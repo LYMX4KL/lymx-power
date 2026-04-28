@@ -1,0 +1,71 @@
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+[[redirects]]
+  from = "/browse"
+  to = "/browse.html"
+  status = 200
+
+[[redirects]]
+  from = "/about"
+  to = "/about.html"
+  status = 200
+
+[[redirects]]
+  from = "/careers"
+  to = "/careers.html"
+  status = 200
+
+[[redirects]]
+  from = "/press"
+  to = "/press.html"
+  status = 200
+
+[[redirects]]
+  from = "/support"
+  to = "/support.html"
+  status = 200
+
+[[redirects]]
+  from = "/app"
+  to = "/app.html"
+  status = 200
+
+[[redirects]]
+  from = "/business"
+  to = "/business.html"
+  status = 200
+
+[[redirects]]
+  from = "/signup"
+  to = "/onboarding.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/customer-dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/biz"
+  to = "/biz-dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/rep"
+  to = "/rep-dashboard.html"
+  status = 200
+
+# MGC recruiter deep-links (matches rep-dashboard's getlymx.com/r/:name pattern)
+[[redirects]]
+  from = "/r/*"
+  to = "/onboarding.html"
+  status = 302

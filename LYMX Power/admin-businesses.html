@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — manage Businesses on the network. Approve pending applications, edit listings, view settlement, suspend." />
+<title>Businesses · LYMX Admin</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://getlymx.com/admin-businesses" />
+<meta property="og:title" content="LYMX Admin · Businesses" />
+<meta property="og:description" content="Internal Business management." />
+<meta property="og:image" content="https://getlymx.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="LYMX" />
+<meta name="twitter:card" content="summary_large_image" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .page{padding:32px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:10px;font-weight:600;font-size:14.5px;border:1px solid transparent;cursor:pointer;transition:.15s;font-family:inherit}
+  .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-success{background:var(--ok);color:#fff}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-sm{padding:7px 14px;font-size:13px;border-radius:8px}
+
+  /* Strip */
+  .strip{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
+  @media(max-width:1000px){.strip{grid-template-columns:repeat(2,1fr)}}
+  .stat-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .stat-card .lab{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}
+  .stat-card .v{font-size:24px;font-weight:800;letter-spacing:-.01em;line-height:1.1}
+  .stat-card .v.green{color:var(--ok)}
+  .stat-card .v.warn{color:var(--warn)}
+  .stat-card .sub{font-size:12px;color:var(--muted);margin-top:4px}
+
+  /* Pending banner */
+  .pending-banner{background:linear-gradient(135deg,#7a4d0a,#5a3608);color:#fff;border-radius:var(--radius);padding:16px 22px;margin-bottom:18px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .pending-banner .icon{font-size:28px}
+  .pending-banner .body{flex:1;min-width:240px}
+  .pending-banner .body .head{font-size:15px;font-weight:800}
+  .pending-banner .body .body-text{font-size:13px;color:#f5d172;margin-top:2px}
+  .pending-banner .actions{display:flex;gap:10px}
+  .pending-banner .btn-w{background:#f5d172;color:var(--ink);padding:9px 16px;border-radius:9px;font-weight:800;font-size:13.5px;border:0;cursor:pointer;font-family:inherit}
+
+  /* Filter chips + search */
+  .head-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:14px;flex-wrap:wrap}
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{padding:7px 14px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .ct{display:inline-block;background:rgba(255,255,255,.18);color:inherit;font-size:11px;font-weight:800;padding:1px 6px;border-radius:5px;margin-left:5px}
+  .chip:not(.on) .ct{background:var(--bg-soft);color:var(--muted)}
+  .search{padding:9px 14px;border:1px solid var(--line);border-radius:999px;font-size:13.5px;font-family:inherit;min-width:240px}
+  .search:focus{outline:none;border-color:var(--accent)}
+
+  /* Card / table */
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:0;overflow:hidden}
+  .card-h{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:18px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .card-h h2{margin:0;font-size:17px;font-weight:800}
+  .card-h .meta{font-size:13px;color:var(--muted)}
+
+  table.biz{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.biz th{text-align:left;padding:11px 16px;border-bottom:2px solid var(--line);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg-soft)}
+  table.biz td{padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+  table.biz td.right{text-align:right}
+  table.biz tbody tr{cursor:pointer;transition:.1s}
+  table.biz tbody tr:hover{background:var(--bg-soft)}
+  table.biz tbody tr.on{background:rgba(10,132,255,.04)}
+  table.biz td .name{font-weight:800;display:flex;align-items:center;gap:8px}
+  table.biz td .name .av{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+  table.biz td .sub{color:var(--muted);font-size:12px;margin-top:1px}
+  table.biz td.amt{font-weight:800;text-align:right}
+
+  .status{display:inline-block;padding:3px 9px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+  .status.pending{background:rgba(240,160,32,.16);color:#a06a0c}
+  .status.active{background:rgba(19,162,107,.14);color:var(--ok)}
+  .status.suspended{background:rgba(208,32,84,.14);color:#a01644}
+  .status.draft{background:rgba(91,100,114,.12);color:var(--muted)}
+
+  .row-action{display:inline-flex;gap:6px}
+  .row-action button{padding:5px 9px;font-size:11.5px;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--ink-2);font-weight:700;cursor:pointer;font-family:inherit}
+  .row-action button:hover{border-color:var(--ink);background:var(--bg-soft)}
+  .row-action button.approve{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .row-action button.deny{background:#fff;color:var(--danger);border-color:var(--danger)}
+
+  /* Detail drawer */
+  .drawer{position:fixed;top:0;right:-520px;width:520px;max-width:100vw;height:100vh;background:#fff;border-left:1px solid var(--line);box-shadow:-10px 0 40px rgba(14,17,22,.12);transition:right .3s;z-index:200;overflow-y:auto}
+  .drawer.on{right:0}
+  .drawer-h{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:1}
+  .drawer-h h3{margin:0;font-size:18px;font-weight:800}
+  .drawer-h .close{font-size:24px;color:var(--muted);background:none;border:0;cursor:pointer;padding:4px;line-height:1;font-family:inherit}
+  .drawer-body{padding:20px 24px}
+  .drawer .stat-row{display:flex;justify-content:space-between;padding:9px 0;font-size:13.5px;border-bottom:1px solid var(--line)}
+  .drawer .stat-row .l{color:var(--muted)}
+  .drawer .stat-row .r{font-weight:800}
+  .drawer .stat-row.big .r{font-size:18px}
+  .drawer .sec{margin-top:22px}
+  .drawer .sec h4{margin:0 0 10px;font-size:13px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  .drawer .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .scrim{position:fixed;inset:0;background:rgba(14,17,22,.4);z-index:150;display:none}
+  .scrim.on{display:block}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:14px 22px;border-radius:11px;font-weight:700;font-size:14.5px;box-shadow:var(--shadow);z-index:300;display:none}
+  .toast.on{display:block;animation:up .3s ease-out}
+  .toast.success{background:var(--ok)}
+  .toast.warn{background:var(--warn);color:#fff}
+  @keyframes up{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:30px 0;font-size:13px;text-align:center;margin-top:48px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Admin</span>
+    </div>
+    <nav class="nav-links">
+      <a href="commission-backend.html">Commissions</a>
+      <a href="admin-promos.html">Promos</a>
+      <a href="admin-businesses.html" class="on">Businesses</a>
+      <a href="admin-customers.html">Customers</a>
+      <a href="rep-dashboard.html">Partner view</a>
+    </nav>
+    <div class="admin-avatar">KL</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>Businesses</h1>
+        <p>Manage the LYMX Business roster — approve applications, edit listings, view settlement, suspend.</p>
+      </div>
+      <div>
+        <button class="btn btn-primary" onclick="exportCSV()">⬇ Export all to CSV</button>
+      </div>
+    </div>
+
+    <div class="strip">
+      <div class="stat-card">
+        <div class="lab">Active</div>
+        <div class="v green" id="s-active">12</div>
+        <div class="sub">Live on the network</div>
+      </div>
+      <div class="stat-card">
+        <div class="lab">Pending review</div>
+        <div class="v warn" id="s-pending">3</div>
+        <div class="sub">Submitted in last 7 days</div>
+      </div>
+      <div class="stat-card">
+        <div class="lab">Suspended</div>
+        <div class="v" id="s-suspended">1</div>
+        <div class="sub">Manual review needed</div>
+      </div>
+      <div class="stat-card">
+        <div class="lab">Founding 25 filled</div>
+        <div class="v" id="s-founding">12 / 25</div>
+        <div class="sub">13 spots left in launch cohort</div>
+      </div>
+      <div class="stat-card">
+        <div class="lab">Monthly recurring</div>
+        <div class="v">$2,388</div>
+        <div class="sub">From 12 active subscriptions</div>
+      </div>
+    </div>
+
+    <div class="pending-banner">
+      <div class="icon">⏳</div>
+      <div class="body">
+        <div class="head">3 Businesses awaiting your review</div>
+        <div class="body-text">Riverside Vet Clinic, Hilltop Bakery, Northgate Print Shop</div>
+      </div>
+      <div class="actions">
+        <button class="btn-w" onclick="setFilter('pending', document.querySelector('[data-f=pending]'))">Review now →</button>
+      </div>
+    </div>
+
+    <div class="head-row">
+      <div class="filter-row">
+        <button class="chip on" data-f="all" onclick="setFilter('all', this)">All <span class="ct" id="ct-all">16</span></button>
+        <button class="chip" data-f="pending" onclick="setFilter('pending', this)">Pending <span class="ct" id="ct-pending">3</span></button>
+        <button class="chip" data-f="active" onclick="setFilter('active', this)">Active <span class="ct" id="ct-active">12</span></button>
+        <button class="chip" data-f="suspended" onclick="setFilter('suspended', this)">Suspended <span class="ct" id="ct-suspended">1</span></button>
+      </div>
+      <input class="search" id="search" placeholder="Search Business or city…" oninput="render()" />
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <h2>Business roster</h2>
+        <div class="meta"><span id="row-count">0</span> shown</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="biz">
+          <thead>
+            <tr>
+              <th>Business</th>
+              <th>Type</th>
+              <th>Direct Partner</th>
+              <th>Activated</th>
+              <th class="right">Rate</th>
+              <th class="right">Mo. LYMX issued</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Drawer -->
+<div class="scrim" id="scrim" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-h">
+    <h3 id="d-name">—</h3>
+    <button class="close" onclick="closeDrawer()">×</button>
+  </div>
+  <div class="drawer-body" id="d-body"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div class="wrap">
+    <div>LYMX Admin · Internal use only</div>
+    <div style="margin-top:8px;font-size:12px;color:#5b6472">© <span id="yr"></span> LYMX. Prototype with mock data.</div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // Mock business roster
+  const businesses = [
+    {id:'b001', name:'Brew & Bean Coffee',   type:'Café',          city:'Las Vegas, NV', partner:'Mike Chen',  activated:'2026-01-15', rate:5, monthlyLymx:8200,  status:'active',    founding:true, plan:'Enterprise',  contact:'sarah@brewandbean.com'},
+    {id:'b002', name:'Oakline Kitchen',      type:'Restaurant',    city:'Las Vegas, NV', partner:'Mike Chen',  activated:'2026-01-22', rate:3, monthlyLymx:14400, status:'active',    founding:true, plan:'Enterprise',  contact:'chef@oaklinekitchen.com'},
+    {id:'b003', name:'Sun Market & Deli',    type:'Grocery',       city:'Las Vegas, NV', partner:'Sarah Lee',  activated:'2026-02-04', rate:4, monthlyLymx:6800,  status:'active',    founding:true, plan:'Enterprise',  contact:'hi@sunmarket.com'},
+    {id:'b004', name:'Field & Bloom Florals',type:'Florist',       city:'Las Vegas, NV', partner:'Lisa Park',  activated:'2026-02-18', rate:7, monthlyLymx:3200,  status:'active',    founding:true, plan:'Enterprise',  contact:'orders@fieldbloom.com'},
+    {id:'b005', name:'Iron & Oak Salon',     type:'Salon',         city:'Henderson, NV', partner:'Tom Vega',   activated:'2026-03-01', rate:5, monthlyLymx:4100,  status:'active',    founding:true, plan:'Enterprise',  contact:'book@ironoaksalon.com'},
+    {id:'b006', name:'Pacific Tile Co.',     type:'Home services', city:'Las Vegas, NV', partner:'Jordan Faye',activated:'2026-03-08', rate:2, monthlyLymx:9600,  status:'active',    founding:true, plan:'Enterprise',  contact:'sales@pacifictile.com'},
+    {id:'b007', name:'Maple Auto Detail',    type:'Auto',          city:'Las Vegas, NV', partner:'Mike Chen',  activated:'2026-03-19', rate:5, monthlyLymx:5400,  status:'active',    founding:true, plan:'Enterprise',  contact:'service@mapleauto.com'},
+    {id:'b008', name:'Riverside Vet Clinic', type:'Pet',           city:'Henderson, NV', partner:'Nina Patel', activated:'2026-04-02', rate:4, monthlyLymx:2800,  status:'pending',   founding:false,plan:'Enterprise',  contact:'admin@riversidevet.com'},
+    {id:'b009', name:'Hilltop Bakery',       type:'Bakery',        city:'Las Vegas, NV', partner:'Lisa Park',  activated:'2026-04-09', rate:5, monthlyLymx:4200,  status:'pending',   founding:false,plan:'Enterprise',  contact:'orders@hilltopbakery.com'},
+    {id:'b010', name:'Northgate Print Shop', type:'Print',         city:'Las Vegas, NV', partner:'Chris Vega', activated:'2026-04-15', rate:3, monthlyLymx:1800,  status:'pending',   founding:false,plan:'Enterprise',  contact:'hi@northgateprint.com'},
+    {id:'b011', name:'Ember Pizza',          type:'Restaurant',    city:'Las Vegas, NV', partner:'Maya Cole',  activated:'2026-04-22', rate:4, monthlyLymx:3600,  status:'active',    founding:true, plan:'Enterprise',  contact:'orders@emberpizza.com'},
+    {id:'b012', name:'Crescent Yoga Studio', type:'Fitness',       city:'Las Vegas, NV', partner:'Elena Ross', activated:'2026-04-25', rate:5, monthlyLymx:1200,  status:'active',    founding:true, plan:'Enterprise',  contact:'hello@crescentyoga.com'},
+    {id:'b013', name:'Harbor Pet Spa',       type:'Pet',           city:'Las Vegas, NV', partner:'Mike Chen',  activated:'2026-04-26', rate:5, monthlyLymx:780,   status:'active',    founding:true, plan:'Enterprise',  contact:'book@harborpetspa.com'},
+    {id:'b014', name:'Rio Auto Glass',       type:'Auto',          city:'Las Vegas, NV', partner:'Sarah Lee',  activated:'2026-04-27', rate:3, monthlyLymx:520,   status:'active',    founding:true, plan:'Enterprise',  contact:'office@rioautoglass.com'},
+    {id:'b015', name:'Empire Boba',          type:'Café',          city:'Las Vegas, NV', partner:'Tom Vega',   activated:'2026-04-27', rate:6, monthlyLymx:2400,  status:'active',    founding:true, plan:'Enterprise',  contact:'shop@empireboba.com'},
+    {id:'b016', name:'Old Vegas Diner',      type:'Restaurant',    city:'Las Vegas, NV', partner:'Mike Chen',  activated:'2026-02-12', rate:4, monthlyLymx:0,     status:'suspended', founding:false,plan:'Enterprise',  contact:'support@oldvegas.com'},
+  ];
+
+  let currentFilter = 'all';
+
+  function setFilter(f, btn){
+    currentFilter = f;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+    btn.classList.add('on');
+    render();
+  }
+
+  function fmtN(n){ return Math.round(n).toLocaleString(); }
+  function initials(s){ return s.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase(); }
+
+  function render(){
+    let rows = businesses;
+    if (currentFilter !== 'all') rows = rows.filter(b => b.status === currentFilter);
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    if (q) rows = rows.filter(b => (b.name + ' ' + b.city + ' ' + b.partner).toLowerCase().includes(q));
+
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = rows.map(b => `
+      <tr onclick="openDrawer('${b.id}')">
+        <td>
+          <div class="name"><span class="av">${initials(b.name)}</span>${b.name}${b.founding ? ' <span style="background:rgba(212,175,55,.18);color:#86670c;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:4px;margin-left:4px">★ Founding</span>' : ''}</div>
+          <div class="sub">${b.city}</div>
+        </td>
+        <td>${b.type}</td>
+        <td>${b.partner}</td>
+        <td>${new Date(b.activated).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+        <td class="right">${b.rate} LYMX/$1</td>
+        <td class="amt">${b.status === 'pending' ? '—' : fmtN(b.monthlyLymx)}</td>
+        <td><span class="status ${b.status}">${b.status}</span></td>
+        <td>
+          <div class="row-action" onclick="event.stopPropagation()">
+            ${b.status === 'pending'
+              ? `<button class="approve" onclick="approve('${b.id}')">Approve</button><button class="deny" onclick="deny('${b.id}')">Deny</button>`
+              : b.status === 'active'
+                ? `<button onclick="openDrawer('${b.id}')">View</button><button onclick="suspend('${b.id}')">Suspend</button>`
+                : `<button onclick="reinstate('${b.id}')">Reinstate</button>`}
+          </div>
+        </td>
+      </tr>
+    `).join('');
+    document.getElementById('row-count').textContent = rows.length;
+
+    // Update strip & chip counts
+    const counts = {all: businesses.length, pending: 0, active: 0, suspended: 0};
+    businesses.forEach(b => { counts[b.status] += 1; });
+    document.getElementById('s-active').textContent = counts.active;
+    document.getElementById('s-pending').textContent = counts.pending;
+    document.getElementById('s-suspended').textContent = counts.suspended;
+    document.getElementById('s-founding').textContent = businesses.filter(b => b.founding).length + ' / 25';
+    document.getElementById('ct-all').textContent = counts.all;
+    document.getElementById('ct-pending').textContent = counts.pending;
+    document.getElementById('ct-active').textContent = counts.active;
+    document.getElementById('ct-suspended').textContent = counts.suspended;
+  }
+
+  function openDrawer(id){
+    const b = businesses.find(x => x.id === id);
+    document.getElementById('d-name').textContent = b.name;
+    const fee = b.monthlyLymx * 0.008;
+    document.getElementById('d-body').innerHTML = `
+      <div class="stat-row big"><div class="l">Status</div><div class="r"><span class="status ${b.status}">${b.status}</span></div></div>
+      <div class="stat-row"><div class="l">Type</div><div class="r">${b.type}</div></div>
+      <div class="stat-row"><div class="l">City</div><div class="r">${b.city}</div></div>
+      <div class="stat-row"><div class="l">Activated</div><div class="r">${new Date(b.activated).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div></div>
+      <div class="stat-row"><div class="l">Plan</div><div class="r">${b.plan}</div></div>
+      <div class="stat-row"><div class="l">Issuance rate</div><div class="r">${b.rate} LYMX / $1 · 🔒 locked</div></div>
+      <div class="stat-row"><div class="l">Direct Partner</div><div class="r">${b.partner}</div></div>
+
+      <div class="sec">
+        <h4>Last 30 days</h4>
+        <div class="stat-row"><div class="l">LYMX issued</div><div class="r">${fmtN(b.monthlyLymx)}</div></div>
+        <div class="stat-row"><div class="l">Unit purchases (cost)</div><div class="r">$${fee.toFixed(2)}</div></div>
+        <div class="stat-row"><div class="l">Unique customers</div><div class="r">${Math.round(b.monthlyLymx/250) || 0}</div></div>
+      </div>
+
+      <div class="sec">
+        <h4>Contact</h4>
+        <div class="stat-row"><div class="l">Email</div><div class="r" style="font-weight:600">${b.contact}</div></div>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-ghost btn-sm" href="settlement.html">View settlement →</a>
+        <a class="btn btn-ghost btn-sm" href="pos.html">View POS log</a>
+        <a class="btn btn-ghost btn-sm" href="biz-dashboard.html">As-Business view</a>
+        ${b.status === 'active'
+          ? `<button class="btn btn-danger btn-sm" onclick="suspend('${b.id}')">Suspend</button>`
+          : b.status === 'pending'
+            ? `<button class="btn btn-success btn-sm" onclick="approve('${b.id}')">Approve activation</button>`
+            : `<button class="btn btn-success btn-sm" onclick="reinstate('${b.id}')">Reinstate</button>`}
+      </div>
+    `;
+    document.getElementById('drawer').classList.add('on');
+    document.getElementById('scrim').classList.add('on');
+  }
+
+  function closeDrawer(){
+    document.getElementById('drawer').classList.remove('on');
+    document.getElementById('scrim').classList.remove('on');
+  }
+
+  function approve(id){
+    const b = businesses.find(x => x.id === id);
+    if (!b) return;
+    b.status = 'active';
+    b.activated = new Date().toISOString().slice(0,10);
+    closeDrawer();
+    render();
+    showToast(`${b.name} approved and activated`, 'success');
+  }
+  function deny(id){
+    const b = businesses.find(x => x.id === id);
+    if (!b) return;
+    if (!confirm(`Deny ${b.name}? They'll receive a rejection email.`)) return;
+    const idx = businesses.indexOf(b);
+    businesses.splice(idx, 1);
+    closeDrawer();
+    render();
+    showToast(`${b.name} application denied`, 'warn');
+  }
+  function suspend(id){
+    const b = businesses.find(x => x.id === id);
+    if (!b) return;
+    if (!confirm(`Suspend ${b.name}? They'll lose POS access until reinstated.`)) return;
+    b.status = 'suspended';
+    closeDrawer();
+    render();
+    showToast(`${b.name} suspended`, 'warn');
+  }
+  function reinstate(id){
+    const b = businesses.find(x => x.id === id);
+    if (!b) return;
+    b.status = 'active';
+    closeDrawer();
+    render();
+    showToast(`${b.name} reinstated`, 'success');
+  }
+
+  function exportCSV(){
+    let csv = 'ID,Business,Type,City,Direct Partner,Activated,Rate,Monthly LYMX issued,Status,Founding,Plan,Contact\n';
+    businesses.forEach(b => {
+      csv += [b.id, '"'+b.name+'"', '"'+b.type+'"', '"'+b.city+'"', '"'+b.partner+'"', b.activated, b.rate, b.monthlyLymx, b.status, b.founding, b.plan, b.contact].join(',') + '\n';
+    });
+    const blob = new Blob([csv], {type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'lymx-businesses.csv';
+    a.click();
+    showToast('Roster exported', 'success');
+  }
+
+  function showToast(msg, type){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast on ' + (type || '');
+    setTimeout(()=> t.classList.remove('on'), 2400);
+  }
+
+  render();
+</script>
+</body>
+</html>

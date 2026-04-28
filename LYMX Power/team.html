@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX team preview — internal review hub for the LYMX prototype. All pages grouped by audience for quick walkthrough." />
+<title>Team preview · LYMX</title>
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1080px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  /* Header */
+  header.top{padding:36px 0 18px;background:#fff;border-bottom:1px solid var(--line)}
+  header.top h1{margin:0;font-size:32px;font-weight:800;letter-spacing:-.015em}
+  header.top .lede{font-size:15px;color:var(--muted);margin-top:6px;max-width:680px}
+  .stamp{display:inline-block;background:rgba(208,32,84,.08);color:#a01644;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:6px;margin-bottom:10px}
+
+  /* Section */
+  .page{padding:36px 0 64px}
+  .section{margin-bottom:36px}
+  .sec-h{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+  .sec-h h2{margin:0;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .sec-h .audience{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:3px 10px;border-radius:6px}
+  .sec-h .audience.customer{background:rgba(10,132,255,.12);color:var(--accent-2)}
+  .sec-h .audience.business{background:rgba(212,175,55,.18);color:#86670c}
+  .sec-h .audience.partner{background:rgba(128,90,213,.14);color:#5d3aa8}
+  .sec-h .audience.admin{background:rgba(208,32,84,.12);color:#a01644}
+  .sec-h .audience.public{background:rgba(91,100,114,.14);color:var(--ink-2)}
+  .sec-h .desc{font-size:13.5px;color:var(--muted)}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .card{display:block;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;transition:.15s;position:relative}
+  .card:hover{border-color:var(--ink);transform:translateY(-1px);box-shadow:var(--shadow)}
+  .card .name{font-weight:800;font-size:15px;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+  .card .name .new{background:var(--gold);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:4px}
+  .card .url{font-family:'SF Mono',Menlo,monospace;font-size:11px;color:var(--accent-2);margin-bottom:8px;word-break:break-all}
+  .card .desc{font-size:12.5px;color:var(--muted);line-height:1.55}
+  .card .arrow{position:absolute;top:18px;right:18px;color:var(--muted);font-size:18px;transition:.15s}
+  .card:hover .arrow{color:var(--ink);transform:translateX(2px)}
+
+  /* Note box */
+  .note{background:#fff7e6;border:1px solid #f0d289;border-radius:12px;padding:16px 20px;margin:18px 0;font-size:13.5px;color:#7a5c0a}
+  .note strong{color:#5a4308}
+  .note ul{margin:8px 0 0;padding-left:20px;line-height:1.7}
+
+  /* Quick actions */
+  .quick{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:var(--radius);padding:24px 28px;margin-bottom:24px;position:relative;overflow:hidden}
+  .quick::after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);right:-100px;top:-100px;pointer-events:none}
+  .quick .lab{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#9aa3b0;font-weight:700;margin-bottom:10px;position:relative}
+  .quick .links{display:flex;gap:10px;flex-wrap:wrap;position:relative}
+  .quick .links a{background:rgba(255,255,255,.12);color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,.15)}
+  .quick .links a:hover{background:rgba(255,255,255,.22)}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:30px 0;font-size:13px;text-align:center;margin-top:48px}
+  footer a{color:#c6ccd4;margin:0 10px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="stamp">Internal preview · do not share publicly</div>
+    <h1>LYMX team review hub</h1>
+    <p class="lede">All prototype pages in one place. Click through, leave comments in our shared doc. Models, math, and copy are all subject to attorney sign-off and team feedback before launch.</p>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+
+    <div class="quick">
+      <div class="lab">Start here</div>
+      <div class="links">
+        <a href="index.html">🏠 Public homepage</a>
+        <a href="business.html">🏪 Business pitch</a>
+        <a href="rep-dashboard.html">🤝 Partner dashboard</a>
+        <a href="customer-wallet.html">📱 Customer wallet</a>
+        <a href="LYMX-Legal-Inquiry.docx">📄 Legal inquiry (Word)</a>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>What's locked vs. open for input</strong>
+      <ul>
+        <li><strong>Locked</strong>: $0.01 face value · 80% buy/sell rate · 9/3/2/1% Partner commissions · Las Vegas pilot · web-first (no native app yet)</li>
+        <li><strong>Pending attorney review</strong>: processing-fee structure · Nevada money-transmitter analysis · MLM disclosures</li>
+        <li><strong>Open for team input</strong>: copy, tone, page priorities, what to build next, design polish, team-member-specific feedback</li>
+      </ul>
+    </div>
+
+    <!-- Public marketing -->
+    <div class="section">
+      <div class="sec-h">
+        <h2>Public marketing site</h2>
+        <span class="audience public">Public</span>
+        <span class="desc">What customers and prospects see first</span>
+      </div>
+      <div class="cards">
+        <a class="card" href="index.html">
+          <div class="name">Homepage <span class="arrow">→</span></div>
+          <div class="url">/index.html</div>
+          <div class="desc">Hero, search, "How LYMX works", featured Businesses, customer + Business CTAs.</div>
+        </a>
+        <a class="card" href="why-lymx.html">
+          <div class="name">Why LYMX comparison page <span class="new">NEW</span> <span class="arrow">→</span></div>
+          <div class="url">/why-lymx.html</div>
+          <div class="desc">Side-by-side vs traditional rewards. Real customer-pain stories (Spirit / McDonald's / Hotel). Business-side ad-spend comparison. Triple CTA at the bottom.</div>
+        </a>
+        <a class="card" href="browse.html">
+          <div class="name">Browse Businesses <span class="arrow">→</span></div>
+          <div class="url">/browse.html</div>
+          <div class="desc">Yelp-style directory with filters, ratings, distance, map placeholder.</div>
+        </a>
+        <a class="card" href="biz-brew-and-bean.html">
+          <div class="name">Business detail — Brew &amp; Bean <span class="arrow">→</span></div>
+          <div class="url">/biz-brew-and-bean.html</div>
+          <div class="desc">Sample Business listing with menu, reviews, write-a-review form.</div>
+        </a>
+        <a class="card" href="biz-oakline-kitchen.html">
+          <div class="name">Business detail — Oakline Kitchen <span class="arrow">→</span></div>
+          <div class="url">/biz-oakline-kitchen.html</div>
+          <div class="desc">Second sample Business — restaurant + bar variant.</div>
+        </a>
+        <a class="card" href="about.html">
+          <div class="name">About <span class="arrow">→</span></div>
+          <div class="url">/about.html</div>
+          <div class="desc">Mission, founding team, early stats.</div>
+        </a>
+        <a class="card" href="careers.html">
+          <div class="name">Careers <span class="arrow">→</span></div>
+          <div class="url">/careers.html</div>
+          <div class="desc">Open roles · web-first stack (no native mobile roles).</div>
+        </a>
+        <a class="card" href="press.html">
+          <div class="name">Press <span class="arrow">→</span></div>
+          <div class="url">/press.html</div>
+          <div class="desc">Press releases and quotes (illustrative).</div>
+        </a>
+        <a class="card" href="support.html">
+          <div class="name">Support / FAQ <span class="arrow">→</span></div>
+          <div class="url">/support.html</div>
+          <div class="desc">Customer + Business FAQ. Working contact form (Netlify Forms).</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Customer -->
+    <div class="section">
+      <div class="sec-h">
+        <h2>Customer experience</h2>
+        <span class="audience customer">Customer</span>
+        <span class="desc">What a LYMX cardholder sees in the wallet</span>
+      </div>
+      <div class="cards">
+        <a class="card" href="customer-signup.html">
+          <div class="name">Sign-up flow <span class="new">NEW</span> <span class="arrow">→</span></div>
+          <div class="url">/customer-signup.html</div>
+          <div class="desc">5-step phone-number → OTP → profile → tour → done. Welcome bonus 100 LYMX.</div>
+        </a>
+        <a class="card" href="customer-wallet.html">
+          <div class="name">Web Wallet <span class="arrow">→</span></div>
+          <div class="url">/customer-wallet.html</div>
+          <div class="desc">Mobile-style wallet view — balance, QR to pay, recent activity, find Businesses. No download.</div>
+        </a>
+        <a class="card" href="customer-referral.html">
+          <div class="name">Refer a friend <span class="new">NEW</span> <span class="arrow">→</span></div>
+          <div class="url">/customer-referral.html</div>
+          <div class="desc">Personal referral code, share buttons, pending + earned referrals tracker. 200 LYMX per friend.</div>
+        </a>
+        <a class="card" href="notifications.html">
+          <div class="name">Notifications inbox <span class="new">NEW</span> <span class="arrow">→</span></div>
+          <div class="url">/notifications.html</div>
+          <div class="desc">Activity feed: earn confirmations, redemption receipts, promo alerts, referral updates.</div>
+        </a>
+        <a class="card" href="customer-dashboard.html">
+          <div class="name">Activity dashboard <span class="arrow">→</span></div>
+          <div class="url">/customer-dashboard.html</div>
+          <div class="desc">Full transaction history, reviews written, pending reviews.</div>
+        </a>
+        <a class="card" href="app.html">
+          <div class="name">Wallet install instructions <span class="arrow">→</span></div>
+          <div class="url">/app.html</div>
+          <div class="desc">How to add the LYMX Web Wallet to iPhone/Android home screen as a PWA.</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Business -->
+    <div class="section">
+      <div class="sec-h">
+        <h2>Business operator tools</h2>
+        <span class="audience business">Business</span>
+        <span class="desc">For the local Business that signed up to issue + accept LYMX</span>
+      </div>
+      <div class="cards">
+        <a class="card" href="biz-dashboard.html">
+          <div class="name">Business dashboard <span class="arrow">→</span></div>
+          <div class="url">/biz-dashboard.html</div>
+          <div class="desc">Daily activity, settlement preview ($46.40 owed), volume chart, listing health.</div>
+        </a>
+        <a class="card" href="pos.html">
+          <div class="name">Point of sale <span class="new">NEW</span> <span class="arrow">→</span></div>
+          <div class="url">/pos.html</div>
+          <div class="desc">Issue LYMX / Accept LYMX. Locked base rate, live promo multiplier visible, real-time fee preview.</div>
+        </a>
+        <a class="card" href="promotions.html">
+          <div class="name">Promotions <span class="new">NEW</span> <span class="arrow">→</span></div>
+          <div class="url">/promotions.html</div>
+          <div class="desc">Schedule time-bound, item-specific, first-time-customer multipliers on top of locked base rate.</div>
+        </a>
+        <a class="card" href="settlement.html">
+          <div class="name">Monthly settlement <span class="new">NEW</span> <span class="arrow">→</span></div>
+          <div class="url">/settlement.html</div>
+          <div class="desc">Net of unit purchases vs. buy-backs. Transaction log + QuickBooks CSV export.</div>
+        </a>
+        <a class="card" href="business.html">
+          <div class="name">Business pitch page <span class="arrow">→</span></div>
+          <div class="url">/business.html</div>
+          <div class="desc">Public-facing why-LYMX page, plans, partner program, sign-up CTA.</div>
+        </a>
+        <a class="card" href="onboarding.html">
+          <div class="name">Onboarding wizard <span class="arrow">→</span></div>
+          <div class="url">/onboarding.html</div>
+          <div class="desc">Multi-step Business signup flow — biz info, plan, payment review.</div>
+        </a>
+        <a class="card" href="website-service.html">
+          <div class="name">Website service upsell <span class="arrow">→</span></div>
+          <div class="url">/website-service.html</div>
+          <div class="desc">$250 (50% off) website built for Businesses in their first 3 months.</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Partner -->
+    <div class="section">
+      <div class="sec-h">
+        <h2>Partner (recruiter) tools</h2>
+        <span class="audience partner">Partner</span>
+        <span class="desc">For the independent contractors who recruit Businesses</span>
+      </div>
+      <div class="cards">
+        <a class="card" href="partner-signup.html">
+          <div class="name">Partner application <span class="new">NEW</span> <span class="arrow">→</span></div>
+          <div class="url">/partner-signup.html</div>
+          <div class="desc">4-step recruiter application — contact, sponsor, background, agreement. Sponsor verification, anti-pyramid disclosures.</div>
+        </a>
+        <a class="card" href="rep-dashboard.html">
+          <div class="name">Partner dashboard <span class="arrow">→</span></div>
+          <div class="url">/rep-dashboard.html</div>
+          <div class="desc">Earnings, tier ladder (Bronze→Platinum), referral tree, leaderboard, Founding 25 banner.</div>
+        </a>
+        <a class="card" href="projection.html">
+          <div class="name">Income projection calculator <span class="arrow">→</span></div>
+          <div class="url">/projection.html</div>
+          <div class="desc">Sliders for Direct + G1/G2/G3 counts. Live cash + LYMX projection.</div>
+        </a>
+        <a class="card" href="partner-crm.html">
+          <div class="name">Partner CRM <span class="new">NEW</span> <span class="arrow">→</span></div>
+          <div class="url">/partner-crm.html</div>
+          <div class="desc">Prospect tracker (cold/warm/demo/trial/activated), filters, search, add prospect.</div>
+        </a>
+        <a class="card" href="content-hub.html">
+          <div class="name">Content hub / sales kit <span class="arrow">→</span></div>
+          <div class="url">/content-hub.html</div>
+          <div class="desc">Pitch script, email templates, SMS templates, demo, closing, FAQ.</div>
+        </a>
+        <a class="card" href="territory-program.html">
+          <div class="name">Territory program <span class="arrow">→</span></div>
+          <div class="url">/territory-program.html</div>
+          <div class="desc">3-phase rollout to Territory Leader status with city-wide override.</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Admin -->
+    <div class="section">
+      <div class="sec-h">
+        <h2>Admin (LYMX staff only)</h2>
+        <span class="audience admin">Admin</span>
+        <span class="desc">Internal tools for running the platform</span>
+      </div>
+      <div class="cards">
+        <a class="card" href="commission-backend.html">
+          <div class="name">Commission engine <span class="arrow">→</span></div>
+          <div class="url">/commission-backend.html</div>
+          <div class="desc">Monthly Partner payouts. By Partner / By Business. ACH CSV export.</div>
+        </a>
+        <a class="card" href="admin-promos.html">
+          <div class="name">Promo campaigns <span class="arrow">→</span></div>
+          <div class="url">/admin-promos.html</div>
+          <div class="desc">Platform-funded LYMX issuance — welcome bonuses, activation kits, Partner sign-up incentives.</div>
+        </a>
+        <a class="card" href="admin-businesses.html">
+          <div class="name">Business management <span class="new">NEW</span> <span class="arrow">→</span></div>
+          <div class="url">/admin-businesses.html</div>
+          <div class="desc">Roster of all Businesses. Approve pending applications, suspend/reinstate, view per-Business detail. Pending banner shows applications awaiting review.</div>
+        </a>
+        <a class="card" href="admin-customers.html">
+          <div class="name">Customer support <span class="new">NEW</span> <span class="arrow">→</span></div>
+          <div class="url">/admin-customers.html</div>
+          <div class="desc">Customer lookup by phone/email/name. View balance + transaction history, adjust balance with audit reason, flag/suspend, export.</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Documents -->
+    <div class="section">
+      <div class="sec-h">
+        <h2>Strategy &amp; legal documents</h2>
+        <span class="audience public">Docs</span>
+        <span class="desc">Reference materials</span>
+      </div>
+      <div class="cards">
+        <a class="card" href="LYMX-Legal-Inquiry.docx">
+          <div class="name">Legal structure inquiry <span class="arrow">→</span></div>
+          <div class="url">/LYMX-Legal-Inquiry.docx</div>
+          <div class="desc">9-section attorney inquiry covering Nevada money-transmitter, stored value, MLM, tax, and disclosures. ~115 paragraphs.</div>
+        </a>
+        <a class="card" href="PARTNER-PLAYBOOK.md">
+          <div class="name">Partner playbook <span class="arrow">→</span></div>
+          <div class="url">/PARTNER-PLAYBOOK.md</div>
+          <div class="desc">10-section strategy doc — money, tiers, territory, recognition, career path.</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>How to give feedback</strong>
+      <ul>
+        <li>Find Kenny on Slack/email and drop your top 3 thoughts after a 10-min walkthrough</li>
+        <li>For copy/typo nits, take a screenshot with the URL visible — easier to track</li>
+        <li>For structural questions (do we need this page? wrong audience?), flag them — easier to change now than after launch</li>
+        <li>If you find something on the live site that's wrong, the URL pattern is <code>https://getlymx.com/[page-name].html</code></li>
+      </ul>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>LYMX internal preview · <a href="index.html">Public homepage</a></div>
+    <div style="margin-top:8px;font-size:12px;color:#5b6472">© <span id="yr"></span> LYMX. Prototype only — not yet operating.</div>
+  </div>
+</footer>
+
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+</body>
+</html>

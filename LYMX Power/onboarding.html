@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Set up your LYMX partner account in 5 minutes — pick a plan, add your business, configure your listing, connect your POS, and go live." />
+<title>Get Started · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://getlymx.com/onboarding" />
+<meta property="og:title" content="Get Started · LYMX" />
+<meta property="og:description" content="Set up your LYMX partner account in 5 minutes — pick a plan, add your business, configure your listing, connect your POS, and go live." />
+<meta property="og:image" content="https://getlymx.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="LYMX" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Get Started · LYMX" />
+<meta name="twitter:description" content="Set up your LYMX partner account in 5 minutes — pick a plan, add your business, configure your listing, connect your POS, and go live." />
+<meta name="twitter:image" content="https://getlymx.com/og-image.png" />
+<link rel="canonical" href="https://getlymx.com/onboarding" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  img{max-width:100%;display:block}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  button,input,select,textarea{font-family:inherit}
+
+  header.nav{background:#fff;border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+  .brand img{height:24px;width:auto}
+  .nav-cta{font-size:13.5px;color:var(--muted)}
+  .nav-cta a{color:var(--accent-2);font-weight:600}
+
+  /* Progress bar */
+  .prog{padding:24px 0 8px}
+  .steps-bar{display:flex;align-items:center;gap:0;max-width:780px;margin:0 auto;padding:0 24px}
+  .step-dot{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;cursor:pointer}
+  .step-dot::after{content:"";position:absolute;top:14px;left:50%;width:100%;height:2px;background:var(--line);z-index:0}
+  .step-dot:last-child::after{display:none}
+  .step-dot .circle{position:relative;z-index:1;width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--muted);transition:.15s}
+  .step-dot.done .circle{background:var(--ok);border-color:var(--ok);color:#fff}
+  .step-dot.done::after{background:var(--ok)}
+  .step-dot.active .circle{background:var(--ink);border-color:var(--ink);color:#fff;transform:scale(1.1);box-shadow:0 0 0 4px rgba(14,17,22,.08)}
+  .step-dot .lbl{font-size:12px;color:var(--muted);font-weight:600;text-align:center;line-height:1.3}
+  .step-dot.active .lbl{color:var(--ink);font-weight:700}
+  .step-dot.done .lbl{color:var(--ok)}
+  @media(max-width:680px){.step-dot .lbl{display:none}}
+
+  /* Page layout */
+  .page{padding:24px 0 60px}
+  .page-head{text-align:center;margin-bottom:32px}
+  .page-head h1{margin:0 0 6px;font-size:30px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:0;color:var(--muted);font-size:15.5px}
+
+  .layout{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:32px}
+  @media(max-width:600px){.card{padding:22px}}
+
+  .step{display:none}
+  .step.active{display:block}
+  .step h2{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .step .step-sub{margin:0 0 24px;color:var(--muted);font-size:14.5px}
+
+  /* Form */
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px}
+  .field .help{font-size:12.5px;color:var(--muted);margin-top:6px}
+  .field input[type=text],.field input[type=email],.field input[type=tel],.field input[type=url],.field select,.field textarea{
+    width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:10px;font-size:14.5px;color:var(--ink);background:#fff;outline:0;transition:.15s
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  .field textarea{resize:vertical;min-height:90px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:560px){.row2{grid-template-columns:1fr}}
+
+  /* Plan picker */
+  .plans-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:760px){.plans-pick{grid-template-columns:1fr}}
+  .plan-pick{
+    border:2px solid var(--line);border-radius:12px;padding:18px;cursor:pointer;
+    background:#fff;transition:.15s;position:relative;display:flex;flex-direction:column;gap:8px;
+  }
+  .plan-pick:hover{border-color:#c0c7d1}
+  .plan-pick.sel{border-color:var(--accent);background:rgba(10,132,255,.04)}
+  .plan-pick .name{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .plan-pick.sel .name{color:var(--accent-2)}
+  .plan-pick .price{font-size:24px;font-weight:800;letter-spacing:-.01em}
+  .plan-pick .price small{font-size:13px;color:var(--muted);font-weight:600}
+  .plan-pick .desc{font-size:13px;color:var(--ink-2);margin:0}
+  .plan-pick .recommend{position:absolute;top:-10px;right:14px;background:var(--accent);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:3px 10px;border-radius:999px;text-transform:uppercase}
+
+  /* POS picker */
+  .pos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:560px){.pos-grid{grid-template-columns:1fr 1fr}}
+  .pos-pick{
+    border:2px solid var(--line);border-radius:10px;padding:18px 12px;cursor:pointer;background:#fff;
+    text-align:center;transition:.15s;display:flex;flex-direction:column;align-items:center;gap:6px;
+  }
+  .pos-pick:hover{border-color:#c0c7d1}
+  .pos-pick.sel{border-color:var(--accent);background:rgba(10,132,255,.04)}
+  .pos-pick .ic{font-size:30px}
+  .pos-pick .name{font-size:13.5px;font-weight:700}
+  .pos-pick .sub{font-size:11.5px;color:var(--muted)}
+
+  /* Photo upload */
+  .photo-upload{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+  .photo-slot{width:96px;height:96px;border:2px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;color:var(--muted);font-size:28px;transition:.15s;position:relative}
+  .photo-slot:hover{border-color:var(--accent);color:var(--accent);background:rgba(10,132,255,.04)}
+  .photo-slot.filled{background:linear-gradient(135deg,#fef3e0,#ffd9a8);border-style:solid;border-color:var(--line);color:var(--ink)}
+  .photo-slot input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+  /* Earn rate slider */
+  .earn-row{display:flex;align-items:center;gap:14px;margin:6px 0 0}
+  .earn-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:6px;background:var(--line);border-radius:3px;outline:0}
+  .earn-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+  .earn-row .preview{font-weight:800;font-size:15px;min-width:155px;background:rgba(10,132,255,.08);color:var(--accent-2);padding:6px 12px;border-radius:8px;text-align:center}
+
+  /* Review screen */
+  .review-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px;gap:14px}
+  .review-row:last-child{border-bottom:0}
+  .review-row .k{color:var(--muted);min-width:130px}
+  .review-row .v{font-weight:700;text-align:right;flex:1}
+  .review-row a{color:var(--accent-2);font-size:12.5px;font-weight:600;display:block;margin-top:2px}
+  .terms{margin:18px 0 0;padding:14px;background:var(--bg-soft);border-radius:10px;font-size:13px;display:flex;gap:10px;align-items:start;color:var(--ink-2)}
+  .terms input{margin-top:3px;width:18px;height:18px;flex-shrink:0}
+
+  /* Footer of step (buttons) */
+  .step-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid var(--line);padding-top:22px;margin-top:28px;flex-wrap:wrap}
+  .step-foot .help-line{font-size:12.5px;color:var(--muted)}
+  .step-foot .btn-row{display:flex;gap:10px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 22px;border-radius:10px;font-weight:700;font-size:14.5px;border:1px solid transparent;cursor:pointer;transition:.15s;text-decoration:none}
+  .btn-back{background:#fff;color:var(--ink-2);border-color:var(--line)}
+  .btn-back:hover{border-color:var(--ink-2)}
+  .btn-next{background:var(--ink);color:#fff}
+  .btn-next:hover{background:#000}
+  .btn-launch{background:linear-gradient(135deg,#0a84ff,#13a26b);color:#fff;padding:13px 28px;font-size:15.5px}
+  .btn-launch:hover{filter:brightness(1.05)}
+
+  /* Sidebar preview */
+  .side{display:flex;flex-direction:column;gap:18px;position:sticky;top:24px}
+  .preview-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .preview-card h3{margin:0 0 4px;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .preview-card .biz-mock{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
+  .preview-card .ph{aspect-ratio:16/9;background:linear-gradient(135deg,#fef3e0,#ffd9a8);display:flex;align-items:center;justify-content:center;font-size:48px}
+  .preview-card .body{padding:12px}
+  .preview-card .name{font-weight:800;font-size:14px}
+  .preview-card .meta{font-size:12px;color:var(--muted);margin:2px 0 6px}
+  .preview-card .desc{font-size:12px;color:var(--ink-2);margin:0;line-height:1.45}
+  .preview-card .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;background:rgba(19,162,107,.10);color:var(--ok);padding:2px 7px;border-radius:999px;text-transform:uppercase;margin-top:6px}
+
+  .help-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px;font-size:13px}
+  .help-card h4{margin:0 0 8px;font-size:13.5px;font-weight:800}
+  .help-card ul{padding-left:18px;margin:0;color:var(--ink-2)}
+  .help-card ul li{padding:3px 0}
+
+  /* Success state */
+  .success{display:none;text-align:center;padding:40px 20px}
+  .success.shown{display:block}
+  .success .check{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#13a26b);color:#fff;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 20px}
+  .success h2{margin:0 0 8px;font-size:30px;font-weight:800;letter-spacing:-.01em}
+  .success p{margin:0 auto 24px;color:var(--muted);font-size:15.5px;max-width:520px}
+  .success .links{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+  footer{text-align:center;color:var(--muted);font-size:12.5px;padding:24px 0 32px;line-height:1.6}
+  footer .disc{max-width:780px;margin:8px auto 0}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html"><img src="logo.png" alt="LYMX logo" /></a>
+    <div class="nav-cta">Already a partner? <a href="biz-dashboard.html">Sign in</a></div>
+  </div>
+</header>
+
+<!-- Progress bar -->
+<div class="prog">
+  <div class="steps-bar" id="stepsBar">
+    <div class="step-dot active" data-step="1"><div class="circle">1</div><div class="lbl">Plan</div></div>
+    <div class="step-dot" data-step="2"><div class="circle">2</div><div class="lbl">Business</div></div>
+    <div class="step-dot" data-step="3"><div class="circle">3</div><div class="lbl">Listing</div></div>
+    <div class="step-dot" data-step="4"><div class="circle">4</div><div class="lbl">POS</div></div>
+    <div class="step-dot" data-step="5"><div class="circle">5</div><div class="lbl">Launch</div></div>
+  </div>
+</div>
+
+<div class="wrap page">
+  <div class="page-head">
+    <h1>Set up your LYMX partner account</h1>
+    <p>5 short steps. About 5 minutes. No card required until you go live.</p>
+  </div>
+
+  <div class="layout">
+    <div class="card" id="form">
+
+      <!-- STEP 1: PLAN -->
+      <div class="step active" data-step="1">
+        <h2>Pick the plan that fits</h2>
+        <p class="step-sub">You can switch plans anytime. Most local businesses start on Enterprise to be on the public network.</p>
+        <div class="plans-pick" id="planPick">
+          <div class="plan-pick" data-plan="basic">
+            <div class="name">Basic</div>
+            <div class="price">$19<small> / mo</small></div>
+            <p class="desc">Standalone loyalty for one business. Not on getlymx.com.</p>
+          </div>
+          <div class="plan-pick" data-plan="pro">
+            <div class="name">Pro</div>
+            <div class="price">$49<small> / mo</small></div>
+            <p class="desc">Multi-location loyalty. Up to 3 stores. Not on getlymx.com.</p>
+          </div>
+          <div class="plan-pick sel" data-plan="enterprise">
+            <span class="recommend">Most chosen</span>
+            <div class="name">Enterprise</div>
+            <div class="price">$199<small> / mo</small></div>
+            <p class="desc">Full LYMX network. Featured on getlymx.com. MGC-eligible.</p>
+          </div>
+        </div>
+
+        <div class="step-foot">
+          <span class="help-line">Need help choosing? <a href="business.html#plans" style="color:var(--accent-2);font-weight:600">Compare plans →</a></span>
+          <div class="btn-row">
+            <button class="btn btn-next" data-go="2">Continue →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: BUSINESS DETAILS -->
+      <div class="step" data-step="2">
+        <h2>Your business details</h2>
+        <p class="step-sub">The basics. We'll only display what you choose to make public on your listing.</p>
+
+        <div class="field">
+          <label for="bName">Business name</label>
+          <input type="text" id="bName" placeholder="e.g. Brew &amp; Bean Café" value="Brew &amp; Bean Café" />
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="bCat">Category</label>
+            <select id="bCat">
+              <option>Café · Coffee shop</option>
+              <option>Restaurant · Dining</option>
+              <option>Retail · Shop</option>
+              <option>Salon &amp; spa</option>
+              <option>Fitness · Gym</option>
+              <option>Real estate</option>
+              <option>EV charging</option>
+              <option>Home services</option>
+              <option>Pet services</option>
+              <option>Education</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="bPrice">Price tier</label>
+            <select id="bPrice">
+              <option>$ — Affordable</option>
+              <option selected>$$ — Mid-range</option>
+              <option>$$$ — Premium</option>
+              <option>$$$$ — Luxury</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="bAddr">Street address</label>
+          <input type="text" id="bAddr" placeholder="1421 Fremont Street" value="1421 Fremont Street" />
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="bCity">City</label>
+            <input type="text" id="bCity" value="Las Vegas" />
+          </div>
+          <div class="field">
+            <label for="bZip">ZIP</label>
+            <input type="text" id="bZip" value="89101" />
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="bPhone">Phone</label>
+            <input type="tel" id="bPhone" placeholder="(916) 555-0142" value="(916) 555-0142" />
+          </div>
+          <div class="field">
+            <label for="bEmail">Owner email</label>
+            <input type="email" id="bEmail" placeholder="you@business.com" value="kenny@brewandbean.cafe" />
+          </div>
+        </div>
+
+        <div class="step-foot">
+          <span class="help-line">Verified address shows up on the public LYMX map.</span>
+          <div class="btn-row">
+            <button class="btn btn-back" data-go="1">← Back</button>
+            <button class="btn btn-next" data-go="3">Continue →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: PUBLIC LISTING -->
+      <div class="step" data-step="3">
+        <h2>Your public listing</h2>
+        <p class="step-sub">This is what customers see on getlymx.com. You can edit anything later from your dashboard.</p>
+
+        <div class="field">
+          <label for="bDesc">Short description (visible on cards)</label>
+          <textarea id="bDesc" placeholder="2 sentences max — what makes you you.">Specialty coffee, pastries, and a sunny patio. Earn 5 LYMX per $1, redeem any amount.</textarea>
+          <div class="help">Used in directory cards and search results. Keep it short and specific.</div>
+        </div>
+
+        <div class="field">
+          <label>Your earn rate</label>
+          <div class="earn-row">
+            <input type="range" id="earnRate" min="1" max="20" value="5" />
+            <div class="preview" id="earnPreview">5 LYMX per $1</div>
+          </div>
+          <div class="help">Common: 3-5 LYMX per $1 for cafés &amp; restaurants. 1-2 for high-ticket categories. You can change this later.</div>
+        </div>
+
+        <div class="field">
+          <label>Photos (3-6 recommended)</label>
+          <div class="photo-upload">
+            <label class="photo-slot filled" style="background:linear-gradient(135deg,#fef3e0,#ffd9a8)"><input type="file" accept="image/*" /><span>☕</span></label>
+            <label class="photo-slot filled" style="background:linear-gradient(135deg,#e8d5c0,#d4a574)"><input type="file" accept="image/*" /><span>🥐</span></label>
+            <label class="photo-slot"><input type="file" accept="image/*" /><span>+</span></label>
+            <label class="photo-slot"><input type="file" accept="image/*" /><span>+</span></label>
+          </div>
+          <div class="help">JPG or PNG, 5 MB each. Listings with 3+ photos get 2.4× more clicks.</div>
+        </div>
+
+        <div class="field">
+          <label for="bWeb">Website (optional)</label>
+          <input type="url" id="bWeb" placeholder="https://" value="brewandbean.cafe" />
+        </div>
+
+        <div class="step-foot">
+          <span class="help-line">All fields editable later from your dashboard.</span>
+          <div class="btn-row">
+            <button class="btn btn-back" data-go="2">← Back</button>
+            <button class="btn btn-next" data-go="4">Continue →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: POS -->
+      <div class="step" data-step="4">
+        <h2>Connect your POS</h2>
+        <p class="step-sub">LYMX issues automatically when a customer pays. Pick what you use today — or skip and use the receipt-scan fallback.</p>
+
+        <div class="pos-grid" id="posGrid">
+          <div class="pos-pick sel" data-pos="square"><div class="ic">⬜</div><div class="name">Square</div><div class="sub">2-min setup</div></div>
+          <div class="pos-pick" data-pos="shopify"><div class="ic">🛒</div><div class="name">Shopify</div><div class="sub">2-min setup</div></div>
+          <div class="pos-pick" data-pos="toast"><div class="ic">🍞</div><div class="name">Toast</div><div class="sub">3-min setup</div></div>
+          <div class="pos-pick" data-pos="clover"><div class="ic">🍀</div><div class="name">Clover</div><div class="sub">2-min setup</div></div>
+          <div class="pos-pick" data-pos="stripe"><div class="ic">💳</div><div class="name">Stripe</div><div class="sub">For online</div></div>
+          <div class="pos-pick" data-pos="manual"><div class="ic">📷</div><div class="name">Receipt scan</div><div class="sub">No POS needed</div></div>
+        </div>
+
+        <div style="margin-top:18px;background:rgba(10,132,255,.06);border:1px solid rgba(10,132,255,.18);border-radius:10px;padding:14px;font-size:13px;color:var(--ink-2)">
+          <strong>What happens after you pick:</strong> we'll send a one-time integration link to <strong>kenny@brewandbean.cafe</strong>. Square integration takes ~2 minutes; you can do it during onboarding or later.
+        </div>
+
+        <div class="step-foot">
+          <span class="help-line">You can complete POS integration after launch.</span>
+          <div class="btn-row">
+            <button class="btn btn-back" data-go="3">← Back</button>
+            <button class="btn btn-next" data-go="5">Continue →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5: REVIEW & LAUNCH -->
+      <div class="step" data-step="5">
+        <h2>Review &amp; go live</h2>
+        <p class="step-sub">Last check. Once you launch, your listing publishes to getlymx.com within minutes.</p>
+
+        <div class="review-row"><span class="k">Plan</span><span class="v" id="rvPlan">Enterprise — $199/mo</span></div>
+        <div class="review-row"><span class="k">Business</span><span class="v" id="rvBiz">Brew &amp; Bean Café · Café · $$<a href="#" data-go="2">Edit</a></span></div>
+        <div class="review-row"><span class="k">Address</span><span class="v" id="rvAddr">1421 Fremont Street, Las Vegas, NV 89101</span></div>
+        <div class="review-row"><span class="k">Listing</span><span class="v" id="rvListing">2 photos, 1 description, earn rate 5 LYMX/$1<a href="#" data-go="3">Edit</a></span></div>
+        <div class="review-row"><span class="k">POS</span><span class="v" id="rvPOS">Square · setup link will be emailed<a href="#" data-go="4">Change</a></span></div>
+        <div class="review-row"><span class="k">First charge</span><span class="v">$199 on day of go-live · monthly thereafter</span></div>
+
+        <div class="terms">
+          <input type="checkbox" id="agree" checked />
+          <label for="agree" style="font-weight:500">I agree to the <a href="#" style="color:var(--accent-2);font-weight:600">LYMX Partner Agreement</a> and acknowledge that LYMX is a promotional credit unit, not cash, not cryptocurrency, and not a stored monetary balance.</label>
+        </div>
+
+        <div class="step-foot">
+          <span class="help-line">Need to talk to sales first? <a href="mailto:hello@getlymx.com" style="color:var(--accent-2);font-weight:600">Contact us</a></span>
+          <div class="btn-row">
+            <button class="btn btn-back" data-go="4">← Back</button>
+            <button class="btn btn-launch" id="launchBtn">🚀 Launch listing</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="success" id="success">
+        <div class="check">✓</div>
+        <h2>You're live on LYMX!</h2>
+        <p>Your listing is now publishing to getlymx.com. We've emailed your Square integration link and your dashboard is ready.</p>
+        <div class="links">
+          <a class="btn btn-launch" href="biz-dashboard.html">Open my dashboard →</a>
+          <a class="btn btn-back" href="biz-brew-and-bean.html" target="_blank">View my public listing</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sidebar preview -->
+    <aside class="side">
+      <div class="preview-card">
+        <h3>How customers will see you</h3>
+        <div class="biz-mock">
+          <div class="ph">☕</div>
+          <div class="body">
+            <div class="name" id="prevName">Brew &amp; Bean Café</div>
+            <div class="meta" id="prevMeta">Café · Midtown · $$</div>
+            <p class="desc" id="prevDesc">Specialty coffee, pastries, and a sunny patio. Earn 5 LYMX per $1, redeem any amount.</p>
+            <span class="tag">Live</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-card">
+        <h4>Setup tips</h4>
+        <ul>
+          <li>Address is verified by Google Maps API — make sure it's exact.</li>
+          <li>3+ photos = 2.4× more clicks.</li>
+          <li>Most cafés/restaurants set 5 LYMX per $1.</li>
+          <li>You can complete POS integration after going live.</li>
+          <li>First $199 charge happens on the day you launch.</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div>© <span id="yr"></span> LYMX · <a href="business.html" style="color:var(--accent-2)">Plans</a> · <a href="support.html" style="color:var(--accent-2)">Support</a></div>
+    <div class="disc">LYMX is a promotional credit unit used exclusively within the Enterprise ecosystem. LYMX is not cash, not cryptocurrency, and not a stored monetary balance.</div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent=new Date().getFullYear();
+
+  // Wizard navigation
+  function go(n){
+    document.querySelectorAll('.step').forEach(s=>s.classList.toggle('active', s.dataset.step==String(n)));
+    document.querySelectorAll('.step-dot').forEach(d=>{
+      var ds = +d.dataset.step;
+      d.classList.toggle('active', ds==n);
+      d.classList.toggle('done', ds<n);
+    });
+    document.getElementById('success').classList.remove('shown');
+    document.getElementById('form').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  document.querySelectorAll('[data-go]').forEach(b=>{
+    b.addEventListener('click', function(e){ e.preventDefault(); go(+b.dataset.go); });
+  });
+  document.querySelectorAll('.step-dot').forEach(d=>{
+    d.addEventListener('click', function(){
+      if(d.classList.contains('done') || d.classList.contains('active')) go(+d.dataset.step);
+    });
+  });
+
+  // Plan picker
+  document.querySelectorAll('.plan-pick').forEach(p=>{
+    p.addEventListener('click', function(){
+      document.querySelectorAll('.plan-pick').forEach(x=>x.classList.remove('sel'));
+      p.classList.add('sel');
+      var name = p.querySelector('.name').textContent;
+      var price = p.querySelector('.price').textContent.replace(/\s+/g,' ').trim();
+      document.getElementById('rvPlan').textContent = name + ' — ' + price;
+    });
+  });
+
+  // POS picker
+  document.querySelectorAll('.pos-pick').forEach(p=>{
+    p.addEventListener('click', function(){
+      document.querySelectorAll('.pos-pick').forEach(x=>x.classList.remove('sel'));
+      p.classList.add('sel');
+      var name = p.querySelector('.name').textContent;
+      var sub = p.querySelector('.sub').textContent;
+      document.getElementById('rvPOS').innerHTML = name + ' · ' + sub + '<a href="#" data-go="4">Change</a>';
+      document.querySelector('#rvPOS [data-go]').addEventListener('click', e=>{e.preventDefault();go(4)});
+    });
+  });
+
+  // Live preview tied to listing fields
+  function updatePreview(){
+    var n = document.getElementById('bName').value || 'Your Business';
+    var c = document.getElementById('bCat').value.split('·')[0].trim();
+    var p = document.getElementById('bPrice').value.split('—')[0].trim();
+    var city = document.getElementById('bCity').value;
+    var d = document.getElementById('bDesc').value;
+    var rate = document.getElementById('earnRate').value;
+    document.getElementById('prevName').textContent = n;
+    document.getElementById('prevMeta').textContent = c + ' · ' + city + ' · ' + p;
+    document.getElementById('prevDesc').textContent = d;
+    document.getElementById('earnPreview').textContent = rate + ' LYMX per $1';
+    // Update review screen
+    document.getElementById('rvBiz').innerHTML = n + ' · ' + c + ' · ' + p + ' <a href="#" data-go="2">Edit</a>';
+    document.getElementById('rvAddr').textContent = document.getElementById('bAddr').value + ', ' + city + ', NV ' + document.getElementById('bZip').value;
+    document.getElementById('rvListing').innerHTML = '2 photos, 1 description, earn rate ' + rate + ' LYMX/$1 <a href="#" data-go="3">Edit</a>';
+    // Re-attach click handlers for new edit links
+    document.querySelectorAll('#rvBiz [data-go],#rvListing [data-go]').forEach(a=>{
+      a.addEventListener('click', e=>{ e.preventDefault(); go(+a.dataset.go); });
+    });
+  }
+  ['bName','bCat','bPrice','bCity','bAddr','bZip','bDesc','earnRate'].forEach(id=>{
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('input', updatePreview);
+    if(el) el.addEventListener('change', updatePreview);
+  });
+
+  // Photo upload
+  document.querySelectorAll('.photo-slot input[type=file]').forEach(input=>{
+    input.addEventListener('change', function(){
+      var slot = input.closest('.photo-slot');
+      if(input.files && input.files[0]){
+        var icons=['☕','🥐','🍰','🌞','🪴','🥪'];
+        slot.classList.add('filled');
+        slot.querySelector('span').textContent = icons[Math.floor(Math.random()*icons.length)];
+      }
+    });
+  });
+
+  // Launch button
+  document.getElementById('launchBtn').addEventListener('click', function(){
+    if(!document.getElementById('agree').checked){ alert('Please accept the Partner Agreement to continue.'); return; }
+    document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.step-dot').forEach(d=>{ d.classList.remove('active'); d.classList.add('done'); });
+    document.getElementById('success').classList.add('shown');
+    document.getElementById('form').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+</script>
+</body>
+</html>

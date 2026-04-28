@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Browse LYMX partner businesses on the map. Filter by category, price, rating, and distance. Earn and redeem LYMX across the network." />
+<title>Browse Partners — LYMX</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1400px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+  img{max-width:100%;display:block}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+  .brand img{height:24px;width:auto}
+  .nav-links{display:flex;gap:24px;font-size:14px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .nav-cta{display:flex;gap:10px;align-items:center}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:9px 16px;border-radius:9px;font-weight:600;font-size:13.5px;border:1px solid transparent;cursor:pointer;transition:.15s}
+  .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
+  .btn-ghost:hover{border-color:var(--ink-2)}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-biz{background:var(--accent);color:#fff;font-size:13px;padding:7px 12px}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Search bar at top */
+  .top-search{padding:14px 0;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .search-row{display:grid;grid-template-columns:1.4fr 1fr auto;gap:0;background:#fff;border:1px solid var(--line);border-radius:12px;padding:5px;max-width:680px}
+  .search-row .field{display:flex;align-items:center;gap:8px;padding:7px 12px;border-right:1px solid var(--line);min-width:0}
+  .search-row .field:last-of-type{border-right:0}
+  .search-row .field .col{flex:1;min-width:0}
+  .search-row .field label{display:block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:1px}
+  .search-row .field input{border:0;outline:0;font-size:14px;width:100%;background:transparent;color:var(--ink);font-family:inherit}
+  .search-row .field .ic{font-size:16px;opacity:.7}
+  .search-row .btn-search{background:var(--ink);color:#fff;border:0;border-radius:8px;padding:0 18px;font-weight:700;font-size:13.5px;cursor:pointer}
+  .search-row .btn-search:hover{background:#000}
+  @media(max-width:560px){.search-row{grid-template-columns:1fr}.search-row .field{border-right:0;border-bottom:1px solid var(--line);padding:9px 12px}.search-row .btn-search{padding:11px}}
+
+  /* Filters bar */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .filters .lbl{color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:11.5px;margin-right:4px}
+  .chip{padding:7px 13px;border:1px solid var(--line);border-radius:999px;cursor:pointer;background:#fff;font-weight:600;font-size:12.5px;color:var(--ink-2);transition:.15s}
+  .chip:hover{border-color:var(--ink-2)}
+  .chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .chip.cat-on{background:rgba(10,132,255,.08);border-color:var(--accent);color:var(--accent-2)}
+  .filters .sep{height:18px;width:1px;background:var(--line)}
+  .filters .sort{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .filters select{padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px;color:var(--ink);outline:0;font-family:inherit}
+
+  /* Layout */
+  .page{display:grid;grid-template-columns:560px 1fr;gap:0;height:calc(100vh - 175px);min-height:520px}
+  @media(max-width:1024px){.page{grid-template-columns:1fr;height:auto}}
+
+  .results{overflow-y:auto;padding:18px 0;border-right:1px solid var(--line)}
+  @media(max-width:1024px){.results{border-right:0;height:auto;overflow:visible}}
+  .results .meta-line{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding:0 24px 14px}
+  .results .meta-line strong{color:var(--ink)}
+
+  .biz-list{display:flex;flex-direction:column;gap:8px;padding:0 16px}
+  .biz-card{display:grid;grid-template-columns:140px 1fr;gap:14px;padding:12px;border-radius:12px;cursor:pointer;transition:.15s;border:1px solid transparent}
+  .biz-card:hover{background:var(--bg-soft);border-color:var(--line)}
+  .biz-card.active{background:rgba(10,132,255,.04);border-color:var(--accent)}
+  .biz-card .ph{aspect-ratio:1;width:140px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#fef3e0,#ffd9a8);display:flex;align-items:center;justify-content:center;font-size:48px;position:relative;flex-shrink:0}
+  .biz-card .ph .tag{position:absolute;top:8px;left:8px;font-size:10.5px;letter-spacing:.04em;font-weight:800;padding:3px 7px;border-radius:999px;background:var(--ok);color:#fff}
+  .biz-card .ph .pin-num{position:absolute;bottom:8px;right:8px;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px}
+  .biz-card .body{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0}
+  .biz-card h3{margin:0;font-size:16px;font-weight:800;letter-spacing:-.005em}
+  .biz-card .meta{font-size:12.5px;color:var(--muted)}
+  .biz-card .desc{font-size:13px;color:var(--ink-2);margin:4px 0 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .biz-card .foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:12.5px}
+  .biz-card .stars{color:var(--warn);font-weight:700}
+  .biz-card .lymx-rate{background:rgba(10,132,255,.08);color:var(--accent-2);padding:3px 8px;border-radius:999px;font-weight:700;font-size:11.5px}
+  @media(max-width:560px){.biz-card{grid-template-columns:96px 1fr}.biz-card .ph{width:96px;font-size:32px}}
+
+  /* Map */
+  #map{height:100%;min-height:420px}
+  .map-wrap{position:relative;height:100%}
+  @media(max-width:1024px){.map-wrap{height:420px}}
+  .map-overlay{position:absolute;top:14px;right:14px;z-index:1000;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow)}
+  .map-overlay .dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+
+  /* Custom marker */
+  .leaflet-pin{
+    width:32px;height:38px;display:flex;align-items:center;justify-content:center;
+    background:var(--ink);color:#fff;font-weight:800;font-size:14px;border-radius:18px 18px 18px 4px;
+    transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.3);cursor:pointer;
+  }
+  .leaflet-pin span{transform:rotate(45deg)}
+  .leaflet-pin.live{background:var(--ok)}
+  .leaflet-pin.featured{background:var(--accent)}
+
+  footer{padding:32px 0 28px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;text-align:center}
+  footer .disc{max-width:780px;margin:8px auto 0;font-size:11.5px;line-height:1.55}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html"><img src="logo.png" alt="LYMX logo" /></a>
+    <nav class="nav-links">
+      <a href="browse.html" class="on">Browse</a>
+      <a href="index.html#categories">Categories</a>
+      <a href="index.html#how">How LYMX works</a>
+      <a href="app.html">Get the app</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="customer-dashboard.html">Sign in</a>
+      <a class="btn btn-biz" href="business.html">For Business →</a>
+    </div>
+  </div>
+</header>
+
+<!-- Top search -->
+<div class="top-search">
+  <div class="wrap">
+    <form class="search-row" onsubmit="event.preventDefault();">
+      <div class="field">
+        <span class="ic">🔍</span>
+        <div class="col"><label>Find</label><input type="text" placeholder="Coffee, real estate, EV charger…" value="" /></div>
+      </div>
+      <div class="field">
+        <span class="ic">📍</span>
+        <div class="col"><label>Near</label><input type="text" value="Sacramento, CA" /></div>
+      </div>
+      <button class="btn-search" type="submit">Search LYMX</button>
+    </form>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="wrap">
+  <div class="filters">
+    <span class="lbl">Category</span>
+    <span class="chip cat-on">All</span>
+    <span class="chip">Dining</span>
+    <span class="chip">Retail</span>
+    <span class="chip">Real Estate</span>
+    <span class="chip">EV Charging</span>
+    <span class="chip">Home Services</span>
+    <span class="chip">Beauty &amp; Spa</span>
+    <span class="sep"></span>
+    <span class="lbl">Price</span>
+    <span class="chip">$</span>
+    <span class="chip">$$</span>
+    <span class="chip">$$$</span>
+    <span class="sep"></span>
+    <span class="chip">★ 4.0+</span>
+    <span class="chip">Open now</span>
+    <div class="sort">
+      <span class="lbl">Sort by</span>
+      <select>
+        <option>Recommended</option>
+        <option>Distance</option>
+        <option>Highest rated</option>
+        <option>Most LYMX</option>
+        <option>New on network</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Page split -->
+<div class="page">
+  <!-- Results list -->
+  <div class="results">
+    <div class="meta-line"><strong>11 partners</strong> found near Sacramento, CA</div>
+    <div class="biz-list" id="bizList">
+
+      <a class="biz-card active" href="biz-brew-and-bean.html" data-pin="1" data-lat="38.5746" data-lng="-121.4914">
+        <div class="ph" style="background:linear-gradient(135deg,#fef3e0,#ffd9a8)">☕<span class="tag">Live</span><span class="pin-num">1</span></div>
+        <div class="body">
+          <h3>Brew &amp; Bean Café</h3>
+          <div class="meta">Café · Midtown · $$ · 0.8 mi</div>
+          <p class="desc">Specialty coffee, pastries, and a sunny patio. Earn 5 LYMX per $1, redeem any amount.</p>
+          <div class="foot"><span class="stars">★ 4.6 (82)</span><span class="lymx-rate">5 LYMX / $1</span></div>
+        </div>
+      </a>
+
+      <a class="biz-card" href="biz-oakline-kitchen.html" data-pin="2" data-lat="38.5811" data-lng="-121.4942">
+        <div class="ph" style="background:linear-gradient(135deg,#ffe0d6,#ffaa7d)">🍜<span class="tag">Live</span><span class="pin-num">2</span></div>
+        <div class="body">
+          <h3>Oakline Kitchen</h3>
+          <div class="meta">Asian fusion · Downtown · $$ · 1.1 mi</div>
+          <p class="desc">Chef-driven plates, hand-pulled noodles, obsessive cocktail program. Reservations available.</p>
+          <div class="foot"><span class="stars">★ 4.8 (214)</span><span class="lymx-rate">5 LYMX / $1</span></div>
+        </div>
+      </a>
+
+      <a class="biz-card" href="#" data-pin="3" data-lat="38.5667" data-lng="-121.4880">
+        <div class="ph" style="background:linear-gradient(135deg,#f0d8b5,#c89165)">🛍️<span class="tag">Live</span><span class="pin-num">3</span></div>
+        <div class="body">
+          <h3>BoxYard Market</h3>
+          <div class="meta">Retail &amp; dining district · R Street · $$ · 1.3 mi</div>
+          <p class="desc">10+ shops and eateries under one roof. Spend LYMX across food, drink, and goods.</p>
+          <div class="foot"><span class="stars">★ 4.7 (348)</span><span class="lymx-rate">3 LYMX / $1</span></div>
+        </div>
+      </a>
+
+      <a class="biz-card" href="#" data-pin="4" data-lat="38.5631" data-lng="-121.5021">
+        <div class="ph" style="background:linear-gradient(135deg,#e1f0ff,#dfe8ff)">🔌<span class="tag">Live</span><span class="pin-num">4</span></div>
+        <div class="body">
+          <h3>EverGrid Hub</h3>
+          <div class="meta">EV charging &amp; sustainability · Land Park · $$ · 2.3 mi</div>
+          <p class="desc">DC fast charging plus solar-powered lounge. 8 LYMX per kWh charged.</p>
+          <div class="foot"><span class="stars">★ 4.9 (412)</span><span class="lymx-rate">8 LYMX / kWh</span></div>
+        </div>
+      </a>
+
+      <a class="biz-card" href="#" data-pin="5" data-lat="38.5708" data-lng="-121.4836">
+        <div class="ph" style="background:linear-gradient(135deg,#f0e6ff,#ffe1f0)">💇<span class="tag">Live</span><span class="pin-num">5</span></div>
+        <div class="body">
+          <h3>Avery Hair Studio</h3>
+          <div class="meta">Salon &amp; spa · East Sac · $$$ · 1.4 mi</div>
+          <p class="desc">Cuts, color, and skincare by an award-winning team. Book with LYMX, tip with cash.</p>
+          <div class="foot"><span class="stars">★ 4.9 (158)</span><span class="lymx-rate">3 LYMX / $1</span></div>
+        </div>
+      </a>
+
+      <a class="biz-card" href="#" data-pin="6" data-lat="38.5944" data-lng="-121.4956">
+        <div class="ph" style="background:linear-gradient(135deg,#fff5d0,#f5d970)">🏠<span class="tag">Live</span><span class="pin-num">6</span></div>
+        <div class="body">
+          <h3>InvestPro Realty</h3>
+          <div class="meta">Real estate &amp; property mgmt · East Sac · 2.0 mi</div>
+          <p class="desc">Earn LYMX on rent paid through InvestPro PM — up to 5 LYMX per $100.</p>
+          <div class="foot"><span class="stars">★ 4.8 (92)</span><span class="lymx-rate">5 LYMX / $100</span></div>
+        </div>
+      </a>
+
+      <a class="biz-card" href="#" data-pin="7" data-lat="38.6488" data-lng="-121.4127">
+        <div class="ph" style="background:linear-gradient(135deg,#d8e6ff,#a5b8e0)">🏋️<span class="tag">Live</span><span class="pin-num">7</span></div>
+        <div class="body">
+          <h3>Summit Fitness Club</h3>
+          <div class="meta">Gym · Roseville · $$$ · 8.4 mi</div>
+          <p class="desc">Full gym, classes, recovery suite. Pay your membership and earn LYMX back.</p>
+          <div class="foot"><span class="stars">★ 4.5 (410)</span><span class="lymx-rate">2 LYMX / $1</span></div>
+        </div>
+      </a>
+
+      <a class="biz-card" href="#" data-pin="8" data-lat="38.6013" data-lng="-121.4978">
+        <div class="ph" style="background:linear-gradient(135deg,#ffe4d6,#ffb289)">🐕<span class="tag">Live</span><span class="pin-num">8</span></div>
+        <div class="body">
+          <h3>Paws &amp; Tails Grooming</h3>
+          <div class="meta">Pet services · Natomas · $$ · 4.6 mi</div>
+          <p class="desc">Full-service grooming and pet boutique. Earn LYMX on every visit.</p>
+          <div class="foot"><span class="stars">★ 4.7 (63)</span><span class="lymx-rate">4 LYMX / $1</span></div>
+        </div>
+      </a>
+
+      <a class="biz-card" href="#" data-pin="9" data-lat="38.5556" data-lng="-121.4663">
+        <div class="ph" style="background:linear-gradient(135deg,#dde6c8,#a5b878)">🔧<span class="tag">Live</span><span class="pin-num">9</span></div>
+        <div class="body">
+          <h3>Delta HVAC &amp; Air</h3>
+          <div class="meta">Home services · Greater Sac · $$ · service area</div>
+          <p class="desc">Heating, cooling, and indoor air specialists. 50 LYMX per $50 of service.</p>
+          <div class="foot"><span class="stars">★ 4.9 (197)</span><span class="lymx-rate">100 LYMX / $100</span></div>
+        </div>
+      </a>
+
+      <a class="biz-card" href="#" data-pin="10" data-lat="38.5582" data-lng="-121.4881">
+        <div class="ph" style="background:linear-gradient(135deg,#fce4d6,#f4a486)">🍞<span class="tag">Live</span><span class="pin-num">10</span></div>
+        <div class="body">
+          <h3>Lumière Bakery</h3>
+          <div class="meta">Bakery · Old Sac · $$ · 1.7 mi</div>
+          <p class="desc">Croissants, sourdough, and seasonal tarts. Family-owned since 2018.</p>
+          <div class="foot"><span class="stars">★ 4.7 (146)</span><span class="lymx-rate">5 LYMX / $1</span></div>
+        </div>
+      </a>
+
+      <a class="biz-card" href="#" data-pin="11" data-lat="38.5762" data-lng="-121.4763">
+        <div class="ph" style="background:linear-gradient(135deg,#d4e6ff,#7fa8d8)">💰<span class="tag">Live</span><span class="pin-num">11</span></div>
+        <div class="body">
+          <h3>CFS Advantage</h3>
+          <div class="meta">Financial services · 28th &amp; J · 1.0 mi</div>
+          <p class="desc">Earn LYMX on qualifying financial products. Turn financial activity into rewards.</p>
+          <div class="foot"><span class="stars">★ 4.8 (78)</span><span class="lymx-rate">varies</span></div>
+        </div>
+      </a>
+
+    </div>
+    <div style="text-align:center;padding:18px;color:var(--muted);font-size:13px">Showing 11 of 11 partners in Sacramento metro · zoom out for more</div>
+  </div>
+
+  <!-- Map -->
+  <div class="map-wrap">
+    <div class="map-overlay"><span class="dot"></span> Showing live partners</div>
+    <div id="map"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div>© <span id="yr"></span> LYMX · <a href="index.html" style="color:var(--accent-2)">Home</a> · <a href="business.html" style="color:var(--accent-2)">For Business</a> · <a href="support.html" style="color:var(--accent-2)">Support</a></div>
+    <div class="disc">LYMX is a promotional credit unit used exclusively within the Enterprise ecosystem. LYMX is not cash, not cryptocurrency, and not a stored monetary balance. Map data © OpenStreetMap contributors.</div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+  document.getElementById('yr').textContent=new Date().getFullYear();
+
+  // Map setup
+  var map = L.map('map').setView([38.5816, -121.4944], 12);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap',
+    maxZoom: 19
+  }).addTo(map);
+
+  // Build markers from list
+  var markers = {};
+  document.querySelectorAll('.biz-card').forEach(function(card){
+    var lat = parseFloat(card.dataset.lat);
+    var lng = parseFloat(card.dataset.lng);
+    var num = card.dataset.pin;
+    var name = card.querySelector('h3').textContent;
+    var meta = card.querySelector('.meta').textContent;
+    var rate = card.querySelector('.lymx-rate').textContent;
+    var icon = L.divIcon({
+      className: 'leaflet-pin-wrap',
+      html: '<div class="leaflet-pin live"><span>' + num + '</span></div>',
+      iconSize: [32, 38],
+      iconAnchor: [16, 36]
+    });
+    var marker = L.marker([lat, lng], {icon: icon}).addTo(map);
+    marker.bindPopup('<strong>' + name + '</strong><br/><span style="font-size:12px;color:#5b6472">' + meta + '</span><br/><span style="font-size:12px;color:#0050c7;font-weight:600">' + rate + '</span><br/><a href="' + card.getAttribute('href') + '" style="color:#0050c7;font-weight:600;font-size:13px">View →</a>');
+    markers[num] = marker;
+    card.addEventListener('mouseenter', function(){ marker.openPopup(); });
+    card.addEventListener('click', function(e){
+      if(card.getAttribute('href') === '#'){
+        e.preventDefault();
+        document.querySelectorAll('.biz-card').forEach(c=>c.classList.remove('active'));
+        card.classList.add('active');
+        map.setView([lat, lng], 15);
+        marker.openPopup();
+      }
+    });
+  });
+</script>
+</body>
+</html>

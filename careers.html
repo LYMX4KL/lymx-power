@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Join LYMX — careers, open roles, benefits, and how we work." />
+<title>Careers — LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+  img{max-width:100%;display:block}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+  .brand img{height:26px;width:auto}
+  .nav-links{display:flex;gap:26px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-cta{display:flex;gap:10px;align-items:center}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:10px;font-weight:600;font-size:14.5px;border:1px solid transparent;cursor:pointer;transition:.15s}
+  .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
+  .btn-ghost:hover{border-color:var(--ink-2)}
+  .btn-biz{background:var(--accent);color:#fff;font-size:13.5px;padding:8px 14px}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .hero{padding:80px 0 40px;background:linear-gradient(180deg,#fff,#fafbfc)}
+  .eyebrow{display:inline-block;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-2);font-weight:700;background:rgba(10,132,255,.08);padding:6px 10px;border-radius:999px;margin-bottom:18px}
+  .hero h1{font-size:clamp(36px,4.6vw,52px);line-height:1.1;margin:0 0 16px;letter-spacing:-.02em;font-weight:800}
+  .hero p{font-size:17px;color:var(--ink-2);margin:0;max-width:680px}
+
+  section{padding:50px 0;border-top:1px solid var(--line)}
+  section.soft{background:var(--bg-soft)}
+  h2{font-size:clamp(24px,2.8vw,32px);margin:0 0 14px;font-weight:800;letter-spacing:-.01em}
+
+  /* Values */
+  .vals{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:28px 0 0}
+  @media(max-width:780px){.vals{grid-template-columns:1fr 1fr}}
+  .val{padding:16px;border:1px solid var(--line);border-radius:12px;background:#fff}
+  .val .ic{font-size:22px;margin-bottom:8px}
+  .val h3{margin:0 0 4px;font-size:14.5px;font-weight:800}
+  .val p{margin:0;font-size:13px;color:var(--muted)}
+
+  /* Roles */
+  .roles{display:flex;flex-direction:column;gap:10px}
+  .role{
+    background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;cursor:pointer;transition:.15s;
+  }
+  .role:hover{border-color:var(--ink-2);box-shadow:var(--shadow)}
+  .role .info h3{margin:0 0 4px;font-size:17px;font-weight:800}
+  .role .info .meta{font-size:13px;color:var(--muted)}
+  .role .info .meta .sep{color:var(--line);margin:0 8px}
+  .role .pill-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .role .pill{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:rgba(10,132,255,.08);color:var(--accent-2);letter-spacing:.04em;text-transform:uppercase}
+  .role .pill.green{background:rgba(19,162,107,.12);color:var(--ok)}
+  .role .arrow{color:var(--muted);font-size:18px}
+
+  /* Benefits */
+  .benefits{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:780px){.benefits{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.benefits{grid-template-columns:1fr}}
+  .ben{padding:18px;background:#fff;border:1px solid var(--line);border-radius:12px}
+  .ben h4{margin:0 0 4px;font-size:14.5px;font-weight:800}
+  .ben p{margin:0;font-size:13px;color:var(--muted)}
+
+  .final{padding:60px 0;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;text-align:center}
+  .final h2{color:#fff;margin:0 0 12px}
+  .final p{color:#c6ccd4;max-width:540px;margin:0 auto 22px;font-size:15.5px}
+  .final .btn-w{background:#fff;color:var(--ink);padding:11px 22px;border-radius:10px;font-weight:700;font-size:14.5px}
+  .final .btn-w:hover{background:#eaeaea}
+
+  footer{padding:36px 0 32px;color:var(--muted);font-size:13px;text-align:center;border-top:1px solid var(--line)}
+  footer .disc{max-width:780px;margin:8px auto 0;font-size:11.5px;line-height:1.55}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html"><img src="logo.png" alt="LYMX logo" /></a>
+    <nav class="nav-links">
+      <a href="browse.html">Browse</a>
+      <a href="business.html">For Business</a>
+      <a href="about.html">About</a>
+      <a href="careers.html" style="color:var(--accent);font-weight:700">Careers</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="customer-dashboard.html">Sign in</a>
+      <a class="btn btn-biz" href="business.html">For Business →</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero" style="border-top:0">
+  <div class="wrap">
+    <span class="eyebrow">Careers · LYMX</span>
+    <h1>Help us rebuild how local businesses grow.</h1>
+    <p>We're a small founding team in Sacramento working on a hard, important problem. We pay well, ship fast, and care about getting independent businesses to thrive.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>How we work</h2>
+    <div class="vals">
+      <div class="val"><div class="ic">🛠️</div><h3>Operator first</h3><p>We've all run small businesses. We build for that customer.</p></div>
+      <div class="val"><div class="ic">🧭</div><h3>Direct &amp; clear</h3><p>No politics, no jargon. Say the thing. Decide. Move.</p></div>
+      <div class="val"><div class="ic">🚀</div><h3>Ship weekly</h3><p>We'd rather have an imperfect thing in a partner's hands than a perfect plan.</p></div>
+      <div class="val"><div class="ic">🌳</div><h3>Long horizon</h3><p>The network compounds. So do careers here. We're building for years, not quarters.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="soft">
+  <div class="wrap">
+    <h2>Open roles</h2>
+    <div class="roles">
+      <a class="role" href="mailto:careers@getlymx.com?subject=Senior%20Full-Stack%20Engineer">
+        <div class="info">
+          <h3>Senior Full-Stack Engineer</h3>
+          <div class="meta">Engineering<span class="sep">·</span>Sacramento or Remote (US)<span class="sep">·</span>Full-time<span class="sep">·</span>$160K–$200K + equity</div>
+        </div>
+        <div class="pill-row">
+          <span class="pill">Engineering</span>
+          <span class="pill green">Hiring fast</span>
+          <span class="arrow">→</span>
+        </div>
+      </a>
+      <a class="role" href="mailto:careers@getlymx.com?subject=Partner%20Success%20Lead">
+        <div class="info">
+          <h3>Partner Success Lead</h3>
+          <div class="meta">Operations<span class="sep">·</span>Sacramento (on-site)<span class="sep">·</span>Full-time<span class="sep">·</span>$95K–$120K + equity</div>
+        </div>
+        <div class="pill-row">
+          <span class="pill">Operations</span>
+          <span class="arrow">→</span>
+        </div>
+      </a>
+      <a class="role" href="mailto:careers@getlymx.com?subject=Mobile%20Engineer%20(iOS%2FAndroid)">
+        <div class="info">
+          <h3>Mobile Engineer (iOS / Android)</h3>
+          <div class="meta">Engineering<span class="sep">·</span>Remote (US)<span class="sep">·</span>Full-time<span class="sep">·</span>$150K–$180K + equity</div>
+        </div>
+        <div class="pill-row">
+          <span class="pill">Engineering</span>
+          <span class="arrow">→</span>
+        </div>
+      </a>
+      <a class="role" href="mailto:careers@getlymx.com?subject=Brand%20%26%20Content%20Designer">
+        <div class="info">
+          <h3>Brand &amp; Content Designer</h3>
+          <div class="meta">Design<span class="sep">·</span>Sacramento or Remote<span class="sep">·</span>Full-time<span class="sep">·</span>$110K–$140K + equity</div>
+        </div>
+        <div class="pill-row">
+          <span class="pill">Design</span>
+          <span class="arrow">→</span>
+        </div>
+      </a>
+    </div>
+    <div style="text-align:center;margin-top:30px;font-size:13.5px;color:var(--muted)">
+      Don't see your role? Send us a note at <a href="mailto:careers@getlymx.com" style="color:var(--accent-2);font-weight:600">careers@getlymx.com</a> — we read every email.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Benefits</h2>
+    <div class="benefits">
+      <div class="ben"><h4>Health, dental, vision</h4><p>100% premium covered for you, 80% for dependents.</p></div>
+      <div class="ben"><h4>4 weeks PTO</h4><p>Plus federal holidays. Plus we close between Christmas and New Year.</p></div>
+      <div class="ben"><h4>Equity</h4><p>Every employee. 4-year vest with 1-year cliff. We share what we build.</p></div>
+      <div class="ben"><h4>$2K learning budget</h4><p>Books, courses, conferences. Spend it on growing.</p></div>
+      <div class="ben"><h4>Home-office stipend</h4><p>$1,500 to set up your workspace however works for you.</p></div>
+      <div class="ben"><h4>LYMX for life</h4><p>Founding-team LYMX bonus. The network we're building should benefit those building it.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>One application form. One human reviews it.</h2>
+    <p>We don't use applicant tracking systems. Send a real email, with whatever portfolio or context you want to share. We'll reply within 5 business days.</p>
+    <a class="btn-w" href="mailto:careers@getlymx.com">careers@getlymx.com →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>© <span id="yr"></span> LYMX · <a href="index.html" style="color:var(--accent-2)">Home</a> · <a href="about.html" style="color:var(--accent-2)">About</a> · <a href="press.html" style="color:var(--accent-2)">Press</a></div>
+    <div class="disc">LYMX is a promotional credit unit used exclusively within the Enterprise ecosystem. LYMX is not cash, not cryptocurrency, and not a stored monetary balance.</div>
+  </div>
+</footer>
+<script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+</body>
+</html>

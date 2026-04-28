@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Brew & Bean Café on LYMX — Midtown Sacramento café. Earn 5 LYMX per $1 spent. Read reviews, see the menu, and write your own review for 100 LYMX." />
+<title>Brew & Bean Café — LYMX Partner</title>
+<style>
+  :root{
+    --ink:#0e1116;
+    --ink-2:#1a1f27;
+    --muted:#5b6472;
+    --line:#e6e8ec;
+    --bg:#ffffff;
+    --bg-soft:#f6f7f9;
+    --accent:#0a84ff;
+    --accent-2:#0050c7;
+    --ok:#13a26b;
+    --warn:#f0a020;
+    --radius:14px;
+    --shadow:0 10px 30px rgba(14,17,22,.08);
+    --maxw:1200px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+  img{max-width:100%;display:block}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  /* Nav */
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+  .brand img{height:26px;width:auto}
+  .nav-links{display:flex;gap:26px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-cta{display:flex;gap:10px;align-items:center}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:10px;font-weight:600;font-size:14.5px;border:1px solid transparent;cursor:pointer;transition:.15s;text-decoration:none}
+  .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
+  .btn-ghost:hover{border-color:var(--ink-2)}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-biz{background:var(--accent);color:#fff;font-size:13.5px;padding:8px 14px}
+  .btn-biz:hover{background:var(--accent-2)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Breadcrumb */
+  .crumb{padding:18px 0 8px;color:var(--muted);font-size:13.5px}
+  .crumb a{color:var(--muted)}
+  .crumb a:hover{color:var(--ink)}
+
+  /* Hero photos */
+  .photos{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:6px;height:380px;border-radius:var(--radius);overflow:hidden;margin-bottom:24px}
+  .photos .ph{display:flex;align-items:center;justify-content:center;font-size:80px;background:linear-gradient(135deg,#fef3e0,#ffe9d2)}
+  .photos .ph.main{grid-row:span 2;font-size:130px;background:linear-gradient(135deg,#fef3e0,#ffd9a8)}
+  .photos .ph.p2{background:linear-gradient(135deg,#e8d5c0,#d4a574)}
+  .photos .ph.p3{background:linear-gradient(135deg,#fff4d6,#fbe4a8)}
+  .photos .ph.p4{background:linear-gradient(135deg,#f0e5d2,#d6b67a)}
+  .photos .ph.p5{background:linear-gradient(135deg,#e6d5c0,#bf9970);position:relative;cursor:pointer}
+  .photos .ph.p5::after{content:"+12 more";position:absolute;bottom:12px;right:12px;background:rgba(14,17,22,.78);color:#fff;font-size:13px;padding:6px 12px;border-radius:999px;font-weight:600}
+  @media(max-width:780px){.photos{grid-template-columns:1fr 1fr;grid-template-rows:200px 100px;height:auto}.photos .ph.main{grid-row:span 2}.photos .ph.p4,.photos .ph.p5{display:none}}
+
+  /* Title */
+  .title-row{display:flex;justify-content:space-between;align-items:start;gap:24px;flex-wrap:wrap;margin-bottom:8px}
+  .title-row h1{margin:0;font-size:clamp(28px,3.8vw,40px);font-weight:800;letter-spacing:-.01em;line-height:1.1}
+  .title-row .save{display:flex;gap:8px}
+  .meta-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:14.5px;color:var(--ink-2);margin-bottom:6px}
+  .stars-big{color:var(--warn);font-weight:800;font-size:16px}
+  .meta-row .dot{color:var(--muted)}
+  .tag-live{background:var(--ok);color:#fff;font-size:11.5px;letter-spacing:.04em;font-weight:700;padding:4px 10px;border-radius:999px}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:1fr 360px;gap:36px;margin-top:32px}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}}
+
+  /* Sidebar */
+  .side{position:sticky;top:96px;align-self:start;display:flex;flex-direction:column;gap:16px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+  .card h3{margin:0 0 12px;font-size:16px;font-weight:700}
+  .lymx-side{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border:0}
+  .lymx-side h3{color:#fff;margin-bottom:8px}
+  .lymx-side .rate{font-size:24px;font-weight:800}
+  .lymx-side .rate small{font-size:14px;opacity:.85;font-weight:600}
+  .lymx-side ul{list-style:none;padding:0;margin:14px 0 0;font-size:13.5px}
+  .lymx-side ul li{padding:6px 0;display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.95)}
+  .lymx-side ul li::before{content:"✓";font-weight:800;color:#a4ffe5}
+  .lymx-side .btn-side{margin-top:16px;background:#fff;color:var(--ink);width:100%}
+  .lymx-side .btn-side:hover{background:#eaeaea}
+
+  .info-row{display:flex;gap:10px;font-size:13.5px;color:var(--ink-2);padding:6px 0;border-bottom:1px solid var(--line)}
+  .info-row:last-child{border-bottom:0}
+  .info-row .ic{font-size:16px;flex-shrink:0;width:20px}
+  .info-row .lab{color:var(--muted);min-width:64px}
+  .info-row .val{flex:1}
+
+  /* Sections */
+  .sec{padding-top:36px;border-top:1px solid var(--line);margin-top:36px}
+  .sec:first-child{border-top:0;padding-top:0;margin-top:0}
+  .sec h2{margin:0 0 14px;font-size:24px;font-weight:800}
+  .sec p{color:var(--ink-2);font-size:15.5px;margin:0 0 12px}
+  .sec p:last-child{margin-bottom:0}
+
+  /* Offers */
+  .offers{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .offer{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+  .offer .badge{display:inline-block;background:rgba(10,132,255,.08);color:var(--accent-2);padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
+  .offer h4{margin:0 0 4px;font-size:15px;font-weight:700}
+  .offer p{margin:0;font-size:13.5px;color:var(--muted)}
+
+  /* Menu */
+  .menu{display:grid;grid-template-columns:1fr 1fr;gap:12px 28px}
+  .menu-item{display:flex;justify-content:space-between;align-items:start;padding:10px 0;border-bottom:1px solid var(--line);gap:12px}
+  .menu-item h4{margin:0;font-size:15px;font-weight:700}
+  .menu-item p{margin:2px 0 0;font-size:13.5px;color:var(--muted)}
+  .menu-item .price{font-weight:700;font-size:14.5px;white-space:nowrap}
+  @media(max-width:680px){.menu{grid-template-columns:1fr}}
+
+  /* Reviews display */
+  .review-summary{display:flex;align-items:center;gap:24px;background:var(--bg-soft);border-radius:var(--radius);padding:20px;margin-bottom:20px;flex-wrap:wrap}
+  .review-summary .big{font-size:48px;font-weight:800;line-height:1;color:var(--ink)}
+  .review-summary .big-sub{font-size:13px;color:var(--muted)}
+  .review-summary .stars-big-2{color:var(--warn);font-size:18px;letter-spacing:1px}
+  .review-summary .breakdown{flex:1;min-width:200px}
+  .review-summary .bar{display:grid;grid-template-columns:24px 1fr 32px;gap:10px;align-items:center;font-size:12px;color:var(--muted)}
+  .review-summary .bar .track{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+  .review-summary .bar .fill{height:100%;background:var(--warn);border-radius:3px}
+
+  .review-list{display:flex;flex-direction:column;gap:14px}
+  .review-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .review-card .head{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+  .review-card .author{display:flex;align-items:center;gap:10px}
+  .review-card .avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#13a26b);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+  .review-card .name{font-weight:700;font-size:14.5px}
+  .review-card .when{font-size:12.5px;color:var(--muted)}
+  .review-card .stars-row{color:var(--warn);font-size:14.5px;letter-spacing:1px;margin:6px 0 8px}
+  .review-card .quote{font-size:14.5px;color:var(--ink-2);margin:0 0 12px;line-height:1.55}
+  .review-card .photos-mini{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .review-card .pmini{width:80px;height:80px;border-radius:8px;background:linear-gradient(135deg,#fef3e0,#ffd9a8);display:flex;align-items:center;justify-content:center;font-size:28px}
+  .review-card .pmini.b{background:linear-gradient(135deg,#e8d5c0,#d4a574)}
+  .review-card .badges{display:flex;gap:8px;align-items:center;font-size:12px;flex-wrap:wrap}
+  .badge-verified{color:var(--ok);background:rgba(19,162,107,.08);font-weight:700;padding:3px 9px;border-radius:999px}
+  .badge-earned{color:var(--accent-2);background:rgba(10,132,255,.08);font-weight:700;padding:3px 9px;border-radius:999px}
+  .badge-helpful{color:var(--muted);padding:3px 0}
+
+  /* Write review form (NEW) */
+  .write-form{background:linear-gradient(135deg,#f6f7f9,#fff);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin-top:24px}
+  .write-form .head{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  .write-form h3{margin:0;font-size:18px;font-weight:800}
+  .write-form .lymx-pill{background:linear-gradient(135deg,#0a84ff,#13a26b);color:#fff;font-weight:700;font-size:13px;padding:6px 14px;border-radius:999px}
+
+  .field-group{margin-bottom:18px}
+  .field-group label{display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:.02em}
+  .field-group .help{font-size:12.5px;color:var(--muted);margin-top:6px}
+
+  /* Star picker */
+  .star-picker{display:flex;gap:6px;font-size:32px;color:var(--line);cursor:pointer;user-select:none}
+  .star-picker .star{transition:.1s;line-height:1}
+  .star-picker .star.on{color:var(--warn)}
+  .star-picker .star:hover{transform:scale(1.1)}
+  .star-picker-label{font-size:13.5px;color:var(--muted);margin-left:10px;align-self:center}
+
+  textarea.review-input{width:100%;min-height:120px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14.5px;font-family:inherit;color:var(--ink);background:#fff;resize:vertical;outline:0}
+  textarea.review-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+
+  /* Photo upload */
+  .photo-upload{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+  .photo-slot{width:96px;height:96px;border:2px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;color:var(--muted);font-size:28px;transition:.15s;position:relative}
+  .photo-slot:hover{border-color:var(--accent);color:var(--accent);background:rgba(10,132,255,.04)}
+  .photo-slot.filled{background:linear-gradient(135deg,#fef3e0,#ffd9a8);border-style:solid;border-color:var(--line);color:var(--ink)}
+  .photo-slot.filled.b{background:linear-gradient(135deg,#e8d5c0,#d4a574)}
+  .photo-slot input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .photo-slot .x{position:absolute;top:-6px;right:-6px;width:22px;height:22px;background:var(--ink);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;line-height:1}
+
+  .form-foot{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px;margin-top:6px}
+  .form-foot .reward-line{font-size:13.5px;color:var(--muted)}
+  .form-foot .reward-line strong{color:var(--accent-2);font-weight:700}
+
+  /* Footer */
+  footer{padding:48px 0 40px;border-top:1px solid var(--line);color:var(--muted);font-size:14px;margin-top:64px}
+  .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:30px;margin-bottom:30px}
+  .foot-grid h4{color:var(--ink);font-size:13px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 12px}
+  .foot-grid a{display:block;padding:4px 0;font-size:14px}
+  .foot-grid a:hover{color:var(--ink)}
+  .foot-bot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;padding-top:20px;border-top:1px solid var(--line)}
+  .disclaimer{margin-top:18px;font-size:12px;color:var(--muted);max-width:900px}
+  @media(max-width:780px){.foot-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html"><img src="logo.png" alt="LYMX logo" /></a>
+    <nav class="nav-links">
+      <a href="browse.html">Browse</a>
+      <a href="index.html#categories">Categories</a>
+      <a href="index.html#how">How LYMX works</a>
+      <a href="app.html">Get the app</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="customer-dashboard.html">Sign in</a>
+      <a class="btn btn-biz" href="business.html">For Business →</a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="crumb">
+    <a href="index.html">Home</a> · <a href="browse.html">Browse</a> · <a href="browse.html">Dining</a> · <span style="color:var(--ink)">Brew &amp; Bean Café</span>
+  </div>
+
+  <!-- Photo gallery -->
+  <div class="photos">
+    <div class="ph main">☕</div>
+    <div class="ph p2">🥐</div>
+    <div class="ph p3">🍰</div>
+    <div class="ph p4">🪴</div>
+    <div class="ph p5">🌞</div>
+  </div>
+
+  <!-- Title -->
+  <div class="title-row">
+    <div>
+      <h1>Brew &amp; Bean Café</h1>
+      <div class="meta-row" style="margin-top:8px">
+        <span class="stars-big">★ 4.6</span>
+        <span style="color:var(--muted)">(82 reviews)</span>
+        <span class="dot">·</span>
+        <span>Café · Bakery</span>
+        <span class="dot">·</span>
+        <span>$$</span>
+        <span class="dot">·</span>
+        <span>Midtown Sacramento</span>
+        <span class="tag-live">Live on LYMX</span>
+      </div>
+    </div>
+    <div class="save">
+      <a class="btn btn-ghost" href="#">♡ Save</a>
+      <a class="btn btn-ghost" href="#">↗ Share</a>
+    </div>
+  </div>
+
+  <!-- Main layout -->
+  <div class="layout">
+    <main>
+      <!-- About -->
+      <div class="sec">
+        <h2>About</h2>
+        <p>Brew &amp; Bean is a neighborhood specialty coffee shop and bakery in the heart of Midtown. We roast small-batch beans from a family farm in Costa Rica, bake everything from scratch every morning, and run a sunny patio that's perfect for laptops, dates, or solo afternoons. Family-owned since 2019.</p>
+        <p>We were one of the first Sacramento businesses to join LYMX. Earn 5 LYMX per $1 spent — coffee, pastries, lunch, and our small retail shelf are all eligible. Redeem any LYMX balance toward your order, no minimums.</p>
+      </div>
+
+      <!-- Current offers -->
+      <div class="sec">
+        <h2>Current LYMX offers</h2>
+        <div class="offers">
+          <div class="offer">
+            <span class="badge">Bonus earn</span>
+            <h4>2× LYMX before 10 AM</h4>
+            <p>Earn 10 LYMX per $1 on weekdays — fuel up and stack rewards.</p>
+          </div>
+          <div class="offer">
+            <span class="badge">Redeem perk</span>
+            <h4>Free pastry at 500 LYMX</h4>
+            <p>Use 500 LYMX on any in-house bake — croissants, scones, muffins, cookies.</p>
+          </div>
+          <div class="offer">
+            <span class="badge">First visit</span>
+            <h4>+200 LYMX welcome</h4>
+            <p>New LYMX members get a 200-LYMX bonus on their first order at Brew &amp; Bean.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Menu -->
+      <div class="sec">
+        <h2>Menu highlights</h2>
+        <div class="menu">
+          <div class="menu-item"><div><h4>House drip</h4><p>Single-origin Costa Rican, refills $1</p></div><div class="price">$3.25</div></div>
+          <div class="menu-item"><div><h4>Cortado</h4><p>Equal parts espresso &amp; steamed milk</p></div><div class="price">$4.50</div></div>
+          <div class="menu-item"><div><h4>Cold brew</h4><p>16-hour steep, served over ice</p></div><div class="price">$5.25</div></div>
+          <div class="menu-item"><div><h4>Matcha latte</h4><p>Ceremonial-grade matcha, oat milk</p></div><div class="price">$5.75</div></div>
+          <div class="menu-item"><div><h4>Ham &amp; Gruyère croissant</h4><p>Black Forest ham, Gruyère, butter croissant</p></div><div class="price">$8.50</div></div>
+          <div class="menu-item"><div><h4>Avocado tartine</h4><p>Sourdough, smashed avocado, lemon, chili flakes</p></div><div class="price">$11.00</div></div>
+        </div>
+      </div>
+
+      <!-- Reviews display -->
+      <div class="sec" id="reviews">
+        <h2>Reviews</h2>
+
+        <div class="review-summary">
+          <div>
+            <div class="big">4.6</div>
+            <div class="stars-big-2">★★★★☆</div>
+            <div class="big-sub">82 reviews</div>
+          </div>
+          <div class="breakdown">
+            <div class="bar"><span>5★</span><div class="track"><div class="fill" style="width:62%"></div></div><span style="text-align:right">51</span></div>
+            <div class="bar"><span>4★</span><div class="track"><div class="fill" style="width:24%"></div></div><span style="text-align:right">20</span></div>
+            <div class="bar"><span>3★</span><div class="track"><div class="fill" style="width:10%"></div></div><span style="text-align:right">8</span></div>
+            <div class="bar"><span>2★</span><div class="track"><div class="fill" style="width:3%"></div></div><span style="text-align:right">2</span></div>
+            <div class="bar"><span>1★</span><div class="track"><div class="fill" style="width:1%"></div></div><span style="text-align:right">1</span></div>
+          </div>
+        </div>
+
+        <div class="review-list">
+          <div class="review-card">
+            <div class="head">
+              <div class="author">
+                <div class="avatar">MR</div>
+                <div>
+                  <div class="name">Maya R.</div>
+                  <div class="when">2 days ago · 14 reviews</div>
+                </div>
+              </div>
+              <span class="badge-verified">✓ Verified visit</span>
+            </div>
+            <div class="stars-row">★★★★★</div>
+            <p class="quote">Sunny patio, friendly staff, and the cold brew is the best in Midtown. I've been earning LYMX here for two months and just redeemed them at EverGrid for a free EV charge — felt amazing. The avocado tartine is a hidden gem too.</p>
+            <div class="photos-mini">
+              <div class="pmini">☕</div>
+              <div class="pmini b">🥐</div>
+            </div>
+            <div class="badges">
+              <span class="badge-earned">+100 LYMX earned</span>
+              <span class="badge-helpful">👍 Helpful (24)</span>
+            </div>
+          </div>
+
+          <div class="review-card">
+            <div class="head">
+              <div class="author">
+                <div class="avatar">JT</div>
+                <div>
+                  <div class="name">Jordan T.</div>
+                  <div class="when">1 week ago · 7 reviews</div>
+                </div>
+              </div>
+              <span class="badge-verified">✓ Verified visit</span>
+            </div>
+            <div class="stars-row">★★★★★</div>
+            <p class="quote">Quiet corner, fast wifi, great matcha. I've parked here on Tuesday afternoons for a month writing my thesis. The 2× LYMX before 10 is a real perk — I'm sitting on 1,200 already.</p>
+            <div class="badges">
+              <span class="badge-earned">+50 LYMX earned</span>
+              <span class="badge-helpful">👍 Helpful (12)</span>
+            </div>
+          </div>
+
+          <div class="review-card">
+            <div class="head">
+              <div class="author">
+                <div class="avatar">SL</div>
+                <div>
+                  <div class="name">Sam L.</div>
+                  <div class="when">2 weeks ago · 32 reviews</div>
+                </div>
+              </div>
+              <span class="badge-verified">✓ Verified visit</span>
+            </div>
+            <div class="stars-row">★★★★☆</div>
+            <p class="quote">Solid coffee, friendly owner, the croissants are a 9.5/10. Took a star off because the patio fills up fast on weekends — get there before 10 if you want a seat. Worth it for the cortado alone.</p>
+            <div class="photos-mini">
+              <div class="pmini b">🥐</div>
+            </div>
+            <div class="badges">
+              <span class="badge-earned">+100 LYMX earned</span>
+              <span class="badge-helpful">👍 Helpful (8)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ★ NEW: WRITE A REVIEW FORM -->
+        <div class="write-form" id="write-review">
+          <div class="head">
+            <h3>Write a review</h3>
+            <span class="lymx-pill">Earn up to 100 LYMX</span>
+          </div>
+
+          <form onsubmit="event.preventDefault(); alert('Thanks for the review! In the live version, this will save your review and credit 100 LYMX to your balance.');">
+            <div class="field-group">
+              <label>How was your visit?</label>
+              <div style="display:flex;align-items:center">
+                <div class="star-picker" id="starPicker">
+                  <span class="star" data-v="1">★</span>
+                  <span class="star" data-v="2">★</span>
+                  <span class="star" data-v="3">★</span>
+                  <span class="star" data-v="4">★</span>
+                  <span class="star" data-v="5">★</span>
+                </div>
+                <span class="star-picker-label" id="starLabel">Tap to rate</span>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="reviewText">Tell other LYMX members about it</label>
+              <textarea id="reviewText" class="review-input" placeholder="What did you order? How was the service? What stood out? Honest reviews help everyone."></textarea>
+              <div class="help">Min 30 characters. Be specific about what you experienced — vague reviews don't earn LYMX.</div>
+            </div>
+
+            <div class="field-group">
+              <label>Add photos <span style="color:var(--accent-2);font-weight:700">+50 LYMX bonus</span></label>
+              <div class="photo-upload">
+                <label class="photo-slot">
+                  <input type="file" accept="image/*" />
+                  <span>+</span>
+                </label>
+                <label class="photo-slot">
+                  <input type="file" accept="image/*" />
+                  <span>+</span>
+                </label>
+                <label class="photo-slot">
+                  <input type="file" accept="image/*" />
+                  <span>+</span>
+                </label>
+              </div>
+              <div class="help">Up to 3 photos. JPG or PNG, 5 MB each. Photos help your review get more visibility.</div>
+            </div>
+
+            <div class="form-foot">
+              <div class="reward-line">
+                You'll earn <strong>50 LYMX</strong> for the review + <strong>50 LYMX</strong> if you add a photo. Reviews are verified against your visit history.
+              </div>
+              <button type="submit" class="btn btn-primary">Post review &amp; earn LYMX →</button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Sidebar -->
+    <aside class="side">
+      <div class="card lymx-side">
+        <h3>LYMX at this business</h3>
+        <div class="rate">5 LYMX <small>per $1 spent</small></div>
+        <ul>
+          <li>Earn on every order</li>
+          <li>Redeem any amount, anytime</li>
+          <li>1 LYMX = $0.01, fixed</li>
+          <li>Spend at any LYMX partner</li>
+        </ul>
+        <a class="btn btn-side" href="customer-dashboard.html">Open in LYMX app →</a>
+      </div>
+
+      <div class="card">
+        <h3>Visit</h3>
+        <div class="info-row"><span class="ic">📍</span><span class="lab">Address</span><span class="val">1421 J Street<br/>Sacramento, CA 95814</span></div>
+        <div class="info-row"><span class="ic">🕐</span><span class="lab">Hours</span><span class="val">Mon–Fri 6:30a–6p<br/>Sat–Sun 7a–4p</span></div>
+        <div class="info-row"><span class="ic">📞</span><span class="lab">Phone</span><span class="val">(916) 555-0142</span></div>
+        <div class="info-row"><span class="ic">🌐</span><span class="lab">Web</span><span class="val">brewandbean.cafe</span></div>
+        <div class="info-row"><span class="ic">🪑</span><span class="lab">Patio</span><span class="val">Yes · pet-friendly</span></div>
+        <div class="info-row"><span class="ic">📶</span><span class="lab">Wifi</span><span class="val">Free, fast</span></div>
+      </div>
+
+      <div class="card">
+        <h3>Have you visited?</h3>
+        <p style="font-size:13.5px;color:var(--muted);margin:0 0 12px">Verified members earn <strong style="color:var(--accent-2)">100 LYMX</strong> for a review with photo.</p>
+        <a class="btn btn-primary" href="#write-review" style="width:100%">Write a review →</a>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <img src="logo.png" alt="LYMX" style="height:22px;margin-bottom:10px" />
+        <div>One loyalty credit. Every partner business. Earn anywhere on the network, redeem anywhere on the network.</div>
+      </div>
+      <div>
+        <h4>Discover</h4>
+        <a href="index.html#browse">Browse</a>
+        <a href="index.html#categories">Categories</a>
+        <a href="index.html#how">How LYMX works</a>
+        <a href="app.html">Get the app</a>
+      </div>
+      <div>
+        <h4>Business</h4>
+        <a href="business.html">Why LYMX</a>
+        <a href="business.html#plans">Plans &amp; pricing</a>
+        <a href="business.html#earn">Partner program</a>
+        <a href="mailto:hello@getlymx.com">Contact sales</a>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <a href="about.html">About</a>
+        <a href="careers.html">Careers</a>
+        <a href="press.html">Press</a>
+        <a href="support.html">Support</a>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <div>© <span id="yr"></span> LYMX · All rights reserved</div>
+      <div style="display:flex;gap:20px"><a href="#">Terms</a><a href="#">Privacy</a><a href="#">Cookies</a></div>
+    </div>
+    <div class="disclaimer">
+      LYMX is a promotional credit unit used exclusively within the Enterprise ecosystem. LYMX is not cash, not cryptocurrency, and not a stored monetary balance. Redemption value and acceptance are governed by Enterprise participation rules.
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // Star rating picker
+  (function(){
+    var picker = document.getElementById('starPicker');
+    var label = document.getElementById('starLabel');
+    var labels = ['','Poor','Fair','Good','Great','Loved it'];
+    var current = 0;
+    var stars = picker.querySelectorAll('.star');
+    function paint(n){
+      stars.forEach(function(s,i){ s.classList.toggle('on', i < n); });
+      label.textContent = n ? labels[n] + ' (' + n + ' star' + (n>1?'s':'') + ')' : 'Tap to rate';
+    }
+    stars.forEach(function(s,i){
+      s.addEventListener('mouseenter', function(){ paint(i+1); });
+      s.addEventListener('click', function(){ current = i+1; paint(current); });
+    });
+    picker.addEventListener('mouseleave', function(){ paint(current); });
+  })();
+
+  // Photo upload preview
+  document.querySelectorAll('.photo-slot input[type=file]').forEach(function(input){
+    input.addEventListener('change', function(){
+      var slot = input.closest('.photo-slot');
+      if(input.files && input.files[0]){
+        var icons = ['☕','🥐','🍰','🌞','🪴','🥪'];
+        var pick = icons[Math.floor(Math.random()*icons.length)];
+        slot.classList.add('filled');
+        if(Math.random() > 0.5) slot.classList.add('b');
+        slot.querySelector('span').textContent = pick;
+      }
+    });
+  });
+</script>
+</body>
+</html>

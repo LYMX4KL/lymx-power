@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Partner CRM — track your prospects through the pipeline, log notes, see who needs follow-up." />
+<title>My CRM · LYMX Partner</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://getlymx.com/partner-crm" />
+<meta property="og:title" content="My CRM · LYMX Partner" />
+<meta property="og:description" content="Track your prospects through the pipeline, log notes, see who needs follow-up." />
+<meta property="og:image" content="https://getlymx.com/og-image.png" />
+<meta property="og:site_name" content="LYMX" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://getlymx.com/og-image.png" />
+<link rel="canonical" href="https://getlymx.com/partner-crm" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--coral:#dc6e3a;--purple:#7a4ab8;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1300px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  img{max-width:100%;display:block}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  button,input,select,textarea{font-family:inherit}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+  .brand img{height:24px;width:auto}
+  .role-tag{background:rgba(212,175,55,.16);color:#86670c;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:9px 16px;border-radius:9px;font-weight:600;font-size:13.5px;border:1px solid transparent;cursor:pointer;transition:.15s}
+  .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
+  .btn-ghost:hover{border-color:var(--ink-2)}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-sm{padding:7px 12px;font-size:12.5px;border-radius:8px}
+  .rep-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .page{padding:32px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head .crumb{font-size:13.5px;color:var(--muted);margin-bottom:6px}
+  .page-head .crumb a{color:var(--accent-2);font-weight:600}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:15px}
+
+  /* Stats row */
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+  @media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .stat .lab{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .stat .num{font-size:24px;font-weight:800;letter-spacing:-.01em;margin-top:4px}
+  .stat .det{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+  /* Action bar */
+  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .toolbar .filters{display:flex;gap:6px;flex-wrap:wrap}
+  .toolbar .filter{padding:7px 13px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer;transition:.15s}
+  .toolbar .filter:hover{border-color:var(--ink-2)}
+  .toolbar .filter.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .toolbar .search{display:flex;align-items:center;background:#fff;border:1px solid var(--line);border-radius:9px;padding:0 12px}
+  .toolbar .search input{border:0;outline:0;font-size:13.5px;padding:9px 8px;width:240px;background:transparent}
+  .toolbar .search .ic{color:var(--muted)}
+
+  /* Add prospect form */
+  .add-form{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:18px;display:none}
+  .add-form.shown{display:block}
+  .add-form h3{margin:0 0 14px;font-size:16px;font-weight:800}
+  .add-form .row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+  @media(max-width:780px){.add-form .row{grid-template-columns:1fr 1fr}}
+  @media(max-width:480px){.add-form .row{grid-template-columns:1fr}}
+  .add-form label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase}
+  .add-form input,.add-form select{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;color:var(--ink);background:#fff;outline:0}
+  .add-form input:focus,.add-form select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  .add-form .actions{display:flex;justify-content:flex-end;gap:10px}
+
+  /* CRM table */
+  .crm-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .crm-card .head-row{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:800;background:var(--bg-soft)}
+
+  table.crm{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.crm th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:800;text-align:left;padding:12px 16px;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  table.crm th.num{text-align:right}
+  table.crm td{padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+  table.crm tr.row{cursor:pointer;transition:.1s}
+  table.crm tr.row:hover{background:var(--bg-soft)}
+  table.crm tr.row.expanded{background:rgba(10,132,255,.04)}
+  table.crm tr.detail{display:none;background:rgba(10,132,255,.03)}
+  table.crm tr.detail.shown{display:table-row}
+  table.crm tr.detail td{padding:0 16px 16px;border-bottom:1px solid var(--line)}
+  table.crm tr:last-child td{border-bottom:0}
+
+  .who{display:flex;align-items:center;gap:10px}
+  .who .av{width:36px;height:36px;border-radius:50%;background:var(--bg-soft);color:var(--muted);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;flex-shrink:0}
+  .who .nm{font-weight:700;font-size:14.5px}
+  .who .biz{font-size:12px;color:var(--muted);margin-top:1px}
+
+  .pipe-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .pipe-pill::before{content:"";width:6px;height:6px;border-radius:50%}
+  .pipe-pill.cold{background:rgba(91,100,114,.10);color:var(--muted)}
+  .pipe-pill.cold::before{background:var(--muted)}
+  .pipe-pill.warm{background:rgba(240,160,32,.12);color:#7a4a0e}
+  .pipe-pill.warm::before{background:var(--warn)}
+  .pipe-pill.demo{background:rgba(10,132,255,.10);color:var(--accent-2)}
+  .pipe-pill.demo::before{background:var(--accent)}
+  .pipe-pill.trial{background:rgba(122,74,184,.10);color:var(--purple)}
+  .pipe-pill.trial::before{background:var(--purple)}
+  .pipe-pill.activated{background:rgba(19,162,107,.12);color:var(--ok)}
+  .pipe-pill.activated::before{background:var(--ok)}
+  .pipe-pill.inactive{background:rgba(220,38,38,.08);color:#a32d2d}
+  .pipe-pill.inactive::before{background:#a32d2d}
+
+  .source{font-size:12.5px;color:var(--muted)}
+  .last-contact{font-size:12.5px;color:var(--muted)}
+  .last-contact.overdue{color:#a32d2d;font-weight:700}
+  .last-contact.due{color:#7a4a0e;font-weight:700}
+  .next-step{font-size:13px;color:var(--ink-2);max-width:240px}
+
+  .row-actions{display:flex;gap:6px;justify-content:flex-end}
+  .row-actions button{background:transparent;border:1px solid var(--line);border-radius:7px;padding:6px 10px;font-size:11.5px;font-weight:700;cursor:pointer;color:var(--ink-2)}
+  .row-actions button:hover{border-color:var(--ink);background:#fff}
+  .row-actions button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .row-actions button.primary:hover{background:#000}
+
+  /* Detail panel */
+  .detail-panel{display:grid;grid-template-columns:2fr 1fr;gap:24px;padding:8px 0 4px}
+  @media(max-width:780px){.detail-panel{grid-template-columns:1fr}}
+  .detail-h{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:10px}
+  .timeline{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+  .tl-item{display:flex;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+  .tl-item:last-child{border-bottom:0;padding-bottom:0}
+  .tl-item .ic{width:28px;height:28px;border-radius:50%;background:var(--bg-soft);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px}
+  .tl-item .body{flex:1;min-width:0}
+  .tl-item .tl-h{font-size:13px;font-weight:700}
+  .tl-item .tl-t{font-size:12.5px;color:var(--muted);margin-top:1px}
+  .tl-item .tl-d{font-size:11.5px;color:var(--muted);margin-top:4px}
+  .add-note{display:flex;gap:8px;margin-top:12px}
+  .add-note input{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:13.5px;outline:0}
+  .add-note input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  .add-note button{background:var(--ink);color:#fff;border:0;padding:9px 14px;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer}
+
+  .info-rows{font-size:13px}
+  .info-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)}
+  .info-row:last-child{border-bottom:0}
+  .info-row .k{color:var(--muted)}
+  .info-row .v{font-weight:600}
+
+  /* Empty state */
+  .empty{padding:48px 24px;text-align:center;color:var(--muted)}
+  .empty h3{margin:0 0 8px;font-size:18px;color:var(--ink-2)}
+  .empty p{margin:0;font-size:14px}
+
+  footer{padding:36px 0 32px;color:var(--muted);font-size:13px;text-align:center}
+  footer .disc{max-width:780px;margin:8px auto 0;font-size:11.5px;line-height:1.55}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html"><img src="logo.png" alt="LYMX logo" /><span class="role-tag">Partner</span></a>
+    <nav class="nav-links">
+      <a href="rep-dashboard.html">Dashboard</a>
+      <a href="projection.html">Projection</a>
+      <a href="partner-crm.html" class="on">CRM</a>
+      <a href="content-hub.html">Content Hub</a>
+      <a href="territory-program.html">Territory</a>
+    </nav>
+    <div style="display:flex;gap:10px;align-items:center">
+      <a class="btn btn-ghost" href="rep-dashboard.html">← Back to dashboard</a>
+      <div class="rep-avatar" title="Kenny Lin">KL</div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap page">
+  <div class="page-head">
+    <div>
+      <div class="crumb"><a href="rep-dashboard.html">Dashboard</a> · CRM</div>
+      <h1>My prospects</h1>
+      <p>Track every Business you're courting — from first conversation to activation. Click any row to see notes and timeline.</p>
+    </div>
+    <button class="btn btn-primary" id="btn-add">+ Add prospect</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="lab">Total prospects</div><div class="num">9</div><div class="det">Active in pipeline</div></div>
+    <div class="stat"><div class="lab">Demos this week</div><div class="num">3</div><div class="det">2 scheduled · 1 done</div></div>
+    <div class="stat"><div class="lab">In trial</div><div class="num">2</div><div class="det">First 3 mo period</div></div>
+    <div class="stat"><div class="lab">Activated this month</div><div class="num">3</div><div class="det">+$1,500 in bonuses</div></div>
+    <div class="stat"><div class="lab">Conversion rate</div><div class="num">42%</div><div class="det">Last 90 days · network avg 28%</div></div>
+  </div>
+
+  <!-- Add prospect form (hidden by default) -->
+  <div class="add-form" id="add-form">
+    <h3>Add a new prospect</h3>
+    <div class="row">
+      <div>
+        <label>Owner name</label>
+        <input type="text" id="np-name" placeholder="Maya Rodriguez" />
+      </div>
+      <div>
+        <label>Business name</label>
+        <input type="text" id="np-biz" placeholder="Brew &amp; Bean Café" />
+      </div>
+      <div>
+        <label>Category</label>
+        <select id="np-cat">
+          <option>Café · Coffee shop</option>
+          <option>Restaurant</option>
+          <option>Retail</option>
+          <option>Salon &amp; spa</option>
+          <option>Fitness</option>
+          <option>Real estate</option>
+          <option>EV charging</option>
+          <option>Home services</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div>
+        <label>Source</label>
+        <select id="np-src">
+          <option>Cold outreach</option>
+          <option>Referral</option>
+          <option>Inbound</option>
+          <option>Event / road show</option>
+          <option>Social</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Phone or email</label>
+        <input type="text" id="np-contact" placeholder="(916) 555-0123 / kenny@cafe.com" />
+      </div>
+      <div>
+        <label>Status</label>
+        <select id="np-status">
+          <option value="cold">Cold</option>
+          <option value="warm">Warmed</option>
+          <option value="demo">Demo scheduled</option>
+          <option value="trial">In trial</option>
+        </select>
+      </div>
+      <div style="grid-column:span 2">
+        <label>Next step</label>
+        <input type="text" id="np-next" placeholder="Call Friday 2pm to schedule demo" />
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-ghost" id="btn-cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-save">Save prospect</button>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="filters">
+      <button class="filter on" data-filter="all">All <span style="opacity:.6">9</span></button>
+      <button class="filter" data-filter="cold">Cold <span style="opacity:.6">2</span></button>
+      <button class="filter" data-filter="warm">Warmed <span style="opacity:.6">2</span></button>
+      <button class="filter" data-filter="demo">Demo <span style="opacity:.6">2</span></button>
+      <button class="filter" data-filter="trial">In trial <span style="opacity:.6">2</span></button>
+      <button class="filter" data-filter="activated">Activated <span style="opacity:.6">1</span></button>
+    </div>
+    <div class="search">
+      <span class="ic">🔍</span>
+      <input type="text" placeholder="Search by name, business, or notes…" id="search" />
+    </div>
+  </div>
+
+  <!-- CRM table -->
+  <div class="crm-card">
+    <table class="crm" id="crm-tbl">
+      <thead>
+        <tr>
+          <th>Prospect</th>
+          <th>Status</th>
+          <th>Source</th>
+          <th>Last contact</th>
+          <th>Next step</th>
+          <th class="num">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr class="row" data-status="demo">
+          <td class="who"><div class="av" style="background:rgba(10,132,255,.10);color:var(--accent-2)">SK</div><div><div class="nm">Sarah Kim</div><div class="biz">Lumière Bakery · Old Sac</div></div></td>
+          <td><span class="pipe-pill demo">Demo scheduled</span></td>
+          <td class="source">Referral · Brew &amp; Bean</td>
+          <td class="last-contact">Yesterday</td>
+          <td class="next-step">Demo at her bakery, Fri 3pm</td>
+          <td class="row-actions"><button class="primary">Open</button></td>
+        </tr>
+        <tr class="detail">
+          <td colspan="6">
+            <div class="detail-panel">
+              <div>
+                <div class="detail-h">Notes &amp; timeline</div>
+                <div class="timeline">
+                  <div class="tl-item"><div class="ic">📅</div><div class="body"><div class="tl-h">Demo scheduled — Fri 3pm at her bakery</div><div class="tl-d">Yesterday at 4:12pm</div></div></div>
+                  <div class="tl-item"><div class="ic">💬</div><div class="body"><div class="tl-h">Texted her after meeting at chamber event</div><div class="tl-t">"Loved your croissant — would you have 15 min for me to show you LYMX?"</div><div class="tl-d">3 days ago</div></div></div>
+                  <div class="tl-item"><div class="ic">🤝</div><div class="body"><div class="tl-h">Met at Las Vegas Chamber networking</div><div class="tl-t">Brew &amp; Bean introduced. Mentioned she's tired of paying $400/mo for a Yelp Ads boost that doesn't move the needle.</div><div class="tl-d">5 days ago</div></div></div>
+                </div>
+                <div class="add-note"><input type="text" placeholder="Add a note…" /><button>Save</button></div>
+              </div>
+              <div>
+                <div class="detail-h">Quick info</div>
+                <div class="info-rows">
+                  <div class="info-row"><span class="k">Phone</span><span class="v">(916) 555-0143</span></div>
+                  <div class="info-row"><span class="k">Email</span><span class="v">sarah@lumiere-bakery.com</span></div>
+                  <div class="info-row"><span class="k">Category</span><span class="v">Bakery</span></div>
+                  <div class="info-row"><span class="k">Address</span><span class="v">Old Sac</span></div>
+                  <div class="info-row"><span class="k">Avg ticket</span><span class="v">~$11</span></div>
+                  <div class="info-row"><span class="k">Source</span><span class="v">Referral · Brew &amp; Bean</span></div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <tr class="row" data-status="warm">
+          <td class="who"><div class="av" style="background:rgba(240,160,32,.12);color:#7a4a0e">DR</div><div><div class="nm">David Reyes</div><div class="biz">Reyes Auto Body · Natomas</div></div></td>
+          <td><span class="pipe-pill warm">Warmed</span></td>
+          <td class="source">Cold outreach · email</td>
+          <td class="last-contact due">2 days ago — follow up</td>
+          <td class="next-step">Send 1-pager + calendar link</td>
+          <td class="row-actions"><button>Open</button></td>
+        </tr>
+
+        <tr class="row" data-status="trial">
+          <td class="who"><div class="av" style="background:rgba(122,74,184,.10);color:var(--purple)">AS</div><div><div class="nm">Aliyah Smith</div><div class="biz">Avery Hair Studio · East Sac</div></div></td>
+          <td><span class="pipe-pill trial">In trial</span></td>
+          <td class="source">Referral · Oakline</td>
+          <td class="last-contact">3 days ago</td>
+          <td class="next-step">Check on POS integration setup, day 17 of trial</td>
+          <td class="row-actions"><button>Open</button></td>
+        </tr>
+
+        <tr class="row" data-status="cold">
+          <td class="who"><div class="av" style="background:rgba(91,100,114,.10);color:var(--muted)">JM</div><div><div class="nm">Jorge Martinez</div><div class="biz">Martinez Tacos · Florin Rd</div></div></td>
+          <td><span class="pipe-pill cold">Cold</span></td>
+          <td class="source">Walk-by ID</td>
+          <td class="last-contact overdue">Never contacted</td>
+          <td class="next-step">Stop in this week, leave 1-pager</td>
+          <td class="row-actions"><button>Open</button></td>
+        </tr>
+
+        <tr class="row" data-status="demo">
+          <td class="who"><div class="av" style="background:rgba(10,132,255,.10);color:var(--accent-2)">EC</div><div><div class="nm">Elena Cho</div><div class="biz">Cho Yoga &amp; Pilates · Midtown</div></div></td>
+          <td><span class="pipe-pill demo">Demo scheduled</span></td>
+          <td class="source">Inbound · Instagram DM</td>
+          <td class="last-contact">5 hours ago</td>
+          <td class="next-step">Tuesday 11am demo at her studio</td>
+          <td class="row-actions"><button>Open</button></td>
+        </tr>
+
+        <tr class="row" data-status="warm">
+          <td class="who"><div class="av" style="background:rgba(240,160,32,.12);color:#7a4a0e">PT</div><div><div class="nm">Priya Thakur</div><div class="biz">Thakur Tailor &amp; Alterations · Roseville</div></div></td>
+          <td><span class="pipe-pill warm">Warmed</span></td>
+          <td class="source">Event · Roseville expo</td>
+          <td class="last-contact">1 week ago</td>
+          <td class="next-step">Reply to her last text — she asked about POS integration</td>
+          <td class="row-actions"><button>Open</button></td>
+        </tr>
+
+        <tr class="row" data-status="trial">
+          <td class="who"><div class="av" style="background:rgba(122,74,184,.10);color:var(--purple)">RG</div><div><div class="nm">Robin Gardner</div><div class="biz">Gardner Pet Wellness · Natomas</div></div></td>
+          <td><span class="pipe-pill trial">In trial</span></td>
+          <td class="source">Referral · Paws &amp; Tails</td>
+          <td class="last-contact">1 week ago</td>
+          <td class="next-step">Day 22 of trial — schedule 30-day check-in call</td>
+          <td class="row-actions"><button>Open</button></td>
+        </tr>
+
+        <tr class="row" data-status="cold">
+          <td class="who"><div class="av" style="background:rgba(91,100,114,.10);color:var(--muted)">TN</div><div><div class="nm">Tony Nguyen</div><div class="biz">Pho Cao · 28th &amp; J</div></div></td>
+          <td><span class="pipe-pill cold">Cold</span></td>
+          <td class="source">Walk-by ID</td>
+          <td class="last-contact">Never contacted</td>
+          <td class="next-step">Drop off 1-pager next week</td>
+          <td class="row-actions"><button>Open</button></td>
+        </tr>
+
+        <tr class="row" data-status="activated">
+          <td class="who"><div class="av" style="background:rgba(19,162,107,.12);color:var(--ok)">MS</div><div><div class="nm">Marcus Singh</div><div class="biz">Delta HVAC &amp; Air · Greater Sac</div></div></td>
+          <td><span class="pipe-pill activated">Activated</span></td>
+          <td class="source">Cold outreach</td>
+          <td class="last-contact">Yesterday</td>
+          <td class="next-step">Day 7 of post-activation. $250 bonus paid.</td>
+          <td class="row-actions"><button>Open</button></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <div>© <span id="yr"></span> LYMX · <a href="rep-dashboard.html" style="color:var(--accent-2)">Dashboard</a> · <a href="projection.html" style="color:var(--accent-2)">Projection</a> · <a href="content-hub.html" style="color:var(--accent-2)">Content Hub</a></div>
+    <div class="disc">Prospect data is private to your account. The team only sees a count of activated Businesses for MGC commission tracking.</div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent=new Date().getFullYear();
+
+  // Toggle add form
+  const addForm = document.getElementById('add-form');
+  document.getElementById('btn-add').addEventListener('click', () => addForm.classList.toggle('shown'));
+  document.getElementById('btn-cancel').addEventListener('click', () => addForm.classList.remove('shown'));
+  document.getElementById('btn-save').addEventListener('click', () => {
+    alert('In production this would save the prospect and update your tree. For now: form submitted with status = ' + document.getElementById('np-status').value);
+    addForm.classList.remove('shown');
+  });
+
+  // Filters
+  document.querySelectorAll('.filter').forEach(f => {
+    f.addEventListener('click', () => {
+      document.querySelectorAll('.filter').forEach(x => x.classList.remove('on'));
+      f.classList.add('on');
+      const filter = f.dataset.filter;
+      document.querySelectorAll('table.crm tr.row').forEach(r => {
+        if (filter === 'all' || r.dataset.status === filter) {
+          r.style.display = '';
+        } else {
+          r.style.display = 'none';
+          // Also hide its detail row if showing
+          const next = r.nextElementSibling;
+          if (next && next.classList.contains('detail')) next.classList.remove('shown');
+        }
+      });
+    });
+  });
+
+  // Search
+  document.getElementById('search').addEventListener('input', e => {
+    const q = e.target.value.toLowerCase().trim();
+    document.querySelectorAll('table.crm tr.row').forEach(r => {
+      const text = r.textContent.toLowerCase();
+      r.style.display = (q === '' || text.includes(q)) ? '' : 'none';
+    });
+  });
+
+  // Row expand
+  document.querySelectorAll('table.crm tr.row').forEach(r => {
+    r.addEventListener('click', e => {
+      if (e.target.closest('button')) return; // ignore action button clicks
+      const next = r.nextElementSibling;
+      if (next && next.classList.contains('detail')) {
+        const wasShown = next.classList.contains('shown');
+        // Close all
+        document.querySelectorAll('table.crm tr.detail').forEach(d => d.classList.remove('shown'));
+        document.querySelectorAll('table.crm tr.row').forEach(rr => rr.classList.remove('expanded'));
+        if (!wasShown) {
+          next.classList.add('shown');
+          r.classList.add('expanded');
+        }
+      }
+    });
+  });
+</script>
+</body>
+</html>

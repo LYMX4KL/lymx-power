@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="About LYMX — a shared-value loyalty network rebuilding how independent businesses grow." />
+<title>About — LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+  img{max-width:100%;display:block}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+  .brand img{height:26px;width:auto}
+  .nav-links{display:flex;gap:26px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-cta{display:flex;gap:10px;align-items:center}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:10px;font-weight:600;font-size:14.5px;border:1px solid transparent;cursor:pointer;transition:.15s}
+  .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
+  .btn-ghost:hover{border-color:var(--ink-2)}
+  .btn-biz{background:var(--accent);color:#fff;font-size:13.5px;padding:8px 14px}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .hero{padding:80px 0 50px;background:radial-gradient(900px 500px at 80% -10%,rgba(10,132,255,.14),transparent 60%),linear-gradient(180deg,#fff,#fafbfc)}
+  .eyebrow{display:inline-block;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-2);font-weight:700;background:rgba(10,132,255,.08);padding:6px 10px;border-radius:999px;margin-bottom:18px}
+  .hero h1{font-size:clamp(36px,5vw,56px);line-height:1.1;margin:0 0 18px;letter-spacing:-.02em;font-weight:800;max-width:780px}
+  .hero h1 .grad{background:linear-gradient(90deg,#0a84ff,#13a26b);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero .lede{font-size:18px;color:var(--ink-2);margin:0 0 0;max-width:720px}
+
+  /* Sections */
+  section{padding:64px 0;border-top:1px solid var(--line)}
+  section.soft{background:var(--bg-soft)}
+  h2{font-size:clamp(26px,3.2vw,36px);line-height:1.15;margin:0 0 14px;letter-spacing:-.01em;font-weight:800}
+  .sec-head{max-width:780px;margin:0 auto 36px;text-align:center}
+  .sec-head p{color:var(--muted);font-size:16px;margin:0}
+
+  /* Mission narrative */
+  .narr{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+  @media(max-width:900px){.narr{grid-template-columns:1fr;gap:30px}}
+  .narr p{font-size:16px;color:var(--ink-2);margin:0 0 14px}
+  .narr p:last-child{margin-bottom:0}
+  .narr .quote{background:#fff;border-left:4px solid var(--accent);padding:24px;border-radius:0 10px 10px 0;font-size:18px;line-height:1.5;color:var(--ink-2);font-weight:500}
+  .narr .quote-by{font-size:13px;color:var(--muted);margin-top:10px;font-style:normal}
+
+  /* Stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  @media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px;text-align:center}
+  .stat .n{font-size:36px;font-weight:800;letter-spacing:-.01em;color:var(--accent-2)}
+  .stat .l{font-size:13px;color:var(--muted);margin-top:4px}
+
+  /* Values */
+  .values{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:900px){.values{grid-template-columns:1fr}}
+  .value{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:26px}
+  .value h3{margin:0 0 8px;font-size:18px;font-weight:800}
+  .value p{margin:0;font-size:14.5px;color:var(--muted)}
+
+  /* Team */
+  .team{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  @media(max-width:780px){.team{grid-template-columns:repeat(2,1fr)}}
+  .person{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px;text-align:center}
+  .person .av{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#13a26b);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;margin:0 auto 12px}
+  .person .av.b{background:linear-gradient(135deg,#f0a020,#d97706)}
+  .person .av.c{background:linear-gradient(135deg,#9b59b6,#5e2d8c)}
+  .person .av.d{background:linear-gradient(135deg,#dc2626,#991b1b)}
+  .person h4{margin:0 0 2px;font-size:15px;font-weight:800}
+  .person .role{font-size:13px;color:var(--muted)}
+
+  /* Final */
+  .final{padding:60px 0;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;text-align:center}
+  .final h2{color:#fff;font-size:30px;margin:0 0 12px}
+  .final p{color:#c6ccd4;max-width:560px;margin:0 auto 24px;font-size:16px}
+  .final .btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .final .btn-w{background:#fff;color:var(--ink);padding:11px 22px;border-radius:10px;font-weight:700;font-size:14.5px}
+  .final .btn-w:hover{background:#eaeaea}
+  .final .btn-w.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4)}
+
+  footer{padding:36px 0 32px;color:var(--muted);font-size:13px;text-align:center;border-top:1px solid var(--line)}
+  footer .disc{max-width:780px;margin:8px auto 0;font-size:11.5px;line-height:1.55}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html"><img src="logo.png" alt="LYMX logo" /></a>
+    <nav class="nav-links">
+      <a href="browse.html">Browse</a>
+      <a href="business.html">For Business</a>
+      <a href="app.html">Get the app</a>
+      <a href="about.html" style="color:var(--accent);font-weight:700">About</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="customer-dashboard.html">Sign in</a>
+      <a class="btn btn-biz" href="business.html">For Business →</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero" style="border-top:0">
+  <div class="wrap">
+    <span class="eyebrow">About LYMX</span>
+    <h1>We're rebuilding how independent businesses <span class="grad">grow together.</span></h1>
+    <p class="lede">
+      LYMX replaces fragmented loyalty programs and expensive ads with a shared-value network.
+      One credit, every partner business — so the dollar a customer spends at one shop becomes a customer at the next.
+    </p>
+  </div>
+</section>
+
+<!-- Mission -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><h2>Why we exist</h2></div>
+    <div class="narr">
+      <div>
+        <p>Independent businesses spend ~12% of revenue on customer acquisition — most of it going to ad networks owned by the same handful of platforms. The cost goes up every year. The customers don't actually become loyal.</p>
+        <p>Meanwhile, every business runs its own loyalty program — points that only work in one place, never get redeemed, and gather digital dust. The customer doesn't feel rewarded. The business doesn't see returns.</p>
+        <p>LYMX flips this. Earn anywhere, redeem anywhere. The discount is the marketing budget. The customer carries real value across the network — and shows up at businesses they'd otherwise never have found.</p>
+        <p>It's not a loyalty program. It's a <strong>shared customer base</strong> that everyone in the network co-owns and contributes to.</p>
+      </div>
+      <div>
+        <div class="quote">
+          We don't think the future of small business growth is more ads. It's businesses pooling their customer base and rewarding the customer for the loyalty they're already showing across the network.
+          <div class="quote-by">— Kenny Lin, founder</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="soft">
+  <div class="wrap">
+    <div class="sec-head"><h2>Where we are</h2><p>The early numbers, transparently.</p></div>
+    <div class="stats">
+      <div class="stat"><div class="n">5</div><div class="l">Founding partners live</div></div>
+      <div class="stat"><div class="n">12</div><div class="l">Businesses across all 3 generations</div></div>
+      <div class="stat"><div class="n">$0.01</div><div class="l">Fixed value per LYMX</div></div>
+      <div class="stat"><div class="n">100%</div><div class="l">Pay-on-redemption — no ads</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Values -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><h2>What we believe</h2></div>
+    <div class="values">
+      <div class="value">
+        <h3>Transparent economics</h3>
+        <p>Every fee, settlement, and commission is shown to every party. No hidden cuts. No surprise bills. The math is the product.</p>
+      </div>
+      <div class="value">
+        <h3>Pay-per-result</h3>
+        <p>Businesses should only pay when something real happens — a customer, a transaction, a redemption. Not for impressions. Not for clicks.</p>
+      </div>
+      <div class="value">
+        <h3>The network owes the customer</h3>
+        <p>1 LYMX = $0.01 across the entire network. Always. The customer's reward retains its value no matter where they spend it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Team -->
+<section class="soft">
+  <div class="wrap">
+    <div class="sec-head"><h2>Founding team</h2><p>A small team of operators, designers, and engineers — building from Sacramento.</p></div>
+    <div class="team">
+      <div class="person"><div class="av">KL</div><h4>Kenny Lin</h4><div class="role">Founder &amp; CEO</div></div>
+      <div class="person"><div class="av b">SC</div><h4>Sarah Chen</h4><div class="role">Partner success</div></div>
+      <div class="person"><div class="av c">MR</div><h4>Maya Rodriguez</h4><div class="role">Engineering</div></div>
+      <div class="person"><div class="av d">DK</div><h4>Daniel Kwon</h4><div class="role">Design &amp; brand</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>Build with us.</h2>
+    <p>We're hiring across product, engineering, and partner ops. We're also always looking for businesses that want to be founding partners in their city.</p>
+    <div class="btns">
+      <a class="btn-w" href="careers.html">See open roles →</a>
+      <a class="btn-w ghost" href="business.html">For Business</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>© <span id="yr"></span> LYMX · <a href="index.html" style="color:var(--accent-2)">Home</a> · <a href="press.html" style="color:var(--accent-2)">Press</a> · <a href="support.html" style="color:var(--accent-2)">Support</a></div>
+    <div class="disc">LYMX is a promotional credit unit used exclusively within the Enterprise ecosystem. LYMX is not cash, not cryptocurrency, and not a stored monetary balance.</div>
+  </div>
+</footer>
+<script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+</body>
+</html>
