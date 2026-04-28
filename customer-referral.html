@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Refer a friend to LYMX — they get 100 LYMX welcome, you get 200 LYMX when they make their first network purchase." />
+<title>Refer a friend · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://getlymx.com/customer-referral" />
+<meta property="og:title" content="Refer a friend · LYMX" />
+<meta property="og:description" content="200 LYMX per friend who joins and transacts." />
+<meta property="og:image" content="https://getlymx.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="LYMX" />
+<meta name="twitter:card" content="summary_large_image" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--radius:18px;--shadow:0 14px 40px rgba(14,17,22,.12)}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+
+  /* Phone frame */
+  .device{max-width:430px;margin:32px auto;background:#fff;border-radius:32px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--line);min-height:780px}
+  @media(max-width:480px){.device{margin:0;border-radius:0;border:0;min-height:100vh}}
+
+  .status-bar{display:flex;justify-content:space-between;padding:14px 22px 6px;font-size:13px;color:var(--ink);font-weight:700}
+  .status-bar .icons{display:flex;gap:6px;font-size:12px;color:var(--muted)}
+
+  /* Top bar */
+  .top{padding:8px 22px 0;display:flex;align-items:center;gap:12px}
+  .back{background:transparent;border:0;font-size:20px;color:var(--ink);cursor:pointer;padding:0;font-family:inherit;text-decoration:none}
+  .top h1{margin:0;font-size:18px;font-weight:800;flex:1}
+
+  /* Hero */
+  .hero{
+    background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;
+    border-radius:var(--radius);margin:18px 22px;padding:24px;position:relative;overflow:hidden;text-align:center
+  }
+  .hero::after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.22),transparent 70%);right:-100px;top:-100px;pointer-events:none}
+  .hero .pre{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:#9aa3b0;font-weight:700;margin-bottom:8px;position:relative}
+  .hero h2{margin:0;font-size:30px;font-weight:800;letter-spacing:-.015em;line-height:1.15;position:relative}
+  .hero h2 .gold{color:#f5d172}
+  .hero p{font-size:13.5px;color:#c6ccd4;margin:8px 0 0;position:relative;line-height:1.55}
+
+  /* Referral code box */
+  .code-box{margin:0 22px 18px;background:#fff;border:2px dashed var(--accent);border-radius:14px;padding:14px;text-align:center}
+  .code-box .lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:5px}
+  .code-box .code{font-family:'SF Mono',Menlo,monospace;font-size:24px;font-weight:800;color:var(--ink);letter-spacing:.06em;margin-bottom:5px}
+  .code-box .url{font-size:12px;color:var(--accent-2);word-break:break-all}
+
+  /* Share buttons */
+  .share-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 22px;margin-bottom:18px}
+  .share{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;font-family:inherit}
+  .share:hover{border-color:var(--ink)}
+  .share .ic{font-size:22px;margin-bottom:4px}
+  .share .lb{font-size:11.5px;font-weight:700;color:var(--ink-2)}
+  .share-big{margin:0 22px 18px}
+  .share-big button{width:100%;background:var(--ink);color:#fff;border:0;padding:14px;border-radius:13px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+  .share-big button:hover{background:#000}
+
+  /* Stats grid */
+  .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 22px;margin-bottom:14px}
+  .st-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 8px;text-align:center}
+  .st-card .v{font-size:20px;font-weight:800;letter-spacing:-.005em;line-height:1.1}
+  .st-card .v.gold{color:var(--gold)}
+  .st-card .v.green{color:var(--ok)}
+  .st-card .l{font-size:11px;color:var(--muted);font-weight:600;margin-top:3px;line-height:1.3}
+
+  /* How it works */
+  .how{padding:0 22px;margin-bottom:18px}
+  .how h3{margin:18px 0 10px;font-size:15.5px;font-weight:800}
+  .how-step{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .how-step:last-child{border-bottom:0}
+  .how-step .num{width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .how-step .body{flex:1;min-width:0}
+  .how-step .body .h{font-weight:700;font-size:13.5px}
+  .how-step .body .d{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.5}
+
+  /* Section */
+  .section{padding:0 22px;margin-bottom:18px}
+  .sec-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .sec-h h3{margin:0;font-size:15.5px;font-weight:800}
+  .sec-h .ct{font-size:12.5px;color:var(--muted);font-weight:600}
+
+  .ref{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .ref:last-child{border-bottom:0}
+  .ref .av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+  .ref .av.pending{background:linear-gradient(135deg,#f0a020,#d6892a)}
+  .ref .av.expired{background:linear-gradient(135deg,#5b6472,#3a4250)}
+  .ref .body{flex:1;min-width:0}
+  .ref .body .n{font-weight:700;font-size:13.5px}
+  .ref .body .d{color:var(--muted);font-size:12px;margin-top:1px}
+  .ref .v{font-weight:800;font-size:13px;text-align:right;flex-shrink:0}
+  .ref .v.earned{color:var(--ok)}
+  .ref .v.pending{color:var(--warn)}
+  .ref .v.expired{color:var(--muted)}
+
+  /* Bottom nav */
+  .botnav{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 0 14px}
+  .botnav a{text-align:center;padding:6px 0;font-size:11px;color:var(--muted);font-weight:700}
+  .botnav a.on{color:var(--accent-2)}
+  .botnav a .b{font-size:18px;display:block;margin-bottom:1px}
+
+  .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:11px;font-weight:700;font-size:13.5px;box-shadow:var(--shadow);z-index:300;display:none}
+  .toast.on{display:block;animation:up .3s ease-out}
+  .toast.success{background:var(--ok)}
+  @keyframes up{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+</style>
+</head>
+<body>
+
+<div class="device">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="icons"><span>●●●</span><span>5G</span><span>100%</span></div>
+  </div>
+
+  <div class="top">
+    <a class="back" href="customer-wallet.html">‹</a>
+    <h1>Refer a friend</h1>
+  </div>
+
+  <div class="hero">
+    <div class="pre">Both of you win</div>
+    <h2>You get <span class="gold">200 LYMX</span><br/>they get <span class="gold">100 LYMX</span></h2>
+    <p>For every friend who joins LYMX through your link AND makes their first purchase at any LYMX Business.</p>
+  </div>
+
+  <div class="code-box">
+    <div class="lab">Your referral code</div>
+    <div class="code">SARAH-7K9F</div>
+    <div class="url">getlymx.com/join?ref=SARAH-7K9F</div>
+  </div>
+
+  <div class="share-big">
+    <button onclick="copyLink()">📋 Copy link</button>
+  </div>
+
+  <div class="share-row">
+    <button class="share" onclick="shareSMS()">
+      <div class="ic">💬</div>
+      <div class="lb">Text</div>
+    </button>
+    <button class="share" onclick="shareEmail()">
+      <div class="ic">✉️</div>
+      <div class="lb">Email</div>
+    </button>
+    <button class="share" onclick="shareSocial('whatsapp')">
+      <div class="ic">📱</div>
+      <div class="lb">WhatsApp</div>
+    </button>
+    <button class="share" onclick="shareNative()">
+      <div class="ic">⤴️</div>
+      <div class="lb">More</div>
+    </button>
+  </div>
+
+  <div class="stats">
+    <div class="st-card">
+      <div class="v">7</div>
+      <div class="l">Friends invited</div>
+    </div>
+    <div class="st-card">
+      <div class="v green">3</div>
+      <div class="l">Joined &amp; transacted</div>
+    </div>
+    <div class="st-card">
+      <div class="v gold">600</div>
+      <div class="l">LYMX earned</div>
+    </div>
+  </div>
+
+  <div class="how">
+    <h3>How it works</h3>
+    <div class="how-step">
+      <div class="num">1</div>
+      <div class="body">
+        <div class="h">Share your link or code</div>
+        <div class="d">Each friend you send it to gets a personal welcome.</div>
+      </div>
+    </div>
+    <div class="how-step">
+      <div class="num">2</div>
+      <div class="body">
+        <div class="h">They sign up &amp; get 100 LYMX</div>
+        <div class="d">Free welcome credit, ready to spend at any LYMX Business.</div>
+      </div>
+    </div>
+    <div class="how-step">
+      <div class="num">3</div>
+      <div class="body">
+        <div class="h">When they make their first purchase, you get 200 LYMX</div>
+        <div class="d">Auto-credited to your wallet within 24 hours of their first transaction.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-h">
+      <h3>Your referrals</h3>
+      <div class="ct">7 total</div>
+    </div>
+
+    <div class="ref">
+      <div class="av">EM</div>
+      <div class="body">
+        <div class="n">Emma Marsh</div>
+        <div class="d">Joined Apr 26 · spent at Brew &amp; Bean</div>
+      </div>
+      <div class="v earned">+200 LYMX</div>
+    </div>
+    <div class="ref">
+      <div class="av">DK</div>
+      <div class="body">
+        <div class="n">Daniel Kim</div>
+        <div class="d">Joined Apr 22 · spent at Oakline Kitchen</div>
+      </div>
+      <div class="v earned">+200 LYMX</div>
+    </div>
+    <div class="ref">
+      <div class="av">RC</div>
+      <div class="body">
+        <div class="n">Rachel Cho</div>
+        <div class="d">Joined Apr 14 · spent at Sun Market</div>
+      </div>
+      <div class="v earned">+200 LYMX</div>
+    </div>
+    <div class="ref">
+      <div class="av pending">JO</div>
+      <div class="body">
+        <div class="n">Jamie Ortiz</div>
+        <div class="d">Joined Apr 24 · waiting for first purchase</div>
+      </div>
+      <div class="v pending">Pending</div>
+    </div>
+    <div class="ref">
+      <div class="av pending">SF</div>
+      <div class="body">
+        <div class="n">Sam Fox</div>
+        <div class="d">Joined Apr 23 · waiting for first purchase</div>
+      </div>
+      <div class="v pending">Pending</div>
+    </div>
+    <div class="ref">
+      <div class="av pending">MN</div>
+      <div class="body">
+        <div class="n">Maya Nash</div>
+        <div class="d">Invited Apr 20 · hasn't joined yet</div>
+      </div>
+      <div class="v pending">Invite sent</div>
+    </div>
+    <div class="ref">
+      <div class="av expired">TJ</div>
+      <div class="body">
+        <div class="n">Tess Jordan</div>
+        <div class="d">Invited Mar 12 · invite expired</div>
+      </div>
+      <div class="v expired">Expired</div>
+    </div>
+  </div>
+
+  <div style="font-size:11px;color:var(--muted);text-align:center;padding:14px 28px 18px;line-height:1.5;border-top:1px solid var(--line);margin-top:6px">
+    Referral bonus is paid in LYMX (not cash) and is redeemable at any LYMX Business. Limit one bonus per referred customer. Invites expire after 60 days. LYMX reserves the right to deny obviously fraudulent referrals.
+  </div>
+
+  <nav class="botnav">
+    <a href="customer-wallet.html"><span class="b">⬢</span>Wallet</a>
+    <a href="browse.html"><span class="b">⌕</span>Discover</a>
+    <a href="customer-referral.html" class="on"><span class="b">🎁</span>Refer</a>
+    <a href="notifications.html"><span class="b">🔔</span>Inbox</a>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  function showToast(msg, success){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast on ' + (success ? 'success' : '');
+    setTimeout(()=> t.classList.remove('on'), 2000);
+  }
+
+  function copyLink(){
+    const url = 'https://getlymx.com/join?ref=SARAH-7K9F';
+    navigator.clipboard?.writeText(url).then(
+      ()=> showToast('Link copied!', true),
+      ()=> showToast('Tap to copy: ' + url)
+    );
+  }
+
+  const msg = "I've been earning LYMX at local Las Vegas spots — coffee, dinner, errands, all of it. Use my link to get 100 LYMX free: https://getlymx.com/join?ref=SARAH-7K9F";
+
+  function shareSMS(){
+    location.href = `sms:?&body=${encodeURIComponent(msg)}`;
+  }
+  function shareEmail(){
+    location.href = `mailto:?subject=Try LYMX with me&body=${encodeURIComponent(msg)}`;
+  }
+  function shareSocial(platform){
+    if (platform === 'whatsapp') location.href = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  }
+  function shareNative(){
+    if (navigator.share){
+      navigator.share({title:'Try LYMX', text:msg, url:'https://getlymx.com/join?ref=SARAH-7K9F'}).catch(()=>{});
+    } else {
+      copyLink();
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Business settlement — monthly net of LYMX units purchased and bought back, transaction log, QuickBooks CSV export." />
+<title>Settlement · LYMX Business</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://getlymx.com/settlement" />
+<meta property="og:title" content="LYMX Business Settlement" />
+<meta property="og:description" content="Monthly settlement: LYMX units purchased vs. bought back, transaction log, and QuickBooks CSV export." />
+<meta property="og:image" content="https://getlymx.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="LYMX" />
+<meta name="twitter:card" content="summary_large_image" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(10,132,255,.12);color:var(--accent-2);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .biz-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .page{padding:32px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:10px;font-weight:600;font-size:14.5px;border:1px solid transparent;cursor:pointer;transition:.15s;font-family:inherit}
+  .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
+  .btn-ghost:hover{border-color:var(--ink-2)}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+
+  .period-pick{display:flex;gap:8px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:5px;margin-bottom:18px;width:fit-content}
+  .period-pick button{padding:8px 16px;border-radius:8px;border:0;background:transparent;font-weight:700;font-size:13.5px;color:var(--muted);cursor:pointer}
+  .period-pick button.on{background:var(--ink);color:#fff}
+
+  /* Settlement hero */
+  .hero{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:var(--radius);padding:32px;position:relative;overflow:hidden;margin-bottom:18px}
+  .hero::after{content:"";position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(10,132,255,.18),transparent 70%);right:-150px;top:-150px}
+  .hero .row1{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:24px;align-items:end;position:relative}
+  @media(max-width:780px){.hero .row1{grid-template-columns:1fr 1fr;gap:18px}}
+  .hero .lab{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#9aa3b0;font-weight:700;margin-bottom:6px}
+  .hero .big{font-size:48px;font-weight:800;letter-spacing:-.02em;line-height:1}
+  .hero .big small{font-size:14px;color:#9aa3b0;font-weight:600;margin-left:6px}
+  .hero .big.gold{color:#f5d172}
+  .hero .big.green{color:#5fd198}
+  .hero .v{font-size:24px;font-weight:800;color:#fff}
+  .hero .sub{font-size:13px;color:#9aa3b0;margin-top:6px}
+  .hero .actions{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap;position:relative}
+  .hero .btn-w{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.3);padding:10px 18px;border-radius:9px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit}
+  .hero .btn-w:hover{background:rgba(255,255,255,.28)}
+  .hero .btn-w.solid{background:#fff;color:var(--ink);border-color:#fff}
+
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:20px}
+  @media(max-width:1000px){.grid{grid-template-columns:1fr}}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  .card-h{display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+  .card-h h2{margin:0;font-size:17px;font-weight:800}
+  .card-h .meta{font-size:13px;color:var(--muted)}
+
+  .filter-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .filter-row .chip{padding:7px 14px;background:var(--bg-soft);border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer}
+  .filter-row .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .filter-row .search{flex:1;min-width:140px;padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-family:inherit}
+  .filter-row .search:focus{outline:none;border-color:var(--accent)}
+
+  table.tx{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.tx th{text-align:left;padding:10px 8px;border-bottom:2px solid var(--line);font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  table.tx td{padding:11px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+  table.tx td.right{text-align:right}
+  table.tx td.lymx{font-weight:800}
+  table.tx td.lymx.minus{color:var(--ok)}
+  table.tx tr.issue td.cash{color:var(--ink-2)}
+  table.tx tr.redeem td.cash{color:var(--ok)}
+  table.tx tbody tr:hover{background:var(--bg-soft)}
+  .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .tag.issue{background:rgba(10,132,255,.12);color:var(--accent-2)}
+  .tag.redeem{background:rgba(19,162,107,.14);color:var(--ok)}
+
+  /* Right panel */
+  .panel{display:flex;flex-direction:column;gap:18px}
+  .panel .card .stat{display:flex;justify-content:space-between;padding:8px 0;font-size:13.5px;border-bottom:1px solid var(--line)}
+  .panel .card .stat:last-child{border-bottom:0}
+  .panel .card .stat .l{color:var(--muted)}
+  .panel .card .stat .r{font-weight:700}
+  .panel .card .stat.big .r{font-size:18px;font-weight:800}
+
+  .help{background:#fff7e6;border:1px solid #f0d289;border-radius:12px;padding:14px 16px;font-size:13px;color:#7a5c0a}
+  .help strong{color:#5a4308}
+  .help code{background:#fff;border:1px solid #f0d289;padding:1px 5px;border-radius:4px;font-size:12px;font-family:'SF Mono',Menlo,monospace}
+
+  /* Toast */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:14px 22px;border-radius:11px;font-weight:700;font-size:14.5px;box-shadow:var(--shadow);z-index:100;display:none;align-items:center;gap:10px}
+  .toast.on{display:flex;animation:up .3s ease-out}
+  .toast.success{background:var(--ok)}
+  @keyframes up{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:30px 0;font-size:13px;text-align:center;margin-top:48px}
+  footer a{color:#c6ccd4;margin:0 10px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Business</span>
+    </div>
+    <nav class="nav-links">
+      <a href="biz-dashboard.html">Dashboard</a>
+      <a href="pos.html">POS</a>
+      <a href="promotions.html">Promotions</a>
+      <a href="settlement.html" class="on">Settlement</a>
+      <a href="support.html">Support</a>
+    </nav>
+    <div class="biz-avatar">BB</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>Settlement</h1>
+        <p>Brew &amp; Bean Coffee · 142 W Main St</p>
+      </div>
+    </div>
+
+    <div class="period-pick">
+      <button class="on" onclick="setPeriod('this')">This month</button>
+      <button onclick="setPeriod('last')">Last month</button>
+      <button onclick="setPeriod('ytd')">Year to date</button>
+    </div>
+
+    <div class="hero">
+      <div class="row1">
+        <div>
+          <div class="lab">Net <span id="net-direction">owed</span> this period</div>
+          <div class="big gold" id="net-owed">$0.00</div>
+          <div class="sub" id="net-sub">Due May 5, 2026 · ACH on file</div>
+        </div>
+        <div>
+          <div class="lab">LYMX issued</div>
+          <div class="v" id="t-issued">0</div>
+          <div class="sub" id="t-issued-sub">$0.00 purchased</div>
+        </div>
+        <div>
+          <div class="lab">LYMX redeemed</div>
+          <div class="v" id="t-redeemed">0</div>
+          <div class="sub" id="t-redeemed-sub">$0.00 bought back</div>
+        </div>
+        <div>
+          <div class="lab">Customers served</div>
+          <div class="v" id="t-customers">0</div>
+          <div class="sub" id="t-customers-sub">0 first-time</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn-w solid" onclick="downloadCSV()">⬇ Download CSV for QuickBooks</button>
+        <button class="btn-w" onclick="downloadPDF()">⬇ Statement PDF</button>
+        <button class="btn-w" onclick="showHelp()">QuickBooks import help</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-h">
+          <h2>Transaction log</h2>
+          <div class="meta"><span id="row-count">0</span> transactions</div>
+        </div>
+        <div class="filter-row">
+          <button class="chip on" onclick="setFilter('all', this)">All</button>
+          <button class="chip" onclick="setFilter('issue', this)">Issued</button>
+          <button class="chip" onclick="setFilter('redeem', this)">Redeemed</button>
+          <input class="search" id="search" placeholder="Search customer…" oninput="render()" />
+        </div>
+        <div style="overflow-x:auto">
+        <table class="tx">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Type</th>
+              <th class="right">LYMX</th>
+              <th class="right">Cash impact</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="card">
+          <div class="card-h"><h2>Period summary</h2></div>
+          <div class="stat"><div class="l">LYMX units purchased from us</div><div class="r" id="s-issue-fee">$0.00</div></div>
+          <div class="stat"><div class="l">LYMX units we bought back from you</div><div class="r" id="s-redeem-credit">−$0.00</div></div>
+          <div class="stat big"><div class="l">Net owed to LYMX</div><div class="r" id="s-net">$0.00</div></div>
+          <div class="stat" style="margin-top:8px"><div class="l">Avg unit cost per customer</div><div class="r" id="s-avg">$0.00</div></div>
+          <div class="stat"><div class="l">% of customer revenue</div><div class="r" id="s-pct">0%</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Year to date</h2></div>
+          <div class="stat"><div class="l">LYMX issued YTD</div><div class="r" id="ytd-issued">0</div></div>
+          <div class="stat"><div class="l">LYMX redeemed YTD</div><div class="r" id="ytd-redeemed">0</div></div>
+          <div class="stat"><div class="l">Net paid YTD</div><div class="r" id="ytd-net">$0.00</div></div>
+          <div class="stat"><div class="l">Customers (unique)</div><div class="r" id="ytd-cust">0</div></div>
+        </div>
+
+        <div class="help" id="help-card" style="display:none">
+          <strong>QuickBooks import (3 steps)</strong>
+          <ol style="margin:8px 0 0;padding-left:18px;line-height:1.7">
+            <li>Open QuickBooks Online &rarr; <strong>+ New</strong> &rarr; <strong>Bank Deposit</strong> or <strong>Bill</strong></li>
+            <li>Select <strong>Import data</strong> &rarr; <strong>Bank transactions</strong> &rarr; pick the downloaded <code>lymx-settlement.csv</code></li>
+            <li>Map columns: <code>Date</code> &rarr; Date, <code>Memo</code> &rarr; Description, <code>Amount</code> &rarr; Amount. Categorize unit purchases to <em>"Marketing &amp; advertising"</em> and buy-backs to <em>"Other income"</em>.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div class="wrap">
+    <div>LYMX Business · <a href="biz-dashboard.html">Dashboard</a> · <a href="pos.html">POS</a> · <a href="support.html">Support</a></div>
+    <div style="margin-top:8px;font-size:12px;color:#5b6472">© <span id="yr"></span> LYMX. All transactions in this prototype are illustrative.</div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // Constants
+  const FEE_RATE = 0.008;
+  const FACE = 0.01;
+
+  // Mock customer pool
+  const customers = [
+    {n:'Marcus Chen', p:'+15551024811'},
+    {n:'Priya Shah', p:'+15558872241'},
+    {n:'Anna Park', p:'+15552091004'},
+    {n:'David Liu', p:'+15553317780'},
+    {n:'Tom Reyes', p:'+15554129908'},
+    {n:'Sarah Reyes', p:'+15555550199'},
+    {n:'Alex Kim', p:'+15556661234'},
+    {n:'Elena Ross', p:'+15557772345'},
+    {n:'Jordan Faye', p:'+15558883456'},
+    {n:'Nina Patel', p:'+15559994567'},
+    {n:'Chris Vega', p:'+15551115678'},
+    {n:'Maya Cole', p:'+15552226789'},
+  ];
+  const notes = ['Latte + scone','Drip coffee','Cold brew flight','Catering order','Sandwich + drink','Espresso','Pastry box','Lunch special','Drip + muffin','Cappuccino','Iced tea','Quiche + soup'];
+
+  // Generate mock transactions for a given month/year
+  function genTx(year, month, count){
+    let rows = [];
+    for (let i=0; i<count; i++){
+      const day = 1 + Math.floor(Math.random() * 28);
+      const hr = 7 + Math.floor(Math.random() * 11);
+      const min = Math.floor(Math.random() * 60);
+      const isIssue = Math.random() < 0.65;
+      const c = customers[Math.floor(Math.random() * customers.length)];
+      const note = notes[Math.floor(Math.random() * notes.length)];
+      let lymx, cashSale = 0;
+      if (isIssue){
+        cashSale = +(Math.random() * 60 + 4).toFixed(2);
+        lymx = Math.round(cashSale * 5);  // biz rate fixed at 5 for mock
+      } else {
+        lymx = Math.round(50 + Math.random() * 1800);
+      }
+      rows.push({
+        date: new Date(year, month, day, hr, min),
+        customer: c, note, type: isIssue?'issue':'redeem', lymx, cashSale
+      });
+    }
+    rows.sort((a,b)=> b.date - a.date);
+    return rows;
+  }
+
+  // Periods (mock — using April 2026 as "this month")
+  const periods = {
+    this: { label:'April 2026', tx: genTx(2026, 3, 38) },
+    last: { label:'March 2026', tx: genTx(2026, 2, 31) },
+    ytd:  { label:'YTD 2026',   tx: null }  // computed
+  };
+  let currentPeriod = 'this';
+  let currentFilter = 'all';
+
+  // YTD aggregate
+  function ytdRows(){
+    return [...periods.this.tx, ...periods.last.tx, ...genTx(2026,1,28), ...genTx(2026,0,22)];
+  }
+  periods.ytd.tx = ytdRows();
+
+  function setPeriod(p){
+    currentPeriod = p;
+    document.querySelectorAll('.period-pick button').forEach((b,i)=> b.classList.toggle('on', i === ['this','last','ytd'].indexOf(p)));
+    render();
+  }
+
+  function setFilter(f, btn){
+    currentFilter = f;
+    document.querySelectorAll('.filter-row .chip').forEach(c => c.classList.remove('on'));
+    btn.classList.add('on');
+    render();
+  }
+
+  function fmtMoney(n){
+    const s = Math.abs(n).toFixed(2);
+    return (n < 0 ? '−$' : '$') + s;
+  }
+  function fmtDate(d){
+    return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' ' + d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  }
+  function fmtDateISO(d){
+    return d.toISOString().slice(0,10);
+  }
+
+  function getRows(){
+    let rows = periods[currentPeriod].tx;
+    if (currentFilter !== 'all') rows = rows.filter(r => r.type === currentFilter);
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    if (q) rows = rows.filter(r => r.customer.n.toLowerCase().includes(q) || r.customer.p.includes(q));
+    return rows;
+  }
+
+  function render(){
+    const rows = getRows();
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = rows.map(r => {
+      const cash = r.type === 'issue' ? r.lymx * FEE_RATE : r.lymx * FEE_RATE;
+      const sign = r.type === 'issue' ? '−' : '+';
+      const rowCls = r.type === 'issue' ? 'issue' : 'redeem';
+      const tagCls = r.type === 'issue' ? 'issue' : 'redeem';
+      const tagTxt = r.type === 'issue' ? 'Issued' : 'Redeemed';
+      const lymxSign = r.type === 'issue' ? '+' : '−';
+      const lymxCls = r.type === 'issue' ? '' : 'minus';
+      return `
+        <tr class="${rowCls}">
+          <td>${fmtDate(r.date)}</td>
+          <td><strong>${r.customer.n}</strong><br><span style="color:var(--muted);font-size:12px">${r.note}</span></td>
+          <td><span class="tag ${tagCls}">${tagTxt}</span></td>
+          <td class="right lymx ${lymxCls}">${lymxSign}${r.lymx.toLocaleString()}</td>
+          <td class="right cash">${sign}${cash.toFixed(2).replace(/^/,'$')}</td>
+        </tr>`;
+    }).join('');
+    document.getElementById('row-count').textContent = rows.length;
+
+    // Period totals (always full period, ignoring filter for the hero)
+    const all = periods[currentPeriod].tx;
+    const issued = all.filter(r => r.type === 'issue').reduce((s,r)=> s+r.lymx, 0);
+    const redeemed = all.filter(r => r.type === 'redeem').reduce((s,r)=> s+r.lymx, 0);
+    const issueFee = issued * FEE_RATE;
+    const redeemCredit = redeemed * FEE_RATE;
+    const net = issueFee - redeemCredit;
+    const customerSet = new Set(all.map(r => r.customer.p));
+    const totalCashSale = all.filter(r=>r.type==='issue').reduce((s,r)=> s+r.cashSale, 0);
+
+    document.getElementById('net-owed').textContent = fmtMoney(Math.abs(net));
+    document.getElementById('net-direction').textContent = net >= 0 ? 'owed' : 'credited';
+    document.getElementById('t-issued').textContent = issued.toLocaleString() + ' LYMX';
+    document.getElementById('t-issued-sub').textContent = '$' + issueFee.toFixed(2) + ' purchased';
+    document.getElementById('t-redeemed').textContent = redeemed.toLocaleString() + ' LYMX';
+    document.getElementById('t-redeemed-sub').textContent = '$' + redeemCredit.toFixed(2) + ' bought back';
+    document.getElementById('t-customers').textContent = customerSet.size;
+    document.getElementById('t-customers-sub').textContent = Math.round(customerSet.size * 0.3) + ' first-time';
+
+    document.getElementById('s-issue-fee').textContent = '$' + issueFee.toFixed(2);
+    document.getElementById('s-redeem-credit').textContent = '−$' + redeemCredit.toFixed(2);
+    document.getElementById('s-net').textContent = (net >= 0 ? '$' : '−$') + Math.abs(net).toFixed(2);
+    document.getElementById('s-avg').textContent = customerSet.size ? '$' + (issueFee / customerSet.size).toFixed(2) : '$0.00';
+    document.getElementById('s-pct').textContent = totalCashSale ? ((issueFee / totalCashSale) * 100).toFixed(1) + '%' : '—';
+
+    // YTD
+    const ytd = periods.ytd.tx;
+    const ytdIssued = ytd.filter(r=>r.type==='issue').reduce((s,r)=>s+r.lymx,0);
+    const ytdRedeemed = ytd.filter(r=>r.type==='redeem').reduce((s,r)=>s+r.lymx,0);
+    const ytdNet = (ytdIssued * FEE_RATE) - (ytdRedeemed * FEE_RATE);
+    document.getElementById('ytd-issued').textContent = ytdIssued.toLocaleString();
+    document.getElementById('ytd-redeemed').textContent = ytdRedeemed.toLocaleString();
+    document.getElementById('ytd-net').textContent = '$' + ytdNet.toFixed(2);
+    document.getElementById('ytd-cust').textContent = new Set(ytd.map(r => r.customer.p)).size;
+  }
+
+  function downloadCSV(){
+    const rows = periods[currentPeriod].tx;
+    const period = periods[currentPeriod].label;
+    let csv = 'Date,Customer,Phone,Type,LYMX,Memo,Amount,Account\n';
+    rows.forEach(r => {
+      const cash = r.lymx * FEE_RATE;
+      const amount = r.type === 'issue' ? -cash : cash;
+      const account = r.type === 'issue' ? 'Marketing & advertising' : 'Other income';
+      const memo = `LYMX ${r.type === 'issue' ? 'unit purchase' : 'unit buy-back'} - ${r.note}`;
+      csv += [
+        fmtDateISO(r.date),
+        '"' + r.customer.n + '"',
+        r.customer.p,
+        r.type === 'issue' ? 'Issued' : 'Redeemed',
+        r.lymx,
+        '"' + memo + '"',
+        amount.toFixed(2),
+        '"' + account + '"'
+      ].join(',') + '\n';
+    });
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `lymx-settlement-${period.replace(/\s+/g,'-').toLowerCase()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('CSV downloaded — ready for QuickBooks import', true);
+  }
+
+  function downloadPDF(){
+    showToast('Statement PDF coming soon. Use CSV for QuickBooks import.', false);
+  }
+
+  function showHelp(){
+    const h = document.getElementById('help-card');
+    h.style.display = h.style.display === 'none' ? '' : 'none';
+  }
+
+  function showToast(msg, success){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    t.classList.toggle('success', !!success);
+    setTimeout(()=> t.classList.remove('on'), 2400);
+  }
+
+  render();
+</script>
+</body>
+</html>

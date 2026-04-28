@@ -3,8 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="LYMX rep dashboard — Multi-Generation Compensation, referral tree, commissions, leaderboard." />
-<title>MGC Partner Dashboard · LYMX</title>
+<meta name="description" content="LYMX Partner dashboard — Multi-Generation Compensation, referral tree, commissions, leaderboard." />
+<title>Partner Dashboard · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://getlymx.com/rep-dashboard" />
+<meta property="og:title" content="Partner Dashboard · LYMX" />
+<meta property="og:description" content="LYMX Partner dashboard — Multi-Generation Compensation, referral tree, commissions, leaderboard." />
+<meta property="og:image" content="https://getlymx.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="LYMX" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Partner Dashboard · LYMX" />
+<meta name="twitter:description" content="LYMX Partner dashboard — Multi-Generation Compensation, referral tree, commissions, leaderboard." />
+<meta name="twitter:image" content="https://getlymx.com/og-image.png" />
+<link rel="canonical" href="https://getlymx.com/rep-dashboard" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
   *{box-sizing:border-box}
@@ -67,6 +83,39 @@
   .card-h h2{margin:0;font-size:17px;font-weight:800}
   .card-h .more{color:var(--accent-2);font-weight:600;font-size:13.5px}
   .card-h .count{font-size:12px;color:var(--muted);font-weight:500}
+
+  /* Founding Partner banner */
+  .founding-banner{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:var(--radius);padding:18px 24px;margin-bottom:18px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;position:relative;overflow:hidden}
+  .founding-banner::after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.22),transparent 70%);right:-100px;top:-100px}
+  .founding-banner .badge{background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:5px 12px;border-radius:999px;flex-shrink:0;position:relative}
+  .founding-banner .body{flex:1;min-width:260px;position:relative}
+  .founding-banner .body .head{font-size:16px;font-weight:800;color:#fff}
+  .founding-banner .body .body-text{font-size:13.5px;color:#c6ccd4;margin-top:3px}
+  .founding-banner .body .body-text strong{color:#f5d172}
+  .founding-banner .counter{font-size:13px;color:#c6ccd4;text-align:right;font-weight:600;position:relative;min-width:120px}
+  .founding-banner .counter strong{display:block;font-size:24px;color:#f5d172;font-weight:800;letter-spacing:-.01em;line-height:1}
+  .founding-banner .btn-apply{background:#fff;color:var(--ink);padding:9px 18px;border-radius:9px;font-weight:800;font-size:13.5px;position:relative}
+  .founding-banner .btn-apply:hover{background:#eaeaea}
+
+  /* Tier ladder */
+  .tier-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin-bottom:18px;display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center}
+  @media(max-width:780px){.tier-card{grid-template-columns:1fr;text-align:center}}
+  .tier-badge{width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;letter-spacing:.06em;text-transform:uppercase;flex-shrink:0;margin:0 auto;position:relative;background:linear-gradient(135deg,#d4af37,#b88a2e);box-shadow:0 6px 16px rgba(212,175,55,.35)}
+  .tier-badge.bronze{background:linear-gradient(135deg,#cd7f32,#a05a23)}
+  .tier-badge.silver{background:linear-gradient(135deg,#a3a3a3,#7a7a7a)}
+  .tier-badge.gold{background:linear-gradient(135deg,#d4af37,#b88a2e)}
+  .tier-badge.platinum{background:linear-gradient(135deg,#7c7c7c,#3e3e3e);box-shadow:0 6px 16px rgba(50,50,50,.35)}
+  .tier-info .lbl{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .tier-info .name{font-size:22px;font-weight:800;letter-spacing:-.005em;margin-top:2px}
+  .tier-info .progress-line{font-size:13.5px;color:var(--muted);margin-top:4px}
+  .tier-info .bar{margin-top:10px;height:8px;background:var(--bg-soft);border-radius:4px;overflow:hidden}
+  .tier-info .bar .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--ok));border-radius:4px;transition:width .4s}
+  .tier-info .pct{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+  .tier-perks{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--ink-2);min-width:240px}
+  .tier-perks .perks-h{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:2px}
+  .tier-perks ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px}
+  .tier-perks ul li{display:flex;align-items:start;gap:6px}
+  .tier-perks ul li::before{content:"→";color:var(--accent);font-weight:800;flex-shrink:0}
 
   /* Commission breakdown */
   .com-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px;gap:14px}
@@ -162,10 +211,10 @@
     <a class="brand" href="index.html"><img src="logo.png" alt="LYMX logo" /><span class="role-tag">Partner</span></a>
     <nav class="nav-links">
       <a href="rep-dashboard.html" class="on">Dashboard</a>
-      <a href="#">My tree</a>
-      <a href="#">Materials</a>
-      <a href="#">Payouts</a>
-      <a href="#">Settings</a>
+      <a href="projection.html">Projection</a>
+      <a href="partner-crm.html">CRM</a>
+      <a href="content-hub.html">Content Hub</a>
+      <a href="territory-program.html">Territory</a>
     </nav>
     <div class="nav-cta">
       <a class="btn btn-ghost btn-sm" href="support.html">Help</a>
@@ -180,8 +229,9 @@
       <h1>Welcome back, Kenny 👋</h1>
       <p>Your MGC tree, commissions, and the next payout — all in one place.</p>
     </div>
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
       <a class="btn btn-ghost" href="business.html#earn">Read MGC rules</a>
+      <a class="btn btn-ghost" href="projection.html">📊 Project my income</a>
       <a class="btn btn-primary" href="#share">Share my code →</a>
     </div>
   </div>
@@ -195,7 +245,7 @@
         <div class="sub">Cash payout on May 5 · LYMX in your balance now</div>
       </div>
       <div class="mini">
-        <span class="lab">Active downline</span>
+        <span class="lab">Active tree</span>
         <span class="v">12 businesses</span>
         <span class="sub" style="margin-top:0;color:#9aa3b0;font-size:12px">across 3 generations</span>
       </div>
@@ -209,6 +259,38 @@
       <a class="btn-w gold" href="#share">📤 Share recruiter link</a>
       <a class="btn-w" href="#">Download W-9 / 1099</a>
       <a class="btn-w" href="#">Materials &amp; pitch deck</a>
+    </div>
+  </div>
+
+  <!-- Founding Partner promo banner -->
+  <div class="founding-banner">
+    <span class="badge">★ Founding 25 Program</span>
+    <div class="body">
+      <div class="head">Earn your way in. First 25 Partners to hit <span style="color:#f5d172">5 Direct activations</span> get lifetime perks.</div>
+      <div class="body-text">1.5× sign-up bonuses (<strong>$750</strong>) on activations beyond your 5th · <strong>+2% override forever</strong> on Direct (11% total) · Lifetime quarterly summit invite · Direct WhatsApp line to founder. Status locks when claimed — earned, not bought.</div>
+    </div>
+    <div class="counter"><strong>4 / 25</strong>Partners qualified</div>
+    <a class="btn-apply" href="projection.html">Project my 5 →</a>
+  </div>
+
+  <!-- Tier ladder -->
+  <div class="tier-card">
+    <div class="tier-badge gold">Gold</div>
+    <div class="tier-info">
+      <div class="lbl">Current Partner tier</div>
+      <div class="name">Gold Partner</div>
+      <div class="progress-line">8 Direct Businesses active · <strong>32 more direct activations to Platinum</strong></div>
+      <div class="bar"><div class="fill" style="width:53%"></div></div>
+      <div class="pct"><span>15 / Gold threshold</span><span>40 / Platinum</span></div>
+    </div>
+    <div class="tier-perks">
+      <div class="perks-h">Your Gold unlocks</div>
+      <ul>
+        <li>Featured on getlymx.com Partners</li>
+        <li>+1% override boost on Direct (10% total)</li>
+        <li>Custom email: kenny@getlymx.com</li>
+        <li>Monthly Partner Council seat</li>
+      </ul>
     </div>
   </div>
 
@@ -464,7 +546,7 @@
         <div>
           <div class="lb-row top1">
             <div class="rk">1</div>
-            <div class="nm">Maria T. <small>Sacramento · 8 G1 active</small></div>
+            <div class="nm">Maria T. <small>Las Vegas · 8 G1 active</small></div>
             <div class="vol">$4,210 <span class="sub">12 activated</span></div>
           </div>
           <div class="lb-row top2">
@@ -479,7 +561,7 @@
           </div>
           <div class="lb-row you">
             <div class="rk">4</div>
-            <div class="nm">Kenny Lin <small>Sacramento · you</small></div>
+            <div class="nm">Kenny Lin <small>Las Vegas · you</small></div>
             <div class="vol">$2,341 <span class="sub">12 in tree</span></div>
           </div>
           <div class="lb-row">
