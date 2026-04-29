@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX status — current uptime, subsystem health, and recent incidents." />
+<title>System status · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://getlymx.com/status" />
+<meta property="og:title" content="LYMX System Status" />
+<meta property="og:description" content="Current uptime, subsystem health, and recent incidents." />
+<meta property="og:image" content="https://getlymx.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="LYMX" />
+<meta name="twitter:card" content="summary_large_image" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:880px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{background:#fff;border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px;max-width:1200px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--ink)}
+  .nav-links a{font-size:14px;color:var(--muted);margin-left:18px}
+
+  /* Top banner — overall status */
+  .banner{padding:40px 0;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;text-align:center;position:relative;overflow:hidden}
+  .banner::after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(245,209,114,.18),transparent 70%);right:-100px;top:-100px;pointer-events:none}
+  .banner .ic{font-size:42px;margin-bottom:8px;position:relative}
+  .banner h1{margin:0;font-size:30px;font-weight:800;letter-spacing:-.015em;color:#fff;position:relative}
+  .banner .lede{margin:8px 0 0;font-size:14.5px;color:#c5edd9;position:relative}
+  .banner.degraded{background:linear-gradient(135deg,#a06a0c,#7a4d0a)}
+  .banner.outage{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+
+  /* Sections */
+  .page{padding:36px 0 48px}
+  .sec-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;gap:14px;flex-wrap:wrap}
+  .sec-h h2{margin:0;font-size:20px;font-weight:800;letter-spacing:-.005em}
+  .sec-h .meta{font-size:13px;color:var(--muted)}
+
+  /* Subsystem rows */
+  .systems{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:30px}
+  .sys-row{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:16px 22px;border-bottom:1px solid var(--line);font-size:14.5px}
+  .sys-row:last-child{border-bottom:0}
+  .sys-row .nm{font-weight:800}
+  .sys-row .nm small{display:block;color:var(--muted);font-weight:500;font-size:12.5px;margin-top:1px}
+  .sys-row .uptime{font-family:'SF Mono',Menlo,monospace;font-size:13px;color:var(--muted)}
+  .sys-row .indicator{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:5px 11px;border-radius:99px}
+  .indicator.ok{background:rgba(19,162,107,.14);color:var(--ok)}
+  .indicator.degraded{background:rgba(240,160,32,.14);color:#a06a0c}
+  .indicator.down{background:rgba(208,32,84,.14);color:#a01644}
+  .indicator .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .indicator.ok .dot{background:var(--ok);box-shadow:0 0 0 4px rgba(19,162,107,.18);animation:pulse 2s infinite}
+  .indicator.degraded .dot{background:var(--warn)}
+  .indicator.down .dot{background:var(--danger)}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(19,162,107,.18)}50%{box-shadow:0 0 0 8px rgba(19,162,107,0)}}
+
+  /* Uptime grid */
+  .uptime-grid{display:flex;gap:2px;margin-top:8px}
+  .day{flex:1;height:24px;border-radius:3px;background:var(--ok);position:relative}
+  .day.warn{background:var(--warn)}
+  .day.down{background:var(--danger)}
+  .day.unknown{background:var(--line)}
+  .day:hover::after{content:attr(data-d);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:10.5px;padding:3px 7px;border-radius:5px;white-space:nowrap;z-index:5;font-weight:700;margin-bottom:4px}
+
+  /* Incident timeline */
+  .incidents{background:#fff;border:1px solid var(--line);border-radius:14px;padding:0;margin-bottom:30px}
+  .incident{padding:18px 22px;border-bottom:1px solid var(--line)}
+  .incident:last-child{border-bottom:0}
+  .incident.empty{padding:34px 22px;text-align:center;color:var(--muted)}
+  .incident .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:10px;flex-wrap:wrap}
+  .incident .h{font-weight:800;font-size:15px}
+  .incident .when{font-size:12.5px;color:var(--muted)}
+  .incident .desc{font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:6px 0 0}
+  .badge-resolved{background:rgba(19,162,107,.14);color:var(--ok);font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:6px}
+  .badge-investigating{background:rgba(240,160,32,.14);color:#a06a0c;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:6px}
+
+  /* Subscribe card */
+  .subscribe{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:14px;padding:24px 28px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;position:relative;overflow:hidden}
+  @media(max-width:680px){.subscribe{grid-template-columns:1fr}}
+  .subscribe::after{content:"";position:absolute;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(95,209,152,.18),transparent 70%);right:-90px;top:-90px;pointer-events:none}
+  .subscribe h3{margin:0 0 4px;font-size:18px;color:#fff;position:relative}
+  .subscribe p{margin:0;font-size:13.5px;color:#c6ccd4;position:relative}
+  .subscribe .form{display:flex;gap:8px;position:relative}
+  .subscribe input{padding:10px 14px;font-size:13.5px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:rgba(255,255,255,.06);color:#fff;font-family:inherit;min-width:200px}
+  .subscribe input::placeholder{color:#9aa3b0}
+  .subscribe input:focus{outline:none;border-color:#5fd198}
+  .subscribe button{padding:10px 16px;background:#5fd198;color:var(--ink);border:0;border-radius:8px;font-weight:800;font-size:13.5px;cursor:pointer;font-family:inherit}
+
+  .stamp{font-size:12px;color:var(--muted);text-align:center;margin-top:16px}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
+  footer a{color:#c6ccd4;margin:0 10px}
+
+  /* Toast */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;padding:11px 18px;border-radius:11px;font-weight:700;font-size:13.5px;box-shadow:var(--shadow);z-index:300;display:none}
+  .toast.on{display:block;animation:up .25s ease-out}
+  @keyframes up{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">LYMX</a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="support.html">Support</a>
+      <a href="help-center.html">Help Center</a>
+    </nav>
+  </div>
+</header>
+
+<!-- BANNER -->
+<section class="banner">
+  <div class="wrap">
+    <div class="ic">✓</div>
+    <h1>All systems operational</h1>
+    <div class="lede">Last updated <span id="last-updated">just now</span> · status.getlymx.com</div>
+  </div>
+</section>
+
+<main class="page">
+  <div class="wrap">
+    <!-- Subsystems -->
+    <div class="sec-h">
+      <h2>Subsystem health</h2>
+      <div class="meta">Live · auto-refreshes every 60s</div>
+    </div>
+    <div class="systems">
+      <div class="sys-row">
+        <div>
+          <div class="nm">Web wallet (customer-facing)</div>
+          <small>getlymx.com / customer-wallet</small>
+        </div>
+        <div class="uptime">99.98% (30d)</div>
+        <div class="indicator ok"><span class="dot"></span>Operational</div>
+      </div>
+      <div class="sys-row">
+        <div>
+          <div class="nm">Business POS</div>
+          <small>Issue + accept LYMX at checkout</small>
+        </div>
+        <div class="uptime">99.99% (30d)</div>
+        <div class="indicator ok"><span class="dot"></span>Operational</div>
+      </div>
+      <div class="sys-row">
+        <div>
+          <div class="nm">Settlement engine</div>
+          <small>Monthly Business settlement, CSV export</small>
+        </div>
+        <div class="uptime">100% (30d)</div>
+        <div class="indicator ok"><span class="dot"></span>Operational</div>
+      </div>
+      <div class="sys-row">
+        <div>
+          <div class="nm">Customer support</div>
+          <small>Email, contact form, FAQ</small>
+        </div>
+        <div class="uptime">100% (30d)</div>
+        <div class="indicator ok"><span class="dot"></span>Operational</div>
+      </div>
+      <div class="sys-row">
+        <div>
+          <div class="nm">ACH payouts (Partners)</div>
+          <small>Monthly commission disbursement</small>
+        </div>
+        <div class="uptime">99.97% (30d)</div>
+        <div class="indicator ok"><span class="dot"></span>Operational</div>
+      </div>
+      <div class="sys-row">
+        <div>
+          <div class="nm">SMS verification &amp; notifications</div>
+          <small>OTP delivery, transactional SMS</small>
+        </div>
+        <div class="uptime">99.95% (30d)</div>
+        <div class="indicator ok"><span class="dot"></span>Operational</div>
+      </div>
+      <div class="sys-row">
+        <div>
+          <div class="nm">Email delivery</div>
+          <small>Receipts, settlement statements, marketing blasts</small>
+        </div>
+        <div class="uptime">99.99% (30d)</div>
+        <div class="indicator ok"><span class="dot"></span>Operational</div>
+      </div>
+      <div class="sys-row">
+        <div>
+          <div class="nm">Admin tools</div>
+          <small>Internal commission engine, moderation</small>
+        </div>
+        <div class="uptime">100% (30d)</div>
+        <div class="indicator ok"><span class="dot"></span>Operational</div>
+      </div>
+    </div>
+
+    <!-- 30-day uptime -->
+    <div class="sec-h">
+      <h2>30-day uptime — web wallet</h2>
+      <div class="meta">Each block = 1 day</div>
+    </div>
+    <div class="uptime-grid" id="uptime-grid">
+      <!-- 30 days, populated by JS -->
+    </div>
+    <div style="text-align:right;margin-top:8px;font-size:12.5px;color:var(--muted)">99.98% uptime · 0 incidents this period</div>
+
+    <!-- Incidents -->
+    <div class="sec-h" style="margin-top:30px">
+      <h2>Recent incidents</h2>
+      <div class="meta">Last 90 days</div>
+    </div>
+    <div class="incidents">
+      <div class="incident empty">
+        <div style="font-size:32px;opacity:.6;margin-bottom:6px">✓</div>
+        <div style="font-size:14px;color:var(--muted)">No incidents in the last 90 days.</div>
+      </div>
+    </div>
+
+    <!-- Subscribe -->
+    <div class="subscribe">
+      <div>
+        <h3>Get notified of incidents</h3>
+        <p>One-line emails when a subsystem goes down or comes back. No marketing.</p>
+      </div>
+      <form class="form" onsubmit="event.preventDefault();subscribe()">
+        <input type="email" id="email" placeholder="you@example.com" required />
+        <button type="submit">Subscribe</button>
+      </form>
+    </div>
+
+    <div class="stamp">All status data is mock for the prototype. Production status will be powered by an automated monitoring service.</div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div class="wrap">
+    <div>© <span id="yr"></span> LYMX · <a href="index.html">Home</a> · <a href="support.html">Support</a> · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // Generate 30-day uptime grid
+  const grid = document.getElementById('uptime-grid');
+  const today = new Date();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const cell = document.createElement('div');
+    cell.className = 'day';
+    cell.dataset.d = d.toLocaleDateString('en-US', {month:'short', day:'numeric'}) + ' · 100% uptime';
+    grid.appendChild(cell);
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    setTimeout(() => t.classList.remove('on'), 2400);
+  }
+
+  function subscribe(){
+    const email = document.getElementById('email').value.trim();
+    if (!email) return;
+    document.getElementById('email').value = '';
+    showToast('Subscribed · ' + email);
+  }
+</script>
+</body>
+</html>

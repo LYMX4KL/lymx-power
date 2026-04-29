@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX account settings — manage your profile, notifications, privacy, and referral code." />
+<title>Settings · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://getlymx.com/customer-settings" />
+<meta property="og:title" content="LYMX Account Settings" />
+<meta property="og:description" content="Manage your LYMX account." />
+<meta property="og:image" content="https://getlymx.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="LYMX" />
+<meta name="twitter:card" content="summary_large_image" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:18px;--shadow:0 14px 40px rgba(14,17,22,.12)}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+
+  .device{max-width:430px;margin:32px auto;background:#fff;border-radius:32px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--line);min-height:780px;display:flex;flex-direction:column}
+  @media(max-width:480px){.device{margin:0;border-radius:0;border:0;min-height:100vh}}
+
+  .status-bar{display:flex;justify-content:space-between;padding:14px 22px 6px;font-size:13px;color:var(--ink);font-weight:700}
+  .status-bar .icons{display:flex;gap:6px;font-size:12px;color:var(--muted)}
+
+  /* Top */
+  .top{padding:8px 22px 14px;display:flex;align-items:center;gap:12px}
+  .back{background:transparent;border:0;font-size:20px;color:var(--ink);cursor:pointer;padding:0;font-family:inherit;text-decoration:none}
+  .top h1{margin:0;font-size:20px;font-weight:800;flex:1}
+
+  /* Profile header */
+  .profile{display:flex;align-items:center;gap:14px;padding:14px 22px 18px}
+  .profile .av{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0}
+  .profile .body .nm{font-size:18px;font-weight:800}
+  .profile .body .em{font-size:13px;color:var(--muted);margin-top:2px}
+  .profile .body .verified{display:inline-block;background:rgba(19,162,107,.14);color:var(--ok);font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:99px;margin-top:5px;letter-spacing:.04em;text-transform:uppercase}
+
+  /* Section */
+  .feed{flex:1}
+  .sec-h{padding:14px 22px 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800}
+
+  .group{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:12px}
+  .item{display:flex;align-items:center;gap:14px;padding:13px 22px;border-bottom:1px solid var(--line);cursor:pointer;transition:.1s}
+  .item:hover{background:var(--bg-soft)}
+  .item:last-child{border-bottom:0}
+  .item .ic{font-size:18px;width:28px;text-align:center;flex-shrink:0;color:var(--ink-2)}
+  .item .body{flex:1;min-width:0}
+  .item .body .h{font-size:14.5px;font-weight:700}
+  .item .body .d{font-size:12.5px;color:var(--muted);margin-top:1px}
+  .item .body .d.code{font-family:'SF Mono',Menlo,monospace;color:var(--accent-2);font-weight:700}
+  .item .arrow{color:var(--muted);font-size:18px}
+  .item .v{font-size:13px;color:var(--muted);font-weight:700}
+  .item.danger .body .h{color:var(--danger)}
+
+  /* Toggle */
+  .toggle{position:relative;width:42px;height:24px;background:var(--line);border-radius:99px;cursor:pointer;transition:.15s;flex-shrink:0}
+  .toggle.on{background:var(--ok)}
+  .toggle::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .toggle.on::after{left:20px}
+
+  /* Bottom version */
+  .version{padding:18px 22px 22px;text-align:center;font-size:11px;color:var(--muted);line-height:1.5}
+  .version a{color:var(--accent-2);font-weight:700}
+
+  /* Bottom nav */
+  .botnav{background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 0 14px}
+  .botnav a{text-align:center;padding:6px 0;font-size:11px;color:var(--muted);font-weight:700}
+  .botnav a.on{color:var(--accent-2)}
+  .botnav a .b{font-size:18px;display:block;margin-bottom:1px}
+
+  /* Modal */
+  .modal{position:fixed;inset:0;background:rgba(14,17,22,.6);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+  .modal.on{display:flex;animation:fade .2s ease-out}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .modal-card{background:#fff;border-radius:18px;max-width:380px;width:100%}
+  .modal-h{padding:18px 22px;border-bottom:1px solid var(--line)}
+  .modal-h h3{margin:0;font-size:18px;font-weight:800}
+  .modal-h p{margin:6px 0 0;font-size:13.5px;color:var(--muted)}
+  .modal-body{padding:18px 22px}
+  .modal-foot{padding:14px 22px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--line);background:var(--bg-soft);border-radius:0 0 18px 18px}
+  .modal label{display:block;font-size:12px;font-weight:700;color:var(--ink-2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px}
+  .modal .field{margin-bottom:14px}
+  .modal .input{width:100%;padding:10px 13px;border:1.5px solid var(--line);border-radius:10px;font-size:14.5px;font-weight:500;font-family:inherit}
+  .modal .input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  .btn{padding:10px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid transparent;cursor:pointer;font-family:inherit}
+  .btn-ghost{background:#fff;border-color:var(--line);color:var(--ink-2)}
+  .btn-primary{background:var(--ink);color:#fff;border:0}
+  .btn-danger{background:var(--danger);color:#fff;border:0}
+
+  .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:11px;font-weight:700;font-size:13px;box-shadow:var(--shadow);z-index:300;display:none}
+  .toast.on{display:block;animation:up .25s ease-out}
+  .toast.success{background:var(--ok)}
+  @keyframes up{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+</style>
+</head>
+<body>
+
+<div class="device">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="icons"><span>●●●</span><span>5G</span><span>100%</span></div>
+  </div>
+
+  <div class="top">
+    <a class="back" href="customer-wallet.html">‹</a>
+    <h1>Settings</h1>
+  </div>
+
+  <!-- Profile -->
+  <div class="profile">
+    <div class="av">SR</div>
+    <div class="body">
+      <div class="nm">Sarah Reyes</div>
+      <div class="em">+1 (702) 555-0199 · sarah.reyes@example.com</div>
+      <span class="verified">✓ Phone verified</span>
+    </div>
+  </div>
+
+  <div class="feed">
+
+    <!-- Profile group -->
+    <div class="sec-h">Profile</div>
+    <div class="group">
+      <div class="item" onclick="openEditName()">
+        <div class="ic">👤</div>
+        <div class="body">
+          <div class="h">Name</div>
+          <div class="d">Sarah Reyes</div>
+        </div>
+        <div class="arrow">›</div>
+      </div>
+      <div class="item" onclick="openEditPhone()">
+        <div class="ic">📱</div>
+        <div class="body">
+          <div class="h">Phone</div>
+          <div class="d">+1 (702) 555-0199</div>
+        </div>
+        <div class="arrow">›</div>
+      </div>
+      <div class="item" onclick="openEditEmail()">
+        <div class="ic">✉️</div>
+        <div class="body">
+          <div class="h">Email</div>
+          <div class="d">sarah.reyes@example.com</div>
+        </div>
+        <div class="arrow">›</div>
+      </div>
+      <div class="item" onclick="openEditPassword()">
+        <div class="ic">🔑</div>
+        <div class="body">
+          <div class="h">Password</div>
+          <div class="d">Last changed 23 days ago</div>
+        </div>
+        <div class="arrow">›</div>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="sec-h">Notifications</div>
+    <div class="group">
+      <div class="item" onclick="toggle(this)">
+        <div class="ic">🔔</div>
+        <div class="body">
+          <div class="h">Push notifications</div>
+          <div class="d">Earn confirmations, redemptions, promos</div>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="ic">💬</div>
+        <div class="body">
+          <div class="h">Text messages</div>
+          <div class="d">Receipts and verification codes only</div>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="ic">📧</div>
+        <div class="body">
+          <div class="h">Email digests</div>
+          <div class="d">Weekly Business spotlights and offers</div>
+        </div>
+        <div class="toggle"></div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="ic">🎁</div>
+        <div class="body">
+          <div class="h">Referral updates</div>
+          <div class="d">When friends join or earn you bonuses</div>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+    </div>
+
+    <!-- Privacy -->
+    <div class="sec-h">Privacy</div>
+    <div class="group">
+      <div class="item" onclick="toggle(this)">
+        <div class="ic">👁️</div>
+        <div class="body">
+          <div class="h">Show my reviews publicly</div>
+          <div class="d">Reviews appear with your first name only</div>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="ic">📍</div>
+        <div class="body">
+          <div class="h">Location while browsing</div>
+          <div class="d">Used to find nearby Businesses</div>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+      <div class="item">
+        <div class="ic">⬇️</div>
+        <div class="body">
+          <div class="h">Download my data</div>
+          <div class="d">Get a copy of everything we have on you</div>
+        </div>
+        <div class="arrow">›</div>
+      </div>
+    </div>
+
+    <!-- Refer / earn -->
+    <div class="sec-h">Refer &amp; earn</div>
+    <div class="group">
+      <a class="item" href="customer-referral.html">
+        <div class="ic">🎁</div>
+        <div class="body">
+          <div class="h">Your referral code</div>
+          <div class="d code">SARAH-7K9F</div>
+        </div>
+        <div class="v">200 LYMX</div>
+        <div class="arrow">›</div>
+      </a>
+    </div>
+
+    <!-- Help -->
+    <div class="sec-h">Help</div>
+    <div class="group">
+      <a class="item" href="support.html">
+        <div class="ic">❓</div>
+        <div class="body">
+          <div class="h">Help &amp; FAQ</div>
+          <div class="d">Common questions and contact</div>
+        </div>
+        <div class="arrow">›</div>
+      </a>
+      <a class="item" href="why-lymx.html">
+        <div class="ic">💡</div>
+        <div class="body">
+          <div class="h">How LYMX works</div>
+          <div class="d">Why LYMX vs traditional rewards</div>
+        </div>
+        <div class="arrow">›</div>
+      </a>
+      <a class="item" href="mailto:hello@getlymx.com">
+        <div class="ic">📞</div>
+        <div class="body">
+          <div class="h">Contact support</div>
+          <div class="d">hello@getlymx.com</div>
+        </div>
+        <div class="arrow">›</div>
+      </a>
+    </div>
+
+    <!-- Account -->
+    <div class="sec-h">Account</div>
+    <div class="group">
+      <div class="item" onclick="signOut()">
+        <div class="ic">🚪</div>
+        <div class="body">
+          <div class="h">Sign out</div>
+          <div class="d">You'll need to verify your phone next time</div>
+        </div>
+        <div class="arrow">›</div>
+      </div>
+      <div class="item danger" onclick="openDelete()">
+        <div class="ic">⚠️</div>
+        <div class="body">
+          <div class="h">Delete account</div>
+          <div class="d">Remove account and unspent LYMX</div>
+        </div>
+        <div class="arrow">›</div>
+      </div>
+    </div>
+
+    <div class="version">
+      LYMX v1.0 · prototype<br>
+      <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="disclaimer.html">Disclaimer</a>
+    </div>
+  </div>
+
+  <nav class="botnav">
+    <a href="customer-wallet.html"><span class="b">⬢</span>Wallet</a>
+    <a href="browse.html"><span class="b">⌕</span>Discover</a>
+    <a href="customer-referral.html"><span class="b">🎁</span>Refer</a>
+    <a href="notifications.html"><span class="b">🔔</span>Inbox</a>
+  </nav>
+</div>
+
+<!-- Edit modal (reused) -->
+<div class="modal" id="edit-modal" onclick="if(event.target===this)closeEdit()">
+  <div class="modal-card">
+    <div class="modal-h">
+      <h3 id="edit-title">Edit</h3>
+      <p id="edit-sub"></p>
+    </div>
+    <div class="modal-body" id="edit-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeEdit()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete modal -->
+<div class="modal" id="delete-modal" onclick="if(event.target===this)closeDelete()">
+  <div class="modal-card">
+    <div class="modal-h">
+      <h3 style="color:var(--danger)">Delete account?</h3>
+      <p>This is permanent. You'll lose your <strong>7,250 LYMX</strong> balance and your referral history.</p>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Type "DELETE" to confirm</label>
+        <input class="input" id="del-confirm" oninput="checkDel()" />
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeDelete()">Cancel</button>
+      <button class="btn btn-danger" id="del-btn" disabled>Delete forever</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  function showToast(msg, success){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast on ' + (success ? 'success' : '');
+    setTimeout(()=> t.classList.remove('on'), 1800);
+  }
+
+  function toggle(row){
+    const t = row.querySelector('.toggle');
+    if (!t) return;
+    t.classList.toggle('on');
+    showToast(t.classList.contains('on') ? 'Turned on' : 'Turned off', true);
+  }
+
+  function openEdit(title, sub, body){
+    document.getElementById('edit-title').textContent = title;
+    document.getElementById('edit-sub').textContent = sub;
+    document.getElementById('edit-body').innerHTML = body;
+    document.getElementById('edit-modal').classList.add('on');
+  }
+  function closeEdit(){ document.getElementById('edit-modal').classList.remove('on'); }
+  function saveEdit(){ closeEdit(); showToast('Saved', true); }
+
+  function openEditName(){ openEdit('Update name', 'How it appears on receipts.', '<div class="field"><label>Full name</label><input class="input" value="Sarah Reyes" /></div>'); }
+  function openEditPhone(){ openEdit('Update phone', "We'll send a code to confirm.", '<div class="field"><label>New mobile number</label><input class="input" value="+1 (702) 555-0199" /></div>'); }
+  function openEditEmail(){ openEdit('Update email', 'Used for digital receipts.', '<div class="field"><label>Email</label><input class="input" type="email" value="sarah.reyes@example.com" /></div>'); }
+  function openEditPassword(){ openEdit('Change password', 'You\'ll be signed out of other devices.', '<div class="field"><label>Current password</label><input class="input" type="password" /></div><div class="field"><label>New password</label><input class="input" type="password" /></div>'); }
+
+  function signOut(){
+    if (confirm('Sign out of LYMX?')) location.href = 'index.html';
+  }
+
+  function openDelete(){ document.getElementById('delete-modal').classList.add('on'); }
+  function closeDelete(){ document.getElementById('delete-modal').classList.remove('on'); document.getElementById('del-confirm').value=''; checkDel(); }
+  function checkDel(){
+    document.getElementById('del-btn').disabled = document.getElementById('del-confirm').value.trim().toUpperCase() !== 'DELETE';
+  }
+</script>
+</body>
+</html>

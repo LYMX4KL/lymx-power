@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Business analytics — customer cohorts, peak hours, LTV, top items, promo ROI." />
+<title>Analytics · LYMX Business</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://getlymx.com/biz-analytics" />
+<meta property="og:title" content="LYMX Business Analytics" />
+<meta property="og:description" content="Customer cohorts, peak hours, LTV, promo ROI." />
+<meta property="og:image" content="https://getlymx.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="LYMX" />
+<meta name="twitter:card" content="summary_large_image" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1280px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(10,132,255,.12);color:var(--accent-2);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .biz-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .page{padding:32px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
+
+  .period-pick{display:flex;gap:8px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:5px;margin-bottom:18px;width:fit-content}
+  .period-pick button{padding:8px 16px;border-radius:8px;border:0;background:transparent;font-weight:700;font-size:13.5px;color:var(--muted);cursor:pointer;font-family:inherit}
+  .period-pick button.on{background:var(--ink);color:#fff}
+
+  /* Top stats */
+  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+  @media(max-width:1000px){.strip{grid-template-columns:repeat(2,1fr)}}
+  .stat-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .stat-card .lab{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}
+  .stat-card .v{font-size:28px;font-weight:800;letter-spacing:-.01em;line-height:1.05}
+  .stat-card .v.green{color:var(--ok)}
+  .stat-card .v.gold{color:var(--gold)}
+  .stat-card .delta{font-size:12px;color:var(--ok);font-weight:700;margin-top:5px}
+  .stat-card .delta.down{color:var(--danger)}
+  .stat-card .sub{font-size:12px;color:var(--muted);margin-top:5px}
+
+  /* Layout */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+  @media(max-width:1000px){.grid-2{grid-template-columns:1fr}}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  .card-h{display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+  .card-h h2{margin:0;font-size:16px;font-weight:800}
+  .card-h .meta{font-size:12.5px;color:var(--muted)}
+
+  /* Cohort retention */
+  .cohort-table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .cohort-table th, .cohort-table td{padding:8px 10px;text-align:center;border:1px solid var(--line)}
+  .cohort-table th{background:var(--bg-soft);color:var(--muted);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+  .cohort-table td.cohort{text-align:left;font-weight:700;background:var(--bg-soft);color:var(--ink-2)}
+  .cohort-table td.size{font-weight:700;color:var(--ink)}
+
+  /* Heatmap */
+  .heat-grid{display:grid;grid-template-columns:60px repeat(12,1fr);gap:3px;margin-top:8px}
+  .heat-grid .lab{font-size:11px;color:var(--muted);font-weight:700;text-align:right;padding-right:8px;align-self:center}
+  .heat-grid .hr-lab{font-size:9.5px;color:var(--muted);text-align:center;font-weight:700}
+  .heat-grid .cell{aspect-ratio:1;border-radius:3px;background:var(--bg-soft);position:relative}
+  .heat-grid .cell:hover::after{content:attr(data-v);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:10.5px;padding:3px 7px;border-radius:5px;white-space:nowrap;z-index:5;font-weight:700}
+  .heat-legend{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--muted);justify-content:flex-end}
+  .heat-legend .swatch{width:14px;height:10px;border-radius:2px}
+
+  /* Bar chart */
+  .bar-chart{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+  .bar-row{display:grid;grid-template-columns:120px 1fr 60px;gap:10px;align-items:center;font-size:13px}
+  .bar-row .lab{font-weight:600;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bar-row .track{background:var(--bg-soft);border-radius:6px;height:22px;overflow:hidden;position:relative}
+  .bar-row .fill{height:100%;background:linear-gradient(90deg,#0a84ff,#0050c7);border-radius:6px}
+  .bar-row .fill.gold{background:linear-gradient(90deg,#d4af37,#b88a2e)}
+  .bar-row .fill.green{background:linear-gradient(90deg,#13a26b,#0d7d51)}
+  .bar-row .v{text-align:right;font-weight:800;font-size:13px}
+
+  /* LTV donut/comparison */
+  .ltv-row{display:flex;align-items:center;gap:18px;padding:14px 0;border-bottom:1px solid var(--line)}
+  .ltv-row:last-child{border-bottom:0}
+  .ltv-row .av{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;color:#fff;font-weight:800}
+  .ltv-row .av.lymx{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .ltv-row .av.cash{background:linear-gradient(135deg,#5b6472,#3a4250)}
+  .ltv-row .body{flex:1;min-width:0}
+  .ltv-row .body .nm{font-weight:800;font-size:14.5px}
+  .ltv-row .body .desc{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.5}
+  .ltv-row .num{text-align:right;flex-shrink:0}
+  .ltv-row .num .v{font-size:24px;font-weight:800;letter-spacing:-.01em;color:var(--ok)}
+  .ltv-row .num .v.muted{color:var(--ink-2)}
+  .ltv-row .num .l{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-top:2px}
+
+  /* Promo ROI */
+  .promo-roi{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+  @media(max-width:680px){.promo-roi{grid-template-columns:1fr}}
+  .pr-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:11px;padding:14px 16px}
+  .pr-card .nm{font-weight:800;font-size:13.5px;display:flex;align-items:center;gap:6px}
+  .pr-card .desc{font-size:12px;color:var(--muted);margin:3px 0 8px}
+  .pr-card .stats{display:flex;gap:14px;font-size:12.5px}
+  .pr-card .stats div{flex:1}
+  .pr-card .stats .v{font-weight:800;font-size:16px;color:var(--ink)}
+  .pr-card .stats .v.green{color:var(--ok)}
+  .pr-card .stats .l{color:var(--muted);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:700}
+
+  /* Insights box */
+  .insights{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:var(--radius);padding:24px 28px;margin-bottom:18px;position:relative;overflow:hidden}
+  .insights::after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);right:-100px;top:-100px;pointer-events:none}
+  .insights .lab{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#9aa3b0;font-weight:800;margin-bottom:12px;position:relative}
+  .insights .it{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:14px;color:#fff;display:flex;align-items:flex-start;gap:10px;position:relative}
+  .insights .it:last-child{border-bottom:0}
+  .insights .it .ic{font-size:18px;flex-shrink:0;line-height:1.2}
+  .insights .it .body{flex:1}
+  .insights .it .body strong{color:#f5d172}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:30px 0;font-size:13px;text-align:center;margin-top:48px}
+  footer a{color:#c6ccd4;margin:0 10px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Business</span>
+    </div>
+    <nav class="nav-links">
+      <a href="biz-dashboard.html">Dashboard</a>
+      <a href="biz-analytics.html" class="on">Analytics</a>
+      <a href="pos.html">POS</a>
+      <a href="promotions.html">Promotions</a>
+      <a href="settlement.html">Settlement</a>
+    </nav>
+    <div class="biz-avatar">BB</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>Analytics</h1>
+        <p>Brew &amp; Bean Coffee · Customer cohorts, peak hours, LTV, promo ROI.</p>
+      </div>
+      <div class="period-pick">
+        <button class="on">Last 30 days</button>
+        <button>Last 90 days</button>
+        <button>Year to date</button>
+      </div>
+    </div>
+
+    <!-- Top stats -->
+    <div class="strip">
+      <div class="stat-card">
+        <div class="lab">Customers served</div>
+        <div class="v">412</div>
+        <div class="delta">▲ +18% vs prior 30 days</div>
+        <div class="sub">73 new this period</div>
+      </div>
+      <div class="stat-card">
+        <div class="lab">Repeat-customer rate</div>
+        <div class="v green">68%</div>
+        <div class="delta">▲ +6 pts vs prior</div>
+        <div class="sub">Up sharply since Happy Hour 2× launched</div>
+      </div>
+      <div class="stat-card">
+        <div class="lab">Avg ticket — LYMX customer</div>
+        <div class="v">$28.40</div>
+        <div class="delta">▲ +24% vs cash-only</div>
+        <div class="sub">Cash-only avg: $22.90</div>
+      </div>
+      <div class="stat-card">
+        <div class="lab">90-day LTV — LYMX customer</div>
+        <div class="v gold">$182</div>
+        <div class="delta">▲ Up 31% vs cash-only</div>
+        <div class="sub">Cash-only LTV: $139</div>
+      </div>
+    </div>
+
+    <!-- Insights -->
+    <div class="insights">
+      <div class="lab">★ This period's takeaways</div>
+      <div class="it">
+        <div class="ic">🔥</div>
+        <div class="body"><strong>Happy Hour 2× is your #1 retention lever.</strong> Customers who first visit during Happy Hour return at <strong>2.4× the rate</strong> of off-peak first-timers. Consider extending the window by 30 minutes.</div>
+      </div>
+      <div class="it">
+        <div class="ic">📍</div>
+        <div class="body">First-time customers brought in by the network are <strong>worth $43 more in 90-day LTV</strong> than walk-ins. The network is doing real customer-acquisition work.</div>
+      </div>
+      <div class="it">
+        <div class="ic">⚠️</div>
+        <div class="body">Tuesday 11 AM–1 PM is your slowest window — only 8 customers/wk. Worth a Tuesday-only 3× promo to fill the dip?</div>
+      </div>
+    </div>
+
+    <!-- LTV comparison -->
+    <div class="card" style="margin-bottom:18px">
+      <div class="card-h">
+        <h2>LYMX customers vs cash-only customers</h2>
+        <div class="meta">Last 90 days</div>
+      </div>
+      <div class="ltv-row">
+        <div class="av lymx">L</div>
+        <div class="body">
+          <div class="nm">LYMX customers (172 unique)</div>
+          <div class="desc">Customers who earned or redeemed LYMX at your shop. Higher avg ticket and visit frequency.</div>
+        </div>
+        <div class="num">
+          <div class="v">$182</div>
+          <div class="l">90-day LTV</div>
+        </div>
+      </div>
+      <div class="ltv-row">
+        <div class="av cash">$</div>
+        <div class="body">
+          <div class="nm">Cash-only walk-ins (240 unique)</div>
+          <div class="desc">Customers who paid cash or card without earning LYMX.</div>
+        </div>
+        <div class="num">
+          <div class="v muted">$139</div>
+          <div class="l">90-day LTV</div>
+        </div>
+      </div>
+      <div class="ltv-row">
+        <div class="av" style="background:linear-gradient(135deg,#d4af37,#b88a2e)">★</div>
+        <div class="body">
+          <div class="nm">Network referrals (came in via LYMX wallet's "find Businesses")</div>
+          <div class="desc">First-time-at-your-shop customers brought in by other Businesses' LYMX issuance. The network paying for itself.</div>
+        </div>
+        <div class="num">
+          <div class="v">$211</div>
+          <div class="l">90-day LTV</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cohort + heatmap row -->
+    <div class="grid-2">
+      <!-- Cohort retention -->
+      <div class="card">
+        <div class="card-h">
+          <h2>Customer cohort retention</h2>
+          <div class="meta">% who returned within N weeks</div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="cohort-table">
+            <thead>
+              <tr>
+                <th>First visit</th>
+                <th>Size</th>
+                <th>Wk 1</th>
+                <th>Wk 2</th>
+                <th>Wk 3</th>
+                <th>Wk 4</th>
+                <th>Wk 6</th>
+                <th>Wk 8</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="cohort">Mar 1–7</td><td class="size">42</td><td style="background:rgba(19,162,107,.62);color:#fff;font-weight:800">81%</td><td style="background:rgba(19,162,107,.5);color:#fff;font-weight:800">71%</td><td style="background:rgba(19,162,107,.42);color:#fff;font-weight:800">62%</td><td style="background:rgba(19,162,107,.34);color:#fff;font-weight:800">55%</td><td style="background:rgba(19,162,107,.28);color:#fff;font-weight:800">48%</td><td style="background:rgba(19,162,107,.22);color:#fff;font-weight:800">42%</td></tr>
+              <tr><td class="cohort">Mar 8–14</td><td class="size">38</td><td style="background:rgba(19,162,107,.7);color:#fff;font-weight:800">86%</td><td style="background:rgba(19,162,107,.55);color:#fff;font-weight:800">73%</td><td style="background:rgba(19,162,107,.45);color:#fff;font-weight:800">66%</td><td style="background:rgba(19,162,107,.35);color:#fff;font-weight:800">57%</td><td style="background:rgba(19,162,107,.28);color:#fff;font-weight:800">49%</td><td>—</td></tr>
+              <tr><td class="cohort">Mar 15–21</td><td class="size">51</td><td style="background:rgba(19,162,107,.74);color:#fff;font-weight:800">88%</td><td style="background:rgba(19,162,107,.6);color:#fff;font-weight:800">78%</td><td style="background:rgba(19,162,107,.5);color:#fff;font-weight:800">70%</td><td style="background:rgba(19,162,107,.42);color:#fff;font-weight:800">63%</td><td>—</td><td>—</td></tr>
+              <tr><td class="cohort">Mar 22–28</td><td class="size">55</td><td style="background:rgba(19,162,107,.78);color:#fff;font-weight:800">91%</td><td style="background:rgba(19,162,107,.66);color:#fff;font-weight:800">82%</td><td style="background:rgba(19,162,107,.56);color:#fff;font-weight:800">74%</td><td>—</td><td>—</td><td>—</td></tr>
+              <tr><td class="cohort">Apr 1–7</td><td class="size">62</td><td style="background:rgba(19,162,107,.8);color:#fff;font-weight:800">93%</td><td style="background:rgba(19,162,107,.7);color:#fff;font-weight:800">85%</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+              <tr><td class="cohort">Apr 8–14</td><td class="size">59</td><td style="background:rgba(19,162,107,.82);color:#fff;font-weight:800">95%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.55">Cohorts since launching Happy Hour 2× (Mar 22) show meaningfully higher Wk 1 retention.</div>
+      </div>
+
+      <!-- Peak hours heatmap -->
+      <div class="card">
+        <div class="card-h">
+          <h2>Peak hours heatmap</h2>
+          <div class="meta">LYMX issued, last 30 days</div>
+        </div>
+        <div class="heat-grid" id="heat">
+          <div></div>
+          <div class="hr-lab">7</div><div class="hr-lab">8</div><div class="hr-lab">9</div><div class="hr-lab">10</div><div class="hr-lab">11</div><div class="hr-lab">12</div><div class="hr-lab">1</div><div class="hr-lab">2</div><div class="hr-lab">3</div><div class="hr-lab">4</div><div class="hr-lab">5</div><div class="hr-lab">6</div>
+          <div class="lab">Mon</div>
+          <div class="cell" data-v="Mon 7am · 84 LYMX" style="background:rgba(10,132,255,.4)"></div>
+          <div class="cell" data-v="Mon 8am · 380 LYMX" style="background:rgba(10,132,255,.85)"></div>
+          <div class="cell" data-v="Mon 9am · 220 LYMX" style="background:rgba(10,132,255,.55)"></div>
+          <div class="cell" data-v="Mon 10am · 90 LYMX" style="background:rgba(10,132,255,.32)"></div>
+          <div class="cell" data-v="Mon 11am · 60 LYMX" style="background:rgba(10,132,255,.22)"></div>
+          <div class="cell" data-v="Mon 12pm · 280 LYMX" style="background:rgba(10,132,255,.65)"></div>
+          <div class="cell" data-v="Mon 1pm · 240 LYMX" style="background:rgba(10,132,255,.58)"></div>
+          <div class="cell" data-v="Mon 2pm · 80 LYMX" style="background:rgba(10,132,255,.28)"></div>
+          <div class="cell" data-v="Mon 3pm · 480 LYMX" style="background:rgba(212,175,55,.85)" title="2x promo"></div>
+          <div class="cell" data-v="Mon 4pm · 520 LYMX" style="background:rgba(212,175,55,.95)"></div>
+          <div class="cell" data-v="Mon 5pm · 380 LYMX" style="background:rgba(212,175,55,.7)"></div>
+          <div class="cell" data-v="Mon 6pm · 60 LYMX" style="background:rgba(10,132,255,.22)"></div>
+          <div class="lab">Tue</div>
+          <div class="cell" data-v="Tue 7am · 70 LYMX" style="background:rgba(10,132,255,.35)"></div>
+          <div class="cell" data-v="Tue 8am · 420 LYMX" style="background:rgba(10,132,255,.92)"></div>
+          <div class="cell" data-v="Tue 9am · 240 LYMX" style="background:rgba(10,132,255,.58)"></div>
+          <div class="cell" data-v="Tue 10am · 80 LYMX" style="background:rgba(10,132,255,.28)"></div>
+          <div class="cell" data-v="Tue 11am · 30 LYMX" style="background:rgba(10,132,255,.15)" title="weak window"></div>
+          <div class="cell" data-v="Tue 12pm · 50 LYMX" style="background:rgba(10,132,255,.2)" title="weak window"></div>
+          <div class="cell" data-v="Tue 1pm · 80 LYMX" style="background:rgba(10,132,255,.28)"></div>
+          <div class="cell" data-v="Tue 2pm · 100 LYMX" style="background:rgba(10,132,255,.34)"></div>
+          <div class="cell" data-v="Tue 3pm · 510 LYMX" style="background:rgba(212,175,55,.92)"></div>
+          <div class="cell" data-v="Tue 4pm · 540 LYMX" style="background:rgba(212,175,55,.98)"></div>
+          <div class="cell" data-v="Tue 5pm · 410 LYMX" style="background:rgba(212,175,55,.75)"></div>
+          <div class="cell" data-v="Tue 6pm · 80 LYMX" style="background:rgba(10,132,255,.28)"></div>
+          <div class="lab">Wed</div>
+          <div class="cell" style="background:rgba(10,132,255,.4)"></div><div class="cell" style="background:rgba(10,132,255,.88)"></div><div class="cell" style="background:rgba(10,132,255,.6)"></div><div class="cell" style="background:rgba(10,132,255,.32)"></div><div class="cell" style="background:rgba(10,132,255,.22)"></div><div class="cell" style="background:rgba(10,132,255,.55)"></div><div class="cell" style="background:rgba(10,132,255,.5)"></div><div class="cell" style="background:rgba(10,132,255,.3)"></div><div class="cell" style="background:rgba(212,175,55,.88)"></div><div class="cell" style="background:rgba(212,175,55,.95)"></div><div class="cell" style="background:rgba(212,175,55,.72)"></div><div class="cell" style="background:rgba(10,132,255,.25)"></div>
+          <div class="lab">Thu</div>
+          <div class="cell" style="background:rgba(10,132,255,.42)"></div><div class="cell" style="background:rgba(10,132,255,.9)"></div><div class="cell" style="background:rgba(10,132,255,.6)"></div><div class="cell" style="background:rgba(10,132,255,.34)"></div><div class="cell" style="background:rgba(10,132,255,.24)"></div><div class="cell" style="background:rgba(10,132,255,.5)"></div><div class="cell" style="background:rgba(10,132,255,.48)"></div><div class="cell" style="background:rgba(10,132,255,.32)"></div><div class="cell" style="background:rgba(212,175,55,.88)"></div><div class="cell" style="background:rgba(212,175,55,.95)"></div><div class="cell" style="background:rgba(212,175,55,.78)"></div><div class="cell" style="background:rgba(10,132,255,.28)"></div>
+          <div class="lab">Fri</div>
+          <div class="cell" style="background:rgba(10,132,255,.55)"></div><div class="cell" style="background:rgba(10,132,255,.95)"></div><div class="cell" style="background:rgba(10,132,255,.7)"></div><div class="cell" style="background:rgba(10,132,255,.48)"></div><div class="cell" style="background:rgba(10,132,255,.4)"></div><div class="cell" style="background:rgba(10,132,255,.7)"></div><div class="cell" style="background:rgba(10,132,255,.65)"></div><div class="cell" style="background:rgba(10,132,255,.5)"></div><div class="cell" style="background:rgba(212,175,55,.95)"></div><div class="cell" style="background:rgba(212,175,55,1)"></div><div class="cell" style="background:rgba(212,175,55,.85)"></div><div class="cell" style="background:rgba(10,132,255,.42)"></div>
+          <div class="lab">Sat</div>
+          <div class="cell" style="background:rgba(10,132,255,.32)"></div><div class="cell" style="background:rgba(10,132,255,.85)"></div><div class="cell" style="background:rgba(10,132,255,.95)"></div><div class="cell" style="background:rgba(10,132,255,.78)"></div><div class="cell" style="background:rgba(10,132,255,.6)"></div><div class="cell" style="background:rgba(10,132,255,.7)"></div><div class="cell" style="background:rgba(10,132,255,.55)"></div><div class="cell" style="background:rgba(10,132,255,.42)"></div><div class="cell" style="background:rgba(10,132,255,.5)"></div><div class="cell" style="background:rgba(10,132,255,.45)"></div><div class="cell" style="background:rgba(10,132,255,.4)"></div><div class="cell" style="background:rgba(10,132,255,.3)"></div>
+          <div class="lab">Sun</div>
+          <div class="cell" style="background:rgba(10,132,255,.28)"></div><div class="cell" style="background:rgba(10,132,255,.7)"></div><div class="cell" style="background:rgba(10,132,255,.92)"></div><div class="cell" style="background:rgba(10,132,255,.85)"></div><div class="cell" style="background:rgba(10,132,255,.7)"></div><div class="cell" style="background:rgba(10,132,255,.55)"></div><div class="cell" style="background:rgba(10,132,255,.42)"></div><div class="cell" style="background:rgba(10,132,255,.32)"></div><div class="cell" style="background:rgba(10,132,255,.32)"></div><div class="cell" style="background:rgba(10,132,255,.28)"></div><div class="cell" style="background:rgba(10,132,255,.25)"></div><div class="cell" style="background:rgba(10,132,255,.22)"></div>
+        </div>
+        <div class="heat-legend">
+          <span>Less</span>
+          <span class="swatch" style="background:rgba(10,132,255,.15)"></span>
+          <span class="swatch" style="background:rgba(10,132,255,.4)"></span>
+          <span class="swatch" style="background:rgba(10,132,255,.7)"></span>
+          <span class="swatch" style="background:rgba(10,132,255,.95)"></span>
+          <span>More</span>
+          <span style="margin-left:14px">Promo</span>
+          <span class="swatch" style="background:rgba(212,175,55,.95)"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top items + Promo ROI -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-h">
+          <h2>Top items driving LYMX</h2>
+          <div class="meta">By LYMX issued · last 30 days</div>
+        </div>
+        <div class="bar-chart">
+          <div class="bar-row"><div class="lab">Latte (16oz)</div><div class="track"><div class="fill" style="width:92%"></div></div><div class="v">14,200</div></div>
+          <div class="bar-row"><div class="lab">Cold brew flight</div><div class="track"><div class="fill" style="width:74%"></div></div><div class="v">11,400</div></div>
+          <div class="bar-row"><div class="lab">Almond croissant</div><div class="track"><div class="fill" style="width:58%"></div></div><div class="v">8,900</div></div>
+          <div class="bar-row"><div class="lab">Drip coffee</div><div class="track"><div class="fill" style="width:48%"></div></div><div class="v">7,400</div></div>
+          <div class="bar-row"><div class="lab">Avocado toast</div><div class="track"><div class="fill" style="width:42%"></div></div><div class="v">6,500</div></div>
+          <div class="bar-row"><div class="lab">Espresso</div><div class="track"><div class="fill" style="width:36%"></div></div><div class="v">5,500</div></div>
+          <div class="bar-row"><div class="lab">Chai latte</div><div class="track"><div class="fill" style="width:30%"></div></div><div class="v">4,600</div></div>
+          <div class="bar-row"><div class="lab">Catering orders</div><div class="track"><div class="fill green" style="width:28%"></div></div><div class="v">4,200</div></div>
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.55">Catering orders punch above their weight on revenue — small volume but high-ticket. Worth a B2B email push.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h2>Promo ROI</h2>
+          <div class="meta">Cost per net new repeat customer</div>
+        </div>
+        <div class="promo-roi">
+          <div class="pr-card">
+            <div class="nm">⏰ Happy Hour 2×</div>
+            <div class="desc">Tue–Fri 3–6 PM · ongoing</div>
+            <div class="stats">
+              <div><div class="v green">$1.42</div><div class="l">Cost / repeat</div></div>
+              <div><div class="v">+47</div><div class="l">Net new repeat</div></div>
+            </div>
+          </div>
+          <div class="pr-card">
+            <div class="nm">⭐ First-time bonus 5×</div>
+            <div class="desc">Always-on · auto-detect first scan</div>
+            <div class="stats">
+              <div><div class="v green">$1.24</div><div class="l">Cost / repeat</div></div>
+              <div><div class="v">+9 / 14</div><div class="l">Returned 30d</div></div>
+            </div>
+          </div>
+          <div class="pr-card">
+            <div class="nm">🎉 Earth Day 3×</div>
+            <div class="desc">Apr 22 · all day · ended</div>
+            <div class="stats">
+              <div><div class="v">$2.76</div><div class="l">Cost / repeat</div></div>
+              <div><div class="v">+18</div><div class="l">New customers</div></div>
+            </div>
+          </div>
+          <div class="pr-card">
+            <div class="nm">🥐 April Pastry Push</div>
+            <div class="desc">Apr 1–14 · 2× on pastries</div>
+            <div class="stats">
+              <div><div class="v green">$1.90</div><div class="l">Cost / repeat</div></div>
+              <div><div class="v">35×</div><div class="l">Revenue ROI</div></div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.55">First-time bonus has the lowest cost per acquired repeat customer. Worth doubling down on it before increasing the base rate.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>LYMX Business · <a href="biz-dashboard.html">Dashboard</a> · <a href="pos.html">POS</a> · <a href="settlement.html">Settlement</a> · <a href="support.html">Support</a></div>
+    <div style="margin-top:8px;font-size:12px;color:#5b6472">© <span id="yr"></span> LYMX. Analytics shown are illustrative for prototype review.</div>
+  </div>
+</footer>
+<script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+</body>
+</html>

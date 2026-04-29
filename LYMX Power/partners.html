@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Partner directory — meet the recruiters building the LYMX network in your city." />
+<title>Partner directory · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://getlymx.com/partners" />
+<meta property="og:title" content="LYMX Partner directory" />
+<meta property="og:description" content="Meet the LYMX Partners recruiting Businesses in your city." />
+<meta property="og:image" content="https://getlymx.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="LYMX" />
+<meta name="twitter:card" content="summary_large_image" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1180px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{background:#fff;border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px;max-width:1200px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--ink)}
+  .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--ink-2)}
+  .nav-cta{display:flex;gap:10px;align-items:center}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:10px;font-weight:700;font-size:14px;border:1px solid transparent;cursor:pointer;text-decoration:none;font-family:inherit}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .hero{padding:48px 0 30px;background:#fff;border-bottom:1px solid var(--line);text-align:center}
+  .hero .pre{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-2);margin-bottom:14px;background:rgba(10,132,255,.08);padding:5px 12px;border-radius:99px}
+  .hero h1{margin:0;font-size:36px;font-weight:800;letter-spacing:-.015em}
+  .hero .lede{font-size:15.5px;color:var(--muted);max-width:560px;margin:14px auto 0;line-height:1.6}
+
+  /* Stats strip */
+  .strip{padding:24px 0;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .strip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;text-align:center}
+  @media(max-width:680px){.strip-grid{grid-template-columns:repeat(2,1fr)}}
+  .strip-grid .v{font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .strip-grid .v.gold{color:var(--gold)}
+  .strip-grid .l{font-size:11.5px;color:var(--muted);margin-top:3px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+
+  /* Filters */
+  .filters{padding:20px 0;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+  .filters-inner{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .search{flex:1;min-width:220px;padding:10px 14px;font-size:14.5px;border:1.5px solid var(--line);border-radius:10px;font-family:inherit}
+  .search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:7px 13px;background:#fff;border:1px solid var(--line);border-radius:99px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .ct{font-size:11px;font-weight:800;margin-left:4px;color:inherit;opacity:.65}
+
+  /* Partner cards grid */
+  .page{padding:36px 0 56px}
+  .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:880px){.pgrid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.pgrid{grid-template-columns:1fr}}
+
+  .pcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;display:block;transition:.15s;color:var(--ink);position:relative}
+  .pcard:hover{border-color:var(--ink-2);transform:translateY(-2px);box-shadow:var(--shadow)}
+  .pcard.founding{border-color:rgba(212,175,55,.5);background:linear-gradient(180deg,rgba(245,209,114,.04),#fff)}
+  .pcard .badge{position:absolute;top:10px;right:10px;background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.05em;padding:3px 8px;border-radius:99px}
+  .pcard .top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .pcard .av{width:54px;height:54px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;flex-shrink:0}
+  .pcard .top .info{flex:1;min-width:0}
+  .pcard .nm{font-weight:800;font-size:15.5px;letter-spacing:-.005em}
+  .pcard .city{font-size:12.5px;color:var(--muted);margin-top:1px}
+  .pcard .tier{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;padding:1px 7px;border-radius:4px;margin-top:5px;text-transform:uppercase}
+  .pcard .tier.bronze{background:rgba(176,113,46,.16);color:#8a5119}
+  .pcard .tier.silver{background:rgba(120,128,140,.16);color:#4a5260}
+  .pcard .tier.gold{background:rgba(212,175,55,.18);color:#86670c}
+  .pcard .tier.platinum{background:rgba(128,90,213,.16);color:#5d3aa8}
+
+  .pcard .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:14px;border-top:1px solid var(--line);margin-bottom:12px}
+  .pcard .stats .s{text-align:center}
+  .pcard .stats .v{font-size:18px;font-weight:800;letter-spacing:-.005em}
+  .pcard .stats .l{font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-top:2px}
+  .pcard .cta{display:block;text-align:center;padding:9px;background:var(--bg-soft);border:1px solid var(--line);border-radius:9px;font-weight:800;font-size:13px;color:var(--ink-2);transition:.15s}
+  .pcard:hover .cta{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* CTA at bottom */
+  .final{padding:48px 0;text-align:center;background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;position:relative;overflow:hidden}
+  .final::after{content:"";position:absolute;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);right:-120px;top:-120px;pointer-events:none}
+  .final h2{margin:0;font-size:26px;font-weight:800;color:#fff;position:relative}
+  .final p{margin:12px auto 22px;font-size:15px;color:#c6ccd4;max-width:480px;position:relative}
+  .final .cta-btn{background:#f5d172;color:var(--ink);padding:12px 22px;border-radius:11px;font-weight:800;font-size:14px;text-decoration:none;display:inline-block;position:relative}
+  .final .cta-btn:hover{background:#fff}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center}
+  footer a{color:#c6ccd4;margin:0 10px}
+
+  .empty{padding:48px 24px;text-align:center;color:var(--muted);grid-column:1 / -1}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">LYMX</a>
+    <nav class="nav-links">
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="business.html">For Business</a>
+      <a href="founding-25.html">Founding 25</a>
+      <a href="partners.html" style="color:var(--accent);font-weight:700">Partners</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-primary" href="partner-signup.html">Become a Partner →</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="pre">★ Independent recruiters</div>
+    <h1>The LYMX Partner directory</h1>
+    <p class="lede">Partners are independent recruiters building the LYMX network in their cities. Search the directory, find a Partner near you, and start a conversation.</p>
+  </div>
+</section>
+
+<section class="strip">
+  <div class="wrap strip-grid">
+    <div><div class="v">10</div><div class="l">Active Partners</div></div>
+    <div><div class="v gold">4</div><div class="l">Founding 25 qualified</div></div>
+    <div><div class="v">13</div><div class="l">Businesses brought in</div></div>
+    <div><div class="v">3</div><div class="l">Cities represented</div></div>
+  </div>
+</section>
+
+<section class="filters">
+  <div class="wrap filters-inner">
+    <input class="search" id="q" type="text" placeholder="Search by name or city…" oninput="render()" />
+    <div class="chips">
+      <button class="chip on" data-f="all" onclick="setFilter('all', this)">All <span class="ct" id="ct-all">10</span></button>
+      <button class="chip" data-f="founding" onclick="setFilter('founding', this)">Founding 25 <span class="ct" id="ct-founding">4</span></button>
+      <button class="chip" data-f="platinum" onclick="setFilter('platinum', this)">Platinum</button>
+      <button class="chip" data-f="gold" onclick="setFilter('gold', this)">Gold</button>
+      <button class="chip" data-f="silver" onclick="setFilter('silver', this)">Silver</button>
+      <button class="chip" data-f="bronze" onclick="setFilter('bronze', this)">Bronze</button>
+    </div>
+  </div>
+</section>
+
+<main class="page">
+  <div class="wrap">
+    <div class="pgrid" id="grid"></div>
+  </div>
+</main>
+
+<section class="final">
+  <div class="wrap">
+    <h2>Want to be in this directory?</h2>
+    <p>Apply to become a LYMX Partner. Recruit Businesses to the network and earn cash + LYMX commissions across 4 generations of your tree.</p>
+    <a class="cta-btn" href="partner-signup.html">Apply as a Partner →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>© <span id="yr"></span> LYMX · <a href="why-lymx.html">Why LYMX</a> · <a href="business.html">For Business</a> · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  const partners = [
+    {id:'kenny-lin',  name:'Kenny Lin',     city:'Las Vegas, NV',    tier:'gold',     direct:12, tree:28, founding:true,  av:'KL', avBg:'linear-gradient(135deg,#d4af37,#b88a2e)'},
+    {id:'mike-chen',  name:'Mike Chen',     city:'Las Vegas, NV',    tier:'gold',     direct:8,  tree:14, founding:true,  av:'MC', avBg:'linear-gradient(135deg,#0a84ff,#0050c7)'},
+    {id:'sarah-lee',  name:'Sarah Lee',     city:'Henderson, NV',    tier:'silver',   direct:5,  tree:8,  founding:true,  av:'SL', avBg:'linear-gradient(135deg,#13a26b,#0d7d51)'},
+    {id:'lisa-park',  name:'Lisa Park',     city:'Las Vegas, NV',    tier:'gold',     direct:6,  tree:10, founding:true,  av:'LP', avBg:'linear-gradient(135deg,#8b5cf6,#6d28d9)'},
+    {id:'tom-vega',   name:'Tom Vega',      city:'Henderson, NV',    tier:'silver',   direct:3,  tree:5,  founding:false, av:'TV', avBg:'linear-gradient(135deg,#ef4444,#dc2626)'},
+    {id:'jordan-faye',name:'Jordan Faye',   city:'Las Vegas, NV',    tier:'bronze',   direct:2,  tree:2,  founding:false, av:'JF', avBg:'linear-gradient(135deg,#f59e0b,#d97706)'},
+    {id:'nina-patel', name:'Nina Patel',    city:'Las Vegas, NV',    tier:'silver',   direct:4,  tree:7,  founding:false, av:'NP', avBg:'linear-gradient(135deg,#10b981,#059669)'},
+    {id:'chris-vega', name:'Chris Vega',    city:'Las Vegas, NV',    tier:'bronze',   direct:1,  tree:1,  founding:false, av:'CV', avBg:'linear-gradient(135deg,#0891b2,#0e7490)'},
+    {id:'maya-cole',  name:'Maya Cole',     city:'Las Vegas, NV',    tier:'bronze',   direct:1,  tree:1,  founding:false, av:'MC', avBg:'linear-gradient(135deg,#a01644,#6e0e2f)'},
+    {id:'alex-kim',   name:'Alex Kim',      city:'Las Vegas, NV',    tier:'platinum', direct:14, tree:42, founding:false, av:'AK', avBg:'linear-gradient(135deg,#7c3aed,#5b21b6)'},
+  ];
+
+  let currentFilter = 'all';
+
+  function setFilter(f, btn){
+    currentFilter = f;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+    btn.classList.add('on');
+    render();
+  }
+
+  function render(){
+    const q = document.getElementById('q').value.trim().toLowerCase();
+    let rows = partners;
+    if (currentFilter === 'founding') rows = rows.filter(p => p.founding);
+    else if (['platinum','gold','silver','bronze'].includes(currentFilter)) rows = rows.filter(p => p.tier === currentFilter);
+    if (q) rows = rows.filter(p => (p.name + ' ' + p.city).toLowerCase().includes(q));
+
+    rows.sort((a,b) => b.direct - a.direct);
+
+    const grid = document.getElementById('grid');
+    if (rows.length === 0){
+      grid.innerHTML = '<div class="empty">No Partners match those filters.</div>';
+      return;
+    }
+    grid.innerHTML = rows.map(p => `
+      <a class="pcard ${p.founding ? 'founding' : ''}" href="${p.id === 'kenny-lin' ? 'partner-profile.html' : 'partner-profile.html'}">
+        ${p.founding ? '<div class="badge">★ Founding</div>' : ''}
+        <div class="top">
+          <div class="av" style="background:${p.avBg}">${p.av}</div>
+          <div class="info">
+            <div class="nm">${p.name}</div>
+            <div class="city">${p.city}</div>
+            <div class="tier ${p.tier}">${p.tier}</div>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="s"><div class="v">${p.direct}</div><div class="l">Direct</div></div>
+          <div class="s"><div class="v">${p.tree}</div><div class="l">Tree size</div></div>
+        </div>
+        <div class="cta">View profile →</div>
+      </a>
+    `).join('');
+  }
+
+  render();
+</script>
+</body>
+</html>

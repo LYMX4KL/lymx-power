@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — manage email templates sent to customers, Businesses, and Partners. Edit copy, preview with variables, view send stats." />
+<title>Email templates · LYMX Admin</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .page{padding:32px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
+
+  /* Strip */
+  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+  @media(max-width:1000px){.strip{grid-template-columns:repeat(2,1fr)}}
+  .stat-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .stat-card .lab{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}
+  .stat-card .v{font-size:24px;font-weight:800;letter-spacing:-.01em;line-height:1.1}
+  .stat-card .v.green{color:var(--ok)}
+  .stat-card .sub{font-size:12px;color:var(--muted);margin-top:5px}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}
+  @media(max-width:1000px){.layout{grid-template-columns:1fr}}
+
+  /* Templates list */
+  .templates{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;position:sticky;top:84px;max-height:calc(100vh - 110px);overflow-y:auto}
+  .tpl-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .tpl-head h2{margin:0;font-size:15px;font-weight:800}
+  .tpl-head .ct{font-size:12px;color:var(--muted)}
+
+  .tpl-cat{padding:8px 18px 4px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:800;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .tpl{padding:12px 18px;border-bottom:1px solid var(--line);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;transition:.1s}
+  .tpl:hover{background:var(--bg-soft)}
+  .tpl.on{background:rgba(10,132,255,.06);border-left:3px solid var(--accent);padding-left:15px}
+  .tpl .body .nm{font-weight:700;font-size:13.5px}
+  .tpl .body .desc{font-size:11.5px;color:var(--muted);margin-top:1px;line-height:1.4}
+  .tpl .stat{text-align:right;flex-shrink:0}
+  .tpl .stat .ct{font-weight:800;font-size:13px;color:var(--ink-2)}
+  .tpl .stat .lab{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .tpl .audience{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:4px;margin-bottom:3px}
+  .audience.customer{background:rgba(10,132,255,.12);color:var(--accent-2)}
+  .audience.business{background:rgba(212,175,55,.18);color:#86670c}
+  .audience.partner{background:rgba(128,90,213,.14);color:#5d3aa8}
+  .audience.system{background:rgba(91,100,114,.14);color:var(--ink-2)}
+
+  /* Editor */
+  .editor{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px}
+  .editor-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+  .editor-head h2{margin:0;font-size:18px;font-weight:800}
+  .editor-head .meta{font-size:12.5px;color:var(--muted)}
+  .editor-actions{display:flex;gap:8px}
+
+  .field{margin-bottom:16px}
+  label{display:block;font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px}
+  .input,textarea,select{width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:9px;font-size:14.5px;font-weight:500;background:#fff;color:var(--ink);font-family:inherit}
+  textarea{resize:vertical;font-family:'SF Mono',Menlo,monospace;font-size:13.5px;line-height:1.6}
+  .input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+
+  /* Variables panel */
+  .vars{background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:14px 0}
+  .vars-h{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:8px}
+  .vars-list{display:flex;gap:6px;flex-wrap:wrap}
+  .var-tag{background:#fff;border:1px solid var(--line);font-family:'SF Mono',Menlo,monospace;font-size:11.5px;font-weight:700;color:var(--accent-2);padding:3px 8px;border-radius:6px;cursor:pointer}
+  .var-tag:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  /* Preview */
+  .preview{background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;padding:0;margin-top:18px;overflow:hidden}
+  .preview-h{display:flex;justify-content:space-between;padding:10px 16px;background:#fff;border-bottom:1px solid var(--line);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .preview-frame{padding:24px 28px;background:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.65;color:var(--ink-2);border-bottom:1px solid var(--line)}
+  .preview-frame strong{color:var(--ink)}
+  .preview-meta{padding:10px 16px;font-size:12px;color:var(--muted);background:var(--bg-soft);display:flex;gap:14px}
+  .preview-meta strong{color:var(--ink-2)}
+
+  /* Buttons */
+  .btn{padding:9px 16px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid transparent;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  .btn-ghost{background:#fff;border-color:var(--line);color:var(--ink-2)}
+  .btn-ghost:hover{border-color:var(--ink-2)}
+  .btn-primary{background:var(--ink);color:#fff;border:0}
+  .btn-primary:hover{background:#000}
+  .btn-test{background:rgba(19,162,107,.12);color:var(--ok);border:0}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:14px 22px;border-radius:11px;font-weight:700;font-size:14.5px;box-shadow:var(--shadow);z-index:300;display:none}
+  .toast.on{display:block;animation:up .3s ease-out}
+  .toast.success{background:var(--ok)}
+  @keyframes up{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:40px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Admin</span>
+    </div>
+    <nav class="nav-links">
+      <a href="commission-backend.html">Commissions</a>
+      <a href="admin-promos.html">Promos</a>
+      <a href="admin-businesses.html">Businesses</a>
+      <a href="admin-customers.html">Customers</a>
+      <a href="admin-reviews.html">Reviews</a>
+      <a href="admin-emails.html" class="on">Emails</a>
+    </nav>
+    <div class="admin-avatar">KL</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>Email templates</h1>
+        <p>Manage every email LYMX sends. Edit copy, swap variables, send a test, view delivery stats.</p>
+      </div>
+    </div>
+
+    <div class="strip">
+      <div class="stat-card">
+        <div class="lab">Active templates</div>
+        <div class="v">14</div>
+        <div class="sub">3 customer · 4 business · 3 partner · 4 system</div>
+      </div>
+      <div class="stat-card">
+        <div class="lab">Sent last 30 days</div>
+        <div class="v">8,420</div>
+        <div class="sub">+12% vs prior period</div>
+      </div>
+      <div class="stat-card">
+        <div class="lab">Delivery rate</div>
+        <div class="v green">99.2%</div>
+        <div class="sub">Above industry avg of 95%</div>
+      </div>
+      <div class="stat-card">
+        <div class="lab">Open rate (transactional)</div>
+        <div class="v">61%</div>
+        <div class="sub">Receipts &amp; settlement statements</div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- TEMPLATES LIST -->
+      <aside class="templates">
+        <div class="tpl-head">
+          <h2>All templates</h2>
+          <div class="ct">14</div>
+        </div>
+
+        <div class="tpl-cat">Customer (3)</div>
+        <div class="tpl on" onclick="select(this, 'cust-welcome')">
+          <div class="body">
+            <div class="audience customer">Customer</div>
+            <div class="nm">Welcome to LYMX</div>
+            <div class="desc">Sent on signup with 100 LYMX bonus reveal</div>
+          </div>
+          <div class="stat"><div class="ct">847</div><div class="lab">/30d</div></div>
+        </div>
+        <div class="tpl" onclick="select(this, 'cust-receipt')">
+          <div class="body">
+            <div class="audience customer">Customer</div>
+            <div class="nm">Transaction receipt</div>
+            <div class="desc">After every earn / redemption</div>
+          </div>
+          <div class="stat"><div class="ct">3,210</div><div class="lab">/30d</div></div>
+        </div>
+        <div class="tpl" onclick="select(this, 'cust-referral')">
+          <div class="body">
+            <div class="audience customer">Customer</div>
+            <div class="nm">Friend referral confirmed</div>
+            <div class="desc">When a referred friend transacts</div>
+          </div>
+          <div class="stat"><div class="ct">42</div><div class="lab">/30d</div></div>
+        </div>
+
+        <div class="tpl-cat">Business (4)</div>
+        <div class="tpl" onclick="select(this, 'biz-welcome')">
+          <div class="body">
+            <div class="audience business">Business</div>
+            <div class="nm">Activation confirmation</div>
+            <div class="desc">After Business completes onboarding + $850 charge</div>
+          </div>
+          <div class="stat"><div class="ct">5</div><div class="lab">/30d</div></div>
+        </div>
+        <div class="tpl" onclick="select(this, 'biz-blast')">
+          <div class="body">
+            <div class="audience business">Business</div>
+            <div class="nm">Launch email blast (auto)</div>
+            <div class="desc">Sent to all local LYMX customers when a new Business activates</div>
+          </div>
+          <div class="stat"><div class="ct">5</div><div class="lab">/30d</div></div>
+        </div>
+        <div class="tpl" onclick="select(this, 'biz-settlement')">
+          <div class="body">
+            <div class="audience business">Business</div>
+            <div class="nm">Monthly settlement statement</div>
+            <div class="desc">1st of each month — net amount owed</div>
+          </div>
+          <div class="stat"><div class="ct">12</div><div class="lab">/30d</div></div>
+        </div>
+        <div class="tpl" onclick="select(this, 'biz-pending')">
+          <div class="body">
+            <div class="audience business">Business</div>
+            <div class="nm">Application received</div>
+            <div class="desc">Sent after Business application, before approval</div>
+          </div>
+          <div class="stat"><div class="ct">3</div><div class="lab">/30d</div></div>
+        </div>
+
+        <div class="tpl-cat">Partner (3)</div>
+        <div class="tpl" onclick="select(this, 'par-approved')">
+          <div class="body">
+            <div class="audience partner">Partner</div>
+            <div class="nm">Application approved</div>
+            <div class="desc">Welcome + onboarding call link + W-9</div>
+          </div>
+          <div class="stat"><div class="ct">8</div><div class="lab">/30d</div></div>
+        </div>
+        <div class="tpl" onclick="select(this, 'par-payout')">
+          <div class="body">
+            <div class="audience partner">Partner</div>
+            <div class="nm">Monthly payout sent</div>
+            <div class="desc">5th of each month — ACH details</div>
+          </div>
+          <div class="stat"><div class="ct">10</div><div class="lab">/30d</div></div>
+        </div>
+        <div class="tpl" onclick="select(this, 'par-bonus')">
+          <div class="body">
+            <div class="audience partner">Partner</div>
+            <div class="nm">$500 sign-up bonus paid</div>
+            <div class="desc">Day-7 + day-30 split notifications</div>
+          </div>
+          <div class="stat"><div class="ct">10</div><div class="lab">/30d</div></div>
+        </div>
+
+        <div class="tpl-cat">System (4)</div>
+        <div class="tpl" onclick="select(this, 'sys-otp')">
+          <div class="body">
+            <div class="audience system">System</div>
+            <div class="nm">SMS verification code</div>
+            <div class="desc">6-digit OTP for sign-in</div>
+          </div>
+          <div class="stat"><div class="ct">2,140</div><div class="lab">/30d</div></div>
+        </div>
+        <div class="tpl" onclick="select(this, 'sys-pwreset')">
+          <div class="body">
+            <div class="audience system">System</div>
+            <div class="nm">Password reset</div>
+            <div class="desc">Magic link, expires in 30 min</div>
+          </div>
+          <div class="stat"><div class="ct">68</div><div class="lab">/30d</div></div>
+        </div>
+        <div class="tpl" onclick="select(this, 'sys-suspended')">
+          <div class="body">
+            <div class="audience system">System</div>
+            <div class="nm">Account suspended</div>
+            <div class="desc">Sent if admin flags account</div>
+          </div>
+          <div class="stat"><div class="ct">2</div><div class="lab">/30d</div></div>
+        </div>
+        <div class="tpl" onclick="select(this, 'sys-status')">
+          <div class="body">
+            <div class="audience system">System</div>
+            <div class="nm">Status / outage alert</div>
+            <div class="desc">For status.html subscribers</div>
+          </div>
+          <div class="stat"><div class="ct">0</div><div class="lab">/30d</div></div>
+        </div>
+      </aside>
+
+      <!-- EDITOR -->
+      <section class="editor">
+        <div class="editor-head">
+          <div>
+            <h2 id="ed-name">Welcome to LYMX</h2>
+            <div class="meta"><span class="audience customer">Customer</span> · ID: <span style="font-family:'SF Mono',Menlo,monospace">cust-welcome</span> · last edited 4 days ago</div>
+          </div>
+          <div class="editor-actions">
+            <button class="btn btn-test" onclick="sendTest()">📧 Send test</button>
+            <button class="btn btn-ghost" onclick="cancel()">Cancel</button>
+            <button class="btn btn-primary" onclick="save()">💾 Save changes</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Subject line</label>
+          <input class="input" id="subject" value="Welcome to LYMX, {{first_name}} 🎉" />
+        </div>
+
+        <div class="field">
+          <label>Preheader (preview text)</label>
+          <input class="input" id="preheader" value="Your 100 LYMX welcome bonus is in your wallet — here's how to spend it" />
+        </div>
+
+        <div class="vars">
+          <div class="vars-h">📌 Available variables — click to insert</div>
+          <div class="vars-list">
+            <span class="var-tag" onclick="insertVar('{{first_name}}')">{{first_name}}</span>
+            <span class="var-tag" onclick="insertVar('{{full_name}}')">{{full_name}}</span>
+            <span class="var-tag" onclick="insertVar('{{phone}}')">{{phone}}</span>
+            <span class="var-tag" onclick="insertVar('{{email}}')">{{email}}</span>
+            <span class="var-tag" onclick="insertVar('{{wallet_url}}')">{{wallet_url}}</span>
+            <span class="var-tag" onclick="insertVar('{{bonus_amount}}')">{{bonus_amount}}</span>
+            <span class="var-tag" onclick="insertVar('{{referrer_name}}')">{{referrer_name}}</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Email body (Markdown supported)</label>
+          <textarea id="body" rows="14"># Welcome to LYMX, {{first_name}}!
+
+Your wallet is ready, and we just dropped a **{{bonus_amount}} LYMX welcome bonus** into it.
+
+Here's what to do next:
+
+1. **Open your wallet** — [{{wallet_url}}]({{wallet_url}})
+2. **Find a LYMX Business near you** — coffee, dinner, gas, salons, EV charging — they all earn LYMX
+3. **Show your QR at checkout** — your bonus is spendable today
+
+LYMX is one credit, fixed at $0.01 each, redeemable across the entire network. No expiration, no item restrictions, no devaluation. The math is the same on day one and day 1,000.
+
+Welcome aboard.
+
+— The LYMX team
+
+---
+*This is a transactional email sent because you signed up at getlymx.com. You can update your preferences in [Settings](https://getlymx.com/customer-settings.html) anytime.*</textarea>
+        </div>
+
+        <!-- Live preview -->
+        <div class="preview">
+          <div class="preview-h">
+            <div>📧 Live preview · variables filled</div>
+            <div>Sender: hello@getlymx.com</div>
+          </div>
+          <div class="preview-frame">
+            <div style="font-size:18px;font-weight:800;margin-bottom:8px">Welcome to LYMX, Sarah! 🎉</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Your 100 LYMX welcome bonus is in your wallet — here's how to spend it</div>
+            <p>Your wallet is ready, and we just dropped a <strong>100 LYMX welcome bonus</strong> into it.</p>
+            <p>Here's what to do next:</p>
+            <ol>
+              <li><strong>Open your wallet</strong> — getlymx.com/customer-wallet</li>
+              <li><strong>Find a LYMX Business near you</strong> — coffee, dinner, gas, salons, EV charging — they all earn LYMX</li>
+              <li><strong>Show your QR at checkout</strong> — your bonus is spendable today</li>
+            </ol>
+            <p>LYMX is one credit, fixed at $0.01 each, redeemable across the entire network. No expiration, no item restrictions, no devaluation. The math is the same on day one and day 1,000.</p>
+            <p>Welcome aboard.</p>
+            <p>— The LYMX team</p>
+          </div>
+          <div class="preview-meta">
+            <div><strong>Recipient:</strong> sarah.reyes@example.com</div>
+            <div><strong>Variables filled:</strong> 4 of 4</div>
+            <div><strong>Preview rendered for:</strong> Sarah Reyes (#c1001)</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div class="wrap">
+    <div>LYMX Admin · Internal use only · All edits logged to audit trail</div>
+    <div style="margin-top:8px;font-size:11.5px;color:#5b6472">© <span id="yr"></span> LYMX. Prototype with mock data.</div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  function select(el, id){
+    document.querySelectorAll('.tpl').forEach(t => t.classList.remove('on'));
+    el.classList.add('on');
+    showToast('Switched to template · ' + id, 'success');
+    // In production this would load the template content into the editor
+  }
+
+  function insertVar(v){
+    const ta = document.getElementById('body');
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    ta.value = ta.value.slice(0, start) + v + ta.value.slice(end);
+    ta.selectionStart = ta.selectionEnd = start + v.length;
+    ta.focus();
+  }
+
+  function save(){ showToast('Template saved · changes live in 1 minute', 'success'); }
+  function cancel(){ showToast('Edits discarded'); }
+  function sendTest(){
+    const to = prompt('Send test to which email?', 'kenny@getlymx.com');
+    if (to) showToast('Test email sent to ' + to, 'success');
+  }
+
+  function showToast(msg, type){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast on ' + (type || '');
+    setTimeout(() => t.classList.remove('on'), 2400);
+  }
+</script>
+</body>
+</html>
