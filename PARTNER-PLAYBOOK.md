@@ -21,6 +21,19 @@ Six categories:
 
 ## 1. Money
 
+### The $850 Business sign-up — what your prospects are actually buying
+
+You're not selling them software. You're selling them **the launch package**:
+
+- **🚀 Top-of-getlymx.com homepage feature** for their first 30 days — alongside top-ranked Businesses
+- **📧 One-time launch email blast** sent only for them, to every existing LYMX customer in their metro (in mature metros: 100K+ ready-to-spend customers, each holding pre-funded LYMX)
+- **🎁 First 3 months Enterprise service** included (worth $597)
+- **🛠️ Activation kit**: QR signage, listing setup, onboarding call, custom welcome promo
+
+**Your closer math** when they ask "is $850 worth it":
+
+> "Your shop does ~$100K/month in volume. $20 average ticket means ~5,000 customers a month. About 70% are repeats, so ~1,500 brand-new customers walk in every month — every one of them gets LYMX issued at checkout, joining the network. After 10 Businesses join, that's 15,000 LYMX customers in your metro, each holding redeemable LYMX. Your $850 sign-up gets you a 30-day homepage feature AND an email blast directly to all of them. Replicating that with paid ads would cost thousands. The math pays back in your first week."
+
 ### Locked-in commission structure (4 layers deep)
 
 LYMX is in the business of selling LYMX promotional credit units to Businesses (at 80% of face value, when issued) and buying them back (at the same 80%, when redeemed). Partner LYMX commissions are calculated as a percentage of the unit-sale revenue LYMX earns from Businesses in the Partner's tree — we can only pay commissions out of revenue we actually earn.

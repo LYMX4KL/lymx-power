@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Partner — payout history, ACH details, 1099-NEC tax forms." />
+<title>Payouts · LYMX Partner</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://getlymx.com/partner-payouts" />
+<meta property="og:title" content="LYMX Partner Payouts" />
+<meta property="og:description" content="Your monthly ACH payouts and tax forms." />
+<meta property="og:image" content="https://getlymx.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="LYMX" />
+<meta name="twitter:card" content="summary_large_image" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(212,175,55,.16);color:#86670c;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .rep-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .page{padding:32px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:10px;font-weight:600;font-size:14.5px;border:1px solid transparent;cursor:pointer;transition:.15s;font-family:inherit}
+  .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
+  .btn-primary{background:var(--ink);color:#fff}
+
+  /* Hero */
+  .hero{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:var(--radius);padding:30px 32px;position:relative;overflow:hidden;margin-bottom:18px;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:24px;align-items:end}
+  .hero::after{content:"";position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);right:-150px;top:-150px;pointer-events:none}
+  @media(max-width:780px){.hero{grid-template-columns:1fr 1fr;gap:18px}}
+  .hero .cell{position:relative}
+  .hero .lab{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#9aa3b0;font-weight:700;margin-bottom:6px}
+  .hero .big{font-size:44px;font-weight:800;letter-spacing:-.02em;line-height:1}
+  .hero .big.gold{color:#f5d172}
+  .hero .v{font-size:22px;font-weight:800;color:#fff}
+  .hero .sub{font-size:13px;color:#9aa3b0;margin-top:5px}
+
+  /* Filter chips */
+  .head-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:14px;flex-wrap:wrap}
+  .filter-row{display:flex;gap:8px}
+  .chip{padding:7px 14px;background:#fff;border:1px solid var(--line);border-radius:99px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* Layout */
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:20px}
+  @media(max-width:1000px){.grid{grid-template-columns:1fr}}
+
+  /* Card / table */
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:0;overflow:hidden}
+  .card-h{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:18px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .card-h h2{margin:0;font-size:17px;font-weight:800}
+  .card-h .meta{font-size:13px;color:var(--muted)}
+
+  table.po{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.po th{text-align:left;padding:11px 18px;border-bottom:2px solid var(--line);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg-soft)}
+  table.po td{padding:13px 18px;border-bottom:1px solid var(--line);vertical-align:middle}
+  table.po td.right{text-align:right}
+  table.po tbody tr.parent{cursor:pointer}
+  table.po tbody tr.parent:hover{background:var(--bg-soft)}
+  table.po td .nm{font-weight:800;display:flex;align-items:center;gap:6px}
+  table.po td .sub{color:var(--muted);font-size:12px;margin-top:1px}
+  table.po td.amt{font-weight:800;color:var(--ok);text-align:right}
+  table.po td.amt.lymx{color:var(--gold)}
+  table.po td.account{color:var(--muted);font-family:'SF Mono',Menlo,monospace;font-size:12.5px}
+  .status{display:inline-block;padding:3px 9px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+  .status.scheduled{background:rgba(10,132,255,.12);color:var(--accent-2)}
+  .status.sent{background:rgba(240,160,32,.16);color:#a06a0c}
+  .status.paid{background:rgba(19,162,107,.14);color:var(--ok)}
+  .status.bounced{background:rgba(208,32,84,.14);color:#a01644}
+
+  /* Detail row (expandable) */
+  tr.detail{display:none;background:var(--bg-soft)}
+  tr.detail.on{display:table-row}
+  tr.detail td{padding:0}
+  .detail-inner{padding:14px 22px}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  @media(max-width:780px){.detail-grid{grid-template-columns:1fr}}
+  .detail-card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:14px 16px}
+  .detail-card .lab{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6px}
+  .detail-card .v{font-size:18px;font-weight:800}
+  .detail-card .v.green{color:var(--ok)}
+  .detail-card .v.gold{color:var(--gold)}
+  .detail-list{margin-top:8px;font-size:12.5px;color:var(--muted);line-height:1.65}
+  .detail-list strong{color:var(--ink-2)}
+
+  /* Right panel */
+  .panel{display:flex;flex-direction:column;gap:14px}
+  .panel .card{padding:20px 22px}
+  .panel h3{margin:0 0 10px;font-size:14px;font-weight:800}
+  .stat{display:flex;justify-content:space-between;padding:8px 0;font-size:13.5px;border-bottom:1px solid var(--line)}
+  .stat:last-child{border-bottom:0}
+  .stat .l{color:var(--muted)}
+  .stat .r{font-weight:800}
+  .stat .r.green{color:var(--ok)}
+  .stat .r.gold{color:var(--gold)}
+
+  .ach-card{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:var(--radius);padding:20px 22px;position:relative;overflow:hidden}
+  .ach-card::after{content:"";position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(95,209,152,.18),transparent 70%);right:-80px;top:-80px}
+  .ach-card h3{color:#fff;margin:0 0 14px;font-size:14px;position:relative}
+  .ach-card .field{font-size:12.5px;color:#9aa3b0;margin-bottom:10px;position:relative}
+  .ach-card .field strong{display:block;color:#fff;font-size:14px;font-weight:700;font-family:'SF Mono',Menlo,monospace}
+  .ach-card a{color:#5fd198;font-weight:700;font-size:13px;position:relative}
+
+  /* Tax */
+  .tax-box{background:#fff7e6;border:1px solid #f0d289;border-radius:11px;padding:14px 16px;font-size:13px;color:#7a5c0a}
+  .tax-box strong{color:#5a4308}
+  .tax-box a{color:#86670c;font-weight:700}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:14px 22px;border-radius:11px;font-weight:700;font-size:14.5px;box-shadow:var(--shadow);z-index:300;display:none}
+  .toast.on{display:block;animation:up .3s ease-out}
+  .toast.success{background:var(--ok)}
+  @keyframes up{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:30px 0;font-size:13px;text-align:center;margin-top:48px}
+  footer a{color:#c6ccd4;margin:0 10px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Partner</span>
+    </div>
+    <nav class="nav-links">
+      <a href="rep-dashboard.html">Dashboard</a>
+      <a href="projection.html">Projection</a>
+      <a href="partner-crm.html">CRM</a>
+      <a href="content-hub.html">Content</a>
+      <a href="partner-payouts.html" class="on">Payouts</a>
+    </nav>
+    <div class="rep-avatar">KL</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>Payouts</h1>
+        <p>Your monthly ACH payouts, the breakdown behind each, and your tax forms.</p>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="cell">
+        <div class="lab">Paid year-to-date</div>
+        <div class="big gold">$5,847.41</div>
+        <div class="sub">12 Direct activations · 4 monthly cycles</div>
+      </div>
+      <div class="cell">
+        <div class="lab">Next payout</div>
+        <div class="v">$1,162.91</div>
+        <div class="sub">Scheduled May 5, 2026</div>
+      </div>
+      <div class="cell">
+        <div class="lab">LYMX earned (network)</div>
+        <div class="v" style="color:#f5d172">87,200</div>
+        <div class="sub">Spendable at any LYMX Business</div>
+      </div>
+      <div class="cell">
+        <div class="lab">ACH on file</div>
+        <div class="v" style="font-family:'SF Mono',Menlo,monospace;font-size:18px">****6411</div>
+        <div class="sub">Chase · verified</div>
+      </div>
+    </div>
+
+    <div class="head-row">
+      <div class="filter-row">
+        <button class="chip on" data-f="all" onclick="setFilter('all', this)">All</button>
+        <button class="chip" data-f="2026" onclick="setFilter('2026', this)">2026</button>
+        <button class="chip" data-f="2025" onclick="setFilter('2025', this)">2025</button>
+      </div>
+      <button class="btn btn-ghost" onclick="downloadCSV()">⬇ Export CSV</button>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-h">
+          <h2>Payout history</h2>
+          <div class="meta"><span id="row-count">0</span> payouts shown</div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="po">
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th>Sent on</th>
+                <th>Account</th>
+                <th class="right">Cash</th>
+                <th class="right">LYMX</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <aside class="panel">
+        <div class="ach-card">
+          <h3>Bank details</h3>
+          <div class="field"><div>Bank</div><strong>Chase</strong></div>
+          <div class="field"><div>Routing</div><strong>****0025</strong></div>
+          <div class="field"><div>Account</div><strong>****6411</strong></div>
+          <a href="rep-dashboard.html#ach">Update bank info →</a>
+        </div>
+
+        <div class="card">
+          <h3>YTD breakdown</h3>
+          <div class="stat"><div class="l">Sign-up bonuses</div><div class="r green">$3,500.00</div></div>
+          <div class="stat"><div class="l">Direct overrides (9%)</div><div class="r green">$1,790.10</div></div>
+          <div class="stat"><div class="l">G1 / G2 / G3 overrides</div><div class="r green">$557.31</div></div>
+          <div class="stat"><div class="l">LYMX commissions</div><div class="r gold">87,200 LYMX</div></div>
+          <div class="stat" style="margin-top:6px;border-top:2px solid var(--ink);padding-top:10px"><div class="l" style="font-weight:800;color:var(--ink)">Total cash YTD</div><div class="r green" style="font-size:16px">$5,847.41</div></div>
+        </div>
+
+        <div class="tax-box">
+          <strong>📄 Tax forms</strong><br>
+          1099-NEC for 2025 is available. <a href="#" onclick="event.preventDefault();showToast('1099-NEC downloading...', true)">Download (PDF)</a><br>
+          1099-NEC for 2026 will be available by January 31, 2027.
+        </div>
+
+        <div style="font-size:11.5px;color:var(--muted);line-height:1.55">
+          Cash payouts are paid via ACH on the 5th of each month. LYMX commissions are credited the same day to your network LYMX balance and are spendable at any LYMX Business — not convertible to cash.
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div class="wrap">
+    <div>LYMX Partner · <a href="rep-dashboard.html">Dashboard</a> · <a href="projection.html">Projection</a> · <a href="content-hub.html">Content hub</a> · <a href="support.html">Support</a></div>
+    <div style="margin-top:8px;font-size:12px;color:#5b6472">© <span id="yr"></span> LYMX. Partners are independent contractors. No earnings claims.</div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // Mock payout history
+  const payouts = [
+    {period:'May 2026', year:2026, scheduled:'2026-05-05', sent:null,         cash:1162.91, lymx:18400, status:'scheduled', breakdown:{signup:1000.00, direct:90.91, gens:72.00, lymx:18400}},
+    {period:'April 2026',year:2026, scheduled:'2026-04-05', sent:'2026-04-05',cash:1340.16, lymx:22800, status:'paid',      breakdown:{signup:1000.00, direct:248.40, gens:91.76, lymx:22800}},
+    {period:'March 2026',year:2026, scheduled:'2026-03-05', sent:'2026-03-05',cash:1487.55, lymx:24600, status:'paid',      breakdown:{signup:1000.00, direct:339.40, gens:148.15, lymx:24600}},
+    {period:'February 2026',year:2026, scheduled:'2026-02-05', sent:'2026-02-05', cash:1019.70, lymx:21400, status:'paid',  breakdown:{signup:500.00, direct:357.10, gens:162.60, lymx:21400}},
+    {period:'January 2026',year:2026, scheduled:'2026-01-05', sent:'2026-01-05', cash:837.10,  lymx:0,     status:'paid',  breakdown:{signup:500.00, direct:194.91, gens:142.19, lymx:0}},
+    {period:'December 2025',year:2025, scheduled:'2025-12-05', sent:'2025-12-05', cash:240.00, lymx:0,     status:'paid',  breakdown:{signup:0, direct:178.20, gens:61.80, lymx:0}},
+    {period:'November 2025',year:2025, scheduled:'2025-11-05', sent:'2025-11-05', cash:178.20, lymx:0,     status:'paid',  breakdown:{signup:0, direct:142.56, gens:35.64, lymx:0}},
+  ];
+
+  let currentFilter = 'all';
+
+  function setFilter(f, btn){
+    currentFilter = f;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+    btn.classList.add('on');
+    render();
+  }
+
+  function fmt$(n){ return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function fmtN(n){ return n.toLocaleString(); }
+  function fmtDate(d){
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  }
+
+  function render(){
+    let rows = payouts;
+    if (currentFilter !== 'all') rows = rows.filter(p => String(p.year) === currentFilter);
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = rows.map((p, i) => `
+      <tr class="parent" onclick="toggleDetail(${i})">
+        <td><div class="nm">${p.period}</div><div class="sub">${p.lymx ? fmtN(p.lymx) + ' LYMX commissions' : 'Cash only'}</div></td>
+        <td>${fmtDate(p.sent || p.scheduled)}${p.sent ? '' : ' <span style="color:var(--muted)">(scheduled)</span>'}</td>
+        <td class="account">****6411</td>
+        <td class="amt">${fmt$(p.cash)}</td>
+        <td class="amt lymx">${p.lymx ? fmtN(p.lymx) : '—'}</td>
+        <td><span class="status ${p.status}">${p.status}</span></td>
+      </tr>
+      <tr class="detail" id="d-${i}">
+        <td colspan="6">
+          <div class="detail-inner">
+            <div class="detail-grid">
+              <div class="detail-card">
+                <div class="lab">Sign-up bonuses</div>
+                <div class="v green">${fmt$(p.breakdown.signup)}</div>
+                <div class="detail-list">${p.breakdown.signup > 0 ? `<strong>${Math.round(p.breakdown.signup/250)}</strong> half-payments at $250 each (day-7 + day-30)` : 'None this period'}</div>
+              </div>
+              <div class="detail-card">
+                <div class="lab">Direct + generation overrides</div>
+                <div class="v green">${fmt$(p.breakdown.direct + p.breakdown.gens)}</div>
+                <div class="detail-list">Direct (9%): <strong>${fmt$(p.breakdown.direct)}</strong><br>G1/G2/G3 overrides: <strong>${fmt$(p.breakdown.gens)}</strong></div>
+              </div>
+              <div class="detail-card">
+                <div class="lab">LYMX commissions</div>
+                <div class="v gold">${fmtN(p.breakdown.lymx)} LYMX</div>
+                <div class="detail-list">Network-spendable. ~${fmt$(p.breakdown.lymx * 0.01)} face value at LYMX Businesses.</div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+    document.getElementById('row-count').textContent = rows.length;
+  }
+
+  function toggleDetail(i){
+    document.getElementById('d-'+i).classList.toggle('on');
+  }
+
+  function downloadCSV(){
+    let csv = 'Period,Scheduled,Sent,Cash,LYMX,Status,Sign-up,Direct,Gen overrides,LYMX comm\n';
+    payouts.forEach(p => {
+      csv += [p.period, p.scheduled, p.sent || '', p.cash.toFixed(2), p.lymx, p.status, p.breakdown.signup.toFixed(2), p.breakdown.direct.toFixed(2), p.breakdown.gens.toFixed(2), p.breakdown.lymx].join(',') + '\n';
+    });
+    const blob = new Blob([csv], {type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'lymx-partner-payouts.csv';
+    a.click();
+    showToast('Payout history exported', true);
+  }
+
+  function showToast(msg, success){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast on ' + (success ? 'success' : '');
+    setTimeout(()=> t.classList.remove('on'), 2400);
+  }
+
+  render();
+</script>
+</body>
+</html>
