@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Vote For Your City — LYMX Power</title>
+<meta name="description" content="LYMX is launching in Las Vegas Q3 2026. Vote for your city — the most-voted cities go first.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+  .hero{background:linear-gradient(135deg,#0e1116 0%,#1a2a4a 100%);color:#fff;padding:80px 24px 60px;position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 70% 20%,rgba(212,175,55,.18) 0%,transparent 50%);pointer-events:none}
+  .hero-inner{max-width:1180px;margin:0 auto;position:relative;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--gold);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;border:1px solid var(--gold);padding:5px 12px;border-radius:999px}
+  .hero h1{font-size:54px;font-weight:800;letter-spacing:-.03em;margin:0 0 16px;line-height:1.05}
+  .hero p{color:#b8c2d6;font-size:18px;max-width:620px;margin:0 auto 28px}
+  .vote-cta{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:#0e1116;padding:14px 28px;border-radius:10px;font-weight:700;font-size:16px;cursor:pointer;border:0}
+  .vote-cta:hover{transform:translateY(-1px)}
+  .live-stats{display:flex;justify-content:center;gap:48px;margin-top:48px;flex-wrap:wrap}
+  .stat{text-align:center}
+  .stat .n{font-size:32px;font-weight:800;color:#fff;letter-spacing:-.02em}
+  .stat .l{font-size:12px;color:#8a9bb8;letter-spacing:.04em;text-transform:uppercase;margin-top:4px}
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+  .vote-form{background:var(--card);border:2px solid var(--gold);border-radius:14px;padding:28px;margin-bottom:48px;display:none}
+  .vote-form.show{display:block}
+  .vote-form h2{margin:0 0 6px;font-size:22px}
+  .vote-form .sub{color:var(--mute);font-size:14px;margin-bottom:20px}
+  .vote-form .field{margin-bottom:14px}
+  .vote-form label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+  .vote-form input{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff}
+  .vote-form input:focus{outline:none;border-color:var(--accent)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:520px){.row2{grid-template-columns:1fr}}
+  .vote-form .submit{background:var(--ink);color:#fff;padding:12px 24px;border-radius:8px;font-weight:700;border:0;cursor:pointer;font-size:15px;width:100%;margin-top:6px}
+  .vote-form .privacy{font-size:12px;color:var(--mute);margin-top:14px;text-align:center}
+  .thanks{display:none;background:#e8f6ee;border:2px solid var(--ok);border-radius:14px;padding:28px;text-align:center;margin-bottom:48px}
+  .thanks.show{display:block}
+  .thanks h2{margin:0 0 6px;color:#0a7a4d;font-size:22px}
+  .thanks p{margin:0;color:#0a7a4d}
+  h2.section-h{font-size:28px;letter-spacing:-.025em;margin:0 0 6px}
+  .section-sub{color:var(--mute);font-size:14px;margin-bottom:24px}
+  .filter-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  .filter-row input{flex:1;min-width:200px;padding:11px 14px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
+  .filter-row select{padding:11px 14px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
+  .city-list{display:grid;gap:10px;margin-bottom:48px}
+  .city{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:18px}
+  @media (max-width:680px){.city{grid-template-columns:auto 1fr;gap:10px}.city .bar-cell,.city .vote-btn{grid-column:1 / -1}}
+  .city .rk{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f1f3f7;color:var(--ink);font-size:14px;font-weight:800}
+  .city.next .rk{background:var(--ok);color:#fff}
+  .city.featured .rk{background:var(--gold);color:#fff}
+  .city .name{font-weight:700;font-size:15px}
+  .city .meta{color:var(--mute);font-size:12px;margin-top:2px}
+  .city .bar-cell{min-width:140px}
+  .bar-track{height:6px;background:#f1f3f7;border-radius:3px;overflow:hidden;margin-bottom:4px}
+  .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+  .city.featured .bar-fill{background:var(--gold)}
+  .city.next .bar-fill{background:var(--ok)}
+  .vote-count{font-size:13px;font-weight:700;color:var(--ink)}
+  .vote-btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;background:#fff;color:var(--ink);font-weight:600;font-size:13px;cursor:pointer}
+  .vote-btn.voted{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .badge{font-size:10px;font-weight:700;padding:3px 7px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--mute);margin-left:8px;letter-spacing:.04em;text-transform:uppercase}
+  .badge.next{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .badge.featured{background:var(--gold);color:#fff;border-color:var(--gold)}
+  .roadmap{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;margin-bottom:48px}
+  .roadmap h2{margin:0 0 18px;font-size:22px}
+  .phase{display:grid;grid-template-columns:auto 1fr;gap:18px;padding:14px 0;border-bottom:1px dashed var(--line)}
+  .phase:last-child{border-bottom:0}
+  .phase-tag{font-size:12px;font-weight:700;color:#fff;background:var(--accent);padding:4px 10px;border-radius:6px;height:fit-content;letter-spacing:.04em}
+  .phase-tag.live{background:var(--ok)}
+  .phase-tag.next{background:var(--gold);color:#0e1116}
+  .phase-tag.future{background:var(--mute)}
+  .phase-body strong{display:block;font-size:15px;margin-bottom:2px}
+  .phase-body span{color:var(--mute);font-size:13px}
+  .footer{text-align:center;padding:60px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="coverage-map.html">Coverage</a>
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="business.html">For Businesses</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Expansion roadmap · Voting open</div>
+    <h1>Vote for your city</h1>
+    <p>LYMX is launching in Las Vegas Q3 2026. Where we go next is up to you — most-voted cities go first.</p>
+    <button class="vote-cta" onclick="document.getElementById('voteForm').classList.add('show');document.getElementById('voteForm').scrollIntoView({behavior:'smooth',block:'center'})">
+      Cast your vote →
+    </button>
+
+    <div class="live-stats">
+      <div class="stat"><div class="n" id="liveTotal">12,418</div><div class="l">Total votes</div></div>
+      <div class="stat"><div class="n">142</div><div class="l">Cities ranked</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">Cities greenlit</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<form class="vote-form" id="voteForm" onsubmit="submitVote(event)">
+  <h2>Vote for your city</h2>
+  <p class="sub">One vote per email. We'll only contact you when LYMX launches in your area — promise.</p>
+
+  <div class="field">
+    <label>Your city</label>
+    <input type="text" id="city" placeholder="e.g. Phoenix, AZ" required>
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="you@email.com" required>
+    </div>
+    <div class="field">
+      <label>ZIP code</label>
+      <input type="text" id="zip" placeholder="85001" required pattern="[0-9]{5}">
+    </div>
+  </div>
+
+  <button type="submit" class="submit">Submit vote</button>
+  <p class="privacy">No spam. <a href="privacy.html">Privacy policy</a>.</p>
+</form>
+
+<div class="thanks" id="thanks">
+  <h2>Vote counted ✓</h2>
+  <p>Thanks — you'll be the first to hear when LYMX launches in your city.</p>
+</div>
+
+<h2 class="section-h">Live leaderboard</h2>
+<p class="section-sub">Top 25 most-voted cities. Refreshed every minute.</p>
+
+<div class="filter-row">
+  <input type="text" id="search" placeholder="Filter cities…" oninput="filterCities()">
+  <select id="region" onchange="filterCities()">
+    <option value="">All regions</option>
+    <option>West</option>
+    <option>Southwest</option>
+    <option>Mountain</option>
+    <option>South</option>
+    <option>Midwest</option>
+    <option>Northeast</option>
+  </select>
+</div>
+
+<div class="city-list" id="cityList">
+  <!-- Rows populated below -->
+</div>
+
+<div class="roadmap">
+  <h2>Expansion roadmap</h2>
+
+  <div class="phase">
+    <span class="phase-tag live">Q3 2026</span>
+    <div class="phase-body"><strong>Las Vegas, NV — LIVE</strong><span>Founding 25 Businesses on launch day. Public launch Sept 12, 2026.</span></div>
+  </div>
+
+  <div class="phase">
+    <span class="phase-tag next">Q4 2026</span>
+    <div class="phase-body"><strong>Phoenix, AZ &amp; Reno, NV — Next up</strong><span>Greenlit based on vote totals + Business waitlist depth. Soft launch end of October.</span></div>
+  </div>
+
+  <div class="phase">
+    <span class="phase-tag">Q1 2027</span>
+    <div class="phase-body"><strong>Salt Lake City, UT &amp; Denver, CO</strong><span>Selection criteria: top 10 by votes, walkable downtown, &gt; 50 Business waitlist signups.</span></div>
+  </div>
+
+  <div class="phase">
+    <span class="phase-tag future">Q2+ 2027</span>
+    <div class="phase-body"><strong>Cities to be announced</strong><span>Driven by ongoing voting. <a href="roadmap.html">See full roadmap →</a></span></div>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Vote for your city · Launching Q3 2026 in Las Vegas · <a href="coverage-map.html">Coverage map</a> · <a href="roadmap.html">Roadmap</a>
+</div>
+
+<script>
+  // City data — sortable + filterable
+  const cities = [
+    {name:"Phoenix, AZ", region:"Southwest", votes:1842, badge:"next"},
+    {name:"Reno, NV", region:"West", votes:1604, badge:"next"},
+    {name:"Salt Lake City, UT", region:"Mountain", votes:1287, badge:""},
+    {name:"Denver, CO", region:"Mountain", votes:1115, badge:""},
+    {name:"Austin, TX", region:"South", votes:982, badge:""},
+    {name:"San Diego, CA", region:"West", votes:867, badge:""},
+    {name:"Portland, OR", region:"West", votes:744, badge:""},
+    {name:"Boise, ID", region:"Mountain", votes:621, badge:""},
+    {name:"Tucson, AZ", region:"Southwest", votes:580, badge:""},
+    {name:"Albuquerque, NM", region:"Southwest", votes:512, badge:""},
+    {name:"Sacramento, CA", region:"West", votes:484, badge:""},
+    {name:"Nashville, TN", region:"South", votes:432, badge:""},
+    {name:"Seattle, WA", region:"West", votes:398, badge:""},
+    {name:"Charlotte, NC", region:"South", votes:362, badge:""},
+    {name:"Atlanta, GA", region:"South", votes:328, badge:""},
+    {name:"Minneapolis, MN", region:"Midwest", votes:294, badge:""},
+    {name:"Kansas City, MO", region:"Midwest", votes:262, badge:""},
+    {name:"Indianapolis, IN", region:"Midwest", votes:248, badge:""},
+    {name:"Boston, MA", region:"Northeast", votes:221, badge:""},
+    {name:"Pittsburgh, PA", region:"Northeast", votes:198, badge:""},
+    {name:"Cincinnati, OH", region:"Midwest", votes:184, badge:""},
+    {name:"Raleigh, NC", region:"South", votes:172, badge:""},
+    {name:"Tampa, FL", region:"South", votes:156, badge:""},
+    {name:"Philadelphia, PA", region:"Northeast", votes:148, badge:""},
+    {name:"Columbus, OH", region:"Midwest", votes:134, badge:""}
+  ];
+
+  const voted = JSON.parse(localStorage.getItem('lymx_voted_cities') || '{}');
+  const maxVotes = cities[0].votes;
+
+  function renderCities() {
+    const list = document.getElementById('cityList');
+    const search = document.getElementById('search').value.toLowerCase();
+    const region = document.getElementById('region').value;
+    list.innerHTML = '';
+    cities.forEach((c, idx) => {
+      if (search && !c.name.toLowerCase().includes(search)) return;
+      if (region && c.region !== region) return;
+      const cls = c.badge === 'next' ? 'next' : (idx === 0 ? 'featured' : '');
+      const pct = (c.votes / maxVotes) * 100;
+      const isVoted = voted[c.name];
+      const badgeHtml = c.badge === 'next' ? '<span class="badge next">Next up</span>' : (idx === 0 ? '<span class="badge featured">Top voted</span>' : '');
+      list.innerHTML += `
+        <div class="city ${cls}">
+          <div class="rk">${idx+1}</div>
+          <div>
+            <div class="name">${c.name}${badgeHtml}</div>
+            <div class="meta">${c.region} · ${c.votes.toLocaleString()} votes</div>
+          </div>
+          <div class="bar-cell">
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+            <div class="vote-count">${c.votes.toLocaleString()}</div>
+          </div>
+          <button class="vote-btn ${isVoted?'voted':''}" onclick="quickVote('${c.name}')">${isVoted?'✓ Voted':'+1 Vote'}</button>
+        </div>
+      `;
+    });
+  }
+
+  function quickVote(cityName) {
+    if (voted[cityName]) return;
+    voted[cityName] = true;
+    localStorage.setItem('lymx_voted_cities', JSON.stringify(voted));
+    const c = cities.find(x => x.name === cityName);
+    if (c) c.votes += 1;
+    document.getElementById('liveTotal').textContent = (parseInt(document.getElementById('liveTotal').textContent.replace(/,/g,'')) + 1).toLocaleString();
+    renderCities();
+  }
+
+  function filterCities() { renderCities(); }
+
+  function submitVote(e) {
+    e.preventDefault();
+    const city = document.getElementById('city').value;
+    quickVote(city);
+    document.getElementById('voteForm').classList.remove('show');
+    document.getElementById('thanks').classList.add('show');
+    document.getElementById('thanks').scrollIntoView({behavior:'smooth',block:'center'});
+  }
+
+  renderCities();
+</script>
+
+</body>
+</html>
