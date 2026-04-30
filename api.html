@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX API — issue and accept LYMX programmatically, sync transactions to your POS, build integrations. Beta — request access." />
+<title>API · LYMX Developer Docs</title>
+<meta property="og:title" content="LYMX API — Developer Docs" />
+<meta property="og:description" content="Issue and accept LYMX programmatically. Beta — request access." />
+<meta property="og:image" content="og-image.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--code:#1a1f27;--code-bg:#0e1116;--maxw:1240px;--radius:14px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .brand .tag{background:rgba(212,175,55,.18);color:#7a5e10;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .btn{padding:9px 14px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn.gold{background:#f5d172;color:#0e1116}
+  .btn.gold:hover{background:#fff}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Beta banner */
+  .beta-banner{background:linear-gradient(90deg,#1a1f27,#0e1116);color:#fff;padding:11px 0;font-size:13px;text-align:center}
+  .beta-banner strong{color:#f5d172;font-weight:800}
+  .beta-banner a{color:#f5d172;font-weight:700;text-decoration:underline;margin-left:6px}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:240px 1fr;gap:36px;padding:32px 0 60px;align-items:start}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}.toc-side{display:none}}
+
+  /* TOC */
+  .toc{position:sticky;top:88px}
+  .toc h4{margin:0 0 8px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .toc ul{list-style:none;margin:0 0 20px;padding:0;border-left:2px solid var(--line)}
+  .toc li{padding:0}
+  .toc a{display:block;padding:6px 14px;font-size:13px;color:var(--ink-2);border-left:2px solid transparent;margin-left:-2px;transition:.1s}
+  .toc a:hover{color:var(--accent)}
+  .toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:700;background:rgba(10,132,255,.04)}
+
+  /* Article */
+  article{max-width:880px}
+  article h1{margin:0 0 8px;font-size:36px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  article .lede{font-size:17px;color:var(--ink-2);margin:0 0 20px;line-height:1.55;max-width:680px}
+  article h2{margin:42px 0 12px;font-size:24px;font-weight:800;letter-spacing:-.01em;scroll-margin-top:90px}
+  article h3{margin:24px 0 8px;font-size:17px;font-weight:800;scroll-margin-top:90px}
+  article h4{margin:18px 0 6px;font-size:14.5px;font-weight:800}
+  article p{margin:0 0 14px;font-size:15.5px;color:var(--ink-2)}
+  article ul,article ol{margin:0 0 14px 22px;padding:0}
+  article li{margin:6px 0;font-size:15.5px;color:var(--ink-2);line-height:1.55}
+  article strong{color:var(--ink);font-weight:800}
+
+  /* Inline code */
+  article code{background:var(--bg-soft);border:1px solid var(--line);border-radius:5px;padding:2px 6px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#a01644}
+
+  /* Code block */
+  .code{background:var(--code-bg);color:#e8eaef;border-radius:13px;padding:18px 20px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.55;overflow-x:auto;margin:14px 0;position:relative;white-space:pre}
+  .code .kw{color:#f5d172}
+  .code .str{color:#9adfb6}
+  .code .com{color:#7a8493;font-style:italic}
+  .code .num{color:#a3c5ff}
+  .code-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11.5px}
+  .code-h .lang{color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+  .code-h .copy{background:transparent;border:1px solid var(--line);color:var(--muted);padding:4px 11px;border-radius:6px;font-size:11.5px;font-weight:800;cursor:pointer}
+  .code-h .copy:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .code-h .copy.copied{background:var(--ok);color:#fff;border-color:var(--ok)}
+
+  /* Tabs (multi-language) */
+  .tabs{display:flex;gap:4px;margin-bottom:6px}
+  .tabs button{background:#fff;border:1px solid var(--line);color:var(--ink-2);padding:6px 13px;font-size:12px;font-weight:800;border-radius:6px;cursor:pointer;font-family:inherit}
+  .tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* Endpoint card */
+  .ep{margin:14px 0 22px;padding:0;background:#fff;border:1px solid var(--line);border-radius:13px;overflow:hidden}
+  .ep-h{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,var(--bg-soft));flex-wrap:wrap}
+  .ep .method{padding:5px 11px;border-radius:6px;font-size:11px;font-weight:800;letter-spacing:.06em;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .ep .method.get{background:rgba(10,132,255,.13);color:var(--accent-2)}
+  .ep .method.post{background:rgba(19,162,107,.14);color:#0d7d51}
+  .ep .method.delete{background:rgba(224,65,62,.13);color:#a01644}
+  .ep .path{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;font-weight:800;color:var(--ink)}
+  .ep .desc{font-size:13px;color:var(--muted);margin-left:auto}
+  .ep-body{padding:14px 18px}
+  .ep-body p{margin:0 0 8px;font-size:13.5px}
+
+  /* Param table */
+  .params{width:100%;border-collapse:separate;border-spacing:0;margin:8px 0}
+  .params th{text-align:left;padding:8px 12px;background:var(--bg-soft);font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line)}
+  .params td{padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
+  .params tr:last-child td{border-bottom:0}
+  .params .name{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:800;color:var(--ink-2);font-size:12.5px}
+  .params .type{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--muted);font-size:12px}
+  .params .req{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.05em;padding:1px 6px;border-radius:4px;text-transform:uppercase;margin-left:5px;background:rgba(224,65,62,.12);color:#a01644}
+  .params .opt{background:rgba(91,100,114,.12);color:var(--muted)}
+
+  /* Sidebar callout */
+  .callout{padding:14px 18px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.3);border-radius:11px;margin:14px 0;font-size:13.5px;color:#7a5e10}
+  .callout strong{color:#7a5e10;font-weight:800}
+  .callout.info{background:rgba(10,132,255,.06);border-color:rgba(10,132,255,.2);color:var(--accent-2)}
+  .callout.info strong{color:var(--accent-2)}
+
+  /* Cards row */
+  .cards-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+  @media(max-width:780px){.cards-row{grid-template-columns:1fr}}
+  .lang-card{padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:11px}
+  .lang-card .h{font-weight:800;font-size:14px;margin-bottom:3px}
+  .lang-card .d{font-size:12.5px;color:var(--muted);margin-bottom:8px}
+  .lang-card a{display:inline-block;padding:5px 10px;background:var(--bg-soft);border-radius:6px;font-size:11.5px;font-weight:800;color:var(--ink-2)}
+
+  /* Status table */
+  .status-table{margin:8px 0}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:32px 0 22px;font-size:13px;margin-top:30px}
+  .foot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-bottom:18px}
+  @media(max-width:780px){.foot-grid{grid-template-columns:repeat(2,1fr)}}
+  .foot-grid h4{color:#fff;font-size:13px;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
+  .foot-grid a{display:block;padding:3px 0;color:#9aa3b0}
+  .foot-grid a:hover{color:#fff}
+  .foot-bot{padding-top:16px;border-top:1px solid rgba(255,255,255,.1);text-align:center;font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="beta-banner">
+  📡 <strong>Beta API</strong> — Available to Founding 25 Businesses today. Public access summer 2026.
+  <a href="#access">Request access →</a>
+</div>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+      <span class="tag">API · Beta</span>
+    </div>
+    <nav class="nav-links">
+      <a href="api.html" class="on">Docs</a>
+      <a href="status.html">Status</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="security.html">Security</a>
+    </nav>
+    <a class="btn gold" href="#access">Request API key</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+    <!-- TOC -->
+    <aside class="toc-side">
+      <nav class="toc" id="toc">
+        <h4>Quickstart</h4>
+        <ul>
+          <li><a href="#intro" class="on">Introduction</a></li>
+          <li><a href="#access">Request access</a></li>
+          <li><a href="#auth">Authentication</a></li>
+          <li><a href="#first">Your first call</a></li>
+        </ul>
+        <h4>Core endpoints</h4>
+        <ul>
+          <li><a href="#issue">Issue LYMX</a></li>
+          <li><a href="#redeem">Accept LYMX</a></li>
+          <li><a href="#balance">Get balance</a></li>
+          <li><a href="#transactions">List transactions</a></li>
+        </ul>
+        <h4>Reference</h4>
+        <ul>
+          <li><a href="#webhooks">Webhooks</a></li>
+          <li><a href="#errors">Error codes</a></li>
+          <li><a href="#limits">Rate limits</a></li>
+          <li><a href="#sdks">SDKs &amp; libraries</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Article -->
+    <article>
+      <h1 id="intro">LYMX API</h1>
+      <p class="lede">Issue and accept LYMX programmatically. Sync transactions from your POS. Build webhooks against wallet events. The same engine that powers our Web POS, exposed as a JSON REST API.</p>
+
+      <div class="callout">
+        <strong>Beta status:</strong> available today to Founding 25 Businesses with custom POS integrations. Public release summer 2026 alongside our Square / Toast / Clover partner integrations. Endpoints documented here are stable; we'll version any breaking change with a 90-day deprecation window.
+      </div>
+
+      <h2 id="access">Request access</h2>
+      <p>Email <a href="mailto:api@getlymx.com">api@getlymx.com</a> with your Business name, Business ID (from your dashboard), and a 1-line description of what you're building. We respond within 1 business day during beta.</p>
+
+      <p>Once approved, you get:</p>
+      <ul>
+        <li><strong>1 sandbox key</strong> — for development and testing. Sandbox transactions don't settle.</li>
+        <li><strong>1 live key</strong> — for production. All actions affect real wallet balances and Business settlement.</li>
+        <li><strong>1 webhook signing secret</strong> — to verify webhook payloads we send to you.</li>
+      </ul>
+
+      <h2 id="auth">Authentication</h2>
+      <p>Every request includes your API key in the <code>Authorization</code> header. Keys are 32-char tokens prefixed with <code>lymx_live_</code> or <code>lymx_test_</code>.</p>
+
+      <div class="code-h">
+        <span class="lang">cURL</span>
+        <button class="copy" onclick="copyCode(this)">Copy</button>
+      </div>
+      <div class="code"><span class="com"># Production</span>
+curl https://api.getlymx.com/v1/balance \
+  -H <span class="str">"Authorization: Bearer lymx_live_xxxxxxxxxxxxxxxx"</span>
+
+<span class="com"># Sandbox</span>
+curl https://api.getlymx.com/v1/balance \
+  -H <span class="str">"Authorization: Bearer lymx_test_xxxxxxxxxxxxxxxx"</span></div>
+
+      <div class="callout info"><strong>Never commit API keys to source.</strong> Use environment variables or a secrets manager. We auto-rotate any key we find publicly leaked.</div>
+
+      <h2 id="first">Your first call</h2>
+      <p>Make sure your key works by calling the balance endpoint for a test customer:</p>
+
+      <div class="tabs">
+        <button class="on" data-lang="curl">cURL</button>
+        <button data-lang="js">Node</button>
+        <button data-lang="py">Python</button>
+      </div>
+
+      <div data-pane="curl" class="pane">
+        <div class="code-h"><span class="lang">cURL</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+        <div class="code">curl https://api.getlymx.com/v1/customers/cus_demo123/balance \
+  -H <span class="str">"Authorization: Bearer lymx_test_..."</span> \
+  -H <span class="str">"Accept: application/json"</span></div>
+      </div>
+
+      <div data-pane="js" class="pane" style="display:none">
+        <div class="code-h"><span class="lang">Node.js</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+        <div class="code"><span class="kw">import</span> Lymx <span class="kw">from</span> <span class="str">'@lymx/node'</span>;
+<span class="kw">const</span> lymx = <span class="kw">new</span> Lymx(process.env.<span class="num">LYMX_KEY</span>);
+
+<span class="kw">const</span> balance = <span class="kw">await</span> lymx.customers.balance(<span class="str">'cus_demo123'</span>);
+console.log(balance);
+<span class="com">// =&gt; { customer_id: 'cus_demo123', lymx: 2450, usd_value: 24.5, ... }</span></div>
+      </div>
+
+      <div data-pane="py" class="pane" style="display:none">
+        <div class="code-h"><span class="lang">Python</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+        <div class="code"><span class="kw">import</span> lymx
+lymx.api_key = os.environ[<span class="str">"LYMX_KEY"</span>]
+
+balance = lymx.Customer.balance(<span class="str">"cus_demo123"</span>)
+<span class="kw">print</span>(balance.lymx, balance.usd_value)
+<span class="com"># =&gt; 2450 24.5</span></div>
+      </div>
+
+      <h2 id="issue">Issue LYMX <span style="color:var(--muted);font-weight:600;font-size:14px;letter-spacing:0;text-transform:none">— give a customer LYMX after a sale</span></h2>
+
+      <div class="ep">
+        <div class="ep-h">
+          <span class="method post">POST</span>
+          <span class="path">/v1/transactions/issue</span>
+          <span class="desc">Issue LYMX to a customer's wallet after they pay for a purchase.</span>
+        </div>
+        <div class="ep-body">
+          <p>Trigger after the customer completes a sale at your POS. Auto-applies any active promotion multipliers configured in your <a href="promotions.html">Promotions dashboard</a>.</p>
+
+          <h4>Request body</h4>
+          <table class="params">
+            <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="name">customer_phone</span><span class="req req">Required</span></td><td><span class="type">string</span></td><td>E.164-formatted phone number of the customer (e.g. <code>+17025550181</code>).</td></tr>
+              <tr><td><span class="name">subtotal_cents</span><span class="req req">Required</span></td><td><span class="type">integer</span></td><td>Pre-tax sale subtotal in cents. We multiply by your locked rate to compute LYMX earned.</td></tr>
+              <tr><td><span class="name">idempotency_key</span><span class="req req">Required</span></td><td><span class="type">string</span></td><td>Unique key per transaction. Repeat calls with the same key return the original result without re-issuing.</td></tr>
+              <tr><td><span class="name">tip_cents</span><span class="req opt">Optional</span></td><td><span class="type">integer</span></td><td>Tip amount in cents. Tips don't earn LYMX by default.</td></tr>
+              <tr><td><span class="name">items</span><span class="req opt">Optional</span></td><td><span class="type">array</span></td><td>Line items, used by item-targeted promotions. See <a href="#">Items reference</a>.</td></tr>
+            </tbody>
+          </table>
+
+          <h4>Example</h4>
+          <div class="code-h"><span class="lang">cURL</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+          <div class="code">curl -X POST https://api.getlymx.com/v1/transactions/issue \
+  -H <span class="str">"Authorization: Bearer lymx_live_..."</span> \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d '{
+    <span class="str">"customer_phone"</span>: <span class="str">"+17025550181"</span>,
+    <span class="str">"subtotal_cents"</span>: <span class="num">1450</span>,
+    <span class="str">"idempotency_key"</span>: <span class="str">"order_2026-04-29_004086"</span>
+  }'</div>
+
+          <h4>Response (201)</h4>
+          <div class="code-h"><span class="lang">JSON</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+          <div class="code">{
+  <span class="str">"id"</span>: <span class="str">"tx_2zR8aQpL"</span>,
+  <span class="str">"type"</span>: <span class="str">"issue"</span>,
+  <span class="str">"customer_id"</span>: <span class="str">"cus_8jN4b2"</span>,
+  <span class="str">"lymx_issued"</span>: <span class="num">145</span>,
+  <span class="str">"base_rate"</span>: <span class="num">5</span>,
+  <span class="str">"multiplier"</span>: <span class="num">2.0</span>,
+  <span class="str">"promotion_id"</span>: <span class="str">"promo_happyhour_w17"</span>,
+  <span class="str">"created_at"</span>: <span class="str">"2026-04-29T16:08:42Z"</span>
+}</div>
+        </div>
+      </div>
+
+      <h2 id="redeem">Accept LYMX <span style="color:var(--muted);font-weight:600;font-size:14px;letter-spacing:0;text-transform:none">— deduct LYMX from a customer's wallet as payment</span></h2>
+
+      <div class="ep">
+        <div class="ep-h">
+          <span class="method post">POST</span>
+          <span class="path">/v1/transactions/redeem</span>
+          <span class="desc">Apply LYMX from a customer's wallet to a sale.</span>
+        </div>
+        <div class="ep-body">
+          <p>Two-step: first call <code>/v1/transactions/redeem/quote</code> to get a quote and a confirmation URL the customer scans. After they confirm, the redemption settles automatically and you receive a webhook.</p>
+          <p style="font-size:13.5px;color:var(--muted)">For low-value redemptions under the customer's auto-approve threshold (default $20), the quote auto-confirms and you can skip the second step.</p>
+        </div>
+      </div>
+
+      <h2 id="balance">Get balance</h2>
+      <div class="ep">
+        <div class="ep-h">
+          <span class="method get">GET</span>
+          <span class="path">/v1/customers/{phone_or_id}/balance</span>
+          <span class="desc">Returns the customer's current LYMX balance.</span>
+        </div>
+      </div>
+
+      <h2 id="transactions">List transactions</h2>
+      <div class="ep">
+        <div class="ep-h">
+          <span class="method get">GET</span>
+          <span class="path">/v1/transactions</span>
+          <span class="desc">List all transactions for your Business, paginated.</span>
+        </div>
+      </div>
+
+      <h2 id="webhooks">Webhooks</h2>
+      <p>We send webhooks to your endpoint when state changes. Configure your endpoint URL and signing secret in the <a href="biz-dashboard.html">Business dashboard</a>.</p>
+
+      <h3>Events</h3>
+      <ul>
+        <li><code>transaction.created</code> — a new issue or redemption posted</li>
+        <li><code>transaction.disputed</code> — a customer or Business filed a dispute</li>
+        <li><code>customer.balance.updated</code> — a customer's balance changed</li>
+        <li><code>settlement.statement.ready</code> — your monthly settlement statement is ready</li>
+        <li><code>promotion.activated</code> / <code>promotion.deactivated</code> — promo multiplier changed state</li>
+      </ul>
+
+      <h3>Verify a webhook</h3>
+      <p>Each webhook includes an <code>X-LYMX-Signature</code> header — an HMAC-SHA256 of the raw body using your signing secret. Verify before processing:</p>
+
+      <div class="code-h"><span class="lang">Node.js</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+      <div class="code"><span class="kw">import</span> crypto <span class="kw">from</span> <span class="str">'crypto'</span>;
+
+<span class="kw">function</span> verify(rawBody, signature, secret) {
+  <span class="kw">const</span> expected = crypto
+    .createHmac(<span class="str">'sha256'</span>, secret)
+    .update(rawBody)
+    .digest(<span class="str">'hex'</span>);
+  <span class="kw">return</span> crypto.timingSafeEqual(
+    Buffer.from(signature), Buffer.from(expected)
+  );
+}</div>
+
+      <h2 id="errors">Error codes</h2>
+      <table class="params status-table">
+        <thead><tr><th>Status</th><th>Code</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><span class="name">400</span></td><td><span class="name">invalid_request</span></td><td>Missing or malformed parameters.</td></tr>
+          <tr><td><span class="name">401</span></td><td><span class="name">authentication_failed</span></td><td>Invalid or missing API key.</td></tr>
+          <tr><td><span class="name">402</span></td><td><span class="name">insufficient_balance</span></td><td>Customer doesn't have enough LYMX for the redemption.</td></tr>
+          <tr><td><span class="name">404</span></td><td><span class="name">not_found</span></td><td>The referenced resource doesn't exist.</td></tr>
+          <tr><td><span class="name">409</span></td><td><span class="name">idempotency_conflict</span></td><td>Same idempotency_key with different parameters.</td></tr>
+          <tr><td><span class="name">429</span></td><td><span class="name">rate_limit_exceeded</span></td><td>You've hit the rate limit. Retry after the time in the <code>Retry-After</code> header.</td></tr>
+          <tr><td><span class="name">500</span></td><td><span class="name">internal_error</span></td><td>Something broke on our end. Check <a href="status.html">status.getlymx.com</a>.</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="limits">Rate limits</h2>
+      <p>Default beta limits per Business:</p>
+      <ul>
+        <li><strong>Read endpoints</strong> (GET balance, list transactions): <code>100 req/min</code></li>
+        <li><strong>Write endpoints</strong> (issue, redeem): <code>30 req/min</code> sustained, <code>120 req/min</code> burst</li>
+      </ul>
+      <p>Need higher limits for a launch event or large sale? Email <a href="mailto:api@getlymx.com">api@getlymx.com</a> 48h ahead.</p>
+
+      <h2 id="sdks">SDKs &amp; libraries</h2>
+      <div class="cards-row">
+        <div class="lang-card">
+          <div class="h">@lymx/node</div>
+          <div class="d">Official Node SDK · TypeScript types included</div>
+          <a>npm install @lymx/node (coming soon)</a>
+        </div>
+        <div class="lang-card">
+          <div class="h">lymx (Python)</div>
+          <div class="d">Official Python SDK · Python 3.9+</div>
+          <a>pip install lymx (coming soon)</a>
+        </div>
+        <div class="lang-card">
+          <div class="h">REST + cURL</div>
+          <div class="d">Use any HTTP client — JSON over HTTPS</div>
+          <a>Available now</a>
+        </div>
+      </div>
+      <p style="font-size:13.5px;color:var(--muted)">Building a SDK for another language? Email <a href="mailto:api@getlymx.com">api@getlymx.com</a> — we'll feature it here.</p>
+
+      <div class="callout info" style="margin-top:32px">
+        <strong>Found a bug?</strong> Email <a href="mailto:api@getlymx.com">api@getlymx.com</a>. Security issues to <a href="mailto:security@getlymx.com">security@getlymx.com</a> — see our <a href="security.html">security &amp; trust page</a>.
+      </div>
+    </article>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>Developers</h4>
+        <a href="api.html">API docs</a>
+        <a href="status.html">Status</a>
+        <a href="changelog.html">Changelog</a>
+        <a href="security.html">Security</a>
+      </div>
+      <div>
+        <h4>Customers</h4>
+        <a href="why-lymx.html">Why LYMX</a>
+        <a href="browse.html">Browse Businesses</a>
+        <a href="app.html">Web Wallet</a>
+      </div>
+      <div>
+        <h4>Businesses</h4>
+        <a href="business.html">List your Business</a>
+        <a href="catering.html">Bulk gifts</a>
+        <a href="founding-25.html">Founding 25</a>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="disclaimer.html">Disclaimer</a>
+      </div>
+    </div>
+    <div class="foot-bot">© 2026 LYMX Power · Las Vegas, NV · API v1 · Beta</div>
+  </div>
+</footer>
+
+<script>
+  // TOC scroll-spy
+  const tocLinks = document.querySelectorAll('#toc a');
+  const sections = Array.from(tocLinks).map(a=>document.querySelector(a.getAttribute('href')));
+  function onScroll(){
+    let active = sections[0];
+    for(const s of sections){
+      if(!s) continue;
+      if(s.getBoundingClientRect().top < 120) active = s;
+    }
+    tocLinks.forEach(a=>{
+      a.classList.toggle('on', a.getAttribute('href') === '#'+active.id);
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  tocLinks.forEach(a=>{
+    a.onclick = e=>{
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+    };
+  });
+
+  // Multi-language tabs
+  document.querySelectorAll('.tabs').forEach(t=>{
+    t.querySelectorAll('button').forEach(b=>{
+      b.onclick = ()=>{
+        t.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+        b.classList.add('on');
+        const lang = b.dataset.lang;
+        const parent = t.parentElement;
+        parent.querySelectorAll('.pane').forEach(p=>{
+          p.style.display = p.dataset.pane === lang ? 'block' : 'none';
+        });
+      };
+    });
+  });
+
+  // Copy code
+  function copyCode(btn){
+    const code = btn.closest('.ep-body, article')?.querySelector('.code');
+    // Find the .code immediately following this button's .code-h
+    const cb = btn.closest('.code-h')?.nextElementSibling;
+    const target = (cb && cb.classList.contains('code')) ? cb : code;
+    if(!target) return;
+    const text = target.innerText;
+    navigator.clipboard.writeText(text).then(()=>{
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(()=>{ btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+    });
+  }
+</script>
+</body>
+</html>

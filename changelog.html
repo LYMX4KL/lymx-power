@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX changelog — what's new on the platform. Every feature, fix, and policy change, dated and explained." />
+<title>Changelog · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://getlymx.com/changelog" />
+<meta property="og:title" content="LYMX Changelog" />
+<meta property="og:description" content="What's new on the LYMX platform." />
+<meta property="og:image" content="https://getlymx.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="LYMX" />
+<meta name="twitter:card" content="summary_large_image" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:880px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{background:#fff;border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px;max-width:1200px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--ink)}
+  .nav-links a{font-size:14px;color:var(--muted);margin-left:18px}
+
+  /* Hero */
+  .hero{padding:54px 0 36px;text-align:center;background:#fff;border-bottom:1px solid var(--line)}
+  .hero .pre{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-2);margin-bottom:14px}
+  .hero h1{margin:0;font-size:36px;font-weight:800;letter-spacing:-.015em}
+  .hero .lede{font-size:15.5px;color:var(--muted);max-width:520px;margin:14px auto 22px}
+  .subscribe{display:inline-flex;gap:8px}
+  .subscribe input{padding:11px 14px;font-size:14px;border:1.5px solid var(--line);border-radius:10px;font-family:inherit;min-width:240px}
+  .subscribe input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  .subscribe button{padding:11px 18px;background:var(--ink);color:#fff;border:0;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
+  .rss{margin-top:14px;font-size:12.5px;color:var(--muted)}
+  .rss a{color:var(--accent-2);font-weight:700}
+
+  /* Filter chips */
+  .chips-row{padding:18px 0;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .chip{padding:6px 14px;background:#fff;border:1px solid var(--line);border-radius:99px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* Timeline */
+  .timeline{padding:48px 0}
+  .entry{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;margin-bottom:18px;position:relative}
+  .entry .head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px;margin-bottom:10px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .entry .head h2{margin:0;font-size:18px;font-weight:800;letter-spacing:-.005em}
+  .entry .head h2 .ver{display:inline-block;font-family:'SF Mono',Menlo,monospace;font-size:11.5px;font-weight:800;color:var(--muted);background:var(--bg-soft);padding:2px 7px;border-radius:5px;margin-right:8px;letter-spacing:0;text-transform:none}
+  .entry .head .date{font-size:13px;color:var(--muted)}
+
+  .entry h3{margin:14px 0 6px;font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px}
+  .entry h3 .ic{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;font-size:13px;color:#fff}
+  .entry h3 .ic.added{background:var(--ok)}
+  .entry h3 .ic.changed{background:var(--accent)}
+  .entry h3 .ic.fixed{background:var(--warn)}
+  .entry h3 .ic.security{background:#a01644}
+  .entry ul{padding-left:22px;margin:6px 0 12px}
+  .entry li{font-size:14px;line-height:1.7;color:var(--ink-2);margin-bottom:4px}
+  .entry li code{background:var(--bg-soft);padding:1px 5px;border-radius:4px;font-family:'SF Mono',Menlo,monospace;font-size:12.5px}
+
+  /* Empty / footer note */
+  .footnote{text-align:center;padding:18px;color:var(--muted);font-size:13px}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center}
+  footer a{color:#c6ccd4;margin:0 10px}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;padding:11px 18px;border-radius:11px;font-weight:700;font-size:13.5px;box-shadow:var(--shadow);z-index:300;display:none}
+  .toast.on{display:block;animation:up .25s ease-out}
+  @keyframes up{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">LYMX</a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="status.html">Status</a>
+      <a href="support.html">Support</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="pre">What's new</div>
+    <h1>Changelog</h1>
+    <p class="lede">Every change to the LYMX platform — features, fixes, policies. Subscribe and we'll email you a one-liner per release.</p>
+    <form class="subscribe" onsubmit="event.preventDefault();subscribeMe()">
+      <input type="email" id="email" placeholder="you@example.com" required />
+      <button type="submit">Subscribe</button>
+    </form>
+    <div class="rss">Or follow via <a href="#">RSS</a> · <a href="#">JSON feed</a></div>
+  </div>
+</section>
+
+<div class="chips-row">
+  <div class="wrap chips">
+    <button class="chip on" onclick="filter('all', this)">All</button>
+    <button class="chip" onclick="filter('added', this)">✨ Added</button>
+    <button class="chip" onclick="filter('changed', this)">↻ Changed</button>
+    <button class="chip" onclick="filter('fixed', this)">🐛 Fixed</button>
+    <button class="chip" onclick="filter('security', this)">🛡 Security</button>
+  </div>
+</div>
+
+<main class="timeline">
+  <div class="wrap">
+
+    <article class="entry" data-tags="added changed">
+      <div class="head">
+        <h2><span class="ver">v0.7</span>Network flywheel goes public</h2>
+        <div class="date">Apr 28, 2026</div>
+      </div>
+      <h3><span class="ic added">+</span>Added</h3>
+      <ul>
+        <li><strong>Founding 25 page</strong> — public showcase of the launch cohort with progress bar and FOMO. <code>/founding-25</code></li>
+        <li><strong>Public Partner profile pages</strong> — recruiters can share <code>/p/[name]</code> as their personal pitch URL with referral codes auto-attached</li>
+        <li><strong>Investor data room</strong> — companion to the investor brief. Indexes pitch + prototype + strategy + legal + sensitive (gated) materials</li>
+        <li><strong>Press kit</strong> with 3-length boilerplate, fact sheet, founder bio, brand colors</li>
+        <li><strong>Status page + sitemap.xml + robots.txt</strong></li>
+      </ul>
+      <h3><span class="ic changed">↻</span>Changed</h3>
+      <ul>
+        <li>Network-flywheel math (1,500 new customers per Business / month) added to homepage, business pitch, investor brief, and Partner sales kit</li>
+        <li>$850 sign-up package now explicitly includes <strong>top-of-homepage feature spot</strong> + <strong>launch email blast</strong> to all local LYMX customers</li>
+        <li>Removed all named brand references (Spirit / McDonald's / hotels) from public copy in favor of generic descriptors — legal safety</li>
+      </ul>
+    </article>
+
+    <article class="entry" data-tags="added">
+      <div class="head">
+        <h2><span class="ver">v0.6</span>Legal scaffolding</h2>
+        <div class="date">Apr 28, 2026</div>
+      </div>
+      <h3><span class="ic added">+</span>Added</h3>
+      <ul>
+        <li><strong>Privacy Policy, Terms of Service, and LYMX Disclaimer</strong> — placeholder drafts pending counsel review, linked from every footer</li>
+        <li><strong>Business Activation Agreement</strong> and <strong>Partner Independent Contractor Agreement</strong> — full role-specific contracts</li>
+        <li><strong>Help Center</strong> — 7 categories, ~42 article cards, search bar</li>
+        <li><strong>Branded 404 page</strong> with quick destinations</li>
+        <li><strong>Email templates admin</strong> — internal tool to manage 14 system emails</li>
+      </ul>
+    </article>
+
+    <article class="entry" data-tags="added">
+      <div class="head">
+        <h2><span class="ver">v0.5</span>Customer + Partner sign-up flows go live</h2>
+        <div class="date">Apr 28, 2026</div>
+      </div>
+      <h3><span class="ic added">+</span>Added</h3>
+      <ul>
+        <li><strong>Customer sign-up</strong> — 5-step mobile-first flow with phone verification, OTP, profile, tour, welcome bonus reveal</li>
+        <li><strong>Partner application</strong> — 4-step desktop flow with sponsor verification, agreement checkboxes, pending-approval state</li>
+        <li><strong>Account settings</strong> for customer (profile, notifications, privacy, referral, sign-out, delete)</li>
+        <li><strong>Customer referral page</strong> with personal code, share buttons, pending + earned tracker</li>
+        <li><strong>Notifications inbox</strong> with filters and read/unread states</li>
+        <li><strong>Transaction-detail receipt page</strong> with itemized breakdown + buy/sell math</li>
+      </ul>
+    </article>
+
+    <article class="entry" data-tags="added changed">
+      <div class="head">
+        <h2><span class="ver">v0.4</span>Admin tooling</h2>
+        <div class="date">Apr 28, 2026</div>
+      </div>
+      <h3><span class="ic added">+</span>Added</h3>
+      <ul>
+        <li><strong>Business management</strong> — approve / suspend / reinstate, per-Business detail drawer, CSV export</li>
+        <li><strong>Customer support lookup</strong> — search by phone/email, balance adjustment with audit reason, flag/suspend</li>
+        <li><strong>Reviews moderation</strong> — queue for flagged + Business-reported reviews, bulk approve/hide/remove</li>
+        <li><strong>Promo campaigns engine</strong> — platform-funded LYMX issuance for welcome bonuses, activation kits, Partner incentives</li>
+        <li><strong>Business analytics deep-dive</strong> — cohort retention, peak-hours heatmap, LTV (LYMX vs cash-only), top items, promo ROI</li>
+      </ul>
+      <h3><span class="ic changed">↻</span>Changed</h3>
+      <ul>
+        <li>Unified admin nav: Commissions · Promos · Businesses · Customers · Reviews · Emails</li>
+      </ul>
+    </article>
+
+    <article class="entry" data-tags="changed security">
+      <div class="head">
+        <h2><span class="ver">v0.3</span>Buy/sell mechanic — final structure</h2>
+        <div class="date">Apr 27, 2026</div>
+      </div>
+      <h3><span class="ic security">🛡</span>Security &amp; legal positioning</h3>
+      <ul>
+        <li><strong>Removed all "escrow" framing</strong> from public copy. LYMX does not hold or transmit money. The buy/sell mechanic is structured as ordinary accounts payable / receivable.</li>
+        <li>Issuance: Business <strong>purchases units from LYMX</strong> at $0.008 (80% of face)</li>
+        <li>Redemption: LYMX <strong>buys units back</strong> from the redeeming Business at the same $0.008</li>
+        <li>20% gap is the redeeming Business's customer-acquisition discount — not retained by LYMX</li>
+      </ul>
+      <h3><span class="ic changed">↻</span>Changed</h3>
+      <ul>
+        <li>Issuance rate is now <strong>locked by LYMX at activation</strong> — Business cannot change mid-contract. Promotional multipliers (time-bound, item-specific) layer on top via the new <a href="promotions.html">Promotions</a> page.</li>
+        <li>POS, Settlement, and dashboards updated to reflect the new "unit purchase / unit buy-back" terminology end-to-end</li>
+      </ul>
+    </article>
+
+    <article class="entry" data-tags="added">
+      <div class="head">
+        <h2><span class="ver">v0.2</span>Core operator pages</h2>
+        <div class="date">Apr 28, 2026</div>
+      </div>
+      <h3><span class="ic added">+</span>Added</h3>
+      <ul>
+        <li><strong>POS</strong> — Business point-of-sale to issue / accept LYMX with live preview</li>
+        <li><strong>Settlement page</strong> — Business monthly statement with QuickBooks CSV export</li>
+        <li><strong>Customer wallet</strong> — mobile-first web wallet with QR-to-pay, no native app required</li>
+        <li><strong>Commission engine</strong> — internal admin tool for monthly Partner payouts (ACH CSV export)</li>
+        <li><strong>Promotions page</strong> for Businesses to schedule rate multipliers</li>
+        <li><strong>Team review hub</strong> at <code>/team</code> — single link to share with internal team</li>
+      </ul>
+    </article>
+
+    <article class="entry" data-tags="added">
+      <div class="head">
+        <h2><span class="ver">v0.1</span>Las Vegas pilot setup</h2>
+        <div class="date">Apr 27, 2026</div>
+      </div>
+      <h3><span class="ic added">+</span>Added</h3>
+      <ul>
+        <li>Custom domain <strong>getlymx.com</strong> live</li>
+        <li>Public homepage, why-LYMX comparison page, business pitch, browse directory, sample Business listings</li>
+        <li>Partner content hub, projection calculator, CRM, territory program</li>
+        <li>Partner playbook (10-section internal strategy doc)</li>
+        <li>Legal structure inquiry document for counsel review (NV money-transmitter, MLM, tax)</li>
+      </ul>
+    </article>
+
+    <article class="entry" data-tags="changed">
+      <div class="head">
+        <h2><span class="ver">v0.0</span>Initial scaffold</h2>
+        <div class="date">Apr 13, 2026</div>
+      </div>
+      <h3><span class="ic changed">↻</span>Project start</h3>
+      <ul>
+        <li>Project rebranded from <em>Bluewood Rewards</em> to <strong>LYMX</strong></li>
+        <li>Fixed-value $0.01 promotional credit unit defined</li>
+        <li>Initial 14-page static prototype deployed to Netlify</li>
+      </ul>
+    </article>
+
+    <div class="footnote">
+      That's all the entries. Earlier prototype iterations are in the <a href="https://github.com/LYMX4KL/lymx-power" style="color:var(--accent-2);font-weight:700">GitHub repo history</a>.
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div class="wrap">
+    <div>© <span id="yr"></span> LYMX · <a href="index.html">Home</a> · <a href="status.html">Status</a> · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  function filter(tag, btn){
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+    btn.classList.add('on');
+    document.querySelectorAll('.entry').forEach(e => {
+      if (tag === 'all' || e.dataset.tags.includes(tag)) {
+        e.style.display = '';
+      } else {
+        e.style.display = 'none';
+      }
+    });
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    setTimeout(() => t.classList.remove('on'), 2400);
+  }
+
+  function subscribeMe(){
+    const e = document.getElementById('email').value.trim();
+    if (!e) return;
+    document.getElementById('email').value = '';
+    showToast('Subscribed · ' + e);
+  }
+</script>
+</body>
+</html>

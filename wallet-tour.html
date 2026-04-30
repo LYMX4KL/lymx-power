@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0" />
+<meta name="description" content="LYMX Web Wallet — 5-step welcome tour for first-time customers. Balance, QR pay, earn, refer, settings." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Welcome to your LYMX Wallet</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08)}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#000;height:100%;overflow:hidden}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+
+  /* Mock phone frame */
+  .phone-shell{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#1a1f27,#000)}
+  .phone{width:380px;height:760px;max-width:96vw;max-height:96vh;background:#fff;border-radius:42px;border:14px solid #0e1116;box-shadow:0 60px 120px rgba(0,0,0,.6);position:relative;overflow:hidden}
+  @media(max-width:480px){.phone{width:100vw;height:100vh;max-width:100vw;max-height:100vh;border-radius:0;border:0}}
+  .phone .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:24px;background:#0e1116;border-radius:0 0 14px 14px;z-index:5}
+  @media(max-width:480px){.phone .notch{display:none}}
+
+  /* Wallet content (mocked, simplified version of customer-wallet.html) */
+  .wallet{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg-soft);overflow:hidden}
+  .w-head{padding:46px 18px 12px;display:flex;justify-content:space-between;align-items:center}
+  .w-head .greeting{font-size:13px;color:var(--muted)}
+  .w-head .name{font-size:18px;font-weight:800}
+  .w-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+
+  .balance-card{margin:0 16px 16px;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border-radius:18px;padding:20px;position:relative;overflow:hidden}
+  .balance-card::after{content:"";position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(245,209,114,.18),transparent 70%);right:-80px;top:-80px}
+  .balance-card .lab{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#a3c5ff;margin-bottom:5px;position:relative}
+  .balance-card .v{font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1;position:relative}
+  .balance-card .v .unit{font-size:18px;color:#a3c5ff;margin-left:6px;font-weight:700}
+  .balance-card .usd{font-size:13px;color:#a3c5ff;margin-top:4px;position:relative}
+  .balance-card .row{display:flex;justify-content:space-between;align-items:end;margin-top:18px;position:relative}
+  .balance-card .pay-btn{background:#f5d172;color:#0e1116;padding:10px 16px;border-radius:10px;font-weight:800;font-size:13.5px;border:0;cursor:pointer}
+
+  .quick-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 16px 14px}
+  .quick{background:#fff;border-radius:12px;padding:13px 8px;text-align:center;box-shadow:0 2px 8px rgba(14,17,22,.05)}
+  .quick .ic{font-size:22px;margin-bottom:3px}
+  .quick .lab{font-size:11.5px;font-weight:800;color:var(--ink-2)}
+
+  .activity{flex:1;background:#fff;border-radius:18px 18px 0 0;padding:18px 16px 64px;overflow-y:auto;box-shadow:0 -4px 16px rgba(14,17,22,.04)}
+  .activity h3{margin:0 0 10px;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .act{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .act:last-child{border-bottom:0}
+  .act .who{font-weight:700}
+  .act .when{font-size:12px;color:var(--muted)}
+  .act .amt{font-weight:800;color:var(--ok);font-size:14px}
+  .act .amt.neg{color:var(--ink-2)}
+
+  .bottom-nav{position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);padding:8px 0 14px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;text-align:center}
+  .bn{font-size:11px;color:var(--muted);font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+  .bn .ic{font-size:22px}
+  .bn.on{color:var(--accent)}
+
+  /* Tour overlay */
+  .tour{position:absolute;inset:0;background:rgba(14,17,22,.78);z-index:50;backdrop-filter:blur(2px)}
+  .tour.off{display:none}
+
+  .spotlight{position:absolute;border-radius:18px;box-shadow:0 0 0 9999px rgba(14,17,22,.78), 0 0 0 4px rgba(245,209,114,.65), 0 12px 30px rgba(0,0,0,.4);transition:all .45s cubic-bezier(.2,.7,.3,1);pointer-events:none}
+
+  .coach{position:absolute;background:#fff;border-radius:14px;padding:18px 20px;width:300px;max-width:88%;box-shadow:0 20px 50px rgba(0,0,0,.4);z-index:60;transition:all .45s cubic-bezier(.2,.7,.3,1)}
+  .coach .step-num{display:inline-block;background:rgba(10,132,255,.12);color:var(--accent-2);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:6px;margin-bottom:8px}
+  .coach h3{margin:0 0 5px;font-size:17px;font-weight:800;letter-spacing:-.01em}
+  .coach p{margin:0 0 14px;color:var(--muted);font-size:13.5px;line-height:1.5}
+  .coach .footer{display:flex;justify-content:space-between;align-items:center}
+  .coach .pips{display:flex;gap:5px}
+  .coach .pip{width:7px;height:7px;border-radius:50%;background:var(--line)}
+  .coach .pip.on{background:var(--accent);width:18px;border-radius:4px}
+  .coach .actions{display:flex;gap:6px}
+  .coach .skip{font-size:12px;color:var(--muted);font-weight:700;cursor:pointer;padding:6px 8px}
+  .coach .skip:hover{color:var(--ink-2)}
+  .coach .next{padding:8px 14px;background:var(--ink);color:#fff;border-radius:8px;font-weight:800;font-size:13px;border:0;cursor:pointer}
+  .coach .next:hover{background:var(--accent-2)}
+  .coach .prev{padding:8px 12px;background:transparent;color:var(--ink-2);border:1px solid var(--line);border-radius:8px;font-weight:800;font-size:13px;cursor:pointer}
+  .coach .prev:hover{border-color:var(--ink)}
+
+  /* Welcome modal */
+  .welcome{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:18px;padding:30px 26px 22px;width:320px;max-width:90%;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.5);z-index:70}
+  .welcome.off{display:none}
+  .welcome .ic{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;font-size:36px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+  .welcome h2{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .welcome p{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.5}
+  .welcome .start{width:100%;padding:13px;background:var(--ink);color:#fff;border-radius:11px;font-weight:800;font-size:14.5px;border:0;cursor:pointer;margin-bottom:8px}
+  .welcome .start:hover{background:var(--accent-2)}
+  .welcome .skip{display:inline-block;font-size:13px;color:var(--muted);font-weight:700;cursor:pointer;padding:4px 8px}
+
+  /* Done modal */
+  .done{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:18px;padding:30px 26px 22px;width:320px;max-width:90%;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.5);z-index:70}
+  .done.off{display:none}
+  .done .ic{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;font-size:36px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+  .done h2{margin:0 0 6px;font-size:22px;font-weight:800}
+  .done p{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.5}
+  .done .gift{padding:12px 14px;background:linear-gradient(135deg,rgba(245,209,114,.18),rgba(212,175,55,.1));border:1px solid rgba(212,175,55,.4);border-radius:11px;color:#7a5e10;font-size:13px;font-weight:700;margin-bottom:14px}
+  .done .gift .v{font-size:24px;font-weight:800;color:#a08020;letter-spacing:-.01em;margin-top:3px}
+  .done .start{width:100%;padding:13px;background:var(--ink);color:#fff;border-radius:11px;font-weight:800;font-size:14.5px;border:0;cursor:pointer}
+
+  /* Help me from outside */
+  .info{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);font-size:11px;color:#5a6373;letter-spacing:.04em;text-transform:uppercase;font-weight:700;z-index:1}
+  .info a{color:#9aa3b0}
+  @media(max-width:480px){.info{display:none}}
+</style>
+</head>
+<body>
+<div class="phone-shell">
+  <div class="phone">
+    <div class="notch"></div>
+
+    <!-- Wallet UI (under tour overlay) -->
+    <div class="wallet">
+      <div class="w-head">
+        <div>
+          <div class="greeting">Welcome,</div>
+          <div class="name">Maya</div>
+        </div>
+        <div class="w-avatar" id="t-avatar">MH</div>
+      </div>
+
+      <div class="balance-card" id="t-balance">
+        <div class="lab">Your balance</div>
+        <div class="v">100<span class="unit">LYMX</span></div>
+        <div class="usd">≈ $1.00 spendable across LYMX Businesses</div>
+        <div class="row">
+          <div style="font-size:12px;color:#a3c5ff">+100 welcome bonus</div>
+          <button class="pay-btn" id="t-qr">📲 Pay with QR</button>
+        </div>
+      </div>
+
+      <div class="quick-row">
+        <div class="quick" id="t-discover"><div class="ic">🔍</div><div class="lab">Discover</div></div>
+        <div class="quick" id="t-refer"><div class="ic">🎁</div><div class="lab">Refer</div></div>
+        <div class="quick" id="t-inbox"><div class="ic">📬</div><div class="lab">Inbox</div></div>
+      </div>
+
+      <div class="activity">
+        <h3>Recent activity</h3>
+        <div class="act">
+          <div><div class="who">LYMX welcome bonus</div><div class="when">Just now · 100 LYMX</div></div>
+          <div class="amt">+100</div>
+        </div>
+        <div class="act">
+          <div><div class="who">Account created</div><div class="when">Today · 9:14 AM</div></div>
+          <div class="amt neg" style="color:var(--muted);font-weight:600">—</div>
+        </div>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="bn on"><div class="ic">💳</div>Wallet</div>
+        <div class="bn"><div class="ic">🔍</div>Discover</div>
+        <div class="bn"><div class="ic">🎁</div>Refer</div>
+        <div class="bn"><div class="ic">📬</div>Inbox</div>
+      </div>
+    </div>
+
+    <!-- Tour overlay -->
+    <div class="tour" id="tour">
+      <div class="spotlight" id="spot"></div>
+      <div class="coach" id="coach"></div>
+    </div>
+
+    <!-- Welcome modal -->
+    <div class="welcome" id="welcome">
+      <div class="ic">👋</div>
+      <h2>Welcome to LYMX, Maya!</h2>
+      <p>Quick 30-second tour of your new wallet — balance, paying, earning, and inviting friends. Let's go.</p>
+      <button class="start" onclick="startTour()">Show me around →</button>
+      <div><span class="skip" onclick="finishTour(true)">Skip tour</span></div>
+    </div>
+
+    <!-- Done modal -->
+    <div class="done off" id="done">
+      <div class="ic">🎉</div>
+      <h2>You're all set</h2>
+      <p>That's everything. You'll find every Business that accepts LYMX in Discover. Earn at any of them — spend at any of them.</p>
+      <div class="gift">
+        Your welcome bonus
+        <div class="v">100 LYMX</div>
+        Already in your balance — find a Business and try it out.
+      </div>
+      <button class="start" onclick="goWallet()">Open my wallet</button>
+    </div>
+  </div>
+</div>
+
+<div class="info">Mock onboarding tour · this overlays customer-wallet.html on first visit</div>
+
+<script>
+  const STEPS = [
+    {target:'t-balance', placement:'below', title:'Your LYMX balance', body:'1 LYMX = $0.01 in spending power across the network. You start with 100 LYMX as a welcome bonus.'},
+    {target:'t-qr', placement:'below-left', title:'Pay with QR', body:'Tap here at the counter and show your QR. The Business scans, and the LYMX amount is deducted from your balance.'},
+    {target:'t-discover', placement:'below', title:'Discover Businesses', body:'Find every café, restaurant, salon, and shop that accepts LYMX. Earn LYMX at one place — spend it at any other.'},
+    {target:'t-refer', placement:'below', title:'Earn 200 LYMX per friend', body:'Share your link. When a friend signs up, you both get 200 LYMX. No limit on referrals.'},
+    {target:'t-avatar', placement:'below-right', title:'Settings live here', body:'Tap your avatar anytime for profile, notifications, payment history, and sign-out.'}
+  ];
+
+  let cur = 0;
+
+  function startTour(){
+    document.getElementById('welcome').classList.add('off');
+    showStep(0);
+  }
+
+  function showStep(i){
+    cur = i;
+    if(i >= STEPS.length){ return finishTour(); }
+    const s = STEPS[i];
+    const el = document.getElementById(s.target);
+    if(!el){ return finishTour(); }
+    const r = el.getBoundingClientRect();
+    const phone = document.querySelector('.phone').getBoundingClientRect();
+    const top = r.top - phone.top - 4;
+    const left = r.left - phone.left - 4;
+
+    const spot = document.getElementById('spot');
+    spot.style.top = top + 'px';
+    spot.style.left = left + 'px';
+    spot.style.width = (r.width + 8) + 'px';
+    spot.style.height = (r.height + 8) + 'px';
+    spot.style.borderRadius = '14px';
+
+    // Coach card position
+    const coach = document.getElementById('coach');
+    let coachTop, coachLeft;
+    const coachW = 300;
+    const phoneW = phone.width;
+    const phoneH = phone.height;
+    const targetCenterX = left + r.width/2;
+    const targetCenterY = top + r.height/2;
+
+    if(s.placement === 'below'){
+      coachTop = top + r.height + 18;
+      coachLeft = Math.min(phoneW - coachW - 14, Math.max(14, targetCenterX - coachW/2));
+    } else if(s.placement === 'below-left'){
+      coachTop = top + r.height + 18;
+      coachLeft = 14;
+    } else if(s.placement === 'below-right'){
+      coachTop = top + r.height + 18;
+      coachLeft = phoneW - coachW - 14;
+    } else { // above
+      coachTop = Math.max(14, top - 150);
+      coachLeft = Math.min(phoneW - coachW - 14, Math.max(14, targetCenterX - coachW/2));
+    }
+    // If coach would go below phone, push above
+    if(coachTop + 200 > phoneH - 80){
+      coachTop = top - 180;
+    }
+
+    coach.style.top = coachTop + 'px';
+    coach.style.left = coachLeft + 'px';
+    coach.innerHTML = `
+      <div class="step-num">Step ${i+1} of ${STEPS.length}</div>
+      <h3>${s.title}</h3>
+      <p>${s.body}</p>
+      <div class="footer">
+        <div class="pips">
+          ${STEPS.map((_,k)=>`<div class="pip ${k===i?'on':''}"></div>`).join('')}
+        </div>
+        <div class="actions">
+          ${i>0 ? '<button class="prev" onclick="showStep('+(i-1)+')">Back</button>' : '<span class="skip" onclick="finishTour(true)">Skip</span>'}
+          <button class="next" onclick="showStep(${i+1})">${i===STEPS.length-1?'Finish':'Next →'}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function finishTour(skipped){
+    document.getElementById('tour').classList.add('off');
+    if(skipped){
+      goWallet();
+    } else {
+      document.getElementById('done').classList.remove('off');
+    }
+  }
+
+  function goWallet(){
+    window.location.href = 'customer-wallet.html';
+  }
+
+  // Recompute positions on resize so the tour stays aligned in the phone frame.
+  window.addEventListener('resize', ()=>{
+    if(!document.getElementById('tour').classList.contains('off')) showStep(cur);
+  });
+</script>
+</body>
+</html>

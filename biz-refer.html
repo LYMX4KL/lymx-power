@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Business referrals — refer another local Business owner. You both get $200 (cash for you, LYMX welcome bonus for them) when they activate." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Refer a Business · LYMX Business</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(19,162,107,.15);color:#0d7d51;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  @media(max-width:960px){.nav-links{display:none}}
+  .btn{padding:10px 16px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13.5px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+  .btn:hover{opacity:.92}
+
+  .page{padding:30px 0 64px}
+  .page-head{margin-bottom:18px}
+  .breadcrumb{font-size:13px;color:var(--muted);margin-bottom:6px}
+  .breadcrumb a{color:var(--accent-2);font-weight:700}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:15px;max-width:600px}
+
+  /* Reward hero */
+  .hero{background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;border-radius:var(--radius);padding:30px 32px;margin-bottom:18px;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:24px;align-items:center;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(245,209,114,.18),transparent 70%);right:-100px;top:-100px;pointer-events:none}
+  @media(max-width:780px){.hero{grid-template-columns:1fr 1fr}}
+  .hero .lab{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:#c5edd9;margin-bottom:5px;position:relative}
+  .hero h2{margin:0 0 4px;font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.05;position:relative;color:#fff}
+  .hero .sub{font-size:14px;color:#c5edd9;line-height:1.5;position:relative}
+  .hero .v{font-size:38px;font-weight:800;color:#f5d172;letter-spacing:-.02em;line-height:1;position:relative}
+  .hero .vsub{font-size:12.5px;color:#c5edd9;margin-top:4px;position:relative}
+
+  /* How it works */
+  .how{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;margin-bottom:18px}
+  .how h3{margin:0 0 16px;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;text-align:center}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start}
+  @media(max-width:780px){.steps{grid-template-columns:1fr 1fr}}
+  @media(max-width:480px){.steps{grid-template-columns:1fr}}
+  .step{text-align:center;padding:14px 10px;position:relative}
+  .step .num{width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;margin:0 auto 8px}
+  .step .h{font-weight:800;font-size:14.5px;margin-bottom:4px}
+  .step .d{font-size:12.5px;color:var(--muted);line-height:1.5}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+  @media(max-width:1000px){.layout{grid-template-columns:1fr}}
+
+  /* Share card */
+  .share-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;margin-bottom:14px}
+  .share-card h2{margin:0 0 14px;font-size:18px;font-weight:800}
+
+  .link-row{display:flex;gap:8px;align-items:stretch;margin-bottom:14px;flex-wrap:wrap}
+  .link-input{flex:1;min-width:240px;background:var(--bg-soft);border:1px solid var(--line);border-radius:9px;padding:11px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:var(--ink-2)}
+  .link-copy{padding:11px 18px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13px;border:0;cursor:pointer}
+  .link-copy:hover{background:var(--accent-2)}
+  .link-copy.copied{background:var(--ok)}
+
+  .share-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .share-btn{flex:1;min-width:120px;padding:11px 14px;background:#fff;border:1px solid var(--line);border-radius:9px;font-size:13px;font-weight:800;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
+  .share-btn:hover{border-color:var(--ink)}
+  .share-btn.email{background:#f0a020;color:#fff;border-color:#f0a020}
+  .share-btn.email:hover{background:#d6892a}
+  .share-btn.sms{background:#13a26b;color:#fff;border-color:#13a26b}
+  .share-btn.sms:hover{background:#0d7d51}
+
+  .invite-form{padding:18px;background:var(--bg-soft);border-radius:11px}
+  .invite-form .h{font-size:13.5px;font-weight:800;margin-bottom:10px}
+  .invite-form .field{margin-bottom:10px}
+  .invite-form .field label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+  .invite-form .field input,.invite-form .field textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;font-family:inherit;background:#fff}
+  .invite-form .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:600px){.invite-form .field-grid{grid-template-columns:1fr}}
+  .invite-form .send{padding:11px 18px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13px;border:0;cursor:pointer;margin-top:6px}
+  .invite-form .send:hover{background:var(--accent-2)}
+
+  /* Tracker */
+  .tracker{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;margin-bottom:14px}
+  .tracker h2{margin:0 0 4px;font-size:18px;font-weight:800}
+  .tracker .sub{margin:0 0 18px;font-size:13px;color:var(--muted)}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-bottom:14px}
+  @media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#fff;padding:14px 16px}
+  .stat .l{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+  .stat .v{font-size:20px;font-weight:800;letter-spacing:-.01em}
+  .stat .v.green{color:var(--ok)}
+  .stat .v.gold{color:var(--gold)}
+  .stat .v.amber{color:#a06808}
+
+  .ref-list{border:1px solid var(--line);border-radius:11px;overflow:hidden}
+  .ref-row{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center}
+  .ref-row:last-child{border-bottom:0}
+  .ref-row .av{width:36px;height:36px;border-radius:50%;background:var(--bg-soft);color:var(--ink-2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+  .ref-row .body{flex:1;min-width:0}
+  .ref-row .name{font-size:14px;font-weight:800}
+  .ref-row .meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .ref-row .status{padding:3px 10px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
+  .ref-row .status.invited{background:rgba(91,100,114,.12);color:var(--muted)}
+  .ref-row .status.demo{background:rgba(10,132,255,.1);color:var(--accent-2)}
+  .ref-row .status.signed{background:rgba(240,160,32,.16);color:#a06808}
+  .ref-row .status.activated{background:rgba(19,162,107,.14);color:#0d7d51}
+  .ref-row .status.paid{background:linear-gradient(135deg,#d4af37,#a08020);color:#fff}
+  .ref-row .v{font-weight:800;font-size:14px;text-align:right;min-width:70px;flex-shrink:0}
+  .ref-row .v.gold{color:var(--gold)}
+  .ref-row .v.muted{color:var(--muted)}
+
+  /* Side panel */
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:14px}
+  .panel h3{margin:0 0 10px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .panel p{margin:0 0 8px;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+  .panel a{color:var(--accent-2);font-weight:700}
+
+  .leader-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .leader-row:last-child{border-bottom:0}
+  .leader-row .rank{font-size:13px;font-weight:800;color:var(--muted);min-width:24px}
+  .leader-row .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;margin-right:8px}
+  .leader-row .v{font-weight:800;color:var(--ok);flex-shrink:0}
+  .leader-row.you{background:rgba(212,175,55,.08);margin:0 -10px;padding:8px 10px;border-radius:7px}
+  .leader-row.you .rank{color:var(--gold)}
+
+  /* Compare card */
+  .compare{background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);padding:20px 22px;margin-bottom:14px}
+  .compare h3{color:#f5d172;margin:0 0 8px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+  .compare p{margin:0 0 10px;font-size:13px;color:#c5edd9;line-height:1.5}
+  .compare a{color:#f5d172;font-weight:800}
+
+  /* Confirmation modal */
+  .ovr{position:fixed;inset:0;background:rgba(14,17,22,.5);z-index:90;display:none;align-items:center;justify-content:center;padding:20px}
+  .ovr.on{display:flex}
+  .modal{background:#fff;border-radius:var(--radius);max-width:420px;width:100%;padding:28px;text-align:center}
+  .modal .ic{font-size:42px;margin-bottom:10px}
+  .modal h3{margin:0 0 6px;font-size:20px;font-weight:800}
+  .modal p{margin:0 0 16px;color:var(--muted);font-size:14px}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Business</span>
+    </div>
+    <nav class="nav-links">
+      <a href="biz-dashboard.html">Dashboard</a>
+      <a href="biz-analytics.html">Analytics</a>
+      <a href="pos.html">POS</a>
+      <a href="promotions.html">Promotions</a>
+      <a href="settlement.html">Settlement</a>
+      <a href="biz-refer.html" class="on">Refer</a>
+    </nav>
+    <a href="support.html" class="btn ghost">Help</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div class="breadcrumb"><a href="biz-dashboard.html">Dashboard</a> · Refer a Business</div>
+      <h1>Refer another Business — get $200, give $200</h1>
+      <p>Know a local Business owner who'd be a good fit? Refer them, and when they activate, you get <strong>$200 cash</strong> and they get <strong>$200 in LYMX</strong> as a welcome bonus on top of their normal package.</p>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div>
+        <div class="lab">The deal</div>
+        <h2>You get $200<br>They get $200</h2>
+        <div class="sub">Cash to you (paid 30 days after they activate). LYMX welcome bonus to them, on top of their regular Founding Business package.</div>
+      </div>
+      <div><div class="lab">Your earnings to date</div><div class="v" id="m-earned">$—</div><div class="vsub" id="m-earned-sub">—</div></div>
+      <div><div class="lab">Pending</div><div class="v" id="m-pending" style="color:#f5d172">$—</div><div class="vsub">In flight</div></div>
+    </div>
+
+    <!-- How it works -->
+    <div class="how">
+      <h3>How it works</h3>
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <div class="h">Share your link</div>
+          <div class="d">Personal referral URL or email/SMS template — pre-filled with the value prop.</div>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <div class="h">They book a demo</div>
+          <div class="d">Your link routes them to a 30-min demo. We mention you sent them.</div>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <div class="h">They activate</div>
+          <div class="d">Once they sign the Activation Agreement and process their first transaction.</div>
+        </div>
+        <div class="step">
+          <div class="num">4</div>
+          <div class="h">Both rewards pay out</div>
+          <div class="d">$200 cash to you (ACH, day 30). $200 LYMX into their wallet (instant).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div>
+        <!-- Share card -->
+        <div class="share-card">
+          <h2>Your referral link</h2>
+          <div class="link-row">
+            <input class="link-input" id="ref-link" value="https://getlymx.com/r/biz/brewbean-7K2X" readonly />
+            <button class="link-copy" id="copy-btn" onclick="copyLink()">Copy link</button>
+          </div>
+          <div class="share-row">
+            <a class="share-btn email" id="email-btn">📧 Email template</a>
+            <a class="share-btn sms" id="sms-btn">💬 SMS template</a>
+            <a class="share-btn" onclick="shareNative()">🔗 More options</a>
+          </div>
+
+          <div class="invite-form">
+            <div class="h">Or invite directly — we'll email them on your behalf</div>
+            <div class="field-grid">
+              <div class="field">
+                <label>Their name</label>
+                <input type="text" id="i-name" placeholder="Maria Lopez" />
+              </div>
+              <div class="field">
+                <label>Their Business</label>
+                <input type="text" id="i-biz" placeholder="Oakline Kitchen" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Their email</label>
+              <input type="email" id="i-email" placeholder="maria@oakline-kitchen.com" />
+            </div>
+            <div class="field">
+              <label>Add a personal note (optional)</label>
+              <textarea id="i-note" rows="3" placeholder="Maria — saw you might dig this. We've been on LYMX for 2 months and Q1 traffic is up. Worth a 15-min look. — Daniel"></textarea>
+            </div>
+            <button class="send" onclick="sendInvite()">Send invitation</button>
+          </div>
+        </div>
+
+        <!-- Tracker -->
+        <div class="tracker">
+          <h2>Your referrals</h2>
+          <p class="sub">From earliest invite to most recent.</p>
+
+          <div class="stats">
+            <div class="stat"><div class="l">Invited</div><div class="v" id="s-invited">5</div></div>
+            <div class="stat"><div class="l">Booked demo</div><div class="v" id="s-demo">3</div></div>
+            <div class="stat"><div class="l">Activated</div><div class="v green" id="s-activated">2</div></div>
+            <div class="stat"><div class="l">$ Earned</div><div class="v gold" id="s-earned">$400</div></div>
+          </div>
+
+          <div class="ref-list" id="ref-list"></div>
+        </div>
+      </div>
+
+      <!-- Side -->
+      <div>
+        <div class="panel">
+          <h3>Why we offer this</h3>
+          <p>Business owners trust other Business owners. A referral from you converts <strong style="color:var(--ok)">3.7×</strong> better than our cold outreach.</p>
+          <p>The $200 to your friend offsets their first month — they hit profitability faster, which means they stay longer.</p>
+        </div>
+
+        <div class="panel">
+          <h3>Top referrers this quarter</h3>
+          <div class="leader-row"><span class="rank">1.</span><span class="name">Two Birds Café</span><span class="v">5 active</span></div>
+          <div class="leader-row you"><span class="rank">2.</span><span class="name">Brew &amp; Bean (you)</span><span class="v">2 active</span></div>
+          <div class="leader-row"><span class="rank">3.</span><span class="name">Pulse Studio</span><span class="v">2 active</span></div>
+          <div class="leader-row"><span class="rank">4.</span><span class="name">Sage &amp; Stone Bakery</span><span class="v">1 active</span></div>
+          <div class="leader-row"><span class="rank">5.</span><span class="name">Pink Note Co</span><span class="v">1 active</span></div>
+        </div>
+
+        <div class="compare">
+          <h3>Want a bigger upside?</h3>
+          <p>Becoming a LYMX <strong>Partner</strong> unlocks 9% recurring overrides on every Business you sign — not just a one-time $200.</p>
+          <p>Same effort, recurring income. Open to current Businesses.</p>
+          <a href="partner-signup.html">Apply to become a Partner →</a>
+        </div>
+
+        <div class="panel">
+          <h3>FAQ</h3>
+          <p><strong>When do I get paid?</strong> $200 ACH 30 days after the Business activates (so they can't cancel and trigger a clawback).</p>
+          <p><strong>Cap on referrals?</strong> No cap.</p>
+          <p><strong>What if they're already in LYMX talks?</strong> We honor whoever was first — usually that's the Partner who initially reached out. <a href="support.html">Contact us if there's a conflict</a>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Confirmation modal -->
+<div class="ovr" id="ovr-confirm">
+  <div class="modal">
+    <div class="ic">📨</div>
+    <h3>Invitation sent</h3>
+    <p>We emailed your friend. They'll see your note and your referral link. We'll let you know when they book a demo.</p>
+    <button class="btn" onclick="closeConfirm()">Got it</button>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · Business referral program — $200 cash + $200 LYMX welcome bonus per activation</div>
+</footer>
+
+<script>
+  // Mock referral data
+  const REFS = [
+    {name:'Maria Lopez', biz:'Oakline Kitchen', date:'2026-04-22', status:'paid', earned:200, av:'OK'},
+    {name:'Daniel Whitley Jr.', biz:'Daniel\'s Detail Co', date:'2026-04-15', status:'activated', earned:0, av:'DD'},
+    {name:'Aida Mendoza', biz:'Sunlit Salon Studio', date:'2026-04-08', status:'demo', earned:0, av:'SS'},
+    {name:'Riya Patel', biz:'Sage & Stone Bakery', date:'2026-04-01', status:'paid', earned:200, av:'SS'},
+    {name:'Jordan Brooks', biz:'Pink Note Co', date:'2026-03-25', status:'invited', earned:0, av:'PN'}
+  ];
+  const STATUS_LABEL = {invited:'Invited', demo:'Booked demo', signed:'Signed', activated:'Activated · pending payout', paid:'Paid'};
+
+  function timeAgo(dateStr){
+    const d = new Date(dateStr+'T00:00:00');
+    const today = new Date('2026-04-29');
+    const diff = Math.round((today - d)/(1000*60*60*24));
+    if(diff === 0) return 'Today';
+    if(diff === 1) return 'Yesterday';
+    if(diff < 30) return diff + ' days ago';
+    if(diff < 60) return '1 month ago';
+    return Math.floor(diff/30) + ' months ago';
+  }
+
+  function render(){
+    // Stats
+    const invited = REFS.length;
+    const demo = REFS.filter(r=>['demo','signed','activated','paid'].includes(r.status)).length;
+    const activated = REFS.filter(r=>['activated','paid'].includes(r.status)).length;
+    const paid = REFS.filter(r=>r.status==='paid');
+    const pending = REFS.filter(r=>r.status==='activated');
+    const earnedTotal = paid.reduce((a,b)=>a+b.earned,0);
+    const pendingTotal = pending.length * 200;
+
+    document.getElementById('s-invited').textContent = invited;
+    document.getElementById('s-demo').textContent = demo;
+    document.getElementById('s-activated').textContent = activated;
+    document.getElementById('s-earned').textContent = '$' + earnedTotal;
+    document.getElementById('m-earned').textContent = '$' + earnedTotal;
+    document.getElementById('m-earned-sub').textContent = paid.length + ' referral' + (paid.length===1?'':'s') + ' paid';
+    document.getElementById('m-pending').textContent = '$' + pendingTotal;
+
+    // List
+    document.getElementById('ref-list').innerHTML = REFS.map(r=>{
+      return `<div class="ref-row">
+        <div class="av">${r.av}</div>
+        <div class="body">
+          <div class="name">${r.biz}</div>
+          <div class="meta">${r.name} · invited ${timeAgo(r.date)}</div>
+        </div>
+        <span class="status ${r.status}">${STATUS_LABEL[r.status]}</span>
+        <div class="v ${r.status==='paid' ? 'gold' : 'muted'}">${r.status==='paid' ? '+$200' : r.status==='activated' ? '$200 pending' : '—'}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Copy link
+  function copyLink(){
+    const link = document.getElementById('ref-link').value;
+    navigator.clipboard.writeText(link).then(()=>{
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(()=>{ btn.textContent = 'Copy link'; btn.classList.remove('copied'); }, 1800);
+    }).catch(()=>{
+      document.getElementById('ref-link').select();
+      alert('Press Ctrl/Cmd+C to copy');
+    });
+  }
+
+  // Email + SMS templates
+  const REF_LINK = 'https://getlymx.com/r/biz/brewbean-7K2X';
+  const EMAIL_SUBJ = "A way to bring back the customers who've forgotten about us";
+  const EMAIL_BODY = `Hey -- I joined this thing called LYMX a couple months ago. It's a shared loyalty network for local Businesses. I've been getting more repeat traffic since signing up.
+
+If you join through my link, you get a $200 LYMX welcome bonus on top of the regular Founding Business package, and I get $200. Win-win.
+
+Take a look: ${REF_LINK}
+
+-- Daniel @ Brew & Bean`;
+  const SMS_BODY = `Hey -- I joined LYMX (shared loyalty network for local Businesses). Real boost in repeat customers. If you join through my link we both get $200. ${REF_LINK}`;
+
+  document.getElementById('email-btn').href = 'mailto:?subject=' + encodeURIComponent(EMAIL_SUBJ) + '&body=' + encodeURIComponent(EMAIL_BODY);
+  document.getElementById('sms-btn').href = 'sms:?&body=' + encodeURIComponent(SMS_BODY);
+
+  function shareNative(){
+    if(navigator.share){
+      navigator.share({title:'Join LYMX',text:SMS_BODY,url:REF_LINK}).catch(()=>{});
+    } else {
+      copyLink();
+    }
+  }
+
+  function sendInvite(){
+    const name = document.getElementById('i-name').value.trim();
+    const biz = document.getElementById('i-biz').value.trim();
+    const email = document.getElementById('i-email').value.trim();
+    if(!name || !biz || !email){ alert('Please fill in your friend\'s name, Business, and email.'); return; }
+    if(!/@/.test(email)){ alert('Please enter a valid email.'); return; }
+
+    // Append to mock list
+    REFS.unshift({name, biz, date:new Date().toISOString().slice(0,10), status:'invited', earned:0, av:biz.split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase()});
+    render();
+    ['i-name','i-biz','i-email','i-note'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('ovr-confirm').classList.add('on');
+  }
+  function closeConfirm(){ document.getElementById('ovr-confirm').classList.remove('on'); }
+
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX — la red local de lealtad compartida en Las Vegas. Gana LYMX en una Empresa, gástalo en cualquiera. Sin apps, sin caducidad." />
+<title>LYMX · Lealtad local compartida en Las Vegas</title>
+<meta property="og:title" content="LYMX — Lealtad local compartida" />
+<meta property="og:description" content="Gana LYMX en una Empresa local. Gástalo en cualquier otra de la red. Sin apps. Sin caducidad." />
+<meta property="og:image" content="og-image.png" />
+<link rel="alternate" hreflang="es" href="https://getlymx.com/index-es.html" />
+<link rel="alternate" hreflang="en" href="https://getlymx.com/" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  /* Top language strip */
+  .lang-bar{background:var(--ink);color:#fff;padding:8px 0;font-size:12.5px;text-align:center}
+  .lang-bar a{color:#f5d172;font-weight:700;margin-left:5px}
+  .lang-bar a:hover{text-decoration:underline}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px}
+  .brand .dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:24px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-cta{display:flex;gap:8px;align-items:center}
+  .lang-toggle{display:flex;background:var(--bg-soft);border-radius:8px;padding:2px;font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .lang-toggle a{padding:5px 10px;border-radius:6px;color:var(--muted)}
+  .lang-toggle a.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(14,17,22,.1)}
+  .btn{padding:10px 16px;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;border:0;text-decoration:none;display:inline-block}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:var(--accent-2)}
+  .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--ink)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .hero{padding:60px 0 50px;background:linear-gradient(180deg,#fff,var(--bg-soft));border-bottom:1px solid var(--line)}
+  .hero-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center}
+  @media(max-width:900px){.hero-grid{grid-template-columns:1fr}}
+  .hero .pre{display:inline-block;background:rgba(10,132,255,.1);color:var(--accent-2);font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .hero h1{margin:0 0 14px;font-size:46px;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+  .hero h1 .accent{color:var(--accent-2)}
+  .hero p.lede{font-size:17px;color:var(--ink-2);margin:0 0 22px;max-width:540px;line-height:1.55}
+  .hero-cta{display:flex;gap:10px;flex-wrap:wrap}
+
+  /* Hero illustration */
+  .hero-illu{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+  .balance{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border-radius:14px;padding:22px 24px;position:relative;overflow:hidden}
+  .balance::after{content:"";position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(245,209,114,.18),transparent 70%);right:-80px;top:-80px}
+  .balance .lab{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#a3c5ff;margin-bottom:5px;position:relative}
+  .balance .v{font-size:42px;font-weight:800;letter-spacing:-.02em;line-height:1;position:relative}
+  .balance .equiv{font-size:13px;color:#a3c5ff;margin-top:6px;position:relative}
+  .balance .row{display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.18);font-size:11.5px;color:#a3c5ff;position:relative}
+  .pay-btn{background:#f5d172;color:#0e1116;padding:9px 14px;border-radius:8px;font-weight:800;font-size:13px;border:0}
+
+  .activity{margin-top:14px}
+  .act{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .act:last-child{border-bottom:0}
+  .act .who{font-weight:700}
+  .act .when{font-size:11.5px;color:var(--muted)}
+  .act .amt{font-weight:800;color:var(--ok)}
+  .act .amt.neg{color:var(--ink-2)}
+
+  /* How it works */
+  .how{padding:48px 0}
+  .how h2{margin:0 0 8px;font-size:30px;font-weight:800;letter-spacing:-.02em;text-align:center}
+  .how .lede{text-align:center;color:var(--muted);font-size:15.5px;margin:0 0 30px;max-width:580px;margin-left:auto;margin-right:auto}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:780px){.steps{grid-template-columns:1fr}}
+  .step{padding:24px 26px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);position:relative}
+  .step .n{position:absolute;top:-14px;left:24px;width:28px;height:28px;background:var(--ink);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+  .step h3{margin:6px 0 6px;font-size:18px;font-weight:800}
+  .step p{margin:0;font-size:14px;color:var(--ink-2);line-height:1.55}
+
+  /* Categories */
+  .cats{padding:48px 0;background:var(--bg-soft)}
+  .cats h2{margin:0 0 6px;font-size:26px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .cats .lede{text-align:center;color:var(--muted);font-size:14.5px;margin:0 0 24px}
+  .cat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+  @media(max-width:780px){.cat-grid{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:480px){.cat-grid{grid-template-columns:repeat(2,1fr)}}
+  .cat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px 14px;text-align:center;cursor:pointer;transition:.15s}
+  .cat:hover{border-color:var(--ink);transform:translateY(-2px);box-shadow:var(--shadow)}
+  .cat .emoji{font-size:32px;display:block;margin-bottom:6px}
+  .cat .n{font-weight:800;font-size:13.5px}
+  .cat .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+  /* Why LYMX strip */
+  .why{padding:48px 0}
+  .why-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:780px){.why-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.why-grid{grid-template-columns:1fr}}
+  .why-card{padding:22px 24px;background:linear-gradient(180deg,#fff,var(--bg-soft));border:1px solid var(--line);border-radius:var(--radius)}
+  .why-card .ic{font-size:30px;margin-bottom:8px}
+  .why-card h3{margin:0 0 4px;font-size:15px;font-weight:800}
+  .why-card p{margin:0;font-size:13px;color:var(--muted);line-height:1.55}
+
+  /* Comparison strip */
+  .vs{padding:60px 0;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;text-align:center}
+  .vs h2{margin:0 0 8px;font-size:30px;font-weight:800;letter-spacing:-.02em;color:#fff}
+  .vs .lede{margin:0 auto 24px;color:#9aa3b0;font-size:15px;max-width:600px}
+  .vs-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:780px;margin:0 auto;text-align:left}
+  @media(max-width:600px){.vs-row{grid-template-columns:1fr}}
+  .vs-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:20px 22px}
+  .vs-card.win{border-color:rgba(245,209,114,.4);background:rgba(245,209,114,.08)}
+  .vs-card .h{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+  .vs-card.lose .h{color:#9aa3b0}
+  .vs-card.win .h{color:#f5d172}
+  .vs-card ul{margin:0;padding:0 0 0 20px;color:#cdd2da;font-size:14px;line-height:1.7}
+  .vs-card.win ul{color:#fff}
+  .vs-card li{margin:6px 0}
+  .vs-cta{margin-top:24px}
+
+  /* CTA */
+  .cta{padding:48px 0;background:var(--bg-soft);text-align:center}
+  .cta h2{margin:0 0 8px;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .cta p{margin:0 0 20px;color:var(--muted);font-size:15.5px}
+  .cta-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .btn-gold{background:#f5d172;color:#0e1116}
+  .btn-gold:hover{background:var(--ink);color:#fff}
+  .btn-lg{padding:13px 22px;font-size:15px}
+
+  /* Footer */
+  footer{background:var(--ink);color:#9aa3b0;padding:38px 0 24px;font-size:13px}
+  .foot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-bottom:18px}
+  @media(max-width:780px){.foot-grid{grid-template-columns:repeat(2,1fr)}}
+  .foot-grid h4{color:#fff;font-size:13px;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
+  .foot-grid a{display:block;padding:3px 0;color:#9aa3b0}
+  .foot-grid a:hover{color:#fff}
+  .foot-bot{padding-top:16px;border-top:1px solid rgba(255,255,255,.1);text-align:center;font-size:12.5px}
+</style>
+</head>
+<body>
+
+<div class="lang-bar">
+  🌐 Estás viendo la página en español. <a href="index.html">Ver en inglés →</a>
+</div>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index-es.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="browse.html">Explorar</a>
+      <a href="why-lymx.html">Por qué LYMX</a>
+      <a href="business.html">Para Empresas</a>
+      <a href="founding-25.html">Cohorte Fundadora</a>
+      <a href="app.html">Cartera Web</a>
+    </nav>
+    <div class="nav-cta">
+      <div class="lang-toggle">
+        <a href="index.html">EN</a>
+        <a href="index-es.html" class="on">ES</a>
+      </div>
+      <a href="customer-signup.html" class="btn btn-primary">Únete gratis</a>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="pre">⚡ Lealtad local compartida</span>
+        <h1>Gana LYMX en una Empresa.<br><span class="accent">Gástalo en cualquiera</span> de la red.</h1>
+        <p class="lede">Sin apps que descargar. Sin puntos que caducan. Sin "compra 9 cafés para conseguir uno gratis." Una sola moneda local, gastable en cada Empresa de LYMX en Las Vegas.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary btn-lg" href="customer-signup.html">Quiero mi cartera →</a>
+          <a class="btn btn-ghost btn-lg" href="why-lymx.html">¿Cómo funciona?</a>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-top:14px">Bono de bienvenida: <strong style="color:var(--gold);font-weight:800">100 LYMX</strong> (≈ $1) al registrarte. Sin tarjeta de crédito.</p>
+      </div>
+      <div class="hero-illu">
+        <div class="balance">
+          <div class="lab">Tu saldo</div>
+          <div class="v">2,450 LYMX</div>
+          <div class="equiv">≈ $24.50 para gastar en la red</div>
+          <div class="row">
+            <span>Spendable en 13 Empresas activas</span>
+            <button class="pay-btn">📲 Pagar con QR</button>
+          </div>
+        </div>
+        <div class="activity">
+          <div class="act">
+            <div><div class="who">Brew &amp; Bean Café</div><div class="when">Hoy · 8:14 AM · Latte</div></div>
+            <div class="amt">+1,200 LYMX</div>
+          </div>
+          <div class="act">
+            <div><div class="who">Oakline Kitchen</div><div class="when">Ayer · cena</div></div>
+            <div class="amt">+520 LYMX</div>
+          </div>
+          <div class="act">
+            <div><div class="who">Pink Note Co</div><div class="when">Hace 2 días · regalo</div></div>
+            <div class="amt neg" style="color:var(--muted)">−1,100 LYMX</div>
+          </div>
+          <div class="act">
+            <div><div class="who">Bono de bienvenida</div><div class="when">El mes pasado</div></div>
+            <div class="amt">+100 LYMX</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="how">
+  <div class="wrap">
+    <h2>Así funciona</h2>
+    <p class="lede">Tres pasos. Si has pagado con una tarjeta de café, ya sabes el 90% de esto.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="n">1</div>
+        <h3>Abre tu cartera</h3>
+        <p>La cartera LYMX vive en tu navegador. Agrégala a la pantalla de inicio de tu teléfono — funciona como una app, sin descargar.</p>
+      </div>
+      <div class="step">
+        <div class="n">2</div>
+        <h3>Gana al pagar</h3>
+        <p>Cada vez que compres en una Empresa LYMX, ganas LYMX automáticamente. 5 LYMX por cada $1 es lo típico, más con promociones.</p>
+      </div>
+      <div class="step">
+        <div class="n">3</div>
+        <h3>Gasta donde quieras</h3>
+        <p>Gana LYMX en el café. Gástalo en la cena. Acumúlalos para el salón. Una sola moneda en toda la red de Empresas LYMX.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Categories -->
+<section class="cats">
+  <div class="wrap">
+    <h2>Encuentra Empresas en Las Vegas</h2>
+    <p class="lede">13 Empresas activas hoy · 12 espacios abiertos en la cohorte fundadora</p>
+    <div class="cat-grid">
+      <a class="cat" href="browse.html"><span class="emoji">🍽️</span><div class="n">Comida</div><div class="s">Cafés · Restaurantes</div></a>
+      <a class="cat" href="browse.html"><span class="emoji">🛍️</span><div class="n">Tiendas</div><div class="s">Comercios locales</div></a>
+      <a class="cat" href="browse.html"><span class="emoji">💇</span><div class="n">Belleza</div><div class="s">Salones · Estética</div></a>
+      <a class="cat" href="browse.html"><span class="emoji">💪</span><div class="n">Fitness</div><div class="s">Gimnasios · Estudios</div></a>
+      <a class="cat" href="browse.html"><span class="emoji">🧰</span><div class="n">Servicios</div><div class="s">Reparación · Hogar</div></a>
+      <a class="cat" href="coverage-map.html"><span class="emoji">🗺️</span><div class="n">Ver el mapa</div><div class="s">Por barrio</div></a>
+    </div>
+  </div>
+</section>
+
+<!-- Why LYMX -->
+<section class="why">
+  <div class="wrap">
+    <h2 style="margin:0 0 6px;font-size:26px;font-weight:800;letter-spacing:-.01em;text-align:center">Por qué LYMX es diferente</h2>
+    <p style="text-align:center;color:var(--muted);font-size:14.5px;margin:0 0 24px">Cuatro cosas que ningún programa de millas o puntos te ofrece.</p>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="ic">⏳</div>
+        <h3>Nunca caduca</h3>
+        <p>Tus LYMX están ahí cuando los necesites. Sin reglas de "úsalo o piérdelo".</p>
+      </div>
+      <div class="why-card">
+        <div class="ic">💵</div>
+        <h3>Valor fijo</h3>
+        <p>1 LYMX = $0.01 siempre. Sin portales que cambian la matemática.</p>
+      </div>
+      <div class="why-card">
+        <div class="ic">🌐</div>
+        <h3>Red compartida</h3>
+        <p>Gana en una Empresa, gasta en cualquier otra de la red LYMX.</p>
+      </div>
+      <div class="why-card">
+        <div class="ic">📲</div>
+        <h3>Sin app que descargar</h3>
+        <p>Funciona desde tu navegador. Agrega a la pantalla de inicio.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Comparison strip -->
+<section class="vs">
+  <div class="wrap">
+    <h2>LYMX vs millas y puntos</h2>
+    <p class="lede">La diferencia honesta entre LYMX y los programas de lealtad típicos.</p>
+    <div class="vs-row">
+      <div class="vs-card lose">
+        <div class="h">Programas tradicionales</div>
+        <ul>
+          <li>Los puntos caducan en 12-24 meses</li>
+          <li>Mínimos altos para canjear (5,000+)</li>
+          <li>Solo gastas donde los ganaste</li>
+          <li>Necesitas otra app más</li>
+          <li>~80% de los puntos nunca se canjean</li>
+        </ul>
+      </div>
+      <div class="vs-card win">
+        <div class="h">★ LYMX</div>
+        <ul>
+          <li>LYMX nunca caduca</li>
+          <li>Sin mínimo — usa 1 LYMX si quieres</li>
+          <li>Gasta en cualquier Empresa de la red</li>
+          <li>Sin app — funciona en tu navegador</li>
+          <li>Diseñado para gastarse, no para perderse</li>
+        </ul>
+      </div>
+    </div>
+    <div class="vs-cta">
+      <a class="btn btn-gold btn-lg" href="customer-rewards-vs.html">Ver comparación completa →</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="wrap">
+    <h2>¿Listo para empezar?</h2>
+    <p>Gratis para siempre. Bono de bienvenida de 100 LYMX al registrarte.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary btn-lg" href="customer-signup.html">Únete a LYMX →</a>
+      <a class="btn btn-ghost btn-lg" href="business.html">¿Tienes una Empresa?</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>Para clientes</h4>
+        <a href="why-lymx.html">Por qué LYMX</a>
+        <a href="customer-rewards-vs.html">Comparar</a>
+        <a href="browse.html">Explorar Empresas</a>
+        <a href="customer-referral.html">Refiere a un amigo</a>
+      </div>
+      <div>
+        <h4>Para Empresas</h4>
+        <a href="business.html">Inscribe tu Empresa</a>
+        <a href="founding-25.html">Cohorte Fundadora</a>
+        <a href="catering.html">Regalos en bulto</a>
+        <a href="demo.html">Programar demo</a>
+      </div>
+      <div>
+        <h4>Empresa</h4>
+        <a href="about.html">Quiénes somos</a>
+        <a href="careers.html">Carreras</a>
+        <a href="press.html">Prensa</a>
+        <a href="launch-event.html">Lanzamiento Sept 12</a>
+      </div>
+      <div>
+        <h4>Ayuda</h4>
+        <a href="support.html">Soporte</a>
+        <a href="help-center.html">Centro de ayuda</a>
+        <a href="status.html">Estado del sistema</a>
+        <a href="terms.html">Términos</a>
+        <a href="privacy.html">Privacidad</a>
+      </div>
+    </div>
+    <div class="foot-bot">© 2026 LYMX Power · Las Vegas, NV · LYMX es un crédito promocional, no dinero. <a href="disclaimer.html" style="color:#a3c5ff">Más info</a> · <a href="index.html" style="color:#f5d172;font-weight:800">English version</a></div>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Partner social media kit — pre-made graphics + caption packs you can copy and post. FTC-compliant, brand-safe, ready to go." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Social media kit · LYMX Partner</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1280px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(212,175,55,.18);color:#7a5e10;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  @media(max-width:1100px){.nav-links{display:none}}
+  .btn{padding:10px 16px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13.5px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+  .btn:hover{opacity:.92}
+
+  .page{padding:30px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:15px;max-width:600px}
+
+  /* FTC banner */
+  .ftc{padding:14px 20px;background:rgba(240,160,32,.1);border:1px solid rgba(240,160,32,.3);color:#7a4d0a;border-radius:11px;margin-bottom:18px;font-size:13.5px;line-height:1.5;display:flex;gap:12px}
+  .ftc .ic{font-size:18px;flex-shrink:0;margin-top:1px}
+  .ftc strong{font-weight:800}
+
+  /* Filter row */
+  .filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:7px 13px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .chip:hover{border-color:var(--ink)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .ct{margin-left:5px;background:var(--bg-soft);color:var(--muted);padding:1px 7px;border-radius:5px;font-size:10.5px}
+  .chip.on .ct{background:rgba(255,255,255,.18);color:#fff}
+
+  /* Cadence card */
+  .cadence{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px 26px;margin-bottom:18px}
+  .cadence h2{margin:0 0 4px;font-size:17px;font-weight:800}
+  .cadence p.sub{margin:0 0 14px;color:var(--muted);font-size:13.5px}
+  .cadence-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  @media(max-width:780px){.cadence-grid{grid-template-columns:repeat(4,1fr)}}
+  @media(max-width:480px){.cadence-grid{grid-template-columns:repeat(2,1fr)}}
+  .day{padding:12px 10px;border-radius:9px;background:var(--bg-soft);text-align:center;border:1px solid var(--line);font-size:12px}
+  .day.do{background:rgba(19,162,107,.08);border-color:rgba(19,162,107,.3)}
+  .day .dn{font-weight:800;color:var(--ink-2)}
+  .day .dt{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.3}
+  .day.do .dt{color:#0d7d51}
+
+  /* Posts grid */
+  .posts{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+  .post{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+  .post-img{aspect-ratio:1/1;position:relative;display:flex;align-items:center;justify-content:center;color:#fff;padding:24px;text-align:center;font-weight:800}
+  .post-img.story{aspect-ratio:9/16;font-size:20px}
+  .post-img.feed{font-size:18px}
+  .post-img.banner{aspect-ratio:1.91/1;font-size:18px;padding:18px}
+  .post-img .platform{position:absolute;top:10px;left:10px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.78);background:rgba(0,0,0,.18);padding:3px 8px;border-radius:5px;backdrop-filter:blur(4px)}
+  .post-img .lymx-logo{position:absolute;top:10px;right:12px;font-size:11px;font-weight:800;letter-spacing:.1em;color:rgba(255,255,255,.85);background:rgba(255,255,255,.15);padding:3px 8px;border-radius:5px;backdrop-filter:blur(4px)}
+  .post-img .h{font-size:1em;line-height:1.2;letter-spacing:-.01em;margin-bottom:8px}
+  .post-img .sub{font-size:.7em;font-weight:600;opacity:.85;line-height:1.4}
+  .post-img.bg-blue{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .post-img.bg-gold{background:linear-gradient(135deg,#d4af37,#7a5e10)}
+  .post-img.bg-green{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .post-img.bg-purple{background:linear-gradient(135deg,#7426c4,#4d1888)}
+  .post-img.bg-rose{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  .post-img.bg-dark{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#f5d172}
+  .post-img.bg-amber{background:linear-gradient(135deg,#f0a020,#a06808)}
+
+  .post-body{padding:14px 16px;display:flex;flex-direction:column;flex:1}
+  .post-body .meta{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--muted);margin-bottom:6px}
+  .post-body .meta .pill{padding:2px 7px;border-radius:5px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .post-body .meta .pill.feed{background:rgba(10,132,255,.1);color:var(--accent-2)}
+  .post-body .meta .pill.story{background:rgba(165,69,255,.1);color:#7426c4}
+  .post-body .meta .pill.banner{background:rgba(19,162,107,.14);color:#0d7d51}
+  .post-body h3{margin:0 0 8px;font-size:14.5px;font-weight:800;line-height:1.3}
+  .post-body .caption{flex:1;font-size:13px;color:var(--ink-2);background:var(--bg-soft);padding:10px 12px;border-radius:9px;white-space:pre-wrap;line-height:1.45;margin-bottom:10px;max-height:140px;overflow-y:auto}
+  .post-actions{display:flex;gap:6px;flex-wrap:wrap}
+  .post-actions button,.post-actions a{flex:1;min-width:90px;padding:7px 10px;background:var(--bg-soft);border:1px solid var(--line);border-radius:7px;font-size:12px;font-weight:800;color:var(--ink-2);cursor:pointer;text-align:center;text-decoration:none}
+  .post-actions button:hover,.post-actions a:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .post-actions .copied{background:var(--ok);color:#fff;border-color:var(--ok)}
+
+  /* Sidebar tips */
+  .layout{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
+  @media(max-width:1100px){.layout{grid-template-columns:1fr}}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px;margin-bottom:14px}
+  .panel h3{margin:0 0 10px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .panel p{margin:0 0 10px;font-size:13px;color:var(--ink-2);line-height:1.55}
+  .panel ul{margin:0 0 10px 18px;padding:0;font-size:13px;color:var(--ink-2)}
+  .panel ul li{margin:5px 0;line-height:1.5}
+  .panel a{color:var(--accent-2);font-weight:700}
+
+  .compliance-card{background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);padding:18px 22px;margin-bottom:14px}
+  .compliance-card h3{color:#f5d172;margin:0 0 8px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+  .compliance-card p{margin:0 0 10px;font-size:13px;color:#c5edd9;line-height:1.55}
+  .compliance-card .copy-disc{padding:11px 13px;background:rgba(255,255,255,.08);border-radius:9px;font-size:12.5px;color:#fff;font-style:italic;margin:8px 0}
+  .compliance-card button{padding:7px 12px;background:#f5d172;color:#0e1116;border-radius:7px;font-size:11.5px;font-weight:800;border:0;cursor:pointer}
+  .compliance-card button.copied{background:#fff}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Partner</span>
+    </div>
+    <nav class="nav-links">
+      <a href="rep-dashboard.html">Dashboard</a>
+      <a href="projection.html">Projection</a>
+      <a href="partner-crm.html">CRM</a>
+      <a href="partner-tree.html">Downline</a>
+      <a href="content-hub.html">Content</a>
+      <a href="partner-social-kit.html" class="on">Social kit</a>
+      <a href="territory-program.html">Territory</a>
+      <a href="partner-payouts.html">Payouts</a>
+    </nav>
+    <a href="partner-spotlight.html" class="btn ghost">Master spotlight</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>Social media kit</h1>
+        <p>Pre-made graphics + caption packs you can copy and post. Brand-safe, FTC-compliant, ready to go. Replace <code>/r/yourname</code> in captions with your actual referral link before posting.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="btn ghost" href="press-kit.html">Brand kit (logos)</a>
+        <a class="btn" href="content-hub.html">Sales kit</a>
+      </div>
+    </div>
+
+    <!-- FTC reminder -->
+    <div class="ftc">
+      <div class="ic">⚠️</div>
+      <div>
+        <strong>FTC compliance reminder:</strong> Every post about LYMX must clearly disclose your Partner relationship — e.g. "I'm a LYMX Partner — I get paid if you sign up." All captions below already include this. Don't remove it. (See <a href="partner-agreement.html" style="color:#7a4d0a;font-weight:800">Partner Agreement §5</a>.)
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-row">
+      <div class="chips" id="cat-chips">
+        <div class="chip on" data-c="all">All <span class="ct" id="ct-all">12</span></div>
+        <div class="chip" data-c="feed">Feed posts <span class="ct" id="ct-feed">5</span></div>
+        <div class="chip" data-c="story">Stories / Reels <span class="ct" id="ct-story">4</span></div>
+        <div class="chip" data-c="banner">Banners <span class="ct" id="ct-banner">3</span></div>
+      </div>
+      <div class="chips" style="margin-left:8px">
+        <div class="chip on" data-p="all">All platforms</div>
+        <div class="chip" data-p="instagram">Instagram</div>
+        <div class="chip" data-p="linkedin">LinkedIn</div>
+        <div class="chip" data-p="facebook">Facebook</div>
+        <div class="chip" data-p="twitter">Twitter / X</div>
+      </div>
+    </div>
+
+    <!-- Cadence -->
+    <div class="cadence">
+      <h2>Suggested posting cadence</h2>
+      <p class="sub">3 posts / week is enough to stay top-of-mind without burning out. Mix the post types — don't only post the "earn $500" hook.</p>
+      <div class="cadence-grid">
+        <div class="day do"><div class="dn">Mon</div><div class="dt">Story: behind-the-scenes</div></div>
+        <div class="day"><div class="dn">Tue</div><div class="dt">Off</div></div>
+        <div class="day do"><div class="dn">Wed</div><div class="dt">Feed: Business win</div></div>
+        <div class="day"><div class="dn">Thu</div><div class="dt">Off</div></div>
+        <div class="day do"><div class="dn">Fri</div><div class="dt">Reel: pitch hook</div></div>
+        <div class="day"><div class="dn">Sat</div><div class="dt">Off</div></div>
+        <div class="day"><div class="dn">Sun</div><div class="dt">Off</div></div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- Posts -->
+      <div class="posts" id="posts"></div>
+
+      <!-- Sidebar -->
+      <div>
+        <div class="compliance-card">
+          <h3>The 1-line disclosure</h3>
+          <p>Drop this somewhere in every post about LYMX — caption, comment, or story sticker. Required.</p>
+          <div class="copy-disc">"I'm a LYMX Partner — I get paid if you sign up through my link."</div>
+          <button id="copy-disc-btn" onclick="copyDisclosure()">📋 Copy disclosure</button>
+        </div>
+
+        <div class="panel">
+          <h3>The three post styles that work</h3>
+          <ul>
+            <li><strong>The Business owner story.</strong> Feature a real Business — what changed for them after joining. Specific, concrete, narrative.</li>
+            <li><strong>The customer pain story.</strong> Tell the airline-points / fast-food-app frustration that LYMX solves. Don't name brands by name.</li>
+            <li><strong>The behind-the-scenes.</strong> What you did this week, who you talked to, what you learned. Builds your personal credibility.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3>Don't do these</h3>
+          <ul>
+            <li>Don't promise income amounts ("I made $5K this month!"). The Income Disclosure must accompany any earnings claim.</li>
+            <li>Don't use "passive income" or "guaranteed" or anything close.</li>
+            <li>Don't @ -mention Businesses on LYMX without checking with them first.</li>
+            <li>Don't run paid ads with your Partner link without legal sign-off.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3>Need more?</h3>
+          <p>Email <a href="mailto:partners@getlymx.com">partners@getlymx.com</a> if you want a custom graphic for a specific Business or campaign. We turn around in 1-2 days.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Partner social media kit · FTC-compliant captions · Always disclose your Partner relationship.</div>
+</footer>
+
+<script>
+  // The 12 post templates — each has a generated graphic spec + caption
+  const POSTS = [
+    {
+      id:'p1', cat:'feed', size:'feed', bg:'bg-blue',
+      title:'Founding 25 announcement',
+      h:'Las Vegas Businesses', sub:'12 spots left in the LYMX Founding 25',
+      platforms:'Instagram, LinkedIn, Facebook',
+      caption:`Local Las Vegas Business owners — LYMX Founding 25 has 12 spots left.
+
+What you get:
+• Listed as Founding Business on every wallet
+• Permanent gold-frame badge
+• Homepage feature spot for 30 days
+• One-time email blast to all local LYMX customers
+
+I'm a LYMX Partner — I get paid if you sign up through my link.
+
+Apply: https://getlymx.com/r/yourname`
+    },
+    {
+      id:'p2', cat:'story', size:'story', bg:'bg-gold',
+      title:'Pitch hook for stories',
+      h:'When was the last time you redeemed loyalty points?', sub:'Probably never. LYMX fixes that.',
+      platforms:'Instagram, Facebook',
+      caption:`Story slide caption:
+
+When was the last time you redeemed loyalty points?
+Probably never.
+
+LYMX is a shared loyalty network for local Businesses. Earn at one. Spend at any of them. No 90-day expiration. No "minimum 1,000 points to redeem."
+
+Real LYMX. Real value. Right here in Las Vegas.
+
+Partner disclosure: I get paid if you sign up.
+Sign up: https://getlymx.com/r/yourname`
+    },
+    {
+      id:'p3', cat:'feed', size:'feed', bg:'bg-green',
+      title:'The math post',
+      h:'1 LYMX = $0.01', sub:'Same value at every LYMX Business. No expiration. No fine print.',
+      platforms:'Instagram, LinkedIn, Twitter',
+      caption:`The clearest loyalty math in Las Vegas:
+
+1 LYMX = $0.01 of spending power
+1,000 LYMX = $10 you can use anywhere on the network
+
+Earn at the cafe. Spend at dinner. Save up for the salon.
+
+No expiration. No minimum redemption. No "points only good at THIS store."
+
+I'm a LYMX Partner — I get paid if you sign up through my link.
+Try it: https://getlymx.com/r/yourname`
+    },
+    {
+      id:'p4', cat:'banner', size:'banner', bg:'bg-rose',
+      title:'LinkedIn header banner',
+      h:'I help local Businesses bring back the customers who forgot about them.', sub:'LYMX Partner · Las Vegas',
+      platforms:'LinkedIn',
+      caption:`Use as your LinkedIn header banner.
+
+Your bio could read:
+
+"LYMX Partner serving Las Vegas. I help local Businesses build customer loyalty without an app, an integration, or a marketing team. Every Business I sign up earns recurring revenue for me — and brings their customers into a shared network of 8,000+ active Las Vegas spenders.
+
+Disclosure: I'm a paid LYMX Partner. https://getlymx.com/r/yourname"`
+    },
+    {
+      id:'p5', cat:'feed', size:'feed', bg:'bg-purple',
+      title:'Master Partner spotlight repost',
+      h:'Sienna closed 42 Businesses in 9 months', sub:'Read her story (link in bio)',
+      platforms:'Instagram, LinkedIn',
+      caption:`The first LYMX Master Partner is Sienna Vega. From corporate sales to building a 6-figure Partner business in 9 months.
+
+42 Businesses recruited. 14 downline Partners. Three things she did differently:
+
+1. Pitched the Business owner's problem, not the deal.
+2. Recruited Partners who already sell something.
+3. Made follow-up the job, not first contact.
+
+Earnings shown are individual results. See income disclosure.
+I'm a LYMX Partner — I get paid if you sign up through my link.
+Read the full story: https://getlymx.com/spotlight`
+    },
+    {
+      id:'p6', cat:'story', size:'story', bg:'bg-dark',
+      title:'Why LYMX exists (Reels script)',
+      h:'You bought once. They never saw you again.', sub:'LYMX fixes that for local Businesses.',
+      platforms:'Instagram Reels, TikTok',
+      caption:`Reels script (15-30 sec):
+
+[Hook] You walked into a coffee shop once. They were great. You forgot. They never saw you again.
+
+[Problem] That happens 70% of the time to local Businesses. They lose customers they don't even know they had.
+
+[Solution] LYMX is the shared loyalty network for local. Customers earn at one Business, spend anywhere — and the Businesses get them back.
+
+[CTA] Local owners — link in bio. I'm a LYMX Partner.
+
+Disclosure: I get paid if you sign up. https://getlymx.com/r/yourname`
+    },
+    {
+      id:'p7', cat:'feed', size:'feed', bg:'bg-blue',
+      title:'Customer pain story',
+      h:'Booked a flight. The points expired in 24 months.', sub:'LYMX never expires. That\'s the whole point.',
+      platforms:'Instagram, Facebook, LinkedIn',
+      caption:`I just booked a flight. My loyalty points from a major airline expire in 24 months. They've expired on me twice in 5 years.
+
+LYMX never expires. Not in 24 months. Not in 24 years.
+
+Earn it once at a local Las Vegas Business. Spend it whenever you want. Move it across coffee, dinner, gym, salon. Whatever works for you.
+
+I'm a LYMX Partner — I get paid if you sign up.
+Try it: https://getlymx.com/r/yourname`
+    },
+    {
+      id:'p8', cat:'story', size:'story', bg:'bg-amber',
+      title:'Behind-the-scenes Monday',
+      h:'My week as a LYMX Partner', sub:'8 first calls. 3 demos. 1 close.',
+      platforms:'Instagram Stories',
+      caption:`Story slide:
+
+Last week as a LYMX Partner:
+• 8 first calls
+• 3 booked demos
+• 1 Business signed (a salon in Henderson)
+• 4 follow-ups still in flight
+
+The follow-ups are the job. Not the first call.
+
+Day 1 closes are rare. Day 30 closes are normal.
+
+I'm a LYMX Partner — I get paid if you sign up through my link.
+DM me if you want to learn what we do: https://getlymx.com/r/yourname`
+    },
+    {
+      id:'p9', cat:'banner', size:'banner', bg:'bg-green',
+      title:'Email signature banner',
+      h:'Building Las Vegas\'s shared local-loyalty network.', sub:'LYMX Partner · getlymx.com/r/yourname',
+      platforms:'Email signature',
+      caption:`Use as your email signature image. Caption (text below the image):
+
+[Your name] · LYMX Partner · Las Vegas
+Helping local Businesses bring back the customers who forgot.
+I get paid if you sign up. https://getlymx.com/r/yourname`
+    },
+    {
+      id:'p10', cat:'feed', size:'feed', bg:'bg-rose',
+      title:'Network flywheel post',
+      h:'Each LYMX Business brings ~1,500 new customers/month', sub:'Into a shared pool every other Business benefits from.',
+      platforms:'LinkedIn, Twitter',
+      caption:`The math behind why LYMX works:
+
+A typical Business has $100K monthly volume / $20 ticket = 5,000 customers/month.
+70% are repeats → 1,500 new customers per month per Business.
+
+10 Businesses on LYMX in their first month = 15,000 net new customers in the network.
+Zero customer-acquisition cost on the LYMX side.
+
+Network effects are real when the math is.
+
+I'm a LYMX Partner — I get paid if you sign up Businesses through my link.
+Local Vegas owners: https://getlymx.com/r/yourname`
+    },
+    {
+      id:'p11', cat:'story', size:'story', bg:'bg-purple',
+      title:'Customer wallet screen mock',
+      h:'2,450 LYMX', sub:'Spendable across every LYMX Business in Las Vegas.',
+      platforms:'Instagram, TikTok',
+      caption:`Story idea: take a screenshot of YOUR LYMX wallet (after you sign up) and post it.
+
+Caption:
+
+This is real. Real LYMX I earned this month at local Las Vegas Businesses. Spendable at any other LYMX-accepting spot. No app. No expiration.
+
+Disclosure: I'm a paid LYMX Partner. https://getlymx.com/r/yourname`
+    },
+    {
+      id:'p12', cat:'banner', size:'banner', bg:'bg-dark',
+      title:'Open-graph image (link previews)',
+      h:'LYMX', sub:'Shared loyalty for local Las Vegas. I\'m a Partner.',
+      platforms:'Open graph (link previews)',
+      caption:`Used as the link-preview image when you share your referral URL on social media.
+
+Optional caption tag:
+
+I'm a LYMX Partner. Shared loyalty for local Las Vegas. https://getlymx.com/r/yourname
+
+Disclosure: I get paid if you sign up.`
+    }
+  ];
+
+  let activeCat = 'all';
+  let activePlatform = 'all';
+
+  function render(){
+    const filtered = POSTS.filter(p=>{
+      if(activeCat !== 'all' && p.cat !== activeCat) return false;
+      if(activePlatform !== 'all' && !p.platforms.toLowerCase().includes(activePlatform)) return false;
+      return true;
+    });
+
+    // Counts
+    document.getElementById('ct-all').textContent = POSTS.length;
+    document.getElementById('ct-feed').textContent = POSTS.filter(p=>p.cat==='feed').length;
+    document.getElementById('ct-story').textContent = POSTS.filter(p=>p.cat==='story').length;
+    document.getElementById('ct-banner').textContent = POSTS.filter(p=>p.cat==='banner').length;
+
+    const target = document.getElementById('posts');
+    if(filtered.length === 0){
+      target.innerHTML = '<div style="grid-column:1/-1;padding:40px;background:#fff;border:1px solid var(--line);border-radius:11px;text-align:center;color:var(--muted)">No posts match. Try a different filter.</div>';
+      return;
+    }
+    target.innerHTML = filtered.map(p=>{
+      const sizeLabel = p.size === 'feed' ? '1080×1080 (Feed)' : p.size === 'story' ? '1080×1920 (Story)' : '1200×628 (Banner)';
+      const pillCls = p.cat;
+      return `<div class="post">
+        <div class="post-img ${p.size} ${p.bg}">
+          <span class="platform">${sizeLabel}</span>
+          <span class="lymx-logo">LYMX</span>
+          <div>
+            <div class="h">${escapeHTML(p.h)}</div>
+            <div class="sub">${escapeHTML(p.sub)}</div>
+          </div>
+        </div>
+        <div class="post-body">
+          <div class="meta">
+            <span class="pill ${pillCls}">${p.cat==='feed'?'Feed post':p.cat==='story'?'Story / Reel':'Banner'}</span>
+            <span>${p.platforms}</span>
+          </div>
+          <h3>${escapeHTML(p.title)}</h3>
+          <div class="caption">${escapeHTML(p.caption)}</div>
+          <div class="post-actions">
+            <button onclick="copyCaption('${p.id}', this)">📋 Copy caption</button>
+            <button onclick="downloadGraphic('${p.id}')">📥 Save graphic</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function copyCaption(id, btn){
+    const post = POSTS.find(p=>p.id===id);
+    if(!post) return;
+    navigator.clipboard.writeText(post.caption).then(()=>{
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(()=>{ btn.textContent = '📋 Copy caption'; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+  function downloadGraphic(id){
+    alert('In production: downloads the high-res PNG/JPG. Mock for now.\n\nGraphic: ' + id);
+  }
+  function copyDisclosure(){
+    const text = "I'm a LYMX Partner — I get paid if you sign up through my link.";
+    const btn = document.getElementById('copy-disc-btn');
+    navigator.clipboard.writeText(text).then(()=>{
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(()=>{ btn.textContent = '📋 Copy disclosure'; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+
+  function escapeHTML(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+  // Filters
+  document.querySelectorAll('#cat-chips .chip').forEach(c=>{
+    c.onclick = ()=>{
+      document.querySelectorAll('#cat-chips .chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      activeCat = c.dataset.c;
+      render();
+    };
+  });
+  document.querySelectorAll('[data-p]').forEach(c=>{
+    c.onclick = ()=>{
+      document.querySelectorAll('[data-p]').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      activePlatform = c.dataset.p;
+      render();
+    };
+  });
+
+  render();
+</script>
+</body>
+</html>

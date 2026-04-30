@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX POS thermal-printer receipt. 58mm/80mm formatted, shows transaction details and customer's new LYMX balance." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Receipt · LYMX POS</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4af37}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);color:var(--ink-2);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+
+  /* Screen-only chrome */
+  .screen{padding:30px 20px 60px;max-width:760px;margin:0 auto}
+  .screen-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+  .screen-head h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.01em}
+  .screen-head p{margin:2px 0 0;color:var(--muted);font-size:13px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{padding:10px 18px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13.5px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+  .btn.ok{background:var(--ok)}
+  .btn:hover{opacity:.92}
+
+  /* Width selector */
+  .width-pick{display:flex;gap:6px;margin-bottom:14px;align-items:center;font-size:12.5px;color:var(--muted)}
+  .width-pick .pill{padding:6px 12px;background:#fff;border:1px solid var(--line);border-radius:7px;font-size:12px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .width-pick .pill.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* Receipt frame (screen preview) */
+  .preview{display:flex;justify-content:center;padding:26px 14px;background:linear-gradient(180deg,#fff,var(--bg-soft));border:1px solid var(--line);border-radius:14px;margin-bottom:16px;overflow-x:auto}
+  .receipt{background:#fff;color:#000;padding:18px 14px;font-family:'Courier New',ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.45;box-shadow:0 6px 24px rgba(14,17,22,.12);position:relative}
+  .receipt.w58{width:220px}
+  .receipt.w80{width:300px}
+  .receipt h2{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;text-align:center;margin:0 0 4px;font-size:18px;font-weight:800;letter-spacing:-.01em}
+  .receipt .biz-tag{text-align:center;font-size:11px;color:#000;margin-bottom:10px;font-weight:700}
+  .receipt .biz-meta{text-align:center;font-size:10.5px;color:#444;margin-bottom:8px;line-height:1.4}
+  .receipt hr{border:0;border-top:1px dashed #777;margin:8px 0}
+  .receipt .line{display:flex;justify-content:space-between;padding:1px 0}
+  .receipt .line .l{flex:1;min-width:0}
+  .receipt .line .r{flex-shrink:0;text-align:right;padding-left:8px}
+  .receipt .line.bold{font-weight:800}
+  .receipt .center{text-align:center}
+  .receipt .small{font-size:10.5px;line-height:1.5;color:#333}
+  .receipt .promo-line{padding:4px 6px;background:#f4f4f4;border-radius:3px;margin:4px 0;font-size:11px;text-align:center}
+
+  .receipt .qr-block{display:flex;flex-direction:column;align-items:center;margin:8px 0}
+  .receipt .qr{width:80px;height:80px;background:linear-gradient(45deg,#000 25%,#fff 25%,#fff 50%,#000 50%,#000 75%,#fff 75%);background-size:14px 14px;border:6px solid #fff;outline:1px solid #000}
+  .receipt .qr-label{font-size:10px;margin-top:5px;text-align:center;color:#333}
+
+  .receipt .footer-text{text-align:center;font-size:10.5px;color:#333;margin-top:8px;line-height:1.6}
+  .receipt .footer-text strong{color:#000}
+  .receipt .barcode{height:34px;margin:6px 0;background:repeating-linear-gradient(90deg,#000 0 1px,#fff 1px 3px,#000 3px 4px,#fff 4px 7px,#000 7px 9px,#fff 9px 11px);border:0}
+  .receipt .barcode-num{text-align:center;font-size:10.5px;font-family:inherit;color:#333;margin-top:1px}
+
+  /* Variant: redemption (negative-style) */
+  .receipt.redemption .v-line{border-left:3px solid #000;padding-left:6px;margin:6px 0}
+
+  /* Edit panel */
+  .editor{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 22px;margin-bottom:14px}
+  .editor h3{margin:0 0 10px;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:600px){.field-grid{grid-template-columns:1fr}}
+  .field{margin-bottom:10px}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+  .field input,.field select{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:13.5px;font-family:inherit}
+  .field input:focus,.field select:focus{outline:0;border-color:var(--accent)}
+
+  .type-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  .type-opt{padding:14px;border:2px solid var(--line);border-radius:11px;cursor:pointer;text-align:center}
+  .type-opt:hover{border-color:var(--ink)}
+  .type-opt.on{border-color:var(--accent);background:rgba(10,132,255,.05)}
+  .type-opt .ic{font-size:22px;margin-bottom:4px}
+  .type-opt .h{font-weight:800;font-size:13.5px}
+  .type-opt .d{font-size:11.5px;color:var(--muted)}
+
+  /* Print rules */
+  @media print {
+    @page { margin:0; size:80mm auto; }
+    body { background:#fff; }
+    .screen-head, .toolbar, .editor, .width-pick, .print-help, footer.screen-foot { display:none !important; }
+    .preview{ padding:0; border:0; background:#fff; box-shadow:none; margin:0; border-radius:0 }
+    .receipt{ box-shadow:none; padding:6mm 4mm; width:100% !important; max-width:80mm; margin:0 auto; font-size:11.5px }
+  }
+  @media print and (max-width:60mm) {
+    @page { size:58mm auto }
+    .receipt{ max-width:58mm; font-size:10.5px }
+  }
+
+  .print-help{margin-top:12px;padding:14px;background:rgba(10,132,255,.06);border:1px solid rgba(10,132,255,.2);border-radius:11px;font-size:12.5px;color:var(--accent-2);line-height:1.5}
+  .print-help strong{color:var(--accent-2);font-weight:800}
+
+  footer.screen-foot{margin-top:30px;text-align:center;font-size:11.5px;color:var(--muted);line-height:1.5}
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="screen-head">
+    <div>
+      <h1>Receipt preview</h1>
+      <p>Customer's printed copy. Tap Print to send to the thermal printer paired with your iPad.</p>
+    </div>
+    <div class="toolbar">
+      <a class="btn ghost" href="pos.html">← Back to POS</a>
+      <button class="btn ok" onclick="emailReceipt()">📧 Email it</button>
+      <button class="btn" onclick="window.print()">🖨️ Print receipt</button>
+    </div>
+  </div>
+
+  <!-- Type toggle -->
+  <div class="type-toggle">
+    <div class="type-opt on" data-t="issue" onclick="pickType('issue',this)">
+      <div class="ic">🟢</div>
+      <div class="h">Issuance receipt</div>
+      <div class="d">Customer earned LYMX</div>
+    </div>
+    <div class="type-opt" data-t="redeem" onclick="pickType('redeem',this)">
+      <div class="ic">🟡</div>
+      <div class="h">Redemption receipt</div>
+      <div class="d">Customer paid with LYMX</div>
+    </div>
+  </div>
+
+  <!-- Width pick -->
+  <div class="width-pick">
+    <span>Paper width:</span>
+    <span class="pill on" data-w="80" onclick="pickWidth(80,this)">80mm (3.15")</span>
+    <span class="pill" data-w="58" onclick="pickWidth(58,this)">58mm (2.28")</span>
+  </div>
+
+  <!-- Editor -->
+  <div class="editor">
+    <h3>Edit fields (preview only — POS auto-fills these)</h3>
+    <div class="field-grid">
+      <div class="field"><label>Business name</label><input type="text" id="f-biz" value="Brew &amp; Bean Coffee" /></div>
+      <div class="field"><label>Location</label><input type="text" id="f-addr" value="3920 S Las Vegas Blvd, Las Vegas NV" /></div>
+    </div>
+    <div class="field-grid">
+      <div class="field"><label>Cashier</label><input type="text" id="f-cashier" value="Daniel W." /></div>
+      <div class="field"><label>Customer first name</label><input type="text" id="f-cust" value="Maya" /></div>
+    </div>
+    <div class="field-grid">
+      <div class="field"><label>Ticket subtotal ($)</label><input type="number" id="f-sub" value="14.50" step="0.01" /></div>
+      <div class="field"><label>Tax ($)</label><input type="number" id="f-tax" value="1.21" step="0.01" /></div>
+    </div>
+    <div class="field-grid">
+      <div class="field"><label>Base LYMX rate (per $1)</label><input type="number" id="f-rate" value="5" /></div>
+      <div class="field"><label>Active multiplier</label><input type="number" id="f-mult" value="2" step="0.5" /></div>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="preview">
+    <div class="receipt w80" id="receipt"></div>
+  </div>
+
+  <div class="print-help">
+    <strong>Printer setup:</strong> we recommend a Bluetooth thermal printer (Star TSP100, Epson TM-T20, or any ESC/POS device). Pair with your iPad once. After that, tapping Print fires automatically. <a href="help-center.html" style="color:var(--accent-2);font-weight:700">See printer setup guide →</a>
+  </div>
+
+  <footer class="screen-foot">
+    LYMX is a promotional credit, not money. <a href="disclaimer.html" style="color:var(--accent-2);font-weight:700">Learn more</a>
+  </footer>
+</div>
+
+<script>
+  let receiptType = 'issue';
+  let receiptWidth = 80;
+
+  function pickType(t, el){
+    receiptType = t;
+    document.querySelectorAll('.type-opt').forEach(x=>x.classList.remove('on'));
+    el.classList.add('on');
+    render();
+  }
+  function pickWidth(w, el){
+    receiptWidth = w;
+    document.querySelectorAll('.width-pick .pill').forEach(x=>x.classList.remove('on'));
+    el.classList.add('on');
+    render();
+  }
+
+  // Update on input
+  document.querySelectorAll('.editor input').forEach(i=>{
+    i.addEventListener('input', render);
+  });
+
+  function fmt$(n){
+    return '$' + n.toFixed(2);
+  }
+
+  function render(){
+    const biz = document.getElementById('f-biz').value;
+    const addr = document.getElementById('f-addr').value;
+    const cashier = document.getElementById('f-cashier').value;
+    const cust = document.getElementById('f-cust').value;
+    const sub = parseFloat(document.getElementById('f-sub').value) || 0;
+    const tax = parseFloat(document.getElementById('f-tax').value) || 0;
+    const rate = parseFloat(document.getElementById('f-rate').value) || 5;
+    const mult = parseFloat(document.getElementById('f-mult').value) || 1;
+    const total = sub + tax;
+
+    const r = document.getElementById('receipt');
+    r.classList.remove('w58','w80','redemption','issuance');
+    r.classList.add('w' + receiptWidth);
+
+    const now = new Date();
+    const stamp = now.toLocaleString('en-US', {dateStyle:'medium', timeStyle:'short'});
+    const txId = 'TX-' + now.toISOString().slice(0,10).replace(/-/g,'') + '-' + (Math.floor(Math.random()*9000)+1000);
+
+    if(receiptType === 'issue'){
+      r.classList.add('issuance');
+      const lymxEarned = Math.round(sub * rate * mult);
+      const promoLine = mult > 1
+        ? `<div class="promo-line"><strong>HAPPY HOUR ${mult}× ACTIVE</strong></div>`
+        : '';
+
+      r.innerHTML = `
+        <h2>${escapeHTML(biz)}</h2>
+        <div class="biz-meta">${escapeHTML(addr)}<br>${stamp}<br>Cashier: ${escapeHTML(cashier)}</div>
+        <hr>
+        <div class="center" style="font-weight:800;font-size:13px">SALE — RECEIPT</div>
+        <hr>
+        <div class="line"><span class="l">Subtotal</span><span class="r">${fmt$(sub)}</span></div>
+        <div class="line"><span class="l">Tax</span><span class="r">${fmt$(tax)}</span></div>
+        <div class="line bold"><span class="l">Total paid</span><span class="r">${fmt$(total)}</span></div>
+        ${promoLine}
+        <hr>
+        <div class="center" style="font-weight:800">LYMX EARNED</div>
+        <div class="line"><span class="l">Base rate</span><span class="r">${rate} LYMX / $1</span></div>
+        ${mult > 1 ? `<div class="line"><span class="l">Multiplier</span><span class="r">${mult}× promo</span></div>` : ''}
+        <div class="line bold" style="font-size:14px"><span class="l">${escapeHTML(cust)} earned</span><span class="r">+${lymxEarned} LYMX</span></div>
+        <hr>
+        <div class="qr-block">
+          <div class="qr"></div>
+          <div class="qr-label">Scan to open<br>your wallet</div>
+        </div>
+        <div class="small">Spendable across every LYMX Business in the network. ≈ ${fmt$(lymxEarned*0.01)} of spending power.</div>
+        <hr>
+        <div class="footer-text">
+          Thanks, <strong>${escapeHTML(cust)}</strong>!<br>
+          Your LYMX has been added to your wallet at<br>
+          <strong>getlymx.com/wallet</strong><br><br>
+          Tx: ${txId}
+        </div>
+        <div class="barcode"></div>
+        <div class="barcode-num">${txId}</div>
+      `;
+    } else {
+      r.classList.add('redemption');
+      // For redemption: customer pays with LYMX. Assume they're spending lymxApplied LYMX
+      const lymxApplied = Math.min(2400, Math.round(total * 100));
+      const lymxValueUSD = lymxApplied * 0.01;
+      const remainder = Math.max(0, total - lymxValueUSD);
+
+      r.innerHTML = `
+        <h2>${escapeHTML(biz)}</h2>
+        <div class="biz-meta">${escapeHTML(addr)}<br>${stamp}<br>Cashier: ${escapeHTML(cashier)}</div>
+        <hr>
+        <div class="center" style="font-weight:800;font-size:13px">REDEMPTION — RECEIPT</div>
+        <hr>
+        <div class="line"><span class="l">Subtotal</span><span class="r">${fmt$(sub)}</span></div>
+        <div class="line"><span class="l">Tax</span><span class="r">${fmt$(tax)}</span></div>
+        <div class="line bold"><span class="l">Ticket total</span><span class="r">${fmt$(total)}</span></div>
+        <hr>
+        <div class="v-line">
+          <div class="line"><span class="l">LYMX applied</span><span class="r">−${lymxApplied}</span></div>
+          <div class="line"><span class="l">Value applied</span><span class="r">−${fmt$(lymxValueUSD)}</span></div>
+        </div>
+        <div class="line bold" style="font-size:14px"><span class="l">Remainder due</span><span class="r">${fmt$(remainder)}</span></div>
+        <div class="line"><span class="l">Paid by</span><span class="r">Cash / Card</span></div>
+        <hr>
+        <div class="center small" style="margin:6px 0">
+          <strong>${escapeHTML(cust)}</strong>'s new wallet balance<br>
+          <strong style="font-size:14px">2,150 LYMX</strong> (≈ $21.50)
+        </div>
+        <hr>
+        <div class="footer-text">
+          See you next time, <strong>${escapeHTML(cust)}</strong>!<br>
+          Manage your wallet at<br>
+          <strong>getlymx.com/wallet</strong><br><br>
+          Tx: ${txId}
+        </div>
+        <div class="barcode"></div>
+        <div class="barcode-num">${txId}</div>
+      `;
+    }
+  }
+
+  function escapeHTML(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+  function emailReceipt(){
+    alert('In production: emails the receipt PDF to the customer (uses the email tied to their wallet phone number). Mock for now.');
+  }
+
+  render();
+</script>
+</body>
+</html>

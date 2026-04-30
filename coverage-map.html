@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Las Vegas network coverage. See LYMX Business density across The Strip, Downtown, Henderson, Summerlin, North Las Vegas, and more. Live count of active Businesses by neighborhood." />
+<title>Network coverage · LYMX Las Vegas</title>
+<meta property="og:title" content="LYMX Network Coverage — Las Vegas" />
+<meta property="og:description" content="See where LYMX Businesses are active across Las Vegas. 13 active, 12 spots open in the Founding 25." />
+<meta property="og:image" content="og-image.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1280px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px}
+  .brand .dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:24px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .btn{padding:10px 16px;background:var(--ink);color:#fff;border-radius:10px;font-weight:800;font-size:14px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn:hover{opacity:.9}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .head{padding:38px 0 16px;text-align:center}
+  .head .pre{display:inline-block;background:rgba(10,132,255,.1);color:var(--accent-2);font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:12px}
+  .head h1{margin:0 0 8px;font-size:34px;font-weight:800;letter-spacing:-.02em}
+  .head p{margin:0 auto;color:var(--muted);font-size:16px;max-width:600px}
+
+  /* Stats strip */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin:18px 0}
+  @media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#fff;padding:18px 22px;text-align:center}
+  .stat .l{font-size:11.5px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+  .stat .v{font-size:28px;font-weight:800;letter-spacing:-.02em}
+  .stat .v.gold{color:var(--gold)}
+  .stat .v.green{color:var(--ok)}
+  .stat .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+  /* Filter row */
+  .filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0 18px}
+  .label{font-size:12.5px;color:var(--muted);font-weight:700}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:7px 13px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .chip:hover{border-color:var(--ink)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .ct{margin-left:5px;background:var(--bg-soft);color:var(--muted);padding:1px 7px;border-radius:5px;font-size:10.5px}
+  .chip.on .ct{background:rgba(255,255,255,.18);color:#fff}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:1fr 320px;gap:20px;padding:0 0 60px;align-items:start}
+  @media(max-width:1000px){.layout{grid-template-columns:1fr}}
+
+  /* Map */
+  .map-shell{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  .map-h{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:var(--bg-soft)}
+  .map-h h2{margin:0;font-size:16px;font-weight:800}
+  .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+  .leg{display:flex;align-items:center;gap:6px}
+  .leg .sw{width:13px;height:13px;border-radius:3px;display:inline-block}
+
+  /* SVG map */
+  .map-body{padding:18px;background:linear-gradient(180deg,#f9fafb,#f0f3f6)}
+  .map-svg-wrap{display:flex;justify-content:center}
+  svg.map{width:100%;max-width:780px;height:auto}
+  .zone{cursor:pointer;transition:filter .15s}
+  .zone:hover{filter:brightness(1.08)}
+  .zone-stroke{fill:none;stroke:rgba(255,255,255,.6);stroke-width:1.5}
+  .zone-label{font-size:12px;font-weight:800;fill:#fff;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+  .zone-count{font-size:10.5px;font-weight:700;fill:rgba(255,255,255,.8);pointer-events:none}
+
+  /* Roads + landmark */
+  .road{stroke:#9aa3b0;stroke-width:2.5;stroke-linecap:round;opacity:.4}
+  .road-strip{stroke:#f5d172;stroke-width:3;opacity:.7}
+  .compass{font-size:10.5px;fill:var(--muted);font-weight:700;letter-spacing:.05em}
+
+  /* Phase rollout banner */
+  .phases{padding:14px 20px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}
+  @media(max-width:680px){.phases{grid-template-columns:1fr}}
+  .phase{background:#fff;padding:14px 16px}
+  .phase .lab{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+  .phase .h{font-size:14.5px;font-weight:800;margin-bottom:3px}
+  .phase .d{font-size:12.5px;color:var(--muted);line-height:1.4}
+  .phase.now{background:rgba(19,162,107,.06);border-left:3px solid var(--ok)}
+  .phase.next{border-left:3px solid var(--accent)}
+  .phase.future{opacity:.7}
+
+  /* Right rail */
+  .rail .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px;margin-bottom:14px}
+  .rail h3{margin:0 0 10px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .neighborhood-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;cursor:pointer}
+  .neighborhood-row:last-child{border-bottom:0}
+  .neighborhood-row:hover .name{color:var(--accent)}
+  .neighborhood-row .left{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+  .neighborhood-row .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .neighborhood-row .name{font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .neighborhood-row .meta{font-size:11.5px;color:var(--muted)}
+  .neighborhood-row .v{font-weight:800;color:var(--ink-2);font-size:14px;text-align:right;flex-shrink:0}
+  .neighborhood-row .bars{display:inline-block;width:50px;height:6px;background:var(--bg-soft);border-radius:3px;overflow:hidden;margin-right:8px}
+  .neighborhood-row .bars > div{height:100%;border-radius:3px}
+
+  /* CTA card */
+  .cta-card{background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);padding:22px;text-align:center}
+  .cta-card h3{color:#fff;margin:0 0 6px;font-size:17px;font-weight:800}
+  .cta-card p{margin:0 0 12px;color:#9aa3b0;font-size:13.5px;line-height:1.5}
+  .cta-card .btn-gold{display:inline-block;padding:10px 16px;background:#f5d172;color:#0e1116;border-radius:9px;font-weight:800;font-size:13.5px;text-decoration:none}
+  .cta-card .btn-gold:hover{background:#fff}
+
+  /* Detail modal */
+  .ovr{position:fixed;inset:0;background:rgba(14,17,22,.5);z-index:90;display:none;align-items:center;justify-content:center;padding:20px}
+  .ovr.on{display:flex}
+  .modal{background:#fff;border-radius:var(--radius);max-width:480px;width:100%;padding:24px}
+  .modal h3{margin:0 0 4px;font-size:20px;font-weight:800}
+  .modal p.sub{margin:0 0 14px;color:var(--muted);font-size:13.5px}
+  .m-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}
+  .ms{padding:11px 13px;background:var(--bg-soft);border-radius:9px}
+  .ms .l{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .ms .v{font-size:18px;font-weight:800;margin-top:2px}
+  .biz-list{margin-bottom:14px}
+  .biz-list .b{padding:8px 12px;background:var(--bg-soft);border-radius:8px;margin-bottom:5px;font-size:13px;display:flex;justify-content:space-between}
+  .biz-list .b .cat{color:var(--muted);font-size:11.5px}
+  .m-actions{display:flex;gap:8px;justify-content:end}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:32px 0 22px;font-size:13px}
+  .foot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-bottom:18px}
+  @media(max-width:780px){.foot-grid{grid-template-columns:repeat(2,1fr)}}
+  .foot-grid h4{color:#fff;font-size:13px;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
+  .foot-grid a{display:block;padding:3px 0;color:#9aa3b0}
+  .foot-grid a:hover{color:#fff}
+  .foot-bot{padding-top:16px;border-top:1px solid rgba(255,255,255,.1);text-align:center;font-size:12.5px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="browse.html">Browse</a>
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="founding-25.html">Founding 25</a>
+      <a href="partners.html">Partners</a>
+      <a href="coverage-map.html" class="on">Coverage</a>
+    </nav>
+    <a href="business.html" class="btn">List my Business</a>
+  </div>
+</header>
+
+<section class="head">
+  <div class="wrap">
+    <span class="pre">Las Vegas · Q3 2026 launch</span>
+    <h1>LYMX network coverage — Las Vegas</h1>
+    <p>13 Founding Businesses live, 12 spots open. Hover any neighborhood for live counts, click to see who's there. We're rolling out The Strip → Downtown → Henderson → Summerlin → North Las Vegas → Spring Valley.</p>
+  </div>
+</section>
+
+<div class="wrap">
+  <!-- Stats strip -->
+  <div class="stats">
+    <div class="stat"><div class="l">Active Businesses</div><div class="v green">13</div><div class="sub">+3 this week</div></div>
+    <div class="stat"><div class="l">Founding 25 spots open</div><div class="v gold">12</div><div class="sub">Closing fast</div></div>
+    <div class="stat"><div class="l">Neighborhoods covered</div><div class="v">6</div><div class="sub">Of 12 in roadmap</div></div>
+    <div class="stat"><div class="l">LYMX customers in city</div><div class="v">8,420</div><div class="sub">Weekly active</div></div>
+  </div>
+
+  <!-- Filter chips -->
+  <div class="filter-row">
+    <span class="label">Filter by category:</span>
+    <div class="chips" id="cat-chips">
+      <div class="chip on" data-c="all">All <span class="ct" id="ct-all">13</span></div>
+      <div class="chip" data-c="dining">Dining <span class="ct" id="ct-dining">5</span></div>
+      <div class="chip" data-c="retail">Retail <span class="ct" id="ct-retail">3</span></div>
+      <div class="chip" data-c="services">Services <span class="ct" id="ct-services">3</span></div>
+      <div class="chip" data-c="fitness">Fitness <span class="ct" id="ct-fitness">2</span></div>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="layout">
+    <!-- Map -->
+    <div class="map-shell">
+      <div class="map-h">
+        <h2>Las Vegas neighborhoods</h2>
+        <div class="legend">
+          <div class="leg"><span class="sw" style="background:#13a26b"></span>Live (3+ Businesses)</div>
+          <div class="leg"><span class="sw" style="background:#5fd198"></span>Active (1-2)</div>
+          <div class="leg"><span class="sw" style="background:#9aa3b0"></span>Coming soon</div>
+          <div class="leg"><span class="sw" style="background:#e6e8ec"></span>Phase 2+</div>
+        </div>
+      </div>
+      <div class="map-body">
+        <div class="map-svg-wrap">
+          <svg class="map" viewBox="0 0 780 540" xmlns="http://www.w3.org/2000/svg" id="map-svg">
+            <!-- Roads (simplified abstract grid) -->
+            <line class="road road-strip" x1="380" y1="40" x2="380" y2="510" />
+            <line class="road" x1="50" y1="200" x2="730" y2="200" />
+            <line class="road" x1="50" y1="340" x2="730" y2="340" />
+            <line class="road" x1="180" y1="40" x2="180" y2="510" />
+            <line class="road" x1="580" y1="40" x2="580" y2="510" />
+
+            <!-- Compass -->
+            <text class="compass" x="36" y="32">N ↑</text>
+            <text class="compass" x="700" y="32">LAS VEGAS</text>
+
+            <!-- Zones (rect-based abstract neighborhoods) -->
+            <g id="zones"></g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Phase banner -->
+      <div class="phases">
+        <div class="phase now">
+          <div class="lab">Phase 1 — now</div>
+          <div class="h">The Strip + Downtown</div>
+          <div class="d">13 Businesses live · Founding 25 cohort closing in 3 weeks</div>
+        </div>
+        <div class="phase next">
+          <div class="lab">Phase 2 — May 2026</div>
+          <div class="h">Henderson + Summerlin</div>
+          <div class="d">Target: 25 more Businesses · 5 Partners actively recruiting</div>
+        </div>
+        <div class="phase future">
+          <div class="lab">Phase 3 — Q3 2026</div>
+          <div class="h">North LV + Spring Valley + city-wide</div>
+          <div class="d">Target: 100+ Businesses · launch event + press</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right rail -->
+    <div class="rail">
+      <div class="panel">
+        <h3>Top neighborhoods</h3>
+        <div id="ngh-list"></div>
+      </div>
+
+      <div class="panel">
+        <h3>How to bring LYMX to your neighborhood</h3>
+        <p style="font-size:13px;color:var(--ink-2);margin:0 0 8px;line-height:1.5">Don't see your area? Three ways to help us get there faster:</p>
+        <div style="display:flex;flex-direction:column;gap:5px;font-size:13px">
+          <a href="business.html" style="color:var(--accent-2);font-weight:700">→ List your Business</a>
+          <a href="partner-signup.html" style="color:var(--accent-2);font-weight:700">→ Become a Partner here</a>
+          <a href="waitlist.html" style="color:var(--accent-2);font-weight:700">→ Add me to the waitlist</a>
+        </div>
+      </div>
+
+      <div class="cta-card">
+        <h3>🏆 Want premium placement?</h3>
+        <p>Founding 25 Businesses get a permanent gold-frame badge on this map and homepage feature spot for 30 days.</p>
+        <a class="btn-gold" href="founding-25.html">Claim a spot →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Neighborhood detail modal -->
+<div class="ovr" id="ovr">
+  <div class="modal" id="modal-body"></div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>LYMX</h4>
+        <a href="about.html">About</a>
+        <a href="careers.html">Careers</a>
+        <a href="press.html">Press</a>
+        <a href="press-kit.html">Press kit</a>
+      </div>
+      <div>
+        <h4>Customers</h4>
+        <a href="why-lymx.html">Why LYMX</a>
+        <a href="browse.html">Browse Businesses</a>
+        <a href="coverage-map.html">Coverage map</a>
+        <a href="customer-referral.html">Refer friends</a>
+      </div>
+      <div>
+        <h4>Businesses</h4>
+        <a href="business.html">List your Business</a>
+        <a href="founding-25.html">Founding 25</a>
+        <a href="catering.html">Bulk gifts</a>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="disclaimer.html">Disclaimer</a>
+      </div>
+    </div>
+    <div class="foot-bot">© 2026 LYMX Power · Las Vegas, NV · Map is illustrative; Business locations are approximate by neighborhood.</div>
+  </div>
+</footer>
+
+<script>
+  // Zone data — abstract rect coordinates on the SVG canvas
+  const ZONES = [
+    {id:'strip',     name:'The Strip',          x:300, y:80,  w:160, h:120, count:5, dining:2, retail:1, services:1, fitness:1, tier:'live',   businesses:['Brew & Bean (café)','Oakline Kitchen (restaurant)','Sunlit Salon Studio (salon)','Pink Note Co (retail)','Pulse Studio (gym)']},
+    {id:'downtown',  name:'Downtown',           x:300, y:220, w:160, h:120, count:4, dining:2, retail:1, services:1, fitness:0, tier:'live',   businesses:['Yumi Sushi (restaurant)','Two Birds Café (café)','Lavender & Sage (gift shop)','Mendoza Tax (services)']},
+    {id:'henderson', name:'Henderson',          x:480, y:220, w:160, h:120, count:2, dining:1, retail:0, services:1, fitness:0, tier:'active', businesses:['Sage & Stone Bakery (bakery)','Henderson Auto Detail (services)']},
+    {id:'summerlin', name:'Summerlin',          x:120, y:80,  w:160, h:120, count:2, dining:0, retail:1, services:0, fitness:1, tier:'active', businesses:['CityRow Studio (fitness)','The Quiet Library (bookshop)']},
+    {id:'northlv',   name:'North LV',           x:120, y:220, w:160, h:120, count:0, dining:0, retail:0, services:0, fitness:0, tier:'soon',   businesses:[]},
+    {id:'spring',    name:'Spring Valley',      x:480, y:80,  w:160, h:120, count:0, dining:0, retail:0, services:0, fitness:0, tier:'soon',   businesses:[]},
+    {id:'eastside',  name:'East Side',          x:480, y:360, w:160, h:120, count:0, dining:0, retail:0, services:0, fitness:0, tier:'phase2', businesses:[]},
+    {id:'paradise',  name:'Paradise',           x:300, y:360, w:160, h:120, count:0, dining:0, retail:0, services:0, fitness:0, tier:'phase2', businesses:[]},
+    {id:'westlv',    name:'West LV',            x:120, y:360, w:160, h:120, count:0, dining:0, retail:0, services:0, fitness:0, tier:'phase2', businesses:[]}
+  ];
+
+  const TIER_COLOR = {live:'#13a26b', active:'#5fd198', soon:'#9aa3b0', phase2:'#e6e8ec'};
+  let activeFilter = 'all';
+
+  function fillForCategory(z){
+    if(activeFilter === 'all') return TIER_COLOR[z.tier];
+    const ct = z[activeFilter] || 0;
+    if(ct >= 2) return '#13a26b';
+    if(ct === 1) return '#5fd198';
+    if(z.tier === 'soon') return '#9aa3b0';
+    return '#e6e8ec';
+  }
+  function countForCategory(z){
+    return activeFilter === 'all' ? z.count : (z[activeFilter] || 0);
+  }
+
+  function renderMap(){
+    const g = document.getElementById('zones');
+    g.innerHTML = ZONES.map(z=>{
+      const fill = fillForCategory(z);
+      const ct = countForCategory(z);
+      const cx = z.x + z.w/2;
+      const cy = z.y + z.h/2;
+      return `<g class="zone" onclick="openZone('${z.id}')">
+        <rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="13" ry="13" fill="${fill}" />
+        <rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="13" ry="13" class="zone-stroke" />
+        <text x="${cx}" y="${cy-2}" text-anchor="middle" class="zone-label">${z.name}</text>
+        <text x="${cx}" y="${cy+15}" text-anchor="middle" class="zone-count">${ct} Business${ct===1?'':'es'}</text>
+      </g>`;
+    }).join('');
+
+    // Top-neighborhoods rail
+    const sorted = [...ZONES].sort((a,b)=>countForCategory(b)-countForCategory(a));
+    const max = Math.max(1, countForCategory(sorted[0]));
+    document.getElementById('ngh-list').innerHTML = sorted.slice(0,7).map(z=>{
+      const ct = countForCategory(z);
+      const pct = (ct/max)*100;
+      const color = TIER_COLOR[z.tier];
+      return `<div class="neighborhood-row" onclick="openZone('${z.id}')">
+        <div class="left">
+          <span class="dot" style="background:${color}"></span>
+          <div style="min-width:0">
+            <div class="name">${z.name}</div>
+            <div class="meta">${z.tier === 'live' ? 'Live' : z.tier === 'active' ? 'Active' : z.tier === 'soon' ? 'Coming soon' : 'Phase 2'}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center">
+          <div class="bars"><div style="width:${pct}%;background:${color}"></div></div>
+          <div class="v">${ct}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Update chip counts
+    const totals = {all:0,dining:0,retail:0,services:0,fitness:0};
+    ZONES.forEach(z=>{
+      totals.all += z.count;
+      totals.dining += z.dining;
+      totals.retail += z.retail;
+      totals.services += z.services;
+      totals.fitness += z.fitness;
+    });
+    document.getElementById('ct-all').textContent = totals.all;
+    document.getElementById('ct-dining').textContent = totals.dining;
+    document.getElementById('ct-retail').textContent = totals.retail;
+    document.getElementById('ct-services').textContent = totals.services;
+    document.getElementById('ct-fitness').textContent = totals.fitness;
+  }
+
+  function openZone(id){
+    const z = ZONES.find(x=>x.id===id);
+    if(!z) return;
+    const m = document.getElementById('modal-body');
+    const tierLabel = z.tier === 'live' ? 'Live · 3+ Businesses' :
+                      z.tier === 'active' ? 'Active · 1-2 Businesses' :
+                      z.tier === 'soon' ? 'Coming soon · Phase 1' : 'Phase 2+';
+    m.innerHTML = `
+      <h3>${z.name}</h3>
+      <p class="sub">${tierLabel}</p>
+      <div class="m-stats">
+        <div class="ms"><div class="l">Total Businesses</div><div class="v">${z.count}</div></div>
+        <div class="ms"><div class="l">Customers in zone</div><div class="v">${z.tier==='live'? '3,200' : z.tier==='active'?'820':'—'}</div></div>
+        <div class="ms"><div class="l">Categories</div><div class="v" style="font-size:13px">${[
+          z.dining?z.dining+' Dining':'', z.retail?z.retail+' Retail':'', z.services?z.services+' Services':'', z.fitness?z.fitness+' Fitness':''
+        ].filter(Boolean).join(' · ') || '—'}</div></div>
+        <div class="ms"><div class="l">Status</div><div class="v" style="font-size:14px;color:${TIER_COLOR[z.tier]}">${tierLabel.split(' · ')[0]}</div></div>
+      </div>
+      ${z.businesses.length ? `<h4 style="margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Businesses here</h4>
+        <div class="biz-list">${z.businesses.map(b=>{
+          const parts = b.match(/^(.+?) \((.+?)\)$/);
+          return `<div class="b"><span>${parts?parts[1]:b}</span><span class="cat">${parts?parts[2]:''}</span></div>`;
+        }).join('')}</div>` : '<p style="font-size:13.5px;color:var(--muted);background:var(--bg-soft);padding:11px 14px;border-radius:9px;margin:0 0 14px">No active Businesses yet. Want to be the first in '+z.name+'? Sign up as a Founding 25 Business and lock in launch perks.</p>'}
+      <div class="m-actions">
+        <button class="btn ghost" onclick="closeZone()">Close</button>
+        ${z.businesses.length ? '<a class="btn" href="browse.html">Browse '+z.name+' →</a>' : '<a class="btn" href="business.html">Bring LYMX here →</a>'}
+      </div>
+    `;
+    document.getElementById('ovr').classList.add('on');
+  }
+  function closeZone(){ document.getElementById('ovr').classList.remove('on'); }
+  document.getElementById('ovr').onclick = e=>{ if(e.target.id==='ovr') closeZone(); };
+
+  // Filter
+  document.querySelectorAll('#cat-chips .chip').forEach(c=>{
+    c.onclick = ()=>{
+      document.querySelectorAll('#cat-chips .chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      activeFilter = c.dataset.c;
+      renderMap();
+    };
+  });
+
+  renderMap();
+</script>
+</body>
+</html>

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Schedule a 30-minute LYMX demo. Pick a date, pick a time, and a LYMX Partner will walk you through the network." />
+<title>Schedule a demo · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg-soft);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px}
+  .brand .dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:24px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .head{padding:48px 0 28px;text-align:center}
+  .head h1{margin:0 0 8px;font-size:34px;font-weight:800;letter-spacing:-.02em}
+  .head p{margin:0 0 4px;color:var(--muted);font-size:16px;max-width:600px;margin-left:auto;margin-right:auto}
+
+  /* Step indicator */
+  .steps{display:flex;justify-content:center;gap:8px;margin:18px 0 30px}
+  .pip{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:700}
+  .pip .num{width:26px;height:26px;border-radius:50%;background:var(--line);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800}
+  .pip.on .num{background:var(--ink);color:#fff}
+  .pip.done .num{background:var(--ok);color:#fff}
+  .pip.done .num::after{content:"✓";font-size:13px}
+  .pip.done .num span{display:none}
+  .pip-line{width:32px;height:2px;background:var(--line);align-self:center}
+  @media(max-width:600px){.pip-line{width:14px}.pip{font-size:12px}}
+
+  /* Card */
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);max-width:780px;margin:0 auto;padding:32px;margin-bottom:60px}
+  @media(max-width:640px){.card{padding:22px}}
+
+  .step{display:none}
+  .step.on{display:block}
+  .step h2{margin:0 0 8px;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .step p.sub{margin:0 0 22px;color:var(--muted);font-size:14.5px}
+
+  /* Step 1: who */
+  .who-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:640px){.who-grid{grid-template-columns:1fr}}
+  .who-card{padding:22px;border:2px solid var(--line);border-radius:13px;cursor:pointer;transition:.15s}
+  .who-card:hover{border-color:var(--ink);transform:translateY(-2px)}
+  .who-card.on{border-color:var(--accent);background:rgba(10,132,255,.04)}
+  .who-card .ic{font-size:32px;margin-bottom:10px}
+  .who-card h3{margin:0 0 4px;font-size:17px;font-weight:800}
+  .who-card p{margin:0;font-size:13.5px;color:var(--muted)}
+
+  .partner-pick{margin-top:18px}
+  .partner-pick label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  .partner-pick select{width:100%;border:1px solid var(--line);border-radius:9px;padding:11px 14px;font-size:14.5px;font-family:inherit;background:#fff}
+
+  /* Step 2: calendar */
+  .cal-shell{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  @media(max-width:780px){.cal-shell{grid-template-columns:1fr}}
+  .cal{background:var(--bg-soft);border:1px solid var(--line);border-radius:11px;padding:14px 16px}
+  .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .cal-head .mo{font-weight:800;font-size:15px}
+  .cal-head .nav{display:flex;gap:6px}
+  .cal-head .nav button{width:30px;height:30px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--ink-2);cursor:pointer;font-weight:800}
+  .cal-head .nav button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal-grid .day-name{font-size:11px;color:var(--muted);font-weight:700;text-align:center;padding:4px 0;text-transform:uppercase;letter-spacing:.04em}
+  .cal-grid .day{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;border-radius:7px;cursor:pointer;color:var(--ink-2);background:#fff;transition:.1s}
+  .cal-grid .day:hover{background:var(--ink);color:#fff}
+  .cal-grid .day.disabled{color:var(--line);background:transparent;cursor:not-allowed}
+  .cal-grid .day.disabled:hover{background:transparent;color:var(--line)}
+  .cal-grid .day.today{outline:2px solid var(--accent);outline-offset:-2px}
+  .cal-grid .day.on{background:var(--accent);color:#fff}
+  .cal-grid .empty{aspect-ratio:1/1}
+
+  /* Slots */
+  .slots-h{font-weight:800;font-size:15px;margin-bottom:10px}
+  .slots-h .pickdate{font-size:13px;color:var(--muted);font-weight:700;margin-left:4px}
+  .slots{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:300px;overflow-y:auto;padding-right:4px}
+  @media(max-width:780px){.slots{max-height:200px}}
+  .slot{padding:11px;border:1px solid var(--line);border-radius:8px;text-align:center;font-size:13.5px;font-weight:800;background:#fff;cursor:pointer;color:var(--ink-2);transition:.1s}
+  .slot:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .slot.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .slot.taken{color:var(--line);background:var(--bg-soft);cursor:not-allowed;text-decoration:line-through}
+  .slot.taken:hover{background:var(--bg-soft);color:var(--line)}
+  .slots-empty{padding:30px 14px;text-align:center;color:var(--muted);font-size:13.5px;background:var(--bg-soft);border-radius:9px}
+
+  .tz{margin-top:10px;font-size:12px;color:var(--muted)}
+  .tz a{color:var(--accent-2);font-weight:700}
+
+  /* Step 3: details */
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+  .field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:11px 14px;font-size:14.5px;font-family:inherit}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:0;border-color:var(--accent)}
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:600px){.field-grid{grid-template-columns:1fr}}
+
+  .check-row{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ink-2);margin-top:8px}
+  .check-row input{margin-top:4px}
+
+  /* Buttons */
+  .row-btn{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:24px;flex-wrap:wrap}
+  .btn{padding:12px 22px;border-radius:10px;font-weight:800;font-size:14.5px;cursor:pointer;border:0;text-decoration:none;display:inline-block}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:var(--accent-2)}
+  .btn-primary:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+  .btn-ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--ink)}
+
+  /* Summary panel */
+  .summary{background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:11px;padding:18px 22px;margin-bottom:18px}
+  .summary .lab{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9aa3b0;margin-bottom:5px}
+  .summary .v{font-size:17px;font-weight:800;color:#fff}
+  .summary .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:13.5px}
+  .summary .row:last-child{border-bottom:0}
+  .summary .row .l{color:#9aa3b0}
+  .summary .row .r{color:#fff;font-weight:700}
+
+  /* Confirmation */
+  .ok-state{text-align:center;padding:20px 10px}
+  .ok-state .check{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;font-size:38px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+  .ok-state h2{margin:0 0 6px;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .ok-state p{margin:0 0 18px;color:var(--muted);font-size:15px}
+  .ok-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:11px;padding:18px 22px;text-align:left;max-width:480px;margin:0 auto 18px}
+  .ok-card .row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .ok-card .row:last-child{border-bottom:0}
+  .ok-card .row .l{color:var(--muted)}
+  .ok-card .row .r{color:var(--ink-2);font-weight:700}
+  .add-cal{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:auto}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="business.html">For Business</a>
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="founding-25.html">Founding 25</a>
+      <a href="partners.html">Partners</a>
+    </nav>
+    <a href="business.html" class="btn btn-ghost">Back to Business</a>
+  </div>
+</header>
+
+<section class="head">
+  <h1>Schedule a 30-minute demo</h1>
+  <p>Walk through the LYMX network with a Partner. We'll show you the POS, the math, and what your first 60 days look like.</p>
+</section>
+
+<div class="steps">
+  <div class="pip on" id="pip-1"><div class="num"><span>1</span></div>Pick rep</div>
+  <div class="pip-line"></div>
+  <div class="pip" id="pip-2"><div class="num"><span>2</span></div>Pick time</div>
+  <div class="pip-line"></div>
+  <div class="pip" id="pip-3"><div class="num"><span>3</span></div>Your details</div>
+  <div class="pip-line"></div>
+  <div class="pip" id="pip-4"><div class="num"><span>4</span></div>Confirm</div>
+</div>
+
+<div class="card">
+  <!-- Step 1: Who -->
+  <div class="step on" id="step-1">
+    <h2>Who would you like to meet with?</h2>
+    <p class="sub">Pick a specific Partner if someone referred you, or let us match you with the best-available Partner in your area.</p>
+    <div class="who-grid">
+      <div class="who-card on" data-w="any" onclick="pickWho('any',this)">
+        <div class="ic">⚡</div>
+        <h3>Match me with anyone</h3>
+        <p>We'll route you to the next available LYMX Partner in your time zone. Fastest path to a slot.</p>
+      </div>
+      <div class="who-card" data-w="specific" onclick="pickWho('specific',this)">
+        <div class="ic">🎯</div>
+        <h3>I have a Partner in mind</h3>
+        <p>Pick from the directory below. Useful if a Partner introduced you to LYMX.</p>
+      </div>
+    </div>
+    <div class="partner-pick" id="partner-pick" style="display:none">
+      <label>Choose a Partner</label>
+      <select id="partner-sel">
+        <option value="">— Select a Partner —</option>
+        <option value="Sienna Vega" data-tier="Master Partner">Sienna Vega · Master Partner · Las Vegas</option>
+        <option value="Marcus Chen" data-tier="Platinum">Marcus Chen · Platinum · Las Vegas</option>
+        <option value="Tomás Reyes" data-tier="Platinum">Tomás Reyes · Platinum · Henderson</option>
+        <option value="Bri Okonkwo" data-tier="Gold">Bri Okonkwo · Gold · Las Vegas</option>
+        <option value="Imani Davis" data-tier="Gold">Imani Davis · Gold · North Las Vegas</option>
+        <option value="Hannah Park" data-tier="Silver">Hannah Park · Silver · Las Vegas</option>
+        <option value="Carlos Beltrán" data-tier="Silver">Carlos Beltrán · Silver · Las Vegas</option>
+      </select>
+    </div>
+    <div class="row-btn">
+      <span></span>
+      <button class="btn btn-primary" onclick="next(1)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Step 2: When -->
+  <div class="step" id="step-2">
+    <h2>Pick a day &amp; time</h2>
+    <p class="sub">Each slot is 30 minutes. We'll send you a calendar invite with a video link.</p>
+    <div class="cal-shell">
+      <div class="cal" id="cal"></div>
+      <div>
+        <div class="slots-h">Available times <span class="pickdate" id="picked-date">— pick a day</span></div>
+        <div id="slots-area"><div class="slots-empty">Pick a day on the calendar to see available times.</div></div>
+        <div class="tz">All times shown in your local time zone (<span id="tz-name">—</span>). <a onclick="changeTz()">Wrong time zone?</a></div>
+      </div>
+    </div>
+    <div class="row-btn">
+      <button class="btn btn-ghost" onclick="back(2)">← Back</button>
+      <button class="btn btn-primary" id="step2-next" disabled onclick="next(2)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Details -->
+  <div class="step" id="step-3">
+    <h2>Tell us about your Business</h2>
+    <p class="sub">A LYMX Partner will review this before the call so we can tailor the demo to you.</p>
+    <div class="summary">
+      <div class="row"><span class="l">Meeting with</span><span class="r" id="sum-who">—</span></div>
+      <div class="row"><span class="l">When</span><span class="r" id="sum-when">—</span></div>
+    </div>
+    <div class="field-grid">
+      <div class="field"><label>Your name</label><input type="text" id="d-name" placeholder="Maria Lopez" /></div>
+      <div class="field"><label>Email</label><input type="email" id="d-email" placeholder="you@example.com" /></div>
+    </div>
+    <div class="field-grid">
+      <div class="field"><label>Mobile (for SMS reminder)</label><input type="tel" id="d-phone" placeholder="(702) 555-0181" /></div>
+      <div class="field"><label>Business name</label><input type="text" id="d-biz" placeholder="Brew &amp; Bean" /></div>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label>Business type</label>
+        <select id="d-type">
+          <option value="">— Select one —</option>
+          <option>Café / coffee shop</option>
+          <option>Restaurant</option>
+          <option>Bar / brewery</option>
+          <option>Retail / shop</option>
+          <option>Salon / spa</option>
+          <option>Gym / studio</option>
+          <option>Service business</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Approx. monthly revenue</label>
+        <select id="d-rev">
+          <option value="">— Select one —</option>
+          <option>Under $25K</option>
+          <option>$25K – $75K</option>
+          <option>$75K – $200K</option>
+          <option>$200K – $500K</option>
+          <option>$500K+</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Anything specific you'd like covered? (optional)</label>
+      <textarea id="d-notes" rows="3" placeholder="e.g., we already have a points app — interested in how LYMX is different · or · we're opening a 2nd location in June"></textarea>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="d-consent" checked />
+      <label for="d-consent">I agree to receive a calendar invite and SMS reminder for this meeting.</label>
+    </div>
+    <div class="row-btn">
+      <button class="btn btn-ghost" onclick="back(3)">← Back</button>
+      <button class="btn btn-primary" onclick="next(3)">Confirm meeting →</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Confirmed -->
+  <div class="step" id="step-4">
+    <div class="ok-state">
+      <div class="check">✓</div>
+      <h2>You're booked</h2>
+      <p>We've sent you a calendar invite and an email confirmation.</p>
+      <div class="ok-card">
+        <div class="row"><span class="l">Meeting with</span><span class="r" id="ok-who">—</span></div>
+        <div class="row"><span class="l">When</span><span class="r" id="ok-when">—</span></div>
+        <div class="row"><span class="l">Where</span><span class="r">Video call (link in invite)</span></div>
+        <div class="row"><span class="l">Reminder</span><span class="r">SMS 30 min before</span></div>
+        <div class="row"><span class="l">Booking ID</span><span class="r" id="ok-id">—</span></div>
+      </div>
+      <div class="add-cal">
+        <a class="btn btn-ghost" onclick="addCal('google')">Add to Google Calendar</a>
+        <a class="btn btn-ghost" onclick="addCal('apple')">Add to Apple Calendar</a>
+        <a class="btn btn-ghost" onclick="addCal('outlook')">Add to Outlook</a>
+      </div>
+      <div style="margin-top:24px"><a href="business.html" class="btn btn-primary">Back to Business</a></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · 30-minute demos · Free with no obligation</div>
+</footer>
+
+<script>
+  const state = {
+    who: 'any',
+    partner: '',
+    date: null,    // ISO YYYY-MM-DD
+    time: null,    // 'HH:MM'
+    monthOffset: 0
+  };
+
+  // ===== Step 1 =====
+  function pickWho(w, el){
+    state.who = w;
+    document.querySelectorAll('.who-card').forEach(x=>x.classList.remove('on'));
+    el.classList.add('on');
+    document.getElementById('partner-pick').style.display = (w === 'specific') ? 'block' : 'none';
+  }
+  document.getElementById('partner-sel').onchange = e=>{ state.partner = e.target.value; };
+
+  // ===== Step 2: calendar =====
+  function renderCal(){
+    const today = new Date('2026-04-29');
+    const ref = new Date(today.getFullYear(), today.getMonth() + state.monthOffset, 1);
+    const monthLabel = ref.toLocaleString('en-US', {month:'long', year:'numeric'});
+    const firstDayOfWeek = ref.getDay();
+    const daysInMonth = new Date(ref.getFullYear(), ref.getMonth()+1, 0).getDate();
+
+    const dayNames = ['S','M','T','W','T','F','S'];
+    let html = `
+      <div class="cal-head">
+        <div class="mo">${monthLabel}</div>
+        <div class="nav">
+          <button onclick="prevMonth()" ${state.monthOffset<=0?'disabled style="opacity:.3;cursor:not-allowed"':''}>‹</button>
+          <button onclick="nextMonth()">›</button>
+        </div>
+      </div>
+      <div class="cal-grid">
+        ${dayNames.map(n=>`<div class="day-name">${n}</div>`).join('')}
+        ${Array.from({length:firstDayOfWeek}).map(()=>'<div class="empty"></div>').join('')}
+    `;
+    for(let d=1; d<=daysInMonth; d++){
+      const dt = new Date(ref.getFullYear(), ref.getMonth(), d);
+      const iso = dt.toISOString().slice(0,10);
+      const dow = dt.getDay();
+      const isPast = dt < today;
+      const isWeekend = (dow === 0); // Sunday only — Saturday demos available
+      const disabled = isPast || isWeekend;
+      const isToday = iso === today.toISOString().slice(0,10);
+      const isSelected = iso === state.date;
+      let cls = 'day';
+      if(disabled) cls += ' disabled';
+      if(isToday) cls += ' today';
+      if(isSelected) cls += ' on';
+      html += `<div class="${cls}" ${disabled?'':`onclick="pickDate('${iso}')"`}>${d}</div>`;
+    }
+    html += `</div>`;
+    document.getElementById('cal').innerHTML = html;
+  }
+  function prevMonth(){ if(state.monthOffset>0){ state.monthOffset--; renderCal(); } }
+  function nextMonth(){ state.monthOffset++; renderCal(); }
+
+  function pickDate(iso){
+    state.date = iso;
+    state.time = null;
+    renderCal();
+    renderSlots();
+  }
+
+  function renderSlots(){
+    const area = document.getElementById('slots-area');
+    const lbl = document.getElementById('picked-date');
+    if(!state.date){
+      area.innerHTML = '<div class="slots-empty">Pick a day on the calendar to see available times.</div>';
+      lbl.textContent = '— pick a day';
+      checkStep2Ready();
+      return;
+    }
+    const d = new Date(state.date+'T00:00:00');
+    lbl.textContent = '· ' + d.toLocaleDateString('en-US',{weekday:'long', month:'short', day:'numeric'});
+
+    // Generate slots: 9am-5pm, every 30 min, with mock taken slots for variety
+    const slots = [];
+    for(let h=9; h<17; h++){
+      for(let m of [0,30]){
+        const t = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+        // Randomish taken slots based on date+time hash
+        const seed = (state.date.charCodeAt(8)*31 + h*17 + m) % 17;
+        const taken = seed < 4;
+        slots.push({t, taken});
+      }
+    }
+    area.innerHTML = '<div class="slots">' + slots.map(s=>{
+      const display = formatTime(s.t);
+      if(s.taken) return `<div class="slot taken">${display}</div>`;
+      const on = s.t === state.time ? 'on' : '';
+      return `<div class="slot ${on}" onclick="pickTime('${s.t}')">${display}</div>`;
+    }).join('') + '</div>';
+  }
+  function formatTime(hhmm){
+    const [h,m] = hhmm.split(':').map(Number);
+    const ampm = h>=12 ? 'PM' : 'AM';
+    const h12 = h%12 || 12;
+    return h12 + ':' + String(m).padStart(2,'0') + ' ' + ampm;
+  }
+  function pickTime(t){
+    state.time = t;
+    renderSlots();
+    checkStep2Ready();
+  }
+  function checkStep2Ready(){
+    const ok = state.date && state.time;
+    document.getElementById('step2-next').disabled = !ok;
+  }
+  function changeTz(){ alert('Time zone is auto-detected. To change it, ask the Partner during the call.'); }
+
+  // ===== Step navigation =====
+  function setStep(n){
+    document.querySelectorAll('.step').forEach((el,i)=>{
+      el.classList.toggle('on', i+1 === n);
+    });
+    [1,2,3,4].forEach(i=>{
+      const pip = document.getElementById('pip-'+i);
+      pip.classList.remove('on','done');
+      if(i<n) pip.classList.add('done');
+      if(i===n) pip.classList.add('on');
+    });
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function next(n){
+    if(n===1){
+      if(state.who==='specific' && !state.partner){ alert('Please pick a Partner from the list, or switch to "Match me with anyone".'); return; }
+      // Render calendar lazily on first arrival to step 2
+      renderCal();
+      try { document.getElementById('tz-name').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e){}
+      setStep(2);
+    } else if(n===2){
+      // Update summary
+      document.getElementById('sum-who').textContent = state.who==='any' ? 'Best-available Partner' : state.partner;
+      const d = new Date(state.date+'T00:00:00');
+      const when = d.toLocaleDateString('en-US',{weekday:'long', month:'short', day:'numeric', year:'numeric'}) + ' · ' + formatTime(state.time);
+      document.getElementById('sum-when').textContent = when;
+      setStep(3);
+    } else if(n===3){
+      // Validate details
+      const name = document.getElementById('d-name').value.trim();
+      const email = document.getElementById('d-email').value.trim();
+      const phone = document.getElementById('d-phone').value.trim();
+      const biz = document.getElementById('d-biz').value.trim();
+      const type = document.getElementById('d-type').value;
+      if(!name || !email || !phone || !biz || !type){ alert('Please fill in all required fields.'); return; }
+      const d = new Date(state.date+'T00:00:00');
+      const when = d.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'}) + ' · ' + formatTime(state.time);
+      document.getElementById('ok-who').textContent = state.who==='any' ? 'Best-available Partner' : state.partner;
+      document.getElementById('ok-when').textContent = when;
+      document.getElementById('ok-id').textContent = 'DEMO-' + Math.floor(100000+Math.random()*900000);
+      setStep(4);
+    }
+  }
+  function back(n){
+    setStep(n-1);
+  }
+
+  function addCal(svc){
+    alert(svc.charAt(0).toUpperCase()+svc.slice(1)+' Calendar download will be sent in your confirmation email. (Mock)');
+  }
+
+  // Initial render so the calendar is ready when user arrives at step 2
+  renderCal();
+  try { document.getElementById('tz-name').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e){}
+</script>
+</body>
+</html>

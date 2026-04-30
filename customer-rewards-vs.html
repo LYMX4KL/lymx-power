@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX vs airline miles, hotel points, credit-card rewards, and single-store loyalty cards. The customer's honest comparison of where loyalty programs actually deliver value." />
+<title>LYMX vs airline miles, hotel points, and the rest · Compare</title>
+<meta property="og:title" content="LYMX vs airline miles, hotel points &amp; the rest" />
+<meta property="og:description" content="Why most loyalty programs are designed to make you give up. LYMX is built to be spent." />
+<meta property="og:image" content="og-image.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px}
+  .brand .dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:24px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .btn{padding:10px 16px;background:var(--ink);color:#fff;border-radius:10px;font-weight:800;font-size:14px;text-decoration:none;display:inline-block}
+  .btn.gold{background:#f5d172;color:#0e1116}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .hero{padding:60px 0 40px;background:linear-gradient(180deg,#fff,var(--bg-soft));border-bottom:1px solid var(--line);text-align:center}
+  .hero .pre{display:inline-block;background:rgba(212,175,55,.18);color:#7a5e10;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .hero h1{margin:0 0 12px;font-size:42px;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+  .hero h1 .accent{color:var(--accent-2)}
+  .hero p.lede{margin:0 auto;font-size:17px;color:var(--ink-2);max-width:660px;line-height:1.55}
+
+  /* Pain story strip */
+  .pains{padding:48px 0;background:var(--bg-soft)}
+  .pains h2{margin:0 0 6px;font-size:26px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .pains .lede{text-align:center;color:var(--muted);font-size:14.5px;margin:0 0 26px}
+  .pain-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:780px){.pain-grid{grid-template-columns:1fr}}
+  .pain{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px;display:flex;gap:16px;align-items:flex-start}
+  .pain .ic{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0}
+  .pain .ic.air{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .pain .ic.hotel{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  .pain .ic.cc{background:linear-gradient(135deg,#7426c4,#4d1888)}
+  .pain .ic.store{background:linear-gradient(135deg,#f0a020,#a06808)}
+  .pain h3{margin:0 0 4px;font-size:16px;font-weight:800}
+  .pain .who{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:6px}
+  .pain p{margin:0;font-size:14px;color:var(--ink-2);line-height:1.55}
+  .pain p em{color:var(--ink);font-style:normal;background:rgba(245,209,114,.3);padding:0 3px;border-radius:3px}
+
+  /* Comparison table */
+  .compare{padding:48px 0}
+  .compare h2{margin:0 0 8px;font-size:28px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .compare .lede{text-align:center;margin:0 0 24px;color:var(--muted);font-size:15px}
+  .table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--line);background:#fff;box-shadow:var(--shadow)}
+  table.cmp{width:100%;border-collapse:separate;border-spacing:0;min-width:760px}
+  table.cmp th, table.cmp td{padding:14px 16px;text-align:center;font-size:13.5px;border-bottom:1px solid var(--line);vertical-align:middle}
+  table.cmp th:first-child, table.cmp td:first-child{text-align:left;border-right:1px solid var(--line);background:var(--bg-soft);min-width:200px}
+  table.cmp thead th{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:18px 16px;border-bottom:2px solid var(--line)}
+  table.cmp thead th .logo{width:42px;height:42px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;margin-bottom:6px;letter-spacing:-.01em}
+  table.cmp thead th .name{display:block;color:var(--ink);font-size:13.5px;font-weight:800}
+  table.cmp thead th .pos{display:block;font-size:11px;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:2px;font-weight:600}
+  table.cmp thead th.lymx{background:linear-gradient(180deg,rgba(10,132,255,.08),rgba(10,132,255,.02))}
+  table.cmp thead th.lymx .logo{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  table.cmp thead th.lymx .name{color:var(--accent-2)}
+  table.cmp thead th.air .logo{background:linear-gradient(135deg,#0a84ff,#1a1f27)}
+  table.cmp thead th.hotel .logo{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  table.cmp thead th.cc .logo{background:linear-gradient(135deg,#7426c4,#1a1f27)}
+  table.cmp thead th.store .logo{background:linear-gradient(135deg,#f0a020,#a06808)}
+  table.cmp tbody tr:hover td{background:rgba(10,132,255,.03)}
+  table.cmp tbody tr:hover td:first-child{background:rgba(10,132,255,.06)}
+  table.cmp td.lymx-col{background:rgba(10,132,255,.03)}
+  table.cmp tr:last-child td{border-bottom:0}
+  .row-label{font-weight:800;color:var(--ink-2);font-size:13.5px}
+  .row-sub{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:2px}
+  .v{display:inline-flex;flex-direction:column;align-items:center;gap:2px}
+  .v .big{font-size:14.5px;font-weight:800;color:var(--ink-2)}
+  .v .big.green{color:var(--ok)}
+  .v .big.red{color:var(--danger)}
+  .v .big.amber{color:#a06808}
+  .v .small{font-size:11px;color:var(--muted);font-weight:600}
+  .y{color:var(--ok);font-size:18px;font-weight:800}
+  .n{color:var(--danger);font-size:18px;font-weight:800}
+  .q{color:var(--muted);font-size:13px;font-weight:700}
+
+  /* Math reveal */
+  .math{padding:48px 0;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;text-align:center}
+  .math .pre{display:inline-block;background:rgba(245,209,114,.18);color:#f5d172;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .math h2{margin:0 0 12px;font-size:30px;font-weight:800;letter-spacing:-.02em;color:#fff}
+  .math .lede{margin:0 auto 26px;color:#9aa3b0;font-size:15.5px;max-width:600px}
+  .math-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:840px;margin:0 auto}
+  @media(max-width:780px){.math-grid{grid-template-columns:1fr}}
+  .math-card{padding:22px 24px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:14px}
+  .math-card .lab{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#9aa3b0;margin-bottom:5px}
+  .math-card .v{font-size:34px;font-weight:800;color:#fff;letter-spacing:-.02em;line-height:1}
+  .math-card .v.gold{color:#f5d172}
+  .math-card .v.green{color:#5fd198}
+  .math-card .vsub{font-size:13px;color:#9aa3b0;margin-top:6px}
+
+  /* Pull quote */
+  .pull{padding:48px 0;text-align:center;border-top:1px solid var(--line)}
+  .pull blockquote{margin:0 auto;max-width:740px;font-size:24px;font-weight:600;line-height:1.4;letter-spacing:-.01em;color:var(--ink-2);font-style:italic}
+  .pull cite{display:block;margin-top:14px;font-size:13.5px;color:var(--muted);font-style:normal}
+  .pull cite strong{color:var(--ink);font-weight:800}
+
+  /* CTA */
+  .cta{padding:48px 0;background:var(--bg-soft);text-align:center;border-top:1px solid var(--line)}
+  .cta h2{margin:0 0 8px;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .cta p{margin:0 0 18px;color:var(--muted);font-size:15.5px}
+  .cta-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+  /* Footnote */
+  .foot-note{padding:18px 0;background:#fff;border-top:1px solid var(--line);font-size:11px;color:var(--muted);line-height:1.6;text-align:center}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:32px 0 22px;font-size:13px}
+  .foot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-bottom:18px}
+  @media(max-width:780px){.foot-grid{grid-template-columns:repeat(2,1fr)}}
+  .foot-grid h4{color:#fff;font-size:13px;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
+  .foot-grid a{display:block;padding:3px 0;color:#9aa3b0}
+  .foot-grid a:hover{color:#fff}
+  .foot-bot{padding-top:16px;border-top:1px solid rgba(255,255,255,.1);text-align:center;font-size:12.5px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="customer-rewards-vs.html" class="on">Compare</a>
+      <a href="browse.html">Browse</a>
+      <a href="app.html">Web Wallet</a>
+    </nav>
+    <a class="btn" href="customer-signup.html">Get my wallet →</a>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="wrap">
+    <span class="pre">⚖️ For customers</span>
+    <h1>LYMX vs <span class="accent">every other rewards program</span> you forgot you signed up for</h1>
+    <p class="lede">Airline miles. Hotel points. The 12 store loyalty apps on your phone. Most of them are designed to make you give up. LYMX is the opposite — it's built to be spent. Here's the side-by-side.</p>
+  </div>
+</section>
+
+<!-- Pain stories -->
+<section class="pains">
+  <div class="wrap">
+    <h2>You already know the pain</h2>
+    <p class="lede">Real stories from people we talked to. Names changed because we don't name brands.</p>
+    <div class="pain-grid">
+      <div class="pain">
+        <div class="ic air">✈️</div>
+        <div>
+          <div class="who">Maya — flier on a major US airline</div>
+          <h3>"I had 28,000 miles. Then they expired."</h3>
+          <p>"I'd been saving for a flight to see family. Looked one day and they were gone. The airline said they expired after 24 months of inactivity. <em>I had no idea I needed to keep using them to keep them.</em>"</p>
+        </div>
+      </div>
+      <div class="pain">
+        <div class="ic hotel">🏨</div>
+        <div>
+          <div class="who">Jamal — frequent traveler</div>
+          <h3>"My hotel points = 1/3 of a free night."</h3>
+          <p>"After three years of business travel, I had 18,000 points. The smallest reward stay was 50,000. <em>I'd need to stay another 60 nights to even claim a single free night.</em> The math is rigged."</p>
+        </div>
+      </div>
+      <div class="pain">
+        <div class="ic cc">💳</div>
+        <div>
+          <div class="who">Asha — 6 credit cards in her wallet</div>
+          <h3>"My points are stuck in a portal I never use."</h3>
+          <p>"I have points across three card portals. To redeem, I have to go through their travel site, where the prices are 30% higher than booking direct. <em>Or I take a statement credit at half a cent per point.</em>"</p>
+        </div>
+      </div>
+      <div class="pain">
+        <div class="ic store">🛍️</div>
+        <div>
+          <div class="who">Liam — local-shopper</div>
+          <h3>"I have 11 punch cards in my wallet."</h3>
+          <p>"Each one is for a different coffee shop. Buy 9, get the 10th free. <em>I never get to 9 anywhere.</em> I lose the cards. I forget which one is which. The whole thing is a wallet-stuffer."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Comparison table -->
+<section class="compare">
+  <div class="wrap">
+    <h2>How LYMX compares</h2>
+    <p class="lede">A common-sense comparison across the things that actually matter — earning, expiration, redemption ease, value transparency.</p>
+    <div class="table-wrap">
+      <table class="cmp">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="lymx">
+              <div class="logo">LYMX</div>
+              <span class="name">LYMX</span>
+              <span class="pos">Local shared network</span>
+            </th>
+            <th class="air">
+              <div class="logo">✈</div>
+              <span class="name">Airline miles</span>
+              <span class="pos">Major carriers</span>
+            </th>
+            <th class="hotel">
+              <div class="logo">🏨</div>
+              <span class="name">Hotel points</span>
+              <span class="pos">Big chains</span>
+            </th>
+            <th class="cc">
+              <div class="logo">💳</div>
+              <span class="name">Credit-card points</span>
+              <span class="pos">Bank rewards programs</span>
+            </th>
+            <th class="store">
+              <div class="logo">🛍</div>
+              <span class="name">Store loyalty</span>
+              <span class="pos">Single-Business cards</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="row-label">Each point/mile is worth a fixed amount</div><div class="row-sub">No fine print, no portal multipliers</div></td>
+            <td class="lymx-col"><span class="y">✓</span><div class="row-sub" style="margin-top:5px">1 LYMX = $0.01, always</div></td>
+            <td><span class="n">✗</span><div class="row-sub">Varies by route &amp; date</div></td>
+            <td><span class="n">✗</span><div class="row-sub">Varies by hotel &amp; season</div></td>
+            <td><span class="n">✗</span><div class="row-sub">0.5–2¢ depending on portal</div></td>
+            <td><span class="q">Sort of</span><div class="row-sub">"Buy 9 get 10th free"</div></td>
+          </tr>
+          <tr>
+            <td><div class="row-label">Never expires</div><div class="row-sub">No "use it or lose it"</div></td>
+            <td class="lymx-col"><span class="y">✓</span></td>
+            <td><span class="n">12-24 mo</span></td>
+            <td><span class="n">12-24 mo</span></td>
+            <td><span class="q">Most don't</span></td>
+            <td><span class="q">Card gets lost</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-label">Spendable across many Businesses</div><div class="row-sub">Earn at one, spend at any</div></td>
+            <td class="lymx-col"><span class="y">✓</span><div class="row-sub" style="margin-top:5px">Every LYMX Business</div></td>
+            <td><span class="q">Within alliance</span></td>
+            <td><span class="q">Within chain</span></td>
+            <td><span class="q">Statement credit / 1 portal</span></td>
+            <td><span class="n">✗</span><div class="row-sub">One store only</div></td>
+          </tr>
+          <tr>
+            <td><div class="row-label">Minimum to redeem</div><div class="row-sub">How many you need to use them</div></td>
+            <td class="lymx-col"><div class="v"><span class="big green">1 LYMX</span><span class="small">No minimum</span></div></td>
+            <td><div class="v"><span class="big amber">7,500+ miles</span><span class="small">Cheapest reward flight</span></div></td>
+            <td><div class="v"><span class="big amber">15,000+ pts</span><span class="small">Cheapest reward night</span></div></td>
+            <td><div class="v"><span class="big">Varies</span><span class="small">Often 2,500+</span></div></td>
+            <td><div class="v"><span class="big">9 punches</span><span class="small">Then 1 free item</span></div></td>
+          </tr>
+          <tr>
+            <td><div class="row-label">No app to download</div><div class="row-sub">Web wallet, add to home screen</div></td>
+            <td class="lymx-col"><span class="y">✓</span></td>
+            <td><span class="n">Yes — airline app</span></td>
+            <td><span class="n">Yes — hotel app</span></td>
+            <td><span class="n">Yes — bank app</span></td>
+            <td><span class="n">Often</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-label">Works at independent local Businesses</div><div class="row-sub">Coffee shops, restaurants, salons, retail</div></td>
+            <td class="lymx-col"><span class="y">✓</span><div class="row-sub" style="margin-top:5px">Built for them</div></td>
+            <td><span class="n">✗</span></td>
+            <td><span class="n">✗</span></td>
+            <td><span class="q">Statement credit</span></td>
+            <td><span class="q">One at a time</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-label">Earnings per $1 spent</div><div class="row-sub">Typical for everyday spend</div></td>
+            <td class="lymx-col"><div class="v"><span class="big green">5-10 LYMX</span><span class="small">≈ 5-10% back</span></div></td>
+            <td><div class="v"><span class="big">1-3 mi</span><span class="small">Worth ~1-2¢ each</span></div></td>
+            <td><div class="v"><span class="big">10 pts</span><span class="small">Worth ~0.5¢ each</span></div></td>
+            <td><div class="v"><span class="big">1-2 pts</span><span class="small">Worth 1-2¢ each</span></div></td>
+            <td><div class="v"><span class="big">1 punch</span><span class="small">Per visit</span></div></td>
+          </tr>
+          <tr>
+            <td><div class="row-label">Effective % of spend you actually redeem</div><div class="row-sub">Industry "breakage" rate (lost points)</div></td>
+            <td class="lymx-col"><div class="v"><span class="big green">Tracked</span><span class="small">Goal: &gt;80% redeemed</span></div></td>
+            <td><div class="v"><span class="big red">~20%</span><span class="small">~80% breakage</span></div></td>
+            <td><div class="v"><span class="big red">~30%</span><span class="small">~70% breakage</span></div></td>
+            <td><div class="v"><span class="big amber">~50%</span><span class="small">~50% breakage</span></div></td>
+            <td><div class="v"><span class="big red">~10%</span><span class="small">Lost cards</span></div></td>
+          </tr>
+          <tr>
+            <td><div class="row-label">Sign-up bonus</div><div class="row-sub">Just for joining</div></td>
+            <td class="lymx-col"><div class="v"><span class="big green">100 LYMX</span><span class="small">≈ $1.00 free</span></div></td>
+            <td><span class="q">Varies</span></td>
+            <td><span class="q">Varies</span></td>
+            <td><span class="q">Card-specific</span></td>
+            <td><span class="n">Rare</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-label">Refer a friend</div><div class="row-sub">Both of you earn</div></td>
+            <td class="lymx-col"><div class="v"><span class="big green">200 + 200</span><span class="small">Each, no cap</span></div></td>
+            <td><div class="v"><span class="big">5,000 mi</span><span class="small">Often capped</span></div></td>
+            <td><div class="v"><span class="big">2,000 pts</span><span class="small">Capped</span></div></td>
+            <td><div class="v"><span class="big">10K-75K pts</span><span class="small">Card-specific</span></div></td>
+            <td><span class="n">No</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12px;color:var(--muted);text-align:center;margin-top:12px">Estimates as of April 2026 from publicly available program terms. Your actual earnings vary by program tier and use.</p>
+  </div>
+</section>
+
+<!-- Math reveal -->
+<section class="math">
+  <div class="wrap">
+    <span class="pre">Real math, not marketing</span>
+    <h2>What $5,000/year of spend actually gets you</h2>
+    <p class="lede">Average American spends $5K/year on coffee, dining, and personal services. Here's what each program gives back, after expiration and redemption friction.</p>
+    <div class="math-grid">
+      <div class="math-card">
+        <div class="lab">LYMX</div>
+        <div class="v gold">$300+</div>
+        <div class="vsub">5-10% back, &gt;80% redeemed → $250-$500 actually used</div>
+      </div>
+      <div class="math-card">
+        <div class="lab">Single-store loyalty</div>
+        <div class="v">$50</div>
+        <div class="vsub">~$5 free coffee per shop, only 10% claimed → mostly lost</div>
+      </div>
+      <div class="math-card">
+        <div class="lab">Credit-card points</div>
+        <div class="v green">$50-$100</div>
+        <div class="vsub">1-2% effective when redeemed via portals</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quote -->
+<section class="pull">
+  <div class="wrap">
+    <blockquote>"I'm done collecting points I'll never use. With LYMX, the math is just easier — I earn it, I see it, I spend it. That's loyalty I can actually touch."</blockquote>
+    <cite><strong>Maya H.</strong> · LYMX customer · Las Vegas</cite>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="wrap">
+    <h2>Get the wallet that's built to be spent</h2>
+    <p>Free. No app download. Welcome bonus: 100 LYMX (≈ $1) when you sign up.</p>
+    <div class="cta-row">
+      <a class="btn gold" href="customer-signup.html">Get my wallet →</a>
+      <a class="btn ghost" href="why-lymx.html">Read more</a>
+      <a class="btn ghost" href="browse.html">Browse Businesses</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footnote -->
+<section class="foot-note">
+  <div class="wrap">
+    Examples are illustrative. Actual program terms vary by airline / hotel / card / retailer. We don't reference specific brand names because we don't want any of these comparisons to be marketing claims about a specific competitor — they're industry-typical patterns. Verify with your specific program's terms.
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>Customers</h4>
+        <a href="why-lymx.html">Why LYMX</a>
+        <a href="customer-rewards-vs.html">Compare</a>
+        <a href="browse.html">Browse Businesses</a>
+        <a href="app.html">Web Wallet</a>
+      </div>
+      <div>
+        <h4>Help</h4>
+        <a href="help-center.html">Help center</a>
+        <a href="support.html">Contact support</a>
+        <a href="status.html">Status</a>
+      </div>
+      <div>
+        <h4>Businesses</h4>
+        <a href="business.html">List your Business</a>
+        <a href="catering.html">Bulk gifts</a>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="disclaimer.html">Disclaimer</a>
+      </div>
+    </div>
+    <div class="foot-bot">© 2026 LYMX Power · Las Vegas, NV · Promotional credit, not money. <a href="disclaimer.html" style="color:#a3c5ff">More</a></div>
+  </div>
+</footer>
+</body>
+</html>

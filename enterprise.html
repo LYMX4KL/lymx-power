@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Enterprise — for multi-location chains (3+ locations). Volume pricing, dedicated CSM, custom POS integration, SLA-backed support, single billing." />
+<title>LYMX Enterprise · For multi-location chains</title>
+<meta property="og:title" content="LYMX Enterprise" />
+<meta property="og:description" content="Multi-location loyalty network. Volume pricing, dedicated CSM, SLA-backed." />
+<meta property="og:image" content="og-image.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 30px 80px rgba(14,17,22,.16);--maxw:1180px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(14,17,22,.78);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid rgba(255,255,255,.06);color:#fff}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:#fff}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#f5d172,#a08020)}
+  .brand .tag{background:rgba(245,209,114,.18);color:#f5d172;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:#cdd2da}
+  .nav-links a:hover{color:#fff}
+  .btn{padding:9px 14px;border-radius:9px;font-weight:800;font-size:13.5px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn-gold{background:#f5d172;color:#0e1116}
+  .btn-gold:hover{background:#fff}
+  .btn-ghost-w{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3)}
+  .btn-ghost-w:hover{border-color:#fff}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .hero{padding:70px 0 60px;background:linear-gradient(180deg,#0e1116,#1a1f27);color:#fff;position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(245,209,114,.18),transparent 70%);left:-200px;top:-200px;pointer-events:none}
+  .hero::after{content:"";position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(10,132,255,.18),transparent 70%);right:-180px;bottom:-180px;pointer-events:none}
+  .hero-grid{position:relative;display:grid;grid-template-columns:1.1fr 1fr;gap:42px;align-items:center}
+  @media(max-width:900px){.hero-grid{grid-template-columns:1fr}}
+  .pre{display:inline-block;background:rgba(245,209,114,.18);color:#f5d172;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:6px;margin-bottom:18px}
+  .hero h1{margin:0 0 14px;font-size:50px;font-weight:800;letter-spacing:-.03em;line-height:1.05;color:#fff}
+  .hero h1 .gold{color:#f5d172}
+  .hero p.lede{font-size:18px;color:#cdd2da;margin:0 0 26px;max-width:540px;line-height:1.55}
+  .hero-cta{display:flex;gap:10px;flex-wrap:wrap}
+  .btn-lg{padding:13px 22px;font-size:15px}
+
+  /* Hero info card */
+  .hero-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:24px 26px;backdrop-filter:blur(8px)}
+  .hero-card h3{margin:0 0 4px;color:#f5d172;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+  .hero-card .price{font-size:32px;font-weight:800;color:#fff;letter-spacing:-.02em;margin-bottom:4px}
+  .hero-card .price .small{font-size:14px;color:#9aa3b0;font-weight:600;margin-left:6px}
+  .hero-card .basis{font-size:13px;color:#9aa3b0;margin-bottom:18px}
+  .hero-card ul{margin:0;padding:0 0 0 20px;color:#cdd2da;font-size:14px;line-height:1.65}
+  .hero-card li{margin:5px 0}
+  .hero-card li strong{color:#fff;font-weight:800}
+
+  /* Logos strip */
+  .logos{padding:30px 0;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .logos .lab{text-align:center;font-size:11.5px;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px}
+  .logo-row{display:flex;justify-content:center;align-items:center;gap:36px;flex-wrap:wrap;opacity:.7}
+  .logo-row .l{font-weight:800;font-size:17px;color:var(--ink-2);letter-spacing:-.02em}
+  .logo-row .l small{display:block;font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+  /* Why enterprise */
+  .why{padding:60px 0;border-bottom:1px solid var(--line)}
+  .why h2{margin:0 0 8px;font-size:30px;font-weight:800;letter-spacing:-.02em;text-align:center}
+  .why .lede{margin:0 auto 32px;color:var(--muted);font-size:16px;max-width:580px;text-align:center;line-height:1.55}
+  .why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:780px){.why-grid{grid-template-columns:1fr}}
+  .why-card{padding:28px 30px;background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
+  .why-card .ic{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;margin-bottom:14px}
+  .why-card .ic.a{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .why-card .ic.b{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .why-card .ic.c{background:linear-gradient(135deg,#d4af37,#a08020)}
+  .why-card h3{margin:0 0 6px;font-size:18px;font-weight:800}
+  .why-card p{margin:0;font-size:14.5px;color:var(--ink-2);line-height:1.55}
+
+  /* Comparison strip */
+  .compare{padding:60px 0;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .compare h2{margin:0 0 24px;font-size:26px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--line);background:#fff;box-shadow:var(--shadow);max-width:880px;margin:0 auto}
+  table.cmp{width:100%;border-collapse:separate;border-spacing:0;min-width:580px}
+  table.cmp th, table.cmp td{padding:13px 16px;text-align:center;font-size:13.5px;border-bottom:1px solid var(--line)}
+  table.cmp th:first-child, table.cmp td:first-child{text-align:left;background:var(--bg-soft);min-width:200px}
+  table.cmp thead th{font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:16px}
+  table.cmp thead th.starter{color:var(--accent-2)}
+  table.cmp thead th.enterprise{color:#7a5e10}
+  table.cmp tr:last-child td{border-bottom:0}
+  .ent-col{background:rgba(245,209,114,.05)}
+  .y{color:var(--ok);font-size:18px;font-weight:800}
+  .n{color:var(--danger);font-size:16px;font-weight:800}
+
+  /* Volume pricing */
+  .pricing{padding:60px 0;border-bottom:1px solid var(--line)}
+  .pricing h2{margin:0 0 8px;font-size:28px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .pricing .lede{text-align:center;color:var(--muted);font-size:15.5px;margin:0 0 30px;max-width:600px;margin-left:auto;margin-right:auto}
+  .tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:1000px;margin:0 auto}
+  @media(max-width:880px){.tiers{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.tiers{grid-template-columns:1fr}}
+  .tier{background:#fff;border:2px solid var(--line);border-radius:var(--radius);padding:24px 22px;text-align:center;position:relative}
+  .tier.recommended{border-color:var(--gold);box-shadow:0 6px 24px rgba(212,175,55,.18)}
+  .tier .ribbon{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--gold);color:#0e1116;font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:3px 11px;border-radius:6px;text-transform:uppercase}
+  .tier h3{margin:0 0 4px;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .tier .range{font-size:18px;font-weight:800;color:var(--ink);margin-bottom:14px}
+  .tier .price{font-size:30px;font-weight:800;letter-spacing:-.02em}
+  .tier .price .small{font-size:13px;color:var(--muted);font-weight:600;display:block;margin-top:2px}
+  .tier .price.gold{color:var(--gold)}
+  .tier ul{list-style:none;margin:18px 0 14px;padding:0;text-align:left;font-size:13.5px;color:var(--ink-2)}
+  .tier li{padding:5px 0;display:flex;gap:7px}
+  .tier li::before{content:"✓";color:var(--ok);font-weight:800;flex-shrink:0}
+  .tier .cta{display:block;padding:10px;background:var(--bg-soft);color:var(--ink);border-radius:9px;font-weight:800;font-size:13px;text-align:center}
+  .tier.recommended .cta{background:var(--ink);color:#fff}
+  .tier .cta:hover{opacity:.9}
+
+  /* SLA */
+  .sla{padding:60px 0;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff}
+  .sla h2{margin:0 0 8px;font-size:26px;font-weight:800;letter-spacing:-.01em;text-align:center;color:#fff}
+  .sla .lede{text-align:center;color:#9aa3b0;font-size:15px;margin:0 0 28px}
+  .sla-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:980px;margin:0 auto}
+  @media(max-width:780px){.sla-grid{grid-template-columns:repeat(2,1fr)}}
+  .sla-card{padding:18px 20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:13px}
+  .sla-card .lab{font-size:11px;font-weight:800;color:#9aa3b0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+  .sla-card .v{font-size:24px;font-weight:800;color:#f5d172;letter-spacing:-.02em}
+  .sla-card p{margin:6px 0 0;font-size:12.5px;color:#9aa3b0;line-height:1.5}
+
+  /* Case-study quote */
+  .case{padding:50px 0;border-bottom:1px solid var(--line)}
+  .case blockquote{margin:0 auto;max-width:780px;font-size:24px;font-weight:600;line-height:1.4;letter-spacing:-.01em;color:var(--ink-2);font-style:italic;text-align:center}
+  .case cite{display:block;margin-top:16px;font-size:13.5px;color:var(--muted);font-style:normal;text-align:center}
+  .case cite strong{color:var(--ink);font-weight:800}
+
+  /* Contact form */
+  .contact{padding:60px 0}
+  .contact h2{margin:0 0 8px;font-size:28px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .contact .lede{text-align:center;color:var(--muted);font-size:15.5px;margin:0 auto 28px;max-width:580px}
+  .form{max-width:580px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px 32px;box-shadow:var(--shadow)}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+  .field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:11px 14px;font-size:14.5px;font-family:inherit}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:0;border-color:var(--accent)}
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:600px){.field-grid{grid-template-columns:1fr}}
+  .submit-btn{width:100%;padding:14px;background:var(--ink);color:#fff;border-radius:11px;font-weight:800;font-size:15px;border:0;cursor:pointer;margin-top:6px}
+  .submit-btn:hover{background:var(--accent-2)}
+
+  .confirmed{display:none;text-align:center;padding:8px}
+  .confirmed.on{display:block}
+  .confirmed .ic{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+  .confirmed h3{margin:0 0 6px;font-size:18px;font-weight:800}
+  .confirmed p{margin:0;color:var(--muted);font-size:14px;line-height:1.55}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:32px 0 22px;font-size:13px}
+  .foot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-bottom:18px}
+  @media(max-width:780px){.foot-grid{grid-template-columns:repeat(2,1fr)}}
+  .foot-grid h4{color:#fff;font-size:13px;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
+  .foot-grid a{display:block;padding:3px 0;color:#9aa3b0}
+  .foot-grid a:hover{color:#fff}
+  .foot-bot{padding-top:16px;border-top:1px solid rgba(255,255,255,.1);text-align:center;font-size:12.5px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px;color:#fff"><span class="dot"></span> LYMX</a>
+      <span class="tag">Enterprise</span>
+    </div>
+    <nav class="nav-links">
+      <a href="business.html">Standard plan</a>
+      <a href="pricing-compare.html">Compare</a>
+      <a href="integrations.html">Integrations</a>
+      <a href="security.html">Security</a>
+    </nav>
+    <a href="#contact" class="btn btn-gold">Talk to enterprise</a>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="pre">★ For 3+ locations</span>
+        <h1>LYMX <span class="gold">Enterprise</span></h1>
+        <h1 style="font-size:24px;font-weight:600;color:#cdd2da;margin-top:-8px">For multi-location chains.</h1>
+        <p class="lede">If you run 3 or more locations and want one loyalty layer that works across all of them, talk to us. Volume pricing, dedicated success manager, custom POS integration, single billing across all stores.</p>
+        <div class="hero-cta">
+          <a class="btn btn-lg btn-gold" href="#contact">Talk to enterprise →</a>
+          <a class="btn btn-lg btn-ghost-w" href="#tiers">See volume pricing</a>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <h3>Starting at</h3>
+        <div class="price">$150 <span class="small">/ location / mo</span></div>
+        <div class="basis">Volume tiers from 3 to 50+ locations · billed monthly</div>
+        <ul>
+          <li><strong>Single billing</strong> across all locations</li>
+          <li><strong>Dedicated CSM</strong> for setup &amp; ongoing</li>
+          <li><strong>Custom POS integration</strong> if needed</li>
+          <li><strong>SLA-backed support</strong> (4-hour response, 99.9% uptime)</li>
+          <li><strong>Quarterly business review</strong> + executive reporting</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Logos strip (placeholder) -->
+<section class="logos">
+  <div class="wrap">
+    <div class="lab">Trusted by multi-location chains across the network</div>
+    <div class="logo-row">
+      <div class="l">Brew &amp; Bean<small>4 locations</small></div>
+      <div class="l">Pulse Studio<small>3 locations</small></div>
+      <div class="l">Sunlit Salon<small>5 locations</small></div>
+      <div class="l">Pink Note Co<small>3 locations</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- Why -->
+<section class="why">
+  <div class="wrap">
+    <h2>Why chains choose Enterprise</h2>
+    <p class="lede">The standard $200/month plan works great for one location. At 3+ locations, here's what changes.</p>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="ic a">📊</div>
+        <h3>One dashboard, all stores</h3>
+        <p>See LYMX activity, settlement, customer retention across every location. Drill into any single store. Compare locations side-by-side.</p>
+      </div>
+      <div class="why-card">
+        <div class="ic b">🤝</div>
+        <h3>One contract, one invoice</h3>
+        <p>Procurement-friendly. Single MSA, one monthly invoice across all locations. Net-30 terms available. POs accepted.</p>
+      </div>
+      <div class="why-card">
+        <div class="ic c">⚡</div>
+        <h3>Custom POS integration</h3>
+        <p>Already on a POS we don't natively support? Our engineering team builds the integration as part of your activation. No extra fee.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Compare to Standard -->
+<section class="compare">
+  <div class="wrap">
+    <h2>Standard vs Enterprise</h2>
+    <div class="table-wrap">
+      <table class="cmp">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="starter">Standard</th>
+            <th class="enterprise">Enterprise</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Monthly cost</td><td>$200/loc/mo</td><td class="ent-col">From $150/loc/mo</td></tr>
+          <tr><td>One-time activation</td><td>$850/loc</td><td class="ent-col">Negotiated</td></tr>
+          <tr><td>Locations supported</td><td>1-2</td><td class="ent-col">3+</td></tr>
+          <tr><td>Custom POS integration</td><td><span class="n">✗</span></td><td class="ent-col"><span class="y">✓</span></td></tr>
+          <tr><td>Dedicated CSM</td><td>Shared support</td><td class="ent-col"><span class="y">✓ Named CSM</span></td></tr>
+          <tr><td>SLA</td><td>Best effort</td><td class="ent-col">99.9% uptime, 4hr first response</td></tr>
+          <tr><td>Single MSA + billing</td><td><span class="n">✗</span></td><td class="ent-col"><span class="y">✓</span></td></tr>
+          <tr><td>Quarterly business review</td><td><span class="n">✗</span></td><td class="ent-col"><span class="y">✓</span></td></tr>
+          <tr><td>Net-30 / PO terms</td><td><span class="n">✗</span></td><td class="ent-col"><span class="y">✓</span></td></tr>
+          <tr><td>Multi-location dashboard</td><td>Per-location only</td><td class="ent-col">Aggregated + per-location</td></tr>
+          <tr><td>Support channel</td><td>Email + chat</td><td class="ent-col">Dedicated Slack channel</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Volume pricing -->
+<section class="pricing" id="tiers">
+  <div class="wrap">
+    <h2>Volume pricing</h2>
+    <p class="lede">Linear discount with each location. Annual contracts unlock the deepest tier.</p>
+    <div class="tiers">
+      <div class="tier">
+        <h3>Tier 1</h3>
+        <div class="range">3–9 locations</div>
+        <div class="price">$180<span class="small">/ loc / mo</span></div>
+        <ul>
+          <li>Single billing across locations</li>
+          <li>Dedicated CSM</li>
+          <li>4-hour first response SLA</li>
+          <li>Standard POS integrations</li>
+        </ul>
+        <a class="cta" href="#contact">Get a quote</a>
+      </div>
+      <div class="tier recommended">
+        <div class="ribbon">Most popular</div>
+        <h3>Tier 2</h3>
+        <div class="range">10–24 locations</div>
+        <div class="price gold">$160<span class="small">/ loc / mo</span></div>
+        <ul>
+          <li>Tier 1 +</li>
+          <li>Custom POS integration</li>
+          <li>Quarterly business review</li>
+          <li>Net-30 terms</li>
+          <li>Dedicated Slack channel</li>
+        </ul>
+        <a class="cta" href="#contact">Get a quote</a>
+      </div>
+      <div class="tier">
+        <h3>Tier 3</h3>
+        <div class="range">25–49 locations</div>
+        <div class="price">$140<span class="small">/ loc / mo</span></div>
+        <ul>
+          <li>Tier 2 +</li>
+          <li>Co-developed feature roadmap</li>
+          <li>Annual on-site executive review</li>
+          <li>Custom analytics views</li>
+        </ul>
+        <a class="cta" href="#contact">Get a quote</a>
+      </div>
+      <div class="tier">
+        <h3>Tier 4</h3>
+        <div class="range">50+ locations</div>
+        <div class="price">Custom<span class="small">Annual contract</span></div>
+        <ul>
+          <li>Tier 3 +</li>
+          <li>White-label customer wallet</li>
+          <li>Dedicated infrastructure tier</li>
+          <li>Procurement-friendly MSA</li>
+        </ul>
+        <a class="cta" href="#contact">Talk to founders</a>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:20px">All tiers include the standard $850/location activation kit (or negotiated based on volume). LYMX wholesale rate ($0.008 / unit) and customer-facing pricing remain constant — Enterprise pricing affects subscription only.</p>
+  </div>
+</section>
+
+<!-- SLA section -->
+<section class="sla">
+  <div class="wrap">
+    <h2>Backed by an SLA</h2>
+    <p class="lede">The numbers we commit to. Credits applied if we miss them.</p>
+    <div class="sla-grid">
+      <div class="sla-card">
+        <div class="lab">Uptime</div>
+        <div class="v">99.9%</div>
+        <p>Measured monthly. Service credits apply for any breach.</p>
+      </div>
+      <div class="sla-card">
+        <div class="lab">First response</div>
+        <div class="v">4 hours</div>
+        <p>Business hours · Pacific. Critical issues 24×7 within 1 hour.</p>
+      </div>
+      <div class="sla-card">
+        <div class="lab">Settlement</div>
+        <div class="v">Day 5</div>
+        <p>ACH lands by the 5th business day every month, no exceptions.</p>
+      </div>
+      <div class="sla-card">
+        <div class="lab">Data exports</div>
+        <div class="v">&lt; 2 min</div>
+        <p>CSV exports of any view return in under 2 minutes for chains under 100 locations.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Case study quote -->
+<section class="case">
+  <div class="wrap">
+    <blockquote>"Going from 1 to 4 locations made our existing loyalty system a mess — different programs, different points, customers complaining. LYMX gave us one network across all 4 stores in a weekend. Same wallet for the customer at every store."</blockquote>
+    <cite><strong>Daniel Whitley</strong> · Owner, Brew &amp; Bean (4 locations) · LYMX Enterprise customer</cite>
+  </div>
+</section>
+
+<!-- Contact form -->
+<section class="contact" id="contact">
+  <div class="wrap">
+    <h2>Talk to enterprise</h2>
+    <p class="lede">A LYMX founder or CSM responds within 1 business hour. Tell us about your chain.</p>
+    <div class="form" id="form-card">
+      <div id="form-body">
+        <div class="field-grid">
+          <div class="field"><label>Company name</label><input type="text" id="c-co" placeholder="Brew &amp; Bean Co." /></div>
+          <div class="field"><label>Number of locations</label><input type="number" id="c-loc" min="3" placeholder="4" /></div>
+        </div>
+        <div class="field-grid">
+          <div class="field"><label>Your name</label><input type="text" id="c-name" placeholder="Daniel Whitley" /></div>
+          <div class="field"><label>Title</label><input type="text" id="c-title" placeholder="Owner / COO" /></div>
+        </div>
+        <div class="field-grid">
+          <div class="field"><label>Work email</label><input type="email" id="c-email" placeholder="daniel@brewandbean.co" /></div>
+          <div class="field"><label>Phone</label><input type="tel" id="c-phone" placeholder="(702) 555-0142" /></div>
+        </div>
+        <div class="field">
+          <label>Current POS</label>
+          <select id="c-pos">
+            <option>Square</option>
+            <option>Toast</option>
+            <option>Clover</option>
+            <option>Lightspeed</option>
+            <option>Shopify POS</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>What are you trying to solve?</label>
+          <textarea id="c-msg" rows="3" placeholder="Briefly: existing loyalty pain, expansion plans, what success looks like."></textarea>
+        </div>
+        <button class="submit-btn" onclick="submitForm()">Talk to enterprise →</button>
+      </div>
+
+      <div class="confirmed" id="confirmed">
+        <div class="ic">✓</div>
+        <h3>Got it — we'll be in touch within 1 business hour</h3>
+        <p>Look out for an email from <strong>kenny@getlymx.com</strong> with three time options for a 30-minute discovery call.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>Plans</h4>
+        <a href="business.html">Standard</a>
+        <a href="enterprise.html">Enterprise</a>
+        <a href="pricing-compare.html">Compare</a>
+        <a href="catering.html">Bulk gifts</a>
+      </div>
+      <div>
+        <h4>Trust</h4>
+        <a href="security.html">Security</a>
+        <a href="status.html">Status</a>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+      </div>
+      <div>
+        <h4>Build</h4>
+        <a href="integrations.html">Integrations</a>
+        <a href="api.html">API</a>
+        <a href="changelog.html">Changelog</a>
+        <a href="roadmap.html">Roadmap</a>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <a href="mailto:enterprise@getlymx.com">enterprise@getlymx.com</a>
+        <a href="demo.html">Schedule a demo</a>
+        <a href="support.html">Support</a>
+      </div>
+    </div>
+    <div class="foot-bot">© 2026 LYMX Power · Las Vegas, NV · Enterprise plans for 3+ location chains</div>
+  </div>
+</footer>
+
+<script>
+  function submitForm(){
+    const co = document.getElementById('c-co').value.trim();
+    const loc = parseInt(document.getElementById('c-loc').value, 10);
+    const name = document.getElementById('c-name').value.trim();
+    const email = document.getElementById('c-email').value.trim();
+    if(!co || !loc || loc < 1 || !name || !/@/.test(email)){
+      alert('Please fill in company, locations, name, and a valid work email.');
+      return;
+    }
+    if(loc < 3){
+      if(!confirm('Enterprise plans start at 3 locations. With ' + loc + ', you might prefer the Standard plan ($200/loc/mo). Want to proceed anyway?')){
+        return;
+      }
+    }
+    document.getElementById('form-body').style.display = 'none';
+    document.getElementById('confirmed').classList.add('on');
+    window.scrollTo({top: document.getElementById('contact').offsetTop, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

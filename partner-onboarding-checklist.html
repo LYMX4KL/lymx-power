@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Partner — your week-1 onboarding. Watch training, learn the pitch, schedule first 3 demos, sign your first prospect, post your social intro." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Your week-1 onboarding · LYMX Partner</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(212,175,55,.18);color:#7a5e10;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  @media(max-width:1000px){.nav-links{display:none}}
+  .btn{padding:10px 16px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13.5px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+  .btn:hover{opacity:.92}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:14.5px;max-width:600px}
+
+  /* Hero with tier preview */
+  .hero{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:18px}
+  @media(max-width:780px){.hero{grid-template-columns:1fr}}
+  .hero-progress{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:var(--radius);padding:24px 28px;position:relative;overflow:hidden}
+  .hero-progress::after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.16),transparent 70%);right:-100px;top:-100px}
+  .hero-progress .lab{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:#9aa3b0;margin-bottom:5px;position:relative}
+  .hero-progress h2{margin:0 0 4px;font-size:24px;font-weight:800;letter-spacing:-.01em;position:relative;color:#fff}
+  .hero-progress .sub{font-size:14px;color:#9aa3b0;margin-bottom:12px;position:relative}
+  .progress-bar{height:10px;background:rgba(255,255,255,.18);border-radius:6px;overflow:hidden;position:relative}
+  .progress-bar > div{background:linear-gradient(90deg,#13a26b,#5fd198);height:100%;border-radius:6px;transition:width .4s}
+  .progress-text{font-size:11.5px;color:#9aa3b0;margin-top:6px;position:relative}
+  .hero-progress .row{display:flex;gap:18px;margin-top:14px;position:relative}
+  .hero-progress .cell{flex:1}
+  .hero-progress .v{font-size:24px;font-weight:800;color:#f5d172}
+  .hero-progress .v.green{color:#5fd198}
+  .hero-progress .vsub{font-size:11.5px;color:#9aa3b0}
+
+  .tier-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px;display:flex;flex-direction:column}
+  .tier-card h3{margin:0 0 4px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .tier-now{font-size:20px;font-weight:800;color:var(--ink);margin-bottom:10px}
+  .tier-bar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px}
+  .tier-bar .stage{padding:8px 6px;text-align:center;border-radius:7px;font-size:11px;font-weight:800;color:var(--muted);background:var(--bg-soft);border:1px solid var(--line)}
+  .tier-bar .stage.done{background:linear-gradient(135deg,#cd7f32,#8b5a2b);color:#fff;border-color:transparent}
+  .tier-bar .stage.now{outline:2px solid var(--accent)}
+  .tier-bar .stage.silver{background:linear-gradient(135deg,#c0c0c0,#888)}
+  .tier-bar .stage.gold{background:linear-gradient(135deg,#d4af37,#a08020)}
+  .tier-bar .stage.platinum{background:linear-gradient(135deg,#5a6373,#1a1f27)}
+  .tier-bar .stage.gold.done,.tier-bar .stage.silver.done,.tier-bar .stage.platinum.done{color:#fff;border-color:transparent}
+  .tier-card .next{font-size:12.5px;color:var(--ink-2);margin-top:10px}
+  .tier-card .next strong{color:var(--ok);font-weight:800}
+
+  /* Day filter */
+  .days{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+  .day-pill{padding:7px 14px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer;white-space:nowrap;flex-shrink:0}
+  .day-pill:hover{border-color:var(--ink)}
+  .day-pill.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .day-pill .ct{display:inline-block;background:rgba(255,255,255,.18);padding:1px 7px;border-radius:6px;margin-left:5px;font-size:11px}
+  .day-pill:not(.on) .ct{background:var(--bg-soft);color:var(--muted)}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+  @media(max-width:1000px){.layout{grid-template-columns:1fr}}
+
+  /* Items */
+  .list{display:flex;flex-direction:column;gap:10px}
+  .item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px 20px;display:flex;gap:14px;align-items:flex-start;transition:.15s}
+  .item:hover{border-color:var(--ink)}
+  .item.done{background:linear-gradient(180deg,#fff,rgba(212,175,55,.05));border-color:rgba(212,175,55,.3)}
+  .item.done .title{text-decoration:line-through;color:var(--muted)}
+  .check{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);background:#fff;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;transition:.15s;margin-top:2px}
+  .check:hover{border-color:var(--ink)}
+  .item.done .check{background:var(--gold);border-color:var(--gold)}
+  .body{flex:1;min-width:0}
+  .item .day{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--accent-2);background:rgba(10,132,255,.1);padding:2px 8px;border-radius:5px;margin-bottom:4px}
+  .item .day.urgent{color:#a01644;background:rgba(224,65,62,.1)}
+  .item .day.optional{color:var(--muted);background:var(--bg-soft)}
+  .item .day.tier{color:#7a5e10;background:rgba(212,175,55,.16)}
+  .title{font-size:16px;font-weight:800;margin:0 0 4px;line-height:1.3}
+  .desc{font-size:13.5px;color:var(--ink-2);margin:0 0 8px;line-height:1.5}
+  .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .actions a{padding:6px 11px;background:var(--bg-soft);border:1px solid var(--line);border-radius:7px;font-size:12.5px;font-weight:700;color:var(--ink-2)}
+  .actions a:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .actions a.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .actions a.primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
+  .right-col{flex-shrink:0;min-width:80px;text-align:right}
+  .right-col .est{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  .right-col .est-v{font-size:14px;font-weight:800;color:var(--ink)}
+  .right-col .reward{font-size:11px;color:var(--ok);font-weight:800;margin-top:4px}
+
+  /* Side */
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:14px}
+  .panel h3{margin:0 0 10px;font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .panel p{margin:0 0 10px;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+  .panel a{color:var(--accent-2);font-weight:700}
+
+  .sponsor-card{display:flex;gap:10px;align-items:center;padding:12px 14px;background:var(--bg-soft);border-radius:11px;margin-top:10px}
+  .sponsor-card .av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+  .sponsor-card .name{font-size:13.5px;font-weight:800}
+  .sponsor-card .role{font-size:11.5px;color:var(--muted)}
+  .sponsor-card .actions{display:flex;gap:6px;margin-top:6px}
+  .sponsor-card a.book{padding:5px 10px;background:var(--ink);color:#fff;border-radius:6px;font-size:11.5px;font-weight:700}
+
+  /* Reward state */
+  .reward-banner{display:none;padding:24px;background:linear-gradient(135deg,#d4af37,#a08020);color:#0e1116;border-radius:var(--radius);margin-bottom:18px;text-align:center}
+  .reward-banner.on{display:block}
+  .reward-banner h2{margin:0 0 6px;font-size:24px;letter-spacing:-.01em;color:#0e1116}
+  .reward-banner p{margin:0;color:#1a1f27;font-size:14px}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Partner</span>
+    </div>
+    <nav class="nav-links">
+      <a href="rep-dashboard.html">Dashboard</a>
+      <a href="projection.html">Projection</a>
+      <a href="partner-crm.html">CRM</a>
+      <a href="partner-tree.html">Downline</a>
+      <a href="content-hub.html">Content</a>
+      <a href="territory-program.html">Territory</a>
+      <a href="partner-onboarding-checklist.html" class="on">Onboarding</a>
+      <a href="partner-payouts.html">Payouts</a>
+    </nav>
+    <a href="partner-spotlight.html" class="btn ghost">Master spotlight</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>Welcome, Partner. Let's get you to your first $500.</h1>
+        <p>Your week-1 onboarding. We've broken the path into 14 tasks across 5 days. Most new Partners complete it in under 6 hours of total work and book their first paying activation in week 2.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ghost" onclick="resetAll()">Reset progress</button>
+        <a class="btn" href="rep-dashboard.html">Open dashboard</a>
+      </div>
+    </div>
+
+    <!-- Reward when complete -->
+    <div class="reward-banner" id="reward-banner">
+      <h2>🏆 Onboarding complete — you're a Bronze Partner</h2>
+      <p>Your sponsor was just notified. Your activation kit ships today. Time to put it to work.</p>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-progress">
+        <div class="lab">Week-1 progress</div>
+        <h2 id="hero-status">Day 1 — orientation</h2>
+        <div class="sub" id="hero-sub">Watch the training, get the agreement signed, and you're 30% of the way through.</div>
+        <div class="progress-bar"><div id="bar" style="width:0"></div></div>
+        <div class="progress-text" id="bar-text">0 of 14 tasks · 0%</div>
+        <div class="row">
+          <div class="cell"><div class="v green" id="m-streak">0d</div><div class="vsub">Active streak</div></div>
+          <div class="cell"><div class="v" id="m-time">0h</div><div class="vsub">Time invested</div></div>
+          <div class="cell"><div class="v" id="m-next" style="font-size:14px;line-height:1.2">Sign agreement</div><div class="vsub">Next step</div></div>
+        </div>
+      </div>
+
+      <div class="tier-card">
+        <h3>Tier ladder</h3>
+        <div class="tier-now">Pre-onboarding</div>
+        <div class="tier-bar">
+          <div class="stage" id="stg-bronze">Bronze<br>5 Biz</div>
+          <div class="stage silver" id="stg-silver">Silver<br>15 Biz</div>
+          <div class="stage gold" id="stg-gold">Gold<br>30 Biz</div>
+          <div class="stage platinum" id="stg-platinum">Platinum<br>50 Biz</div>
+        </div>
+        <div class="next">Finish onboarding to unlock <strong>Bronze</strong> and start earning. After that: each Business you sign up = $500 cash + 9% override.</div>
+      </div>
+    </div>
+
+    <!-- Day filter -->
+    <div class="days" id="days">
+      <div class="day-pill on" data-d="all">All <span class="ct" id="ct-all">14</span></div>
+      <div class="day-pill" data-d="day1">Day 1 <span class="ct" id="ct-day1">0</span></div>
+      <div class="day-pill" data-d="day2">Day 2 <span class="ct" id="ct-day2">0</span></div>
+      <div class="day-pill" data-d="day3">Day 3 <span class="ct" id="ct-day3">0</span></div>
+      <div class="day-pill" data-d="day4">Day 4-5 <span class="ct" id="ct-day45">0</span></div>
+      <div class="day-pill" data-d="ongoing">Ongoing <span class="ct" id="ct-ongoing">0</span></div>
+    </div>
+
+    <div class="layout">
+      <div>
+        <div class="list" id="list"></div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <h3>Your sponsor</h3>
+          <p>Your sponsor is the Partner who recruited you. Get a 30-min 1:1 walk-through before your first prospect call.</p>
+          <div class="sponsor-card">
+            <div class="av">SV</div>
+            <div style="flex:1;min-width:0">
+              <div class="name">Sienna Vega</div>
+              <div class="role">Master Partner · Las Vegas</div>
+              <div class="actions">
+                <a class="book" href="demo.html">Book a 1:1</a>
+                <a class="book" style="background:#fff;color:var(--ink);border:1px solid var(--line)" href="partner-spotlight.html">Read her story</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Your sales kit</h3>
+          <p><a href="content-hub.html">📋 Pitch script + email templates</a></p>
+          <p><a href="projection.html">🧮 Income projection calculator</a></p>
+          <p><a href="partner-crm.html">📞 Partner CRM (track prospects)</a></p>
+          <p><a href="PARTNER-PLAYBOOK.md">📘 Partner playbook</a></p>
+        </div>
+
+        <div class="panel">
+          <h3>The first-call rule</h3>
+          <p>Don't pitch the deal. Pitch the Business owner's problem. <em>"How do you bring back the customer who tried you once and forgot?"</em></p>
+          <p>If they don't have a good answer, you're already 80% there. Keep your kit ready, but only open it if they ask.</p>
+        </div>
+
+        <div class="panel">
+          <h3>Compliance reminder</h3>
+          <p style="font-size:12px;color:var(--muted)">When you mention LYMX on social media, always disclose your Partner relationship per FTC rules. Example: <em>"I'm a LYMX Partner — I get paid if you sign up."</em></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Partner onboarding · Earnings disclosure: most Partners earn substantially less than the maximum projected.</div>
+</footer>
+
+<script>
+  const TASKS = [
+    {id:'p1', day:'day1', urgent:true, est:5, title:'Sign your Partner Agreement',
+     desc:'Read and e-sign your Independent Contractor Agreement — the formal start of your earning eligibility.',
+     actions:[{label:'Sign now →', href:'sign.html', primary:true},{label:'Read agreement', href:'partner-agreement.html'}]},
+    {id:'p2', day:'day1', urgent:true, est:30, title:'Watch the LYMX 101 training (3 videos)',
+     desc:'25 minutes total. Covers how LYMX works, the pitch, common objections. Required before your first prospect call.',
+     actions:[{label:'Watch training →', href:'content-hub.html', primary:true}]},
+    {id:'p3', day:'day1', urgent:false, est:5, title:'Submit your W-9',
+     desc:'Required before your first commission payout. Takes 3 minutes — we have a fillable PDF.',
+     actions:[{label:'Submit W-9', href:'partner-payouts.html', primary:true}]},
+    {id:'p4', day:'day2', urgent:false, est:15, title:'Set up your Partner profile',
+     desc:'Photo, bio, neighborhoods you cover. Your profile lives at /p/[your-name] — share it with prospects.',
+     actions:[{label:'Edit profile', href:'partner-profile.html', primary:true}]},
+    {id:'p5', day:'day2', urgent:false, est:30, title:'Memorize the 5-minute pitch',
+     desc:'Short version, long version, hook variations. Practice 3 times out loud before your first call.',
+     actions:[{label:'Pitch script →', href:'content-hub.html', primary:true}]},
+    {id:'p6', day:'day2', urgent:false, est:20, title:'Build your prospect list (target: 25)',
+     desc:'Walk your neighborhood. Pull from your phone contacts. Look at Google Maps. Aim for 25 local Businesses you have at least a weak tie to.',
+     actions:[{label:'Open CRM', href:'partner-crm.html', primary:true}]},
+    {id:'p7', day:'day3', urgent:false, est:30, title:'Send 10 outreach messages',
+     desc:'Mix of email + DM + warm-intro asks. Use the templates in the Content Hub. Track replies in your CRM.',
+     actions:[{label:'Templates', href:'content-hub.html', primary:true},{label:'CRM', href:'partner-crm.html'}]},
+    {id:'p8', day:'day3', urgent:false, est:30, title:'Schedule your first 3 demos',
+     desc:'Aim for 3 booked demos by end of day 3. Book in 30-min slots, leave a 15-min buffer between.',
+     actions:[{label:'Demo scheduler', href:'demo.html', primary:true}]},
+    {id:'p9', day:'day4', urgent:false, est:60, title:'Run your first demo (with sponsor as observer)',
+     desc:'Sponsor sits in on your first call as an observer. Debrief immediately after — what worked, what to fix.',
+     actions:[{label:'Book sponsor for ride-along', href:'demo.html', primary:true}]},
+    {id:'p10', day:'day4', urgent:false, est:20, title:'Post your "I joined LYMX" social intro',
+     desc:'One LinkedIn / Instagram / Facebook post about why you joined and who you\'re looking to help. Templates ready.',
+     actions:[{label:'Caption templates', href:'press-kit.html', primary:true}]},
+    {id:'p11', day:'day4', urgent:false, est:15, title:'Save the income projection bookmark',
+     desc:'Use the projection calculator on every prospect call to show realistic income paths for THEIR Business. Bookmark it.',
+     actions:[{label:'Open projection', href:'projection.html', primary:true}]},
+    {id:'p12', day:'ongoing', urgent:false, est:60, title:'Sign your first Business (target: end of week 2)',
+     desc:'Most new Partners close their first deal in days 8–14. Don\'t worry if you don\'t close in week 1 — focus on volume of conversations.',
+     actions:[{label:'CRM', href:'partner-crm.html', primary:true},{label:'Closing script', href:'content-hub.html'}]},
+    {id:'p13', day:'ongoing', urgent:false, est:30, title:'Recruit your first Partner (G1)',
+     desc:'Talk to anyone you know who\'d be a great Partner — sales people, real estate agents, insurance brokers. Each G1 Partner = 3% override on their production.',
+     actions:[{label:'Refer a Partner', href:'partner-signup.html', primary:true}]},
+    {id:'p14', day:'ongoing', urgent:false, est:20, title:'Set your week-2 goal (cash + tier)',
+     desc:'Pick a target: 1 closed Business + 5 booked demos? 2 closed + 1 G1 Partner? Whatever motivates you — write it down on your dashboard.',
+     actions:[{label:'Set goal', href:'rep-dashboard.html', primary:true}]}
+  ];
+
+  const STORAGE_KEY = 'lymx-partner-onboarding-v1';
+  let done = {};
+  try { done = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ done = {}; }
+  let filter = 'all';
+
+  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); } catch(e){} }
+  function toggle(id){ done[id] = !done[id]; save(); render(); }
+  function resetAll(){ if(!confirm('Reset all checklist progress? This cannot be undone.')) return; done = {}; save(); render(); }
+
+  function dayLabel(d){
+    return ({day1:'Day 1',day2:'Day 2',day3:'Day 3',day4:'Day 4-5',ongoing:'Ongoing'})[d];
+  }
+
+  function render(){
+    const total = TASKS.length;
+    const doneCount = TASKS.filter(t=>done[t.id]).length;
+    const pct = Math.round((doneCount/total)*100);
+
+    document.getElementById('bar').style.width = pct+'%';
+    document.getElementById('bar-text').textContent = doneCount+' of '+total+' tasks · '+pct+'%';
+    document.getElementById('m-streak').textContent = doneCount > 0 ? Math.min(7, Math.ceil(doneCount/2))+'d' : '0d';
+    const mins = TASKS.filter(t=>done[t.id]).reduce((a,b)=>a+b.est,0);
+    document.getElementById('m-time').textContent = mins<60 ? mins+'m' : Math.floor(mins/60)+'h '+(mins%60)+'m';
+
+    // hero status + next-up
+    let status, sub;
+    if(doneCount === 0){ status = 'Day 1 — orientation'; sub = 'Watch the training, get the agreement signed, and you\'re 30% of the way through.'; }
+    else if(doneCount < 4){ status = 'You\'re on Day 1'; sub = 'Strong start. Keep going to unlock prospecting tools.'; }
+    else if(doneCount < 8){ status = 'Day 2-3 — prospect list'; sub = 'Now\'s the time to build your top 25 and book your first 3 demos.'; }
+    else if(doneCount < 12){ status = 'Day 4-5 — first demos'; sub = 'You\'re actively pitching. Most Partners close in days 8–14.'; }
+    else if(doneCount < total){ status = 'Building toward week 2'; sub = 'Final ongoing items — start tracking your week-2 goal.'; }
+    else { status = '🏆 Onboarding complete'; sub = 'Bronze Partner status. Activation kit shipping today.'; }
+    document.getElementById('hero-status').textContent = status;
+    document.getElementById('hero-sub').textContent = sub;
+
+    // Next step
+    const next = TASKS.find(t=>!done[t.id]);
+    document.getElementById('m-next').textContent = next ? next.title.slice(0,28) + (next.title.length>28?'…':'') : 'All done 🎉';
+
+    // Tier card
+    const stages = ['stg-bronze','stg-silver','stg-gold','stg-platinum'];
+    stages.forEach(id=>{
+      document.getElementById(id).classList.remove('done','now');
+    });
+    if(doneCount === total){
+      document.getElementById('stg-bronze').classList.add('done','now');
+      document.querySelector('.tier-now').textContent = 'Bronze (just unlocked!)';
+    } else {
+      document.querySelector('.tier-now').textContent = 'Pre-onboarding';
+    }
+
+    document.getElementById('reward-banner').classList.toggle('on', doneCount === total);
+
+    // Day counts
+    const cts = {all:total, day1:0, day2:0, day3:0, day45:0, ongoing:0};
+    TASKS.forEach(t=>{
+      if(t.day==='day1') cts.day1++;
+      else if(t.day==='day2') cts.day2++;
+      else if(t.day==='day3') cts.day3++;
+      else if(t.day==='day4') cts.day45++;
+      else if(t.day==='ongoing') cts.ongoing++;
+    });
+    document.getElementById('ct-all').textContent = cts.all;
+    document.getElementById('ct-day1').textContent = cts.day1;
+    document.getElementById('ct-day2').textContent = cts.day2;
+    document.getElementById('ct-day3').textContent = cts.day3;
+    document.getElementById('ct-day45').textContent = cts.day45;
+    document.getElementById('ct-ongoing').textContent = cts.ongoing;
+
+    // Filter + list
+    const items = TASKS.filter(t=>{
+      if(filter === 'all') return true;
+      if(filter === 'day4') return t.day === 'day4';
+      return t.day === filter;
+    });
+    const list = document.getElementById('list');
+    list.innerHTML = items.map(t=>{
+      const isDone = !!done[t.id];
+      const dayClass = t.day === 'ongoing' ? 'optional' : (t.urgent ? 'urgent' : '');
+      return `<div class="item ${isDone?'done':''}">
+        <div class="check" onclick="toggle('${t.id}')">${isDone?'✓':''}</div>
+        <div class="body">
+          <span class="day ${dayClass}">${dayLabel(t.day)}${t.urgent?' · Start here':''}</span>
+          <h4 class="title">${t.title}</h4>
+          <p class="desc">${t.desc}</p>
+          <div class="actions">
+            ${t.actions.map(a=>`<a class="${a.primary?'primary':''}" href="${a.href}">${a.label}</a>`).join('')}
+          </div>
+        </div>
+        <div class="right-col">
+          <div class="est">Est.</div>
+          <div class="est-v">${t.est}m</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  document.querySelectorAll('.day-pill').forEach(p=>{
+    p.onclick = ()=>{
+      document.querySelectorAll('.day-pill').forEach(x=>x.classList.remove('on'));
+      p.classList.add('on');
+      filter = p.dataset.d;
+      render();
+    };
+  });
+
+  render();
+</script>
+</body>
+</html>
