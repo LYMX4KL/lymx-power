@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Mentor Program — LYMX Partner</title>
+<meta name="description" content="LYMX Partner mentorship program. New Partners get paired with a Master Partner for 90 days. Free. Optional. Game-changing.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .partner-tag{font-size:11px;background:#fef9e7;color:#8b6f1f;padding:3px 8px;border-radius:6px;font-weight:700}
+  .nav-link{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{padding:64px 24px 36px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fef9e7 0%,#fafafa 100%)}
+  .hero-inner{max-width:1100px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#8b6f1f;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid var(--gold)}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:17px}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:48px}
+  @media (max-width:680px){.stats-strip{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px;text-align:center}
+  .stat .n{font-size:32px;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+  .stat.gold .n{color:var(--gold)}
+  .stat .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:6px}
+
+  /* How it works */
+  .how{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:36px;margin-bottom:32px}
+  .how h2{margin:0 0 8px;font-size:26px;letter-spacing:-.025em}
+  .how .sub{color:var(--mute);font-size:14px;margin-bottom:24px}
+  .how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:760px){.how-grid{grid-template-columns:1fr}}
+  .h-step{padding:24px;background:#fafafa;border:1px solid var(--line);border-radius:12px;text-align:center;position:relative}
+  .h-step .num{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--gold);color:#3a2f0a;font-weight:800;font-size:14px;margin-bottom:12px}
+  .h-step h3{margin:0 0 6px;font-size:16px}
+  .h-step p{margin:0;font-size:13px;color:var(--mute);line-height:1.55}
+
+  /* What you get */
+  .perks-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media (max-width:680px){.perks-grid{grid-template-columns:1fr}}
+  .perk{padding:24px;background:var(--card);border:1px solid var(--line);border-radius:14px;display:flex;gap:16px}
+  .perk .ic{flex-shrink:0;width:42px;height:42px;border-radius:10px;background:#fef9e7;color:#8b6f1f;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .perk h4{margin:0 0 4px;font-size:15px}
+  .perk p{margin:0;font-size:13px;color:var(--mute);line-height:1.55}
+
+  /* Mentors */
+  .mentors{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .mentors h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .mentors .sub{color:var(--mute);font-size:14px;margin-bottom:20px}
+  .mentor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:760px){.mentor-grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:520px){.mentor-grid{grid-template-columns:1fr}}
+  .mentor{padding:18px;border:1px solid var(--line);border-radius:12px;text-align:center}
+  .mentor .av{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700;margin:0 auto 10px}
+  .mentor .av.a{background:linear-gradient(135deg,#d4af37,#f5d172);color:#3a2f0a}
+  .mentor .av.b{background:linear-gradient(135deg,#5b3697,#a374e6)}
+  .mentor .av.c{background:linear-gradient(135deg,#13a26b,#9adfb6)}
+  .mentor .av.d{background:linear-gradient(135deg,#0a84ff,#5b9ef5)}
+  .mentor .av.e{background:linear-gradient(135deg,#c0392b,#e74c3c)}
+  .mentor .av.f{background:linear-gradient(135deg,#0e1116,#3a4452)}
+  .mentor h3{margin:0 0 2px;font-size:14px}
+  .mentor .role{font-size:11px;color:var(--mute);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+  .mentor p{margin:0;font-size:12px;color:#1f2530;line-height:1.5}
+  .mentor .badges{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+  .mentor .badge{font-size:9px;font-weight:700;padding:3px 7px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;background:#fef9e7;color:#8b6f1f}
+
+  /* Quotes */
+  .quotes{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:32px}
+  @media (max-width:680px){.quotes{grid-template-columns:1fr}}
+  .quote{padding:24px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+  .quote blockquote{margin:0 0 14px;font-size:14.5px;font-style:italic;color:#1f2530;line-height:1.55}
+  .quote cite{font-size:12px;color:var(--mute);font-style:normal;font-weight:600}
+  .quote cite strong{color:var(--ink);display:block;margin-bottom:2px;font-size:13px}
+
+  /* Application */
+  .apply{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:36px;margin-bottom:32px;display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
+  @media (max-width:760px){.apply{grid-template-columns:1fr}}
+  .apply h2{margin:0 0 8px;color:#fff;font-size:24px}
+  .apply p{margin:0 0 18px;color:#b8c2d6;font-size:14.5px}
+  .apply ul{margin:0;padding-left:20px;color:#b8c2d6;font-size:13px}
+  .apply li{margin-bottom:6px}
+  .apply-form{background:#1f2530;border:1px solid #2a3a5a;border-radius:12px;padding:20px}
+  .apply-form h3{margin:0 0 14px;color:#fff;font-size:16px}
+  .apply-form .field{margin-bottom:12px}
+  .apply-form label{display:block;font-size:11px;color:#8a9bb8;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px}
+  .apply-form input,.apply-form select{width:100%;padding:9px 12px;border:1px solid #2a3a5a;border-radius:7px;background:#0e1116;color:#fff;font-size:13px}
+  .apply-form button{width:100%;padding:11px;background:var(--gold);color:#0e1116;border-radius:8px;font-weight:700;border:0;cursor:pointer;font-size:14px;margin-top:6px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="rep-dashboard.html">LYMX <span>Power</span> <span class="partner-tag">Partner</span></a>
+    <a href="rep-dashboard.html" class="nav-link">← Dashboard</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Partner Mentor Program · Free · Optional</div>
+    <h1>Get a 1:1 Master Partner mentor.</h1>
+    <p>For new Partners (under 90 days) who want a Master-tier veteran in their corner. Pair up. Meet weekly. Ship results faster than you would alone.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="stats-strip">
+  <div class="stat gold"><div class="n">90 days</div><div class="l">Mentorship duration</div></div>
+  <div class="stat"><div class="n">Free</div><div class="l">No cost to mentees</div></div>
+  <div class="stat gold"><div class="n">+62%</div><div class="l">Mentees outperform peers</div></div>
+  <div class="stat"><div class="n">14</div><div class="l">Active mentors right now</div></div>
+</div>
+
+<!-- HOW -->
+<div class="how">
+  <h2>How it works</h2>
+  <p class="sub">3 phases. 90 days. Hour-a-week commitment.</p>
+
+  <div class="how-grid">
+    <div class="h-step">
+      <div class="num">1</div>
+      <h3>Apply &amp; get matched</h3>
+      <p>Tell us your goals, geography, and category focus. We match you with a Master Partner whose path most closely aligns with where you want to go.</p>
+    </div>
+    <div class="h-step">
+      <div class="num">2</div>
+      <h3>30-min weekly calls</h3>
+      <p>One call per week with your mentor. They share what's worked, listen to what's not, push you when needed. You bring an agenda; they bring perspective.</p>
+    </div>
+    <div class="h-step">
+      <div class="num">3</div>
+      <h3>Graduate &amp; pay it forward</h3>
+      <p>After 90 days, you're done. Some mentees stay in touch. Some go on to mentor others themselves once they hit Active or Master tier.</p>
+    </div>
+  </div>
+</div>
+
+<!-- WHAT YOU GET -->
+<div class="how">
+  <h2>What you get from a mentor</h2>
+  <p class="sub">It's not training (that's the academy). It's not coaching (that's the success team). It's something else.</p>
+
+  <div class="perks-grid">
+    <div class="perk">
+      <div class="ic">🎯</div>
+      <div>
+        <h4>Specific tactical advice</h4>
+        <p>"Don't pitch that prospect this way — try this instead." Mentors share pattern-matched advice based on hundreds of pitches they've personally done.</p>
+      </div>
+    </div>
+    <div class="perk">
+      <div class="ic">🔄</div>
+      <div>
+        <h4>Real prospect feedback</h4>
+        <p>Bring an actual prospect to the call. Mentor helps you research them, build a custom pitch, role-play it. Higher conversion than going alone.</p>
+      </div>
+    </div>
+    <div class="perk">
+      <div class="ic">🧠</div>
+      <div>
+        <h4>Pattern recognition</h4>
+        <p>"I've seen this 50 times — here's what'll happen next." Mentors save you from making mistakes you don't even know you're about to make.</p>
+      </div>
+    </div>
+    <div class="perk">
+      <div class="ic">⏰</div>
+      <div>
+        <h4>Accountability &amp; cadence</h4>
+        <p>Weekly call structure forces you to keep moving. Most new Partners stall in month 2 — mentors keep you going.</p>
+      </div>
+    </div>
+    <div class="perk">
+      <div class="ic">🤝</div>
+      <div>
+        <h4>Warm intros</h4>
+        <p>Mentors connect you with people in their network — Partners, Businesses they know, suppliers, etc. Worth the program for these alone.</p>
+      </div>
+    </div>
+    <div class="perk">
+      <div class="ic">💪</div>
+      <div>
+        <h4>Encouragement when needed</h4>
+        <p>The first deal is hard. The first downline Partner is hard. A mentor who's been there reminds you it gets easier.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MENTORS -->
+<div class="mentors">
+  <h2>Meet the mentors</h2>
+  <p class="sub">All 14 mentors are Master-tier Partners who have agreed to share their time. Each takes 1-2 mentees at a time.</p>
+
+  <div class="mentor-grid">
+    <div class="mentor">
+      <div class="av a">SV</div>
+      <h3>Sienna Vega</h3>
+      <div class="role">Master · Vegas</div>
+      <p>Real estate background. 26-Partner downline. Best for: full-time Partners.</p>
+      <div class="badges"><span class="badge">Recruitment</span><span class="badge">Master</span></div>
+    </div>
+    <div class="mentor">
+      <div class="av b">AL</div>
+      <h3>Andre Lim</h3>
+      <div class="role">Master · Phoenix</div>
+      <p>Built Phoenix territory. Best for: Partners launching new cities.</p>
+      <div class="badges"><span class="badge">New cities</span></div>
+    </div>
+    <div class="mentor">
+      <div class="av c">DW</div>
+      <h3>Dana Whitfield</h3>
+      <div class="role">Master · Vegas</div>
+      <p>Former Yelp rep, 11 own Businesses. Best for: people from sales backgrounds.</p>
+      <div class="badges"><span class="badge">Sales</span></div>
+    </div>
+    <div class="mentor">
+      <div class="av d">JP</div>
+      <h3>Jordan Park</h3>
+      <div class="role">Master · Vegas</div>
+      <p>Yoga studio owner background. Best for: services/wellness Partners.</p>
+      <div class="badges"><span class="badge">Services</span></div>
+    </div>
+    <div class="mentor">
+      <div class="av e">RP</div>
+      <h3>Riya Patel</h3>
+      <div class="role">Master · Vegas</div>
+      <p>Niche category specialist (yoga, fitness). Best for: category-focus Partners.</p>
+      <div class="badges"><span class="badge">Niche</span></div>
+    </div>
+    <div class="mentor">
+      <div class="av f">+9</div>
+      <h3>9 more mentors</h3>
+      <div class="role">Various</div>
+      <p>Master Partners across all categories. Match algorithm finds your fit.</p>
+      <div class="badges"><span class="badge">Various</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUOTES -->
+<div class="quotes">
+  <div class="quote">
+    <blockquote>"Getting matched with Sienna in week 3 was the single biggest unlock for me. She told me to stop pitching cold and start pitching peer-to-peer. Changed my conversion rate within a month."</blockquote>
+    <cite><strong>Marcus Ruiz</strong> · Active Partner · Mentee Mar 2026</cite>
+  </div>
+  <div class="quote">
+    <blockquote>"I came in arrogant — thought I had it figured out. My mentor (Andre) listened patiently for the first 3 calls, then asked one question that completely reframed my approach. Worth more than any course."</blockquote>
+    <cite><strong>Riya Patel</strong> · Active Partner (now mentor herself) · Mentee Jan 2026</cite>
+  </div>
+</div>
+
+<!-- APPLY -->
+<div class="apply">
+  <div>
+    <h2>Apply to be a mentee</h2>
+    <p>Limited slots. We approve based on a mix of: your tier, your goals, and mentor availability.</p>
+    <ul>
+      <li>Active Partner status (any tier — even side hustle)</li>
+      <li>Under 90 days as a Partner (newer = priority)</li>
+      <li>Willing to commit 1 hour/week for 12 weeks</li>
+      <li>Bring an open mind and a real goal</li>
+    </ul>
+  </div>
+
+  <form class="apply-form" onsubmit="alert('Application submitted! We\\'ll match you within 1 week.');return false">
+    <h3>Mentee application</h3>
+    <div class="field">
+      <label>Your name</label>
+      <input type="text" placeholder="Marcus Ruiz" required>
+    </div>
+    <div class="field">
+      <label>Goal for the 90 days</label>
+      <select required>
+        <option value="">Pick a primary goal</option>
+        <option>Sign 5+ Businesses</option>
+        <option>Recruit my first G1 Partner</option>
+        <option>Reach Active tier</option>
+        <option>Build a niche specialty</option>
+        <option>Just start consistently</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>City you operate in</label>
+      <select required>
+        <option value="">Pick city</option>
+        <option>Las Vegas</option>
+        <option>Phoenix</option>
+        <option>Reno</option>
+        <option>Other (we'll help)</option>
+      </select>
+    </div>
+    <button type="submit">Submit application →</button>
+  </form>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Partner Mentor Program · <a href="rep-dashboard.html">Dashboard</a> · <a href="partner-bootcamp.html">Bootcamp</a> · <a href="partner-stories.html">Partner stories</a>
+</div>
+
+</body>
+</html>

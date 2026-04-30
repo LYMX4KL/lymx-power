@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Week 2–4 Playbook — LYMX Business</title>
+<meta name="description" content="What to do in weeks 2, 3, and 4 after your LYMX launch. Weekly cadence, metrics to watch, what to fix, what to scale.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700}
+  .nav-link{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{padding:64px 24px 36px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fef9e7 0%,#fafafa 100%)}
+  .hero-inner{max-width:1100px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#8b6f1f;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid var(--gold)}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:17px}
+  .hero .crumbs{font-size:13px;color:var(--mute);margin-top:12px}
+  .hero .crumbs a{color:var(--accent);font-weight:600}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  .week-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px}
+  @media (max-width:760px){.week-grid{grid-template-columns:1fr}}
+  .week-jump{padding:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;text-align:center;cursor:pointer;text-decoration:none;color:var(--ink);transition:.15s}
+  .week-jump:hover{border-color:var(--ink);transform:translateY(-1px)}
+  .week-jump .num{font-size:42px;font-weight:800;letter-spacing:-.025em;color:var(--accent);line-height:1}
+  .week-jump .label{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:6px}
+  .week-jump .focus{font-size:13px;font-weight:600;margin-top:6px}
+
+  .week{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:24px;scroll-margin-top:80px}
+  .week-h{display:flex;align-items:baseline;gap:14px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--ink);flex-wrap:wrap}
+  .week-h h2{margin:0;font-size:30px;letter-spacing:-.025em}
+  .week-h .focus{color:var(--mute);font-size:14px}
+
+  .check-row{display:flex;gap:12px;align-items:flex-start;padding:10px 0;cursor:pointer;border-radius:6px;padding:10px 12px}
+  .check-row:hover{background:#fafafa}
+  .check-row.done{opacity:.5}
+  .check-box{width:22px;height:22px;border:2px solid var(--line);border-radius:6px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:14px}
+  .check-row.done .check-box{background:var(--ok);border-color:var(--ok)}
+  .check-row.done .check-box::after{content:"✓"}
+  .check-row .body h4{margin:0 0 2px;font-size:14.5px}
+  .check-row .body p{margin:0;font-size:13px;color:var(--mute)}
+  .check-row.done h4{text-decoration:line-through}
+
+  .metrics{margin-top:24px;padding:18px;background:#fafafa;border:1px dashed var(--line);border-radius:10px}
+  .metrics h4{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;color:var(--mute)}
+  .metric-row{display:grid;grid-template-columns:1fr auto auto;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .metric-row:last-of-type{border-bottom:0}
+  @media (max-width:680px){.metric-row{grid-template-columns:1fr;gap:4px}}
+  .metric-row .name{font-weight:600}
+  .metric-row .target{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums;font-weight:600}
+  .metric-row .target.good{color:var(--ok)}
+  .metric-row .why{color:var(--mute);font-size:12px;font-style:italic}
+
+  .common-issue{margin-top:18px;background:#fff8eb;border-left:4px solid var(--warn);padding:14px 18px;border-radius:0 10px 10px 0;font-size:13.5px;color:#5d4400}
+  .common-issue strong{color:#8b5500;display:block;margin-bottom:6px}
+
+  .week-cta{margin-top:24px;padding:14px 18px;background:#eef3ff;border-radius:10px;display:flex;align-items:center;gap:12px;font-size:13.5px;color:#1a4196}
+  .week-cta .ic{font-size:20px}
+  .week-cta strong{color:#0a4cb3}
+  .week-cta a{color:var(--accent);font-weight:700}
+
+  /* Final */
+  .final{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:36px;text-align:center;margin-bottom:32px}
+  .final h2{margin:0 0 8px;font-size:26px;color:#fff}
+  .final p{color:#b8c2d6;max-width:560px;margin:0 auto 18px}
+  .final a{display:inline-block;background:var(--gold);color:#0e1116;padding:11px 22px;border-radius:8px;font-weight:700;font-size:14px}
+  .final a.alt{background:transparent;color:var(--gold);border:1px solid var(--gold);margin-left:10px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="biz-dashboard.html">LYMX <span>Power</span> <span class="biz-tag">Business</span></a>
+    <a href="biz-dashboard.html" class="nav-link">← Dashboard</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Week 2–4 playbook · 30-day onboarding follow-up</div>
+    <h1>Now what? The first month of LYMX.</h1>
+    <p>You launched. Day 1 is done. Now what? This is the operator's playbook for weeks 2, 3, and 4 — what to do, what to measure, what to fix.</p>
+    <div class="crumbs">Comes after <a href="biz-launch-day.html">Day 1 launch playbook</a> · Comes before steady-state operations</div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="week-grid">
+  <a href="#week2" class="week-jump"><div class="num">2</div><div class="label">Week 2</div><div class="focus">Find the rhythm</div></a>
+  <a href="#week3" class="week-jump"><div class="num">3</div><div class="label">Week 3</div><div class="focus">First multiplier promo</div></a>
+  <a href="#week4" class="week-jump"><div class="num">4</div><div class="label">Week 4</div><div class="focus">Review &amp; plan ahead</div></a>
+</div>
+
+<!-- WEEK 2 -->
+<div class="week" id="week2">
+  <div class="week-h">
+    <h2>Week 2</h2>
+    <span class="focus">Find the rhythm. The first 7 days were the launch. Now you're calibrating.</span>
+  </div>
+
+  <h3 style="margin:0 0 12px;font-size:16px">Tasks for week 2</h3>
+
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Daily 5-min dashboard check</h4><p>Login each morning. Check yesterday's transactions, sign-ups, redemptions. Watch for anomalies.</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Cashier 1:1 check-in</h4><p>Talk to each cashier individually. What's confusing? What's working? Quick fix anything that comes up.</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Reply to social comments</h4><p>Customers asking about LYMX in IG/FB comments. Answer promptly — they're future LYMX members.</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>First customer-feedback review</h4><p>Check the 3-5 customers who've signed up. What did they say? Anyone confused? Reach out personally.</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Don't run a promo yet</h4><p>Resist. You need a baseline before you can measure if a promo works. Wait until week 3.</p></div></div>
+
+  <div class="metrics">
+    <h4>📊 Metrics to watch in week 2</h4>
+    <div class="metric-row">
+      <span class="name">Daily LYMX transactions</span>
+      <span class="target good">Steady 8–12+</span>
+      <span class="why">If declining, signage or cashier flow is broken</span>
+    </div>
+    <div class="metric-row">
+      <span class="name">New wallet sign-ups / day</span>
+      <span class="target good">2–5</span>
+      <span class="why">Most come from in-store signage</span>
+    </div>
+    <div class="metric-row">
+      <span class="name">First redemption?</span>
+      <span class="target good">Should appear by day 4–7</span>
+      <span class="why">First-redemption customers usually came from the network</span>
+    </div>
+    <div class="metric-row">
+      <span class="name">Cashier confusion rate</span>
+      <span class="target good">&lt; 5%</span>
+      <span class="why">Track cashier "I'm not sure" moments</span>
+    </div>
+  </div>
+
+  <div class="common-issue">
+    <strong>⚠️ Common week-2 issue: Slow Day 8–10</strong>
+    Adoption typically dips between days 7-14 — the easy customers signed up week 1, the resistant ones haven't yet. Don't panic. Trust the trajectory. By week 3, the dip resolves.
+  </div>
+
+  <div class="week-cta">
+    <span class="ic">💡</span>
+    <div><strong>Tip:</strong> Send a "thanks for being early" email to your first 25 LYMX customers. They're your evangelists. <a href="biz-marketing-kit.html">Email template here</a>.</div>
+  </div>
+</div>
+
+<!-- WEEK 3 -->
+<div class="week" id="week3">
+  <div class="week-h">
+    <h2>Week 3</h2>
+    <span class="focus">First multiplier promo. Light experiments.</span>
+  </div>
+
+  <h3 style="margin:0 0 12px;font-size:16px">Tasks for week 3</h3>
+
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Set your first multiplier promo</h4><p>2× on a single bundle item, or 2× on slow days. Don't go bigger — small experiments first. <a href="promotions.html">Set up here</a>.</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Announce the promo on social</h4><p>Use the <a href="biz-marketing-kit.html">marketing kit "Multiplier promo" template</a>. Pin to IG profile for the duration.</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Watch the promo lift</h4><p>Compare daily LYMX transactions on promo days vs. non-promo days. Document the lift.</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>First weekly review with team</h4><p>30 min team standup. What's working? What's not? Open the dashboard together.</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Address any cashier inconsistency</h4><p>By week 3 you should know if one cashier is doing it differently. Coach individually.</p></div></div>
+
+  <div class="metrics">
+    <h4>📊 Metrics to watch in week 3</h4>
+    <div class="metric-row">
+      <span class="name">Promo lift (transactions on promo day)</span>
+      <span class="target good">+15–40%</span>
+      <span class="why">Below 15% = promo isn't compelling. Above 40% = great hit, scale it</span>
+    </div>
+    <div class="metric-row">
+      <span class="name">Cross-Business redemptions</span>
+      <span class="target good">5–15% of transactions</span>
+      <span class="why">If &gt; 15%, the network mechanic is working strongly for you</span>
+    </div>
+    <div class="metric-row">
+      <span class="name">Daily new sign-ups</span>
+      <span class="target good">2–6</span>
+      <span class="why">Should be slightly higher with the promo running</span>
+    </div>
+    <div class="metric-row">
+      <span class="name">Cashier flow speed</span>
+      <span class="target good">&lt; 5 sec extra per transaction</span>
+      <span class="why">If LYMX is slowing your line, fix cashier flow</span>
+    </div>
+  </div>
+
+  <div class="common-issue">
+    <strong>⚠️ Common week-3 issue: Over-aggressive promo</strong>
+    Some operators run a 5× multiplier in week 3 to "make a splash." Don't. The math is brutal — at 5× you're paying 20¢ per dollar of customer spend. Better to start with 2×, prove it works, scale up later.
+  </div>
+
+  <div class="week-cta">
+    <span class="ic">📈</span>
+    <div><strong>Tip:</strong> Use the <a href="benchmarks.html">benchmarks page</a> to compare your week-3 numbers to peer Businesses. Two weeks of data is enough to start seeing your position.</div>
+  </div>
+</div>
+
+<!-- WEEK 4 -->
+<div class="week" id="week4">
+  <div class="week-h">
+    <h2>Week 4</h2>
+    <span class="focus">Review the month. Plan ahead.</span>
+  </div>
+
+  <h3 style="margin:0 0 12px;font-size:16px">Tasks for week 4</h3>
+
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Run a full 30-day review (60 min)</h4><p>Block the time. Open analytics. Walk through everything. What worked? What didn't?</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Review your first settlement (mid-month)</h4><p>You'll receive your first 30-day settlement report on day 30. Reconcile it with your books. Confirm wholesale charges look right.</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Compare to peer benchmarks</h4><p>30 days of data is meaningful. Compare to peers in your category. Find your top-1, top-2, top-3 metrics — and bottom 3.</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Decide what to phase out</h4><p>Old loyalty program (Square Loyalty? Punch cards?). Yelp Ads? Email blasting tool? If LYMX is performing, retire one of these.</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Plan month 2's promotions</h4><p>Use the <a href="holidays.html">holiday playbook</a> to map out month 2's promo calendar. Schedule them in advance.</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Set a recurring weekly 30-min review</h4><p>The most successful operators do this every week. Calendar block it now.</p></div></div>
+
+  <div class="metrics">
+    <h4>📊 30-day metrics — where you should be</h4>
+    <div class="metric-row">
+      <span class="name">Active LYMX customers</span>
+      <span class="target good">200–500 (avg café)</span>
+      <span class="why">Higher for restaurants and high-traffic Businesses</span>
+    </div>
+    <div class="metric-row">
+      <span class="name">% of transactions with LYMX</span>
+      <span class="target good">35–55%</span>
+      <span class="why">If &lt; 25%, signage or cashier flow needs attention</span>
+    </div>
+    <div class="metric-row">
+      <span class="name">Cross-Business redemption %</span>
+      <span class="target good">10–25%</span>
+      <span class="why">Network effect is starting to show</span>
+    </div>
+    <div class="metric-row">
+      <span class="name">Net incremental revenue</span>
+      <span class="target good">Positive</span>
+      <span class="why">Subtract LYMX costs from incremental sales lift</span>
+    </div>
+    <div class="metric-row">
+      <span class="name">NPS</span>
+      <span class="target good">+40 or higher</span>
+      <span class="why">In-app NPS prompts give you live data</span>
+    </div>
+  </div>
+
+  <div class="common-issue">
+    <strong>⚠️ Common week-4 issue: "It's working but not as much as I expected"</strong>
+    Reset expectations. Week 4 is mid-curve, not endgame. Network effects compound — most peers see their biggest lifts in months 2–3 as cross-Business redemption density grows. Trust the trajectory. Talk to a coach if you're worried.
+  </div>
+
+  <div class="week-cta">
+    <span class="ic">📞</span>
+    <div><strong>Talk to your coach:</strong> If you have specific concerns or want a 1:1 review, <a href="biz-success-coaches.html">book a 30-min coaching call</a>. Free for active Businesses.</div>
+  </div>
+</div>
+
+<!-- FINAL -->
+<div class="final">
+  <h2>Month 1 done. What's next?</h2>
+  <p>You now have 30 days of LYMX data. The next 60 days are about scaling what's working and refining what isn't. The peer Businesses who hit the 90-day mark all do the same thing: weekly 30-min reviews, monthly promo planning, quarterly strategy refresh.</p>
+  <a href="holidays.html">Plan month 2 promos →</a>
+  <a href="benchmarks.html" class="alt">Compare to peers</a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Week 2–4 playbook · <a href="biz-launch-day.html">Day 1 playbook</a> · <a href="biz-dashboard.html">Dashboard</a> · <a href="biz-success-coaches.html">Coaching</a>
+</div>
+
+<script>
+  const KEY = 'lymx_launch_week_checks';
+  const state = JSON.parse(localStorage.getItem(KEY) || '{}');
+
+  document.querySelectorAll('.check-row').forEach((row, i) => {
+    if (state[i]) row.classList.add('done');
+  });
+
+  function toggle(el) {
+    el.classList.toggle('done');
+    const idx = Array.from(document.querySelectorAll('.check-row')).indexOf(el);
+    state[idx] = el.classList.contains('done');
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+</script>
+
+</body>
+</html>

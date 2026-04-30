@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>QuickBooks Integration — LYMX Power</title>
+<meta name="description" content="Connect LYMX with QuickBooks Online. Auto-sync monthly settlement, categorize wholesale + subscription, eliminate bookkeeping busywork.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--qb:#2CA01C}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+
+  .hero{padding:72px 24px 48px;border-bottom:1px solid var(--line);background:#fff}
+  .hero-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.3fr 1fr;gap:56px;align-items:center}
+  @media (max-width:880px){.hero-inner{grid-template-columns:1fr;gap:32px}}
+  .hero .pre{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .hero .lymx-tile{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+  .hero .lymx-tile span{color:var(--gold)}
+  .hero .plus{font-size:24px;color:var(--mute);font-weight:300}
+  .hero .qb-tile{width:48px;height:48px;border-radius:12px;background:var(--qb);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800;line-height:1.1}
+  .hero p{color:var(--mute);font-size:18px;max-width:520px;margin-bottom:24px}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn-primary{padding:12px 22px;background:var(--ink);color:#fff;border-radius:10px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:6px}
+  .btn-ghost{padding:12px 22px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:10px;font-weight:700;font-size:15px}
+
+  .hero-illust{aspect-ratio:1.1/1;background:linear-gradient(135deg,#e8f6ee 0%,#fafafa 100%);border-radius:18px;border:1px solid var(--line);position:relative;display:flex;align-items:center;justify-content:center;padding:32px}
+  .arrow-flow{display:flex;align-items:center;gap:18px;font-size:14px;color:var(--mute)}
+  .blk{padding:14px 20px;background:#fff;border:2px solid var(--line);border-radius:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:120px}
+  .blk.lymx{border-color:var(--gold)}
+  .blk.qb{border-color:var(--qb)}
+  .blk .ic{font-size:28px}
+  .arrow-flow .arr{font-size:24px;color:var(--qb);font-weight:700;animation:slide 1.6s infinite}
+  @keyframes slide{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  .timer-strip{background:linear-gradient(135deg,#e8f6ee,#c2e8d2);border:1px solid #c2e8d2;border-radius:14px;padding:20px 28px;margin-bottom:32px;display:flex;align-items:center;gap:18px}
+  .timer-strip .ic{font-size:32px}
+  .timer-strip h3{margin:0 0 4px;font-size:16px;color:#0a4d2f}
+  .timer-strip p{margin:0;font-size:13px;color:#0a7a4d}
+
+  .syncs{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .syncs h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .syncs .sub{color:var(--mute);font-size:14px;margin-bottom:24px}
+  .sync-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media (max-width:680px){.sync-grid{grid-template-columns:1fr}}
+  .sync-row{padding:18px;border:1px solid var(--line);border-radius:10px;background:#fafafa}
+  .sync-h{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .sync-h .ic{width:36px;height:36px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .sync-h h4{margin:0;font-size:14px}
+  .sync-h .freq{font-size:10px;background:#e8f6ee;color:#0a7a4d;padding:3px 7px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-left:auto}
+  .sync-row p{margin:0 0 6px;font-size:13px;color:var(--mute)}
+  .sync-row .from-to{font-size:12px;color:var(--qb);font-weight:700;margin-top:6px}
+  .sync-row .from-to code{background:#fff;padding:2px 6px;border-radius:5px;font-family:"SF Mono",Menlo,Consolas,monospace;color:var(--ink)}
+
+  /* Mapping table */
+  .mapping{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;margin-bottom:32px}
+  .mapping h2{margin:0 0 6px;font-size:22px;letter-spacing:-.02em}
+  .mapping .sub{color:var(--mute);font-size:14px;margin-bottom:18px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#fafafa;font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  tr:last-child td{border-bottom:0}
+  td code{background:#f1f3f7;padding:2px 7px;border-radius:5px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;color:#1a4196}
+  td .desc{font-size:12px;color:var(--mute);margin-top:4px}
+
+  .steps{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .steps h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .steps .sub{color:var(--mute);font-size:14px;margin-bottom:24px;display:flex;align-items:center;gap:14px}
+  .steps .sub .timer{background:#e8f6ee;color:#0a7a4d;padding:5px 12px;border-radius:999px;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:18px;padding:18px 0;border-top:1px solid var(--line)}
+  .step:first-of-type{border-top:0;padding-top:0}
+  .step-n{width:40px;height:40px;border-radius:50%;background:var(--qb);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0}
+  .step h3{margin:0 0 4px;font-size:16px}
+  .step .desc{font-size:14px;color:var(--mute);margin:0 0 10px}
+  .step .est{font-size:11px;color:var(--qb);background:#e8f6ee;padding:3px 9px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;display:inline-block}
+  .step kbd{background:#fff;border:1px solid var(--line);box-shadow:inset 0 -1px 0 var(--line);padding:1px 6px;border-radius:5px;font-size:12px}
+
+  .faq{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .faq h2{margin:0 0 18px;font-size:24px;letter-spacing:-.02em}
+  details{padding:14px 0;border-top:1px solid var(--line)}
+  details:first-of-type{border-top:0;padding-top:0}
+  summary{cursor:pointer;font-weight:600;font-size:15px;list-style:none;display:flex;align-items:center;gap:12px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";width:24px;height:24px;border-radius:6px;background:#f1f3f7;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:var(--mute);flex-shrink:0}
+  details[open] summary::before{content:"−";background:var(--ink);color:#fff}
+  details[open] summary{margin-bottom:10px}
+  .faq-body{font-size:14px;color:#1f2530;line-height:1.65;padding-left:36px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="integrations.html">All integrations</a>
+      <a href="biz-tax-guide.html">Tax guide</a>
+      <a href="settlement.html">Settlement</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="pre">
+        <div class="lymx-tile">L<span>★</span></div>
+        <div class="plus">×</div>
+        <div class="qb-tile">QB</div>
+      </div>
+      <h1>LYMX + QuickBooks — auto-sync your settlement.</h1>
+      <p>Connect QuickBooks Online and your monthly LYMX settlement automatically becomes properly categorized journal entries. No manual data entry. No reconciliation pain.</p>
+      <div class="cta">
+        <a href="biz-dashboard.html" class="btn-primary">Connect QuickBooks →</a>
+        <a href="#how" class="btn-ghost">See how it works</a>
+      </div>
+    </div>
+    <div class="hero-illust">
+      <div class="arrow-flow">
+        <div class="blk lymx"><div class="ic">★</div>LYMX</div>
+        <div class="arr">→</div>
+        <div class="blk qb"><div class="ic">📊</div>QuickBooks</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="timer-strip">
+  <div class="ic">⏱️</div>
+  <div>
+    <h3>Saves ~15 min per month</h3>
+    <p>That's 3 hours a year of bookkeeping you don't have to do. Set it up once, never touch it again.</p>
+  </div>
+</div>
+
+<!-- WHAT SYNCS -->
+<div class="syncs">
+  <h2>What syncs to QuickBooks</h2>
+  <p class="sub">One-way sync from LYMX to QuickBooks Online. We don't pull from QB — we just push categorized journal entries.</p>
+
+  <div class="sync-grid">
+    <div class="sync-row">
+      <div class="sync-h">
+        <div class="ic">💰</div>
+        <h4>Monthly settlement</h4>
+        <span class="freq">Monthly</span>
+      </div>
+      <p>Net LYMX wholesale settlement (issuance − redemption × $0.008) recorded as a journal entry.</p>
+      <div class="from-to">→ <code>Cost of Sales</code> or <code>Marketing Expenses</code> (your choice)</div>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h">
+        <div class="ic">📅</div>
+        <h4>Subscription invoice</h4>
+        <span class="freq">Monthly</span>
+      </div>
+      <p>$200/mo LYMX subscription recorded automatically.</p>
+      <div class="from-to">→ <code>Software &amp; Tech Subscriptions</code></div>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h">
+        <div class="ic">🎁</div>
+        <h4>Customer redemptions (optional)</h4>
+        <span class="freq">Daily</span>
+      </div>
+      <p>If you want fine-grained accounting, we can post each LYMX redemption as a discount line.</p>
+      <div class="from-to">→ <code>Sales Discounts</code></div>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h">
+        <div class="ic">📈</div>
+        <h4>One-time sign-up fee</h4>
+        <span class="freq">Once</span>
+      </div>
+      <p>$850 sign-up fee posts as a single entry.</p>
+      <div class="from-to">→ <code>Marketing &amp; Advertising</code> or <code>Capitalize/Amortize</code></div>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h">
+        <div class="ic">↩️</div>
+        <h4>Refunds &amp; voids</h4>
+        <span class="freq">Real-time</span>
+      </div>
+      <p>If you refund a transaction, the corresponding LYMX issuance reversal is auto-posted.</p>
+      <div class="from-to">→ Adjusts the LYMX expense category</div>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h">
+        <div class="ic">📊</div>
+        <h4>Annual summary</h4>
+        <span class="freq">Yearly</span>
+      </div>
+      <p>End-of-year totals + 1099-K (if applicable) auto-posted to QB for tax filing.</p>
+      <div class="from-to">→ Available Jan 31 of following year</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAPPING TABLE -->
+<div class="mapping">
+  <h2>How LYMX maps to your chart of accounts</h2>
+  <p class="sub">During setup, we walk you through mapping. Here's the default for most Businesses — you can override any of these.</p>
+
+  <table>
+    <thead>
+      <tr><th>LYMX item</th><th>QuickBooks account</th><th>Type</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>LYMX wholesale (issuance cost)</td>
+        <td><code>Cost of Goods Sold &gt; Loyalty</code><div class="desc">Or "Marketing Expenses" if you prefer</div></td>
+        <td>Expense</td>
+      </tr>
+      <tr>
+        <td>LYMX subscription</td>
+        <td><code>Operating Expenses &gt; Software &amp; Subscriptions</code></td>
+        <td>Expense</td>
+      </tr>
+      <tr>
+        <td>Sign-up fee (one-time)</td>
+        <td><code>Marketing &amp; Advertising</code><div class="desc">Or capitalize as Other Asset and amortize 12 months</div></td>
+        <td>Expense / Asset</td>
+      </tr>
+      <tr>
+        <td>Customer redemption (discount)</td>
+        <td><code>Sales Discounts</code></td>
+        <td>Contra-revenue</td>
+      </tr>
+      <tr>
+        <td>Net settlement payment</td>
+        <td><code>Operating Bank Account</code></td>
+        <td>Asset (cash)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- STEPS -->
+<div class="steps" id="how">
+  <h2>How to connect QuickBooks</h2>
+  <p class="sub">One-time setup. <span class="timer">⏱️ Total: ~10 min</span></p>
+
+  <div class="step">
+    <div class="step-n">1</div>
+    <div>
+      <h3>Open Integrations in your LYMX dashboard</h3>
+      <p class="desc">From your <a href="biz-dashboard.html">Business dashboard</a>, click <kbd>Settings</kbd> → <kbd>Integrations</kbd>. Find the <strong>QuickBooks</strong> card and click <kbd>Connect</kbd>.</p>
+      <span class="est">~30 sec</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">2</div>
+    <div>
+      <h3>Sign in to QuickBooks Online &amp; authorize</h3>
+      <p class="desc">QuickBooks OAuth opens. Sign in. Authorize LYMX to write journal entries (we don't read your books or anything sensitive). Approve.</p>
+      <span class="est">~2 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">3</div>
+    <div>
+      <h3>Choose your accounting method</h3>
+      <p class="desc">Two choices: (a) "Simple" — one journal entry per month. (b) "Detailed" — daily redemption entries + monthly settlement. Most Businesses pick (a). You can change later.</p>
+      <span class="est">~1 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">4</div>
+    <div>
+      <h3>Map LYMX items to your chart of accounts</h3>
+      <p class="desc">We auto-suggest mappings based on the table above. Review and override anything that doesn't match your accounting setup. If unsure, default suggestions work for 90% of Businesses.</p>
+      <span class="est">~5 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">5</div>
+    <div>
+      <h3>Run a backfill (optional)</h3>
+      <p class="desc">If you have prior LYMX activity that wasn't in QB, we can backfill journal entries for the past 90 days. Useful for cleaning up your books. Backfill runs in the background — takes 2–3 minutes.</p>
+      <span class="est">~2 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">6</div>
+    <div>
+      <h3>Verify in QuickBooks</h3>
+      <p class="desc">Open QuickBooks Online → Reports → Journal Entries. Filter for entries with <code>"LYMX"</code> in the memo. They should appear with the correct categorization. Done.</p>
+      <span class="est">~1 min</span>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq">
+  <h2>Frequently asked questions</h2>
+
+  <details>
+    <summary>Does this work with QuickBooks Desktop?</summary>
+    <div class="faq-body"><p>No — only QuickBooks Online. QuickBooks Desktop's API is much more limited. If you're on Desktop, we recommend exporting CSV from LYMX and importing manually (or migrating to QBO, which we recommend regardless).</p></div>
+  </details>
+
+  <details>
+    <summary>What about Xero, FreshBooks, or Wave?</summary>
+    <div class="faq-body"><p>Xero integration is in beta — request access from <a href="mailto:integrations@getlymx.com">integrations@getlymx.com</a>. FreshBooks and Wave are on the roadmap (Q3 2026). For now, all of them work via CSV export.</p></div>
+  </details>
+
+  <details>
+    <summary>Can my accountant access this?</summary>
+    <div class="faq-body"><p>Yes. Your accountant accesses LYMX entries through QuickBooks like any other entries. They don't need a separate LYMX login. They can also export the LYMX-tagged entries via QuickBooks reports.</p></div>
+  </details>
+
+  <details>
+    <summary>What if I want to change the account mapping later?</summary>
+    <div class="faq-body"><p>Easy — go to Integrations → QuickBooks → Mapping. Change any line. Future entries use the new mapping. Past entries are unchanged (you can edit them in QuickBooks if you want them remapped).</p></div>
+  </details>
+
+  <details>
+    <summary>Does this affect my LYMX settlement timing?</summary>
+    <div class="faq-body"><p>No. Settlement still hits your bank on the 5th of each month. The QuickBooks integration just creates the journal entry. Two separate things.</p></div>
+  </details>
+
+  <details>
+    <summary>What if I make manual edits to LYMX entries in QuickBooks?</summary>
+    <div class="faq-body"><p>Manual edits are fine — we never overwrite them. Future entries continue to flow in unchanged. If you delete an entry in QuickBooks, we won't recreate it (we assume you have a reason).</p></div>
+  </details>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · QuickBooks integration · <a href="biz-tax-guide.html">Business tax guide</a> · <a href="integrations.html">All integrations</a> · <a href="settlement.html">Settlement</a>
+</div>
+
+</body>
+</html>

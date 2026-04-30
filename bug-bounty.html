@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Bug Bounty Program — LYMX Power</title>
+<meta name="description" content="LYMX security researcher program. Scope, payouts, hall of fame, submission process. Help us keep the network safe.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1080px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+
+  .hero{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;padding:80px 24px 48px;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 70% 20%,rgba(212,175,55,.18) 0%,transparent 50%);pointer-events:none}
+  .hero-inner{max-width:1080px;margin:0 auto;text-align:center;position:relative}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--gold);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;border:1px solid var(--gold);padding:5px 12px;border-radius:999px}
+  .hero h1{font-size:54px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800;color:#fff;line-height:1.1}
+  .hero p{color:#b8c2d6;max-width:580px;margin:0 auto;font-size:17px}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:48px 24px}
+
+  .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px;box-shadow:0 8px 22px rgba(0,0,0,.04)}
+  @media (max-width:680px){.stats-strip{grid-template-columns:repeat(2,1fr)}}
+  .ss-item{text-align:center;padding:0 12px}
+  .ss-item .n{font-size:32px;font-weight:800;color:var(--gold);letter-spacing:-.02em;line-height:1}
+  .ss-item .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:6px}
+
+  .section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:24px}
+  .section h2{margin:0 0 14px;font-size:26px;letter-spacing:-.025em}
+  .section p{margin:0 0 14px;font-size:15px}
+  .section ul{margin:0 0 14px;padding-left:20px;font-size:14.5px}
+  .section li{margin-bottom:8px}
+
+  /* Payouts */
+  .payouts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+  @media (max-width:680px){.payouts{grid-template-columns:repeat(2,1fr)}}
+  .payout{padding:18px;border-radius:12px;text-align:center}
+  .payout.critical{background:linear-gradient(135deg,#fdecea,#fbd5d0);border:1px solid #fbd5d0}
+  .payout.high{background:linear-gradient(135deg,#fff8eb,#ffe2b3);border:1px solid #fbe4b3}
+  .payout.medium{background:linear-gradient(135deg,#eef3ff,#d4e2ff);border:1px solid #c7d6ff}
+  .payout.low{background:linear-gradient(135deg,#e8f6ee,#c2e8d2);border:1px solid #c2e8d2}
+  .payout .sev{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+  .payout.critical .sev{color:#a32114}
+  .payout.high .sev{color:#8b5500}
+  .payout.medium .sev{color:#1a4196}
+  .payout.low .sev{color:#0a4d2f}
+  .payout .amt{font-size:24px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+  .payout .desc{font-size:11.5px;color:var(--mute);margin-top:4px;line-height:1.4}
+
+  /* Scope */
+  .scope-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:680px){.scope-grid{grid-template-columns:1fr}}
+  .scope-col{padding:18px;border-radius:10px}
+  .scope-col.in{background:#e8f6ee;border:1px solid #c2e8d2}
+  .scope-col.out{background:#fdecea;border:1px solid #fbd5d0}
+  .scope-col h4{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  .scope-col.in h4{color:#0a7a4d}
+  .scope-col.out h4{color:#a32114}
+  .scope-col ul{margin:0;padding-left:20px;font-size:13.5px}
+  .scope-col li{margin-bottom:6px}
+
+  /* Hall of fame */
+  .hof{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+  @media (max-width:680px){.hof{grid-template-columns:repeat(2,1fr)}}
+  .hof-item{padding:16px;background:#fafafa;border:1px solid var(--line);border-radius:10px}
+  .hof-name{font-size:14px;font-weight:700;margin-bottom:4px}
+  .hof-find{font-size:12px;color:var(--mute);margin-bottom:8px;line-height:1.4}
+  .hof-payout{font-size:13px;font-weight:700;color:var(--ok)}
+  .hof-payout::before{content:"⭐ ";color:var(--gold)}
+
+  /* Submit */
+  .submit{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:32px;margin-bottom:24px}
+  .submit h2{margin:0 0 8px;color:#fff;font-size:24px}
+  .submit p{color:#b8c2d6;margin:0 0 18px;font-size:14px}
+  .submit-grid{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+  @media (max-width:680px){.submit-grid{grid-template-columns:1fr}}
+  .submit code{background:#1f2530;color:#a3c5ff;padding:4px 10px;border-radius:6px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13px;display:inline-block}
+  .submit a.btn{background:var(--gold);color:#0e1116;padding:12px 22px;border-radius:8px;font-weight:700;font-size:14px;display:inline-block;flex-shrink:0}
+
+  details{padding:14px 0;border-top:1px solid var(--line)}
+  details:first-of-type{border-top:0;padding-top:0}
+  summary{cursor:pointer;font-weight:600;font-size:15px;list-style:none;display:flex;align-items:center;gap:12px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";width:24px;height:24px;border-radius:6px;background:#f1f3f7;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:var(--mute);flex-shrink:0}
+  details[open] summary::before{content:"−";background:var(--ink);color:#fff}
+  details[open] summary{margin-bottom:10px}
+  .faq-body{font-size:14px;color:#1f2530;line-height:1.65;padding-left:36px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="security.html">Security</a>
+      <a href="trust-and-safety.html">Trust &amp; safety</a>
+      <a href="api.html">API</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Bug bounty · Public program</div>
+    <h1>Find a bug. Get paid.</h1>
+    <p>Help us keep LYMX safe. Responsible disclosure of vulnerabilities earns up to $10,000 per finding. We've paid out $47,400 to 28 researchers since opening the program.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="stats-strip">
+  <div class="ss-item"><div class="n">$47,400</div><div class="l">Paid out total</div></div>
+  <div class="ss-item"><div class="n">28</div><div class="l">Researchers</div></div>
+  <div class="ss-item"><div class="n">94</div><div class="l">Bugs fixed</div></div>
+  <div class="ss-item"><div class="n">14 hr</div><div class="l">Avg response time</div></div>
+</div>
+
+<!-- PAYOUTS -->
+<div class="section">
+  <h2>Payout structure</h2>
+  <p>Payouts depend on the severity of the finding. We use the CVSS framework with adjustments for impact on the LYMX network.</p>
+
+  <div class="payouts">
+    <div class="payout critical">
+      <div class="sev">Critical</div>
+      <div class="amt">$5,000–10,000</div>
+      <div class="desc">RCE, auth bypass, financial fraud</div>
+    </div>
+    <div class="payout high">
+      <div class="sev">High</div>
+      <div class="amt">$1,500–4,000</div>
+      <div class="desc">Privilege escalation, data exposure</div>
+    </div>
+    <div class="payout medium">
+      <div class="sev">Medium</div>
+      <div class="amt">$400–1,200</div>
+      <div class="desc">XSS, CSRF, IDOR</div>
+    </div>
+    <div class="payout low">
+      <div class="sev">Low</div>
+      <div class="amt">$100–300</div>
+      <div class="desc">Best practice violations</div>
+    </div>
+  </div>
+
+  <p style="margin-top:18px;font-size:13px;color:var(--mute)">Bonuses for first-of-its-kind findings, exceptional report quality, or chained vulnerabilities. We also have a "swag wall" — first 3 reports get LYMX-branded swag in addition to cash.</p>
+</div>
+
+<!-- SCOPE -->
+<div class="section">
+  <h2>Scope</h2>
+  <p>What's in vs. out of scope for the bug bounty program.</p>
+
+  <div class="scope-grid">
+    <div class="scope-col in">
+      <h4>✓ In scope</h4>
+      <ul>
+        <li><code>getlymx.com</code> and all subdomains</li>
+        <li>LYMX wallet web app</li>
+        <li>LYMX Business dashboard + POS</li>
+        <li>LYMX Partner dashboard + downstream</li>
+        <li>Public API (<code>api.getlymx.com</code>)</li>
+        <li>Settlement &amp; commission backend</li>
+        <li>Authentication / authorization flows</li>
+        <li>Stripe webhook handlers (LYMX side)</li>
+      </ul>
+    </div>
+    <div class="scope-col out">
+      <h4>✗ Out of scope</h4>
+      <ul>
+        <li>Third-party services (Stripe, Square, Toast — report directly to them)</li>
+        <li>Social engineering of LYMX staff</li>
+        <li>Physical attacks on LYMX offices</li>
+        <li>Denial-of-service attacks</li>
+        <li>Spam or rate-limit findings &lt;1000 req/min</li>
+        <li>Vulnerabilities in beta features (announced)</li>
+        <li>Self-XSS without other impact</li>
+        <li>Issues only affecting outdated browsers</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- RULES -->
+<div class="section">
+  <h2>Rules &amp; responsible disclosure</h2>
+  <ul>
+    <li><strong>No data exfiltration.</strong> Find the vulnerability, document it, but don't extract customer data. Take a screenshot showing the issue, not the data itself.</li>
+    <li><strong>No service disruption.</strong> Don't run scanners that could affect uptime. If unsure, ask first.</li>
+    <li><strong>Don't pivot.</strong> If you find an entry point, document it but don't keep going to find more bugs through that entry point. We'll fix it; you get credit for the original finding.</li>
+    <li><strong>One report per issue.</strong> If you find multiple related bugs, file them separately.</li>
+    <li><strong>90-day disclosure window.</strong> We commit to fixing critical bugs within 30 days, others within 90 days. After fix is deployed, you can publish the finding (with our acknowledgment).</li>
+    <li><strong>Don't sell findings.</strong> If you find a bug here and try to sell it elsewhere first, you forfeit the bounty.</li>
+  </ul>
+</div>
+
+<!-- HALL OF FAME -->
+<div class="section">
+  <h2>Hall of fame</h2>
+  <p>Recent top finders (with their permission to be listed publicly).</p>
+
+  <div class="hof">
+    <div class="hof-item">
+      <div class="hof-name">@securityresearcher_v</div>
+      <div class="hof-find">IDOR allowing access to other Businesses' settlement reports. Patched within 4 hours.</div>
+      <div class="hof-payout">$8,500</div>
+    </div>
+    <div class="hof-item">
+      <div class="hof-name">Marcus T.</div>
+      <div class="hof-find">JWT signature confusion in Partner OAuth flow. Could've allowed account takeover.</div>
+      <div class="hof-payout">$6,200</div>
+    </div>
+    <div class="hof-item">
+      <div class="hof-name">@infosec_lola</div>
+      <div class="hof-find">Race condition in LYMX redemption allowing double-spend in narrow window.</div>
+      <div class="hof-payout">$5,800</div>
+    </div>
+    <div class="hof-item">
+      <div class="hof-name">P. Anand</div>
+      <div class="hof-find">XSS in Business profile editing form. Stored XSS, not reflected.</div>
+      <div class="hof-payout">$2,400</div>
+    </div>
+    <div class="hof-item">
+      <div class="hof-name">@bug.hunter</div>
+      <div class="hof-find">CSRF on Partner CRM allowing prospect data modification.</div>
+      <div class="hof-payout">$1,800</div>
+    </div>
+    <div class="hof-item">
+      <div class="hof-name">Various (anon)</div>
+      <div class="hof-find">23 lower-severity findings (rate limiting, header issues, info disclosure).</div>
+      <div class="hof-payout">$3,400 combined</div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMIT -->
+<div class="submit">
+  <h2>How to submit</h2>
+  <p>Email your finding to security@getlymx.com — encrypted PGP preferred (key fingerprint below).</p>
+  <div class="submit-grid">
+    <div>
+      <p style="color:#b8c2d6;font-size:13px;margin-bottom:6px">PGP fingerprint</p>
+      <code>4F2A 9D8C 6B3E 1F5A 2E8B · 7C4F D9A1 6E3B 8F2D 5C7A</code>
+    </div>
+    <a href="mailto:security@getlymx.com" class="btn">Email security team →</a>
+  </div>
+  <p style="color:#b8c2d6;font-size:12px;margin-top:14px;padding-top:14px;border-top:1px solid #2a3a5a">Include: (1) Steps to reproduce. (2) Impact statement. (3) Suggested severity. (4) Optional: suggested fix. We'll respond within 14 hours during business days.</p>
+</div>
+
+<!-- FAQ -->
+<div class="section">
+  <h2>Frequently asked questions</h2>
+
+  <details>
+    <summary>What if I find a bug before signing up for the program?</summary>
+    <div class="faq-body"><p>You don't need to "sign up." The program is open. Submit a finding, follow the rules, and you'll get paid if it's valid.</p></div>
+  </details>
+
+  <details>
+    <summary>Can I be anonymous?</summary>
+    <div class="faq-body"><p>Yes. Tell us when you submit — we'll use a pseudonym in the hall of fame and pay via your preferred method (PayPal, BTC, gift card, or charity donation).</p></div>
+  </details>
+
+  <details>
+    <summary>What payment methods do you support?</summary>
+    <div class="faq-body"><p>USD via PayPal, ACH (US), Wise (international), or BTC. We can also donate the bounty to a charity of your choice. Tax forms: we issue 1099-MISC for US researchers earning $600+ annually.</p></div>
+  </details>
+
+  <details>
+    <summary>What if multiple researchers find the same bug?</summary>
+    <div class="faq-body"><p>First valid report gets full bounty. Subsequent reports of the same bug are acknowledged but not paid. Timestamp on email is the tiebreaker.</p></div>
+  </details>
+
+  <details>
+    <summary>Can I publicly disclose a bug after you fix it?</summary>
+    <div class="faq-body"><p>Yes — please coordinate timing with us. Standard practice: 30 days after fix is deployed, or 90 days from initial report (whichever is later). We'll happily acknowledge and link to your write-up.</p></div>
+  </details>
+
+  <details>
+    <summary>I found a bug in a tool you depend on (Stripe, Postgres, etc.). Should I report it to you?</summary>
+    <div class="faq-body"><p>Report it directly to the upstream maintainer. We'll happily review your finding and amplify if you'd like — but the bounty would come from them, not us. We pay only for findings in LYMX-controlled code.</p></div>
+  </details>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Bug bounty program · <a href="security.html">Security overview</a> · <a href="trust-and-safety.html">Trust &amp; safety</a> · <a href="incident-history.html">Incident history</a>
+</div>
+
+</body>
+</html>

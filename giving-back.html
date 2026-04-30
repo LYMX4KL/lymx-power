@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Giving Back — LYMX Power</title>
+<meta name="description" content="How LYMX gives back to the local communities we serve. Donate-LYMX program, partner nonprofits, founding-25 community grants.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1080px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(180deg,#e8f6ee 0%,#fafafa 100%);padding:80px 24px 48px;border-bottom:1px solid var(--line)}
+  .hero-inner{max-width:1080px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#0a7a4d;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #c2e8d2}
+  .hero h1{font-size:50px;letter-spacing:-.025em;margin:0 0 16px;font-weight:800;line-height:1.1}
+  .hero p{color:var(--mute);max-width:620px;margin:0 auto;font-size:17px}
+
+  .impact-strip{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:36px;margin:-32px auto 48px;max-width:1080px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,.04);position:relative;z-index:2}
+  @media (max-width:680px){.impact-strip{grid-template-columns:repeat(2,1fr);margin-top:0}}
+  .impact-strip .n{font-size:36px;font-weight:800;letter-spacing:-.025em;color:var(--ok);line-height:1}
+  .impact-strip .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:6px}
+  .impact-strip .sub{font-size:11px;color:var(--mute);margin-top:2px}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px 48px}
+
+  .section{margin-bottom:48px}
+  .section h2{font-size:30px;letter-spacing:-.025em;margin:0 0 12px}
+  .section .lead{color:var(--mute);font-size:16px;margin-bottom:24px;max-width:680px}
+
+  /* Donate-LYMX feature */
+  .donate-feature{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;margin-bottom:48px}
+  @media (max-width:760px){.donate-feature{grid-template-columns:1fr}}
+  .df-img{aspect-ratio:1.2/1;background:linear-gradient(135deg,#13a26b,#9adfb6);display:flex;align-items:center;justify-content:center;font-size:120px;color:#fff}
+  .df-body{padding:40px}
+  .df-body h2{margin:0 0 12px;font-size:28px;letter-spacing:-.02em}
+  .df-body .lead{color:var(--mute);font-size:15px;margin-bottom:20px}
+  .df-list{margin:0 0 20px;padding:0;list-style:none}
+  .df-list li{padding:8px 0;font-size:14px;display:flex;gap:10px}
+  .df-list li::before{content:"✓";color:var(--ok);font-weight:800;flex-shrink:0}
+  .df-cta{padding:11px 22px;background:var(--ok);color:#fff;border-radius:8px;font-weight:700;font-size:14px;display:inline-block}
+
+  /* Nonprofit partners */
+  .partners-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media (max-width:760px){.partners-grid{grid-template-columns:1fr}}
+  .partner{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column}
+  .partner-logo{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:14px;color:#fff}
+  .partner-logo.green{background:linear-gradient(135deg,#0a7a4d,#13a26b)}
+  .partner-logo.blue{background:linear-gradient(135deg,#0a84ff,#5b9ef5)}
+  .partner-logo.purple{background:linear-gradient(135deg,#5b3697,#a374e6)}
+  .partner-logo.gold{background:linear-gradient(135deg,#d4af37,#f5d172);color:#3a2f0a}
+  .partner-logo.red{background:linear-gradient(135deg,#c0392b,#e74c3c)}
+  .partner-logo.gray{background:linear-gradient(135deg,#5d6470,#9aa3b0)}
+  .partner h3{margin:0 0 4px;font-size:16px}
+  .partner .cat{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:10px}
+  .partner p{margin:0 0 14px;font-size:13px;color:var(--mute);flex:1}
+  .partner .raised{font-size:13px;font-weight:700;color:var(--ok);margin-top:auto;padding-top:10px;border-top:1px dashed var(--line)}
+
+  /* Grants section */
+  .grants{background:linear-gradient(135deg,#fef9e7,#fff5c2);border:1px solid var(--gold);border-radius:18px;padding:36px;margin-bottom:48px}
+  .grants h2{margin:0 0 12px;font-size:26px;color:#3a2f0a;letter-spacing:-.02em}
+  .grants .lead{color:#5d4d18;font-size:15px;margin-bottom:24px}
+  .grants-list{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:680px){.grants-list{grid-template-columns:1fr}}
+  .grant{background:rgba(255,255,255,.7);padding:18px;border-radius:12px}
+  .grant h4{margin:0 0 4px;font-size:15px;color:#3a2f0a}
+  .grant .amount{font-size:11px;color:#8b6f1f;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+  .grant p{margin:0;font-size:13px;color:#5d4d18}
+
+  /* Volunteer */
+  .volunteer{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:48px;display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
+  @media (max-width:760px){.volunteer{grid-template-columns:1fr}}
+  .volunteer h2{margin:0 0 10px;font-size:24px;letter-spacing:-.02em}
+  .volunteer p{margin:0 0 16px;font-size:14.5px;color:var(--mute)}
+  .volunteer-stat{padding:24px;background:linear-gradient(135deg,#eef3ff,#f7faff);border-radius:14px;text-align:center}
+  .volunteer-stat .n{font-size:42px;font-weight:800;color:var(--accent);letter-spacing:-.025em;line-height:1}
+  .volunteer-stat .l{font-size:13px;color:var(--accent);margin-top:6px;font-weight:600}
+
+  /* CTA */
+  .cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:16px;padding:40px;text-align:center}
+  .cta h2{margin:0 0 8px;font-size:26px;color:#fff}
+  .cta p{color:#b8c2d6;max-width:560px;margin:0 auto 20px}
+  .cta a{display:inline-block;background:var(--gold);color:#0e1116;padding:12px 24px;border-radius:8px;font-weight:700}
+  .cta a.alt{background:transparent;color:var(--gold);border:1px solid var(--gold);margin-left:10px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="customer-wallet.html" class="btn">My wallet →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Community impact · Updated quarterly</div>
+    <h1>The local network gives back.</h1>
+    <p>LYMX is a network of local Businesses. Local Businesses care about local communities. Here's what we do together — and how customers can join in by donating LYMX directly to nonprofits.</p>
+  </div>
+</section>
+
+<div class="impact-strip">
+  <div><div class="n">$184k</div><div class="l">Donated YTD</div><div class="sub">From all sources</div></div>
+  <div><div class="n">14</div><div class="l">Partner nonprofits</div><div class="sub">Las Vegas-based</div></div>
+  <div><div class="n">$28k</div><div class="l">Customer LYMX donations</div><div class="sub">Direct from wallets</div></div>
+  <div><div class="n">8</div><div class="l">Founding 25 grants</div><div class="sub">$2,500 each</div></div>
+</div>
+
+<div class="wrap">
+
+<!-- Donate LYMX -->
+<div class="donate-feature">
+  <div class="df-img">💚</div>
+  <div class="df-body">
+    <h2>Donate your LYMX</h2>
+    <p class="lead">Customers can donate any portion of their LYMX balance directly to a vetted local nonprofit, right from their wallet. We match customer donations 1-to-1 up to $25k per quarter.</p>
+
+    <ul class="df-list">
+      <li>1 LYMX = $0.01, donated at full redemption value</li>
+      <li>LYMX matches every customer donation 1:1, up to $25k/quarter</li>
+      <li>Choose from 14 vetted Las Vegas nonprofits</li>
+      <li>Receive a tax-deductible receipt by email</li>
+      <li>100% of donated LYMX goes to the nonprofit (no fees)</li>
+    </ul>
+
+    <a href="customer-wallet.html" class="df-cta">Donate from your wallet →</a>
+  </div>
+</div>
+
+<!-- Partner nonprofits -->
+<div class="section">
+  <h2>Where the donations go</h2>
+  <p class="lead">14 vetted local nonprofits, all 501(c)(3) verified. Customer-donated LYMX goes directly to these organizations as a 1:1 cash match from LYMX.</p>
+
+  <div class="partners-grid">
+
+    <div class="partner">
+      <div class="partner-logo green">🏠</div>
+      <h3>Vegas Housing Coalition</h3>
+      <div class="cat">Housing &amp; Homelessness</div>
+      <p>Provides emergency shelter and transitional housing for families experiencing homelessness in Clark County.</p>
+      <div class="raised">$24,800 raised</div>
+    </div>
+
+    <div class="partner">
+      <div class="partner-logo blue">📚</div>
+      <h3>Three Square Books</h3>
+      <div class="cat">Literacy</div>
+      <p>Free books for low-income kids in Las Vegas schools. 12,000 books distributed in 2025.</p>
+      <div class="raised">$18,400 raised</div>
+    </div>
+
+    <div class="partner">
+      <div class="partner-logo red">🍱</div>
+      <h3>Three Square Food Bank</h3>
+      <div class="cat">Hunger relief</div>
+      <p>Largest hunger-relief organization in Southern Nevada. $1 LYMX donated = 4 meals provided.</p>
+      <div class="raised">$32,180 raised</div>
+    </div>
+
+    <div class="partner">
+      <div class="partner-logo purple">🌱</div>
+      <h3>Las Vegas Community Garden</h3>
+      <div class="cat">Food &amp; Sustainability</div>
+      <p>Network of community gardens providing fresh produce to neighborhood food banks.</p>
+      <div class="raised">$8,200 raised</div>
+    </div>
+
+    <div class="partner">
+      <div class="partner-logo gold">🐾</div>
+      <h3>Animal Foundation</h3>
+      <div class="cat">Animal welfare</div>
+      <p>Largest no-kill animal shelter in Southern Nevada. Adoptions, low-cost vet care, return-to-owner.</p>
+      <div class="raised">$14,600 raised</div>
+    </div>
+
+    <div class="partner">
+      <div class="partner-logo green">🌳</div>
+      <h3>Get Outdoors Nevada</h3>
+      <div class="cat">Conservation</div>
+      <p>Volunteer-led trail maintenance and conservation projects across Nevada parks and public lands.</p>
+      <div class="raised">$6,400 raised</div>
+    </div>
+
+    <div class="partner">
+      <div class="partner-logo blue">🎨</div>
+      <h3>Nevada Arts Education Trust</h3>
+      <div class="cat">Education &amp; arts</div>
+      <p>Arts programs for K-12 students in Title I schools. Music, visual arts, theater, dance.</p>
+      <div class="raised">$11,200 raised</div>
+    </div>
+
+    <div class="partner">
+      <div class="partner-logo gray">🏥</div>
+      <h3>Nevada Health Centers</h3>
+      <div class="cat">Health</div>
+      <p>Federally Qualified Health Centers across Las Vegas. Sliding-scale primary care for the uninsured.</p>
+      <div class="raised">$22,400 raised</div>
+    </div>
+
+    <div class="partner">
+      <div class="partner-logo purple">👶</div>
+      <h3>Boys &amp; Girls Clubs LV</h3>
+      <div class="cat">Youth</div>
+      <p>After-school programs for kids ages 6–18. Academic support, sports, arts, mentorship.</p>
+      <div class="raised">$15,800 raised</div>
+    </div>
+
+  </div>
+  <p style="font-size:13px;color:var(--mute);text-align:center;margin-top:24px">+ 5 additional vetted nonprofits visible in your wallet at donation time. <a href="mailto:nonprofits@getlymx.com">Suggest a nonprofit for inclusion →</a></p>
+</div>
+
+<!-- Founding 25 Community Grants -->
+<div class="grants">
+  <h2>Founding 25 Community Grants</h2>
+  <p class="lead">When the Founding 25 Las Vegas program filled, we committed $2,500 grants to a community organization nominated by each of our first 25 Businesses. Eight grants have been awarded so far.</p>
+
+  <div class="grants-list">
+    <div class="grant">
+      <div class="amount">$2,500 · Awarded Mar 2026</div>
+      <h4>Vegas PBS Education Programs</h4>
+      <p>Nominated by Brew &amp; Bean Café. Funded literacy programming for Title I schools.</p>
+    </div>
+    <div class="grant">
+      <div class="amount">$2,500 · Awarded Mar 2026</div>
+      <h4>Las Vegas Rescue Mission</h4>
+      <p>Nominated by Oakline Kitchen. Funded 1,000 emergency meals.</p>
+    </div>
+    <div class="grant">
+      <div class="amount">$2,500 · Awarded Apr 2026</div>
+      <h4>Goodie Two Shoes Foundation</h4>
+      <p>Nominated by Sage &amp; Stone Bakery. Funded shoes for 80 children.</p>
+    </div>
+    <div class="grant">
+      <div class="amount">$2,500 · Awarded Apr 2026</div>
+      <h4>Las Vegas Skateboarding Coalition</h4>
+      <p>Nominated by CityRow Studio. Funded equipment + coaching for at-risk youth.</p>
+    </div>
+    <div class="grant">
+      <div class="amount">$2,500 · Awarded Apr 2026</div>
+      <h4>Friends of Red Rock Canyon</h4>
+      <p>Nominated by EverGrid EV Hub. Funded trail restoration.</p>
+    </div>
+    <div class="grant">
+      <div class="amount">$2,500 · Awarded Apr 2026</div>
+      <h4>Las Vegas Library Foundation</h4>
+      <p>Nominated by The Quiet Library. Funded children's book purchases.</p>
+    </div>
+  </div>
+  <p style="font-size:12px;color:#8b6f1f;text-align:center;margin-top:18px">17 more grants pending — additional Founding 25 Businesses are choosing recipients in the coming weeks.</p>
+</div>
+
+<!-- Volunteer -->
+<div class="volunteer">
+  <div>
+    <h2>The volunteer day</h2>
+    <p>Once a quarter, LYMX organizes a network-wide volunteer day at one of our partner nonprofits. Businesses, customers, partners, and HQ staff all show up. The next one is at Three Square Food Bank in June 2026.</p>
+    <p>Past events: Vegas Housing Coalition (Jan 2026, 47 volunteers), Get Outdoors Nevada (Mar 2026, 38 volunteers).</p>
+    <a href="community.html" style="color:var(--accent);font-weight:700">See volunteer events →</a>
+  </div>
+  <div class="volunteer-stat">
+    <div class="n">328</div>
+    <div class="l">Volunteer hours · YTD</div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta">
+  <h2>Donate LYMX. Or volunteer. Or both.</h2>
+  <p>The strongest local Businesses build the strongest local communities. We're trying to make those go together.</p>
+  <a href="customer-wallet.html">Donate from wallet →</a>
+  <a href="community.html" class="alt">Find a volunteer event</a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Giving back · <a href="vegas-impact.html">Las Vegas impact report</a> · <a href="customer-wallet.html">Donate from wallet</a> · <a href="community.html">Volunteer events</a> · <a href="transparency.html">Annual transparency report</a>
+</div>
+
+</body>
+</html>

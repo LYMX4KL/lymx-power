@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Loyalty Migration Guide — LYMX Power</title>
+<meta name="description" content="How to migrate from Square Loyalty, Toast Loyalty, Yelp, Belly, or Fivestars to LYMX. Step-by-step guide for each.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{padding:64px 24px 36px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#e8f6ee 0%,#fafafa 100%)}
+  .hero-inner{max-width:1100px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#0a7a4d;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #c2e8d2}
+  .hero h1{font-size:42px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:16px}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  .picker{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:32px}
+  @media (max-width:760px){.picker{grid-template-columns:repeat(2,1fr)}}
+  .pick{padding:16px 10px;background:var(--card);border:2px solid var(--line);border-radius:12px;cursor:pointer;text-align:center;transition:.15s;text-decoration:none;color:var(--ink)}
+  .pick:hover{border-color:var(--ink);transform:translateY(-1px)}
+  .pick.on{border-color:var(--ok);background:#e8f6ee;color:#0a4d2f}
+  .pick .nm{font-size:14px;font-weight:700}
+  .pick .lg{font-size:24px;margin-bottom:6px}
+
+  .universal{background:linear-gradient(135deg,#fef9e7,#fff5c2);border:1px solid var(--gold);border-radius:14px;padding:32px;margin-bottom:32px}
+  .universal h2{margin:0 0 12px;font-size:24px;color:#3a2f0a}
+  .universal .sub{color:#5d4d18;font-size:14px;margin-bottom:20px}
+  .universal-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media (max-width:680px){.universal-steps{grid-template-columns:repeat(2,1fr)}}
+  .uni-step{padding:14px;background:rgba(255,255,255,.7);border-radius:10px;text-align:center}
+  .uni-step .n{width:32px;height:32px;background:var(--gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;margin:0 auto 8px}
+  .uni-step h4{margin:0 0 4px;font-size:13px;color:#3a2f0a}
+  .uni-step p{margin:0;font-size:11.5px;color:#5d4d18;line-height:1.4}
+
+  .platform{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:24px;display:none;scroll-margin-top:80px}
+  .platform.show{display:block}
+  .platform-h{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+  .platform-h .logo-tile{width:54px;height:54px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;flex-shrink:0;font-weight:800}
+  .platform-h .logo-tile.square{background:#3e4348}
+  .platform-h .logo-tile.toast{background:#FF4F03}
+  .platform-h .logo-tile.yelp{background:#d32323;font-size:18px;letter-spacing:.04em}
+  .platform-h .logo-tile.belly{background:#9b59b6}
+  .platform-h .logo-tile.fivestars{background:#f59e0b}
+  .platform-h h2{margin:0 0 4px;font-size:22px}
+  .platform-h .sub{color:var(--mute);font-size:13px}
+
+  .difficulty{display:flex;gap:14px;margin-bottom:18px}
+  .diff{flex:1;padding:12px 16px;border-radius:10px;border:1px solid var(--line);text-align:center}
+  .diff .l{font-size:10px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:4px}
+  .diff .v{font-size:14px;font-weight:700}
+  .diff.easy{background:#e8f6ee;border-color:#c2e8d2}
+  .diff.easy .v{color:#0a7a4d}
+  .diff.medium{background:#fff8eb;border-color:#fbe4b3}
+  .diff.medium .v{color:#8b5500}
+
+  .step{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+  .step:first-of-type{border-top:0;padding-top:0}
+  .step-n{width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+  .step h3{margin:0 0 4px;font-size:15px}
+  .step p{margin:0;color:#1f2530;font-size:14px}
+  .step code{background:#f1f3f7;padding:2px 7px;border-radius:5px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12.5px}
+  .step kbd{background:#fff;border:1px solid var(--line);box-shadow:inset 0 -1px 0 var(--line);padding:1px 6px;border-radius:5px;font-size:12px}
+
+  .gotcha{background:#fff8eb;border-left:4px solid var(--warn);padding:12px 16px;border-radius:0 8px 8px 0;font-size:13px;color:#5d4400;margin-top:14px}
+  .gotcha strong{color:#8b5500}
+
+  .cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:32px;text-align:center;margin-top:32px}
+  .cta h3{margin:0 0 8px;color:#fff;font-size:22px}
+  .cta p{color:#b8c2d6;margin:0 auto 18px;max-width:520px;font-size:14px}
+  .cta a{display:inline-block;background:var(--gold);color:#0e1116;padding:11px 22px;border-radius:8px;font-weight:700;font-size:14px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="business.html" class="btn">Get LYMX →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Migration guide · For prospective Businesses</div>
+    <h1>Migrating from another loyalty program?</h1>
+    <p>Step-by-step guides for moving from Square Loyalty, Toast Loyalty, Yelp Ads, Belly, or Fivestars to LYMX. Most migrations take under an hour.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="picker">
+  <a class="pick on" data-p="universal" onclick="show(event, 'universal')">
+    <div class="lg">📋</div>
+    <div class="nm">All platforms</div>
+  </a>
+  <a class="pick" data-p="square" onclick="show(event, 'square')">
+    <div class="lg">▣</div>
+    <div class="nm">Square</div>
+  </a>
+  <a class="pick" data-p="toast" onclick="show(event, 'toast')">
+    <div class="lg">🍞</div>
+    <div class="nm">Toast</div>
+  </a>
+  <a class="pick" data-p="yelp" onclick="show(event, 'yelp')">
+    <div class="lg">⭐</div>
+    <div class="nm">Yelp Ads</div>
+  </a>
+  <a class="pick" data-p="other" onclick="show(event, 'other')">
+    <div class="lg">📞</div>
+    <div class="nm">Belly / Fivestars</div>
+  </a>
+</div>
+
+<!-- UNIVERSAL -->
+<div class="platform show" id="universal">
+  <div class="platform-h">
+    <div class="logo-tile" style="background:linear-gradient(135deg,#0e1116,#1a2a4a)">★</div>
+    <div>
+      <h2>The migration approach (any platform)</h2>
+      <p class="sub">The same 4 phases regardless of which platform you're leaving. Total time: 4–8 weeks.</p>
+    </div>
+  </div>
+
+  <div class="universal-steps">
+    <div class="uni-step">
+      <div class="n">1</div>
+      <h4>Run both in parallel</h4>
+      <p>30 days. Don't kill the old program — let LYMX prove value first.</p>
+    </div>
+    <div class="uni-step">
+      <div class="n">2</div>
+      <h4>Inform your customers</h4>
+      <p>Email + signage announcing LYMX. Don't yet say "we're cancelling X."</p>
+    </div>
+    <div class="uni-step">
+      <div class="n">3</div>
+      <h4>Validate value (week 4)</h4>
+      <p>Compare LYMX traffic vs old program traffic. Decide: keep both? Drop old?</p>
+    </div>
+    <div class="uni-step">
+      <div class="n">4</div>
+      <h4>Close out the old program</h4>
+      <p>Cancel old program. Migrate any active customer points (optional).</p>
+    </div>
+  </div>
+
+  <p style="margin-top:18px;font-size:13.5px;color:#5d4d18">→ Click a platform tile above for the specific steps for that platform.</p>
+</div>
+
+<!-- SQUARE -->
+<div class="platform" id="square">
+  <div class="platform-h">
+    <div class="logo-tile square">▣</div>
+    <div>
+      <h2>Migrating from Square Loyalty</h2>
+      <p class="sub">Square Loyalty is bundled with Square POS. You can disable Loyalty without disabling POS.</p>
+    </div>
+  </div>
+
+  <div class="difficulty">
+    <div class="diff easy"><div class="l">Difficulty</div><div class="v">Easy</div></div>
+    <div class="diff easy"><div class="l">Total time</div><div class="v">~30 min + 4 weeks parallel</div></div>
+    <div class="diff easy"><div class="l">Customer disruption</div><div class="v">None</div></div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">1</div>
+    <div>
+      <h3>Sign up for LYMX + connect Square integration</h3>
+      <p>Use the <a href="biz-integration-square.html">Square integration</a>. ~12 min. LYMX layers on top — Square keeps running as your POS.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">2</div>
+    <div>
+      <h3>Pause Square Loyalty (don't cancel yet)</h3>
+      <p>In Square Dashboard → <kbd>Loyalty</kbd> → <kbd>Settings</kbd> → toggle "Active" off. Existing customer points are preserved. Customers can still redeem; new earnings stop.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">3</div>
+    <div>
+      <h3>Announce LYMX to your customers</h3>
+      <p>Use the <a href="biz-marketing-kit.html">marketing kit</a>. Don't mention Square Loyalty cancellation — just say "we're now on LYMX, here's how it works." Most customers won't notice.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">4</div>
+    <div>
+      <h3>Wait 30 days, watch the metrics</h3>
+      <p>By day 30, compare LYMX adoption vs. residual Square Loyalty redemption. For most peers, LYMX captures &gt; 80% of loyalty traffic by week 4.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">5</div>
+    <div>
+      <h3>Cancel Square Loyalty + migrate active customer points</h3>
+      <p>In Square Dashboard → <kbd>Account &amp; Settings</kbd> → <kbd>Subscription</kbd> → cancel Loyalty. Optional: as a goodwill gesture, give existing high-balance Square Loyalty customers a one-time LYMX bonus equivalent to their unused Square points.</p>
+    </div>
+  </div>
+
+  <div class="gotcha"><strong>⚠️ Gotcha:</strong> Square's stamp/punch card data doesn't migrate automatically — but most loyalty data is balance, not historical. The customer email/phone in Square will sync to LYMX automatically through the Square integration, so you don't lose your customer list.</div>
+</div>
+
+<!-- TOAST -->
+<div class="platform" id="toast">
+  <div class="platform-h">
+    <div class="logo-tile toast">🍞</div>
+    <div>
+      <h2>Migrating from Toast Loyalty</h2>
+      <p class="sub">Toast Loyalty is a paid add-on ($45/mo). You'll save money + add the network mechanic.</p>
+    </div>
+  </div>
+
+  <div class="difficulty">
+    <div class="diff easy"><div class="l">Difficulty</div><div class="v">Easy</div></div>
+    <div class="diff easy"><div class="l">Total time</div><div class="v">~45 min + 4 weeks parallel</div></div>
+    <div class="diff medium"><div class="l">Customer disruption</div><div class="v">Low (notify them)</div></div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">1</div>
+    <div>
+      <h3>Sign up for LYMX + connect Toast integration</h3>
+      <p>Use the <a href="biz-integration-toast.html">Toast integration</a>. ~18 min. LYMX is restaurant-grade — handles ticket-line accrual, tip-aware awarding, multi-location.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">2</div>
+    <div>
+      <h3>Run Toast Loyalty + LYMX in parallel for 30 days</h3>
+      <p>Both work simultaneously. Customers can use either or both. We've never seen this confuse customers — they redeem whichever is more convenient.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">3</div>
+    <div>
+      <h3>Email your customers about the change</h3>
+      <p>Restaurant customers tend to be more engaged with loyalty than retail. Use Toast's customer list export → import into your <a href="biz-marketing-kit.html">marketing kit</a> email template. Be transparent about adding LYMX.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">4</div>
+    <div>
+      <h3>Cancel Toast Loyalty (after 30 days)</h3>
+      <p>In Toast Web → <kbd>Settings</kbd> → <kbd>Account</kbd> → <kbd>Subscriptions</kbd> → remove Loyalty. Saves $45/mo. Your Toast POS keeps working — only the bundled loyalty add-on is gone.</p>
+    </div>
+  </div>
+
+  <div class="gotcha"><strong>⚠️ Gotcha:</strong> If you have customers with significant Toast Loyalty point balances, give them a heads-up at least 14 days before cancelling, with options to (a) redeem before cancel date, (b) get a one-time LYMX equivalent at your discretion. This is the right move — both ethically and for retention.</div>
+</div>
+
+<!-- YELP -->
+<div class="platform" id="yelp">
+  <div class="platform-h">
+    <div class="logo-tile yelp">YELP</div>
+    <div>
+      <h2>Migrating from Yelp Ads (or any pay-per-click)</h2>
+      <p class="sub">Yelp Ads aren't really loyalty — they're advertising. But many Businesses replace them with LYMX. Here's how.</p>
+    </div>
+  </div>
+
+  <div class="difficulty">
+    <div class="diff easy"><div class="l">Difficulty</div><div class="v">Easy</div></div>
+    <div class="diff easy"><div class="l">Total time</div><div class="v">~10 min</div></div>
+    <div class="diff easy"><div class="l">Customer disruption</div><div class="v">None</div></div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">1</div>
+    <div>
+      <h3>Pause Yelp Ads (don't cancel yet)</h3>
+      <p>In Yelp for Business → <kbd>Ads</kbd> → <kbd>Settings</kbd> → "Pause." Don't fully cancel — pause lets you turn back on if needed. You'll save the monthly Yelp cost.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">2</div>
+    <div>
+      <h3>Sign up for LYMX</h3>
+      <p>Use any LYMX integration (Square, Toast, Clover). Your savings from Yelp likely cover the LYMX subscription with money to spare.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">3</div>
+    <div>
+      <h3>Compare results after 60 days</h3>
+      <p>Compare your monthly transaction volume + new customer acquisition before vs. after. Most Businesses see equal or better acquisition through LYMX network referrals than through Yelp Ads — at no advertising cost.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">4</div>
+    <div>
+      <h3>Decide: keep Yelp or fully cancel?</h3>
+      <p>If LYMX is performing, you can fully cancel Yelp Ads and save 100%. Some Businesses keep a small Yelp Ads spend for general discoverability — that's fine too. Mix and match.</p>
+    </div>
+  </div>
+
+  <div class="gotcha"><strong>⚠️ Gotcha:</strong> Yelp Ads and LYMX solve different problems. Yelp is "discovery for strangers." LYMX is "loyalty network" + "discovery for LYMX customers." Replacing Yelp entirely with LYMX works for most Businesses — but if you depend heavily on stranger walk-ins (e.g., tourists), keep some Yelp budget too.</div>
+</div>
+
+<!-- OTHER -->
+<div class="platform" id="other">
+  <div class="platform-h">
+    <div class="logo-tile belly">B</div>
+    <div>
+      <h2>Migrating from Belly, Fivestars, or other</h2>
+      <p class="sub">Standalone third-party loyalty programs. The migration path is similar across all of them.</p>
+    </div>
+  </div>
+
+  <div class="difficulty">
+    <div class="diff medium"><div class="l">Difficulty</div><div class="v">Medium</div></div>
+    <div class="diff medium"><div class="l">Total time</div><div class="v">2–3 hours + 4 weeks parallel</div></div>
+    <div class="diff medium"><div class="l">Customer disruption</div><div class="v">Notify users + offer migration bonus</div></div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">1</div>
+    <div>
+      <h3>Export your customer list from the old platform</h3>
+      <p>Belly: Settings → Export Customers. Fivestars: Profile → Data Export. Most platforms give you a CSV with name, email, phone, and points balance.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">2</div>
+    <div>
+      <h3>Sign up for LYMX</h3>
+      <p>Connect your POS via the appropriate <a href="integrations.html">integration</a>. The CSV from your old platform isn't directly imported into LYMX, but you can use it for the customer announcement email.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">3</div>
+    <div>
+      <h3>Email old-platform customers about LYMX</h3>
+      <p>Use the CSV. Send a custom email: "We've moved from [Old Platform] to LYMX. To welcome you, we've added [X] LYMX bonus to your wallet. Sign up here." Make the bonus equivalent to their accumulated balance on the old platform.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">4</div>
+    <div>
+      <h3>Run both for 30 days, then cancel</h3>
+      <p>Standard 30-day parallel period. Cancel the old platform per their terms (most have 30-day notice). Customers can no longer earn on the old platform but their LYMX wallet has accumulated balance from your migration bonus.</p>
+    </div>
+  </div>
+
+  <div class="gotcha"><strong>⚠️ Gotcha:</strong> Belly / Fivestars stamp cards don't translate to LYMX directly because LYMX uses a different mechanic ($-based, network-wide). Treat the migration as "starting fresh" with a goodwill bonus. Don't try to convert stamp cards 1:1 — convert them to LYMX value (e.g., "5 stamps = $5 LYMX").</div>
+</div>
+
+<div class="cta">
+  <h3>Need help with your specific migration?</h3>
+  <p>Email us with your current loyalty program — we'll send you a custom migration plan and offer 1-on-1 setup help.</p>
+  <a href="mailto:migrate@getlymx.com">Get migration help →</a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Loyalty migration · <a href="business.html">For Businesses</a> · <a href="biz-faq.html">Business FAQ</a> · <a href="biz-revenue-calc.html">ROI calculator</a>
+</div>
+
+<script>
+  function show(e, p) {
+    e.preventDefault();
+    document.querySelectorAll('.pick').forEach(x => x.classList.toggle('on', x.dataset.p === p));
+    document.querySelectorAll('.platform').forEach(x => x.classList.toggle('show', x.id === p));
+    document.getElementById(p).scrollIntoView({behavior:'smooth',block:'start'});
+  }
+</script>
+
+</body>
+</html>

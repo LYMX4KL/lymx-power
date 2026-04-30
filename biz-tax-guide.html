@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Tax Guide — LYMX Business</title>
+<meta name="description" content="How to account for LYMX in your Business books. Wholesale rate as COGS, settlement reconciliation, deductions, and what to send your accountant.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.7}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700}
+  .nav-link{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{padding:64px 24px 36px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#e8f6ee 0%,#fafafa 100%)}
+  .hero-inner{max-width:1100px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#0a7a4d;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #c2e8d2}
+  .hero h1{font-size:42px;letter-spacing:-.025em;margin:0 0 12px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:16px}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  .disclaimer{background:#fdecea;border-left:4px solid var(--err);padding:18px 22px;border-radius:0 12px 12px 0;font-size:13px;color:#7d2014;margin-bottom:32px}
+  .disclaimer strong{color:#a32114}
+
+  .layout{display:grid;grid-template-columns:200px 1fr;gap:40px}
+  @media (max-width:880px){.layout{grid-template-columns:1fr}.toc{display:none}}
+  .toc{position:sticky;top:80px;height:fit-content}
+  .toc h3{margin:0 0 10px;font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+  .toc a{display:block;padding:6px 12px;border-radius:6px;color:var(--mute);font-size:13px;margin-bottom:2px}
+  .toc a:hover{background:#e8f6ee;color:#0a7a4d}
+
+  h2{margin:48px 0 14px;font-size:28px;letter-spacing:-.025em;scroll-margin-top:80px}
+  h2:first-of-type{margin-top:0}
+  h3{margin:28px 0 8px;font-size:18px}
+  p{margin:0 0 14px;font-size:15px}
+  strong{color:var(--ink)}
+
+  .callout{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin:18px 0;display:grid;grid-template-columns:auto 1fr;gap:14px}
+  .callout .ic{flex-shrink:0;width:36px;height:36px;border-radius:8px;background:#eef3ff;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800}
+  .callout.gold .ic{background:#fef9e7;color:#8b6f1f}
+  .callout.green .ic{background:#e8f6ee;color:var(--ok)}
+  .callout.red .ic{background:#fdecea;color:var(--err)}
+  .callout h4{margin:0 0 4px;font-size:15px}
+  .callout p{margin:0;font-size:14px}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:18px 0;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line)}
+  th{background:#fafafa;font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  tr:last-child td{border-bottom:0}
+  td.num{font-variant-numeric:tabular-nums;text-align:right;font-weight:600}
+  td.green{color:var(--ok);font-weight:700}
+  td.red{color:var(--err);font-weight:700}
+
+  .deduct-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:18px 0}
+  @media (max-width:680px){.deduct-list{grid-template-columns:1fr}}
+  .deduct{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+  .deduct h4{margin:0 0 4px;font-size:14px;display:flex;align-items:center;gap:8px}
+  .deduct h4 .ic{font-size:18px}
+  .deduct p{margin:0;font-size:13px;color:var(--mute);line-height:1.5}
+
+  details{padding:14px 0;border-top:1px solid var(--line)}
+  details:first-of-type{border-top:0;padding-top:0}
+  summary{cursor:pointer;font-weight:600;font-size:15px;display:flex;align-items:center;gap:12px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";width:24px;height:24px;border-radius:6px;background:#f1f3f7;display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:var(--mute);flex-shrink:0}
+  details[open] summary::before{content:"−";background:var(--ink);color:#fff}
+  details[open] summary{margin-bottom:10px}
+  details > div{padding-left:36px;font-size:14px;line-height:1.7}
+
+  .send-cpa{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:32px;margin:32px 0}
+  .send-cpa h3{margin:0 0 14px;color:#fff;font-size:20px}
+  .send-cpa ol{margin:0 0 18px;padding-left:22px;color:#b8c2d6;font-size:14px}
+  .send-cpa ol li{margin-bottom:8px}
+  .send-cpa code{background:#1f2530;color:#a3c5ff;padding:2px 8px;border-radius:5px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12.5px}
+  .send-cpa a{display:inline-block;background:var(--gold);color:#0e1116;padding:10px 18px;border-radius:8px;font-weight:700;font-size:14px;margin-top:10px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="biz-dashboard.html">LYMX <span>Power</span> <span class="biz-tag">Business</span></a>
+    <a href="biz-dashboard.html" class="nav-link">← Dashboard</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">For LYMX Businesses · Updated April 2026</div>
+    <h1>Business tax &amp; accounting guide</h1>
+    <p>How to account for LYMX in your books. Wholesale rate as cost-of-goods, settlement reconciliation, deductions — and what to hand your accountant at year-end.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="disclaimer">
+  <strong>This is general guidance, not personalized tax advice.</strong> LYMX is not a CPA firm. Tax treatment varies by state, business structure, and accounting method. For anything beyond the basics, talk to a tax professional. We list a few in our <a href="vendor-marketplace.html">vendor marketplace</a>.
+</div>
+
+<div class="layout">
+
+  <aside class="toc">
+    <h3>Sections</h3>
+    <a href="#basics">The basics</a>
+    <a href="#cogs">LYMX wholesale as COGS</a>
+    <a href="#sub">Subscription &amp; sign-up</a>
+    <a href="#settlement">Settlement reconciliation</a>
+    <a href="#deductions">Deductions</a>
+    <a href="#bookkeeping">Bookkeeping flow</a>
+    <a href="#cpa">What to send your CPA</a>
+    <a href="#faq">FAQ</a>
+  </aside>
+
+  <main>
+
+<h2 id="basics">The basics — how LYMX impacts your books</h2>
+
+<p>From a tax perspective, LYMX touches your books in four places. Once you understand each, the rest is mechanical.</p>
+
+<table>
+  <thead>
+    <tr><th>Item</th><th>Frequency</th><th>Treatment</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>$850 sign-up fee</td><td>One-time</td><td>Capitalize &amp; amortize, OR expense (see below)</td></tr>
+    <tr><td>$200/mo subscription</td><td>Monthly</td><td>Operating expense (advertising / marketing)</td></tr>
+    <tr><td>LYMX wholesale rate (issuance)</td><td>Per transaction</td><td>Cost of goods sold (COGS) or marketing</td></tr>
+    <tr><td>Customer redemptions</td><td>Per redemption</td><td>Revenue recognized as discount, NOT separate revenue</td></tr>
+  </tbody>
+</table>
+
+<div class="callout green">
+  <div class="ic">✓</div>
+  <div>
+    <h4>Most LYMX Businesses use cash-basis accounting</h4>
+    <p>If you're under $25M in revenue (which is most LYMX Businesses), you can use cash-basis accounting. Translation: record income when you receive cash and expenses when you pay them. Simpler than accrual.</p>
+  </div>
+</div>
+
+<h2 id="cogs">LYMX wholesale rate — COGS or marketing?</h2>
+
+<p>This is the question your accountant will ask. The wholesale rate ($0.008 per LYMX issued) needs a category. There are two valid approaches:</p>
+
+<h3>Option A: COGS (cost of goods sold)</h3>
+<p>Treat LYMX issuance as a cost of generating each sale. This works well if you can reasonably attribute the LYMX cost to specific transactions (which LYMX makes easy via settlement reports).</p>
+<p><strong>Pros:</strong> Lowers gross profit margin (matches reality). Cleanly attributes cost to revenue.<br>
+<strong>Cons:</strong> Requires per-transaction tracking. Slightly more bookkeeping work.</p>
+
+<h3>Option B: Operating expense (marketing/advertising)</h3>
+<p>Treat LYMX issuance as a marketing expense. Easier to record because you can take it from monthly settlement totals.</p>
+<p><strong>Pros:</strong> Simpler. One number per month from your settlement report.<br>
+<strong>Cons:</strong> Doesn't match cost-to-revenue as cleanly. Inflates marketing expense line.</p>
+
+<div class="callout gold">
+  <div class="ic">💡</div>
+  <div>
+    <h4>Most LYMX Businesses use Option B</h4>
+    <p>Treating it as a marketing expense is simpler and our settlement reports support it. Talk to your accountant about which is right for your situation. Once you pick, stay consistent.</p>
+  </div>
+</div>
+
+<h2 id="sub">$850 sign-up &amp; $200/mo subscription</h2>
+
+<p>The $850 sign-up fee is a one-time cost. You have two valid choices for accounting:</p>
+
+<ol>
+  <li><strong>Capitalize and amortize</strong> the $850 over the expected useful life (often 12 months → $70/mo). This smooths the expense over time.</li>
+  <li><strong>Expense it fully in the month paid</strong> as a marketing or technology expense. Simpler. Most small Businesses do this.</li>
+</ol>
+
+<p>The $200/mo subscription is straightforwardly a recurring operating expense. Categorize as "Software" or "Marketing" — either is acceptable. Keep your categorization consistent month over month.</p>
+
+<h2 id="settlement">Settlement reconciliation</h2>
+
+<p>Each month, LYMX sends you a <strong>monthly settlement report</strong> on the 1st showing the previous month's activity. This is your single source of truth.</p>
+
+<p>The report shows:</p>
+
+<table>
+  <thead>
+    <tr><th>Line item</th><th>What it is</th><th>Sign</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>LYMX issued (you owe)</td><td>Total LYMX you awarded × $0.008 wholesale</td><td class="red">Debit</td></tr>
+    <tr><td>LYMX redeemed (you receive)</td><td>Total LYMX customers spent at your Business × $0.008</td><td class="green">Credit</td></tr>
+    <tr><td>Net settlement</td><td>The difference, billed or paid out via ACH</td><td>—</td></tr>
+    <tr><td>Subscription</td><td>$200/mo (after free-trial period)</td><td class="red">Debit</td></tr>
+  </tbody>
+</table>
+
+<p>The net settlement is debited or credited to your bank account on the 5th of each month. Match this transaction in QuickBooks / Xero against the line items in the settlement report.</p>
+
+<div class="callout">
+  <div class="ic">📊</div>
+  <div>
+    <h4>Reconciliation tip</h4>
+    <p>Your monthly LYMX-related expense is: (Subscription) + (Net wholesale settlement, if positive — meaning you issued more than was redeemed). If your net settlement is negative (more redeemed than issued), you actually got money back — record as income reduction, not extra revenue.</p>
+  </div>
+</div>
+
+<h2 id="deductions">Deductible LYMX-related expenses</h2>
+
+<p>Beyond the obvious, here are LYMX-specific costs you should track:</p>
+
+<div class="deduct-list">
+  <div class="deduct">
+    <h4><span class="ic">📥</span>Subscription &amp; sign-up</h4>
+    <p>Recurring $200/mo + one-time $850. Both fully deductible as operating or marketing expenses.</p>
+  </div>
+  <div class="deduct">
+    <h4><span class="ic">💰</span>Wholesale rate (LYMX issued)</h4>
+    <p>$0.008 × number of LYMX issued. Treat as COGS or marketing per Option A or B above.</p>
+  </div>
+  <div class="deduct">
+    <h4><span class="ic">🖨️</span>Print kit &amp; signage</h4>
+    <p>Window clings, table tents, register cards. Marketing expense — fully deductible.</p>
+  </div>
+  <div class="deduct">
+    <h4><span class="ic">📱</span>POS hardware (if new)</h4>
+    <p>Tablets, card readers, scanners purchased for LYMX setup. Section 179 deductible up to $1.16M (2026 limit) — usually full deduction in year purchased.</p>
+  </div>
+  <div class="deduct">
+    <h4><span class="ic">🎓</span>Training time (if you're an employee owner)</h4>
+    <p>Time spent training staff on LYMX. Doesn't directly deduct unless you're paying yourself — but worth tracking for time-allocation purposes.</p>
+  </div>
+  <div class="deduct">
+    <h4><span class="ic">🎁</span>Customer giveaway promotions</h4>
+    <p>If you run a "$5 free LYMX for every customer" promo, the wholesale cost of those issued LYMX is a deductible marketing expense.</p>
+  </div>
+</div>
+
+<h2 id="bookkeeping">Bookkeeping flow — month by month</h2>
+
+<p>Here's the rhythm we recommend. Takes 15 minutes per month if your books are otherwise organized.</p>
+
+<details>
+  <summary>1st of the month — receive settlement report</summary>
+  <div>
+    <p>Settlement report email arrives in your inbox at 8 AM PT. Forward to your accountant or upload to QuickBooks. Note the net settlement amount.</p>
+  </div>
+</details>
+
+<details>
+  <summary>5th of the month — net settlement clears</summary>
+  <div>
+    <p>ACH debit or credit hits your bank. Match it to the corresponding line in your accounting software. The transaction memo should auto-include "LYMX-Settlement-YYYY-MM".</p>
+  </div>
+</details>
+
+<details>
+  <summary>Same day — categorize</summary>
+  <div>
+    <p>Categorize the LYMX wholesale portion as COGS or Marketing (your Option A or B choice). Categorize the $200 subscription as Software or Marketing.</p>
+  </div>
+</details>
+
+<details>
+  <summary>End of quarter — review</summary>
+  <div>
+    <p>Run a 90-day report from your <a href="biz-dashboard.html">LYMX dashboard</a>. Compare to your accounting software's LYMX-categorized expenses. They should match within 1–2%. If they don't, contact <a href="support.html">support</a> — you may have categorization errors.</p>
+  </div>
+</details>
+
+<details>
+  <summary>Year-end — pull the annual settlement summary</summary>
+  <div>
+    <p>In your <a href="biz-dashboard.html">dashboard</a>, go to Settlement → Annual Summary. This is the document your CPA will use for tax filing. Available January 15 of the following year.</p>
+  </div>
+</details>
+
+<!-- WHAT TO SEND CPA -->
+<div class="send-cpa">
+  <h3>📂 What to send your accountant at year-end</h3>
+  <ol>
+    <li><strong>Annual settlement summary</strong> — pulled from <code>biz-dashboard → Settlement → Annual Summary</code>. PDF + CSV.</li>
+    <li><strong>12 monthly settlement reports</strong> — your accountant may want to see these to reconcile any discrepancies.</li>
+    <li><strong>1099-K from LYMX</strong> — if your gross transaction volume through LYMX exceeded $5,000 in 2026, we issue a 1099-K. Available January 31, 2027.</li>
+    <li><strong>Sign-up invoice</strong> — for the $850 fee. Available in <code>Settings → Billing</code>.</li>
+    <li><strong>Subscription invoices</strong> — 12 monthly invoices. Auto-emailed; also available in <code>Settings → Billing</code>.</li>
+  </ol>
+  <a href="biz-dashboard.html">Pull annual summary →</a>
+</div>
+
+<h2 id="faq">FAQ</h2>
+
+<details>
+  <summary>Are LYMX redemptions taxable as income to me?</summary>
+  <div><p>No. When a customer redeems LYMX at your Business, treat it like a discount applied at checkout, not separate revenue. Your gross sales are the customer's full purchase price; the LYMX redemption is a discount. Your accounting income is the post-discount amount.</p></div>
+</details>
+
+<details>
+  <summary>Do I need to issue a 1099 to LYMX?</summary>
+  <div><p>No. We're a service provider, not a contractor. We issue 1099-K to YOU (if your transaction volume exceeds the threshold), not the other way around.</p></div>
+</details>
+
+<details>
+  <summary>I cancelled LYMX mid-year. How do I handle the unused subscription?</summary>
+  <div><p>If you cancel mid-month, your final invoice is pro-rated. The expense is whatever you actually paid. There's no "carry-forward" of unused subscription value.</p></div>
+</details>
+
+<details>
+  <summary>Do I get a refund on the $850 if I cancel?</summary>
+  <div><p>Per our <a href="refund-policy.html">refund policy</a>, the $850 is partially refundable within the first 30 days. After that, no refund — but you can pause for up to 60 days without losing your spot. Talk to support before cancelling.</p></div>
+</details>
+
+<details>
+  <summary>What if I get audited?</summary>
+  <div><p>Your monthly settlement reports + dashboard exports are sufficient documentation for a tax audit. We retain 7 years of your transaction history. If you need historical settlement data, contact support — we can pull anything from your account.</p></div>
+</details>
+
+<details>
+  <summary>Sales tax — does LYMX issuance affect that?</summary>
+  <div><p>No. Sales tax is calculated on the customer's gross purchase price. LYMX issuance happens after the sale and doesn't change taxable revenue. Sales tax compliance is your responsibility (Square / Toast usually handle this for you).</p></div>
+</details>
+
+  </main>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Business tax guide · <a href="biz-integration-quickbooks.html">QuickBooks</a> · <a href="biz-integration-xero.html">Xero</a> · <a href="vendor-marketplace.html">Find a CPA</a> · <a href="settlement.html">Settlement</a>
+</div>
+
+</body>
+</html>

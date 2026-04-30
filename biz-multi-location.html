@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Multi-Location Playbook — LYMX Business</title>
+<meta name="description" content="The operator's playbook for running LYMX across 2–10 locations. Setup decisions, common patterns, what to avoid.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--err:#c0392b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700}
+  .nav-link{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{padding:64px 24px 36px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#eef3ff 0%,#fafafa 100%)}
+  .hero-inner{max-width:1100px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #c7d6ff}
+  .hero h1{font-size:44px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:16px}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  /* Sizing tier */
+  .tier-strip{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px;margin-bottom:32px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:760px){.tier-strip{grid-template-columns:1fr}}
+  .tier{padding:20px;border-radius:12px;text-align:center}
+  .tier.small{background:#eef3ff;border:1px solid #c7d6ff}
+  .tier.medium{background:#fef9e7;border:1px solid #f0d97a}
+  .tier.large{background:#f2eaff;border:1px solid #d4c1f0}
+  .tier .label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .tier.small .label{color:var(--accent)}
+  .tier.medium .label{color:#8b6f1f}
+  .tier.large .label{color:#5b3697}
+  .tier .count{font-size:30px;font-weight:800;color:var(--ink);margin:6px 0;letter-spacing:-.02em}
+  .tier .price{font-size:13px;color:var(--mute);font-weight:600}
+  .tier .desc{font-size:11.5px;color:var(--mute);margin-top:8px}
+
+  /* Section */
+  .section{margin-bottom:48px}
+  .section h2{font-size:30px;letter-spacing:-.025em;margin:0 0 12px}
+  .section .lead{color:var(--mute);font-size:15px;margin-bottom:24px;max-width:680px}
+
+  /* Decision tree */
+  .decisions{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .decision{padding:18px 0;border-top:1px solid var(--line)}
+  .decision:first-child{border-top:0;padding-top:0}
+  .decision h3{margin:0 0 8px;font-size:17px;display:flex;align-items:center;gap:10px}
+  .decision h3 .num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--ink);color:#fff;border-radius:50%;font-size:13px;font-weight:800;flex-shrink:0}
+  .decision p{margin:0 0 12px;font-size:14px;color:#1f2530}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  @media (max-width:680px){.options{grid-template-columns:1fr}}
+  .option{padding:14px 18px;border:1px solid var(--line);border-radius:10px;font-size:13.5px}
+  .option.recommend{background:#e8f6ee;border-color:#c2e8d2}
+  .option .opt-label{font-weight:700;font-size:13px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .option .opt-label .pill{font-size:9px;background:#0a7a4d;color:#fff;padding:2px 7px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;font-weight:800}
+  .option .opt-body{font-size:12.5px;color:#1f2530;line-height:1.5}
+  .option .opt-good{font-size:11.5px;color:var(--ok);margin-top:6px;font-weight:600}
+  .option .opt-bad{font-size:11.5px;color:var(--err);margin-top:2px;font-weight:600}
+
+  /* Patterns */
+  .patterns{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media (max-width:680px){.patterns{grid-template-columns:1fr}}
+  .pattern{padding:24px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+  .pattern .ic{width:48px;height:48px;border-radius:12px;background:#eef3ff;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+  .pattern h3{margin:0 0 6px;font-size:17px}
+  .pattern p{margin:0 0 10px;font-size:13.5px;color:var(--mute)}
+  .pattern .ex{font-size:12px;background:#fafafa;padding:10px 12px;border-radius:8px;font-style:italic;color:#1f2530}
+  .pattern .ex strong{color:var(--ink);font-style:normal}
+
+  /* Don'ts */
+  .donts{background:#fdecea;border:1px solid #fbd5d0;border-radius:14px;padding:28px;margin-bottom:32px}
+  .donts h3{margin:0 0 14px;color:#a32114;font-size:18px}
+  .donts ul{margin:0;padding-left:22px;font-size:14px;color:#7d2014}
+  .donts li{margin-bottom:8px}
+  .donts strong{color:#a32114}
+
+  /* CTA */
+  .cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:32px;text-align:center}
+  .cta h3{margin:0 0 8px;color:#fff;font-size:22px}
+  .cta p{color:#b8c2d6;margin:0 auto 18px;max-width:560px;font-size:14px}
+  .cta a{display:inline-block;background:var(--gold);color:#0e1116;padding:11px 22px;border-radius:8px;font-weight:700;font-size:14px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="biz-dashboard.html">LYMX <span>Power</span> <span class="biz-tag">Business</span></a>
+    <a href="biz-dashboard.html" class="nav-link">← Dashboard</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Multi-location operator playbook · 2–10 locations</div>
+    <h1>Running LYMX across multiple locations.</h1>
+    <p>If you have 2 or more locations, this guide answers the operational questions: How should I set it up? What do I share between locations? What stays separate? What do I avoid?</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- TIER STRIP -->
+<div class="tier-strip">
+  <div class="tier small">
+    <div class="label">Small</div>
+    <div class="count">2–3</div>
+    <div class="price">$850 covers all 3 locations</div>
+    <div class="desc">Single LYMX program, simple consolidation. Most independents.</div>
+  </div>
+  <div class="tier medium">
+    <div class="label">Medium</div>
+    <div class="count">4–9</div>
+    <div class="price">$300/loc above 3</div>
+    <div class="desc">Optional enterprise tier. Cross-location promos. Dedicated CSM.</div>
+  </div>
+  <div class="tier large">
+    <div class="label">Large</div>
+    <div class="count">10+</div>
+    <div class="price">Custom pricing</div>
+    <div class="desc">Enterprise tier. Custom integrations. SLA-backed support.</div>
+  </div>
+</div>
+
+<!-- KEY DECISIONS -->
+<div class="section">
+  <h2>The 4 setup decisions</h2>
+  <p class="lead">When you're a multi-location operator, there are 4 setup decisions that shape your LYMX experience. Most people get them wrong on the first try. Here's how to think about them.</p>
+
+  <div class="decisions">
+
+    <div class="decision">
+      <h3><span class="num">1</span>One LYMX program, or separate per location?</h3>
+      <p>Your fundamental choice. Determines whether customers earned at location A can redeem at location B without crossing the public network.</p>
+
+      <div class="options">
+        <div class="option recommend">
+          <div class="opt-label">One unified program <span class="pill">Recommended</span></div>
+          <div class="opt-body">All locations share customers, balances, and reporting. Customer earned at Location A redeems at Location B same as at Location A.</div>
+          <div class="opt-good">✓ Better customer experience · Cross-location attribution visible</div>
+          <div class="opt-bad">✗ Harder to franchise — accounting/ops needs to be unified too</div>
+        </div>
+        <div class="option">
+          <div class="opt-label">Separate programs per location</div>
+          <div class="opt-body">Each location is its own LYMX entity. Customer needs separate registrations or relies on the public LYMX network to bridge.</div>
+          <div class="opt-good">✓ Cleaner if locations have different ownership</div>
+          <div class="opt-bad">✗ Worse customer experience · Cross-location loyalty doesn't work</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="decision">
+      <h3><span class="num">2</span>Shared menu, or per-location menus?</h3>
+      <p>Determines whether changing a price or item at HQ flows to all locations automatically.</p>
+
+      <div class="options">
+        <div class="option recommend">
+          <div class="opt-label">Shared menu <span class="pill">If menus are 80%+ similar</span></div>
+          <div class="opt-body">Manage menu items once in LYMX. Per-location overrides for prices or stock-out items.</div>
+          <div class="opt-good">✓ One-place management · Promos scale across locations</div>
+        </div>
+        <div class="option">
+          <div class="opt-label">Per-location menus</div>
+          <div class="opt-body">Each location has its own menu. Useful when locations are different concepts.</div>
+          <div class="opt-good">✓ Best for chains with significant menu variation</div>
+          <div class="opt-bad">✗ Manual work to sync any menu changes across locations</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="decision">
+      <h3><span class="num">3</span>Shared promotions, or per-location promotions?</h3>
+      <p>Whether a 2× multiplier applies network-wide or only at one location.</p>
+
+      <div class="options">
+        <div class="option recommend">
+          <div class="opt-label">Both — set up either <span class="pill">Default</span></div>
+          <div class="opt-body">Most multi-location operators run global promos (announced network-wide) AND per-location promos (e.g. "happy hour at Location A only").</div>
+          <div class="opt-good">✓ Maximum flexibility · Test new promos at one location first</div>
+        </div>
+        <div class="option">
+          <div class="opt-label">Network-wide only</div>
+          <div class="opt-body">All promos apply to all locations. Simpler to manage but less localized.</div>
+          <div class="opt-bad">✗ Can't test localized strategies</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="decision">
+      <h3><span class="num">4</span>Single login for all locations, or separate per location?</h3>
+      <p>Whether your manager at Location A also has access to Location B.</p>
+
+      <div class="options">
+        <div class="option recommend">
+          <div class="opt-label">Role-based access <span class="pill">Recommended</span></div>
+          <div class="opt-body">Owner has access to all locations. Each location's manager has access to their location only. Cashiers see only their location's POS.</div>
+          <div class="opt-good">✓ Privacy + accountability · Manager can't see other locations' settlement</div>
+        </div>
+        <div class="option">
+          <div class="opt-label">All staff have full access</div>
+          <div class="opt-body">Everyone with login sees all locations. Simpler to set up.</div>
+          <div class="opt-bad">✗ Too much info for cashiers · Risk of accidental cross-location changes</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- COMMON PATTERNS -->
+<div class="section">
+  <h2>Common multi-location patterns</h2>
+  <p class="lead">Patterns we see operators use successfully. Borrow these as starting points.</p>
+
+  <div class="patterns">
+
+    <div class="pattern">
+      <div class="ic" style="background:#fef9e7;color:#8b6f1f">🚀</div>
+      <h3>Pilot one location, then scale</h3>
+      <p>Roll LYMX out at one location for 30–60 days. Measure. Apply learnings to the next location. Repeat.</p>
+      <div class="ex"><strong>Example:</strong> Pilar at Vegas Wellness Group launched at Pilates Henderson first. After 6 weeks of data, rolled out to Summerlin + Spring Valley simultaneously.</div>
+    </div>
+
+    <div class="pattern">
+      <div class="ic" style="background:#e8f6ee;color:var(--ok)">🎯</div>
+      <h3>Use multipliers for inter-location traffic</h3>
+      <p>Run a promo at one location to drive customers from another location. Especially powerful when you have a busy + slow location.</p>
+      <div class="ex"><strong>Example:</strong> "Try our Summerlin location — 3× LYMX on your first visit there." Customers earned at Henderson drive new traffic to Summerlin.</div>
+    </div>
+
+    <div class="pattern">
+      <div class="ic" style="background:#eef3ff;color:var(--accent)">📊</div>
+      <h3>Compare locations weekly</h3>
+      <p>Use the multi-location dashboard to compare per-location metrics weekly. The location that's underperforming usually has a fixable cause (cashier training, signage, hours).</p>
+      <div class="ex"><strong>Example:</strong> Daniel at Brew &amp; Bean noticed his 4th location had 60% lower LYMX adoption — turned out signage wasn't installed. Fixed in a day.</div>
+    </div>
+
+    <div class="pattern">
+      <div class="ic" style="background:#f2eaff;color:#5b3697">👥</div>
+      <h3>Cross-train cashiers across locations</h3>
+      <p>If you have 4+ locations, do the cashier training as a single session covering all locations. Cashiers then know they're "one network." Reduces silos.</p>
+      <div class="ex"><strong>Example:</strong> Vegas Wellness Group does an annual half-day combined-staff training. All 6 locations send cashiers — they learn together.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DON'TS -->
+<div class="donts">
+  <h3>What NOT to do as a multi-location operator</h3>
+  <ul>
+    <li><strong>Don't create separate LYMX programs per location.</strong> Unless your locations have separate ownership/accounting, this creates a worse customer experience and more bookkeeping work. Use one unified program.</li>
+    <li><strong>Don't run different multipliers without communicating.</strong> If Location A is 1× and Location B is 2× without context, customers feel cheated at Location A. Run consistent rates or clearly explain the difference.</li>
+    <li><strong>Don't roll out to all locations on Day 1.</strong> Pilot first. Apply lessons. Then scale. The 30-day pilot saves you from making the same mistake at all locations.</li>
+    <li><strong>Don't give all employees access to all locations.</strong> Cashiers don't need to see settlement reports. Use role-based access.</li>
+    <li><strong>Don't skip the cross-location reporting.</strong> The biggest insight in multi-location is which locations are dragging others down. Look at the comparison reports weekly.</li>
+  </ul>
+</div>
+
+<!-- READ MORE -->
+<div class="section">
+  <h2>Real-world reading</h2>
+  <p class="lead">Want to see how multi-location operators actually run LYMX?</p>
+
+  <div class="patterns">
+    <div class="pattern">
+      <div class="ic" style="background:#fef9e7;color:#8b6f1f">📚</div>
+      <h3>Vegas Wellness Group case study</h3>
+      <p>6 locations, 3 verticals, 6 months in. How Pilar consolidated 3 loyalty stacks into LYMX Enterprise.</p>
+      <div class="ex"><a href="chain-detail.html" style="color:var(--accent);font-weight:700">Read full case study →</a></div>
+    </div>
+
+    <div class="pattern">
+      <div class="ic" style="background:#e8f6ee;color:var(--ok)">🏢</div>
+      <h3>Enterprise tier overview</h3>
+      <p>For 5+ locations. Custom pricing, dedicated CSM, advanced multi-location features.</p>
+      <div class="ex"><a href="enterprise.html" style="color:var(--accent);font-weight:700">See Enterprise →</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta">
+  <h3>Need help setting up multi-location?</h3>
+  <p>Our customer success team has 1-on-1 multi-location consultations. Free for active LYMX Businesses. Book a session and we'll walk through your specific setup.</p>
+  <a href="biz-success-coaches.html">Book a coach →</a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Multi-location playbook · <a href="biz-dashboard.html">Dashboard</a> · <a href="enterprise.html">Enterprise tier</a> · <a href="chain-detail.html">Vegas Wellness case study</a>
+</div>
+
+</body>
+</html>

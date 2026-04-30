@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Annual Report 2026 — LYMX Power</title>
+<meta name="description" content="LYMX Annual Report 2026. Letter from the founder, key milestones, financials summary, looking ahead to 2027.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--red:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Georgia,"Times New Roman",serif;color:var(--ink);background:#fcf9f4;line-height:1.7}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(252,249,244,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:880px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px;text-decoration:none}
+
+  .cover{padding:120px 24px 80px;text-align:center;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fcf9f4,#f5efe5)}
+  .cover-inner{max-width:680px;margin:0 auto}
+  .cover .org{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13px;font-weight:800;color:var(--gold);letter-spacing:.2em;text-transform:uppercase;margin-bottom:36px}
+  .cover h1{font-size:88px;letter-spacing:-.04em;margin:0 0 14px;font-weight:400;line-height:1;color:#3a2f0a}
+  .cover .sub{font-size:26px;color:var(--mute);font-style:italic;margin-bottom:48px}
+  .cover .meta{font-size:13px;color:var(--mute);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+
+  .wrap{max-width:680px;margin:0 auto;padding:64px 24px;font-size:17px}
+
+  /* Section */
+  .section{margin-bottom:64px}
+  .section-num{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:11px;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;font-weight:800;margin-bottom:6px}
+  .section h2{font-size:36px;letter-spacing:-.025em;margin:0 0 16px;font-weight:400;line-height:1.2;color:#3a2f0a}
+  .section p{margin:0 0 18px}
+  .section h3{font-size:22px;letter-spacing:-.02em;margin:32px 0 12px;font-weight:700}
+
+  /* Letter */
+  .letter{padding-left:32px;border-left:3px solid var(--gold);font-style:italic;color:#1f2530}
+  .letter p:first-child{margin-top:0}
+  .letter .signature{margin-top:24px;font-style:normal;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;color:var(--ink)}
+  .letter .signature strong{display:block;font-size:16px;font-weight:700;font-style:italic}
+  .letter .signature .role{font-size:12px;color:var(--mute);margin-top:2px;font-style:normal}
+
+  /* Numbers grid */
+  .numbers{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin:32px 0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  @media (max-width:600px){.numbers{grid-template-columns:1fr}}
+  .number{padding:24px;background:var(--card);border:1px solid var(--line);border-radius:12px;text-align:center}
+  .number .n{font-size:42px;font-weight:800;color:var(--gold);letter-spacing:-.025em;line-height:1}
+  .number .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-top:8px}
+  .number .sub{font-size:12px;color:var(--mute);margin-top:4px}
+
+  /* Milestones */
+  .milestones{margin:24px 0;padding-left:24px;border-left:2px solid var(--line);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  .milestone{padding:14px 0;display:grid;grid-template-columns:120px 1fr;gap:18px;align-items:start}
+  @media (max-width:600px){.milestone{grid-template-columns:1fr;gap:4px}}
+  .milestone .when{font-size:13px;font-weight:700;color:var(--gold)}
+  .milestone .what strong{display:block;font-size:15px;margin-bottom:2px}
+  .milestone .what p{margin:0;font-size:13px;color:var(--mute);font-style:normal;font-family:Georgia,serif}
+
+  /* Financial table */
+  .financials{margin:24px 0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  .financials h3{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:700}
+  table{width:100%;border-collapse:collapse;font-size:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line)}
+  th{background:#fafafa;font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+  tr.subtotal td{font-weight:700;background:#fafafa;border-top:1px solid var(--ink)}
+  tr.subtotal td.num{color:var(--ok)}
+  tr:last-child td{border-bottom:0}
+
+  /* Quote */
+  .pull-quote{margin:32px 0;font-size:24px;color:#3a2f0a;line-height:1.4;font-style:italic;text-align:center;padding:24px 32px;border-top:2px solid var(--gold);border-bottom:2px solid var(--gold)}
+  .pull-quote::before{content:"\""}
+  .pull-quote::after{content:"\""}
+
+  /* Looking ahead */
+  .ahead-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:24px 0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  @media (max-width:760px){.ahead-grid{grid-template-columns:1fr}}
+  .ahead{padding:18px;background:var(--card);border:1px solid var(--line);border-radius:10px;text-align:center}
+  .ahead h4{margin:0 0 6px;font-size:14px;font-weight:700}
+  .ahead .quarter{font-size:11px;color:var(--gold);font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+  .ahead p{margin:0;font-size:12px;color:var(--mute);line-height:1.5}
+
+  .credits{padding:48px 24px;background:#3a2f0a;color:#fcf9f4;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13px;text-align:center;border-top:1px solid var(--gold)}
+  .credits h3{margin:0 0 10px;font-size:13px;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;font-weight:800}
+  .credits a{color:var(--gold);font-weight:700}
+
+  .footer{text-align:center;padding:32px 24px;color:var(--mute);font-size:12px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+
+  @media print{.nav{display:none}.cover{padding:80px 24px 60px}.section{break-inside:avoid;page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="year-in-review.html" class="btn">Visual recap →</a>
+  </div>
+</nav>
+
+<section class="cover">
+  <div class="cover-inner">
+    <div class="org">LYMX Power · Las Vegas, Nevada</div>
+    <h1>Annual<br>Report</h1>
+    <div class="sub">Year One · 2026</div>
+    <div class="meta">Reporting period · January 1, 2026 — December 31, 2026</div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- LETTER -->
+<div class="section">
+  <div class="section-num">Section 1</div>
+  <h2>A letter from the founder.</h2>
+
+  <div class="letter">
+    <p>To our customers, our Businesses, our Partners, our team, and our investors —</p>
+
+    <p>Year One is done. As I write this in late December 2026, LYMX serves 218 active Businesses, 14,820 active customers, and operates in two cities (Las Vegas and Phoenix). We've grown from an idea I'd been carrying around for two years to a working network with measurable economic impact.</p>
+
+    <p>The thing I keep returning to is this: when small Businesses pool their loyalty, the math gets better for everyone. The customer earning at Brew &amp; Bean and redeeming at the bookstore — that customer is supported by a network that no single Business could build alone. That's the thesis. After 12 months of operation, the data is consistent with the thesis, but I want to be careful about declaring victory. Network businesses look like they're working until they aren't. We're at the start of the curve, not the end.</p>
+
+    <p>What worked in 2026: the Founding 25 program (we filled it in 18 days and 100% are still active). The Square + Toast integrations (we shipped both within the first 6 months). The Partner program (60+ active Partners now driving meaningful Business acquisition). The 90-day customer cohort retention curve (84% → 91% → 94%, exceeding our model).</p>
+
+    <p>What didn't go the way I expected: Our Phoenix launch took longer than planned (originally Q3, actually ended up Q4 because we wanted to apply learnings from Vegas before opening). Two Founding-25 prospects backed out at the last minute, requiring me to recruit replacements personally. Our Toast integration's beta period went 6 weeks longer than scoped due to webhook reliability issues we hadn't anticipated. None of these were existential — but they cost time and a little credibility.</p>
+
+    <p>What I'm proudest of: We didn't compromise on the redemption model. The temptation when you're starting was real — investors asked about variable redemption rates, Businesses asked about per-store overrides. We held the line: 1 LYMX = $0.01, network-wide, fixed. The discipline matters more in year one than it will in year ten.</p>
+
+    <p>Looking at 2027: We're targeting 4 cities live by mid-year, $5M in committed network volume, and Series A funding by Q3. Every milestone is a question, not an answer. We'll find out together.</p>
+
+    <p>Thank you for being part of this.</p>
+
+    <div class="signature">
+      <strong>Kenny Lin</strong>
+      <div class="role">Founder &amp; CEO, LYMX Power</div>
+      <div class="role" style="margin-top:6px">December 28, 2026 · Las Vegas, NV</div>
+    </div>
+  </div>
+</div>
+
+<!-- BY THE NUMBERS -->
+<div class="section">
+  <div class="section-num">Section 2</div>
+  <h2>Year one, by the numbers.</h2>
+
+  <p>Some headline metrics from 2026. The full audited financials are available in our investor data room (NDA required).</p>
+
+  <div class="numbers">
+    <div class="number">
+      <div class="n">218</div>
+      <div class="l">Active Businesses</div>
+      <div class="sub">As of Dec 31, 2026</div>
+    </div>
+    <div class="number">
+      <div class="n">14,820</div>
+      <div class="l">Active customers</div>
+      <div class="sub">+38% MoM growth</div>
+    </div>
+    <div class="number">
+      <div class="n">$2.1M</div>
+      <div class="l">LYMX volume processed</div>
+      <div class="sub">2026 cumulative</div>
+    </div>
+    <div class="number">
+      <div class="n">2</div>
+      <div class="l">Cities live</div>
+      <div class="sub">Las Vegas + Phoenix</div>
+    </div>
+    <div class="number">
+      <div class="n">100%</div>
+      <div class="l">Founding 25 still active</div>
+      <div class="sub">No churn at 90 days</div>
+    </div>
+    <div class="number">
+      <div class="n">$184k</div>
+      <div class="l">Donated to nonprofits</div>
+      <div class="sub">Across all sources</div>
+    </div>
+  </div>
+
+  <div class="pull-quote">When small Businesses pool their loyalty, the math gets better for everyone.</div>
+</div>
+
+<!-- MILESTONES -->
+<div class="section">
+  <div class="section-num">Section 3</div>
+  <h2>The year, month by month.</h2>
+
+  <div class="milestones">
+    <div class="milestone">
+      <div class="when">January</div>
+      <div class="what"><strong>Bluewood → LYMX rebrand</strong><p>Pivoted from Bluewood Rewards to LYMX Power. Founder-led rebrand including new website + initial business acquisition.</p></div>
+    </div>
+    <div class="milestone">
+      <div class="when">February</div>
+      <div class="what"><strong>Founding 25 program filled in 18 days</strong><p>All 25 Las Vegas spots taken. Founding cohort begins paying. First customer transactions.</p></div>
+    </div>
+    <div class="milestone">
+      <div class="when">March</div>
+      <div class="what"><strong>Public launch event · Sept 12</strong><p>Las Vegas official public launch. 4,200 customer wallet activations on launch day. Press coverage in Vegas Magazine, Restaurant Tech News.</p></div>
+    </div>
+    <div class="milestone">
+      <div class="when">April</div>
+      <div class="what"><strong>Square integration shipped</strong><p>First major POS integration. Onboarding time drops 60%. Major adoption inflection point.</p></div>
+    </div>
+    <div class="milestone">
+      <div class="when">June</div>
+      <div class="what"><strong>Toast integration shipped</strong><p>Restaurant-focused integration. Opens a major addressable market segment.</p></div>
+    </div>
+    <div class="milestone">
+      <div class="when">July</div>
+      <div class="what"><strong>Partner program launches publicly</strong><p>Open recruitment beyond personal network. 30 new Partners approved in first month.</p></div>
+    </div>
+    <div class="milestone">
+      <div class="when">September</div>
+      <div class="what"><strong>Anniversary Week + 100-Business milestone</strong><p>First anniversary. 100th Business signed. First quarterly bootcamp (42 attendees).</p></div>
+    </div>
+    <div class="milestone">
+      <div class="when">October</div>
+      <div class="what"><strong>Phoenix launch</strong><p>Second city. 12 Founding Businesses at launch. Andre L. (Master Partner) led recruitment.</p></div>
+    </div>
+    <div class="milestone">
+      <div class="when">December</div>
+      <div class="what"><strong>200+ Business milestone · Series A interest</strong><p>Crossed 200 active Businesses. First Series A pitches. Q3 2027 target close.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- FINANCIALS -->
+<div class="section">
+  <div class="section-num">Section 4</div>
+  <h2>Financials summary.</h2>
+
+  <p>High-level. The full audited statements are in the investor data room. Numbers below are as of December 31, 2026.</p>
+
+  <div class="financials">
+    <h3>Revenue (2026 full year)</h3>
+    <table>
+      <tbody>
+        <tr><td>Subscription revenue ($200/mo × avg active Businesses)</td><td class="num">$284k</td></tr>
+        <tr><td>One-time sign-up fees ($850 × Businesses signed)</td><td class="num">$185k</td></tr>
+        <tr><td>Network margin (wholesale spread)</td><td class="num">$72k</td></tr>
+        <tr class="subtotal"><td>Total 2026 revenue</td><td class="num">$541k</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Cash position (Dec 31, 2026)</h3>
+    <table>
+      <tbody>
+        <tr><td>Operating cash</td><td class="num">$340k</td></tr>
+        <tr><td>Pre-Seed proceeds remaining</td><td class="num">$120k</td></tr>
+        <tr><td>Net working capital</td><td class="num">$220k</td></tr>
+        <tr class="subtotal"><td>Total liquid resources</td><td class="num">$680k</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Burn &amp; runway</h3>
+    <p style="font-family:Georgia,serif;font-style:italic">Monthly cash burn averaged $48k over Q4 2026, down from $62k in Q1 (subscription revenue offsetting more of fixed costs). At current burn, $680k provides ~14 months of runway. Series A is targeted Q3 2027 to fund 2-city addition (SLC + Denver) and product roadmap.</p>
+  </div>
+</div>
+
+<!-- LOOKING AHEAD -->
+<div class="section">
+  <div class="section-num">Section 5</div>
+  <h2>Looking ahead.</h2>
+
+  <p>2027 priorities. Subject to Series A timing and traction.</p>
+
+  <div class="ahead-grid">
+    <div class="ahead">
+      <div class="quarter">Q1 2027</div>
+      <h4>SLC launch</h4>
+      <p>Salt Lake City Founding 25. Master Partner recruited.</p>
+    </div>
+    <div class="ahead">
+      <div class="quarter">Q2 2027</div>
+      <h4>Denver launch</h4>
+      <p>4-city network. First multi-city Partner ROI data.</p>
+    </div>
+    <div class="ahead">
+      <div class="quarter">Q3 2027</div>
+      <h4>Series A close</h4>
+      <p>$5M target. Funds eng + 4-city expansion to 8.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:32px">Product priorities</h3>
+  <p>The 2027 product roadmap focuses on three threads: <strong>multi-city customer experience</strong> (cross-city redemption, regional promo support), <strong>Business analytics depth</strong> (cohort tracking, automated insights, predictive multiplier ROI), and <strong>API ecosystem</strong> (more integrations, official Partner SDK, white-label tools).</p>
+
+  <p>Detailed roadmap available at <a href="roadmap.html">getlymx.com/roadmap</a> with public voting on what we ship next.</p>
+
+  <h3>Risks we're watching</h3>
+  <p>Three things we worry about, in honest order: (1) <strong>Phoenix density</strong> — needs 50+ Businesses by mid-2027 to hit the network-effect threshold. We're behind on that. (2) <strong>Square or Toast launching a competing offering</strong> — possible but slow given their decision cycles. (3) <strong>Capital markets</strong> — Series A timing depends on broader fundraising environment. Plan B: extend runway via insider bridge from existing investors.</p>
+</div>
+
+<!-- THANK YOU -->
+<div class="section" style="text-align:center;padding-bottom:60px">
+  <h2 style="font-size:30px">Thank you.</h2>
+  <p style="font-size:18px;color:#3a2f0a">To everyone who made Year One possible — the Founding 25, our customers, our Partners, our pre-Seed investors, our team. The next year is yours too.</p>
+</div>
+
+</div>
+
+<div class="credits">
+  <h3>About LYMX Power</h3>
+  <p style="margin:0 0 6px">LYMX Power, Inc. · Las Vegas, NV · Founded 2024 · <a href="https://getlymx.com">getlymx.com</a></p>
+  <p style="margin:0;color:rgba(252,249,244,.6)">This Annual Report is for informational purposes only. It is not a public offering. Forward-looking statements are management's good-faith estimates and may not reflect actual future outcomes.</p>
+</div>
+
+<div class="footer">
+  © 2026 LYMX Power · <a href="year-in-review.html">Year in Review (visual)</a> · <a href="investor.html">Investor home</a> · <a href="founder-blog.html">Founder blog</a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Education Discount — LYMX Power</title>
+<meta name="description" content="LYMX is 50% off for verified education-sector Businesses. Cafés near campus, university bookstores, tutoring centers, school cafeterias.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{padding:64px 24px 36px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#f2eaff 0%,#fafafa 100%)}
+  .hero-inner{max-width:1100px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--purple);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #d4c1f0}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:17px}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  /* Big offer */
+  .big-offer{background:linear-gradient(135deg,#5b3697,#a374e6);color:#fff;border-radius:18px;padding:48px;margin-bottom:32px;text-align:center;position:relative;overflow:hidden}
+  .big-offer::before{content:"🎓";position:absolute;top:-20px;right:-20px;font-size:200px;opacity:.1}
+  .big-offer .label{display:inline-block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:#fef9e7;margin-bottom:14px;background:rgba(255,255,255,.15);padding:5px 12px;border-radius:999px}
+  .big-offer .pct{font-size:96px;font-weight:800;letter-spacing:-.04em;line-height:1;color:#fef9e7}
+  .big-offer .label-2{font-size:24px;font-weight:600;color:#fff;margin-top:6px}
+  .big-offer p{font-size:15px;color:rgba(255,255,255,.85);max-width:520px;margin:18px auto 0}
+
+  /* Eligibility */
+  .eligibility{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:36px;margin-bottom:32px}
+  .eligibility h2{margin:0 0 8px;font-size:26px;letter-spacing:-.025em}
+  .eligibility .sub{color:var(--mute);font-size:14px;margin-bottom:24px}
+  .elig-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media (max-width:680px){.elig-grid{grid-template-columns:1fr}}
+  .elig{padding:18px;background:#fafafa;border:1px solid var(--line);border-radius:10px;display:flex;gap:14px}
+  .elig.yes{background:#e8f6ee;border-color:#c2e8d2}
+  .elig.no{background:#fdecea;border-color:#fbd5d0}
+  .elig .ic{flex-shrink:0;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:14px}
+  .elig.yes .ic{background:var(--ok)}
+  .elig.no .ic{background:#a32114}
+  .elig h4{margin:0 0 4px;font-size:14px}
+  .elig p{margin:0;font-size:12.5px;line-height:1.55}
+  .elig.yes h4,.elig.yes p{color:#0a4d2f}
+  .elig.no h4,.elig.no p{color:#7d2014}
+
+  /* Pricing */
+  .pricing{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .pricing h2{margin:0 0 6px;font-size:26px;letter-spacing:-.025em}
+  .pricing .sub{color:var(--mute);font-size:14px;margin-bottom:20px}
+  .price-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:680px){.price-cards{grid-template-columns:1fr}}
+  .price-card{padding:24px;border:2px solid var(--line);border-radius:14px}
+  .price-card.edu{border-color:var(--purple);background:#faf5ff}
+  .price-card .label{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  .price-card.edu .label{color:var(--purple)}
+  .price-card h3{margin:6px 0 14px;font-size:20px}
+  .price-card .num{font-size:38px;font-weight:800;letter-spacing:-.025em;line-height:1}
+  .price-card .num-l{font-size:13px;color:var(--mute);margin-top:4px}
+  .price-card.edu .num{color:var(--purple)}
+  .price-card ul{margin:18px 0 0;padding-left:20px;font-size:13.5px;color:#1f2530}
+  .price-card li{margin-bottom:6px}
+  .price-card .strike{text-decoration:line-through;color:var(--mute)}
+
+  /* Customer side */
+  .customer-side{background:linear-gradient(135deg,#fef9e7,#fff5c2);border:1px solid var(--gold);border-radius:14px;padding:28px;margin-bottom:32px}
+  .customer-side h3{margin:0 0 6px;color:#3a2f0a;font-size:18px}
+  .customer-side p{margin:0 0 14px;color:#5d4d18;font-size:14px}
+  .cs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  @media (max-width:680px){.cs-grid{grid-template-columns:1fr}}
+  .cs-item{padding:14px;background:rgba(255,255,255,.7);border-radius:10px;display:flex;gap:12px;align-items:flex-start}
+  .cs-item .ic{flex-shrink:0;font-size:22px}
+  .cs-item strong{display:block;font-size:13px;color:#3a2f0a;margin-bottom:2px}
+  .cs-item span{font-size:12.5px;color:#5d4d18}
+
+  /* Apply */
+  .apply{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:36px;margin-bottom:32px;display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+  @media (max-width:760px){.apply{grid-template-columns:1fr}}
+  .apply h2{margin:0 0 8px;color:#fff;font-size:24px}
+  .apply p{margin:0 0 18px;color:#b8c2d6;font-size:14.5px}
+  .apply ul{margin:0;padding-left:20px;color:#b8c2d6;font-size:13px}
+  .apply li{margin-bottom:6px}
+  .apply form{background:#1f2530;border:1px solid #2a3a5a;border-radius:12px;padding:20px}
+  .apply form h3{margin:0 0 14px;color:#fff;font-size:16px}
+  .apply .field{margin-bottom:12px}
+  .apply label{display:block;font-size:11px;color:#8a9bb8;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px}
+  .apply input,.apply select{width:100%;padding:9px 12px;border:1px solid #2a3a5a;border-radius:7px;background:#0e1116;color:#fff;font-size:13px}
+  .apply button{width:100%;padding:11px;background:var(--gold);color:#0e1116;border-radius:8px;font-weight:700;border:0;cursor:pointer;font-size:14px;margin-top:6px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="business.html" class="btn">Standard pricing →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">🎓 Education sector discount · 50% off</div>
+    <h1>For Businesses serving students &amp; schools.</h1>
+    <p>Half-off LYMX subscription for verified education-sector Businesses. Cafés near campus. University bookstores. Tutoring centers. School cafeterias. Student-serving services.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- BIG OFFER -->
+<div class="big-offer">
+  <div class="label">Education sector pricing</div>
+  <div class="pct">50%</div>
+  <div class="label-2">off your LYMX subscription</div>
+  <p>$100/mo instead of $200/mo. $425 sign-up instead of $850. Apply once, locked in for 3 years.</p>
+</div>
+
+<!-- ELIGIBILITY -->
+<div class="eligibility">
+  <h2>Who qualifies</h2>
+  <p class="sub">Education-sector Businesses include any Business where 60%+ of customers are connected to a school, college, or university. Verification required.</p>
+
+  <div class="elig-grid">
+
+    <div class="elig yes">
+      <div class="ic">✓</div>
+      <div>
+        <h4>Café near a college campus</h4>
+        <p>Café within ½ mile of a 2-year, 4-year, or graduate school where students make up the majority of customers.</p>
+      </div>
+    </div>
+
+    <div class="elig yes">
+      <div class="ic">✓</div>
+      <div>
+        <h4>University bookstore (independent)</h4>
+        <p>Bookstores serving universities. Independent operators only — Barnes &amp; Noble College / Follett don't qualify.</p>
+      </div>
+    </div>
+
+    <div class="elig yes">
+      <div class="ic">✓</div>
+      <div>
+        <h4>Tutoring centers</h4>
+        <p>K-12 or college tutoring services. Sylvan, Mathnasium franchises included. Independent tutors qualify.</p>
+      </div>
+    </div>
+
+    <div class="elig yes">
+      <div class="ic">✓</div>
+      <div>
+        <h4>School cafeterias / food service</h4>
+        <p>Independent food service operators in K-12, community college, university dining halls. Sodexo / Aramark contracts excluded.</p>
+      </div>
+    </div>
+
+    <div class="elig yes">
+      <div class="ic">✓</div>
+      <div>
+        <h4>Student-housing-adjacent retail</h4>
+        <p>Convenience stores, dry cleaners, salons within ½ mile of dorms or student housing.</p>
+      </div>
+    </div>
+
+    <div class="elig yes">
+      <div class="ic">✓</div>
+      <div>
+        <h4>Educational supplies + equipment</h4>
+        <p>Art supplies, music stores, lab equipment retailers serving school populations.</p>
+      </div>
+    </div>
+
+    <div class="elig no">
+      <div class="ic">✗</div>
+      <div>
+        <h4>National chains</h4>
+        <p>Starbucks, Chipotle, Subway near campus don't qualify — even if their location serves students. Discount is for independent operators only.</p>
+      </div>
+    </div>
+
+    <div class="elig no">
+      <div class="ic">✗</div>
+      <div>
+        <h4>Non-Business educational institutions</h4>
+        <p>The school itself isn't a Business that joins LYMX. We work with the Business <em>serving</em> the school's students.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PRICING COMPARE -->
+<div class="pricing">
+  <h2>Pricing comparison</h2>
+  <p class="sub">Same product. Same features. 50% off the subscription for verified education-sector Businesses.</p>
+
+  <div class="price-cards">
+    <div class="price-card">
+      <div class="label">Standard</div>
+      <h3>Regular Business pricing</h3>
+      <div class="num">$200<span style="font-size:18px;color:var(--mute);font-weight:600">/mo</span></div>
+      <div class="num-l">+ $850 one-time sign-up</div>
+      <ul>
+        <li>3 months free trial</li>
+        <li>Network access</li>
+        <li>POS integrations</li>
+        <li>Analytics + benchmarks</li>
+      </ul>
+    </div>
+
+    <div class="price-card edu">
+      <div class="label">🎓 Education</div>
+      <h3>Verified education-sector</h3>
+      <div class="num">$100<span style="font-size:18px;color:var(--mute);font-weight:600">/mo</span></div>
+      <div class="num-l">+ $425 one-time sign-up · <span class="strike">$850</span></div>
+      <ul>
+        <li>3 months free trial</li>
+        <li>All features identical to Standard</li>
+        <li>Locked at this rate for 3 years</li>
+        <li>One-time verification required</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMER SIDE -->
+<div class="customer-side">
+  <h3>Customers also benefit (.edu emails)</h3>
+  <p>Students with verified .edu emails get extra perks in the LYMX wallet — automatically.</p>
+  <div class="cs-grid">
+    <div class="cs-item"><div class="ic">📧</div><div><strong>2× LYMX on .edu accounts</strong><span>Auto-applied across the network for students</span></div></div>
+    <div class="cs-item"><div class="ic">🎁</div><div><strong>Welcome bonus 250 LYMX</strong><span>Up from the standard 100 LYMX for non-students</span></div></div>
+    <div class="cs-item"><div class="ic">🎂</div><div><strong>Birthday boost 5×</strong><span>For verified students, anniversary auto-promo</span></div></div>
+    <div class="cs-item"><div class="ic">💰</div><div><strong>Donate-LYMX 2:1 match</strong><span>Higher match rate when students donate to nonprofits</span></div></div>
+  </div>
+</div>
+
+<!-- APPLY -->
+<div class="apply">
+  <div>
+    <h2>Apply for the discount</h2>
+    <p>One-time application + verification. Most are reviewed in 1-2 business days.</p>
+    <ul>
+      <li>Provide your Business address + nearest school</li>
+      <li>Estimate of % student customers</li>
+      <li>One supporting document (lease, business license, 501c3 status, etc.)</li>
+      <li>Locked rate for 3 years once approved</li>
+      <li>Re-verification at year 3</li>
+    </ul>
+  </div>
+
+  <form onsubmit="alert('Application submitted. We\\'ll respond within 2 business days.');return false">
+    <h3>Education discount application</h3>
+    <div class="field">
+      <label>Business name</label>
+      <input type="text" placeholder="Campus Roast Café" required>
+    </div>
+    <div class="field">
+      <label>Nearest school / university</label>
+      <input type="text" placeholder="UNLV" required>
+    </div>
+    <div class="field">
+      <label>Distance from school</label>
+      <select required>
+        <option value="">Pick distance</option>
+        <option>On campus</option>
+        <option>&lt;¼ mile</option>
+        <option>¼ – ½ mile</option>
+        <option>½ – 1 mile</option>
+        <option>&gt;1 mile</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" placeholder="you@yourbusiness.com" required>
+    </div>
+    <button type="submit">Submit application →</button>
+  </form>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Education discount · <a href="business.html">Standard pricing</a> · <a href="biz-faq.html">Business FAQ</a> · <a href="enterprise.html">Enterprise (multi-campus)</a>
+</div>
+
+</body>
+</html>

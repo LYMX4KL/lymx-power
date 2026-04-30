@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Data Export — LYMX Business</title>
+<meta name="description" content="Export your LYMX Business data — transactions, customers, settlement, analytics. CSV, JSON, PDF formats. Schedule recurring exports.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700}
+  .nav-link{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:32px 24px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:32px;margin:0 0 8px;letter-spacing:-.025em}
+  .lead{color:var(--mute);max-width:680px;margin-bottom:32px}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:1fr 360px;gap:32px}
+  @media (max-width:880px){.layout{grid-template-columns:1fr}}
+
+  /* Datasets */
+  .datasets{display:grid;gap:14px}
+  .dataset{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px}
+  .ds-h{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .ds-h .ic{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .ds-h .ic.tx{background:#eef3ff;color:var(--accent)}
+  .ds-h .ic.cust{background:#e8f6ee;color:var(--ok)}
+  .ds-h .ic.set{background:#fef9e7;color:#8b6f1f}
+  .ds-h .ic.an{background:#f2eaff;color:var(--purple)}
+  .ds-h .ic.staff{background:#fdecea;color:#a32114}
+  .ds-h .ic.menu{background:#fff8eb;color:#8b5500}
+  .ds-h h3{margin:0 0 2px;font-size:16px;flex:1}
+  .ds-h .records{font-size:11px;color:var(--mute);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .ds-h .records strong{color:var(--ink)}
+  .dataset p{margin:0 0 14px;font-size:13.5px;color:var(--mute)}
+
+  .ds-options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+  @media (max-width:520px){.ds-options{grid-template-columns:1fr}}
+  .ds-opt{padding:10px 14px;background:#fafafa;border:1px solid var(--line);border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:600;text-decoration:none;color:var(--ink);transition:.15s}
+  .ds-opt:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .ds-opt .fmt{font-size:11px;color:var(--mute);margin-top:2px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+  .ds-opt:hover .fmt{color:#b8c2d6}
+
+  /* Right rail */
+  .rail{position:sticky;top:80px;height:fit-content;display:flex;flex-direction:column;gap:14px}
+  .rail-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .rail-card h3{margin:0 0 6px;font-size:15px}
+  .rail-card .sub{color:var(--mute);font-size:12px;margin-bottom:14px}
+  .rail-card .field{margin-bottom:12px}
+  .rail-card label{display:block;font-size:11px;color:var(--mute);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px}
+  .rail-card select,.rail-card input{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:7px;font-size:13.5px;background:#fff}
+  .btn-primary{width:100%;background:var(--ink);color:#fff;padding:12px;border-radius:10px;font-weight:700;font-size:14px;border:0;cursor:pointer}
+  .btn-primary:hover{background:#1f2530}
+
+  .scheduled{background:linear-gradient(135deg,#fef9e7,#fff5c2);border:1px solid var(--gold);border-radius:12px;padding:14px}
+  .scheduled h4{margin:0 0 4px;font-size:13px;color:#3a2f0a}
+  .scheduled p{margin:0;font-size:11.5px;color:#5d4d18}
+  .scheduled-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+  .sched-item{font-size:12px;padding:8px 10px;background:rgba(255,255,255,.7);border-radius:6px;display:flex;justify-content:space-between;color:#5d4d18}
+  .sched-item .name{font-weight:600;color:#3a2f0a}
+
+  /* History */
+  .history{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin-top:32px}
+  .history h2{margin:0 0 6px;font-size:18px;letter-spacing:-.02em}
+  .history .sub{color:var(--mute);font-size:12px;margin-bottom:14px}
+  .hist-item{display:grid;grid-template-columns:1fr auto auto;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);align-items:center;font-size:13.5px}
+  .hist-item:last-child{border-bottom:0}
+  @media (max-width:680px){.hist-item{grid-template-columns:1fr}}
+  .hist-item .name{font-weight:600}
+  .hist-item .when{font-size:12px;color:var(--mute)}
+  .hist-item .size{font-size:11px;color:var(--mute);font-variant-numeric:tabular-nums}
+  .hist-item a{font-size:12px;font-weight:700;color:var(--accent)}
+
+  /* GDPR */
+  .gdpr{background:#eef3ff;border:1px solid #c7d6ff;border-radius:12px;padding:18px 22px;margin-top:24px;font-size:13px;color:#1a4196}
+  .gdpr strong{color:#0a4cb3}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="biz-dashboard.html">LYMX <span>Power</span> <span class="biz-tag">Business</span></a>
+    <a href="biz-dashboard.html" class="nav-link">← Dashboard</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="crumb"><a href="biz-dashboard.html">Dashboard</a> / Data Export</div>
+
+<h1>Export your data</h1>
+<p class="lead">Your data is yours. Export anything — transactions, customers, settlement, analytics. Choose CSV, JSON, or PDF. Schedule recurring exports if you need them regularly.</p>
+
+<div class="layout">
+
+  <main>
+
+  <div class="datasets">
+
+    <div class="dataset">
+      <div class="ds-h">
+        <div class="ic tx">💳</div>
+        <div style="flex:1">
+          <h3>Transactions</h3>
+          <div class="records"><strong>3,420</strong> transactions on file</div>
+        </div>
+      </div>
+      <p>Every LYMX transaction at your Business — issuance, redemption, refunds. Includes customer ID, timestamp, amount, items, multiplier applied. Most popular export.</p>
+      <div class="ds-options">
+        <a class="ds-opt">Download CSV<div class="fmt">3.2 MB</div></a>
+        <a class="ds-opt">Download JSON<div class="fmt">5.8 MB</div></a>
+        <a class="ds-opt">Download PDF<div class="fmt">Report style</div></a>
+      </div>
+    </div>
+
+    <div class="dataset">
+      <div class="ds-h">
+        <div class="ic cust">👥</div>
+        <div style="flex:1">
+          <h3>Customer list</h3>
+          <div class="records"><strong>1,840</strong> customers</div>
+        </div>
+      </div>
+      <p>All customers who've made a LYMX transaction at your Business. Email, phone, name, first visit date, lifetime spend, last visit. Privacy-filtered to opt-in customers only.</p>
+      <div class="ds-options">
+        <a class="ds-opt">Download CSV<div class="fmt">280 KB</div></a>
+        <a class="ds-opt">Download JSON<div class="fmt">410 KB</div></a>
+        <a class="ds-opt">Mailchimp-ready<div class="fmt">CSV w/ tags</div></a>
+      </div>
+    </div>
+
+    <div class="dataset">
+      <div class="ds-h">
+        <div class="ic set">📋</div>
+        <div style="flex:1">
+          <h3>Settlement statements</h3>
+          <div class="records"><strong>11</strong> monthly statements</div>
+        </div>
+      </div>
+      <p>Monthly settlement reports — LYMX issued, LYMX redeemed, net wholesale, subscription, ACH amount. Required for accounting + tax filing.</p>
+      <div class="ds-options">
+        <a class="ds-opt">Download all (PDF)<div class="fmt">All months · 1.4 MB</div></a>
+        <a class="ds-opt">Download all (CSV)<div class="fmt">For QuickBooks</div></a>
+        <a class="ds-opt">Annual summary<div class="fmt">2026 YTD</div></a>
+      </div>
+    </div>
+
+    <div class="dataset">
+      <div class="ds-h">
+        <div class="ic an">📊</div>
+        <div style="flex:1">
+          <h3>Analytics &amp; reports</h3>
+          <div class="records"><strong>30</strong> report types</div>
+        </div>
+      </div>
+      <p>All your analytics views — cohort retention, hour-of-day heatmap, customer LTV, multiplier ROI, peer benchmarks. PDF reports formatted for sharing.</p>
+      <div class="ds-options">
+        <a class="ds-opt">Custom report<div class="fmt">Pick your views</div></a>
+        <a class="ds-opt">Annual analytics<div class="fmt">PDF · 4 MB</div></a>
+        <a class="ds-opt">Raw data (JSON)<div class="fmt">For your own analysis</div></a>
+      </div>
+    </div>
+
+    <div class="dataset">
+      <div class="ds-h">
+        <div class="ic menu">🍴</div>
+        <div style="flex:1">
+          <h3>Menu &amp; multipliers</h3>
+          <div class="records"><strong>28</strong> items</div>
+        </div>
+      </div>
+      <p>Your full menu with current LYMX multiplier settings, prices, and per-item performance. Useful for menu engineering reviews.</p>
+      <div class="ds-options">
+        <a class="ds-opt">Download CSV<div class="fmt">28 items</div></a>
+        <a class="ds-opt">Performance PDF<div class="fmt">Per-item ROI</div></a>
+        <a class="ds-opt">JSON (API-style)<div class="fmt">For developers</div></a>
+      </div>
+    </div>
+
+    <div class="dataset">
+      <div class="ds-h">
+        <div class="ic staff">👨‍💼</div>
+        <div style="flex:1">
+          <h3>Staff activity log</h3>
+          <div class="records"><strong>7</strong> staff members</div>
+        </div>
+      </div>
+      <p>Per-cashier transaction count + LYMX issuance + shift hours. Useful for operations review and payroll-aware staffing decisions.</p>
+      <div class="ds-options">
+        <a class="ds-opt">Download CSV<div class="fmt">90-day history</div></a>
+        <a class="ds-opt">Per-cashier PDF<div class="fmt">Individual reports</div></a>
+        <a class="ds-opt">Shift-level export<div class="fmt">Timestamps</div></a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="gdpr">
+    <strong>🔐 Privacy:</strong> Customer data exports respect your customers' marketing-opt-in choices. Customers who opted out are excluded from the customer list export (we don't share opted-out contact info, even with you). For full data including opted-out customers, contact <a href="mailto:privacy@getlymx.com">privacy@getlymx.com</a> with a stated business reason.
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history">
+    <h2>Recent exports</h2>
+    <p class="sub">Your last 10 exports. Click to re-download (links expire after 30 days).</p>
+
+    <div class="hist-item">
+      <div><div class="name">Transactions · 90 days</div><div class="when">Apr 28, 2026 · 2:14 PM</div></div>
+      <span class="size">3.2 MB</span>
+      <a>Download</a>
+    </div>
+    <div class="hist-item">
+      <div><div class="name">Settlement · March 2026</div><div class="when">Apr 1, 2026 · 9:00 AM (auto)</div></div>
+      <span class="size">120 KB</span>
+      <a>Download</a>
+    </div>
+    <div class="hist-item">
+      <div><div class="name">Customer list (Mailchimp-ready)</div><div class="when">Mar 22, 2026 · 4:48 PM</div></div>
+      <span class="size">280 KB</span>
+      <a>Download</a>
+    </div>
+    <div class="hist-item">
+      <div><div class="name">Annual analytics report</div><div class="when">Mar 5, 2026 · 11:32 AM</div></div>
+      <span class="size">4.1 MB</span>
+      <a>Download</a>
+    </div>
+    <div class="hist-item">
+      <div><div class="name">Settlement · February 2026</div><div class="when">Mar 1, 2026 · 9:00 AM (auto)</div></div>
+      <span class="size">110 KB</span>
+      <a>Download</a>
+    </div>
+  </div>
+
+  </main>
+
+  <!-- RAIL -->
+  <aside class="rail">
+
+    <div class="rail-card">
+      <h3>Custom export</h3>
+      <p class="sub">Pick exactly what you want and the format.</p>
+
+      <div class="field">
+        <label>Dataset</label>
+        <select>
+          <option>Transactions</option>
+          <option>Customer list</option>
+          <option>Settlement statements</option>
+          <option>Menu &amp; multipliers</option>
+          <option>Staff activity</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Date range</label>
+        <select>
+          <option>Last 30 days</option>
+          <option>Last 90 days</option>
+          <option>Year to date</option>
+          <option>All time</option>
+          <option>Custom range…</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Format</label>
+        <select>
+          <option>CSV (Excel-compatible)</option>
+          <option>JSON (developer-friendly)</option>
+          <option>PDF report</option>
+          <option>XLSX (Excel native)</option>
+        </select>
+      </div>
+
+      <button class="btn-primary">Generate export →</button>
+    </div>
+
+    <div class="rail-card scheduled">
+      <h4>📅 Scheduled exports</h4>
+      <p>Auto-deliver to your email or QuickBooks.</p>
+      <div class="scheduled-list">
+        <div class="sched-item"><span class="name">Monthly settlement</span><span>Active</span></div>
+        <div class="sched-item"><span class="name">Weekly analytics digest</span><span>Active</span></div>
+        <div class="sched-item"><span class="name">Annual summary</span><span>Pending Jan 1</span></div>
+      </div>
+      <button class="btn-primary" style="margin-top:12px;background:var(--gold);color:#3a2f0a">+ Add schedule</button>
+    </div>
+
+  </aside>
+
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Data export · <a href="biz-dashboard.html">Back to dashboard</a> · <a href="biz-integration-quickbooks.html">QuickBooks sync</a> · <a href="api.html">API for raw access</a>
+</div>
+
+</body>
+</html>

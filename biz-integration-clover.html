@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Clover Integration — LYMX Power</title>
+<meta name="description" content="Connect LYMX with your Clover POS. Multi-tier (Mini, Mobile, Station, Flex) support. Setup takes ~15 minutes.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--clover:#00B66B}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+
+  .hero{padding:72px 24px 48px;border-bottom:1px solid var(--line);background:#fff}
+  .hero-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.3fr 1fr;gap:56px;align-items:center}
+  @media (max-width:880px){.hero-inner{grid-template-columns:1fr;gap:32px}}
+  .hero .pre{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .hero .lymx-tile{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+  .hero .lymx-tile span{color:var(--gold)}
+  .hero .plus{font-size:24px;color:var(--mute);font-weight:300}
+  .hero .clover-tile{width:48px;height:48px;border-radius:12px;background:var(--clover);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800;line-height:1.1}
+  .hero p{color:var(--mute);font-size:18px;max-width:520px;margin-bottom:24px}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn-primary{padding:12px 22px;background:var(--ink);color:#fff;border-radius:10px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:6px}
+  .btn-ghost{padding:12px 22px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:10px;font-weight:700;font-size:15px}
+
+  .hero-illust{aspect-ratio:1.1/1;background:linear-gradient(135deg,#e8f6ee 0%,#fafafa 100%);border-radius:18px;border:1px solid var(--line);position:relative;display:flex;align-items:center;justify-content:center;padding:32px}
+  .arrow-flow{display:flex;align-items:center;gap:18px;font-size:14px;color:var(--mute)}
+  .blk{padding:14px 20px;background:#fff;border:2px solid var(--line);border-radius:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:120px}
+  .blk.lymx{border-color:var(--gold)}
+  .blk.clover{border-color:var(--clover)}
+  .blk .ic{font-size:28px}
+  .arrow-flow .arr{font-size:24px;color:var(--clover);font-weight:700;animation:slide 1.6s infinite}
+  @keyframes slide{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  /* Hardware tiers */
+  .hardware{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .hardware h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .hardware .sub{color:var(--mute);font-size:14px;margin-bottom:24px}
+  .hw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media (max-width:760px){.hw-grid{grid-template-columns:repeat(2,1fr)}}
+  .hw{padding:18px 14px;border:1px solid var(--line);border-radius:10px;text-align:center}
+  .hw.supported{background:#e8f6ee;border-color:#c2e8d2}
+  .hw .ic{font-size:32px;margin-bottom:6px}
+  .hw h4{margin:0 0 4px;font-size:14px}
+  .hw .desc{font-size:11px;color:var(--mute);line-height:1.4}
+  .hw.supported h4::after{content:" ✓";color:var(--ok);font-weight:800}
+
+  .syncs{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .syncs h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .syncs .sub{color:var(--mute);font-size:14px;margin-bottom:24px}
+  .sync-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media (max-width:680px){.sync-grid{grid-template-columns:1fr}}
+  .sync-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:#fafafa}
+  .sync-row .ic{width:36px;height:36px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .sync-row .body{min-width:0}
+  .sync-row .body strong{display:block;font-size:14px;margin-bottom:2px}
+  .sync-row .body span{font-size:12px;color:var(--mute)}
+  .direction{font-size:14px;color:var(--clover);font-weight:700;letter-spacing:.04em}
+  .freq{font-size:10px;background:#e8f6ee;color:#0a7a4d;padding:3px 7px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
+  .freq.realtime{background:#e8f6ee;color:#0a4d2f}
+
+  .steps{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .steps h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .steps .sub{color:var(--mute);font-size:14px;margin-bottom:24px;display:flex;align-items:center;gap:14px}
+  .steps .sub .timer{background:#e8f6ee;color:#0a7a4d;padding:5px 12px;border-radius:999px;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:18px;padding:18px 0;border-top:1px solid var(--line)}
+  .step:first-of-type{border-top:0;padding-top:0}
+  .step-n{width:40px;height:40px;border-radius:50%;background:var(--clover);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0}
+  .step h3{margin:0 0 4px;font-size:16px}
+  .step .desc{font-size:14px;color:var(--mute);margin:0 0 10px}
+  .step .est{font-size:11px;color:var(--clover);background:#e8f6ee;padding:3px 9px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;display:inline-block}
+  .step kbd{background:#fff;border:1px solid var(--line);box-shadow:inset 0 -1px 0 var(--line);padding:1px 6px;border-radius:5px;font-size:12px;font-family:"SF Mono",Menlo,Consolas,monospace}
+
+  .faq{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .faq h2{margin:0 0 18px;font-size:24px;letter-spacing:-.02em}
+  details{padding:14px 0;border-top:1px solid var(--line)}
+  details:first-of-type{border-top:0;padding-top:0}
+  summary{cursor:pointer;font-weight:600;font-size:15px;list-style:none;display:flex;align-items:center;gap:12px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";width:24px;height:24px;border-radius:6px;background:#f1f3f7;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:var(--mute);flex-shrink:0}
+  details[open] summary::before{content:"−";background:var(--ink);color:#fff}
+  details[open] summary{margin-bottom:10px}
+  .faq-body{font-size:14px;color:#1f2530;line-height:1.65;padding-left:36px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="integrations.html">All integrations</a>
+      <a href="biz-integration-square.html">Square</a>
+      <a href="biz-integration-toast.html">Toast</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="pre">
+        <div class="lymx-tile">L<span>★</span></div>
+        <div class="plus">×</div>
+        <div class="clover-tile">🍀</div>
+      </div>
+      <h1>LYMX + Clover — works on every Clover device.</h1>
+      <p>Clover Mini, Mobile, Station, or Flex — LYMX works on all of them. Layer LYMX loyalty on top of your Clover POS without changing hardware.</p>
+      <div class="cta">
+        <a href="biz-dashboard.html" class="btn-primary">Connect Clover →</a>
+        <a href="#how" class="btn-ghost">See how it works</a>
+      </div>
+    </div>
+    <div class="hero-illust">
+      <div class="arrow-flow">
+        <div class="blk clover"><div class="ic">🍀</div>Clover POS</div>
+        <div class="arr">⇄</div>
+        <div class="blk lymx"><div class="ic">★</div>LYMX</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- Hardware tiers -->
+<div class="hardware">
+  <h2>Supported Clover devices</h2>
+  <p class="sub">LYMX works on every Clover hardware tier through the Clover App Market.</p>
+  <div class="hw-grid">
+    <div class="hw supported">
+      <div class="ic">📱</div>
+      <h4>Clover Mini</h4>
+      <div class="desc">Compact countertop POS. LYMX works.</div>
+    </div>
+    <div class="hw supported">
+      <div class="ic">📲</div>
+      <h4>Clover Mobile</h4>
+      <div class="desc">Handheld. Tableside or counter.</div>
+    </div>
+    <div class="hw supported">
+      <div class="ic">🖥️</div>
+      <h4>Clover Station</h4>
+      <div class="desc">Full register. Pro &amp; Solo variants.</div>
+    </div>
+    <div class="hw supported">
+      <div class="ic">📟</div>
+      <h4>Clover Flex</h4>
+      <div class="desc">Mobile &amp; tableside hybrid.</div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--mute);margin-top:14px">Clover Go (the dongle-style reader) — currently in beta. Limited LYMX features available.</p>
+</div>
+
+<!-- WHAT SYNCS -->
+<div class="syncs">
+  <h2>What syncs between Clover &amp; LYMX</h2>
+  <p class="sub">Two-way sync via the Clover App Market integration. Real-time at the transaction level.</p>
+
+  <div class="sync-grid">
+    <div class="sync-row">
+      <div class="ic">📋</div>
+      <div class="body"><strong>Inventory items</strong><span>Categories, prices, modifiers</span></div>
+      <span class="direction">⇄</span>
+      <span class="freq">Every 10 min</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">💳</div>
+      <div class="body"><strong>Sales transactions</strong><span>Real-time issuance</span></div>
+      <span class="direction">→</span>
+      <span class="freq realtime">Real-time</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">👥</div>
+      <div class="body"><strong>Customer records</strong><span>Match by phone or email</span></div>
+      <span class="direction">⇄</span>
+      <span class="freq">Hourly</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">🎁</div>
+      <div class="body"><strong>LYMX redemptions as discount</strong><span>Applied as line item</span></div>
+      <span class="direction">←</span>
+      <span class="freq realtime">Real-time</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">🏠</div>
+      <div class="body"><strong>Multi-merchant support</strong><span>Single Clover login, multiple merchants</span></div>
+      <span class="direction">⇄</span>
+      <span class="freq">Hourly</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">↩️</div>
+      <div class="body"><strong>Refunds &amp; voids</strong><span>Auto-reverses LYMX issuance</span></div>
+      <span class="direction">→</span>
+      <span class="freq realtime">Real-time</span>
+    </div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<div class="steps" id="how">
+  <h2>How to connect Clover</h2>
+  <p class="sub">Step-by-step setup. <span class="timer">⏱️ Total: ~15 min</span></p>
+
+  <div class="step">
+    <div class="step-n">1</div>
+    <div>
+      <h3>Install LYMX from the Clover App Market</h3>
+      <p class="desc">On your Clover Web Dashboard, go to <kbd>Apps</kbd> → <kbd>App Market</kbd> → search "LYMX". Click <kbd>Install</kbd>. The app deploys to all your Clover devices automatically.</p>
+      <span class="est">~2 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">2</div>
+    <div>
+      <h3>Open LYMX on the Clover device</h3>
+      <p class="desc">A LYMX icon appears on your Clover home screen. Tap it. The first time, you'll be prompted to sign in to your LYMX account.</p>
+      <span class="est">~1 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">3</div>
+    <div>
+      <h3>Authorize the integration</h3>
+      <p class="desc">Clover will ask permission for LYMX to read inventory and write transactions. Approve. This happens once per merchant account.</p>
+      <span class="est">~1 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">4</div>
+    <div>
+      <h3>Map inventory categories to LYMX multipliers</h3>
+      <p class="desc">In the LYMX dashboard, walk through your Clover inventory categories. Confirm or set multipliers (default 1×). For specific items, you can boost individually.</p>
+      <span class="est">~5 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">5</div>
+    <div>
+      <h3>Test with a $1 sale</h3>
+      <p class="desc">Ring up a test transaction on the Clover. Confirm the LYMX issuance appears on the receipt and in your LYMX dashboard. Refund the test sale to confirm reversal.</p>
+      <span class="est">~2 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">6</div>
+    <div>
+      <h3>Train staff (5 min)</h3>
+      <p class="desc">New checkout flow: ask the customer "do you have LYMX?" → if yes, scan their QR. The Clover screen prompts the LYMX flow automatically when a LYMX customer is detected. Watch the <a href="onboarding-video.html">cashier training video</a>.</p>
+      <span class="est">~4 min</span>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq">
+  <h2>Frequently asked questions</h2>
+
+  <details>
+    <summary>Does LYMX work with Clover's bundled loyalty app (Clover Loyalty)?</summary>
+    <div class="faq-body"><p>Yes. They run side-by-side without conflict. Most LYMX Businesses on Clover turn off Clover Loyalty after 30–60 days because LYMX adds the network referral mechanic that Clover Loyalty can't.</p></div>
+  </details>
+
+  <details>
+    <summary>Can I use the Clover printer for LYMX receipts?</summary>
+    <div class="faq-body"><p>Yes. LYMX issuance and redemption appear as line items on the standard Clover receipt — printed automatically. No separate LYMX receipt needed.</p></div>
+  </details>
+
+  <details>
+    <summary>What if my Clover device loses internet?</summary>
+    <div class="faq-body"><p>Clover transactions process offline (Clover handles this). LYMX issuances queue locally and replay when the connection returns. Customer-facing wallet operations are unaffected — they don't depend on your Clover.</p></div>
+  </details>
+
+  <details>
+    <summary>Multiple Clover merchants — can I roll them up?</summary>
+    <div class="faq-body"><p>Yes. If you operate multiple merchant accounts under one ownership, LYMX rolls them up to a single LYMX Business profile (or splits them into separate profiles, your choice). Configure in <code>Settings → Multi-merchant</code>.</p></div>
+  </details>
+
+  <details>
+    <summary>Does LYMX charge anything per transaction?</summary>
+    <div class="faq-body"><p>No transaction fee from LYMX. The only LYMX cost is the wholesale rate ($0.008 per LYMX issued) + your monthly subscription. Clover's standard transaction fees apply separately.</p></div>
+  </details>
+
+  <details>
+    <summary>What if I switch to a different POS later?</summary>
+    <div class="faq-body"><p>Your LYMX data (customers, transaction history, settings) lives in LYMX, not Clover. If you switch POS later, you can disconnect Clover and connect a different POS without losing data.</p></div>
+  </details>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Clover integration · <a href="biz-integration-square.html">Square</a> · <a href="biz-integration-toast.html">Toast</a> · <a href="integrations.html">All integrations</a>
+</div>
+
+</body>
+</html>

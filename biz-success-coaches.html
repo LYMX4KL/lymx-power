@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Customer Success Team — LYMX Power</title>
+<meta name="description" content="Meet the LYMX customer success team. Real humans who help your Business get the most out of LYMX. Book a free 30-min consultation.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700}
+  .nav-link{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{padding:64px 24px 36px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#eef3ff 0%,#fafafa 100%)}
+  .hero-inner{max-width:1180px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #c7d6ff}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:17px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+
+  .promise-strip{background:linear-gradient(135deg,#fef9e7,#fff5c2);border:1px solid var(--gold);border-radius:14px;padding:24px;margin-bottom:32px;display:grid;grid-template-columns:repeat(4,1fr);gap:18px;text-align:center}
+  @media (max-width:680px){.promise-strip{grid-template-columns:repeat(2,1fr)}}
+  .ps-item .n{font-size:30px;font-weight:800;color:var(--gold);letter-spacing:-.02em;line-height:1}
+  .ps-item .l{font-size:11px;color:#8b6f1f;text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:6px}
+
+  .team{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:48px}
+  @media (max-width:760px){.team{grid-template-columns:1fr}}
+
+  .coach{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;gap:18px;align-items:flex-start;transition:.15s}
+  .coach:hover{border-color:var(--ink);transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.05)}
+
+  .coach-av{width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:30px;font-weight:700;flex-shrink:0}
+  .coach-av.a{background:linear-gradient(135deg,#0a84ff,#5b9ef5)}
+  .coach-av.b{background:linear-gradient(135deg,#13a26b,#9adfb6)}
+  .coach-av.c{background:linear-gradient(135deg,#5b3697,#a374e6)}
+  .coach-av.d{background:linear-gradient(135deg,#d4af37,#f5d172);color:#3a2f0a}
+  .coach-av.e{background:linear-gradient(135deg,#c0392b,#e74c3c)}
+  .coach-av.f{background:linear-gradient(135deg,#0e1116,#3a4452)}
+
+  .coach-body{flex:1;min-width:0}
+  .coach h3{margin:0 0 2px;font-size:18px}
+  .coach .role{font-size:12px;color:var(--mute);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+  .coach .bio{font-size:13.5px;color:#1f2530;margin-bottom:10px;line-height:1.5}
+
+  .coach-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+  .coach-tag{font-size:10px;background:#eef3ff;color:var(--accent);padding:3px 8px;border-radius:999px;font-weight:600;letter-spacing:.04em}
+  .coach-tag.green{background:#e8f6ee;color:#0a7a4d}
+  .coach-tag.gold{background:#fef9e7;color:#8b6f1f}
+  .coach-tag.purple{background:#f2eaff;color:#5b3697}
+
+  .coach-meta{font-size:12px;color:var(--mute);margin-bottom:10px}
+  .coach-meta strong{color:var(--ink)}
+  .coach-cta{display:inline-block;font-size:12px;font-weight:700;color:var(--accent);padding:6px 12px;border:1px solid var(--line);border-radius:6px}
+  .coach-cta:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  /* Booking */
+  .booking{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:36px;margin-bottom:32px;display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
+  @media (max-width:760px){.booking{grid-template-columns:1fr}}
+  .booking h2{margin:0 0 8px;font-size:24px;color:#fff}
+  .booking p{margin:0 0 18px;color:#b8c2d6;font-size:14.5px}
+  .booking ul{margin:0 0 18px;padding-left:20px;color:#b8c2d6;font-size:13.5px}
+  .booking li{margin-bottom:6px}
+  .booking-form{background:#1f2530;border:1px solid #2a3a5a;border-radius:12px;padding:20px}
+  .booking-form h3{margin:0 0 14px;color:#fff;font-size:16px}
+  .booking-form .field{margin-bottom:12px}
+  .booking-form label{display:block;font-size:11px;color:#8a9bb8;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px}
+  .booking-form input,.booking-form select{width:100%;padding:9px 12px;border:1px solid #2a3a5a;border-radius:7px;background:#0e1116;color:#fff;font-size:13px}
+  .booking-form button{width:100%;padding:11px;background:var(--gold);color:#0e1116;border-radius:8px;font-weight:700;border:0;cursor:pointer;font-size:14px;margin-top:6px}
+
+  .topics{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .topics h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .topics .sub{color:var(--mute);font-size:14px;margin-bottom:20px}
+  .topic-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:760px){.topic-grid{grid-template-columns:1fr}}
+  .topic{padding:18px;background:#fafafa;border:1px solid var(--line);border-radius:10px}
+  .topic h4{margin:0 0 6px;font-size:14px;display:flex;align-items:center;gap:8px}
+  .topic h4 .ic{font-size:20px}
+  .topic p{margin:0;font-size:12.5px;color:var(--mute);line-height:1.5}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="biz-dashboard.html">LYMX <span>Power</span> <span class="biz-tag">Business</span></a>
+    <a href="biz-dashboard.html" class="nav-link">← Dashboard</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Customer success · Free for all LYMX Businesses</div>
+    <h1>Real humans who help you succeed.</h1>
+    <p>Our customer success team is small but personal. Every LYMX Business gets a dedicated coach for their first 90 days. After that, book time anytime — free.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="promise-strip">
+  <div class="ps-item"><div class="n">14 hr</div><div class="l">Avg first-response</div></div>
+  <div class="ps-item"><div class="n">100%</div><div class="l">Free for all Businesses</div></div>
+  <div class="ps-item"><div class="n">90 days</div><div class="l">Dedicated coach window</div></div>
+  <div class="ps-item"><div class="n">+18%</div><div class="l">Avg coached vs uncoached lift</div></div>
+</div>
+
+<!-- TEAM -->
+<div class="team">
+
+  <div class="coach">
+    <div class="coach-av a">JC</div>
+    <div class="coach-body">
+      <h3>Jenna Costa</h3>
+      <div class="role">Head of Customer Success</div>
+      <div class="bio">Former Square Loyalty PM (2019–2024) and small Business owner before that. Knows the loyalty space inside and out.</div>
+      <div class="coach-tags">
+        <span class="coach-tag">Strategy</span>
+        <span class="coach-tag">Onboarding</span>
+        <span class="coach-tag green">F25 program</span>
+      </div>
+      <div class="coach-meta">📍 Las Vegas · <strong>Specialty:</strong> Multi-location Businesses</div>
+      <a href="#book" class="coach-cta">Book 30 min →</a>
+    </div>
+  </div>
+
+  <div class="coach">
+    <div class="coach-av b">MR</div>
+    <div class="coach-body">
+      <h3>Marcos Rivera</h3>
+      <div class="role">Senior Success Manager</div>
+      <div class="bio">10 years running independent restaurants in Vegas before joining LYMX. Speaks Spanish + English. The team's restaurant-domain expert.</div>
+      <div class="coach-tags">
+        <span class="coach-tag green">Restaurants</span>
+        <span class="coach-tag green">Cafés</span>
+        <span class="coach-tag">Promotions</span>
+      </div>
+      <div class="coach-meta">📍 Las Vegas · <strong>Specialty:</strong> Food &amp; beverage</div>
+      <a href="#book" class="coach-cta">Book 30 min →</a>
+    </div>
+  </div>
+
+  <div class="coach">
+    <div class="coach-av c">SK</div>
+    <div class="coach-body">
+      <h3>Sasha Kim</h3>
+      <div class="role">Senior Success Manager</div>
+      <div class="bio">Background: independent retail (boutique owner, 2018–2024) + Shopify Partner Manager. Specializes in retail + e-commerce flows.</div>
+      <div class="coach-tags">
+        <span class="coach-tag purple">Retail</span>
+        <span class="coach-tag">E-commerce</span>
+        <span class="coach-tag">Inventory</span>
+      </div>
+      <div class="coach-meta">📍 Remote (Boston) · <strong>Specialty:</strong> Retail &amp; specialty</div>
+      <a href="#book" class="coach-cta">Book 30 min →</a>
+    </div>
+  </div>
+
+  <div class="coach">
+    <div class="coach-av d">AT</div>
+    <div class="coach-body">
+      <h3>Avery Tran</h3>
+      <div class="role">Success Manager · Service Businesses</div>
+      <div class="bio">Yoga studio owner background (2 locations, 2017–2024). Knows fitness, wellness, and service-based Businesses better than anyone on the team.</div>
+      <div class="coach-tags">
+        <span class="coach-tag gold">Fitness</span>
+        <span class="coach-tag gold">Wellness</span>
+        <span class="coach-tag">Memberships</span>
+      </div>
+      <div class="coach-meta">📍 Remote (Portland) · <strong>Specialty:</strong> Services + memberships</div>
+      <a href="#book" class="coach-cta">Book 30 min →</a>
+    </div>
+  </div>
+
+  <div class="coach">
+    <div class="coach-av e">DH</div>
+    <div class="coach-body">
+      <h3>Daniel Heinrich</h3>
+      <div class="role">Onboarding Specialist</div>
+      <div class="bio">Onboarding wizard. Specifically helps with Day 1 — POS integration, cashier training, signage setup. The first person new Businesses hear from.</div>
+      <div class="coach-tags">
+        <span class="coach-tag">Day 1 setup</span>
+        <span class="coach-tag">POS integration</span>
+        <span class="coach-tag green">Square / Toast</span>
+      </div>
+      <div class="coach-meta">📍 Las Vegas · <strong>Specialty:</strong> First 14 days</div>
+      <a href="#book" class="coach-cta">Book 30 min →</a>
+    </div>
+  </div>
+
+  <div class="coach">
+    <div class="coach-av f">KL</div>
+    <div class="coach-body">
+      <h3>Kenny Lin</h3>
+      <div class="role">Founder · Customer Success Coach (sometimes)</div>
+      <div class="bio">Yes, Kenny himself takes coaching calls — usually for Founding 25 Businesses or strategic-tier accounts. If you've waited a few weeks and want to talk to the founder directly, he'll find time.</div>
+      <div class="coach-tags">
+        <span class="coach-tag gold">F25 only</span>
+        <span class="coach-tag">Strategic</span>
+      </div>
+      <div class="coach-meta">📍 Las Vegas · <strong>Specialty:</strong> Founding 25 + chains</div>
+      <a href="mailto:kenny@getlymx.com" class="coach-cta">Email Kenny →</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOPICS -->
+<div class="topics">
+  <h2>What we can help with</h2>
+  <p class="sub">Most common topics for a 30-min coaching call.</p>
+  <div class="topic-grid">
+    <div class="topic">
+      <h4><span class="ic">🚀</span>Day 1 launch</h4>
+      <p>Onboarding checklist, cashier training, marketing kit deployment, first-week metrics review.</p>
+    </div>
+    <div class="topic">
+      <h4><span class="ic">📊</span>Performance review</h4>
+      <p>Walk through your first month's numbers. Compare to peer benchmarks. Find the 1-2 things to fix.</p>
+    </div>
+    <div class="topic">
+      <h4><span class="ic">🎯</span>Promo strategy</h4>
+      <p>Build a quarterly promo plan. Pick the right multipliers for your category. Avoid common mistakes.</p>
+    </div>
+    <div class="topic">
+      <h4><span class="ic">🔌</span>Integration setup</h4>
+      <p>POS integration help. Multi-location setup. Custom CSV imports. Anything technical.</p>
+    </div>
+    <div class="topic">
+      <h4><span class="ic">📈</span>Growth scaling</h4>
+      <p>For Businesses doing well. Scaling LYMX as you grow. Multi-location ops. Enterprise tier evaluation.</p>
+    </div>
+    <div class="topic">
+      <h4><span class="ic">💡</span>Just brainstorm</h4>
+      <p>You have an idea, you're not sure. We've heard it all. Bring an idea — we'll tell you if a peer's tried it.</p>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING -->
+<div class="booking" id="book">
+  <div>
+    <h2>Book a 30-min call</h2>
+    <p>Free for all LYMX Businesses. We'll match you with the right coach based on your category and what you want to discuss.</p>
+    <ul>
+      <li>Available in English + Spanish</li>
+      <li>Phone, video, or in-person (Las Vegas)</li>
+      <li>Within 3 business days, usually next-day</li>
+      <li>Founding 25 Businesses get priority slots</li>
+    </ul>
+  </div>
+
+  <form class="booking-form" onsubmit="alert('Coach call request sent. We\\'ll email you within 4 hours to confirm a time.');return false">
+    <h3>Request a call</h3>
+    <div class="field">
+      <label>Your Business</label>
+      <input type="text" placeholder="Brew &amp; Bean Café" required>
+    </div>
+    <div class="field">
+      <label>What's the topic?</label>
+      <select required>
+        <option value="">Pick one</option>
+        <option>Day 1 launch help</option>
+        <option>Performance review</option>
+        <option>Promo strategy</option>
+        <option>Integration setup</option>
+        <option>Growth / scaling</option>
+        <option>Just want to brainstorm</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" placeholder="you@brewandbean.com" required>
+    </div>
+    <button type="submit">Request a coach →</button>
+  </form>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Customer Success · <a href="biz-dashboard.html">Back to dashboard</a> · <a href="support.html">Support</a> · <a href="biz-faq.html">FAQ</a>
+</div>
+
+</body>
+</html>

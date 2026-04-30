@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Wallet Features — LYMX Power</title>
+<meta name="description" content="Every feature in your LYMX wallet, explained. QR pay, find Businesses, gift cards, donations, refer-a-friend, and more.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{padding:64px 24px 40px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#eef3ff 0%,#fafafa 100%)}
+  .hero-inner{max-width:1180px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #c7d6ff}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:17px}
+
+  .toc{max-width:1180px;margin:24px auto 0;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .toc a{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:12px;font-weight:600;background:#fff;color:var(--ink)}
+  .toc a:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+
+  .feature{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:32px;margin-bottom:24px;display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:center;scroll-margin-top:80px}
+  @media (max-width:880px){.feature{grid-template-columns:1fr;gap:24px}}
+  .feature.flip{grid-template-columns:1fr 1.4fr}
+  @media (max-width:880px){.feature.flip{grid-template-columns:1fr}}
+  .feature.flip .feature-body{order:2}
+  @media (max-width:880px){.feature.flip .feature-body{order:1}}
+
+  .feature .icon-wrap{font-size:18px;color:var(--accent);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .feature .icon-wrap .pill{font-size:11px;padding:3px 9px;border-radius:999px;background:#eef3ff}
+  .feature h2{margin:0 0 12px;font-size:30px;letter-spacing:-.025em}
+  .feature p{margin:0 0 14px;font-size:15.5px;color:#1f2530}
+  .feature ul{margin:14px 0 0;padding-left:20px;color:#1f2530;font-size:14.5px}
+  .feature li{margin-bottom:6px}
+  .feature .actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+  .feature .btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none}
+  .feature .btn.primary{background:var(--ink);color:#fff}
+  .feature .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+
+  /* Phone mock */
+  .mockup{aspect-ratio:9/16;max-width:280px;margin:0 auto;background:#0e1116;border-radius:32px;padding:14px;box-shadow:0 25px 50px rgba(14,17,22,.18);position:relative}
+  .mockup .screen{background:#fff;border-radius:22px;height:100%;overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .mockup .notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:80px;height:18px;background:#0e1116;border-radius:0 0 12px 12px;z-index:2}
+  .mock-h{padding:32px 16px 14px;background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;text-align:center}
+  .mock-h .name{font-size:13px;font-weight:600}
+  .mock-h .balance{font-size:30px;font-weight:800;margin-top:6px;letter-spacing:-.025em}
+  .mock-h .balance span{color:var(--gold)}
+  .mock-h .equiv{font-size:11px;color:#b8c2d6;margin-top:2px}
+
+  .mock-body{padding:14px;flex:1;background:#fafafa}
+  .mock-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;font-size:11px}
+  .mock-card.cta{background:var(--accent);color:#fff;text-align:center;font-weight:700;padding:14px}
+  .mock-card .ttl{font-weight:700;font-size:11px}
+  .mock-card .meta{color:var(--mute);font-size:9px;margin-top:2px}
+  .mock-card .row{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+  .mock-card .amt{color:var(--ok);font-weight:700;font-size:11px}
+
+  .qr-mock{width:90px;height:90px;background:#0e1116;border-radius:8px;background-image:repeating-linear-gradient(0deg,#fff 0 3px,transparent 3px 6px),repeating-linear-gradient(90deg,#fff 0 3px,transparent 3px 6px);background-size:8px 8px;margin:14px auto}
+
+  .gift-card-mock{background:linear-gradient(135deg,#fef9e7,#d4af37);border-radius:10px;padding:14px;color:#3a2f0a;text-align:center}
+  .gift-card-mock .gc-amt{font-size:24px;font-weight:800;letter-spacing:-.025em;margin:6px 0}
+  .gift-card-mock .gc-from{font-size:9px;color:#5d4d18}
+
+  .map-mock{height:140px;background:linear-gradient(135deg,#e8f6ee,#9adfb6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:38px;position:relative;color:#0a4d2f}
+  .map-mock::after{content:"3 nearby";position:absolute;bottom:8px;font-size:10px;color:#0a4d2f;font-weight:700;background:rgba(255,255,255,.85);padding:3px 8px;border-radius:6px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="customer-wallet.html" class="btn">Open my wallet →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Wallet feature tour · For curious customers</div>
+    <h1>Every wallet feature, explained.</h1>
+    <p>The LYMX wallet is small but does a lot. Here's a tour of every feature — what it does, when to use it, and how it fits into how you actually use LYMX.</p>
+  </div>
+</section>
+
+<div class="toc">
+  <a href="#qr">QR pay</a>
+  <a href="#balance">Balance &amp; activity</a>
+  <a href="#find">Find Businesses</a>
+  <a href="#promos">Promos &amp; multipliers</a>
+  <a href="#gift">Gift cards</a>
+  <a href="#donate">Donate LYMX</a>
+  <a href="#refer">Refer-a-friend</a>
+  <a href="#schedule">Add to home screen</a>
+</div>
+
+<div class="wrap">
+
+<!-- QR Pay -->
+<div class="feature" id="qr">
+  <div class="feature-body">
+    <div class="icon-wrap">★ Core feature <span class="pill">Earn + redeem</span></div>
+    <h2>Show your QR. Done.</h2>
+    <p>Your wallet's main job. A unique QR code you show to the cashier at any LYMX Business — they scan it, you earn or redeem LYMX. The QR refreshes every 10 seconds so screenshots can't be replayed.</p>
+    <ul>
+      <li>Open wallet → tap "Earn" or "Spend" tab</li>
+      <li>Show the QR to the cashier</li>
+      <li>Confirm the amount on the screen if redeeming</li>
+      <li>Done — receipt shows LYMX activity</li>
+    </ul>
+    <div class="actions">
+      <a href="customer-wallet.html" class="btn primary">Open my wallet</a>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="mock-h">
+        <div class="name">Show this QR</div>
+      </div>
+      <div class="mock-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div class="qr-mock"></div>
+        <div style="font-size:11px;font-weight:700">Maya Hopkins</div>
+        <div style="font-size:9px;color:var(--mute);margin-top:4px">Refreshes every 10 sec</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Balance & Activity -->
+<div class="feature flip" id="balance">
+  <div class="mockup">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="mock-h">
+        <div class="name">Welcome, Maya</div>
+        <div class="balance">2,840 <span>★</span></div>
+        <div class="equiv">= $28.40 across the network</div>
+      </div>
+      <div class="mock-body">
+        <div class="mock-card">
+          <div class="ttl">Brew &amp; Bean Café</div>
+          <div class="meta">Today, 8:14 AM</div>
+          <div class="row"><span class="meta">Earned</span><span class="amt">+45 LYMX</span></div>
+        </div>
+        <div class="mock-card">
+          <div class="ttl">Sage &amp; Stone Bakery</div>
+          <div class="meta">Yesterday, 2:30 PM</div>
+          <div class="row"><span class="meta">Redeemed</span><span class="amt" style="color:#a32114">−1,200 LYMX</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-body">
+    <div class="icon-wrap">📊 Activity <span class="pill">Always-on</span></div>
+    <h2>See exactly where your LYMX has been.</h2>
+    <p>Your balance + every transaction since you joined. Filter by Business, by date range, or by transaction type (earned vs. redeemed). Export to CSV anytime.</p>
+    <ul>
+      <li>Live balance with USD equivalent</li>
+      <li>Per-transaction detail with merchant + time</li>
+      <li>Monthly + yearly summaries</li>
+      <li>CSV export from Settings → Data</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Find -->
+<div class="feature" id="find">
+  <div class="feature-body">
+    <div class="icon-wrap">🗺️ Discovery</div>
+    <h2>Find LYMX Businesses near you.</h2>
+    <p>Map view of every LYMX Business in your area. Filter by category (food, retail, services), see which are running multiplier promos, sort by distance from you.</p>
+    <ul>
+      <li>Live map with category filters</li>
+      <li>Tap any pin → see profile + current promos</li>
+      <li>"Open now" filter</li>
+      <li>Save favorites for quick access</li>
+    </ul>
+    <div class="actions">
+      <a href="browse.html" class="btn primary">Browse Businesses</a>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="mock-h"><div class="name">Browse</div></div>
+      <div class="mock-body">
+        <div class="map-mock">📍</div>
+        <div class="mock-card">
+          <div class="ttl">Brew &amp; Bean</div>
+          <div class="meta">Café · 0.3 mi · 2× on cold brew</div>
+        </div>
+        <div class="mock-card">
+          <div class="ttl">Oakline Kitchen</div>
+          <div class="meta">Restaurant · 0.5 mi · Open now</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Promos -->
+<div class="feature flip" id="promos">
+  <div class="mockup">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="mock-h"><div class="name">Active promos</div></div>
+      <div class="mock-body">
+        <div class="mock-card" style="background:#fffbe6;border-color:#f0d97a">
+          <div class="ttl" style="color:#3a2f0a">⚡ 3× LYMX Tuesdays</div>
+          <div class="meta">Oakline Kitchen · Today</div>
+        </div>
+        <div class="mock-card" style="background:#e8f6ee;border-color:#c2e8d2">
+          <div class="ttl" style="color:#0a4d2f">🌿 2× on cold brew</div>
+          <div class="meta">Brew &amp; Bean · 5 days left</div>
+        </div>
+        <div class="mock-card" style="background:#f2eaff;border-color:#d4c1f0">
+          <div class="ttl" style="color:#3b1f7a">📚 Reading Hour</div>
+          <div class="meta">Quiet Library · Sat 10–12</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-body">
+    <div class="icon-wrap">⚡ Promos <span class="pill">Time-sensitive</span></div>
+    <h2>Catch live multiplier promos.</h2>
+    <p>Businesses run multiplier promos to drive foot traffic — and you benefit. Earn 2×, 3×, or 5× LYMX on specific items, days, or events. The wallet shows you live promos near you.</p>
+    <ul>
+      <li>Live "active promos" feed</li>
+      <li>Filter by category or location</li>
+      <li>Notification when a favorite Business runs a promo (opt-in)</li>
+      <li>See promo countdown — they expire</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Gift Cards -->
+<div class="feature" id="gift">
+  <div class="feature-body">
+    <div class="icon-wrap">🎁 Gift cards</div>
+    <h2>Send LYMX as a gift.</h2>
+    <p>Buy a LYMX gift card for someone else. They can spend it at any LYMX Business in the network — coffee, dinner, retail, services. The most flexible gift card you can give.</p>
+    <ul>
+      <li>4 preset amounts ($25 / $50 / $100 / $250) or custom</li>
+      <li>8 design options + custom message</li>
+      <li>Delivered by email, text, or print-at-home</li>
+      <li>Recipient gets bonus LYMX (10% extra) — funded by us</li>
+      <li>You earn 5% back as LYMX in your wallet</li>
+    </ul>
+    <div class="actions">
+      <a href="gift-card-buy.html" class="btn primary">Send a gift card</a>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="mock-h"><div class="name">Send gift</div></div>
+      <div class="mock-body" style="display:flex;flex-direction:column;justify-content:center">
+        <div class="gift-card-mock">
+          <div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">LYMX Gift</div>
+          <div class="gc-amt">$50</div>
+          <div class="gc-from">From Maya</div>
+        </div>
+        <div class="mock-card cta" style="margin-top:14px">Send to friend →</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Donate -->
+<div class="feature flip" id="donate">
+  <div class="mockup">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="mock-h" style="background:linear-gradient(135deg,#13a26b,#9adfb6)">
+        <div class="name">Donate LYMX</div>
+      </div>
+      <div class="mock-body">
+        <div class="mock-card" style="background:#e8f6ee;border-color:#c2e8d2">
+          <div class="ttl" style="color:#0a4d2f">🍱 Three Square Food Bank</div>
+          <div class="meta">$1 = 4 meals · 1:1 LYMX match</div>
+        </div>
+        <div class="mock-card">
+          <div class="ttl">📚 Three Square Books</div>
+          <div class="meta">Free books for low-income kids</div>
+        </div>
+        <div class="mock-card cta" style="background:var(--ok)">💚 Donate now</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-body">
+    <div class="icon-wrap">💚 Community</div>
+    <h2>Donate your LYMX to local nonprofits.</h2>
+    <p>Donate any portion of your LYMX directly to one of 14 vetted local nonprofits. We match every donation 1:1 (up to $25k/quarter). 100% of donated LYMX goes to the nonprofit.</p>
+    <ul>
+      <li>14 partner nonprofits, all 501(c)(3) verified</li>
+      <li>1 LYMX = $0.01 donated at full value</li>
+      <li>Tax-deductible receipt by email</li>
+      <li>$25k/quarter LYMX 1:1 match — first come, first served</li>
+    </ul>
+    <div class="actions">
+      <a href="giving-back.html" class="btn primary">See partner nonprofits</a>
+    </div>
+  </div>
+</div>
+
+<!-- Refer -->
+<div class="feature" id="refer">
+  <div class="feature-body">
+    <div class="icon-wrap">🎁 Referrals</div>
+    <h2>Invite friends. Both of you earn.</h2>
+    <p>Share your referral code. When a friend signs up + makes their first transaction, you both get 200 LYMX (= $2 each). No cap on how many friends.</p>
+    <ul>
+      <li>Unique referral code per wallet</li>
+      <li>Share via text, email, or copy link</li>
+      <li>Track pending + earned referrals in dashboard</li>
+      <li>Bonus 500 LYMX for getting friends to refer their own friends (G2 referrals)</li>
+    </ul>
+    <div class="actions">
+      <a href="customer-referral.html" class="btn primary">My referral page</a>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="mock-h" style="background:linear-gradient(135deg,#5b3697,#a374e6)">
+        <div class="name">Refer friends</div>
+      </div>
+      <div class="mock-body">
+        <div class="mock-card" style="background:#fef9e7;border-color:#f0d97a">
+          <div class="meta" style="color:#8b6f1f;font-weight:700;font-size:9px;letter-spacing:.04em;text-transform:uppercase">Your code</div>
+          <div class="ttl" style="font-size:16px;letter-spacing:.05em;color:#3a2f0a;margin-top:4px">MAYA-2026</div>
+        </div>
+        <div class="mock-card cta" style="background:var(--accent)">📤 Share code</div>
+        <div class="mock-card">
+          <div class="row"><span class="meta">Friends invited</span><span class="amt">3</span></div>
+          <div class="row"><span class="meta">Earned</span><span class="amt">+600 LYMX</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add to home -->
+<div class="feature flip" id="schedule">
+  <div class="mockup">
+    <div class="notch"></div>
+    <div class="screen">
+      <div style="flex:1;background:linear-gradient(135deg,#5b9ef5,#a3c5ff);padding:32px 14px 14px;display:flex;flex-direction:column">
+        <div style="font-size:9px;color:#fff;text-align:center;letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-bottom:14px">Home screen</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          <div style="aspect-ratio:1;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px">📷</div>
+          <div style="aspect-ratio:1;background:linear-gradient(135deg,#0e1116,#1a2a4a);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;border:2px solid var(--gold);box-shadow:0 0 0 3px rgba(212,175,55,.5)">L<span style="color:#d4af37">★</span></div>
+          <div style="aspect-ratio:1;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px">📧</div>
+          <div style="aspect-ratio:1;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px">🎵</div>
+          <div style="aspect-ratio:1;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px">🗺️</div>
+          <div style="aspect-ratio:1;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px">⚙️</div>
+          <div style="aspect-ratio:1;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px">📞</div>
+          <div style="aspect-ratio:1;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px">💬</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-body">
+    <div class="icon-wrap">📱 No app</div>
+    <h2>Add to home screen — it's like an app.</h2>
+    <p>The LYMX wallet runs in your browser, but you can add it to your phone's home screen for one-tap access. Looks and behaves like a real app — but no App Store install.</p>
+    <ul>
+      <li><strong>iPhone:</strong> tap Share → "Add to Home Screen"</li>
+      <li><strong>Android:</strong> tap menu → "Install app"</li>
+      <li>Works offline (cached) for browsing balance</li>
+      <li>Push notifications (optional, web standard)</li>
+    </ul>
+    <div class="actions">
+      <a href="wallet-tour.html" class="btn primary">Take the wallet tour</a>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Wallet features · <a href="customer-wallet.html">Open my wallet</a> · <a href="customer-faq.html">FAQ</a> · <a href="earn-smarter.html">Power-user tips</a>
+</div>
+
+</body>
+</html>

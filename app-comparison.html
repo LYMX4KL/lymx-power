@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LYMX vs Other Loyalty Apps — LYMX Power</title>
+<meta name="description" content="LYMX wallet vs Starbucks Rewards, Sephora, Chipotle, and more. Side-by-side comparison of features and trade-offs.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{padding:64px 24px 36px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#eef3ff 0%,#fafafa 100%)}
+  .hero-inner{max-width:1200px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #c7d6ff}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:17px}
+
+  .wrap{max-width:1200px;margin:0 auto;padding:48px 24px}
+
+  /* Comparison table */
+  .compare-section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;margin-bottom:32px;overflow:auto}
+  .compare-section h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .compare-section .sub{color:var(--mute);font-size:14px;margin-bottom:20px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:880px}
+  th{text-align:center;padding:18px 12px;background:#fafafa;border-bottom:1px solid var(--line);font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  th.lymx{background:linear-gradient(180deg,#fef9e7,#fff5c2);color:#3a2f0a;font-size:13px;border-bottom:2px solid var(--gold)}
+  th.feature-h{text-align:left;background:#fff;width:240px}
+  td{padding:14px 12px;border-bottom:1px solid var(--line);text-align:center;vertical-align:top;font-size:13px}
+  td.feat{text-align:left;font-weight:600;font-size:14px}
+  td.lymx{background:#fffbe6}
+  td.lymx.cell{font-weight:700}
+  .y{color:var(--ok);font-weight:700;font-size:16px}
+  .n{color:#cbd0d8;font-size:16px}
+  .partial{color:var(--gold);font-weight:700}
+  .notes{font-size:11px;color:var(--mute);margin-top:2px;font-weight:400}
+  tr:last-child td{border-bottom:0}
+
+  /* Big quote */
+  .pull{margin:40px 0;padding:32px;background:linear-gradient(135deg,#fef9e7,#fff5c2);border:1px solid var(--gold);border-radius:14px;text-align:center}
+  .pull blockquote{margin:0 0 14px;font-size:22px;font-style:italic;color:#3a2f0a;line-height:1.4;max-width:740px;margin-left:auto;margin-right:auto}
+  .pull cite{font-size:13px;color:#5d4d18;font-weight:600}
+
+  /* Pros/cons grid */
+  .pc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:32px}
+  @media (max-width:760px){.pc-grid{grid-template-columns:1fr}}
+  .pc{padding:24px;border-radius:14px}
+  .pc.pros{background:#e8f6ee;border:1px solid #c2e8d2}
+  .pc.cons{background:#fdecea;border:1px solid #fbd5d0}
+  .pc h3{margin:0 0 14px;font-size:16px}
+  .pc.pros h3{color:#0a4d2f}
+  .pc.cons h3{color:#7d2014}
+  .pc ul{margin:0;padding-left:20px;font-size:14px}
+  .pc li{margin-bottom:8px}
+  .pc.pros li{color:#0a4d2f}
+  .pc.cons li{color:#7d2014}
+
+  /* Why each one */
+  .when-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px}
+  @media (max-width:760px){.when-grid{grid-template-columns:1fr}}
+  .when{padding:24px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+  .when h3{margin:0 0 8px;font-size:16px;display:flex;align-items:center;gap:8px}
+  .when h3 .ic{font-size:24px}
+  .when p{margin:0;font-size:13px;color:var(--mute);line-height:1.55}
+  .when .lymx-tag{display:inline-block;font-size:10px;background:var(--gold);color:#3a2f0a;padding:2px 8px;border-radius:999px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-top:10px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="customer-signup.html" class="btn">Sign up free →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Compare loyalty apps · Customer-side</div>
+    <h1>How LYMX compares to other loyalty apps.</h1>
+    <p>An honest side-by-side. Yes, LYMX has trade-offs too. Here's what you get with each.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- COMPARE TABLE -->
+<div class="compare-section">
+  <h2>Feature-by-feature comparison</h2>
+  <p class="sub">LYMX vs the most common single-Business loyalty programs.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="feature-h">Feature</th>
+        <th class="lymx">LYMX</th>
+        <th>Starbucks Rewards</th>
+        <th>Sephora Beauty Insider</th>
+        <th>Chipotle Rewards</th>
+        <th>A typical stamp card</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="feat">Free for customer</td>
+        <td class="lymx cell"><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Works at multiple Businesses</td>
+        <td class="lymx cell"><span class="y">✓</span><div class="notes">218+ in Vegas</div></td>
+        <td><span class="n">Just Starbucks</span></td>
+        <td><span class="n">Just Sephora</span></td>
+        <td><span class="n">Just Chipotle</span></td>
+        <td><span class="n">One shop only</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Fixed redemption value</td>
+        <td class="lymx cell"><span class="y">✓</span><div class="notes">1 LYMX = $0.01 always</div></td>
+        <td><span class="partial">Varies by drink</span></td>
+        <td><span class="partial">Varies by reward</span></td>
+        <td><span class="partial">Varies</span></td>
+        <td><span class="y">✓</span><div class="notes">N stamps = 1 free</div></td>
+      </tr>
+      <tr>
+        <td class="feat">No app download required</td>
+        <td class="lymx cell"><span class="y">✓</span><div class="notes">Web wallet</div></td>
+        <td><span class="n">App required</span></td>
+        <td><span class="n">App or website</span></td>
+        <td><span class="n">App required</span></td>
+        <td><span class="y">✓</span><div class="notes">Physical card</div></td>
+      </tr>
+      <tr>
+        <td class="feat">Send loyalty as a gift</td>
+        <td class="lymx cell"><span class="y">✓</span><div class="notes">Gift card buy</div></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="partial">Gift card</span></td>
+        <td><span class="n">No</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Donate to charity</td>
+        <td class="lymx cell"><span class="y">✓</span><div class="notes">14 partner nonprofits</div></td>
+        <td><span class="n">No</span></td>
+        <td><span class="n">No</span></td>
+        <td><span class="n">No</span></td>
+        <td><span class="n">No</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Tier system / status</td>
+        <td class="lymx cell"><span class="n">No tiers</span><div class="notes">Same earn rate for all</div></td>
+        <td><span class="y">✓</span><div class="notes">Gold, Green</div></td>
+        <td><span class="y">✓</span><div class="notes">Insider, VIB, Rouge</div></td>
+        <td><span class="n">No</span></td>
+        <td><span class="n">No</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Personalized offers</td>
+        <td class="lymx cell"><span class="partial">Yes (per Business)</span></td>
+        <td><span class="y">✓</span><div class="notes">Heavy personalization</div></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="n">No</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Birthday gift</td>
+        <td class="lymx cell"><span class="y">✓</span><div class="notes">2× LYMX on birthday</div></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="n">No</span></td>
+        <td><span class="n">No</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Pre-order / mobile order</td>
+        <td class="lymx cell"><span class="partial">Per-Business</span></td>
+        <td><span class="y">✓</span><div class="notes">Big differentiator</div></td>
+        <td><span class="n">No</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="n">No</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Digital wallet (Apple Wallet etc.)</td>
+        <td class="lymx cell"><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="n">No</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Sells your data to third parties?</td>
+        <td class="lymx cell"><span class="y" style="color:#0a7a4d">Never</span></td>
+        <td><span class="partial">Aggregate data</span></td>
+        <td><span class="partial">With consent</span></td>
+        <td><span class="partial">Aggregate data</span></td>
+        <td><span class="y">No</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- BIG QUOTE -->
+<div class="pull">
+  <blockquote>"The single best feature of LYMX is the network effect. The single weakest is that it's small — only 218 Businesses, only Las Vegas. Both of these are true at the same time."</blockquote>
+  <cite>— A LYMX customer's honest take</cite>
+</div>
+
+<!-- PROS / CONS -->
+<div class="pc-grid">
+  <div class="pc pros">
+    <h3>Where LYMX wins</h3>
+    <ul>
+      <li>Loyalty credit works at every LYMX Business — not just one</li>
+      <li>No app required (web wallet)</li>
+      <li>Fixed redemption value — predictable</li>
+      <li>You can donate LYMX to local nonprofits</li>
+      <li>Discovers new Businesses for you</li>
+      <li>Free, with no data-selling</li>
+      <li>Send as gift card to anyone</li>
+      <li>Earn customer referral bonuses</li>
+    </ul>
+  </div>
+  <div class="pc cons">
+    <h3>Where LYMX loses (for now)</h3>
+    <ul>
+      <li>Small geographic footprint (Vegas, soon Phoenix &amp; Reno)</li>
+      <li>No big-name retailers like Starbucks or Target</li>
+      <li>Smaller pre-order/mobile-order coverage</li>
+      <li>No fancy tier system (everyone's the same earn rate)</li>
+      <li>Younger platform (less battle-tested than Starbucks's app)</li>
+      <li>If your local Businesses aren't on LYMX yet, no benefit</li>
+    </ul>
+  </div>
+</div>
+
+<!-- WHEN TO USE -->
+<div class="compare-section" style="overflow:visible">
+  <h2>So which loyalty app is "right" for you?</h2>
+  <p class="sub">Honest answer: it depends on what you spend on. Here's our take.</p>
+
+  <div class="when-grid">
+    <div class="when">
+      <h3><span class="ic">☕</span>Starbucks Rewards</h3>
+      <p>If you spend $50+/month at Starbucks, you should have Starbucks Rewards. Their app is best-in-class. The pre-order alone is worth it.</p>
+    </div>
+    <div class="when">
+      <h3><span class="ic">💄</span>Sephora Beauty Insider</h3>
+      <p>If you regularly buy beauty products at Sephora, sign up. The tier benefits + samples are real. Keep using it.</p>
+    </div>
+    <div class="when">
+      <h3><span class="ic">⭐</span>LYMX</h3>
+      <p>If you support local Businesses (cafés, bookstores, restaurants, gyms) and you live in Vegas — LYMX is the best loyalty mechanic for that pattern. Use it alongside others.</p>
+      <span class="lymx-tag">For local-first spenders</span>
+    </div>
+  </div>
+
+  <p style="font-size:14px;color:var(--mute);margin-top:18px"><strong>The honest framing:</strong> LYMX is the best fit for the part of your spending that's at independent local Businesses. It's not a replacement for Starbucks Rewards if you're a Starbucks regular. They're solving different problems. Use the right tool for each.</p>
+</div>
+
+<!-- CTA -->
+<div style="background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:36px;text-align:center;margin-top:32px">
+  <h2 style="margin:0 0 8px;font-size:24px;color:#fff">Try LYMX free — no app required</h2>
+  <p style="color:#b8c2d6;max-width:520px;margin:0 auto 18px;font-size:14px">Web-based wallet. 30-second sign-up. Use alongside whatever else you've got.</p>
+  <a href="customer-signup.html" style="display:inline-block;background:var(--gold);color:#0e1116;padding:12px 22px;border-radius:8px;font-weight:700;font-size:14px">Sign up free →</a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Loyalty app comparison · <a href="customer-signup.html">Sign up</a> · <a href="what-is-lymx.html">What is LYMX</a> · <a href="customer-faq.html">FAQ</a>
+</div>
+
+</body>
+</html>

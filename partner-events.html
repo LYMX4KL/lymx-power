@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Partner training events — weekly office hours, monthly bootcamps, quarterly summits. RSVP and grow your skills." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Partner events &amp; training · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(212,175,55,.18);color:#7a5e10;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  @media(max-width:1100px){.nav-links{display:none}}
+  .btn{padding:9px 14px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13px;text-decoration:none;display:inline-block;border:0;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:14.5px;max-width:600px}
+
+  /* Featured event banner */
+  .featured{background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);padding:24px 28px;margin-bottom:18px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;position:relative;overflow:hidden}
+  .featured::after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);right:-100px;top:-100px;pointer-events:none}
+  @media(max-width:780px){.featured{grid-template-columns:1fr}}
+  .featured .lab{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#f5d172;margin-bottom:6px;position:relative}
+  .featured h2{margin:0 0 6px;font-size:24px;font-weight:800;letter-spacing:-.01em;color:#fff;position:relative}
+  .featured .when{font-size:14px;color:#9aa3b0;position:relative;margin-bottom:8px}
+  .featured .when strong{color:#fff;font-weight:800}
+  .featured p{margin:0;font-size:14px;color:#9aa3b0;line-height:1.55;position:relative}
+  .featured .cta{position:relative}
+  .btn-gold{padding:12px 22px;background:#f5d172;color:#0e1116;border-radius:10px;font-weight:800;font-size:14.5px;text-decoration:none;display:inline-block}
+  .btn-gold:hover{background:#fff}
+
+  /* Filter row */
+  .filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:7px 13px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .chip:hover{border-color:var(--ink)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .ct{margin-left:5px;background:var(--bg-soft);color:var(--muted);padding:1px 7px;border-radius:5px;font-size:10.5px}
+  .chip.on .ct{background:rgba(255,255,255,.18);color:#fff}
+
+  /* Calendar group */
+  .month-group{margin-bottom:14px}
+  .month-h{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;padding:6px 0}
+
+  .events{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:780px){.events{grid-template-columns:1fr}}
+
+  .event{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px 20px;display:grid;grid-template-columns:60px 1fr;gap:14px;align-items:start;transition:.15s}
+  .event:hover{border-color:var(--ink);transform:translateY(-2px);box-shadow:var(--shadow)}
+  .event .date{text-align:center}
+  .event .date .mo{font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .event .date .day{font-size:32px;font-weight:800;color:var(--ink);line-height:1;margin-top:2px}
+  .event .date .dow{font-size:11px;color:var(--muted);font-weight:700;margin-top:3px}
+  .event .body{flex:1;min-width:0}
+  .event .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+  .event h3{margin:0;font-size:15.5px;font-weight:800;line-height:1.3}
+  .event .pill{padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
+  .pill.weekly{background:rgba(10,132,255,.1);color:var(--accent-2)}
+  .pill.bootcamp{background:rgba(212,175,55,.18);color:#7a5e10}
+  .pill.summit{background:rgba(165,69,255,.12);color:#7426c4}
+  .pill.field{background:rgba(19,162,107,.14);color:#0d7d51}
+  .event .when{font-size:12.5px;color:var(--muted);margin-bottom:6px}
+  .event p{margin:0 0 8px;font-size:13px;color:var(--ink-2);line-height:1.5}
+  .event .meta{font-size:11.5px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+  .event .meta strong{color:var(--ink-2);font-weight:700}
+  .event .actions{display:flex;gap:6px;flex-wrap:wrap}
+  .event .rsvp{padding:7px 12px;background:var(--ink);color:#fff;border-radius:7px;font-size:11.5px;font-weight:800;border:0;cursor:pointer;text-decoration:none}
+  .event .rsvp.gone{background:var(--bg-soft);color:var(--muted);cursor:not-allowed}
+  .event .rsvp.rsvped{background:var(--ok)}
+  .event .rsvp:hover:not(.gone){opacity:.92}
+  .event .add-cal{padding:7px 12px;background:transparent;border:1px solid var(--line);color:var(--ink-2);border-radius:7px;font-size:11.5px;font-weight:800;cursor:pointer}
+  .event .add-cal:hover{border-color:var(--ink)}
+
+  /* Side */
+  .layout{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+  @media(max-width:1000px){.layout{grid-template-columns:1fr}}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:14px}
+  .panel h3{margin:0 0 10px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .panel p{margin:0 0 8px;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+
+  .my-events{font-size:13px}
+  .my-event{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);align-items:center;gap:8px}
+  .my-event:last-child{border-bottom:0}
+  .my-event .when{font-size:11.5px;color:var(--muted);font-weight:700}
+  .my-event .name{font-weight:700;color:var(--ink-2);font-size:13px}
+  .my-event a{color:var(--accent-2);font-size:11.5px;font-weight:700}
+
+  /* Confirmation modal */
+  .ovr{position:fixed;inset:0;background:rgba(14,17,22,.45);z-index:90;display:none;align-items:center;justify-content:center;padding:20px}
+  .ovr.on{display:flex}
+  .modal{background:#fff;border-radius:var(--radius);max-width:420px;width:100%;padding:28px;text-align:center}
+  .modal .ic{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;font-size:30px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+  .modal h3{margin:0 0 6px;font-size:18px;font-weight:800}
+  .modal p{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.55}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Partner</span>
+    </div>
+    <nav class="nav-links">
+      <a href="rep-dashboard.html">Dashboard</a>
+      <a href="projection.html">Projection</a>
+      <a href="partner-crm.html">CRM</a>
+      <a href="partner-academy.html">Academy</a>
+      <a href="partner-events.html" class="on">Events</a>
+      <a href="partner-social-kit.html">Social</a>
+      <a href="partner-payouts.html">Payouts</a>
+    </nav>
+    <a href="partner-spotlight.html" class="btn ghost">Spotlight</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>Partner training events</h1>
+        <p>Weekly office hours, monthly bootcamps, quarterly summits. Free for active Partners. RSVPs save your seat and let us send you the calendar invite.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="btn ghost" href="partner-academy.html">Self-paced academy</a>
+        <a class="btn" href="#" onclick="alert('Subscribe to all events as an iCal feed — calendar URL: webcal://getlymx.com/partner-events.ics')">📅 Subscribe (iCal)</a>
+      </div>
+    </div>
+
+    <!-- Featured -->
+    <div class="featured">
+      <div>
+        <div class="lab">★ Next event</div>
+        <h2>Q2 Partner Summit — half-day in person</h2>
+        <div class="when"><strong>Saturday, May 17, 2026 · 9 AM – 1 PM PT</strong> · Container Park, Las Vegas</div>
+        <p>Half-day in-person summit for active LYMX Partners. Founder Q&amp;A, Master Partner panel (Sienna + Marcus + Tomás), workshop on the new Toast integration, lunch from Sage &amp; Stone. RSVP capped at 50.</p>
+      </div>
+      <div class="cta"><a class="btn-gold" href="#evt-summit-q2">RSVP — 12 spots left</a></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-row">
+      <div class="chips" id="type-chips">
+        <div class="chip on" data-t="all">All <span class="ct" id="ct-all">12</span></div>
+        <div class="chip" data-t="weekly">Weekly office hours</div>
+        <div class="chip" data-t="bootcamp">Bootcamps</div>
+        <div class="chip" data-t="summit">Summits</div>
+        <div class="chip" data-t="field">Field training</div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- Calendar -->
+      <div id="cal"></div>
+
+      <!-- Side panels -->
+      <div>
+        <div class="panel">
+          <h3>My RSVPs</h3>
+          <div class="my-events" id="my-events">
+            <div style="font-size:12.5px;color:var(--muted);text-align:center;padding:14px 0">No upcoming RSVPs yet. Hit RSVP on any event below.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>How events work</h3>
+          <p><strong>Office hours</strong> — drop-in, no agenda. Bring blockers, get unstuck.</p>
+          <p><strong>Bootcamps</strong> — 90-min focused workshop. One topic, deep dive.</p>
+          <p><strong>Summits</strong> — half-day, in-person, quarterly. Strategy + community.</p>
+          <p><strong>Field training</strong> — ride-along with a Master Partner on real prospect calls.</p>
+        </div>
+
+        <div class="panel" style="background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff">
+          <h3 style="color:#f5d172">Want to host?</h3>
+          <p style="color:#9aa3b0">If you're a Gold or Platinum Partner with something to teach, propose a session. We'll feature you and pay $200 LYMX per attendee.</p>
+          <a href="mailto:partners@getlymx.com?subject=Event%20proposal" style="color:#f5d172;font-weight:800;font-size:13.5px">Propose a session →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Confirmation modal -->
+<div class="ovr" id="ovr">
+  <div class="modal">
+    <div class="ic">✓</div>
+    <h3>RSVP confirmed</h3>
+    <p>Calendar invite is on its way to your email. We'll send a reminder 24 hours before.</p>
+    <button class="btn" onclick="closeModal()">Got it</button>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Partner training · <a href="partner-bootcamp.html" style="color:var(--accent-2,#0a84ff);font-weight:700">Quarterly Bootcamp →</a> · Free for active Partners</div>
+</footer>
+
+<script>
+  const EVENTS = [
+    // May 2026
+    {id:'oh-may-3', month:'May', day:3, dow:'Tue', type:'weekly', name:'Weekly office hours', when:'May 3 · 4:00 PM PT (1 hr)', desc:'Drop-in. Bring whatever you\'re stuck on — closing techniques, prospect-list questions, comp-plan math.', host:'Kenny + Sienna', spots:'Unlimited · video call'},
+    {id:'bc-may-7', month:'May', day:7, dow:'Sat', type:'bootcamp', name:'The 5-minute pitch — bootcamp', when:'May 7 · 10:00 AM PT (90 min)', desc:'Word-for-word breakdown of the pitch script. Live roleplay against tough prospects. Sienna + Tomás co-lead.', host:'Sienna Vega', spots:'25 spots · 18 left'},
+    {id:'oh-may-10', month:'May', day:10, dow:'Tue', type:'weekly', name:'Weekly office hours', when:'May 10 · 4:00 PM PT (1 hr)', desc:'Drop-in. Bring whatever you\'re stuck on.', host:'Kenny + Sienna', spots:'Unlimited · video call'},
+    {id:'evt-summit-q2', month:'May', day:17, dow:'Sat', type:'summit', name:'Q2 Partner Summit', when:'May 17 · 9 AM – 1 PM PT', desc:'Half-day in person. Founder Q&A, Master Partner panel, Toast integration workshop, lunch.', host:'LYMX team', spots:'50 spots · 12 left · in-person Container Park'},
+    {id:'oh-may-17', month:'May', day:17, dow:'Sat', type:'weekly', name:'Weekly office hours', when:'May 17 · 4:00 PM PT (1 hr)', desc:'Drop-in (replaced for those at the summit — recording posted).', host:'Sam Reyes', spots:'Unlimited · video call'},
+    {id:'bc-may-21', month:'May', day:21, dow:'Wed', type:'bootcamp', name:'Building your downline — bootcamp', when:'May 21 · 6:00 PM PT (90 min)', desc:'How to identify, recruit, and coach G1 Partners. The math behind compound team growth.', host:'Marcus Chen', spots:'25 spots · 24 left'},
+    {id:'fld-may-22', month:'May', day:22, dow:'Thu', type:'field', name:'Field training — ride-along with Sienna', when:'May 22 · 9 AM – 1 PM PT', desc:'Shadow Sienna on real prospect calls in Las Vegas. 4 hours, 3 calls, hands-on debrief after each.', host:'Sienna Vega', spots:'3 spots · 1 left · in-person Las Vegas'},
+    {id:'oh-may-24', month:'May', day:24, dow:'Tue', type:'weekly', name:'Weekly office hours', when:'May 24 · 4:00 PM PT (1 hr)', desc:'Drop-in.', host:'Kenny', spots:'Unlimited · video call'},
+
+    // June 2026
+    {id:'bc-jun-4', month:'Jun', day:4, dow:'Wed', type:'bootcamp', name:'Handling objections — bootcamp', when:'Jun 4 · 6:00 PM PT (90 min)', desc:'The 5 most common objections and how to handle each. Roleplay with your sponsor.', host:'Tomás Reyes', spots:'25 spots · 25 left'},
+    {id:'oh-jun-7', month:'Jun', day:7, dow:'Tue', type:'weekly', name:'Weekly office hours', when:'Jun 7 · 4:00 PM PT (1 hr)', desc:'Drop-in.', host:'Kenny + Sienna', spots:'Unlimited · video call'},
+    {id:'fld-jun-11', month:'Jun', day:11, dow:'Sat', type:'field', name:'Field training — Henderson territory', when:'Jun 11 · 10 AM – 2 PM PT', desc:'Ride-along with Tomás through 4 Henderson Businesses. 3 prospect calls + 1 close attempt.', host:'Tomás Reyes', spots:'3 spots · 3 left · in-person Henderson'},
+    {id:'bc-jun-18', month:'Jun', day:18, dow:'Wed', type:'bootcamp', name:'Closing techniques — bootcamp', when:'Jun 18 · 6:00 PM PT (90 min)', desc:'The 3-step close, common stalls, the "I need to think about it" recovery script.', host:'Sienna Vega', spots:'25 spots · 25 left'}
+  ];
+
+  const TYPE_LABEL = {weekly:'Weekly office hours', bootcamp:'Bootcamp', summit:'Summit', field:'Field training'};
+  const STORAGE_KEY = 'lymx-partner-events-rsvp';
+  let rsvped = {};
+  try { rsvped = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){}
+
+  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(rsvped)); } catch(e){} }
+
+  let activeType = 'all';
+
+  function render(){
+    const filtered = EVENTS.filter(e=>activeType==='all'||e.type===activeType);
+    document.getElementById('ct-all').textContent = EVENTS.length;
+
+    // Group by month
+    const byMonth = {};
+    filtered.forEach(e=>{
+      if(!byMonth[e.month]) byMonth[e.month] = [];
+      byMonth[e.month].push(e);
+    });
+
+    let html = '';
+    Object.keys(byMonth).forEach(m=>{
+      html += `<div class="month-group"><div class="month-h">${m} 2026</div><div class="events">`;
+      html += byMonth[m].map(e=>renderEvent(e)).join('');
+      html += `</div></div>`;
+    });
+    document.getElementById('cal').innerHTML = html || '<div style="padding:40px;text-align:center;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:11px">No events match this filter.</div>';
+
+    // My RSVPs
+    const mine = EVENTS.filter(e=>rsvped[e.id]);
+    const my = document.getElementById('my-events');
+    if(mine.length === 0){
+      my.innerHTML = '<div style="font-size:12.5px;color:var(--muted);text-align:center;padding:14px 0">No upcoming RSVPs yet.</div>';
+    } else {
+      my.innerHTML = mine.map(e=>`<div class="my-event">
+        <div style="min-width:0">
+          <div class="name">${escapeHTML(e.name)}</div>
+          <div class="when">${e.when}</div>
+        </div>
+        <a onclick="cancelRSVP('${e.id}')">Cancel</a>
+      </div>`).join('');
+    }
+  }
+
+  function renderEvent(e){
+    const isRsvped = !!rsvped[e.id];
+    const buttonLabel = isRsvped ? '✓ RSVPed' : (e.spots.includes('gone')?'Sold out':'RSVP →');
+    const buttonClass = isRsvped ? 'rsvped' : '';
+    return `<div class="event" id="${e.id}">
+      <div class="date">
+        <div class="mo">${e.month}</div>
+        <div class="day">${e.day}</div>
+        <div class="dow">${e.dow}</div>
+      </div>
+      <div class="body">
+        <div class="top">
+          <h3>${escapeHTML(e.name)}</h3>
+          <span class="pill ${e.type}">${TYPE_LABEL[e.type]}</span>
+        </div>
+        <div class="when">${e.when}</div>
+        <p>${escapeHTML(e.desc)}</p>
+        <div class="meta">
+          <span>👤 Host: <strong>${escapeHTML(e.host)}</strong></span>
+          <span>🪑 ${escapeHTML(e.spots)}</span>
+        </div>
+        <div class="actions">
+          <button class="rsvp ${buttonClass}" onclick="toggleRSVP('${e.id}')">${buttonLabel}</button>
+          <button class="add-cal" onclick="addCal('${e.id}')">📅 Add to calendar</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function toggleRSVP(id){
+    if(rsvped[id]){
+      if(!confirm('Cancel your RSVP?')) return;
+      delete rsvped[id];
+    } else {
+      rsvped[id] = true;
+      document.getElementById('ovr').classList.add('on');
+    }
+    save();
+    render();
+  }
+  function cancelRSVP(id){
+    if(!confirm('Cancel your RSVP?')) return;
+    delete rsvped[id];
+    save();
+    render();
+  }
+  function closeModal(){ document.getElementById('ovr').classList.remove('on'); }
+  function addCal(id){ alert('In production: downloads .ics calendar invite. Mock for now.'); }
+
+  function escapeHTML(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+  document.querySelectorAll('#type-chips .chip').forEach(c=>{
+    c.onclick = ()=>{
+      document.querySelectorAll('#type-chips .chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      activeType = c.dataset.t;
+      render();
+    };
+  });
+
+  render();
+</script>
+</body>
+</html>
