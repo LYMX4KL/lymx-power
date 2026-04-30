@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX master FAQ — every question, one page. Customers, Businesses, Partners, press, investors. Searchable, filterable." />
+<title>FAQ · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4af37;--radius:14px;--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none;font-weight:700}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--ink)}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  .nav-links a{color:var(--ink-2);font-weight:600}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .head{padding:46px 0 22px;text-align:center}
+  .head .pre{display:inline-block;background:rgba(10,132,255,.1);color:var(--accent-2);font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .head h1{margin:0 0 8px;font-size:38px;font-weight:800;letter-spacing:-.02em}
+  .head p{margin:0;color:var(--muted);font-size:15.5px}
+
+  /* Search */
+  .search-box{margin:24px auto 12px;max-width:560px;position:relative}
+  .search-box input{width:100%;background:#fff;border:1px solid var(--line);border-radius:11px;padding:13px 16px 13px 44px;font-size:15px;font-family:inherit;box-shadow:0 4px 12px rgba(14,17,22,.04)}
+  .search-box input:focus{outline:0;border-color:var(--accent);box-shadow:0 4px 12px rgba(10,132,255,.1)}
+  .search-box::before{content:"🔍";position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px}
+
+  /* Filter chips */
+  .filters{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-bottom:24px}
+  .chip{padding:7px 14px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer;font-family:inherit}
+  .chip:hover{border-color:var(--ink)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .ct{margin-left:5px;background:var(--bg-soft);color:var(--muted);padding:1px 7px;border-radius:5px;font-size:10.5px}
+  .chip.on .ct{background:rgba(255,255,255,.18);color:#fff}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:240px 1fr;gap:36px;padding:0 0 60px;align-items:start}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}.toc-side{display:none}}
+
+  .toc{position:sticky;top:88px}
+  .toc h4{margin:0 0 8px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .toc ul{list-style:none;margin:0 0 18px;padding:0}
+  .toc a{display:block;padding:6px 12px;font-size:13.5px;color:var(--ink-2);border-radius:7px;font-weight:600}
+  .toc a:hover{background:var(--bg-soft);text-decoration:none}
+  .toc a .ct{font-size:11px;color:var(--muted);margin-left:4px}
+
+  /* Sections */
+  article{max-width:780px}
+  .section{margin-bottom:30px}
+  .section-h{display:flex;align-items:center;gap:12px;padding:12px 0 10px;border-bottom:2px solid var(--line);margin-bottom:12px;scroll-margin-top:90px}
+  .section-h .ic{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0}
+  .section-h .ic.cust{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .section-h .ic.biz{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .section-h .ic.partner{background:linear-gradient(135deg,#d4af37,#a08020)}
+  .section-h .ic.legal{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  .section-h .ic.press{background:linear-gradient(135deg,#7426c4,#4d1888)}
+  .section-h .ic.tech{background:linear-gradient(135deg,#5b6472,#1a1f27)}
+  .section-h h2{margin:0;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .section-h .count{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:800}
+
+  .qa details{border-bottom:1px solid var(--line);padding:14px 0}
+  .qa details:last-child{border-bottom:0}
+  .qa summary{font-size:15.5px;font-weight:800;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;list-style:none;color:var(--ink)}
+  .qa summary::-webkit-details-marker{display:none}
+  .qa summary::after{content:"+";font-size:22px;color:var(--muted);font-weight:400;flex-shrink:0;line-height:1}
+  .qa details[open] summary::after{content:"−"}
+  .qa .a{padding:10px 0 0;font-size:14.5px;color:var(--ink-2);line-height:1.65}
+  .qa .a p{margin:0 0 8px}
+  .qa .a a{color:var(--accent-2);font-weight:700}
+
+  .empty{text-align:center;padding:60px 30px;color:var(--muted)}
+
+  /* Closing */
+  .closing{margin-top:30px;padding:24px 28px;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);text-align:center}
+  .closing h3{color:#f5d172;margin:0 0 6px;font-size:17px;font-weight:800}
+  .closing p{margin:0 0 14px;color:#9aa3b0;font-size:14px;line-height:1.55}
+  .closing a{display:inline-block;padding:11px 20px;background:#f5d172;color:#0e1116;border-radius:9px;font-weight:800;font-size:13.5px;text-decoration:none;margin:0 4px}
+  .closing a:hover{background:#fff}
+  .closing a.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3)}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center}
+  footer a{color:#9aa3b0}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px;color:var(--ink)"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="master-faq.html" style="color:var(--accent);font-weight:700">FAQ</a>
+      <a href="help-center.html">Help center</a>
+      <a href="support.html">Contact support</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="head">
+    <span class="pre">📚 Master FAQ</span>
+    <h1>Every question, one page</h1>
+    <p>40+ questions across customers, Businesses, Partners, press, and the technical side. Search the lot or filter by audience.</p>
+
+    <div class="search-box">
+      <input type="search" id="search" placeholder="Search questions… (e.g. 'expire', 'partner pay', 'data')" />
+    </div>
+
+    <div class="filters" id="filters">
+      <button class="chip on" data-c="all">All <span class="ct">42</span></button>
+      <button class="chip" data-c="cust">Customers <span class="ct">12</span></button>
+      <button class="chip" data-c="biz">Businesses <span class="ct">11</span></button>
+      <button class="chip" data-c="partner">Partners <span class="ct">8</span></button>
+      <button class="chip" data-c="legal">Legal &amp; data <span class="ct">6</span></button>
+      <button class="chip" data-c="press">Press &amp; investors <span class="ct">3</span></button>
+      <button class="chip" data-c="tech">Technical <span class="ct">2</span></button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside class="toc-side">
+      <nav class="toc">
+        <h4>Jump to a section</h4>
+        <ul>
+          <li><a href="#cust">Customers</a></li>
+          <li><a href="#biz">Businesses</a></li>
+          <li><a href="#partner">Partners</a></li>
+          <li><a href="#legal">Legal &amp; data</a></li>
+          <li><a href="#press">Press &amp; investors</a></li>
+          <li><a href="#tech">Technical</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <article id="article">
+      <!-- Customers -->
+      <div class="section" data-c="cust" id="cust">
+        <div class="section-h"><div class="ic cust">🛒</div><h2>For customers</h2><span class="count">12 questions</span></div>
+        <div class="qa">
+          <details open><summary>What is LYMX in one sentence?</summary><div class="a"><p>LYMX is a shared loyalty network for local Businesses — earn LYMX at one Business, spend it at any other in the network. <a href="why-lymx.html">More →</a></p></div></details>
+          <details><summary>What is 1 LYMX worth?</summary><div class="a"><p><strong>1 LYMX = $0.01 of spending power, always.</strong> 1,000 LYMX = $10 you can apply to any LYMX Business's bill.</p></div></details>
+          <details><summary>Does LYMX expire?</summary><div class="a"><p><strong>Never.</strong> No expiration, no inactivity penalty. Earn it today, spend it next year.</p></div></details>
+          <details><summary>Do I need to download an app?</summary><div class="a"><p>No. The LYMX wallet runs in your browser. <a href="app.html">Add it to your home screen</a> for app-like access.</p></div></details>
+          <details><summary>How do I pay with LYMX at a Business?</summary><div class="a"><p>Open your wallet → tap "Pay with QR" → show the QR to the cashier. They scan it on their iPad. Done. <a href="help-article.html">Full step-by-step →</a></p></div></details>
+          <details><summary>Can I get cash for my LYMX?</summary><div class="a"><p>No. LYMX is a promotional credit, not money. It's spendable at LYMX Businesses but not redeemable for cash. <a href="disclaimer.html">More on what LYMX is and isn't →</a></p></div></details>
+          <details><summary>What's the welcome bonus when I sign up?</summary><div class="a"><p>100 LYMX (≈ $1) automatically credited to your wallet at sign-up. No purchase required.</p></div></details>
+          <details><summary>How does refer-a-friend work?</summary><div class="a"><p>Share your personal link from <a href="customer-referral.html">customer-referral</a>. When a friend signs up + earns their first LYMX, you both get 200 LYMX. No cap.</p></div></details>
+          <details><summary>What if I don't recognize a transaction in my wallet?</summary><div class="a"><p>Open the transaction → tap "Report an issue" → file a <a href="customer-dispute.html">dispute</a>. We respond within 1 business day. If you suspect fraud, hit "Lock my wallet now" first — your balance is safe while we investigate.</p></div></details>
+          <details><summary>Can I use LYMX in cities outside Las Vegas?</summary><div class="a"><p>Right now LYMX is Las Vegas-only. Phase 2 (Q2 2026) adds Henderson + Summerlin. Phase 3 (2027) is multi-city expansion: San Diego, Phoenix, Denver, Austin, Salt Lake. <a href="coverage-map.html">Coverage map →</a></p></div></details>
+          <details><summary>What if I lose my phone?</summary><div class="a"><p>Sign in to your wallet on a new device — your balance and transaction history follow your phone number. If a stranger has access to your phone, hit "Lock my wallet" via the <a href="customer-dispute.html">dispute flow</a> or call 702-555-LYMX.</p></div></details>
+          <details><summary>Where can I see all my activity?</summary><div class="a"><p>The <a href="customer-history.html">My history</a> page in your wallet shows earnings + spending grouped by Business, with totals and your "favorite Business" detection.</p></div></details>
+        </div>
+      </div>
+
+      <!-- Businesses -->
+      <div class="section" data-c="biz" id="biz">
+        <div class="section-h"><div class="ic biz">🏪</div><h2>For Businesses</h2><span class="count">11 questions</span></div>
+        <div class="qa">
+          <details><summary>What does LYMX cost a Business?</summary><div class="a"><p>$850 one-time activation (includes 3 months free + Founding-25 perks while available) + $200/month after that. Locked for the contract term. <a href="business.html#plans">Pricing →</a></p></div></details>
+          <details><summary>How long is the contract?</summary><div class="a"><p>12 months initial, then month-to-month with 30-day cancel. <a href="business-agreement.html">Full agreement →</a></p></div></details>
+          <details><summary>Do I need to replace my POS?</summary><div class="a"><p>No. The LYMX POS runs as a Web App on an iPad you already own. Square / Toast / Clover / Shopify integrations available — see <a href="integrations.html">integrations</a>.</p></div></details>
+          <details><summary>How does the buy/sell mechanic work financially?</summary><div class="a"><p>You buy LYMX units from us at $0.008 per LYMX (80% of face value) to issue to customers. When customers redeem at any participating Business, that Business sells the redeemed units back to us at the same $0.008. The 20% gap is the redeeming Business's effective discount.</p></div></details>
+          <details><summary>How does sales tax work when a customer pays with LYMX?</summary><div class="a"><p>Sales tax is collected and remitted on the full ticket value (not the LYMX-discounted amount). Your POS shows the full ticket; LYMX is treated as a discount line above the tax line. <a href="refund-policy.html">More →</a></p></div></details>
+          <details><summary>What if my employee makes an error in a transaction?</summary><div class="a"><p>Two paths: void within 60 seconds (no extra steps), or file a <a href="settlement-dispute.html">settlement dispute</a> for older errors. Disputes resolve in 1-2 business days.</p></div></details>
+          <details><summary>Can I run promotions like Happy Hour multipliers?</summary><div class="a"><p>Yes. Schedule time-bound (e.g., 2× LYMX 4-6 PM Saturdays), item-targeted (only on espresso), or first-time-customer multipliers. <a href="promotions.html">Promotion engine →</a></p></div></details>
+          <details><summary>How do monthly settlements work?</summary><div class="a"><p>Net of unit purchases vs. buy-backs is settled via ACH on the 5th business day of each month. QuickBooks CSV export included. <a href="settlement.html">More →</a></p></div></details>
+          <details><summary>How do I refer another Business?</summary><div class="a"><p>Use your personal link from <a href="biz-refer.html">biz-refer</a>. When a Business activates through your link, you get $200 cash + they get $200 LYMX welcome bonus on top of standard package.</p></div></details>
+          <details><summary>I have multiple locations. Is there a chain plan?</summary><div class="a"><p>Yes. <a href="enterprise.html">LYMX Enterprise</a> covers 3+ locations: from $150/loc/mo (volume tiers go to $140/loc/mo at 25+), single MSA + billing, dedicated CSM, 99.9% uptime SLA.</p></div></details>
+          <details><summary>What if I want to cancel?</summary><div class="a"><p>30-day written notice after the initial 12-month term. We'll process up to 90 days of customer LYMX redemptions during the wind-down. Final settlement issued for any remaining net buy-back balance. <a href="business-agreement.html">Full wind-down terms →</a></p></div></details>
+        </div>
+      </div>
+
+      <!-- Partners -->
+      <div class="section" data-c="partner" id="partner">
+        <div class="section-h"><div class="ic partner">🤝</div><h2>For Partners (recruiters)</h2><span class="count">8 questions</span></div>
+        <div class="qa">
+          <details><summary>How does Partner compensation work?</summary><div class="a"><p>Two layers: <strong>Production</strong> = $500 sign-up bonus + 9% recurring override on Businesses you personally recruit. <strong>Generations</strong> = 3% override on G1 Partners' production, 2% on G2, 1% on G3. <a href="partner-agreement.html">Full agreement →</a></p></div></details>
+          <details><summary>Do I have to buy anything to be a Partner?</summary><div class="a"><p><strong>No.</strong> No purchase required. The Partner program is structured to comply with NRS 207.235 anti-pyramid law and FTC guidance. You get paid only on bona-fide third-party Business sign-ups.</p></div></details>
+          <details><summary>How and when do I get paid?</summary><div class="a"><p>Sign-up bonuses ($500): 30 days after Business activates (anti-fraud window). Recurring overrides: monthly ACH on 5th business day. 1099-NEC issued annually. <a href="partner-payouts.html">Payouts →</a></p></div></details>
+          <details><summary>What's the tier ladder?</summary><div class="a"><p>Bronze (5 Biz) → Silver (15) → Gold (30) → Platinum (50) → Master Partner (special invite). Each tier unlocks higher overrides + recognition. <a href="rep-dashboard.html">Tier dashboard →</a></p></div></details>
+          <details><summary>What happens if a Business cancels in the first 30 days?</summary><div class="a"><p>The $500 sign-up bonus is clawed back. We pay sign-up bonuses on day 30 specifically to avoid this scenario where possible.</p></div></details>
+          <details><summary>Can I switch sponsors after I sign up?</summary><div class="a"><p>Within 14 days of signing, if no commissions have been earned, sponsor change is reviewed case-by-case. After 14 days, locked. <a href="partner-agreement.html#7">Policy details →</a></p></div></details>
+          <details><summary>What's the deal with FTC compliance?</summary><div class="a"><p>Every public mention of LYMX must include the disclosure: <em>"I'm a LYMX Partner — I get paid if you sign up through my link."</em> Required by FTC for any compensated promotion. <a href="partner-academy.html#g1">Compliance training →</a></p></div></details>
+          <details><summary>What's typical earning?</summary><div class="a"><p>Median active Partner earned $540/month in our first reporting period. Top Partner (Sienna): $11,840/month after 9 months. Earnings vary substantially by individual effort. <a href="transparency.html">Transparency report →</a></p></div></details>
+        </div>
+      </div>
+
+      <!-- Legal & data -->
+      <div class="section" data-c="legal" id="legal">
+        <div class="section-h"><div class="ic legal">⚖️</div><h2>Legal &amp; data</h2><span class="count">6 questions</span></div>
+        <div class="qa">
+          <details><summary>Does LYMX sell my data?</summary><div class="a"><p>No. We don't sell, lease, or share customer data with marketers, ad networks, data brokers, or AI training services. <a href="privacy.html">Full privacy policy →</a></p></div></details>
+          <details><summary>Does LYMX use my data to train AI?</summary><div class="a"><p>No. Every AI provider we use (Anthropic, OpenAI, DeepL) has a no-training-on-our-data contractual commitment. <a href="ai-policy.html">Full AI policy →</a></p></div></details>
+          <details><summary>How can I download or delete my data?</summary><div class="a"><p>Self-service at <a href="data-export.html">data-export</a>. Pick format (JSON / CSV / PDF), categories, and request export — usually ready in 90 seconds. Delete account: 30 days production, 90 days backups, 7-day undo window.</p></div></details>
+          <details><summary>What's LYMX's regulatory status?</summary><div class="a"><p>LYMX is a promotional credit, not money or stored value. Outside Nevada NRS 671 money-transmitter scope. Outside NRS 598B gift-certificate rules (no expiration). <a href="disclaimer.html">Full positioning →</a></p></div></details>
+          <details><summary>Has LYMX had any data breaches?</summary><div class="a"><p>Zero data breaches since launch. One scheduled maintenance incident (March 2026, 22 min, no data affected). Full incident archive: <a href="incident-history.html">incident-history</a>.</p></div></details>
+          <details><summary>What about accessibility (WCAG)?</summary><div class="a"><p>Targeting WCAG 2.1 Level AA. Most principles met today; "Robust" in progress. Independent audit targeted Q4 2026. <a href="accessibility.html">Accessibility statement →</a></p></div></details>
+        </div>
+      </div>
+
+      <!-- Press / investors -->
+      <div class="section" data-c="press" id="press">
+        <div class="section-h"><div class="ic press">📰</div><h2>Press &amp; investors</h2><span class="count">3 questions</span></div>
+        <div class="qa">
+          <details><summary>Where do I get press materials?</summary><div class="a"><p>The <a href="press-kit.html">press kit</a> has boilerplate copy (3 lengths), founder bio, fact sheet, brand assets, and screenshots. Press credentials for the launch event: <a href="mailto:press@getlymx.com">press@getlymx.com</a>.</p></div></details>
+          <details><summary>I'm an investor — where can I learn more?</summary><div class="a"><p>Start with the <a href="investor.html">investor brief</a> (one-pager). The <a href="pitch-deck.html">pitch deck preview</a> (12 slides) is the visual companion. <a href="investor-dataroom.html">Data room</a> is the index.</p></div></details>
+          <details><summary>Are you raising right now?</summary><div class="a"><p>Yes — $1.5M seed on $7.5M post-money SAFE cap, 20% discount. $750K closed, $750K open as of April 2026. Email <a href="mailto:kenny@getlymx.com">Kenny directly</a> for an intro call.</p></div></details>
+        </div>
+      </div>
+
+      <!-- Technical -->
+      <div class="section" data-c="tech" id="tech">
+        <div class="section-h"><div class="ic tech">⚙️</div><h2>Technical</h2><span class="count">2 questions</span></div>
+        <div class="qa">
+          <details><summary>Is there a public API?</summary><div class="a"><p>Yes — currently in beta for Founding 25 Businesses. Public release Q3 2026. <a href="api.html">API docs →</a></p></div></details>
+          <details><summary>How can I integrate LYMX with my existing stack?</summary><div class="a"><p>Native integrations live: Shopify POS, QuickBooks, Mailchimp, Stripe, Twilio. In beta: Square, Toast, Klaviyo. Coming soon: Clover, Lightspeed, Xero. <a href="integrations.html">Full directory →</a></p></div></details>
+        </div>
+      </div>
+
+      <div id="empty" class="empty" style="display:none">
+        <h3>No questions match.</h3>
+        <p>Try a different keyword or filter — or <a href="support.html">ask the support team</a> directly.</p>
+      </div>
+
+      <div class="closing">
+        <h3>Question not answered?</h3>
+        <p>We answer email within 1 business day. The fastest path to a real human answer is <a href="mailto:support@getlymx.com">support@getlymx.com</a>.</p>
+        <a href="mailto:support@getlymx.com">Email support</a>
+        <a class="ghost" href="help-center.html">Browse help center</a>
+      </div>
+    </article>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · <a href="glossary.html">Glossary</a> · <a href="help-center.html">Help center</a> · <a href="support.html">Support</a> · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></div>
+</footer>
+
+<script>
+  let activeFilter = 'all';
+  let searchQ = '';
+
+  function render(){
+    const sections = document.querySelectorAll('.section');
+    let totalVisible = 0;
+    sections.forEach(s=>{
+      const matchesFilter = activeFilter === 'all' || s.dataset.c === activeFilter;
+      let visibleInSection = 0;
+      s.querySelectorAll('details').forEach(d=>{
+        const text = d.textContent.toLowerCase();
+        const matchesSearch = !searchQ || text.includes(searchQ.toLowerCase());
+        const visible = matchesFilter && matchesSearch;
+        d.style.display = visible ? '' : 'none';
+        if(visible) visibleInSection++;
+      });
+      s.style.display = (matchesFilter && visibleInSection > 0) ? '' : 'none';
+      totalVisible += visibleInSection;
+    });
+    document.getElementById('empty').style.display = totalVisible === 0 ? 'block' : 'none';
+  }
+
+  document.querySelectorAll('#filters .chip').forEach(c=>{
+    c.onclick = ()=>{
+      document.querySelectorAll('#filters .chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      activeFilter = c.dataset.c;
+      render();
+    };
+  });
+  document.getElementById('search').oninput = e=>{ searchQ = e.target.value; render(); };
+
+  // Smooth scroll on TOC
+  document.querySelectorAll('.toc a').forEach(a=>{
+    a.onclick = e=>{
+      e.preventDefault();
+      const t = document.querySelector(a.getAttribute('href'));
+      if(t) t.scrollIntoView({behavior:'smooth', block:'start'});
+    };
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Commission Calculator — LYMX Partner</title>
+<meta name="description" content="Model your potential LYMX Partner income. Adjust own-Businesses, downline Partners, and see monthly + annual estimates.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(135deg,#fffbe6,#fff5c2);padding:60px 24px 40px;border-bottom:1px solid var(--line)}
+  .hero-inner{max-width:1180px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#8b6f1f;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid var(--gold)}
+  .hero h1{font-size:42px;letter-spacing:-.025em;margin:0 0 12px;font-weight:800}
+  .hero p{color:#5d4d18;max-width:560px;margin:0 auto;font-size:16px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+
+  .calc{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px}
+  @media (max-width:880px){.calc{grid-template-columns:1fr}}
+
+  .input-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px}
+  .input-card h2{margin:0 0 6px;font-size:18px}
+  .input-card .sub{color:var(--mute);font-size:13px;margin-bottom:24px}
+  .slider{margin-bottom:24px}
+  .slider-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .slider-h label{font-size:13px;font-weight:600}
+  .slider-h .val{font-size:22px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .slider input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:6px;background:var(--line);border-radius:3px;outline:none}
+  .slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid #fff;box-shadow:0 2px 6px rgba(10,132,255,.3)}
+  .slider input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid #fff;box-shadow:0 2px 6px rgba(10,132,255,.3)}
+  .slider .scale{display:flex;justify-content:space-between;font-size:11px;color:var(--mute);margin-top:6px}
+  .slider .help{font-size:12px;color:var(--mute);margin-top:6px}
+
+  .out-card{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:28px;position:sticky;top:80px;height:fit-content}
+  .out-card h2{margin:0 0 6px;font-size:18px;color:#fff}
+  .out-card .sub{color:#b8c2d6;font-size:13px;margin-bottom:24px}
+  .total{margin-bottom:24px}
+  .total-l{font-size:11px;color:#8a9bb8;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+  .total-n{font-size:48px;font-weight:800;letter-spacing:-.03em;color:var(--gold);line-height:1.1;font-variant-numeric:tabular-nums}
+  .total-sub{font-size:13px;color:#b8c2d6;margin-top:2px}
+  .yearly{padding:14px 0;border-top:1px solid #2a3a5a;border-bottom:1px solid #2a3a5a;margin:18px 0;display:flex;justify-content:space-between;align-items:baseline}
+  .yearly span{font-size:13px;color:#b8c2d6}
+  .yearly strong{font-size:24px;color:#fff;font-variant-numeric:tabular-nums}
+  .breakdown{margin-top:14px}
+  .br-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;padding:6px 0}
+  .br-row .l{color:#b8c2d6}
+  .br-row .v{font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
+  .br-row .pct{font-size:11px;color:#8a9bb8;margin-left:6px}
+
+  .compare{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;margin-bottom:32px}
+  .compare h2{margin:0 0 18px;font-size:22px;letter-spacing:-.02em}
+  .scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:760px){.scenarios{grid-template-columns:1fr}}
+  .scenario{padding:18px;border:1px solid var(--line);border-radius:10px;cursor:pointer;transition:.15s}
+  .scenario:hover{border-color:var(--ink);transform:translateY(-1px)}
+  .scenario.gold{border:2px solid var(--gold);background:#fffbe6}
+  .scenario h3{margin:0 0 4px;font-size:15px}
+  .scenario .role{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:14px}
+  .scenario .income{font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .scenario .income-sub{font-size:12px;color:var(--mute)}
+  .scenario .row{font-size:12px;color:var(--mute);margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+  .scenario .row span{display:block;margin:2px 0}
+
+  .legend{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:32px}
+  .legend h2{margin:0 0 12px;font-size:18px}
+  .legend-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media (max-width:680px){.legend-grid{grid-template-columns:1fr}}
+  .legend-item{display:flex;gap:12px;font-size:13px}
+  .legend-item .ic{flex-shrink:0;width:36px;height:36px;border-radius:50%;background:#eef3ff;color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+  .legend-item .ic.g1{background:#e8f6ee;color:#0a7a4d}
+  .legend-item .ic.g2{background:#f2eaff;color:#5b3697}
+  .legend-item .ic.g3{background:#fef9e7;color:#8b6f1f}
+  .legend-item h4{margin:0 0 2px;font-size:14px}
+  .legend-item p{margin:0;color:var(--mute);font-size:12px}
+
+  .cta{background:linear-gradient(135deg,#0a84ff,#0058c7);color:#fff;border-radius:14px;padding:36px;text-align:center;margin-bottom:32px}
+  .cta h2{margin:0 0 8px;font-size:24px;color:#fff}
+  .cta p{color:#cce0ff;max-width:520px;margin:0 auto 18px}
+  .cta a{display:inline-block;background:var(--gold);color:#0e1116;padding:12px 24px;border-radius:8px;font-weight:700}
+
+  .legal{background:#fef9e7;border-left:4px solid var(--gold);padding:18px 22px;border-radius:0 12px 12px 0;font-size:12px;color:#5d4d18}
+  .legal strong{color:#3a2f0a}
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="partner-signup.html" class="btn">Become a Partner →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Partner program · Income illustration</div>
+    <h1>Commission Calculator</h1>
+    <p>Adjust the sliders to model your potential LYMX Partner income. Numbers update live. Note: this is an illustration — actual results vary widely.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="calc">
+
+  <div class="input-card">
+    <h2>Your Partner setup</h2>
+    <p class="sub">Move the sliders to model different scenarios.</p>
+
+    <div class="slider">
+      <div class="slider-h"><label>Own Businesses (Production)</label><span class="val" id="vBiz">3</span></div>
+      <input type="range" id="biz" min="0" max="20" value="3" oninput="recalc()">
+      <div class="scale"><span>0</span><span>5</span><span>10</span><span>15</span><span>20</span></div>
+      <div class="help">Businesses you personally signed. You earn 9% direct on these.</div>
+    </div>
+
+    <div class="slider">
+      <div class="slider-h"><label>G1 Partners (you signed)</label><span class="val" id="vG1">5</span></div>
+      <input type="range" id="g1" min="0" max="50" value="5" oninput="recalc()">
+      <div class="scale"><span>0</span><span>12</span><span>25</span><span>37</span><span>50</span></div>
+      <div class="help">Partners you personally recruited. Earn 3% on their Production.</div>
+    </div>
+
+    <div class="slider">
+      <div class="slider-h"><label>Avg G1 Production (Businesses)</label><span class="val" id="vG1B">2</span></div>
+      <input type="range" id="g1b" min="0" max="10" value="2" oninput="recalc()">
+      <div class="scale"><span>0</span><span>2</span><span>5</span><span>7</span><span>10</span></div>
+      <div class="help">How many Businesses each G1 Partner has, on average.</div>
+    </div>
+
+    <div class="slider">
+      <div class="slider-h"><label>G2 Partners (your G1's recruits)</label><span class="val" id="vG2">8</span></div>
+      <input type="range" id="g2" min="0" max="100" value="8" oninput="recalc()">
+      <div class="scale"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+      <div class="help">Partners your G1's recruited. Earn 2% on their Production.</div>
+    </div>
+
+    <div class="slider">
+      <div class="slider-h"><label>G3 Partners (G2's recruits)</label><span class="val" id="vG3">12</span></div>
+      <input type="range" id="g3" min="0" max="200" value="12" oninput="recalc()">
+      <div class="scale"><span>0</span><span>50</span><span>100</span><span>150</span><span>200</span></div>
+      <div class="help">Partners that G2's recruited. Earn 1% on their Production.</div>
+    </div>
+
+    <div class="slider">
+      <div class="slider-h"><label>Avg monthly Business spend</label><span class="val" id="vSpend">$200</span></div>
+      <input type="range" id="spend" min="100" max="500" step="50" value="200" oninput="recalc()">
+      <div class="scale"><span>$100</span><span>$200</span><span>$300</span><span>$400</span><span>$500</span></div>
+      <div class="help">Monthly LYMX spend per Business. $200 is the typical baseline.</div>
+    </div>
+  </div>
+
+  <div class="out-card">
+    <h2>Estimated income</h2>
+    <p class="sub">Updates live as you adjust the sliders.</p>
+
+    <div class="total">
+      <div class="total-l">Estimated monthly</div>
+      <div class="total-n" id="monthly">$0</div>
+      <div class="total-sub">Recurring, paid on the 15th of each month</div>
+    </div>
+
+    <div class="yearly">
+      <span>Annualized</span>
+      <strong id="yearly">$0</strong>
+    </div>
+
+    <div class="breakdown">
+      <div class="br-row"><span class="l">Own Businesses (9%)</span><span class="v" id="bProd">$0</span></div>
+      <div class="br-row"><span class="l">G1 override (3%)</span><span class="v" id="bG1">$0</span></div>
+      <div class="br-row"><span class="l">G2 override (2%)</span><span class="v" id="bG2">$0</span></div>
+      <div class="br-row"><span class="l">G3 override (1%)</span><span class="v" id="bG3">$0</span></div>
+    </div>
+
+    <div style="margin-top:18px;padding-top:18px;border-top:1px solid #2a3a5a;font-size:12px;color:#b8c2d6">
+      Plus: <strong style="color:var(--gold)">$500 one-time bonus</strong> per Business signed (not shown above)
+    </div>
+  </div>
+</div>
+
+<div class="compare">
+  <h2>Common scenarios</h2>
+  <div class="scenarios">
+    <div class="scenario" onclick="setScenario(1, 0, 0, 0, 0)">
+      <h3>Side hustle</h3>
+      <div class="role">1 Business · 0 downline</div>
+      <div class="income">$18/mo</div>
+      <div class="income-sub">+ $500 one-time</div>
+      <div class="row">
+        <span>Own Businesses: 1</span>
+        <span>Time: ~2 hrs/mo</span>
+      </div>
+    </div>
+    <div class="scenario gold" onclick="setScenario(3, 5, 2, 8, 12)">
+      <h3>Active Partner</h3>
+      <div class="role">★ Most common</div>
+      <div class="income">$1,830/mo</div>
+      <div class="income-sub">+ $1,500 first-month one-time</div>
+      <div class="row">
+        <span>3 own + 5 G1 + 8 G2 + 12 G3</span>
+        <span>Time: ~10 hrs/wk</span>
+      </div>
+    </div>
+    <div class="scenario" onclick="setScenario(8, 20, 4, 60, 150)">
+      <h3>Master Partner</h3>
+      <div class="role">Full-time</div>
+      <div class="income">$11,440/mo</div>
+      <div class="income-sub">+ $4,000 first-month one-time</div>
+      <div class="row">
+        <span>8 own + 20 G1 + 60 G2 + 150 G3</span>
+        <span>Time: 30+ hrs/wk</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <h2>How LYMX Partner commissions work</h2>
+  <div class="legend-grid">
+    <div class="legend-item">
+      <div class="ic">9%</div>
+      <div>
+        <h4>Production (your own Businesses)</h4>
+        <p>Direct commission on every Business you personally signed. Counts forever, not stacked into generations.</p>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="ic g1">3%</div>
+      <div>
+        <h4>G1 — Partners you signed</h4>
+        <p>Override on the Production of Partners you personally recruited.</p>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="ic g2">2%</div>
+      <div>
+        <h4>G2 — Partners your G1 signed</h4>
+        <p>Override on the Production of your G1's downline.</p>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="ic g3">1%</div>
+      <div>
+        <h4>G3 — Partners your G2 signed</h4>
+        <p>Override on the Production of your G2's downline. The chain stops here.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cta">
+  <h2>Like the numbers? Apply to be a Partner.</h2>
+  <p>The Partner program is selective — we approve people we think will be good ambassadors for the network. Application takes 5 minutes.</p>
+  <a href="partner-signup.html">Start application →</a>
+</div>
+
+<div class="legal">
+  <strong>Income disclosure (FTC):</strong> The figures shown here are illustrations — they are NOT a promise of earnings. Actual results vary widely based on effort, location, network depth, and Business retention. Most Partners earn modest income; a small percentage earn significantly more. No earnings are guaranteed. By becoming a Partner you agree to the <a href="partner-agreement.html">Partner Agreement</a>. The LYMX Partner program is a referral program — not a multi-level marketing investment opportunity. You don't pay to join, and you don't pay to maintain Partner status.
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Commission Calculator · <a href="partner-signup.html">Become a Partner</a> · <a href="partners.html">Partner program overview</a> · <a href="partner-agreement.html">Partner Agreement</a>
+</div>
+
+<script>
+  function recalc() {
+    const biz = +document.getElementById('biz').value;
+    const g1 = +document.getElementById('g1').value;
+    const g1b = +document.getElementById('g1b').value;
+    const g2 = +document.getElementById('g2').value;
+    const g3 = +document.getElementById('g3').value;
+    const spend = +document.getElementById('spend').value;
+
+    document.getElementById('vBiz').textContent = biz;
+    document.getElementById('vG1').textContent = g1;
+    document.getElementById('vG1B').textContent = g1b;
+    document.getElementById('vG2').textContent = g2;
+    document.getElementById('vG3').textContent = g3;
+    document.getElementById('vSpend').textContent = '$' + spend;
+
+    // commission math
+    const ownProd = biz * spend * 0.09;
+    const g1Prod = g1 * g1b * spend * 0.03;
+    const g2Prod = g2 * g1b * spend * 0.02;
+    const g3Prod = g3 * g1b * spend * 0.01;
+    const total = ownProd + g1Prod + g2Prod + g3Prod;
+
+    const fmt = (n) => '$' + Math.round(n).toLocaleString();
+    document.getElementById('monthly').textContent = fmt(total);
+    document.getElementById('yearly').textContent = fmt(total * 12);
+    document.getElementById('bProd').textContent = fmt(ownProd);
+    document.getElementById('bG1').textContent = fmt(g1Prod);
+    document.getElementById('bG2').textContent = fmt(g2Prod);
+    document.getElementById('bG3').textContent = fmt(g3Prod);
+  }
+
+  function setScenario(biz, g1, g1b, g2, g3) {
+    document.getElementById('biz').value = biz;
+    document.getElementById('g1').value = g1;
+    document.getElementById('g1b').value = g1b;
+    document.getElementById('g2').value = g2;
+    document.getElementById('g3').value = g3;
+    recalc();
+    document.querySelector('.input-card').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  recalc();
+</script>
+
+</body>
+</html>

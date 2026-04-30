@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Staff — LYMX Business</title>
+<meta name="description" content="Manage staff and cashiers for your Business. Add team members, set permissions, and see who's earning.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .biz-avatar{width:36px;height:36px;border-radius:50%;background:#fef9e7;border:2px solid var(--gold);display:inline-flex;align-items:center;justify-content:center;font-size:18px}
+  .wrap{max-width:1280px;margin:0 auto;padding:32px 24px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:32px;margin:0 0 8px;letter-spacing:-.025em}
+  .lead{color:var(--mute);max-width:680px;margin-bottom:28px}
+  .stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+  @media (max-width:760px){.stat-strip{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .stat .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+  .stat .n{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+  .stat .sub{font-size:12px;color:var(--mute);margin-top:2px}
+  .toolbar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap}
+  .toolbar input{padding:10px 14px;border:1px solid var(--line);border-radius:8px;font-size:14px;min-width:240px;background:#fff}
+  .toolbar select{padding:10px 14px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
+  .btn-primary{background:var(--ink);color:#fff;padding:10px 18px;border-radius:8px;font-weight:600;border:0;cursor:pointer;font-size:14px}
+  .btn-primary:hover{background:#1f2530}
+  .table{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{text-align:left;padding:14px 16px;font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:600;border-bottom:1px solid var(--line);background:#fafafa}
+  td{padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tr:last-child td{border-bottom:0}
+  tr:hover td{background:#fafafa}
+  .who{display:flex;align-items:center;gap:10px}
+  .who .av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a3c5ff,#5b9ef5);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+  .who .n{font-weight:600;font-size:14px}
+  .who .e{font-size:12px;color:var(--mute)}
+  .role{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;background:#eef3ff;color:var(--accent);letter-spacing:.04em;text-transform:uppercase}
+  .role.owner{background:#fef9e7;color:#8b6f1f}
+  .role.manager{background:#f2eaff;color:#5b3697}
+  .role.cashier{background:#e8f6ee;color:#0a7a4d}
+  .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#cbd0d8;margin-right:6px;vertical-align:middle}
+  .status-dot.on{background:var(--ok)}
+  .num{font-variant-numeric:tabular-nums;font-weight:600}
+  .row-actions{display:flex;gap:8px}
+  .row-actions a{padding:5px 10px;border:1px solid var(--line);border-radius:6px;font-size:12px;color:var(--ink);font-weight:500}
+  .row-actions a:hover{border-color:var(--ink);background:#fafafa}
+  .row-actions a.danger{color:var(--err);border-color:#fbd5d0}
+  .row-actions a.danger:hover{background:#fdecea}
+
+  /* Modal */
+  .mask{display:none;position:fixed;inset:0;background:rgba(14,17,22,.6);z-index:200;align-items:center;justify-content:center;padding:20px}
+  .mask.show{display:flex}
+  .modal{background:var(--card);border-radius:16px;max-width:480px;width:100%;padding:28px;box-shadow:0 30px 60px rgba(0,0,0,.3)}
+  .modal h2{margin:0 0 6px;font-size:22px;letter-spacing:-.02em}
+  .modal .sub{color:var(--mute);font-size:14px;margin-bottom:20px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12px;font-weight:600;margin-bottom:6px}
+  .field input,.field select{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--accent)}
+  .role-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .role-pick button{padding:10px 8px;border:2px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-size:12px;font-weight:600}
+  .role-pick button.on{border-color:var(--accent);background:#eef3ff;color:var(--accent)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+  .btn-ghost{padding:10px 16px;border:1px solid var(--line);background:#fff;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px}
+
+  .tip{display:flex;gap:14px;background:#eef3ff;border:1px solid #c7d6ff;border-radius:12px;padding:14px 16px;margin-top:32px;font-size:13px;color:#1a4196}
+  .tip .ic{flex-shrink:0;font-size:18px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="biz-dashboard.html">LYMX <span>Power</span> <span class="biz-tag">Business</span></a>
+    <nav class="nav-links">
+      <a href="biz-dashboard.html">Dashboard</a>
+      <a href="biz-analytics.html">Analytics</a>
+      <a href="benchmarks.html">Benchmarks</a>
+      <a href="pos.html">POS</a>
+      <a href="promotions.html">Promotions</a>
+      <a href="biz-staff.html" class="on">Staff</a>
+      <a href="settlement.html">Settlement</a>
+    </nav>
+    <div class="biz-avatar" title="Brew &amp; Bean Café">☕</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="crumb"><a href="biz-dashboard.html">Dashboard</a> / Staff</div>
+
+<h1>Staff &amp; Cashiers</h1>
+<p class="lead">Manage who can ring up LYMX transactions, run promos, and see your sales data. Cashiers can issue + redeem only — they can't see settlement or change rates.</p>
+
+<div class="stat-strip">
+  <div class="stat"><div class="l">Total staff</div><div class="n">7</div><div class="sub">+1 this month</div></div>
+  <div class="stat"><div class="l">Active today</div><div class="n">4</div><div class="sub">3 cashiers + 1 manager</div></div>
+  <div class="stat"><div class="l">Top earner (week)</div><div class="n">Marcus</div><div class="sub">$1,840 in scans</div></div>
+  <div class="stat"><div class="l">Avg LYMX issued / shift</div><div class="n">2,148</div><div class="sub">~$21 wholesale</div></div>
+</div>
+
+<div class="toolbar">
+  <input type="text" id="search" placeholder="Search by name or email…" oninput="filter()">
+  <select id="role" onchange="filter()">
+    <option value="">All roles</option>
+    <option>Owner</option>
+    <option>Manager</option>
+    <option>Cashier</option>
+  </select>
+  <button class="btn-primary" onclick="document.getElementById('addMask').classList.add('show')">+ Add staff</button>
+</div>
+
+<div class="table">
+  <table id="staffTable">
+    <thead>
+      <tr>
+        <th>Member</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Scans (30d)</th>
+        <th>LYMX issued</th>
+        <th>Last shift</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><div class="who"><div class="av" style="background:linear-gradient(135deg,#f2c94c,#d4af37);color:#fff">SC</div><div><div class="n">Sarah Chen</div><div class="e">sarah@brewandbean.com</div></div></div></td>
+        <td><span class="role owner">Owner</span></td>
+        <td><span class="status-dot on"></span>Active</td>
+        <td class="num">438</td>
+        <td class="num">12,840</td>
+        <td>Today, 8:14 am</td>
+        <td><div class="row-actions"><a href="#">Edit</a></div></td>
+      </tr>
+      <tr>
+        <td><div class="who"><div class="av" style="background:linear-gradient(135deg,#a3c5ff,#5b9ef5)">DT</div><div><div class="n">Daniel Torres</div><div class="e">daniel@brewandbean.com</div></div></div></td>
+        <td><span class="role manager">Manager</span></td>
+        <td><span class="status-dot on"></span>Active</td>
+        <td class="num">312</td>
+        <td class="num">8,920</td>
+        <td>Today, 10:42 am</td>
+        <td><div class="row-actions"><a href="#">Edit</a><a href="#" class="danger">Remove</a></div></td>
+      </tr>
+      <tr>
+        <td><div class="who"><div class="av" style="background:linear-gradient(135deg,#f5a18a,#e07b5e);color:#fff">MR</div><div><div class="n">Marcus Rivera</div><div class="e">marcus@brewandbean.com</div></div></div></td>
+        <td><span class="role cashier">Cashier</span></td>
+        <td><span class="status-dot on"></span>Active</td>
+        <td class="num">521</td>
+        <td class="num">15,420</td>
+        <td>Today, 6:00 am</td>
+        <td><div class="row-actions"><a href="#">Edit</a><a href="#" class="danger">Remove</a></div></td>
+      </tr>
+      <tr>
+        <td><div class="who"><div class="av" style="background:linear-gradient(135deg,#9adfb6,#42c576);color:#fff">JL</div><div><div class="n">Jasmine Lee</div><div class="e">jasmine@brewandbean.com</div></div></div></td>
+        <td><span class="role cashier">Cashier</span></td>
+        <td><span class="status-dot on"></span>Active</td>
+        <td class="num">287</td>
+        <td class="num">8,140</td>
+        <td>Today, 11:00 am</td>
+        <td><div class="row-actions"><a href="#">Edit</a><a href="#" class="danger">Remove</a></div></td>
+      </tr>
+      <tr>
+        <td><div class="who"><div class="av" style="background:linear-gradient(135deg,#c5a5f5,#8b6fd4);color:#fff">EP</div><div><div class="n">Eli Park</div><div class="e">eli@brewandbean.com</div></div></div></td>
+        <td><span class="role cashier">Cashier</span></td>
+        <td><span class="status-dot"></span>Off shift</td>
+        <td class="num">194</td>
+        <td class="num">5,820</td>
+        <td>Yesterday, 3:18 pm</td>
+        <td><div class="row-actions"><a href="#">Edit</a><a href="#" class="danger">Remove</a></div></td>
+      </tr>
+      <tr>
+        <td><div class="who"><div class="av" style="background:linear-gradient(135deg,#ffb3a7,#f5827d);color:#fff">RH</div><div><div class="n">Riley Hayes</div><div class="e">riley@brewandbean.com</div></div></div></td>
+        <td><span class="role cashier">Cashier</span></td>
+        <td><span class="status-dot"></span>Off shift</td>
+        <td class="num">156</td>
+        <td class="num">4,680</td>
+        <td>2 days ago</td>
+        <td><div class="row-actions"><a href="#">Edit</a><a href="#" class="danger">Remove</a></div></td>
+      </tr>
+      <tr>
+        <td><div class="who"><div class="av" style="background:linear-gradient(135deg,#cbd0d8,#9aa3b0);color:#fff">AC</div><div><div class="n">Avery Cole</div><div class="e">avery@brewandbean.com</div></div></div></td>
+        <td><span class="role cashier">Cashier</span></td>
+        <td><span class="status-dot"></span>Pending invite</td>
+        <td class="num">—</td>
+        <td class="num">—</td>
+        <td>Invited 2 days ago</td>
+        <td><div class="row-actions"><a href="#">Resend</a><a href="#" class="danger">Cancel</a></div></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="tip">
+  <span class="ic">💡</span>
+  <div><strong>Cashiers can:</strong> issue + redeem LYMX, run a promo if you've already created one, see daily transactions. <strong>Cashiers can't:</strong> change multipliers, view settlement, edit other staff, see raw customer data. <a href="help-article.html?topic=roles">Learn more about roles →</a></div>
+</div>
+
+</div>
+
+<!-- Add staff modal -->
+<div class="mask" id="addMask">
+  <div class="modal">
+    <h2>Add a team member</h2>
+    <p class="sub">They'll get an email invite. Once accepted, they can sign in to the POS app on their phone.</p>
+
+    <div class="row2">
+      <div class="field"><label>First name</label><input type="text" placeholder="Casey"></div>
+      <div class="field"><label>Last name</label><input type="text" placeholder="Wong"></div>
+    </div>
+    <div class="field"><label>Email address</label><input type="email" placeholder="casey@brewandbean.com"></div>
+
+    <div class="field">
+      <label>Role</label>
+      <div class="role-pick">
+        <button class="on">Cashier</button>
+        <button>Manager</button>
+        <button>Owner</button>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn-ghost" onclick="document.getElementById('addMask').classList.remove('show')">Cancel</button>
+      <button class="btn-primary" onclick="alert('Invite sent to casey@brewandbean.com');document.getElementById('addMask').classList.remove('show')">Send invite</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function filter() {
+    const q = document.getElementById('search').value.toLowerCase();
+    const r = document.getElementById('role').value;
+    const rows = document.querySelectorAll('#staffTable tbody tr');
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      const role = row.querySelector('.role').textContent;
+      const matchSearch = !q || text.includes(q);
+      const matchRole = !r || role === r;
+      row.style.display = matchSearch && matchRole ? '' : 'none';
+    });
+  }
+  document.querySelectorAll('.role-pick button').forEach(b => {
+    b.onclick = () => {
+      document.querySelectorAll('.role-pick button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+    };
+  });
+  document.getElementById('addMask').onclick = (e) => {
+    if (e.target.id === 'addMask') e.target.classList.remove('show');
+  };
+</script>
+
+</body>
+</html>

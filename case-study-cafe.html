@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Case Study: Brew &amp; Bean Café — LYMX Power</title>
+<meta name="description" content="How a Midtown café cut their loyalty cost by 60% and added 142 new customers per month using LYMX.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1080px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(180deg,#fef9e7 0%,#fafafa 100%);padding:80px 24px 40px;border-bottom:1px solid var(--line)}
+  .hero-inner{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:center}
+  @media (max-width:880px){.hero-inner{grid-template-columns:1fr}}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#8b6f1f;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid var(--gold)}
+  .hero h1{font-size:46px;letter-spacing:-.03em;margin:0 0 16px;font-weight:800;line-height:1.1}
+  .hero p{color:var(--mute);font-size:17px;max-width:560px}
+  .hero-img{aspect-ratio:1.2/1;background:linear-gradient(135deg,#f5e6d3,#d4a86a);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:120px;box-shadow:0 20px 50px rgba(212,168,106,.3)}
+
+  .meta-strip{background:var(--ink);color:#fff;padding:24px 0}
+  .meta-inner{max-width:1080px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+  @media (max-width:680px){.meta-inner{grid-template-columns:repeat(2,1fr)}}
+  .meta-item .l{font-size:11px;color:#8a9bb8;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+  .meta-item .v{font-size:16px;font-weight:600;margin-top:4px;color:#fff}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:64px 24px;font-size:16px}
+  h2{font-size:30px;letter-spacing:-.025em;margin:48px 0 14px}
+  h3{font-size:20px;margin:32px 0 10px}
+  p{margin:0 0 16px}
+  .lead-p{font-size:18px;color:#1f2530;margin-bottom:24px}
+
+  .pull{margin:40px 0;padding:28px 32px;background:#fffbe6;border-left:5px solid var(--gold);border-radius:0 12px 12px 0;font-size:20px;font-weight:600;line-height:1.4;color:#3a2f0a}
+  .pull cite{display:block;font-size:13px;color:#8b6f1f;margin-top:14px;font-style:normal;font-weight:600}
+
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:32px 0}
+  @media (max-width:680px){.compare{grid-template-columns:1fr}}
+  .col{padding:24px;border-radius:14px}
+  .col.before{background:#fdecea;border:1px solid #fbd5d0}
+  .col.after{background:#e8f6ee;border:1px solid #c2e8d2}
+  .col h4{margin:0 0 14px;font-size:14px;letter-spacing:.04em;text-transform:uppercase;font-weight:700}
+  .col.before h4{color:#a32114}
+  .col.after h4{color:#0a7a4d}
+  .col ul{margin:0;padding-left:20px;font-size:14px}
+  .col li{margin-bottom:8px}
+  .col li:last-child{margin-bottom:0}
+
+  .stats-block{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:32px;margin:40px 0}
+  .stats-block h3{margin:0 0 24px;font-size:18px;letter-spacing:.04em;text-transform:uppercase;color:var(--mute);font-weight:700}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+  @media (max-width:680px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+  .stat-num{font-size:38px;font-weight:800;letter-spacing:-.02em;color:var(--ok);line-height:1}
+  .stat-num.gold{color:var(--gold)}
+  .stat-num.purple{color:#5b3697}
+  .stat-num.accent{color:var(--accent)}
+  .stat-l{font-size:13px;color:var(--mute);margin-top:6px;line-height:1.3}
+  .stat-cmp{font-size:11px;color:var(--mute);margin-top:4px;font-weight:600}
+
+  .timeline{margin:32px 0;position:relative;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:var(--line)}
+  .tl-item{position:relative;padding-bottom:24px}
+  .tl-item::before{content:"";position:absolute;left:-32px;top:6px;width:18px;height:18px;border-radius:50%;background:var(--card);border:3px solid var(--accent)}
+  .tl-item.gold::before{border-color:var(--gold);background:#fffbe6}
+  .tl-item.ok::before{border-color:var(--ok)}
+  .tl-item .when{font-size:11px;color:var(--mute);letter-spacing:.04em;text-transform:uppercase;font-weight:700;margin-bottom:2px}
+  .tl-item h4{margin:0 0 4px;font-size:15px}
+  .tl-item p{margin:0;color:var(--mute);font-size:14px}
+
+  .quote-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin:32px 0;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+  @media (max-width:680px){.quote-card{grid-template-columns:1fr;text-align:center}}
+  .qc-avatar{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#f5d172,#d4af37);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff}
+  .quote-card blockquote{margin:0;font-size:18px;font-style:italic;color:#1f2530;line-height:1.5}
+  .quote-card cite{display:block;font-size:13px;color:var(--mute);margin-top:12px;font-style:normal;font-weight:600}
+  .quote-card cite strong{color:var(--ink);font-size:14px}
+
+  .cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:16px;padding:40px;text-align:center;margin:48px 0}
+  .cta h2{margin:0 0 8px;font-size:26px;color:#fff}
+  .cta p{color:#b8c2d6;max-width:500px;margin:0 auto 20px}
+  .cta a{display:inline-block;background:var(--gold);color:#0e1116;padding:12px 24px;border-radius:8px;font-weight:700}
+
+  .more-cs{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:32px}
+  @media (max-width:680px){.more-cs{grid-template-columns:1fr}}
+  .cs{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;gap:14px;align-items:center}
+  .cs .ic{flex-shrink:0;width:48px;height:48px;border-radius:50%;background:#fef9e7;display:flex;align-items:center;justify-content:center;font-size:22px}
+  .cs .t{font-size:14px;font-weight:700;margin-bottom:2px}
+  .cs .d{font-size:12px;color:var(--mute)}
+
+  .footer{text-align:center;padding:60px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="business.html" class="btn">List your Business →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow">Case study · Coffee &amp; bakery</div>
+      <h1>How Brew &amp; Bean cut loyalty cost 60% and added 142 new customers a month.</h1>
+      <p>A Midtown café switched from a stack of three single-store loyalty tools to LYMX. Eight weeks later, they were spending less, knew more about their customers, and had a meaningful pipeline of new walk-ins from other LYMX Businesses.</p>
+    </div>
+    <div class="hero-img">☕</div>
+  </div>
+</section>
+
+<section class="meta-strip">
+  <div class="meta-inner">
+    <div class="meta-item"><div class="l">Business</div><div class="v">Brew &amp; Bean Café</div></div>
+    <div class="meta-item"><div class="l">Location</div><div class="v">Midtown · Las Vegas</div></div>
+    <div class="meta-item"><div class="l">Joined LYMX</div><div class="v">February 2026</div></div>
+    <div class="meta-item"><div class="l">Category</div><div class="v">Coffee &amp; Bakery</div></div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<p class="lead-p">Sarah Chen opened Brew &amp; Bean in 2019 and grew it into one of Midtown's most-loved cafés the slow way — good coffee, friendly staff, and a sunny patio. By 2025 she had two consistent problems: keeping new customers coming back, and knowing whether anything she spent on marketing was actually working.</p>
+
+<h2>The setup before LYMX</h2>
+
+<div class="compare">
+  <div class="col before">
+    <h4>What Brew &amp; Bean was running</h4>
+    <ul>
+      <li><strong>$340/mo Yelp Ads</strong> — drove some clicks, hard to attribute to actual visits</li>
+      <li><strong>$120/mo Square Loyalty</strong> — a stamp card that customers forgot existed</li>
+      <li><strong>$210/mo email tool</strong> — sent twice a month to ~800 contacts</li>
+      <li><strong>$80/mo Instagram boosting</strong> — occasional</li>
+      <li><strong>Total: $750/mo</strong> on customer acquisition + retention</li>
+    </ul>
+  </div>
+  <div class="col after">
+    <h4>What they were getting</h4>
+    <ul>
+      <li>~28 new customers per month from all sources combined</li>
+      <li>Repeat-visit rate of 41% within 90 days (industry avg ~50%)</li>
+      <li>No way to tell which channel drove which customer</li>
+      <li>Stamp card data trapped inside Square — no portability</li>
+      <li>Sarah spent 2–3 hours a week running the email tool herself</li>
+    </ul>
+  </div>
+</div>
+
+<div class="pull">
+  "We were spending real money every month and I genuinely could not tell you what any of it was doing. The stamp card felt like the only thing that worked, but it was also the cheapest one — that should have told me something."
+  <cite>Sarah Chen, Owner</cite>
+</div>
+
+<h2>Why she tried LYMX</h2>
+
+<p>A neighbor — Daniel from Oakline Kitchen, two blocks down — joined LYMX in early February 2026 as a Founding 25 Business and mentioned it over coffee. Sarah's hesitation: she'd been pitched loyalty programs before. They all promised acquisition; none of them delivered. The thing that got her over the line was the network effect.</p>
+
+<blockquote class="pull">
+  "Daniel said something that flipped it for me — every other LYMX Business has a financial reason to send their customers to me, because their customer's LYMX work here too. It's not a loyalty program. It's a shared customer base."
+  <cite>Sarah Chen, Owner</cite>
+</blockquote>
+
+<h2>The 8-week rollout</h2>
+
+<div class="timeline">
+
+  <div class="tl-item gold">
+    <div class="when">Week 1 · Feb 8, 2026</div>
+    <h4>Sign up + setup</h4>
+    <p>$850 sign-up fee, plus $200/mo recurring. POS replaced with LYMX (kept Square as backup for first month).</p>
+  </div>
+
+  <div class="tl-item">
+    <div class="when">Week 2</div>
+    <h4>Cancelled Square Loyalty + Yelp Ads</h4>
+    <p>Sarah paused Square Loyalty (kept Square as POS, just turned off the stamp card). Cancelled Yelp Ads. <strong>Cost savings: $460/mo immediately.</strong></p>
+  </div>
+
+  <div class="tl-item">
+    <div class="when">Week 3</div>
+    <h4>First "borrowed" customer</h4>
+    <p>A customer redeemed LYMX they'd earned at Oakline Kitchen for a coffee. Sarah didn't pay any acquisition cost for that customer — Oakline had effectively pre-paid it.</p>
+  </div>
+
+  <div class="tl-item">
+    <div class="when">Week 4–5</div>
+    <h4>Set up first item-level boost</h4>
+    <p>2× multiplier on cold brew ($5.50, normally 28 LYMX → boosted to 55 LYMX). Cold brew sales lifted 38% in two weeks.</p>
+  </div>
+
+  <div class="tl-item ok">
+    <div class="when">Week 6</div>
+    <h4>Hit break-even on monthly cost</h4>
+    <p>By week 6, the 142 new LYMX customers/month were generating enough incremental margin to cover the $200/mo subscription with $740 left over.</p>
+  </div>
+
+  <div class="tl-item ok">
+    <div class="when">Week 8 · Apr 5, 2026</div>
+    <h4>Switched the email tool off</h4>
+    <p>LYMX's built-in customer engagement (push to wallet, in-app receipts, multiplier promos) replaced the standalone email tool. Cancelled. <strong>Cost savings: $210/mo more.</strong></p>
+  </div>
+
+</div>
+
+<h2>The results, week 8</h2>
+
+<div class="stats-block">
+  <h3>By the numbers</h3>
+  <div class="stats-grid">
+    <div>
+      <div class="stat-num">−60%</div>
+      <div class="stat-l">Loyalty + marketing spend</div>
+      <div class="stat-cmp">$750 → $300/mo</div>
+    </div>
+    <div>
+      <div class="stat-num gold">+142</div>
+      <div class="stat-l">New customers / month</div>
+      <div class="stat-cmp">5× the previous baseline</div>
+    </div>
+    <div>
+      <div class="stat-num accent">+27 pts</div>
+      <div class="stat-l">90-day retention rate</div>
+      <div class="stat-cmp">41% → 68%</div>
+    </div>
+    <div>
+      <div class="stat-num purple">+$2,140</div>
+      <div class="stat-l">Incremental sales / month</div>
+      <div class="stat-cmp">From boosted items alone</div>
+    </div>
+  </div>
+</div>
+
+<div class="quote-card">
+  <div class="qc-avatar">SC</div>
+  <blockquote>
+    "After two months on LYMX, my settlement bill is under $40. Two ad subscriptions and an old loyalty plugin? Gone. New customers walking in we've never seen? Constant. The thing I keep telling other owners is that this isn't loyalty — it's the small-business version of being part of a chain. We share a customer base now."
+    <cite><strong>Sarah Chen</strong> · Owner, Brew &amp; Bean Café</cite>
+  </blockquote>
+</div>
+
+<h2>What surprised her</h2>
+
+<p>Three things, in her words.</p>
+
+<p><strong>1. The customers from other Businesses showed up faster than expected.</strong> By week 3, ~15% of transactions were from customers who'd earned LYMX somewhere else. By week 8, that number was 31%. None of those customers cost Sarah anything to acquire.</p>
+
+<p><strong>2. The boosted items moved more than the math suggested they would.</strong> A 2× multiplier on cold brew costs Sarah ~$0.05 in wholesale per drink. Cold brew sales went up 38% in two weeks. The math comes out to roughly $24 in boost cost driving $620 in incremental sales — a 25× return.</p>
+
+<p><strong>3. The data was more useful than the loyalty.</strong> Sarah cared about retention, but the part she ended up using daily was the dashboard — being able to see which times of day generated the most LYMX transactions, which menu items had the lowest attach, which days were softer than the network average. That's not what she signed up for, but it's what kept her engaged.</p>
+
+<div class="pull">
+  "I thought I was buying a loyalty program. What I actually got was a shared customer pipeline plus the analytics tool I should have had years ago."
+  <cite>Sarah Chen, Owner</cite>
+</div>
+
+<h2>What's next for Brew &amp; Bean</h2>
+
+<p>Sarah is now hosting a monthly "LYMX Latte Hour" event for other small Business owners in Midtown — informal Q&amp;A sessions for people considering joining. She's also become a Partner — earning override commission on the 4 Businesses she's referred to date. Her first month as a Partner: $740 in commission alongside her own Business income.</p>
+
+<p>Brew &amp; Bean was ranked #2 in <a href="benchmarks.html">benchmark performance</a> for Coffee &amp; Bakery in the most recent network refresh.</p>
+
+<div class="cta">
+  <h2>Want results like Brew &amp; Bean?</h2>
+  <p>The Founding 25 program closes when the last spot is taken. As of today there are 7 spots remaining for Las Vegas.</p>
+  <a href="business.html">List your Business →</a>
+</div>
+
+<h2>More case studies</h2>
+<div class="more-cs">
+  <a href="biz-oakline-kitchen.html" class="cs"><span class="ic">🥘</span><div><div class="t">Oakline Kitchen</div><div class="d">Restaurant · Founding 25 · Joined Feb 2026</div></div></a>
+  <a href="biz-spotlight.html" class="cs"><span class="ic">🥯</span><div><div class="t">Sage &amp; Stone Bakery</div><div class="d">Bakery · Henderson · Joined Mar 2026</div></div></a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Case study: Brew &amp; Bean Café · <a href="business.html">For Businesses</a> · <a href="testimonials.html">More testimonials</a>
+</div>
+
+</body>
+</html>
