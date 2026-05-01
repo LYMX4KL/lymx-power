@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Emergency Protocol — LYMX Power</title>
+<meta name="description" content="What to do if your LYMX wallet is compromised, lost, or there's a system issue. Quick action steps + how to reach support 24/7.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1080px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+
+  .hero{background:linear-gradient(135deg,#fdecea,#fbd5d0);padding:64px 24px 36px;border-bottom:1px solid var(--line)}
+  .hero-inner{max-width:1080px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#a32114;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #fbd5d0}
+  .hero h1{font-size:42px;letter-spacing:-.025em;margin:0 0 12px;font-weight:800}
+  .hero p{color:#7d2014;max-width:580px;margin:0 auto;font-size:16px}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:48px 24px}
+
+  /* Quick contact bar */
+  .contact-bar{background:#0e1116;color:#fff;border-radius:14px;padding:24px 32px;margin-bottom:32px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media (max-width:680px){.contact-bar{grid-template-columns:1fr;text-align:center}}
+  .cb-item{padding:0 12px;border-right:1px solid #2a3a5a}
+  .cb-item:last-child{border-right:0}
+  @media (max-width:680px){.cb-item{border-right:0;border-bottom:1px solid #2a3a5a;padding-bottom:14px}.cb-item:last-child{border-bottom:0;padding-bottom:0}}
+  .cb-label{font-size:11px;color:#8a9bb8;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:4px}
+  .cb-value{font-size:18px;font-weight:800;color:#fff}
+  .cb-value a{color:var(--gold)}
+  .cb-sub{font-size:11.5px;color:#b8c2d6;margin-top:2px}
+
+  /* Scenario cards */
+  .scenarios{display:grid;gap:14px;margin-bottom:32px}
+  .scenario{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px}
+  .scenario.urgent{border-left:5px solid var(--err)}
+  .scenario.high{border-left:5px solid var(--warn)}
+  .scenario.medium{border-left:5px solid var(--accent)}
+  .scenario-h{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+  .scenario-h h2{margin:0;font-size:20px;letter-spacing:-.02em}
+  .severity{font-size:10px;font-weight:800;padding:3px 10px;border-radius:999px;letter-spacing:.06em;text-transform:uppercase;height:fit-content}
+  .severity.urgent{background:#fdecea;color:#a32114}
+  .severity.high{background:#fff8eb;color:#8b5500}
+  .severity.medium{background:#eef3ff;color:var(--accent)}
+  .scenario p{margin:0 0 14px;font-size:14px;color:var(--mute)}
+  .actions-list{margin:0;padding-left:20px;font-size:14px;color:#1f2530}
+  .actions-list li{margin-bottom:6px}
+  .actions-list li strong{color:var(--ink)}
+  .scenario code{background:#f1f3f7;padding:2px 7px;border-radius:5px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13px}
+
+  .timer-box{margin-top:14px;padding:12px 18px;background:#fef9e7;border-left:4px solid var(--gold);border-radius:0 8px 8px 0;font-size:13px;color:#5d4d18}
+  .timer-box strong{color:#3a2f0a}
+
+  /* Status check */
+  .status{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:32px;margin-bottom:32px;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+  @media (max-width:680px){.status{grid-template-columns:1fr;text-align:center}}
+  .status-light{width:64px;height:64px;border-radius:50%;background:var(--ok);display:flex;align-items:center;justify-content:center;font-size:28px;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(19,162,107,.5)}50%{box-shadow:0 0 0 20px rgba(19,162,107,0)}}
+  .status h3{margin:0 0 4px;font-size:16px;color:#fff}
+  .status p{margin:0;color:#b8c2d6;font-size:13.5px}
+  .status a{color:var(--gold);font-weight:700}
+
+  /* Tips */
+  .tips{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .tips h2{margin:0 0 8px;font-size:22px;letter-spacing:-.02em}
+  .tips .sub{color:var(--mute);font-size:13.5px;margin-bottom:18px}
+  .tips-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media (max-width:680px){.tips-grid{grid-template-columns:1fr}}
+  .tip{padding:14px 18px;background:#fafafa;border-radius:10px;display:flex;gap:12px;font-size:13px}
+  .tip .ic{flex-shrink:0;font-size:22px}
+  .tip strong{display:block;font-size:13px;margin-bottom:2px;color:var(--ink)}
+  .tip span{color:var(--mute)}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="status.html">System status</a>
+      <a href="customer-faq.html">FAQ</a>
+      <a href="trust-and-safety.html">Trust &amp; safety</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">🚨 Emergency protocol</div>
+    <h1>Something's wrong. Here's what to do.</h1>
+    <p>Quick action steps for the most common LYMX emergencies. Save this page to your bookmarks — you don't want to be searching for it when you need it.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- CONTACT BAR -->
+<div class="contact-bar">
+  <div class="cb-item">
+    <div class="cb-label">Email — fastest</div>
+    <div class="cb-value"><a href="mailto:emergency@getlymx.com">emergency@getlymx.com</a></div>
+    <div class="cb-sub">Monitored 24/7 · auto-acknowledged in 5 min</div>
+  </div>
+  <div class="cb-item">
+    <div class="cb-label">Phone — critical</div>
+    <div class="cb-value">1-800-LYMX-911</div>
+    <div class="cb-sub">For active fraud / account compromise · 24/7</div>
+  </div>
+  <div class="cb-item">
+    <div class="cb-label">System status</div>
+    <div class="cb-value"><a href="status.html">status.getlymx.com</a></div>
+    <div class="cb-sub">Live system health · check first</div>
+  </div>
+</div>
+
+<!-- STATUS BANNER -->
+<div class="status">
+  <div class="status-light">✓</div>
+  <div>
+    <h3>All systems operational</h3>
+    <p>Last 90 days: 99.97% uptime. If something feels broken on your end but no incident is showing, it's likely your local connection — try refreshing or check your wifi. <a href="status.html">Live status →</a></p>
+  </div>
+</div>
+
+<!-- SCENARIOS -->
+<div class="scenarios">
+
+  <!-- WALLET STOLEN -->
+  <div class="scenario urgent">
+    <div class="scenario-h">
+      <h2>🚨 My phone was stolen / lost — wallet might be compromised</h2>
+      <span class="severity urgent">Urgent · do this NOW</span>
+    </div>
+    <p>If your phone is gone and you're worried about your LYMX wallet:</p>
+    <ol class="actions-list">
+      <li><strong>Sign into your LYMX wallet from any other device</strong> — go to <a href="customer-wallet.html">getlymx.com/wallet</a>. Authentication is by your phone number, but you'll get an SMS code at your number once you have a new SIM.</li>
+      <li><strong>Click "Lost device" in Security settings</strong> — this immediately revokes the QR access on the lost device. Anyone holding it can no longer scan to spend your LYMX.</li>
+      <li><strong>If you can't sign in</strong>, email <a href="mailto:emergency@getlymx.com">emergency@getlymx.com</a> with: your phone number, your name, last 4 of any recent receipt. We freeze the wallet within 30 minutes.</li>
+      <li><strong>Once you have a new device + SIM</strong>, sign back in. Your balance is preserved — we never delete LYMX, even from frozen wallets.</li>
+    </ol>
+    <div class="timer-box"><strong>Speed matters:</strong> Stolen wallet recovery is free if reported within 30 days. After that, recovery depends on case specifics.</div>
+  </div>
+
+  <!-- LYMX MISSING -->
+  <div class="scenario high">
+    <div class="scenario-h">
+      <h2>💸 LYMX I should have earned isn't showing in my wallet</h2>
+      <span class="severity high">High · within 24 hr</span>
+    </div>
+    <p>You bought something at a LYMX Business but the LYMX didn't appear in your wallet, or the amount is wrong:</p>
+    <ol class="actions-list">
+      <li><strong>Check the receipt.</strong> If LYMX is shown on the receipt, it's recorded — may take up to 60 sec to appear in the wallet. Refresh.</li>
+      <li><strong>If not on the receipt</strong>, ask the cashier to retroactively add LYMX (most can within 7 days). They scan your QR and the system catches up.</li>
+      <li><strong>If the cashier can't help</strong>, file a <a href="customer-dispute.html">customer dispute</a>. We investigate within 1 business day. If we made an error, we credit immediately.</li>
+      <li><strong>Promo multiplier didn't apply?</strong> Same dispute flow — include the date, business name, and what multiplier you think should have applied.</li>
+    </ol>
+  </div>
+
+  <!-- DOUBLE CHARGE -->
+  <div class="scenario high">
+    <div class="scenario-h">
+      <h2>💳 I think I got double-charged or my redemption was wrong</h2>
+      <span class="severity high">High · within 24 hr</span>
+    </div>
+    <p>Card was charged twice, or LYMX was deducted twice for the same order, or the redemption amount looks wrong:</p>
+    <ol class="actions-list">
+      <li><strong>If it's a card double-charge:</strong> contact your card issuer first (Visa, Mastercard, etc.). LYMX doesn't process card payments — Square/Stripe/Toast does. The Business or your card issuer fixes this.</li>
+      <li><strong>If it's a LYMX double-deduction</strong>, file a <a href="customer-dispute.html">dispute</a>. We can confirm in our logs whether the deduction happened twice and refund the duplicate.</li>
+      <li><strong>If the amount is wrong</strong>, check the receipt against your wallet history. Sometimes a multi-step redemption (gift card buy + spend) appears as multiple lines but is actually one transaction.</li>
+    </ol>
+  </div>
+
+  <!-- BUSINESS WON'T ACCEPT -->
+  <div class="scenario medium">
+    <div class="scenario-h">
+      <h2>🏪 A Business won't accept my LYMX even though they're listed</h2>
+      <span class="severity medium">Medium · within 7 days</span>
+    </div>
+    <p>You went to a LYMX Business and they said they don't accept LYMX, or the cashier seemed confused:</p>
+    <ol class="actions-list">
+      <li><strong>Check their listing</strong> at <a href="browse.html">getlymx.com/browse</a>. If their listing has a "Leaving the LYMX network" banner, they're in their 90-day wind-down — but should still accept.</li>
+      <li><strong>Be patient and helpful with the cashier.</strong> Say "I have LYMX — please scan my QR before you ring up." Many cashiers are new.</li>
+      <li><strong>If they still won't take it</strong>, file a <a href="customer-dispute.html">dispute</a> with the Business name, date, and what happened. We follow up directly with the Business.</li>
+      <li><strong>You should never lose LYMX on a refused redemption.</strong> If the Business eventually accepts but you've already paid full price, we adjust and credit you the LYMX afterward.</li>
+    </ol>
+  </div>
+
+  <!-- SUSPICIOUS ACTIVITY -->
+  <div class="scenario urgent">
+    <div class="scenario-h">
+      <h2>⚠️ I see a transaction in my wallet I didn't make</h2>
+      <span class="severity urgent">Urgent · do this NOW</span>
+    </div>
+    <p>Someone else is using your wallet — possibly fraud:</p>
+    <ol class="actions-list">
+      <li><strong>Freeze your wallet immediately</strong> via <a href="customer-settings.html">Settings → Security → Freeze wallet</a>. Stops all activity in 5 sec.</li>
+      <li><strong>Email <a href="mailto:emergency@getlymx.com">emergency@getlymx.com</a></strong> with: the unrecognized transaction (date, amount, business), and any other details.</li>
+      <li><strong>Change your authentication.</strong> If you have a new SIM/device since the issue started, that's done. If not, complete the verification flow we'll send you.</li>
+      <li><strong>Recovery</strong>: we investigate within 4 hours. If we confirm fraud, the LYMX is restored. Card-based fraud is between you and your card issuer.</li>
+    </ol>
+  </div>
+
+  <!-- SYSTEM OUTAGE -->
+  <div class="scenario medium">
+    <div class="scenario-h">
+      <h2>🌐 LYMX system is down — I can't open my wallet</h2>
+      <span class="severity medium">Medium · we usually fix in &lt; 30 min</span>
+    </div>
+    <p>The LYMX wallet won't load, or you're getting error messages:</p>
+    <ol class="actions-list">
+      <li><strong>Check <a href="status.html">status.getlymx.com</a></strong> first — if there's an active incident, we're already working on it. ETA usually posted.</li>
+      <li><strong>If status shows operational but you can't connect</strong>: clear your browser cache, refresh, try a different network (wifi vs. cellular).</li>
+      <li><strong>If the issue persists</strong>, email <a href="mailto:support@getlymx.com">support@getlymx.com</a> with: device type, browser, what error you're seeing.</li>
+      <li><strong>During an outage, your balance is safe.</strong> Just deferred — once we recover, all transactions queue up and replay correctly.</li>
+    </ol>
+  </div>
+</div>
+
+<!-- TIPS -->
+<div class="tips">
+  <h2>How to prevent emergencies</h2>
+  <p class="sub">A few habits that make every emergency easier to recover from.</p>
+
+  <div class="tips-grid">
+    <div class="tip">
+      <div class="ic">📱</div>
+      <div><strong>Set up a backup access method</strong><span>In Settings, add a backup email and a recovery phone (a friend or family member's phone). Lets us reach you even if your primary is gone.</span></div>
+    </div>
+    <div class="tip">
+      <div class="ic">🔒</div>
+      <div><strong>Enable security notifications</strong><span>Get an email any time someone signs in to your wallet, or a redemption over $50 happens. Catches issues fast.</span></div>
+    </div>
+    <div class="tip">
+      <div class="ic">📸</div>
+      <div><strong>Save your receipts (digital is fine)</strong><span>If you ever need to retroactively add LYMX, having the receipt saves arguing with the cashier. Most LYMX Businesses email digital receipts.</span></div>
+    </div>
+    <div class="tip">
+      <div class="ic">🆔</div>
+      <div><strong>Verify your phone number is current</strong><span>If you change your phone number, update it in Settings before you stop using the old one. Otherwise account recovery gets more complicated.</span></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Emergency protocol · <a href="status.html">System status</a> · <a href="trust-and-safety.html">Trust &amp; safety</a> · <a href="customer-faq.html">Customer FAQ</a> · Bookmark this page
+</div>
+
+</body>
+</html>

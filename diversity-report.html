@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Diversity &amp; Inclusion Report — LYMX Power</title>
+<meta name="description" content="LYMX Power's annual Diversity, Equity & Inclusion report. Honest data about who works here, who's on the network, and what we're committed to doing better.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1080px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+
+  .hero{padding:64px 24px 36px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#f2eaff 0%,#fafafa 100%)}
+  .hero-inner{max-width:1080px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--purple);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #d4c1f0}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:17px}
+  .hero .meta{font-size:13px;color:var(--mute);margin-top:18px;font-weight:600}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:48px 24px}
+
+  /* Honesty banner */
+  .honesty{background:#fef9e7;border-left:4px solid var(--gold);padding:18px 24px;border-radius:0 12px 12px 0;margin-bottom:32px;font-size:14px;color:#5d4d18}
+  .honesty strong{color:#3a2f0a}
+
+  /* Section */
+  .section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:36px;margin-bottom:24px}
+  .section h2{font-size:24px;letter-spacing:-.025em;margin:0 0 8px}
+  .section .sub{color:var(--mute);font-size:14px;margin-bottom:20px}
+
+  /* Stats grid */
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media (max-width:760px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+  .stat{padding:18px;background:#fafafa;border:1px solid var(--line);border-radius:12px;text-align:center}
+  .stat .n{font-size:28px;font-weight:800;color:var(--ink);letter-spacing:-.02em;line-height:1}
+  .stat .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:6px}
+  .stat .sub{font-size:11px;color:var(--mute);margin-top:2px}
+
+  /* Bar chart */
+  .bar-chart{margin-top:20px}
+  .bar-row{display:grid;grid-template-columns:160px 1fr 60px;gap:14px;align-items:center;padding:8px 0;font-size:13.5px}
+  @media (max-width:680px){.bar-row{grid-template-columns:1fr}.bar-row .name{font-weight:600}.bar-row .pct{font-weight:700;color:var(--ink)}}
+  .bar-row .name{font-weight:600}
+  .bar-track{height:24px;background:#f1f3f7;border-radius:12px;overflow:hidden;position:relative}
+  .bar-fill{height:100%;border-radius:12px;display:flex;align-items:center;padding-left:10px;color:#fff;font-weight:700;font-size:11.5px}
+  .bar-fill.purple{background:var(--purple)}
+  .bar-fill.blue{background:var(--accent)}
+  .bar-fill.green{background:var(--ok)}
+  .bar-fill.gold{background:var(--gold);color:#3a2f0a}
+  .bar-row .pct{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+
+  /* Methodology */
+  .methodology{background:#f7faff;border:1px solid #c7d6ff;border-radius:12px;padding:18px 22px;margin-top:14px;font-size:12.5px;color:#1a4196;line-height:1.6}
+  .methodology strong{color:#0a4cb3}
+
+  /* Commitments */
+  .commitments{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px}
+  @media (max-width:680px){.commitments{grid-template-columns:1fr}}
+  .commit{padding:18px;background:#fafafa;border:1px solid var(--line);border-radius:10px}
+  .commit h4{margin:0 0 4px;font-size:14px}
+  .commit p{margin:0;font-size:13px;color:var(--mute);line-height:1.55}
+
+  /* Where we fall short */
+  .candor{background:#fdecea;border:1px solid #fbd5d0;border-radius:14px;padding:28px;margin-bottom:24px}
+  .candor h3{margin:0 0 12px;font-size:18px;color:#a32114}
+  .candor ul{margin:0;padding-left:22px;font-size:14px;color:#7d2014}
+  .candor li{margin-bottom:8px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="about.html">About</a>
+      <a href="transparency.html">Transparency</a>
+      <a href="careers.html">Careers</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Diversity, Equity &amp; Inclusion · 2026 Annual Report</div>
+    <h1>Who works here. Who's on the network. What we're doing about it.</h1>
+    <p>Our first annual D&amp;I report. The numbers are honest, including where we fall short. We'll publish this every year and hold ourselves to the trajectory.</p>
+    <div class="meta">Reporting period: Calendar year 2026 · Published April 2026</div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- HONESTY -->
+<div class="honesty">
+  <strong>A note on small-team caveats.</strong> LYMX HQ is a 9-person team. Percentages on a small team can shift a lot when one person joins or leaves. We're showing the actual numbers — not industry-benchmarked or normalized — because honesty matters more than optics. We're committed to publishing this report every year so the trend over time is what we're accountable for.
+</div>
+
+<!-- HQ TEAM -->
+<div class="section">
+  <h2>Our HQ team</h2>
+  <p class="sub">9 people total as of April 2026. Voluntary self-identification.</p>
+
+  <div class="stat-grid">
+    <div class="stat"><div class="n">9</div><div class="l">Total team</div></div>
+    <div class="stat"><div class="n">44%</div><div class="l">Women</div><div class="sub">4 of 9</div></div>
+    <div class="stat"><div class="n">56%</div><div class="l">People of color</div><div class="sub">5 of 9</div></div>
+    <div class="stat"><div class="n">22%</div><div class="l">Immigrant founders/leaders</div><div class="sub">2 of 9 (incl. Kenny)</div></div>
+  </div>
+
+  <h3 style="margin-top:28px;font-size:16px">Race / ethnicity (self-identified)</h3>
+  <div class="bar-chart">
+    <div class="bar-row"><div class="name">Asian / Asian American</div><div class="bar-track"><div class="bar-fill purple" style="width:33%">33%</div></div><div class="pct">3</div></div>
+    <div class="bar-row"><div class="name">White / Caucasian</div><div class="bar-track"><div class="bar-fill blue" style="width:44%">44%</div></div><div class="pct">4</div></div>
+    <div class="bar-row"><div class="name">Hispanic / Latinx</div><div class="bar-track"><div class="bar-fill green" style="width:11%">11%</div></div><div class="pct">1</div></div>
+    <div class="bar-row"><div class="name">Black / African American</div><div class="bar-track"><div class="bar-fill gold" style="width:11%">11%</div></div><div class="pct">1</div></div>
+  </div>
+
+  <h3 style="margin-top:28px;font-size:16px">Roles by gender</h3>
+  <div class="bar-chart">
+    <div class="bar-row"><div class="name">Engineering</div><div class="bar-track"><div class="bar-fill blue" style="width:33%">33%</div></div><div class="pct">1 of 3</div></div>
+    <div class="bar-row"><div class="name">Customer Success</div><div class="bar-track"><div class="bar-fill blue" style="width:75%">75%</div></div><div class="pct">3 of 4</div></div>
+    <div class="bar-row"><div class="name">Operations</div><div class="bar-track"><div class="bar-fill blue" style="width:0%"></div></div><div class="pct">0 of 1</div></div>
+    <div class="bar-row"><div class="name">Founder</div><div class="bar-track"><div class="bar-fill blue" style="width:0%"></div></div><div class="pct">0 of 1</div></div>
+  </div>
+  <p style="font-size:11.5px;color:var(--mute);margin-top:8px;font-style:italic">Bars show % women in each role.</p>
+</div>
+
+<!-- BUSINESSES -->
+<div class="section">
+  <h2>The Businesses on our network</h2>
+  <p class="sub">Of 218 active LYMX Businesses (as of April 2026), here's the ownership breakdown — voluntary self-identification.</p>
+
+  <div class="stat-grid">
+    <div class="stat"><div class="n">218</div><div class="l">Active Businesses</div></div>
+    <div class="stat"><div class="n">52%</div><div class="l">Women-owned</div><div class="sub">Above national avg of 42%</div></div>
+    <div class="stat"><div class="n">61%</div><div class="l">Minority-owned</div><div class="sub">Above national avg of 19%</div></div>
+    <div class="stat"><div class="n">38%</div><div class="l">Immigrant-owned</div><div class="sub">First-gen owners</div></div>
+  </div>
+
+  <h3 style="margin-top:28px;font-size:16px">Business categories on the network</h3>
+  <div class="bar-chart">
+    <div class="bar-row"><div class="name">Food &amp; beverage</div><div class="bar-track"><div class="bar-fill blue" style="width:42%">42%</div></div><div class="pct">92</div></div>
+    <div class="bar-row"><div class="name">Retail</div><div class="bar-track"><div class="bar-fill green" style="width:24%">24%</div></div><div class="pct">52</div></div>
+    <div class="bar-row"><div class="name">Services</div><div class="bar-track"><div class="bar-fill purple" style="width:19%">19%</div></div><div class="pct">42</div></div>
+    <div class="bar-row"><div class="name">Health &amp; wellness</div><div class="bar-track"><div class="bar-fill gold" style="width:11%">11%</div></div><div class="pct">24</div></div>
+    <div class="bar-row"><div class="name">Other</div><div class="bar-track"><div class="bar-fill blue" style="width:4%">4%</div></div><div class="pct">8</div></div>
+  </div>
+
+  <div class="methodology">
+    <strong>Methodology:</strong> Self-identification during onboarding. We use the SBA + Census definitions for women-owned, minority-owned, and immigrant-owned. Self-ID is voluntary and 89% of Businesses provided it. The remaining 11% are excluded from these percentages.
+  </div>
+</div>
+
+<!-- PARTNERS -->
+<div class="section">
+  <h2>Our Partner network</h2>
+  <p class="sub">62 active Partners as of April 2026. Voluntary self-identification.</p>
+
+  <div class="stat-grid">
+    <div class="stat"><div class="n">62</div><div class="l">Active Partners</div></div>
+    <div class="stat"><div class="n">48%</div><div class="l">Women</div><div class="sub">30 of 62</div></div>
+    <div class="stat"><div class="n">71%</div><div class="l">People of color</div><div class="sub">44 of 62</div></div>
+    <div class="stat"><div class="n">29%</div><div class="l">Immigrant Partners</div><div class="sub">18 of 62</div></div>
+  </div>
+
+  <p style="margin-top:18px;font-size:14px">Partner network demographics meaningfully outpace the LYMX HQ team's diversity, which we take as a healthy signal — the program structure attracts people who feel under-served by traditional sales-rep career paths. We're studying what specifically about the model resonates so we can keep it.</p>
+</div>
+
+<!-- COMMITMENTS -->
+<div class="section">
+  <h2>Our 2026 commitments</h2>
+  <p class="sub">What we said we'd do, what we did, and what we're going to focus on next.</p>
+
+  <h3 style="margin-top:14px;font-size:16px">Done in 2026</h3>
+  <div class="commitments">
+    <div class="commit">
+      <h4>✓ Published this report</h4>
+      <p>First annual D&amp;I report. Will publish annually on April 30 going forward.</p>
+    </div>
+    <div class="commit">
+      <h4>✓ Recruiting outside Silicon Valley network</h4>
+      <p>3 of 4 Customer Success hires came through Las Vegas community connections, not the typical SV pipeline.</p>
+    </div>
+    <div class="commit">
+      <h4>✓ Founding 25 minority-owned majority</h4>
+      <p>61% of our Founding 25 Las Vegas Businesses are minority-owned. We picked them; this wasn't accidental.</p>
+    </div>
+    <div class="commit">
+      <h4>✓ Partner program: no degree gate</h4>
+      <p>Application asks about local relationships, not credentials. Partners come from many backgrounds.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:24px;font-size:16px">Where we fall short — and what we'll do</h3>
+  <div class="candor">
+    <ul>
+      <li><strong>Engineering team is not diverse enough.</strong> 1 of 3 engineers is a woman. 0 are Black or Hispanic. We have an active engineering search; we're committing to interview at least 5 candidates from underrepresented backgrounds before any hire.</li>
+      <li><strong>Operations leadership is one person.</strong> We can't claim diversity at a leadership level when there's only one person at it. Once we expand ops leadership in 2027, we'll be deliberate about who we recruit.</li>
+      <li><strong>The founder is the only "leader" right now.</strong> Until we have a second leadership hire, we lack diversity at the top simply because the team is one person tall above the IC layer. Hiring is the answer; it's also imperfect.</li>
+      <li><strong>We don't yet measure pay equity.</strong> Team is too small to do meaningful pay-band statistical analysis. We've committed to publish Mean Gender Pay Gap data once headcount &gt; 25.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- HOW TO APPLY -->
+<div class="section">
+  <h2>How to apply, partner, or push back</h2>
+  <p>If you want to work at LYMX HQ, see <a href="careers.html">careers</a>. If you're a Business owner from an under-represented background applying to the Founding 25 in your city — let us know during application; we'll prioritize the review. If you're a Partner who wants to mentor others from your community, we'll match you. And if you read this report and think we got something wrong — email Kenny directly at <a href="mailto:kenny@getlymx.com">kenny@getlymx.com</a>. He reads everything.</p>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Diversity &amp; Inclusion · <a href="transparency.html">Transparency report</a> · <a href="about.html">About LYMX</a> · <a href="careers.html">Careers</a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>The LYMX Partner Podcast — LYMX Power</title>
+<meta name="description" content="The LYMX Partner Podcast. Real conversations with Master Partners about how they built their tree, what worked, what didn't.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(135deg,#5b3697,#a374e6);color:#fff;padding:80px 24px 56px;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 70% 20%,rgba(212,175,55,.18) 0%,transparent 50%);pointer-events:none}
+  .hero-inner{max-width:1180px;margin:0 auto;position:relative;display:grid;grid-template-columns:1.3fr 1fr;gap:56px;align-items:center}
+  @media (max-width:880px){.hero-inner{grid-template-columns:1fr;gap:32px}}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--gold);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;border:1px solid var(--gold);padding:5px 12px;border-radius:999px}
+  .hero h1{font-size:54px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800;color:#fff;line-height:1.05}
+  .hero p{color:rgba(255,255,255,.85);max-width:540px;margin:0 0 24px;font-size:17px}
+  .hero-cta{display:flex;gap:10px;flex-wrap:wrap}
+  .hero-cta a{padding:10px 18px;border-radius:8px;font-weight:700;font-size:13px}
+  .hero-cta a.spotify{background:#1DB954;color:#fff}
+  .hero-cta a.apple{background:#fff;color:#0e1116}
+  .hero-cta a.youtube{background:#FF0000;color:#fff}
+  .hero-cta a.rss{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)}
+
+  .cover-art{aspect-ratio:1/1;max-width:340px;margin:0 auto;background:linear-gradient(135deg,#0e1116,#1a2a4a);border-radius:24px;padding:32px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 30px 60px rgba(0,0,0,.4);position:relative;overflow:hidden}
+  .cover-art::before{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.2),transparent 60%);bottom:-100px;right:-100px}
+  .cover-art .label{position:relative;font-size:11px;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;font-weight:800}
+  .cover-art .title{position:relative;font-size:36px;font-weight:800;line-height:1;letter-spacing:-.02em;margin:8px 0}
+  .cover-art .sub{position:relative;font-size:13px;color:#b8c2d6;line-height:1.5}
+  .cover-art .star{position:relative;align-self:flex-start;font-size:80px;color:var(--gold);margin-bottom:14px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:48px}
+  @media (max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{padding:24px;background:var(--card);border:1px solid var(--line);border-radius:14px;text-align:center}
+  .stat .n{font-size:32px;font-weight:800;color:var(--purple);letter-spacing:-.02em;line-height:1}
+  .stat .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:6px}
+
+  /* Featured episode */
+  .featured{background:var(--card);border:2px solid var(--purple);border-radius:18px;overflow:hidden;margin-bottom:32px;box-shadow:0 12px 30px rgba(91,54,151,.12)}
+  .featured-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:0}
+  @media (max-width:880px){.featured-grid{grid-template-columns:1fr}}
+  .feat-cover{aspect-ratio:1/1;background:linear-gradient(135deg,#5b3697,#a374e6);display:flex;align-items:center;justify-content:center;font-size:120px;color:#fff;position:relative}
+  .feat-cover .badge{position:absolute;top:18px;left:18px;font-size:11px;background:rgba(255,255,255,.85);color:var(--purple);padding:4px 10px;border-radius:999px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .feat-body{padding:36px}
+  .feat-body .meta{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px}
+  .feat-body h2{margin:0 0 12px;font-size:28px;letter-spacing:-.02em;line-height:1.2}
+  .feat-body p{font-size:14.5px;color:#1f2530;margin:0 0 18px;line-height:1.6}
+  .feat-body .player{padding:18px;background:#fafafa;border:1px solid var(--line);border-radius:10px;display:flex;align-items:center;gap:14px}
+  .feat-body .play-btn{width:48px;height:48px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;flex-shrink:0}
+  .feat-body .timeline{flex:1;height:6px;background:var(--line);border-radius:3px;position:relative}
+  .feat-body .timeline::after{content:"";position:absolute;left:0;top:0;height:100%;width:30%;background:var(--purple);border-radius:3px}
+  .feat-body .duration{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+
+  /* Episode list */
+  .episodes-section h2{font-size:24px;letter-spacing:-.02em;margin:0 0 18px}
+  .episode{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:12px;display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;transition:.15s}
+  .episode:hover{border-color:var(--ink);transform:translateY(-1px);box-shadow:0 8px 22px rgba(0,0,0,.04)}
+  @media (max-width:680px){.episode{grid-template-columns:auto 1fr}.episode .ep-actions{grid-column:1/-1;justify-self:start}}
+  .ep-num{width:48px;height:48px;border-radius:50%;background:#f2eaff;color:var(--purple);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+  .ep-body{min-width:0}
+  .ep-body .ep-meta{font-size:11px;color:var(--mute);font-weight:600;margin-bottom:4px}
+  .ep-body h3{margin:0 0 6px;font-size:16px;line-height:1.3}
+  .ep-body p{margin:0;font-size:13px;color:var(--mute)}
+  .ep-actions{display:flex;align-items:center;gap:10px}
+  .ep-actions .duration{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums;font-weight:600}
+  .ep-actions .play-mini{width:36px;height:36px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer}
+
+  /* Subscribe CTA */
+  .subscribe{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:40px;text-align:center;margin-top:32px}
+  .subscribe h2{margin:0 0 8px;color:#fff;font-size:26px}
+  .subscribe p{color:#b8c2d6;max-width:520px;margin:0 auto 22px}
+  .platforms{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+  .platforms a{padding:11px 20px;border-radius:8px;font-weight:700;font-size:14px}
+  .platforms .spotify{background:#1DB954;color:#fff}
+  .platforms .apple{background:#fff;color:#0e1116}
+  .platforms .youtube{background:#FF0000;color:#fff}
+  .platforms .overcast{background:#fc7e0f;color:#fff}
+  .platforms .rss{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3)}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="partners.html" class="btn">Become a Partner →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow">★ The LYMX Partner Podcast</div>
+      <h1>Honest conversations with Partners building real income.</h1>
+      <p>Bi-weekly. 30–45 minutes. Real Master Partners share what worked, what didn't, and what they're trying next. Hosted by Sienna Vega.</p>
+      <div class="hero-cta">
+        <a href="#" class="spotify">▶ Spotify</a>
+        <a href="#" class="apple">▶ Apple</a>
+        <a href="#" class="youtube">▶ YouTube</a>
+        <a href="#" class="rss">RSS</a>
+      </div>
+    </div>
+    <div>
+      <div class="cover-art">
+        <div class="star">★</div>
+        <div>
+          <div class="label">★ The Podcast</div>
+          <div class="title">LYMX<br>Partner</div>
+          <div class="sub">Real Partners. Real numbers. Real talk.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="stats">
+  <div class="stat"><div class="n">14</div><div class="l">Episodes published</div></div>
+  <div class="stat"><div class="n">~36 min</div><div class="l">Avg episode length</div></div>
+  <div class="stat"><div class="n">4.8/5</div><div class="l">Apple Podcasts rating</div></div>
+  <div class="stat"><div class="n">8.2k</div><div class="l">Subscribers</div></div>
+</div>
+
+<!-- FEATURED EPISODE -->
+<div class="featured">
+  <div class="featured-grid">
+    <div class="feat-cover">
+      <span class="badge">Latest</span>
+      <span>🎤</span>
+    </div>
+    <div class="feat-body">
+      <div class="meta">Episode 14 · April 25, 2026 · 47 min</div>
+      <h2>"The 10 Businesses I almost didn't sign — and the one closing technique that worked"</h2>
+      <p>Sienna Vega walks through her 10 most-skeptical prospects from Q1, and the specific moment in each conversation when they shifted. Some signed; some didn't. Pattern-matching across all 10 is the real value of this episode.</p>
+      <div class="player">
+        <div class="play-btn">▶</div>
+        <div class="timeline"></div>
+        <div class="duration">14:23 / 47:08</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EPISODE LIST -->
+<div class="episodes-section">
+  <h2>All episodes</h2>
+
+  <div class="episode">
+    <div class="ep-num">14</div>
+    <div class="ep-body">
+      <div class="ep-meta">Apr 25, 2026 · Sienna Vega solo</div>
+      <h3>"The 10 Businesses I almost didn't sign — and the closing technique that worked"</h3>
+      <p>Pattern-matching from Q1 prospects. What turns a "let me think about it" into a yes.</p>
+    </div>
+    <div class="ep-actions">
+      <span class="duration">47:08</span>
+      <div class="play-mini">▶</div>
+    </div>
+  </div>
+
+  <div class="episode">
+    <div class="ep-num">13</div>
+    <div class="ep-body">
+      <div class="ep-meta">Apr 11, 2026 · Andre Lim</div>
+      <h3>"Building a city before LYMX is live there: the Phoenix playbook"</h3>
+      <p>Andre led Phoenix's pre-launch waitlist. 30 Businesses queued before we publicly launched. How he did it.</p>
+    </div>
+    <div class="ep-actions">
+      <span class="duration">42:11</span>
+      <div class="play-mini">▶</div>
+    </div>
+  </div>
+
+  <div class="episode">
+    <div class="ep-num">12</div>
+    <div class="ep-body">
+      <div class="ep-meta">Mar 28, 2026 · Dana Whitfield</div>
+      <h3>"From Yelp Ad rep to LYMX Partner: same prospects, different conversations"</h3>
+      <p>Dana sold Yelp Ads for 4 years. Now she pitches LYMX to those same Business owners. What changed and what didn't.</p>
+    </div>
+    <div class="ep-actions">
+      <span class="duration">38:45</span>
+      <div class="play-mini">▶</div>
+    </div>
+  </div>
+
+  <div class="episode">
+    <div class="ep-num">11</div>
+    <div class="ep-body">
+      <div class="ep-meta">Mar 14, 2026 · Jordan Park</div>
+      <h3>"Niche specialty: pitching only fitness studios"</h3>
+      <p>Why Jordan stopped pitching every Business and now only signs yoga / pilates / fitness. Higher conversion, smaller pool.</p>
+    </div>
+    <div class="ep-actions">
+      <span class="duration">31:22</span>
+      <div class="play-mini">▶</div>
+    </div>
+  </div>
+
+  <div class="episode">
+    <div class="ep-num">10</div>
+    <div class="ep-body">
+      <div class="ep-meta">Feb 28, 2026 · Marcus Ruiz</div>
+      <h3>"Bartender by night, Partner by day: the side-hustle Partner playbook"</h3>
+      <p>Marcus signs LYMX Businesses as a side gig. Routine, time-blocking, and how he avoids burning out on his bar shift.</p>
+    </div>
+    <div class="ep-actions">
+      <span class="duration">28:54</span>
+      <div class="play-mini">▶</div>
+    </div>
+  </div>
+
+  <div class="episode">
+    <div class="ep-num">9</div>
+    <div class="ep-body">
+      <div class="ep-meta">Feb 14, 2026 · Riya Patel</div>
+      <h3>"Mentoring my G1: what I learned the hard way"</h3>
+      <p>Riya now mentors 3 of her downline G1 Partners. The tactical specifics of what to do (and not do) as a coach.</p>
+    </div>
+    <div class="ep-actions">
+      <span class="duration">35:18</span>
+      <div class="play-mini">▶</div>
+    </div>
+  </div>
+
+  <div class="episode">
+    <div class="ep-num">8</div>
+    <div class="ep-body">
+      <div class="ep-meta">Jan 31, 2026 · Sienna + Kenny</div>
+      <h3>"Founder Q&amp;A: where LYMX is going in 2026"</h3>
+      <p>Sienna interviews Kenny on the platform's roadmap. Phoenix launch, integrations, what Partners can expect.</p>
+    </div>
+    <div class="ep-actions">
+      <span class="duration">52:07</span>
+      <div class="play-mini">▶</div>
+    </div>
+  </div>
+
+  <div class="episode">
+    <div class="ep-num">7</div>
+    <div class="ep-body">
+      <div class="ep-meta">Jan 17, 2026 · Carla Rodriguez (compliance counsel)</div>
+      <h3>"What you can and can't say in your pitches: the FTC line"</h3>
+      <p>Outside compliance counsel breaks down exactly which earnings claims are FTC-safe and which aren't. Worth a re-listen.</p>
+    </div>
+    <div class="ep-actions">
+      <span class="duration">29:33</span>
+      <div class="play-mini">▶</div>
+    </div>
+  </div>
+
+  <div class="episode">
+    <div class="ep-num">6</div>
+    <div class="ep-body">
+      <div class="ep-meta">Jan 3, 2026 · Sienna Vega solo</div>
+      <h3>"My first 90 days as a Master Partner — the unfiltered version"</h3>
+      <p>Sienna walks through her first quarter at the top tier. Mistakes, wins, what nobody told her about leading a downline.</p>
+    </div>
+    <div class="ep-actions">
+      <span class="duration">44:12</span>
+      <div class="play-mini">▶</div>
+    </div>
+  </div>
+
+  <div class="episode">
+    <div class="ep-num">5</div>
+    <div class="ep-body">
+      <div class="ep-meta">Dec 20, 2025 · Multiple Partners</div>
+      <h3>"Holiday season pitching: what worked at every Business this December"</h3>
+      <p>5 Partners share what they tried during Q4 holiday season — what landed, what didn't.</p>
+    </div>
+    <div class="ep-actions">
+      <span class="duration">38:09</span>
+      <div class="play-mini">▶</div>
+    </div>
+  </div>
+
+  <div class="episode">
+    <div class="ep-num">1–4</div>
+    <div class="ep-body">
+      <div class="ep-meta">Sept – Nov 2025 · Founding episodes</div>
+      <h3>The early episodes</h3>
+      <p>Founding 4 episodes covering the basics: program structure, FTC disclosure, recruiting your first G1, the Master tier ladder.</p>
+    </div>
+    <div class="ep-actions">
+      <span class="duration">~30 min each</span>
+      <div class="play-mini">▶</div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBSCRIBE CTA -->
+<div class="subscribe">
+  <h2>Subscribe wherever you listen</h2>
+  <p>Bi-weekly drops. New episodes every other Monday at 7 AM PT.</p>
+  <div class="platforms">
+    <a href="#" class="spotify">Spotify</a>
+    <a href="#" class="apple">Apple Podcasts</a>
+    <a href="#" class="youtube">YouTube</a>
+    <a href="#" class="overcast">Overcast</a>
+    <a href="#" class="rss">RSS feed</a>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · The LYMX Partner Podcast · <a href="partners.html">Become a Partner</a> · <a href="partner-stories.html">Written stories</a> · <a href="partner-bootcamp.html">Bootcamp</a>
+</div>
+
+</body>
+</html>
