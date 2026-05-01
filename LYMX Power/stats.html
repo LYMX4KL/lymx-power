@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX network stats preview — customers, Businesses, LYMX issued and redeemed. Illustrative figures; live data goes here at launch." />
+<title>Network stats preview · LYMX</title>
+<meta property="og:title" content="LYMX Network Stats Preview" />
+<meta property="og:image" content="og-image.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4af37;--radius:14px;--maxw:1180px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#000}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:#fff;line-height:1.5;-webkit-font-smoothing:antialiased;background:linear-gradient(180deg,#0e1116 0%,#1a1f27 100%);min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(14,17,22,.78);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid rgba(255,255,255,.06)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:#fff}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:#cdd2da}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .hero{padding:52px 0 24px;text-align:center;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);left:50%;top:-200px;transform:translateX(-50%);pointer-events:none}
+  .hero .pre{position:relative;display:inline-flex;align-items:center;gap:8px;background:rgba(95,209,152,.18);color:#5fd198;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:5px 14px;border-radius:6px;margin-bottom:18px}
+  .hero .pre .live-dot{width:8px;height:8px;border-radius:50%;background:#5fd198;box-shadow:0 0 0 4px rgba(95,209,152,.18);animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(95,209,152,.18)}50%{box-shadow:0 0 0 9px rgba(95,209,152,.05)}}
+  .hero h1{position:relative;margin:0 0 12px;font-size:48px;font-weight:800;letter-spacing:-.02em;line-height:1.05;color:#fff}
+  .hero h1 .gold{color:#f5d172}
+  .hero p.lede{position:relative;margin:0 auto 6px;font-size:16px;color:#9aa3b0;max-width:600px}
+  .hero .updated{position:relative;font-size:11.5px;color:#5a6373;margin-top:14px}
+
+  /* Big stats */
+  .bigs{padding:30px 0 18px}
+  .big-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:880px){.big-grid{grid-template-columns:repeat(2,1fr)}}
+  .big{padding:30px 28px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);position:relative;overflow:hidden}
+  .big::after{content:"";position:absolute;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 70%);right:-80px;top:-80px;pointer-events:none}
+  .big .l{font-size:11.5px;color:#9aa3b0;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;position:relative}
+  .big .v{font-size:54px;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;position:relative;color:#fff}
+  .big .v.gold{color:#f5d172}
+  .big .v.green{color:#5fd198}
+  .big .v.blue{color:#a3c5ff}
+  .big .delta{margin-top:8px;font-size:12px;font-weight:800;color:#5fd198;position:relative}
+
+  /* Smaller grid */
+  .smalls{padding:18px 0 30px}
+  .small-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media(max-width:880px){.small-grid{grid-template-columns:repeat(2,1fr)}}
+  .small{padding:18px 20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px}
+  .small .l{font-size:10.5px;color:#9aa3b0;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+  .small .v{font-size:24px;font-weight:800;letter-spacing:-.01em;color:#fff;font-variant-numeric:tabular-nums}
+  .small .sub{font-size:11.5px;color:#9aa3b0;margin-top:3px}
+
+  /* Section breakdowns */
+  section.breakdown{padding:30px 0;border-top:1px solid rgba(255,255,255,.06)}
+  section.breakdown h2{margin:0 0 16px;font-size:20px;font-weight:800;letter-spacing:-.01em;color:#fff}
+
+  /* Bar chart */
+  .bar-row{display:flex;align-items:center;gap:14px;padding:10px 0;border-top:1px solid rgba(255,255,255,.06);font-size:14px}
+  .bar-row:first-child{border-top:0}
+  .bar-row .lbl{flex:0 0 130px;color:#cdd2da;font-weight:700}
+  .bar-row .bar{flex:1;height:10px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden}
+  .bar-row .bar > div{height:100%;background:linear-gradient(90deg,#0a84ff,#5fd198);border-radius:5px}
+  .bar-row .v{flex:0 0 80px;text-align:right;font-weight:800;color:#fff;font-variant-numeric:tabular-nums}
+
+  /* Activity ticker */
+  .ticker{padding:14px 18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:11px;height:200px;overflow-y:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.7}
+  .tick-row{padding:3px 0;color:#cdd2da}
+  .tick-row .when{color:#5a6373;margin-right:8px;font-size:11px}
+  .tick-row .who{color:#fff;font-weight:700}
+  .tick-row .ev{color:#9aa3b0}
+  .tick-row.earn .ev{color:#5fd198}
+  .tick-row.spend .ev{color:#f5d172}
+  .tick-row.signup .ev{color:#a3c5ff}
+  .tick-row.activate .ev{color:#ff8b88}
+
+  /* Footer disclaimer */
+  .disclaimer{padding:14px 0;font-size:11.5px;color:#5a6373;text-align:center;line-height:1.6;border-top:1px solid rgba(255,255,255,.06);margin-top:30px}
+  .disclaimer a{color:#9aa3b0}
+
+  footer{background:#0e1116;border-top:1px solid rgba(255,255,255,.06);padding:22px 0;font-size:12px;color:#5a6373;text-align:center}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px;color:#fff"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="coverage-map.html">Coverage</a>
+      <a href="transparency.html">Transparency</a>
+      <a href="status.html">Status</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="pre"><span class="live-dot"></span> Preview · illustrative numbers</div>
+    <h1>LYMX <span class="gold">network stats</span></h1>
+    <p class="lede">A preview of the dashboard customers, Partners, and the press will see at launch. Numbers below are illustrative — live figures replace them once the network is live.</p>
+    <div class="updated">Demo tick: <span id="last-refresh">just now</span> · Next demo tick in <span id="next-refresh">60</span>s</div>
+  </div>
+</section>
+
+<div class="wrap">
+  <!-- Big numbers -->
+  <div class="bigs">
+    <div class="big-grid">
+      <div class="big">
+        <div class="l">Active customers</div>
+        <div class="v" id="v-customers">8,420</div>
+        <div class="delta">+312 this week</div>
+      </div>
+      <div class="big">
+        <div class="l">Launch 25 Businesses</div>
+        <div class="v gold" id="v-biz">13</div>
+        <div class="delta">+1 this week</div>
+      </div>
+      <div class="big">
+        <div class="l">LYMX issued (lifetime)</div>
+        <div class="v green" id="v-issued">2,418,640</div>
+        <div class="delta">+540K this week</div>
+      </div>
+      <div class="big">
+        <div class="l">LYMX in circulation</div>
+        <div class="v blue" id="v-circulation">812,450</div>
+        <div class="delta">≈ $8,124 of value</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Smaller stats -->
+  <div class="smalls">
+    <div class="small-grid">
+      <div class="small"><div class="l">LYMX redeemed today</div><div class="v" id="v-today-redeemed">12,840</div><div class="sub">≈ $128 across 47 transactions</div></div>
+      <div class="small"><div class="l">Active Partners</div><div class="v">10</div><div class="sub">1 Master, 2 Platinum, 7 building</div></div>
+      <div class="small"><div class="l">Reviews written</div><div class="v" id="v-reviews">487</div><div class="sub">Avg rating: 4.8 ★</div></div>
+      <div class="small"><div class="l">Customer disputes (lifetime)</div><div class="v">12</div><div class="sub">11 resolved, 1 pending</div></div>
+      <div class="small"><div class="l">Cities live</div><div class="v">1</div><div class="sub">Las Vegas · Phase 2 May</div></div>
+      <div class="small"><div class="l">Neighborhoods covered</div><div class="v">6 / 12</div><div class="sub">Strip, Downtown, +4</div></div>
+      <div class="small"><div class="l">Avg API latency (p99)</div><div class="v">142ms</div><div class="sub">Last 24h</div></div>
+      <div class="small"><div class="l">Lifetime uptime</div><div class="v">99.94%</div><div class="sub"><a href="status.html" style="color:#a3c5ff;text-decoration:none">Status →</a></div></div>
+    </div>
+  </div>
+
+  <!-- Breakdown by category -->
+  <section class="breakdown">
+    <h2>LYMX issued by category (last 7 days)</h2>
+    <div class="bar-row"><div class="lbl">Food &amp; drink</div><div class="bar"><div style="width:72%"></div></div><div class="v">387K</div></div>
+    <div class="bar-row"><div class="lbl">Salon / beauty</div><div class="bar"><div style="width:36%"></div></div><div class="v">194K</div></div>
+    <div class="bar-row"><div class="lbl">Retail</div><div class="bar"><div style="width:24%"></div></div><div class="v">128K</div></div>
+    <div class="bar-row"><div class="lbl">Fitness</div><div class="bar"><div style="width:16%"></div></div><div class="v">86K</div></div>
+    <div class="bar-row"><div class="lbl">Services</div><div class="bar"><div style="width:8%"></div></div><div class="v">42K</div></div>
+  </section>
+
+  <!-- Activity ticker -->
+  <section class="breakdown">
+    <h2>Live activity (anonymized)</h2>
+    <div class="ticker" id="ticker"></div>
+    <p style="font-size:11px;color:#5a6373;margin:10px 0 0">Privacy-preserving sample. Customer names initialized + locations approximate. <a href="privacy.html" style="color:#9aa3b0">Privacy policy →</a></p>
+  </section>
+
+  <div class="disclaimer">
+    Numbers shown are aggregate and anonymous. Individual customer or Business data is never disclosed. Methodology + audited annual figures: <a href="transparency.html">transparency report</a>. <a href="security.html">Security &amp; trust</a>.
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · Auto-updates · <a href="transparency.html" style="color:#5a6373">Transparency report</a> · <a href="referral-tree-public.html" style="color:#5a6373">Network map</a> · <a href="status.html" style="color:#5a6373">Status</a></div>
+</footer>
+
+<script>
+  // Tick the counters slowly
+  let customers = 8420;
+  let issued = 2418640;
+  let circulation = 812450;
+  let todayRedeemed = 12840;
+  let reviews = 487;
+
+  function fmt(n){ return n.toLocaleString(); }
+
+  function tickStats(){
+    customers += Math.floor(Math.random() * 3);
+    issued += Math.floor(Math.random() * 1200 + 200);
+    circulation += Math.floor(Math.random() * 80 - 40);
+    todayRedeemed += Math.floor(Math.random() * 60);
+    if(Math.random() < 0.3) reviews += 1;
+
+    document.getElementById('v-customers').textContent = fmt(customers);
+    document.getElementById('v-issued').textContent = fmt(issued);
+    document.getElementById('v-circulation').textContent = fmt(Math.max(0, circulation));
+    document.getElementById('v-today-redeemed').textContent = fmt(todayRedeemed);
+    document.getElementById('v-reviews').textContent = fmt(reviews);
+  }
+  setInterval(tickStats, 3500);
+
+  // Last refresh + countdown
+  let secondsUntilRefresh = 60;
+  setInterval(()=>{
+    secondsUntilRefresh--;
+    if(secondsUntilRefresh <= 0){
+      secondsUntilRefresh = 60;
+      document.getElementById('last-refresh').textContent = 'just now';
+    }
+    document.getElementById('next-refresh').textContent = secondsUntilRefresh;
+  }, 1000);
+
+  // Activity ticker
+  const BUSINESSES = ['Brew & Bean', 'Oakline Kitchen', 'Sage & Stone', 'Sunlit Salon', 'Pulse Studio', 'Pink Note Co', 'Yumi Sushi', 'Two Birds Café', 'Lavender & Sage'];
+  const NAMES = ['M.H.', 'J.R.', 'A.G.', 'L.O.', 'P.N.', 'D.H.', 'R.D.', 'T.M.', 'B.O.', 'I.D.', 'C.B.', 'H.P.'];
+
+  function addTick(){
+    const events = [
+      ()=>{
+        const who = NAMES[Math.floor(Math.random()*NAMES.length)];
+        const biz = BUSINESSES[Math.floor(Math.random()*BUSINESSES.length)];
+        const amt = Math.floor(Math.random()*450 + 50);
+        return {cls:'earn', html:`<span class="who">${who}</span> earned <span class="ev">+${amt} LYMX</span> at ${biz}`};
+      },
+      ()=>{
+        const who = NAMES[Math.floor(Math.random()*NAMES.length)];
+        const biz = BUSINESSES[Math.floor(Math.random()*BUSINESSES.length)];
+        const amt = Math.floor(Math.random()*900 + 100);
+        return {cls:'spend', html:`<span class="who">${who}</span> redeemed <span class="ev">−${amt} LYMX</span> at ${biz}`};
+      },
+      ()=>{
+        const who = NAMES[Math.floor(Math.random()*NAMES.length)];
+        return {cls:'signup', html:`<span class="who">${who}</span> <span class="ev">signed up</span> · +100 LYMX welcome bonus`};
+      },
+      ()=>{
+        const who = NAMES[Math.floor(Math.random()*NAMES.length)];
+        return {cls:'signup', html:`<span class="who">${who}</span> <span class="ev">referred a friend</span> · both earned 200 LYMX`};
+      }
+    ];
+
+    const ev = events[Math.floor(Math.random()*events.length)]();
+    const time = new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+
+    const ticker = document.getElementById('ticker');
+    const row = document.createElement('div');
+    row.className = 'tick-row ' + ev.cls;
+    row.innerHTML = `<span class="when">${time}</span> ${ev.html}`;
+    ticker.insertBefore(row, ticker.firstChild);
+
+    // Trim to 30 rows
+    while(ticker.children.length > 30){
+      ticker.removeChild(ticker.lastChild);
+    }
+  }
+
+  // Seed initial ticks
+  for(let i=0;i<10;i++) addTick();
+  setInterval(addTick, 2200);
+</script>
+</body>
+</html>
