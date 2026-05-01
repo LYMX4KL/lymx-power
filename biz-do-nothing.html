@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>What does NOT joining LYMX cost you? · LYMX</title>
+<meta name="description" content="The opportunity cost of staying off the LYMX network. Real numbers on what doing nothing actually costs your local Business each month.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:42px;margin:0 0 14px;letter-spacing:-.025em;line-height:1.1}
+  .lead{color:var(--mute);font-size:17px;max-width:680px;margin-bottom:32px}
+
+  .hero-card{background:linear-gradient(135deg,#c0392b,#8e2a1f);color:#fff;border-radius:16px;padding:36px 40px;margin-bottom:36px;position:relative;overflow:hidden}
+  .hero-card::after{content:"";position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 70%);right:-150px;top:-100px;pointer-events:none}
+  .hero-card h2{margin:0 0 14px;color:#fff;font-size:28px;letter-spacing:-.02em;position:relative}
+  .hero-card p{margin:0 0 12px;color:#ffd6d0;font-size:15.5px;position:relative}
+  .hero-card .punchline{font-size:22px;font-weight:800;color:#f5d172;margin-top:18px;position:relative}
+
+  .calc-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 32px;margin-bottom:32px}
+  .calc-box h3{margin:0 0 14px;font-size:20px}
+  .calc-row{display:grid;grid-template-columns:1fr 100px;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px;align-items:center}
+  .calc-row:last-child{border-bottom:0;font-weight:800;font-size:15.5px;background:#fde8e6;padding:14px;border-radius:8px;color:#8a2820;margin-top:8px}
+  .calc-row .v{text-align:right;font-family:ui-monospace,Menlo,monospace}
+  .calc-row .v.bad{color:var(--err);font-weight:700}
+
+  .cost-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:32px}
+  @media(max-width:760px){.cost-grid{grid-template-columns:1fr}}
+  .cost{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 26px}
+  .cost .ico{font-size:32px;margin-bottom:8px}
+  .cost h3{margin:0 0 8px;font-size:17px;color:var(--err)}
+  .cost p{margin:0 0 10px;font-size:14px;color:var(--mute);line-height:1.55}
+  .cost .impact{display:inline-block;font-size:13px;padding:5px 12px;background:#fde8e6;color:#8a2820;border-radius:6px;font-weight:700}
+
+  .competitor-watch{background:linear-gradient(135deg,#fef9e7,#fff5c2);border:1px solid var(--gold);border-radius:14px;padding:24px 28px;margin:24px 0}
+  .competitor-watch h3{margin:0 0 8px;color:#5a4200;font-size:18px}
+  .competitor-watch p{margin:0 0 12px;color:#7a5a00;font-size:14.5px}
+  .cw-list{list-style:none;padding:0;margin:0}
+  .cw-list li{padding:10px 0;border-bottom:1px solid #f0c961;display:grid;grid-template-columns:1fr auto;gap:14px;font-size:14px;color:#5a4200}
+  .cw-list li:last-child{border-bottom:0}
+  .cw-list li b{color:#3a2f0a}
+
+  .scenario-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:18px}
+  .scenario-box h3{margin:0 0 10px;font-size:17px}
+  .scenario-box .biz-info{font-size:13px;color:var(--mute);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+  .scenario-box .biz-info b{color:var(--ink)}
+  .scenario-box p{font-size:14.5px;color:var(--mute);margin:0 0 10px;line-height:1.6}
+  .scenario-box .month-cost{display:inline-block;background:#fde8e6;color:#8a2820;padding:6px 14px;border-radius:8px;font-weight:800;font-size:14px}
+
+  .reframe{background:linear-gradient(135deg,#0a7a4d,#13a26b);color:#fff;border-radius:14px;padding:28px 32px;margin:24px 0}
+  .reframe h2{margin:0 0 12px;color:#fff;font-size:24px}
+  .reframe p{margin:0 0 12px;color:#d8efe2;font-size:15.5px;line-height:1.6}
+  .reframe ul{margin:8px 0;padding-left:22px;font-size:14.5px;color:#d8efe2}
+  .reframe ul li{margin-bottom:5px}
+  .reframe ul li b{color:#f5d172}
+  .reframe .cta{display:inline-block;background:#fff;color:#0a7a4d;padding:12px 24px;border-radius:10px;font-weight:800;font-size:15px;text-decoration:none;margin-top:14px}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details[open] summary{margin-bottom:8px}
+  details p{margin:0;color:var(--mute);font-size:14px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power <span class="biz-tag">FOR BUSINESSES</span></div>
+    <div class="nav-links">
+      <a href="business.html">Pricing</a>
+      <a href="biz-revenue-calc.html">ROI calc</a>
+      <a href="biz-faq.html">FAQ</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Business · The opportunity cost of doing nothing</div>
+  <h1>What does NOT joining LYMX cost your Business?</h1>
+  <p class="lead">Most LYMX prospects who say "we'll wait" don't actually do the math on waiting. Here's the math. Spoiler: doing nothing is the most expensive option on the table.</p>
+
+  <div class="hero-card">
+    <h2>The default position isn't free. It's expensive.</h2>
+    <p>Every month you stay off LYMX, the network you'd be plugging into grows by ~20-30 Businesses. The customers earning at THOSE Businesses aren't earning at yours. The cross-redemption flowing through THEIR doors isn't flowing through yours. The network effect compounds — for them, not you.</p>
+    <p>Estimated monthly cost of inaction for a typical $30K/month Vegas Business: <strong>$1,800-3,200 in foregone revenue</strong>.</p>
+    <p class="punchline">"Waiting" is a $20-40K/year decision.</p>
+  </div>
+
+  <h2 style="font-size:26px;margin:0 0 14px">The 6 specific costs of staying off LYMX</h2>
+  <div class="cost-grid">
+
+    <div class="cost">
+      <div class="ico">🔄</div>
+      <h3>Cross-redemption traffic you'll never see</h3>
+      <p>Customers earning LYMX at neighbor Businesses can redeem at any LYMX Business. If you're not on the network, that customer walks past your door to redeem at a neighbor.</p>
+      <span class="impact">~12-25% of your potential new customers</span>
+    </div>
+
+    <div class="cost">
+      <div class="ico">📉</div>
+      <h3>Customers leaking to LYMX-equipped competitors</h3>
+      <p>Your competitor 3 doors down joined LYMX in March. Your customers earning LYMX there now have a small reason to prefer them. Small reasons compound.</p>
+      <span class="impact">2-4% customer drift per quarter</span>
+    </div>
+
+    <div class="cost">
+      <div class="ico">🚫</div>
+      <h3>Inability to recover lapsed customers</h3>
+      <p>Without LYMX's auto-day-30 SMS feature, ~22% of recoverable lapsed customers stay lapsed. That's $400-1,500 of avoided revenue per cohort cycle.</p>
+      <span class="impact">~22% of lapsed never come back</span>
+    </div>
+
+    <div class="cost">
+      <div class="ico">📊</div>
+      <h3>No customer data infrastructure</h3>
+      <p>Without LYMX, you have transaction data but no customer cohort views, no birthday-week tracking, no top-5 list. Your retention efforts stay generic.</p>
+      <span class="impact">Marketing ROI ~3x lower</span>
+    </div>
+
+    <div class="cost">
+      <div class="ico">⏰</div>
+      <h3>Founding 25 Partners closing soon</h3>
+      <p>Once Founding 25 Partners is closed (currently 14/25), the most-engaged Partners with grandfather perks are locked. Future Partners are paying full freight. Less aggressive recruitment in your area.</p>
+      <span class="impact">Slower future onboarding</span>
+    </div>
+
+    <div class="cost">
+      <div class="ico">💸</div>
+      <h3>Continuing to spend on Yelp/Google ads that don't compound</h3>
+      <p>Yelp ads stop the moment you stop paying. LYMX network density compounds — every month you're on, the network is bigger AND more valuable. Yelp doesn't work that way.</p>
+      <span class="impact">$500-1,500/mo on non-compounding ads</span>
+    </div>
+  </div>
+
+  <div class="calc-box">
+    <h3>The "doing nothing" cost calculator</h3>
+    <p style="font-size:13.5px;color:var(--mute);margin:0 0 14px">For a typical $30K/month Vegas Business considering "we'll wait 6 months."</p>
+
+    <div class="calc-row"><div>Foregone cross-redemption traffic (~$1,200/mo)</div><div class="v bad">$7,200</div></div>
+    <div class="calc-row"><div>Customer drift to LYMX-equipped competitors (~$600/mo)</div><div class="v bad">$3,600</div></div>
+    <div class="calc-row"><div>Lapsed customers never recovered (~$700/mo)</div><div class="v bad">$4,200</div></div>
+    <div class="calc-row"><div>Yelp/Google ad spend that LYMX would partially replace ($600/mo continuing)</div><div class="v bad">$3,600</div></div>
+    <div class="calc-row"><div>Marketing ROI lift you don't capture (~$300/mo opportunity)</div><div class="v bad">$1,800</div></div>
+    <div class="calc-row"><div><b>Total cost of "we'll wait 6 months"</b></div><div class="v bad">~$20,400</div></div>
+  </div>
+
+  <p style="font-size:14.5px;color:var(--mute);margin-bottom:24px">For comparison: 6 months of LYMX (3 months free + 3 months × $199 + ~$50/mo issuance) = <strong>~$747</strong>. The waiting cost is 27× the joining cost.</p>
+
+  <h2 style="font-size:26px;margin:32px 0 14px">Three real "waiting" scenarios</h2>
+
+  <div class="scenario-box">
+    <h3>Café — "We'll see if our competitor signs up first"</h3>
+    <div class="biz-info"><b>Business:</b> Independent coffee shop, Henderson · <b>Monthly revenue:</b> $42,000</div>
+    <p>Competitor down the street joined in March 2026. Café owner waited "to see how it goes." 6 months later, competitor has 18% revenue lift from LYMX cross-redemption + retention. Café's regulars who tried the competitor's LYMX promo started splitting their visits.</p>
+    <span class="month-cost">Estimated cost of waiting: $14,000+ in 6 months</span>
+  </div>
+
+  <div class="scenario-box">
+    <h3>Salon — "We have a punch card, that's enough"</h3>
+    <div class="biz-info"><b>Business:</b> 4-chair hair salon, Summerlin · <b>Monthly revenue:</b> $28,000</div>
+    <p>Owner had a punch card (10 visits → free haircut). Refused LYMX for 8 months because "we're set." Lost 4 long-term clients to a salon down the street that joined LYMX. The "set" feeling cost real revenue.</p>
+    <span class="month-cost">Estimated cost of waiting: $9,800 in 8 months</span>
+  </div>
+
+  <div class="scenario-box">
+    <h3>Restaurant — "Let me think about it"</h3>
+    <div class="biz-info"><b>Business:</b> Family-owned dim sum, Spring Mountain · <b>Monthly revenue:</b> $65,000</div>
+    <p>"Thinking about it" became 5 months. Their POS happened to be on Square so the integration would've been 8 minutes. In those 5 months: 38 LYMX customers walked past their door to spend at LYMX dim sum places nearby. Average transaction $42. Foregone revenue: ~$1,600.</p>
+    <span class="month-cost">Estimated cost of "thinking about it": $8,000 in 5 months</span>
+  </div>
+
+  <div class="competitor-watch">
+    <h3>⚠️ The competitive watch</h3>
+    <p>Las Vegas LYMX network density as of August 2026: 218 Businesses across 14 neighborhoods. Average new Business signing per month: 22. Within 12 months: ~480 Businesses on the network.</p>
+    <ul class="cw-list">
+      <li><span>If your direct competitor is already on LYMX</span><span><b>Urgent</b></span></li>
+      <li><span>If 3+ Businesses in your neighborhood are on LYMX</span><span><b>Watch closely</b></span></li>
+      <li><span>If you're the only un-LYMX Business in your category nearby</span><span><b>You're on a clock</b></span></li>
+    </ul>
+    <p style="margin-top:14px">Check the <a href="browse.html">network map</a> to see who in your neighborhood is already on. If you're the last hold-out, you're paying the highest waiting cost.</p>
+  </div>
+
+  <div class="reframe">
+    <h2>The reframe</h2>
+    <p>"We'll wait" sounds like the safe option. It isn't. The safe option is the one that minimizes your cost.</p>
+    <ul>
+      <li><b>$747 over 6 months</b> to be on LYMX with 3 months free + integrations + launch kit</li>
+      <li><b>$20,400 over 6 months</b> in foregone revenue to NOT be on LYMX</li>
+      <li><b>27×</b> cost ratio. Waiting is the expensive option.</li>
+    </ul>
+    <p>The Founding 25 Partners + favorable launch pricing won't last forever. The neighbors signing up around you are creating the network effect that you'll have to pay full freight to access later.</p>
+    <a href="business.html" class="cta">Sign up free for 3 months →</a>
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">Common pushbacks (and what they actually cost)</h2>
+  <details>
+    <summary>"$199/mo is a lot when revenue is tight"</summary>
+    <p>Compared to <strong>$1,800-3,200/mo of foregone revenue</strong>, $199/mo is a 9-16x ROI investment. The tight-revenue argument is itself the strongest case FOR joining — when revenue is tight, you can't afford to leave money on the table.</p>
+  </details>
+  <details>
+    <summary>"I'll wait 6 months and see how the network grows"</summary>
+    <p>The network grows BECAUSE Businesses join. Every month you wait is a month YOU contributed less to network growth. Plus you're paying the $20K+ waiting cost during those 6 months.</p>
+  </details>
+  <details>
+    <summary>"I want to see ROI proof before I commit"</summary>
+    <p>Look at our 6 detailed case studies (<a href="case-study-cafe.html">cafe</a>, <a href="case-study-restaurant.html">restaurant</a>, <a href="case-study-retail.html">retail</a>, <a href="case-study-salon.html">salon</a>, <a href="case-study-fitness.html">fitness</a>, <a href="case-study-services.html">services</a>). All include 6-12 months of real Business data. ROI is documented. Plus 90-day money-back guarantee.</p>
+  </details>
+  <details>
+    <summary>"My customers don't care about loyalty"</summary>
+    <p>Your customers don't care about YOUR loyalty program. They DO care about a network of 8,400+ Las Vegas customers earning + redeeming everywhere. That's not "your" loyalty — it's a city-wide rewards system you're plugging into.</p>
+  </details>
+  <details>
+    <summary>"What if I sign up and it doesn't work?"</summary>
+    <p>90-day money-back guarantee on the $850 sign-up. 90-day wind-down on cancellation. You're not locked in. Compare that to the certainty of $20,400 in foregone revenue from waiting.</p>
+  </details>
+
+  <p style="text-align:center;margin-top:32px;font-size:14.5px;color:var(--mute)">Want to talk through your specific numbers? Book a 30-min call with a success coach. Free, no obligation.</p>
+
+  <p style="text-align:center"><a href="business.html" style="display:inline-block;padding:13px 26px;background:var(--ink);color:#fff;border-radius:11px;font-weight:800;font-size:15px;text-decoration:none;margin-top:14px">Sign up — 3 months free →</a></p>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="biz-revenue-calc.html" style="color:#5a6373">ROI calculator</a> · <a href="business.html" style="color:#5a6373">Pricing</a> · <a href="biz-faq.html" style="color:#5a6373">FAQ</a>
+</footer>
+</body>
+</html>

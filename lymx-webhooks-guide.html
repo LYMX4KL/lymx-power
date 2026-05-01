@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Webhooks guide · LYMX developer docs</title>
+<meta name="description" content="Subscribe to LYMX events via direct webhooks. HMAC signature verification, retry logic, payload schemas, code examples.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--err:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .dev-tag{font-size:11px;background:#e6f0ff;color:#0050c7;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:38px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .toc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin-bottom:32px}
+  .toc h3{margin:0 0 10px;font-size:13px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+  .toc ol{margin:0;padding-left:20px;font-size:14px}
+  .toc ol li{margin-bottom:5px}
+  .toc ol li a{color:var(--accent)}
+
+  h2{font-size:24px;margin:32px 0 14px;letter-spacing:-.015em;scroll-margin-top:80px}
+  h3{font-size:17px;margin:20px 0 10px}
+  p{margin:0 0 14px;font-size:15px;color:var(--ink)}
+  code{background:#f1f3f5;padding:2px 8px;border-radius:5px;font-family:ui-monospace,Menlo,monospace;font-size:13.5px;color:var(--ink)}
+
+  pre{background:#0e1116;color:#e0e4ea;border-radius:10px;padding:18px 22px;font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:1.6;overflow-x:auto;margin:14px 0}
+  pre .kw{color:#c084fc}
+  pre .str{color:#86efac}
+  pre .num{color:#fbbf24}
+  pre .com{color:#71717a;font-style:italic}
+  pre .key{color:#7dd3fc}
+
+  .event-table{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+  .event-table table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .event-table th{background:#fafafa;padding:11px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);font-weight:700;border-bottom:1px solid var(--line)}
+  .event-table td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  .event-table tr:last-child td{border-bottom:0}
+  .event-table td:first-child{font-family:ui-monospace,Menlo,monospace;color:var(--accent)}
+
+  .alert{background:#fff8e6;border:1px solid #f0c961;border-radius:10px;padding:14px 18px;font-size:14px;color:#7a5a00;margin:14px 0}
+  .alert b{color:#5a4200;display:block;font-size:13px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+  .alert.danger{background:#fdedea;border-color:#f0b6b3;color:#6a1810}
+  .alert.danger b{color:#8a2820}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details[open] summary{margin-bottom:8px}
+  details p{margin:0;color:var(--mute);font-size:14px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power <span class="dev-tag">DEVELOPER</span></div>
+    <div class="nav-links">
+      <a href="api.html">API</a>
+      <a href="api-examples.html">Examples</a>
+      <a href="lymx-zapier-guide.html">Zapier</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Tech · Developer · Webhooks guide</div>
+  <h1>Webhooks guide</h1>
+  <p class="lead">Subscribe to LYMX events via direct HTTPS webhooks. For Businesses with custom integrations or technical teams. Free, no Zapier middleman, full control.</p>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#events">Available events</a></li>
+      <li><a href="#configure">Configure a webhook</a></li>
+      <li><a href="#payload">Payload structure</a></li>
+      <li><a href="#verify">HMAC signature verification</a></li>
+      <li><a href="#retries">Retry policy</a></li>
+      <li><a href="#examples">Code examples</a></li>
+      <li><a href="#testing">Testing</a></li>
+    </ol>
+  </div>
+
+  <h2 id="overview">1. Overview</h2>
+  <p>LYMX webhooks deliver events to your server when things happen on your Business account. Events fire within 1-3 seconds of the underlying action (transaction, redemption, etc.).</p>
+  <p>Compared to <a href="lymx-zapier-guide.html">Zapier</a>: webhooks are direct, faster, free, but require code on your end. Most Businesses with internal engineers prefer webhooks; everyone else uses Zapier.</p>
+
+  <div class="alert"><b>Prerequisites</b>You need: (1) a public HTTPS endpoint on a server you control, (2) the ability to verify HMAC SHA-256 signatures, (3) basic familiarity with HTTP POST handling.</div>
+
+  <h2 id="events">2. Available events</h2>
+  <p>The same 8 events available via Zapier are available via webhooks:</p>
+
+  <div class="event-table">
+    <table>
+      <thead><tr><th>Event name</th><th>When it fires</th></tr></thead>
+      <tbody>
+        <tr><td>transaction.completed</td><td>Customer pays at your Business and earns LYMX</td></tr>
+        <tr><td>customer.first_visit</td><td>First-time wallet holder activates at your Business</td></tr>
+        <tr><td>redemption.completed</td><td>Customer redeems LYMX at your Business</td></tr>
+        <tr><td>customer.lapsed</td><td>Customer hasn't visited in 30/60/90 days (configurable)</td></tr>
+        <tr><td>customer.vip</td><td>Customer crosses your VIP threshold</td></tr>
+        <tr><td>customer.birthday</td><td>Customer enters their birthday week</td></tr>
+        <tr><td>settlement.weekly</td><td>Weekly settlement statement generated</td></tr>
+        <tr><td>dispute.filed</td><td>Customer files a dispute on a transaction</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="configure">3. Configure a webhook</h2>
+  <p>From your Business dashboard:</p>
+  <ol style="font-size:15px;padding-left:22px">
+    <li>Settings → API → Webhooks → "+ Add endpoint"</li>
+    <li>Enter your HTTPS URL (e.g., <code>https://api.yourbusiness.com/lymx/webhook</code>)</li>
+    <li>Select events to subscribe to (multi-select)</li>
+    <li>Save → You'll receive a <strong>webhook secret</strong> — store it. Used for HMAC verification.</li>
+    <li>Send test event → confirm your endpoint receives it (200 OK response expected)</li>
+  </ol>
+
+  <h2 id="payload">4. Payload structure</h2>
+  <p>All events POST a JSON body with this structure:</p>
+
+  <pre><span class="kw">{</span>
+  <span class="key">"id"</span>: <span class="str">"evt_a1b2c3d4e5f6"</span>,           <span class="com">// unique event ID</span>
+  <span class="key">"type"</span>: <span class="str">"transaction.completed"</span>,    <span class="com">// event name</span>
+  <span class="key">"timestamp"</span>: <span class="num">1714512345</span>,                <span class="com">// unix epoch (UTC)</span>
+  <span class="key">"business_id"</span>: <span class="str">"biz_brewbean"</span>,         <span class="com">// your Business ID</span>
+  <span class="key">"data"</span>: <span class="kw">{</span>
+    <span class="key">"transaction_id"</span>: <span class="str">"tx_xyz789"</span>,
+    <span class="key">"customer_id"</span>: <span class="str">"cust_4827"</span>,         <span class="com">// anonymized wallet ID, no PII</span>
+    <span class="key">"amount"</span>: <span class="num">2400</span>,                       <span class="com">// USD cents · $24.00</span>
+    <span class="key">"lymx_issued"</span>: <span class="num">120</span>,                   <span class="com">// at 5/$1 rate</span>
+    <span class="key">"location_id"</span>: <span class="str">"loc_henderson"</span>,
+    <span class="key">"items"</span>: <span class="kw">[</span>
+      <span class="kw">{</span> <span class="key">"name"</span>: <span class="str">"latte"</span>, <span class="key">"price_cents"</span>: <span class="num">600</span> <span class="kw">}</span>,
+      <span class="kw">{</span> <span class="key">"name"</span>: <span class="str">"breakfast burrito"</span>, <span class="key">"price_cents"</span>: <span class="num">1800</span> <span class="kw">}</span>
+    <span class="kw">]</span>
+  <span class="kw">}</span>
+<span class="kw">}</span>
+</pre>
+
+  <p>Headers on the POST request:</p>
+  <pre>Content-Type: application/json
+X-LYMX-Signature: sha256=a1b2c3d4...
+X-LYMX-Event-Id: evt_a1b2c3d4e5f6
+X-LYMX-Timestamp: 1714512345
+User-Agent: LYMX-Webhooks/1.0
+</pre>
+
+  <h2 id="verify">5. HMAC signature verification</h2>
+  <p>Every webhook is signed with HMAC SHA-256 using your webhook secret. <strong>Always verify the signature</strong> — otherwise an attacker could forge fake events to your endpoint.</p>
+
+  <p>Compute expected signature: <code>HMAC-SHA256(secret, raw_body_string)</code>. Compare with the <code>X-LYMX-Signature</code> header (strip the <code>sha256=</code> prefix). Use a constant-time string comparison.</p>
+
+  <div class="alert danger"><b>Security warning</b>Do NOT use <code>==</code> for signature comparison — it's vulnerable to timing attacks. Use <code>crypto.timingSafeEqual</code> in Node, <code>hmac.compare_digest</code> in Python, etc.</div>
+
+  <h2 id="retries">6. Retry policy</h2>
+  <p>If your endpoint returns a non-2xx status (or times out after 10 seconds), LYMX retries with exponential backoff:</p>
+  <ul style="font-size:15px;padding-left:22px">
+    <li>1st retry: 30 seconds later</li>
+    <li>2nd retry: 5 minutes later</li>
+    <li>3rd retry: 30 minutes later</li>
+    <li>4th retry: 4 hours later</li>
+    <li>5th retry: 24 hours later</li>
+    <li>After 5 failures: webhook disabled, alert email sent to Owner</li>
+  </ul>
+  <p>Each retry sends the SAME event (same <code>X-LYMX-Event-Id</code>), so your endpoint should be idempotent — handle duplicate event IDs gracefully.</p>
+
+  <h2 id="examples">7. Code examples</h2>
+
+  <h3>Node.js / Express</h3>
+  <pre><span class="kw">import</span> express <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> crypto <span class="kw">from</span> <span class="str">'crypto'</span>;
+
+<span class="kw">const</span> app = express();
+<span class="kw">const</span> WEBHOOK_SECRET = process.env.LYMX_WEBHOOK_SECRET;
+
+<span class="com">// Use raw body for HMAC verification</span>
+app.post(<span class="str">'/lymx/webhook'</span>, express.raw({ type: <span class="str">'application/json'</span> }), (req, res) =&gt; {
+  <span class="kw">const</span> signature = req.headers[<span class="str">'x-lymx-signature'</span>].replace(<span class="str">'sha256='</span>, <span class="str">''</span>);
+  <span class="kw">const</span> expected = crypto
+    .createHmac(<span class="str">'sha256'</span>, WEBHOOK_SECRET)
+    .update(req.body)
+    .digest(<span class="str">'hex'</span>);
+
+  <span class="kw">if</span> (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
+    <span class="kw">return</span> res.status(<span class="num">401</span>).send(<span class="str">'Invalid signature'</span>);
+  }
+
+  <span class="kw">const</span> event = JSON.parse(req.body.toString());
+  console.log(<span class="str">'Received'</span>, event.type, event.id);
+
+  <span class="com">// Handle the event (idempotent — check event.id against your DB)</span>
+  <span class="kw">switch</span> (event.type) {
+    <span class="kw">case</span> <span class="str">'transaction.completed'</span>:
+      handleTransaction(event.data);
+      <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="str">'customer.first_visit'</span>:
+      handleNewCustomer(event.data);
+      <span class="kw">break</span>;
+  }
+
+  res.status(<span class="num">200</span>).send(<span class="str">'OK'</span>);
+});
+</pre>
+
+  <h3>Python / Flask</h3>
+  <pre><span class="kw">from</span> flask <span class="kw">import</span> Flask, request, abort
+<span class="kw">import</span> hmac, hashlib, json, os
+
+app = Flask(__name__)
+WEBHOOK_SECRET = os.environ[<span class="str">'LYMX_WEBHOOK_SECRET'</span>].encode()
+
+<span class="kw">@app.route</span>(<span class="str">'/lymx/webhook'</span>, methods=[<span class="str">'POST'</span>])
+<span class="kw">def</span> lymx_webhook():
+    signature = request.headers.get(<span class="str">'X-LYMX-Signature'</span>, <span class="str">''</span>).replace(<span class="str">'sha256='</span>, <span class="str">''</span>)
+    expected = hmac.new(WEBHOOK_SECRET, request.data, hashlib.sha256).hexdigest()
+
+    <span class="kw">if not</span> hmac.compare_digest(signature, expected):
+        abort(<span class="num">401</span>)
+
+    event = json.loads(request.data)
+    print(<span class="str">f"Received {event['type']} {event['id']}"</span>)
+
+    <span class="com"># Handle the event</span>
+    <span class="kw">if</span> event[<span class="str">'type'</span>] == <span class="str">'transaction.completed'</span>:
+        handle_transaction(event[<span class="str">'data'</span>])
+
+    <span class="kw">return</span> <span class="str">'OK'</span>, <span class="num">200</span>
+</pre>
+
+  <h3>Ruby / Sinatra</h3>
+  <pre><span class="kw">require</span> <span class="str">'sinatra'</span>
+<span class="kw">require</span> <span class="str">'openssl'</span>
+<span class="kw">require</span> <span class="str">'json'</span>
+
+WEBHOOK_SECRET = ENV[<span class="str">'LYMX_WEBHOOK_SECRET'</span>]
+
+post <span class="str">'/lymx/webhook'</span> <span class="kw">do</span>
+  raw_body = request.body.read
+  signature = request.env[<span class="str">'HTTP_X_LYMX_SIGNATURE'</span>].sub(<span class="str">'sha256='</span>, <span class="str">''</span>)
+  expected = OpenSSL::HMAC.hexdigest(<span class="str">'sha256'</span>, WEBHOOK_SECRET, raw_body)
+
+  halt <span class="num">401</span>, <span class="str">'Invalid signature'</span> <span class="kw">unless</span> Rack::Utils.secure_compare(signature, expected)
+
+  event = JSON.parse(raw_body)
+  puts <span class="str">"Received #{event['type']} #{event['id']}"</span>
+
+  <span class="com"># Handle the event</span>
+  <span class="kw">case</span> event[<span class="str">'type'</span>]
+  <span class="kw">when</span> <span class="str">'transaction.completed'</span>
+    handle_transaction(event[<span class="str">'data'</span>])
+  <span class="kw">end</span>
+
+  <span class="num">200</span>
+<span class="kw">end</span>
+</pre>
+
+  <h2 id="testing">8. Testing</h2>
+  <p>Two ways to test before going live:</p>
+
+  <h3>Option A — Send test event from dashboard</h3>
+  <p>Settings → API → Webhooks → tap your endpoint → "Send test event." Generates a synthetic <code>transaction.completed</code> with mock data. No real customer affected.</p>
+
+  <h3>Option B — Use ngrok for local development</h3>
+  <p>Tunnel localhost to public URL with <code>ngrok http 3000</code>. Use the ngrok URL as your webhook endpoint. Test against your local server. Disable when done.</p>
+
+  <pre>$ ngrok http 3000
+Forwarding  https://a1b2c3d4.ngrok.io -&gt; http://localhost:3000
+
+<span class="com"># Use https://a1b2c3d4.ngrok.io/lymx/webhook as your webhook URL</span>
+<span class="com"># in the LYMX dashboard temporarily</span>
+</pre>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">FAQ</h2>
+  <details><summary>What's the difference between webhook and Zapier?</summary><p>Same events, different delivery. Webhooks: direct HTTP POST to your server, requires code. Zapier: visual no-code builder, slightly slower latency, costs $20+/mo. Use webhooks if you have a tech team, Zapier otherwise.</p></details>
+  <details><summary>How many webhooks can I configure?</summary><p>Up to 10 endpoints per Business. Each can subscribe to a different subset of events. Useful for routing different events to different services.</p></details>
+  <details><summary>What if my server is down when an event fires?</summary><p>LYMX retries 5 times over 24+ hours. After that, webhook is disabled + you get an email. You can re-enable from the dashboard once your server is back. Missed events during outage can be replayed from <code>Settings → Webhooks → Replay events</code>.</p></details>
+  <details><summary>Are webhook payloads idempotent?</summary><p>Each event has a unique <code>X-LYMX-Event-Id</code>. Retries reuse the same ID. Build idempotency by checking event ID against your DB before processing.</p></details>
+  <details><summary>Can I subscribe to events for a specific location only?</summary><p>For multi-location chains: yes, configure per-location filtering in webhook settings. Default: all locations on the Business account.</p></details>
+  <details><summary>Are webhooks rate-limited?</summary><p>1,000 events/day per Business with no extra charge. Heavy users (10k+/day) need an enterprise tier. We never throttle real-time delivery — we deliver immediately + log for billing.</p></details>
+
+  <p style="font-size:14px;color:var(--mute);margin-top:32px">For full API reference: <a href="api.html">api.html</a> · For multi-language code samples: <a href="api-examples.html">api-examples.html</a> · For no-code via Zapier: <a href="lymx-zapier-guide.html">lymx-zapier-guide.html</a></p>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="api.html" style="color:#5a6373">API docs</a> · <a href="lymx-zapier-guide.html" style="color:#5a6373">Zapier</a>
+</footer>
+</body>
+</html>

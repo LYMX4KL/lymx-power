@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>No POS? You can still use LYMX · LYMX</title>
+<meta name="description" content="Don't have a modern POS like Square or Toast? LYMX still works. Tablet-based fallback gets you running in 15 minutes for under $300.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--err:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:38px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .reassure-banner{background:linear-gradient(135deg,#0a7a4d,#13a26b);color:#fff;border-radius:14px;padding:24px 28px;margin-bottom:32px;display:grid;grid-template-columns:2fr 1fr;gap:24px;align-items:center}
+  @media(max-width:760px){.reassure-banner{grid-template-columns:1fr}}
+  .reassure-banner h2{margin:0 0 6px;color:#fff;font-size:22px}
+  .reassure-banner p{margin:0;color:#d8efe2;font-size:14.5px}
+  .reassure-banner .stats{background:rgba(255,255,255,.12);border-radius:10px;padding:18px;text-align:center}
+  .reassure-banner .stats .n{font-size:32px;font-weight:800;color:#f5d172;letter-spacing:-.02em}
+  .reassure-banner .stats .l{font-size:11.5px;color:#d8efe2;text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:4px}
+
+  .who-section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:24px}
+  .who-section h2{margin:0 0 14px;font-size:20px}
+  .who-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:760px){.who-grid{grid-template-columns:1fr}}
+  .who-card{padding:16px 20px;background:#f8fafc;border-radius:10px}
+  .who-card .ico{font-size:24px;margin-bottom:6px}
+  .who-card h4{margin:0 0 4px;font-size:14.5px}
+  .who-card p{margin:0;font-size:13px;color:var(--mute)}
+
+  .setup-flow{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 32px;margin-bottom:24px}
+  .setup-flow h2{margin:0 0 18px;font-size:22px}
+  .setup-step{display:grid;grid-template-columns:60px 1fr 100px;gap:18px;padding:18px 0;border-bottom:1px solid var(--line);align-items:start}
+  @media(max-width:680px){.setup-step{grid-template-columns:48px 1fr;gap:12px} .setup-step .time{grid-column:2/3;font-size:12px;color:var(--mute);margin-top:4px}}
+  .setup-step:last-child{border-bottom:0}
+  .setup-step .num{width:48px;height:48px;border-radius:50%;background:var(--accent);color:#fff;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .setup-step h3{margin:0 0 6px;font-size:16px}
+  .setup-step p{margin:0 0 6px;font-size:14px;color:var(--mute);line-height:1.55}
+  .setup-step .time{text-align:right;font-size:11.5px;color:var(--ok);font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:#e8f6ee;padding:4px 10px;border-radius:6px;align-self:start;display:inline-block;height:fit-content}
+
+  .equipment-list{background:#fef9e7;border:1px solid var(--gold);border-radius:14px;padding:24px 28px;margin-bottom:24px}
+  .equipment-list h2{margin:0 0 14px;color:#5a4200;font-size:20px}
+  .eq-row{display:grid;grid-template-columns:1fr 100px 100px;gap:14px;padding:10px 0;border-bottom:1px solid #f0c961;align-items:center;font-size:14px}
+  @media(max-width:680px){.eq-row{grid-template-columns:1fr 80px}.eq-row .price{text-align:right;font-weight:800;color:#5a4200}}
+  .eq-row:last-child{border-bottom:0;font-weight:800}
+  .eq-row .item{font-weight:600}
+  .eq-row .item span{display:block;font-weight:400;font-size:12.5px;color:#7a5a00;margin-top:2px}
+  .eq-row .where{text-align:right;font-size:12px;color:#7a5a00}
+  .eq-row .price{text-align:right;font-weight:800;color:#5a4200;font-family:ui-monospace,Menlo,monospace}
+
+  .scenarios-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:24px}
+  @media(max-width:760px){.scenarios-grid{grid-template-columns:1fr}}
+  .scenario{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 26px}
+  .scenario .ico{font-size:28px;margin-bottom:8px}
+  .scenario h3{margin:0 0 6px;font-size:16px}
+  .scenario p{margin:0 0 10px;font-size:13.5px;color:var(--mute)}
+  .scenario .recommendation{background:#e8f6ee;border-left:3px solid var(--ok);padding:8px 12px;border-radius:6px;font-size:13px;color:#0a5a3a}
+  .scenario .recommendation b{color:#0a7a4d}
+
+  .vs-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin:24px 0}
+  .vs-card h2{margin:0 0 14px;font-size:20px}
+  .vs-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px;align-items:center}
+  .vs-row:first-child{font-weight:800;border-bottom:2px solid var(--line)}
+  .vs-row:last-child{border-bottom:0}
+  .vs-row .check{color:var(--ok);font-weight:800}
+  .vs-row .x{color:var(--mute)}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details[open] summary{margin-bottom:8px}
+  details p{margin:0;color:var(--mute);font-size:14px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power <span class="biz-tag">FOR BUSINESSES</span></div>
+    <div class="nav-links">
+      <a href="biz-faq.html">Biz FAQ</a>
+      <a href="biz-pos-comparison.html">POS comparison</a>
+      <a href="business.html">Sign up</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Business · No modern POS · Tablet fallback</div>
+  <h1>No modern POS? You can still join LYMX</h1>
+  <p class="lead">If you're running on cash + an old register (or no POS at all), you don't need to overhaul your entire payment system to use LYMX. Tablet-based fallback gets you running for ~$280 of equipment + 15 minutes of setup.</p>
+
+  <div class="reassure-banner">
+    <div>
+      <h2>22% of LYMX Businesses use the tablet fallback</h2>
+      <p>Family-owned restaurants, food trucks, market stalls, salons running on cash, vintage shops with manual registers. They all use LYMX without a modern POS. You can too.</p>
+    </div>
+    <div class="stats">
+      <div class="n">$280</div>
+      <div class="l">Equipment cost</div>
+    </div>
+  </div>
+
+  <div class="who-section">
+    <h2>Is the tablet fallback right for you?</h2>
+    <p style="font-size:14.5px;color:var(--mute);margin:0 0 14px">Most likely yes if you fit any of these descriptions:</p>
+    <div class="who-grid">
+      <div class="who-card"><div class="ico">💰</div><h4>Cash-only Business</h4><p>You don't take cards. Or you take cards through a separate device (Square Reader, etc.) but no integrated POS.</p></div>
+      <div class="who-card"><div class="ico">🪙</div><h4>Old register</h4><p>Manual cash register, mechanical or basic electronic. Doesn't connect to internet.</p></div>
+      <div class="who-card"><div class="ico">🚚</div><h4>Mobile / pop-up Business</h4><p>Food truck, farmers market stall, mobile salon. POS not feasible.</p></div>
+      <div class="who-card"><div class="ico">📋</div><h4>Service Business with manual receipts</h4><p>Tutoring, consulting, freelance services. Customers pay how they pay; you log it.</p></div>
+    </div>
+  </div>
+
+  <div class="setup-flow">
+    <h2>The 5-step tablet setup</h2>
+    <p style="font-size:14.5px;color:var(--mute);margin:0 0 14px">Total time: ~15 minutes. Total cost: $280 + LYMX subscription.</p>
+
+    <div class="setup-step">
+      <div class="num">1</div>
+      <div>
+        <h3>Get a tablet (any will do)</h3>
+        <p>Cheapest path: <b>Amazon Fire HD 10</b> ($150) or <b>iPad 9th gen refurb</b> ($200). Doesn't need to be high-end. The LYMX wallet runs in any modern browser. If you already have a spare tablet at home, use that — $0 cost.</p>
+      </div>
+      <div class="time">5 min · $150-200</div>
+    </div>
+
+    <div class="setup-step">
+      <div class="num">2</div>
+      <div>
+        <h3>Add a tablet stand + (optional) charging cable</h3>
+        <p>Cheap aluminum stand from Amazon or office supply store. ~$30. Position the tablet near your register so the customer can easily scan/show their QR. A 6-foot charging cable so it stays plugged in.</p>
+      </div>
+      <div class="time">5 min · $40</div>
+    </div>
+
+    <div class="setup-step">
+      <div class="num">3</div>
+      <div>
+        <h3>Sign up for LYMX as a Business</h3>
+        <p>Standard <a href="business.html">Business sign-up</a>. When asked "what POS do you use?" pick "Other / no POS." LYMX activates the tablet-based interface for your account. Standard pricing applies — $850 sign-up + $199/mo after the 3-month free trial.</p>
+      </div>
+      <div class="time">8 min · $850 + 3 mo free</div>
+    </div>
+
+    <div class="setup-step">
+      <div class="num">4</div>
+      <div>
+        <h3>Open the LYMX Cashier App on your tablet</h3>
+        <p>Browser → <code style="background:#f1f3f5;padding:2px 6px;border-radius:4px">cashier.lymx.com</code>. Log in with your Business credentials. Add to home screen for one-tap access. Same install flow as <a href="customer-mobile-install.html">customer mobile install</a>.</p>
+      </div>
+      <div class="time">2 min · Free</div>
+    </div>
+
+    <div class="setup-step">
+      <div class="num">5</div>
+      <div>
+        <h3>Train cashier — the manual flow</h3>
+        <p>Customer pays however they pay (cash, card, etc.). Cashier opens LYMX Cashier App, taps "+ New transaction," enters dollar amount, scans customer's QR (or types phone number), confirms. LYMX issues. Done. Takes ~15 seconds.</p>
+      </div>
+      <div class="time">5 min</div>
+    </div>
+  </div>
+
+  <div class="equipment-list">
+    <h2>📦 Total equipment + cost breakdown</h2>
+    <div class="eq-row"><div class="item">Amazon Fire HD 10 tablet<span>or any spare iPad / Android tablet you already have</span></div><div class="where">Amazon</div><div class="price">$150</div></div>
+    <div class="eq-row"><div class="item">Aluminum tablet stand<span>angle-adjustable, fits any tablet</span></div><div class="where">Amazon</div><div class="price">$25</div></div>
+    <div class="eq-row"><div class="item">6ft charging cable<span>USB-C or Lightning depending on tablet</span></div><div class="where">Amazon</div><div class="price">$15</div></div>
+    <div class="eq-row"><div class="item">Bluetooth QR scanner (optional)<span>If your tablet camera is slow — most aren't</span></div><div class="where">Amazon</div><div class="price">$45</div></div>
+    <div class="eq-row"><div class="item">Wifi connection<span>Existing or hotspot</span></div><div class="where">—</div><div class="price">$0</div></div>
+    <div class="eq-row"><div class="item">LYMX Cashier App<span>browser-based, free</span></div><div class="where">cashier.lymx.com</div><div class="price">$0</div></div>
+    <div class="eq-row"><div class="item">Total equipment</div><div></div><div class="price">~$235-280</div></div>
+  </div>
+
+  <h2 style="font-size:24px;margin:32px 0 14px">Real scenarios</h2>
+  <div class="scenarios-grid">
+
+    <div class="scenario">
+      <div class="ico">🚚</div>
+      <h3>Food truck (Doña Carmen)</h3>
+      <p>Doña Carmen runs a tamale food truck. Cash and card via Square Reader, but no integrated POS. Joined LYMX with an iPad 9th gen + stand. Daughter mans the iPad.</p>
+      <div class="recommendation"><b>Setup:</b> $230 equipment, 12 min setup. Customer scan rate: 87%.</div>
+    </div>
+
+    <div class="scenario">
+      <div class="ico">🍜</div>
+      <h3>Family dim sum (Mai)</h3>
+      <p>Mai's 18-year-old restaurant uses an old electronic cash register. Won't switch. Wanted LYMX. Got a Fire HD 10 next to register. Server taps it after each customer pays.</p>
+      <div class="recommendation"><b>Setup:</b> $215 equipment, 18 min setup. ~96 transactions/day flow smoothly.</div>
+    </div>
+
+    <div class="scenario">
+      <div class="ico">💇</div>
+      <h3>Cash-only salon (Marcus)</h3>
+      <p>Tailor + dry cleaner. Mostly cash, sometimes card via Square Reader. No POS. Kept it simple — iPad on the counter, customer scans QR after paying.</p>
+      <div class="recommendation"><b>Setup:</b> $250 equipment, 15 min setup. Owner runs it himself.</div>
+    </div>
+
+    <div class="scenario">
+      <div class="ico">🌽</div>
+      <h3>Farmers market stall</h3>
+      <p>Sell at multiple farmers markets each weekend. Mobile setup. Tablet on a folding table at each stall. LYMX Cashier App pulls up offline-friendly.</p>
+      <div class="recommendation"><b>Setup:</b> $200 equipment, 10 min setup. Mobile hotspot keeps online.</div>
+    </div>
+  </div>
+
+  <div class="vs-card">
+    <h2>Tablet fallback vs. modern POS integration</h2>
+    <p style="font-size:13.5px;color:var(--mute);margin:0 0 14px">Quick comparison if you're unsure which path to take.</p>
+    <div class="vs-row"><div></div><div>Tablet fallback</div><div>Modern POS (Square/Toast/etc)</div></div>
+    <div class="vs-row"><div>Setup time</div><div class="check">~15 min</div><div class="check">~8 min</div></div>
+    <div class="vs-row"><div>Equipment cost</div><div>$235-280</div><div class="check">$0 (uses your existing POS)</div></div>
+    <div class="vs-row"><div>Auto-sync transactions</div><div class="x">Manual entry by cashier</div><div class="check">Auto-sync from POS</div></div>
+    <div class="vs-row"><div>Receipt LYMX line item</div><div class="x">Separate receipt</div><div class="check">Built into POS receipt</div></div>
+    <div class="vs-row"><div>Reconciliation</div><div class="x">Manual match against your sales records</div><div class="check">Auto-reconciled</div></div>
+    <div class="vs-row"><div>Best for</div><div>Cash-only, mobile, old POS</div><div>Most established Businesses</div></div>
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">FAQ</h2>
+  <details>
+    <summary>What if my cashier forgets to enter a transaction?</summary>
+    <p>Customers can request retroactive credit by emailing you their receipt. You issue retroactive LYMX from the dashboard within 60 seconds. Or set up daily review: at end of shift, count cash + check LYMX dashboard, reconcile. Most tablet-fallback Businesses match within 1-2 transactions per day.</p>
+  </details>
+  <details>
+    <summary>Can I switch from tablet to modern POS later?</summary>
+    <p>Yes — anytime. If you upgrade your POS to Square/Toast/Clover/Lightspeed/Shopify, integrate it via Dashboard → Integrations. Your historical LYMX data carries over. The tablet becomes redundant; sell or repurpose.</p>
+  </details>
+  <details>
+    <summary>What if my tablet's wifi cuts out?</summary>
+    <p>LYMX Cashier App caches the last 24 hours of activity, so brief outages don't break it. For longer outages, write transactions on paper, enter them when wifi returns. Customers won't see the issue (their LYMX shows as "pending" briefly, then settles).</p>
+  </details>
+  <details>
+    <summary>Do I need a separate phone number for the tablet?</summary>
+    <p>No — your Business already has one LYMX account. The tablet is just another login, scoped to the "Cashier" role. Multiple devices can be logged in simultaneously (e.g., owner phone + counter tablet).</p>
+  </details>
+  <details>
+    <summary>What if a customer doesn't have a phone with them?</summary>
+    <p>Cashier types in the customer's phone number on the tablet (no need to scan QR). If it's a new customer, they get a welcome SMS to sign up + claim their LYMX. Old-fashioned customers without a smartphone can still earn — they just get LYMX held for them.</p>
+  </details>
+  <details>
+    <summary>Is the tablet fallback considered "less professional"?</summary>
+    <p>No — about 22% of LYMX Businesses use it. Some are very high-end (curated retail, fine dining family-owned). Customers don't notice; they just see "scan QR, earn LYMX." The mechanism is identical to a modern POS integration.</p>
+  </details>
+
+  <p style="text-align:center;margin-top:32px;font-size:14.5px;color:var(--mute)">Ready to set up? <a href="business.html" style="color:var(--accent);font-weight:700">Sign up free for 3 months →</a> · Pick "Other / no POS" when asked. Your success coach will walk you through tablet setup.</p>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="biz-pos-comparison.html" style="color:#5a6373">POS comparison</a> · <a href="biz-faq.html" style="color:#5a6373">Business FAQ</a> · <a href="business.html" style="color:#5a6373">Sign up</a>
+</footer>
+</body>
+</html>
