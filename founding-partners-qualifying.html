@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Founding 25 Partners — Qualifying program</title>
+<meta name="description" content="The Founding 25 Partners earn lifetime grandfather perks. To LOCK those perks year after year, Founding Partners participate in cooperative training and network-building activities.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--err:#c0392b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .partner-tag{font-size:11px;background:#f3e8fd;color:#5b3697;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:1000px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:42px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .hero-banner{background:linear-gradient(135deg,#0e1116,#1f2530);color:#fff;border-radius:16px;padding:32px;margin-bottom:40px;position:relative;overflow:hidden}
+  .hero-banner::after{content:"";position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);right:-150px;top:-150px}
+  .hero-banner .badge{background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:5px 14px;border-radius:999px;display:inline-block;margin-bottom:16px;position:relative}
+  .hero-banner h2{margin:0 0 8px;font-size:26px;color:#fff;position:relative}
+  .hero-banner p{margin:0;color:#c6ccd4;font-size:15px;position:relative;max-width:600px}
+  .hero-banner .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px;position:relative}
+  @media(max-width:760px){.hero-banner .stats{grid-template-columns:1fr}}
+  .hero-banner .stat{background:rgba(255,255,255,.08);padding:14px 18px;border-radius:10px}
+  .hero-banner .stat .n{font-size:24px;font-weight:800;color:#f5d172;letter-spacing:-.02em}
+  .hero-banner .stat .l{font-size:12px;color:#c6ccd4;text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-top:3px}
+
+  .perks-section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;margin-bottom:32px}
+  .perks-section h2{margin:0 0 8px;font-size:22px}
+  .perks-section .lede{color:var(--mute);font-size:14.5px;margin-bottom:18px}
+  .perks-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:760px){.perks-grid{grid-template-columns:1fr}}
+  .perk{background:#fef9e7;border:1px solid var(--gold);border-radius:10px;padding:16px 20px}
+  .perk h4{margin:0 0 4px;font-size:15px;color:#7a5a00}
+  .perk p{margin:0;font-size:13.5px;color:#5a4200}
+  .perk .v{font-size:22px;font-weight:800;color:var(--gold);letter-spacing:-.02em;display:block;margin-top:4px}
+
+  .why-box{background:linear-gradient(135deg,#5b3697,#3d1f6b);color:#fff;border-radius:14px;padding:28px;margin-bottom:32px}
+  .why-box h2{margin:0 0 12px;color:#fff;font-size:22px}
+  .why-box p{margin:0 0 8px;color:#e8d8f5;font-size:15px}
+  .why-box p:last-child{margin-bottom:0}
+  .why-box em{color:#f5d172;font-style:normal;font-weight:700}
+
+  .activity{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:14px;display:grid;grid-template-columns:60px 1fr 130px;gap:18px;align-items:center}
+  @media(max-width:760px){.activity{grid-template-columns:1fr;gap:10px}}
+  .activity .ico{width:52px;height:52px;border-radius:14px;background:#f3e8fd;display:flex;align-items:center;justify-content:center;font-size:24px}
+  .activity h3{margin:0 0 4px;font-size:17px}
+  .activity p{margin:0 0 6px;color:var(--mute);font-size:14px}
+  .activity .detail{font-size:13px;color:var(--accent);font-weight:600}
+  .activity .credit{text-align:right;background:#e8f6ee;padding:10px 14px;border-radius:10px}
+  .activity .credit .n{font-size:22px;font-weight:800;color:#0a7a4d;letter-spacing:-.02em}
+  .activity .credit .l{font-size:11px;color:#0a5a3a;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  @media(max-width:760px){.activity .credit{text-align:left;display:inline-flex;gap:6px;align-items:baseline}}
+
+  .threshold-box{background:var(--card);border:2px solid var(--ok);border-radius:14px;padding:24px 28px;margin:24px 0}
+  .threshold-box h2{margin:0 0 14px;font-size:20px;color:#0a7a4d}
+  .threshold-row{display:grid;grid-template-columns:1fr 100px;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px;align-items:center}
+  .threshold-row:last-child{border-bottom:0;font-weight:800;font-size:15px}
+  .threshold-row .v{text-align:right;font-family:ui-monospace,Menlo,monospace}
+
+  .grace-section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:24px}
+  .grace-section h2{margin:0 0 14px;font-size:20px}
+  .grace-row{padding:14px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:80px 1fr;gap:14px;align-items:start}
+  .grace-row:last-child{border-bottom:0}
+  .grace-row .yr{font-weight:800;color:var(--ink);font-size:15px}
+  .grace-row .what{font-size:14px;color:var(--mute)}
+  .grace-row .what b{color:var(--ink)}
+
+  .calendar{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:24px}
+  .calendar h2{margin:0 0 14px;font-size:20px}
+  .cal-row{display:grid;grid-template-columns:130px 1fr 110px;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;align-items:center}
+  .cal-row:last-child{border-bottom:0}
+  .cal-row .when{font-weight:700;font-size:13.5px}
+  .cal-row .desc{color:var(--mute);font-size:13.5px}
+  .cal-row .credits{padding:4px 10px;border-radius:6px;font-size:11.5px;font-weight:700;text-align:center;background:#e8f6ee;color:#0a7a4d}
+
+  .commitment-box{background:#fff8e6;border:1px solid #f0c961;border-radius:12px;padding:18px 22px;margin:24px 0}
+  .commitment-box h3{margin:0 0 8px;color:#5a4200;font-size:16px}
+  .commitment-box p{margin:0;color:#7a5a00;font-size:14px}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details[open] summary{margin-bottom:8px}
+  details p{margin:0;color:var(--mute);font-size:14px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power <span class="partner-tag">FOR PARTNERS</span></div>
+    <div class="nav-links">
+      <a href="partners.html">Partners</a>
+      <a href="partner-resources.html">Resources</a>
+      <a href="partner-leaderboard.html">Leaderboard</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Partner · Founding 25 · Qualifying program</div>
+  <h1>Founding 25 Partners — keep your locked perks</h1>
+  <p class="lead">Founding 25 status is earned, not given. Once earned, you keep the lifetime grandfather perks — but only as long as you continue helping the network grow. Here's the cooperative qualifying program that locks your status year after year.</p>
+
+  <div class="hero-banner">
+    <span class="badge">★ Founding 25 Partners</span>
+    <h2>The grandfather perks you've earned</h2>
+    <p>For Partners who hit 5 Direct Business activations during the launch phase. These perks were locked in when you qualified — and stay locked as long as you maintain annual cooperative qualifying.</p>
+    <div class="stats">
+      <div class="stat"><div class="n">$750</div><div class="l">Bonus per activation (vs. $500)</div></div>
+      <div class="stat"><div class="n">11%</div><div class="l">Direct override (vs. 9%)</div></div>
+      <div class="stat"><div class="n">$0</div><div class="l">Sign-up + monthly fees forever</div></div>
+      <div class="stat"><div class="n">∞</div><div class="l">Lifetime — if you qualify</div></div>
+    </div>
+  </div>
+
+  <div class="perks-section">
+    <h2>What Founding 25 Partners get (locked at the original rates)</h2>
+    <p class="lede">These are your grandfathered perks — better than what new Partners receive. Standard Partner rates may change over time as LYMX evolves; yours don't.</p>
+    <div class="perks-grid">
+      <div class="perk">
+        <h4>1.5× sign-up bonus</h4>
+        <p>Every Business you activate beyond your 5th earns you the boosted bonus.</p>
+        <span class="v">$750</span>
+      </div>
+      <div class="perk">
+        <h4>+2% override on Direct</h4>
+        <p>Instead of 9%, your monthly subscription override on every Direct Business is 11% — forever.</p>
+        <span class="v">11%</span>
+      </div>
+      <div class="perk">
+        <h4>Quarterly cooperative summit</h4>
+        <p>Lifetime invite to the Founding 25 quarterly retreat with Kenny + leadership team. Network strategy + roadmap input.</p>
+        <span class="v">4×/yr</span>
+      </div>
+      <div class="perk">
+        <h4>Direct WhatsApp to Kenny</h4>
+        <p>Skip the support queue — direct line to the founder for issues, ideas, escalations.</p>
+        <span class="v">∞ access</span>
+      </div>
+      <div class="perk">
+        <h4>All Partner fees waived — forever</h4>
+        <p>While other Partners eventually pay $25 sign-up + $12.95/mo dashboard fee, Founding 25 Partners never pay. Locked in for life as long as you maintain qualifying status.</p>
+        <span class="v">$0 forever</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="why-box">
+    <h2>Why a qualifying program?</h2>
+    <p>The Founding 25 Partners are <em>the network's elder generation</em>. You proved the model works. New Partners look up to you. New Businesses trust you because you've been around.</p>
+    <p>The grandfather perks are recognition for that. But they only stay valuable if Founding 25 Partners continue showing up — training the next wave, mentoring new Partners, attending cooperative events that strengthen the network.</p>
+    <p>The qualifying program is the social contract: <em>you keep the perks as long as you keep contributing</em>.</p>
+  </div>
+
+  <h2 style="font-size:24px;margin:0 0 14px">The 5 cooperative qualifying activities</h2>
+  <p style="color:var(--mute);font-size:14.5px;margin-bottom:18px">Each activity earns "qualifying credits." You need <b>3 credits per calendar year</b> to maintain Founding 25 status. Most Founding Partners earn 5+ naturally.</p>
+
+  <div class="activity">
+    <div class="ico">🎤</div>
+    <div>
+      <h3>Speak at a Partner training event</h3>
+      <p>Present your playbook, war stories, or specific tactic at a quarterly Partner bootcamp or live training. New Partners learn fastest from someone who's been there.</p>
+      <div class="detail">Target: 1-2 sessions per year · Coordinated through partner-events</div>
+    </div>
+    <div class="credit"><div class="n">1</div><div class="l">Credit each</div></div>
+  </div>
+
+  <div class="activity">
+    <div class="ico">🤝</div>
+    <div>
+      <h3>Mentor a new Business through their first 90 days</h3>
+      <p>Pair with a recently-signed Business as their cooperative mentor. Monthly check-in calls for 3 months. Not a sales pitch — just experience-sharing.</p>
+      <div class="detail">Target: 1 mentee per year · Pairing handled by partner-mentor program</div>
+    </div>
+    <div class="credit"><div class="n">2</div><div class="l">Credits</div></div>
+  </div>
+
+  <div class="activity">
+    <div class="ico">🎓</div>
+    <div>
+      <h3>Co-host a cooperative event for the local community</h3>
+      <p>Partner with another Founding Partner (and/or 2-3 LYMX Businesses) to host a public-facing event — Business owner roundtable, neighborhood networking, "LYMX 101 for prospective Businesses."</p>
+      <div class="detail">Target: 1 cohost per year · Approval + venue reimbursement via Founding 25 desk</div>
+    </div>
+    <div class="credit"><div class="n">2</div><div class="l">Credits</div></div>
+  </div>
+
+  <div class="activity">
+    <div class="ico">📝</div>
+    <div>
+      <h3>Contribute to the Partner playbook</h3>
+      <p>Write up a specific tactic, objection-response, or war story for the cooperative knowledge base. Becomes part of partner-resources for the next cohort.</p>
+      <div class="detail">Target: 1 contribution per year · Edited and credited to you</div>
+    </div>
+    <div class="credit"><div class="n">1</div><div class="l">Credit each</div></div>
+  </div>
+
+  <div class="activity">
+    <div class="ico">📅</div>
+    <div>
+      <h3>Attend the annual Founding 25 cooperative summit</h3>
+      <p>Mandatory annual gathering. Founding 25 Partners only. Strategic planning, roadmap input, mentor-pairing kickoff for the year, peer feedback. 2 days, expenses covered.</p>
+      <div class="detail">Target: Annual · Date set by Kenny each January</div>
+    </div>
+    <div class="credit"><div class="n">2</div><div class="l">Credits</div></div>
+  </div>
+
+  <div class="threshold-box">
+    <h2>Annual qualifying threshold</h2>
+    <div class="threshold-row"><div>Founding 25 status maintenance threshold</div><div class="v">3 credits/yr</div></div>
+    <div class="threshold-row"><div>Annual summit attendance alone</div><div class="v">2 credits</div></div>
+    <div class="threshold-row"><div>Most Founding Partners actually earn</div><div class="v">5-7 credits</div></div>
+    <div class="threshold-row"><div>To stay qualified, just need</div><div class="v">3 of 5+ activities</div></div>
+  </div>
+
+  <div class="grace-section">
+    <h2>If you don't hit the threshold</h2>
+    <div class="grace-row">
+      <div class="yr">Year 1 short</div>
+      <div class="what"><b>Grace year — perks intact.</b> You receive a private note from the Founding 25 desk with your credit count. Plenty of time to qualify next year. No public flag, no penalty.</div>
+    </div>
+    <div class="grace-row">
+      <div class="yr">Year 2 short</div>
+      <div class="what"><b>Final notice — perks at risk.</b> Direct call from Kenny or Sienna. Specific plan to get back in qualifying. Quarterly check-ins for the year.</div>
+    </div>
+    <div class="grace-row">
+      <div class="yr">Year 3 short</div>
+      <div class="what"><b>Status reverts to standard Partner rates.</b> $500 sign-up bonus, 9% Direct override. Summit invite ends. WhatsApp line closed. <b>You can re-qualify</b> by hitting 5 fresh Direct activations again — but you'd start over with Year 1 of credits.</div>
+    </div>
+    <div class="grace-row">
+      <div class="yr">Re-qualify</div>
+      <div class="what"><b>Path back exists.</b> If you re-earn Founding 25 status (5 Direct activations again) AND hit 3 credits in your re-qualifying year, all grandfather perks restore. Your historical contributions are also restored.</div>
+    </div>
+  </div>
+
+  <div class="calendar">
+    <h2>What a typical Founding 25 year looks like</h2>
+    <p style="color:var(--mute);font-size:13.5px;margin:0 0 14px">A real path to maintaining qualifying status without changing your day job.</p>
+    <div class="cal-row"><div class="when">January</div><div class="desc">Attend annual cooperative summit (2 days, Vegas)</div><div class="credits">2 credits</div></div>
+    <div class="cal-row"><div class="when">February</div><div class="desc">Pair with new Business mentee, kick off 90-day mentorship</div><div class="credits">— starts —</div></div>
+    <div class="cal-row"><div class="when">March</div><div class="desc">Speak at Q1 Partner bootcamp (45 min, your war stories)</div><div class="credits">+1 credit</div></div>
+    <div class="cal-row"><div class="when">April</div><div class="desc">Complete 90-day mentorship — mentee passes month 3</div><div class="credits">+2 credits</div></div>
+    <div class="cal-row"><div class="when">May</div><div class="desc">Mid-year check-in with Founding 25 desk</div><div class="credits">—</div></div>
+    <div class="cal-row"><div class="when">August</div><div class="desc">Co-host neighborhood Business roundtable with 2 other Partners</div><div class="credits">+2 credits</div></div>
+    <div class="cal-row"><div class="when">November</div><div class="desc">Submit playbook contribution: "How I close salons" 800-word piece</div><div class="credits">+1 credit</div></div>
+    <div class="cal-row"><div class="when"><b>Total</b></div><div class="desc"><b>Status maintained for the year</b></div><div class="credits"><b>8 credits</b></div></div>
+  </div>
+
+  <div class="commitment-box">
+    <h3>What this is NOT</h3>
+    <p>This isn't busy-work. We don't expect Founding Partners to hit some arbitrary metric. The activities are <b>things you'd already do</b> if you were active in the cooperative — speaking at events, mentoring new folks, attending summits. The qualifying program just makes sure Founding 25 status stays meaningful: it represents real ongoing contribution to the network.</p>
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">FAQ</h2>
+  <details><summary>How is qualifying tracked?</summary><p>Each activity is logged in your Partner dashboard with date, type, and credit count. Founding 25 desk reviews annually each December. You receive a credit summary every January.</p></details>
+  <details><summary>Can I "double-up" on activities to bank credits?</summary><p>No banking. Each calendar year stands alone. You need 3 credits IN that year. Excess credits don't roll forward.</p></details>
+  <details><summary>What if I'm sick / on leave / have a family emergency?</summary><p>Email Kenny directly. We grant exception years case-by-case. The grace path also gives you 2 cushion years before any actual penalty.</p></details>
+  <details><summary>Can I substitute activities not on the list?</summary><p>Yes — write to the Founding 25 desk with what you're proposing. Things that have counted: writing a published piece about LYMX in trade press, hosting a podcast guest spot, recruiting a marquee enterprise prospect.</p></details>
+  <details><summary>If I lose Founding 25 status, do I lose past commissions?</summary><p>No — past commissions stay paid at the rates they were earned. Going forward, only NEW activations are at the standard rate.</p></details>
+  <details><summary>Are activities cooperative — do I need permission?</summary><p>Most are self-directed (speaking at an event, contributing playbook content). A few — co-hosting events with venue reimbursement, mentor pairing — go through the Founding 25 desk so we can pair you well + cover costs.</p></details>
+  <details><summary>Can a Founding Partner who later becomes a Master Partner also qualify?</summary><p>Yes — Founding 25 status and Master Partner tier are independent. You can be both.</p></details>
+  <details><summary>What if the qualifying program rules change later?</summary><p>Locked at the rules in effect when you earned Founding 25 status. New rules apply only to NEW Founding Partners (if a future cohort exists). This is part of the grandfather promise.</p></details>
+
+  <p style="color:var(--mute);font-size:14px;margin-top:32px">Questions about your specific qualifying year? Email <code>founding-25@lymx.com</code> — direct to Kenny + Sienna.</p>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="partners.html" style="color:#5a6373">Partners</a> · <a href="partner-mentor.html" style="color:#5a6373">Mentor program</a> · <a href="partner-events.html" style="color:#5a6373">Events</a>
+</footer>
+</body>
+</html>

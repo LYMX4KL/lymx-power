@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Google Business Profile Integration — LYMX Power</title>
+<meta name="description" content="Connect LYMX with Google Business Profile. Auto-sync customer reviews, post LYMX promos to Maps, get found on local search.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--google-red:#EA4335;--google-blue:#4285F4;--google-green:#34A853;--google-yellow:#FBBC04}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+
+  .hero{padding:72px 24px 48px;border-bottom:1px solid var(--line);background:#fff}
+  .hero-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.3fr 1fr;gap:56px;align-items:center}
+  @media (max-width:880px){.hero-inner{grid-template-columns:1fr;gap:32px}}
+  .hero .pre{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .hero .lymx-tile{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+  .hero .lymx-tile span{color:var(--gold)}
+  .hero .plus{font-size:24px;color:var(--mute);font-weight:300}
+  .hero .g-tile{width:48px;height:48px;border-radius:12px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px}
+  .hero h1{font-size:42px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800;line-height:1.1}
+  .hero p{color:var(--mute);font-size:17px;max-width:520px;margin-bottom:24px}
+  .btn-primary{padding:12px 22px;background:var(--ink);color:#fff;border-radius:10px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:6px}
+  .btn-ghost{padding:12px 22px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:10px;font-weight:700;font-size:15px;margin-left:8px}
+
+  .hero-illust{aspect-ratio:1.1/1;background:#fff;border:1px solid var(--line);border-radius:18px;display:flex;align-items:center;justify-content:center;padding:24px;position:relative}
+  .map-mock{width:100%;height:100%;background:linear-gradient(135deg,#e8f6ee 0%,#c2e8d2 70%);border-radius:14px;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:14px;color:#0a4d2f}
+  .map-mock::before{content:"📍";position:absolute;top:30%;left:35%;font-size:38px}
+  .map-mock::after{content:"📍";position:absolute;top:50%;right:25%;font-size:28px;opacity:.6}
+  .map-mock .pin-card{background:#fff;border-radius:10px;padding:14px;box-shadow:0 6px 20px rgba(0,0,0,.1);font-size:12px}
+  .map-mock .pin-card .name{font-weight:800;font-size:14px;color:var(--ink)}
+  .map-mock .pin-card .stars{color:#f4b400;margin:4px 0}
+  .map-mock .pin-card .meta{color:var(--mute);font-size:11px}
+  .map-mock .pin-card .badge{display:inline-block;font-size:10px;padding:2px 8px;background:#fef9e7;color:#8b6f1f;border-radius:999px;font-weight:700;margin-top:6px}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  /* Why this matters */
+  .why{background:linear-gradient(135deg,#fff8eb,#ffe4b3);border:1px solid #f0d97a;border-radius:14px;padding:28px;margin-bottom:32px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+  @media (max-width:680px){.why{grid-template-columns:1fr;text-align:center}}
+  .why .ic{font-size:48px}
+  .why h3{margin:0 0 8px;font-size:18px;color:#5d4400}
+  .why p{margin:0;font-size:14px;color:#5d4400;line-height:1.6}
+
+  /* What syncs */
+  .syncs{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .syncs h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .syncs .sub{color:var(--mute);font-size:14px;margin-bottom:24px}
+  .sync-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media (max-width:680px){.sync-grid{grid-template-columns:1fr}}
+  .sync-row{padding:18px;border:1px solid var(--line);border-radius:10px;background:#fafafa}
+  .sync-h{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .sync-h .ic{width:36px;height:36px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .sync-h h4{margin:0;font-size:14px;flex:1}
+  .freq{font-size:10px;background:#e8f6ee;color:#0a7a4d;padding:3px 7px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .sync-row p{margin:0;font-size:13px;color:var(--mute)}
+
+  /* SEO benefits */
+  .seo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px}
+  @media (max-width:760px){.seo-grid{grid-template-columns:1fr}}
+  .seo-card{padding:24px;background:var(--card);border:1px solid var(--line);border-radius:14px;text-align:center}
+  .seo-card .ic{font-size:38px;margin-bottom:12px}
+  .seo-card h4{margin:0 0 6px;font-size:16px}
+  .seo-card p{margin:0;font-size:13px;color:var(--mute);line-height:1.55}
+  .seo-card .stat{font-size:24px;font-weight:800;color:var(--accent);margin-top:10px;letter-spacing:-.02em}
+
+  /* Steps */
+  .steps{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .steps h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .steps .sub{color:var(--mute);font-size:14px;margin-bottom:24px;display:flex;align-items:center;gap:14px}
+  .steps .sub .timer{background:#e6f7fc;color:#0a5570;padding:5px 12px;border-radius:999px;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:18px;padding:18px 0;border-top:1px solid var(--line)}
+  .step:first-of-type{border-top:0;padding-top:0}
+  .step-n{width:40px;height:40px;border-radius:50%;background:var(--google-blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0}
+  .step h3{margin:0 0 4px;font-size:16px}
+  .step .desc{font-size:14px;color:var(--mute);margin:0 0 8px}
+  .step .est{font-size:11px;color:var(--google-blue);background:#e8f0fe;padding:3px 9px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;display:inline-block}
+  .step kbd{background:#fff;border:1px solid var(--line);box-shadow:inset 0 -1px 0 var(--line);padding:1px 6px;border-radius:5px;font-size:12px}
+
+  /* FAQ */
+  .faq{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .faq h2{margin:0 0 18px;font-size:24px;letter-spacing:-.02em}
+  details{padding:14px 0;border-top:1px solid var(--line)}
+  details:first-of-type{border-top:0;padding-top:0}
+  summary{cursor:pointer;font-weight:600;font-size:15px;list-style:none;display:flex;align-items:center;gap:12px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";width:24px;height:24px;border-radius:6px;background:#f1f3f7;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:var(--mute);flex-shrink:0}
+  details[open] summary::before{content:"−";background:var(--ink);color:#fff}
+  details[open] summary{margin-bottom:10px}
+  .faq-body{font-size:14px;color:#1f2530;line-height:1.65;padding-left:36px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="integrations.html">All integrations</a>
+      <a href="biz-faq.html">FAQ</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="pre">
+        <div class="lymx-tile">L<span>★</span></div>
+        <div class="plus">×</div>
+        <div class="g-tile">🅖</div>
+      </div>
+      <h1>LYMX + Google Business Profile</h1>
+      <p>Auto-post LYMX promos to Google Maps. Sync customer reviews. Show "Earn LYMX here" on Google search results. Show up in "coffee near me" — and convert when they get there.</p>
+      <a href="biz-dashboard.html" class="btn-primary">Connect Google →</a>
+      <a href="#how" class="btn-ghost">See how it works</a>
+    </div>
+    <div class="hero-illust">
+      <div class="map-mock">
+        <div class="pin-card">
+          <div class="name">Brew &amp; Bean Café</div>
+          <div class="stars">★★★★★ 4.9 · 142 reviews</div>
+          <div class="meta">Café · Open · 0.3 mi</div>
+          <div class="badge">⭐ Earn LYMX here</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- WHY -->
+<div class="why">
+  <div class="ic">🔍</div>
+  <div>
+    <h3>Why integrate Google Business Profile</h3>
+    <p>Most local-search traffic happens on Google Maps and Google search before customers ever reach your storefront. The LYMX integration makes your Google presence work harder — auto-posting promos, surfacing the LYMX badge in search results, and pulling Google reviews into your LYMX listing for cross-validation.</p>
+  </div>
+</div>
+
+<!-- WHAT SYNCS -->
+<div class="syncs">
+  <h2>What syncs to Google Business Profile</h2>
+  <p class="sub">Two-way sync: LYMX activity flows OUT to Google; Google reviews flow back IN.</p>
+
+  <div class="sync-grid">
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">⚡</div><h4>LYMX promos as Google Posts</h4><span class="freq">Real-time</span></div>
+      <p>When you create a LYMX multiplier promo (e.g., "2× LYMX on cold brew"), it auto-posts as a Google Business Profile Post — visible on your Maps listing.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">⭐</div><h4>"Earn LYMX here" badge</h4><span class="freq">Always-on</span></div>
+      <p>Adds an attribute to your Google profile so the LYMX badge shows in search results and Maps cards. Tested with Google's standardized attribute API.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">⭐</div><h4>Google reviews → LYMX listing</h4><span class="freq">Daily</span></div>
+      <p>Your Google reviews are pulled into your getlymx.com Business profile so customers see them without leaving. Your stars on Google = stars on LYMX.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">📞</div><h4>Hours, address, phone</h4><span class="freq">Hourly</span></div>
+      <p>If you update hours on Google, it syncs to your LYMX listing automatically. One source of truth.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">📸</div><h4>Photos &amp; menu</h4><span class="freq">Every 4 hr</span></div>
+      <p>Your Google Business Profile photos appear on your LYMX listing too. Same for the menu items if you maintain them on Google.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">📊</div><h4>Insights &amp; visibility</h4><span class="freq">Daily</span></div>
+      <p>Google Search/Maps visibility metrics flow to your LYMX dashboard so you can correlate marketing efforts with foot traffic.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SEO BENEFITS -->
+<div class="seo-grid">
+  <div class="seo-card">
+    <div class="ic">🔝</div>
+    <h4>Ranking lift</h4>
+    <p>Active Google Posts (auto-generated from LYMX promos) signal Google that your profile is fresh. Peer Businesses see ~12% lift in local search ranking.</p>
+    <div class="stat">+12%</div>
+  </div>
+  <div class="seo-card">
+    <div class="ic">👁️</div>
+    <h4>Profile views</h4>
+    <p>The LYMX badge attribute attracts curious clicks. Profile-view rate up roughly 18% versus pre-integration baseline.</p>
+    <div class="stat">+18%</div>
+  </div>
+  <div class="seo-card">
+    <div class="ic">📍</div>
+    <h4>"Get directions" clicks</h4>
+    <p>Direction clicks track conversion from Maps to physical foot traffic. LYMX-integrated profiles see ~8% lift here too.</p>
+    <div class="stat">+8%</div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<div class="steps" id="how">
+  <h2>How to connect Google Business Profile</h2>
+  <p class="sub">One-time setup. <span class="timer">⏱️ Total: ~10 min</span></p>
+
+  <div class="step">
+    <div class="step-n">1</div>
+    <div>
+      <h3>You need a verified Google Business Profile</h3>
+      <p class="desc">If you don't have one yet, set it up first at <a href="https://business.google.com">business.google.com</a>. Verification typically takes 1–14 days (Google sends a postcard to your address). You must be the listed owner or manager.</p>
+      <span class="est">Prerequisite</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">2</div>
+    <div>
+      <h3>Open Integrations in your LYMX dashboard</h3>
+      <p class="desc">From your <a href="biz-dashboard.html">Business dashboard</a>, click <kbd>Settings</kbd> → <kbd>Integrations</kbd>. Find <strong>Google Business Profile</strong> and click <kbd>Connect</kbd>.</p>
+      <span class="est">~30 sec</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">3</div>
+    <div>
+      <h3>Authorize Google OAuth</h3>
+      <p class="desc">Sign in to your Google account with admin/owner permissions on your Business Profile. Approve the requested scopes: read profile, write posts, read reviews. Approve.</p>
+      <span class="est">~2 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">4</div>
+    <div>
+      <h3>Pick which Google Profile to link (if multiple)</h3>
+      <p class="desc">If you manage multiple Google Business Profiles (multi-location chains, or a personal profile + business profile), choose the one matching this LYMX Business.</p>
+      <span class="est">~1 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">5</div>
+    <div>
+      <h3>Configure auto-post settings</h3>
+      <p class="desc">Pick which LYMX events trigger Google Posts: multiplier promos (recommended), monthly milestones (optional), seasonal events (optional). You can override per-post.</p>
+      <span class="est">~3 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">6</div>
+    <div>
+      <h3>Verify the integration</h3>
+      <p class="desc">Run a test promo (set a 1-day 2× multiplier on any item). Within 5 min, check your Google Business Profile — the post should appear there. If not, check the Integration log in LYMX dashboard.</p>
+      <span class="est">~3 min</span>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq">
+  <h2>Frequently asked questions</h2>
+
+  <details>
+    <summary>What's the difference between this and just running Google Ads?</summary>
+    <div class="faq-body"><p>Google Ads costs money per click. Google Business Profile is free — and the integration just makes it more active and visible. We're not buying placement; we're amplifying what Google already gives you for free.</p></div>
+  </details>
+
+  <details>
+    <summary>Does this work with multi-location?</summary>
+    <div class="faq-body"><p>Yes. If you manage multiple Google Profiles (one per location), you can link each to its corresponding LYMX location. Multi-location LYMX accounts get a "rollup view" of Google insights across all locations.</p></div>
+  </details>
+
+  <details>
+    <summary>Can I disable the auto-posting?</summary>
+    <div class="faq-body"><p>Yes — anytime. Settings → Integrations → Google → toggle "Auto-post" off. The integration still pulls reviews + insights inbound; just no outbound posting.</p></div>
+  </details>
+
+  <details>
+    <summary>What if I don't have a Google Business Profile yet?</summary>
+    <div class="faq-body"><p>Set one up first — it's free, and required by Google to be verified at the physical address you operate from. Typical setup + verification: 1–14 days. We can guide you through this during your LYMX onboarding.</p></div>
+  </details>
+
+  <details>
+    <summary>Does this affect my Google ranking?</summary>
+    <div class="faq-body"><p>Maybe — Google's local ranking is a black box. Anecdotally, LYMX Businesses with this integration see a ~12% lift in "near me" search ranking versus baseline. We can't promise this, but the increased Posts activity is a known positive ranking signal.</p></div>
+  </details>
+
+  <details>
+    <summary>What about Google Maps + Apple Maps?</summary>
+    <div class="faq-body"><p>Google Maps integration is what's described here. Apple Maps doesn't have a comparable API for third-party apps yet. Apple Maps does pull from your Google Profile in some cases (via Yelp partnerships), so this integration may indirectly help Apple Maps too.</p></div>
+  </details>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Google Business Profile integration · <a href="biz-marketing-kit.html">Marketing kit</a> · <a href="integrations.html">All integrations</a>
+</div>
+
+</body>
+</html>

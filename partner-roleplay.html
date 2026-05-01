@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Roleplay practice · LYMX Partner</title>
+<meta name="description" content="Practice your Partner pitch with simulated Business owner conversations. Pick a Business type, click through the conversation, see how your responses land.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--err:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .partner-tag{font-size:11px;background:#f3e8fd;color:#5b3697;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:38px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  /* Scenario picker */
+  .picker-section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 32px;margin-bottom:24px}
+  .picker-section h2{margin:0 0 14px;font-size:22px}
+  .scenario-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:760px){.scenario-grid{grid-template-columns:1fr}}
+  .scenario-btn{background:#fafafa;border:2px solid var(--line);border-radius:12px;padding:18px 22px;cursor:pointer;text-align:left;transition:all .15s}
+  .scenario-btn:hover{border-color:var(--purple);transform:translateY(-1px)}
+  .scenario-btn.active{border-color:var(--purple);background:#f3e8fd}
+  .scenario-btn .ico{font-size:28px;margin-bottom:6px}
+  .scenario-btn h3{margin:0 0 4px;font-size:16px}
+  .scenario-btn p{margin:0;font-size:13.5px;color:var(--mute)}
+
+  /* Conversation */
+  .conversation{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:24px;display:none}
+  .conversation.active{display:block}
+  .convo-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .convo-header .av{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#5b3697,#3d1f6b);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+  .convo-header .info h3{margin:0 0 2px;font-size:16px}
+  .convo-header .info p{margin:0;font-size:13px;color:var(--mute)}
+  .convo-progress{margin-left:auto;font-size:12.5px;color:var(--mute);font-weight:700}
+
+  .msg{padding:14px 18px;border-radius:12px;margin-bottom:12px;font-size:14.5px;line-height:1.55}
+  .msg.them{background:#f3e8fd;color:#3d1f6b;border-left:3px solid var(--purple);font-style:italic}
+  .msg.them b{font-style:normal;color:var(--purple);display:block;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+  .msg.you{background:#e6f0ff;color:#003a99;border-left:3px solid var(--accent)}
+  .msg.you b{color:var(--accent);display:block;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+  .msg.coach{background:#e8f6ee;color:#0a5a3a;border:1px solid #b3e0c7;font-size:13.5px}
+  .msg.coach b{color:#0a7a4d;display:block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+
+  .choice-row{display:grid;grid-template-columns:1fr;gap:10px;margin:14px 0}
+  .choice{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;cursor:pointer;transition:all .15s;font-size:14px;line-height:1.5}
+  .choice:hover{border-color:var(--accent);background:#f8fafc}
+  .choice.picked.good{border-color:var(--ok);background:#e8f6ee}
+  .choice.picked.bad{border-color:var(--err);background:#fde8e6}
+  .choice .num{display:inline-block;width:24px;height:24px;border-radius:50%;background:var(--line);color:var(--mute);font-weight:800;font-size:12px;text-align:center;line-height:24px;margin-right:8px}
+  .choice.picked.good .num{background:var(--ok);color:#fff}
+  .choice.picked.bad .num{background:var(--err);color:#fff}
+
+  .feedback{padding:14px 18px;border-radius:10px;margin:14px 0;font-size:14px;display:none}
+  .feedback.show{display:block}
+  .feedback.good{background:#e8f6ee;color:#0a5a3a;border-left:3px solid var(--ok)}
+  .feedback.bad{background:#fde8e6;color:#8a2820;border-left:3px solid var(--err)}
+  .feedback b{display:block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+
+  .next-btn{padding:10px 20px;background:var(--purple);color:#fff;border:0;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;display:none;margin-top:14px}
+  .next-btn.show{display:inline-block}
+  .next-btn:hover{background:#3d1f6b}
+
+  .completed{background:linear-gradient(135deg,#0a7a4d,#13a26b);color:#fff;border-radius:14px;padding:28px 32px;text-align:center;display:none}
+  .completed.show{display:block}
+  .completed h2{margin:0 0 8px;color:#fff;font-size:24px}
+  .completed p{margin:0 0 14px;color:#d8efe2;font-size:15.5px}
+  .completed .score{font-size:42px;font-weight:800;color:#f5d172;letter-spacing:-.025em;margin:14px 0}
+  .completed .restart-btn{display:inline-block;background:#fff;color:#0a7a4d;padding:12px 24px;border-radius:10px;font-weight:800;font-size:14px;text-decoration:none;cursor:pointer;border:0;font-family:inherit}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power <span class="partner-tag">FOR PARTNERS</span></div>
+    <div class="nav-links">
+      <a href="partner-discovery-script.html">Script</a>
+      <a href="partner-objections.html">Objections</a>
+      <a href="partner-resources.html">Resources</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Partner · Practice · Roleplay</div>
+  <h1>Roleplay your pitch — practice mode</h1>
+  <p class="lead">Pick a Business type. Walk through a simulated first conversation. Click your response at each step. Get instant feedback on what landed and what didn't.</p>
+
+  <div class="picker-section">
+    <h2>1. Pick a Business owner you'll roleplay with</h2>
+    <div class="scenario-grid">
+      <div class="scenario-btn" data-id="cafe" onclick="pickScenario('cafe', this)">
+        <div class="ico">☕</div>
+        <h3>Café owner — Daniel</h3>
+        <p>40s, tired, runs a 12-table coffee shop. Tried 3 loyalty programs. Skeptical.</p>
+      </div>
+      <div class="scenario-btn" data-id="salon" onclick="pickScenario('salon', this)">
+        <div class="ico">💇</div>
+        <h3>Salon owner — Cristina</h3>
+        <p>30s, busy, 4-chair salon. Lost regulars to a competitor. Open but careful.</p>
+      </div>
+      <div class="scenario-btn" data-id="restaurant" onclick="pickScenario('restaurant', this)">
+        <div class="ico">🍜</div>
+        <h3>Restaurant owner — Mai</h3>
+        <p>50s, family-owned dim sum. Doesn't speak much "tech." Cash-strapped.</p>
+      </div>
+      <div class="scenario-btn" data-id="retail" onclick="pickScenario('retail', this)">
+        <div class="ico">🛍️</div>
+        <h3>Retail owner — Jamal</h3>
+        <p>50s, vintage records shop. Thinks LYMX = MLM. Hostile up front.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conversation: Cafe -->
+  <div class="conversation" id="convo-cafe">
+    <div class="convo-header">
+      <div class="av">D</div>
+      <div class="info"><h3>Daniel · Café owner</h3><p>40s · 12-table coffee shop, Henderson · 6 years open</p></div>
+      <div class="convo-progress" id="prog-cafe">Step 1 of 5</div>
+    </div>
+    <div id="cafe-flow"></div>
+  </div>
+
+  <!-- Conversation: Salon -->
+  <div class="conversation" id="convo-salon">
+    <div class="convo-header">
+      <div class="av">C</div>
+      <div class="info"><h3>Cristina · Salon owner</h3><p>30s · 4-chair salon, Summerlin · 3 years open</p></div>
+      <div class="convo-progress" id="prog-salon">Step 1 of 5</div>
+    </div>
+    <div id="salon-flow"></div>
+  </div>
+
+  <!-- Conversation: Restaurant -->
+  <div class="conversation" id="convo-restaurant">
+    <div class="convo-header">
+      <div class="av">M</div>
+      <div class="info"><h3>Mai · Restaurant owner</h3><p>50s · Family dim sum, Spring Mountain · 18 years open</p></div>
+      <div class="convo-progress" id="prog-restaurant">Step 1 of 5</div>
+    </div>
+    <div id="restaurant-flow"></div>
+  </div>
+
+  <!-- Conversation: Retail -->
+  <div class="conversation" id="convo-retail">
+    <div class="convo-header">
+      <div class="av">J</div>
+      <div class="info"><h3>Jamal · Retail owner</h3><p>50s · Vintage records shop, Arts District · 12 years open</p></div>
+      <div class="convo-progress" id="prog-retail">Step 1 of 5</div>
+    </div>
+    <div id="retail-flow"></div>
+  </div>
+
+  <div class="completed" id="completed">
+    <h2>Conversation complete</h2>
+    <p id="completed-msg">Strong reps. You earned the meeting.</p>
+    <div class="score" id="score">4 / 5</div>
+    <button class="restart-btn" onclick="restart()">Try another scenario →</button>
+  </div>
+
+  <p style="font-size:13.5px;color:var(--mute);margin-top:32px;text-align:center">For the full discovery script, see <a href="partner-discovery-script.html">partner-discovery-script</a>. For objection handling, see <a href="partner-objections.html">partner-objections</a>.</p>
+
+</div>
+
+<script>
+const scenarios = {
+  cafe: [
+    { them: '"What is this — another loyalty program? I tried Square Loyalty, BellySpot, and a punch card. None worked. I\'m skeptical."', choices: [
+      { text: "I get it — those are closed-loop. LYMX is different. Let me show you in 30 seconds.", score: 'good', feedback: "Good — you acknowledged the skepticism without dismissing it. Now you have permission to differentiate." },
+      { text: "Trust me, this one is actually different.", score: 'bad', feedback: "Bad — \"trust me\" is the magic phrase that loses small Business owners. They've heard it from every previous rep." },
+      { text: "I'm not here to pitch you. I just want to learn about your café first.", score: 'good', feedback: "Excellent — you reset the entire frame. Now they're talking about themselves, not arguing with you." }
+    ]},
+    { them: '"Okay fine. I\'ve been at this 6 years. Coffee + breakfast burritos. Mornings are great. Weekends meh."', choices: [
+      { text: "What happens with the people who come on a Tuesday morning — do you see them again?", score: 'good', feedback: "Great open-ended question that gets to retention pain. Use it to bridge to LYMX value." },
+      { text: "Have you tried discounting weekends?", score: 'bad', feedback: "Bad — premature solutioning. He'll say \"yes and it didn't work\" and you've used your social capital with no insight." },
+      { text: "What's your average ticket?", score: 'bad', feedback: "Too transactional. Sounds like you're pricing him. Build rapport first, math later." }
+    ]},
+    { them: '"Tuesday morning regulars... they\'re hit or miss. Some come back. Lots don\'t. I don\'t even know who lapsed."', choices: [
+      { text: "That's the gap LYMX closes — it auto-tracks lapsed customers and recovers ~22% of them. Want to see how?", score: 'good', feedback: "Strong — you matched his exact pain to a specific LYMX feature. Specific stat, immediate value." },
+      { text: "Most cafés have that issue. I'd love to come back with real numbers from a similar café next week.", score: 'good', feedback: "Also good — you're earning the next meeting instead of pitching now. Both are valid; depends on whether he wants more." },
+      { text: "I have a CRM tool that solves that.", score: 'bad', feedback: "Bad — \"CRM tool\" sounds like more software work he doesn't want. Don't make LYMX feel like a tech project." }
+    ]},
+    { them: '"Sounds interesting. But $199/mo is a lot when revenue is tight."', choices: [
+      { text: "Sign-up's free for 3 months. After that, $199 — or your competitor's foregone revenue is 9-16x that. Want to see your specific numbers?", score: 'good', feedback: "Excellent — you reframed cost as opportunity cost AND offered to do the math with HIS numbers. Earns the meeting." },
+      { text: "$199 is what most owners pay for one Yelp ad week. Way better ROI.", score: 'bad', feedback: "Borderline — comparing to Yelp can backfire if he's not on Yelp or hates it. Plus it's still feature-pitching." },
+      { text: "Most cafés break even by month 2. I can show you the math.", score: 'good', feedback: "Strong — credible (gives a timeline), invites further conversation, doesn't oversell." }
+    ]},
+    { them: '"Maybe. I\'d need to think about it."', choices: [
+      { text: "Sure — what specifically do you want to think about? I'd rather come back next week with answers to your real concerns than leave you a generic email.", score: 'good', feedback: "Excellent — pin down what \"think about it\" actually means. 30% of \"thinking\" prospects reveal an actual concern when asked directly." },
+      { text: "Of course, take your time. I'll follow up Monday.", score: 'bad', feedback: "Soft — you let him off the hook. \"Think about it\" without specifics usually = no. Push gently." },
+      { text: "What's the one thing that would have to be true for you to say yes?", score: 'good', feedback: "Powerful — flips the script. He has to articulate a specific gating concern. Often unlocks the deal." }
+    ]}
+  ],
+  salon: [
+    { them: '"I run a 4-chair salon. I have a punch card already. Why do I need yours?"', choices: [
+      { text: "Punch cards work for retention, not acquisition. LYMX adds the network effect — your customers earn at coffee shops, salons, restaurants, and that brings new customers TO YOU.", score: 'good', feedback: "Sharp — you didn't dismiss her existing solution, you positioned LYMX as additive." },
+      { text: "Punch cards are old. LYMX is the modern version.", score: 'bad', feedback: "Don't denigrate her existing tool. She picked it for a reason. Be additive, not dismissive." },
+      { text: "Tell me about your punch card — does it actually move the needle on retention?", score: 'good', feedback: "Great — let her tell you it's underperforming, instead of telling her. She'll commit to that finding." }
+    ]},
+    { them: '"My punch card is okay. Customers like it. But I\'ve been losing some regulars to a salon down the street."', choices: [
+      { text: "Have you noticed when they started leaving? If it's the past 6 months, it might be the salon down the street joined LYMX in March — their customers earn LYMX, walk past your shop to their door.", score: 'good', feedback: "Excellent — you connected her loss to a concrete cause she may not have known. Educates AND sells." },
+      { text: "That's normal — 5-10% turnover yearly is expected.", score: 'bad', feedback: "Dismissive of her real concern. Don't normalize her pain." },
+      { text: "Have you considered what's making them leave?", score: 'bad', feedback: "Sounds like a therapist, not a Partner. Get specific." }
+    ]},
+    { them: '"Wait — that competitor joined LYMX? You\'re saying that\'s why I\'m losing regulars?"', choices: [
+      { text: "Could be one factor. The way LYMX network density works, your customers earning there have small but real friction returning to a non-LYMX salon. Compounds over months.", score: 'good', feedback: "Honest, specific, doesn't overclaim. \"Could be one factor\" preserves credibility." },
+      { text: "Yes, that's exactly why. You need to join immediately.", score: 'bad', feedback: "Overclaim alarms her — she'll resist. And you don't have proof it's the SOLE cause." },
+      { text: "It's likely contributing. Want to check the LYMX network map together?", score: 'good', feedback: "Good — invites her into investigation rather than positioning it as your sales pitch." }
+    ]},
+    { them: '"Show me. What would I need to do to join?"', choices: [
+      { text: "Sign-up is free for 3 months. POS integration with Square/Toast/etc takes 8 minutes. You set your LYMX rate. Customers start earning immediately. About a 30-min commitment to get fully set up.", score: 'good', feedback: "Concrete, specific, low-friction. \"30 minutes\" is the magic phrase for busy salon owners." },
+      { text: "Just sign up online and you're good.", score: 'bad', feedback: "Too vague. Salon owners want concrete time commitment + steps." },
+      { text: "I'll come back next week, walk you through everything, sign you up in person.", score: 'good', feedback: "Good — earns the next meeting and de-risks the commitment." }
+    ]},
+    { them: '"Let\'s do it. Come back Tuesday at 11."', choices: [
+      { text: "Done. I'll bring real numbers from 3 similar salons + your specific projection. See you Tuesday.", score: 'good', feedback: "Perfect close — you earned it without overselling. Now follow through with prep." },
+      { text: "Should I bring anything specific?", score: 'good', feedback: "Polite, professional, lets her shape the meeting. Good." },
+      { text: "Want to sign up now? Why wait until Tuesday?", score: 'bad', feedback: "Don't push when she's already given you a yes. Trust her timing." }
+    ]}
+  ],
+  restaurant: [
+    { them: '"Hello. I am Mai. We have been here 18 years. What is this LYMX?"', choices: [
+      { text: "Mai, hello — I'm here to learn about your restaurant first. Then if it's a fit, I'll explain LYMX in 5 minutes. Tell me about a typical Saturday at the dim sum.", score: 'good', feedback: "Great — you set expectations clearly, kept it simple, and invited her to talk. Patient pacing is everything with multilingual or older owners." },
+      { text: "LYMX is a customer loyalty rewards network for local Las Vegas businesses. It works like this:...", score: 'bad', feedback: "Wall of jargon. She's 50s, family business, English second language. Lead with curiosity, not features." },
+      { text: "Hi Mai. Quick question — how do most of your new customers find you?", score: 'good', feedback: "Direct + gentle. Asks about her acquisition. Builds rapport." }
+    ]},
+    { them: '"Saturdays are busy. Many regulars. New customers come from Yelp."', choices: [
+      { text: "How much do you spend on Yelp ads each month? Just curious.", score: 'good', feedback: "Casual, not interrogative. Builds trust by being genuinely interested." },
+      { text: "Yelp ads aren't very effective for restaurants like yours. Want to know why?", score: 'bad', feedback: "Don't tell her her ads are bad. She picked them. Earn the right to suggest alternatives." },
+      { text: "Yelp's expensive. LYMX is way cheaper.", score: 'bad', feedback: "Anchoring on price is fine if she's the one who brought it up. Don't volunteer it as the lead." }
+    ]},
+    { them: '"$800 per month on Yelp. Mostly works. Some new customers."', choices: [
+      { text: "$800/mo for some customers. Could be useful. The 218 LYMX Businesses on the network sent customers to each other for free in the past month — over $30k of cross-redemption. Want to see if it'd work for your restaurant?", score: 'good', feedback: "Strong — concrete number ($30k cross-redemption), low-friction next step. She can see the network effect math." },
+      { text: "Imagine getting customers from 218 other Businesses. That's what LYMX does.", score: 'bad', feedback: "Vague. \"Imagine\" is weak. Anchor on specific math." },
+      { text: "I can show you how some restaurants got $5,000/mo in new revenue from LYMX cross-redemption.", score: 'good', feedback: "Specific, restaurant-relevant. Numbers work for older Business owners." }
+    ]},
+    { them: '"Hmm. Too complicated for me. I am cash-strapped right now. Maybe later."', choices: [
+      { text: "I understand. The good news: 3 months free trial. By month 4, most restaurants are net-positive. Want me to come back when things are calmer? Or set up a free trial now and you can cancel any time?", score: 'good', feedback: "Excellent — addresses cash concern, removes the barrier (free trial), and gives her a low-stakes way to try. Soft close." },
+      { text: "It's actually simple. Just 8 minutes to set up.", score: 'bad', feedback: "Doesn't address her real concern (cash). Just steamrolls. She'll feel pushed." },
+      { text: "Maybe is fine. I'll check back in 3 months.", score: 'bad', feedback: "Cold — doesn't keep her warm. \"3 months\" is too long; she'll forget you." }
+    ]},
+    { them: '"Free trial. Okay. Show me how."', choices: [
+      { text: "I can walk through the sign-up next week — bring my laptop. Tuesday at 2pm work?", score: 'good', feedback: "Earned the meeting. Good." },
+      { text: "Right now! Let me start your trial.", score: 'bad', feedback: "Don't rush. She just shifted from skeptical to open — give her time to feel comfortable." },
+      { text: "I'll send instructions by email.", score: 'bad', feedback: "She's older, runs a busy restaurant — emails get lost. In-person works better." }
+    ]}
+  ],
+  retail: [
+    { them: '"Look — if this is some MLM scheme, walk away. I\'ve had 4 reps in here this month pushing pyramid stuff."', choices: [
+      { text: "It's not MLM. LYMX is a Business loyalty network — your customers earn rewards at participating shops, redeem at any other. I'm a Partner, not a recruiter.", score: 'good', feedback: "Acknowledges the concern directly + clarifies the model. Doesn't get defensive." },
+      { text: "I get that. Sienna isn't MLM. We have customers, not downline.", score: 'bad', feedback: "Defensive. \"Not MLM\" without clarifying what we ARE leaves him still suspicious." },
+      { text: "I get it. Let me ask you a different question first — what's frustrating you about your current customer retention?", score: 'good', feedback: "Reframes the conversation entirely. He stops being defensive about MLM, starts thinking about his pain." }
+    ]},
+    { them: '"Customer retention? They come in for a record, leave, maybe come back in 6 months. I\'ve given up trying to track them."', choices: [
+      { text: "Tracking those customers IS the whole game. LYMX gives you a wallet ID for every customer + auto-tracks lapse, birthday, top buyers. You'd see who's been in 4 times this year vs once.", score: 'good', feedback: "Connects pain to specific feature. \"Wallet ID\" is concrete. \"Top buyers\" is what every retail owner wants to know." },
+      { text: "All retailers say that. Want to know how Vintage Vault Records solved it?", score: 'good', feedback: "Reference to similar Business is gold. He's interested." },
+      { text: "Most loyalty programs don't track that. LYMX does.", score: 'bad', feedback: "Doesn't differentiate enough. He'll say \"how?\" and you've used a turn without insight." }
+    ]},
+    { them: '"How does LYMX actually work — without the buzzwords?"', choices: [
+      { text: "Customer buys a $40 record at your shop. They earn 200 LYMX. They walk to a coffee shop nearby that's also on LYMX. Use 100 LYMX for $1 off coffee. The system reconciles between the two of you. They\'re happy. You captured a sale + a continuing relationship.", score: 'good', feedback: "Plain-English mechanic. He sees exactly what happens. Not a buzzword in sight." },
+      { text: "It's a loyalty program with cross-business redemption.", score: 'bad', feedback: "Buzzword. He literally just asked you to avoid them." },
+      { text: "Customers earn rewards at one Business, spend at any other. The network reconciles between Businesses behind the scenes.", score: 'good', feedback: "Cleaner. Plain enough." }
+    ]},
+    { them: '"That actually makes sense. What does it cost?"', choices: [
+      { text: "$199/mo, 3 months free. There's a one-time $850 setup fee that includes launch marketing + integration. Sign up now, your trial starts immediately.", score: 'good', feedback: "Clear, no hedging. Records-shop owner appreciates straightforward pricing." },
+      { text: "It's affordable. Around $200/mo.", score: 'bad', feedback: "Vague. He asked specifically. Give him the number." },
+      { text: "Cheaper than what you're paying for Yelp ads, which probably aren't working anyway.", score: 'bad', feedback: "Don't trash his other spend without knowing. Be direct on price." }
+    ]},
+    { them: '"Free for 3 months. Okay, sign me up. But if it doesn\'t work, I want a refund."', choices: [
+      { text: "Done. There's a 90-day money-back guarantee on the $850. I'll have the application here Tuesday.", score: 'good', feedback: "Address his concern directly. The guarantee is real." },
+      { text: "It'll work. Trust me.", score: 'bad', feedback: "He just said \"if it doesn't work.\" Don't override his risk concern with bravado." },
+      { text: "If we both agree it's not working at 90 days, you get a full refund. Fair?", score: 'good', feedback: "Reframes as mutual fairness. He'll respect that." }
+    ]}
+  ]
+};
+
+let currentScenario = null;
+let currentStep = 0;
+let scoreCount = 0;
+
+function pickScenario(id, btn) {
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.conversation').forEach(c => c.classList.remove('active'));
+  document.getElementById('completed').classList.remove('show');
+  document.getElementById('convo-' + id).classList.add('active');
+  currentScenario = id;
+  currentStep = 0;
+  scoreCount = 0;
+  renderStep();
+}
+
+function renderStep() {
+  const data = scenarios[currentScenario][currentStep];
+  if (!data) {
+    finish();
+    return;
+  }
+  const flow = document.getElementById(currentScenario + '-flow');
+  flow.innerHTML = '';
+  document.getElementById('prog-' + currentScenario).textContent = `Step ${currentStep + 1} of 5`;
+
+  const themMsg = document.createElement('div');
+  themMsg.className = 'msg them';
+  themMsg.innerHTML = `<b>${currentScenario === 'cafe' ? 'Daniel' : currentScenario === 'salon' ? 'Cristina' : currentScenario === 'restaurant' ? 'Mai' : 'Jamal'} says</b>${data.them}`;
+  flow.appendChild(themMsg);
+
+  const choicesDiv = document.createElement('div');
+  choicesDiv.className = 'choice-row';
+  data.choices.forEach((choice, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'choice';
+    btn.innerHTML = `<span class="num">${String.fromCharCode(65 + i)}</span>${choice.text}`;
+    btn.onclick = () => pickChoice(i, btn);
+    choicesDiv.appendChild(btn);
+  });
+  flow.appendChild(choicesDiv);
+}
+
+function pickChoice(idx, btn) {
+  const data = scenarios[currentScenario][currentStep];
+  const choice = data.choices[idx];
+  document.querySelectorAll('.choice').forEach(c => c.style.pointerEvents = 'none');
+  btn.classList.add('picked', choice.score === 'good' ? 'good' : 'bad');
+  if (choice.score === 'good') scoreCount++;
+
+  const flow = document.getElementById(currentScenario + '-flow');
+  const fb = document.createElement('div');
+  fb.className = `feedback show ${choice.score === 'good' ? 'good' : 'bad'}`;
+  fb.innerHTML = `<b>Coach feedback</b>${choice.feedback}`;
+  flow.appendChild(fb);
+
+  const next = document.createElement('button');
+  next.className = 'next-btn show';
+  next.textContent = currentStep === 4 ? 'See your score →' : 'Next step →';
+  next.onclick = () => { currentStep++; renderStep(); };
+  flow.appendChild(next);
+}
+
+function finish() {
+  document.querySelectorAll('.conversation').forEach(c => c.classList.remove('active'));
+  const completed = document.getElementById('completed');
+  completed.classList.add('show');
+  document.getElementById('score').textContent = `${scoreCount} / 5`;
+  let msg = '';
+  if (scoreCount === 5) msg = 'Perfect run. You closed the meeting cleanly.';
+  else if (scoreCount === 4) msg = 'Strong reps. You earned the meeting.';
+  else if (scoreCount === 3) msg = 'Good — a couple stumbles, but you got through. Reread partner-discovery-script.';
+  else if (scoreCount === 2) msg = 'Some work needed. Re-read partner-objections + partner-discovery-script.';
+  else msg = 'Try again — review the discovery script and objection playbook before the next attempt.';
+  document.getElementById('completed-msg').textContent = msg;
+}
+
+function restart() {
+  document.getElementById('completed').classList.remove('show');
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="partner-discovery-script.html" style="color:#5a6373">Discovery script</a> · <a href="partner-objections.html" style="color:#5a6373">Objections</a> · <a href="partner-resources.html" style="color:#5a6373">Resources</a>
+</footer>
+</body>
+</html>

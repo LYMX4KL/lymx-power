@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Cash flow & settlement timing · LYMX Business</title>
+<meta name="description" content="How LYMX affects your Business cash flow. Settlement schedule, weekly payouts, the 80% redemption cost, and how to plan for it.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--warn:#d97706;--err:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:38px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .summary-box{background:linear-gradient(135deg,#0a7a4d,#13a26b);color:#fff;border-radius:14px;padding:24px 28px;margin-bottom:36px}
+  .summary-box h3{margin:0 0 8px;color:#fff;font-size:18px}
+  .summary-box ul{margin:8px 0 0;padding-left:20px;color:#d8efe2;font-size:14.5px}
+  .summary-box ul li{margin-bottom:5px}
+  .summary-box ul li b{color:#fff}
+
+  .timeline-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:32px;background:#fff;padding:16px;border-radius:14px;border:1px solid var(--line)}
+  @media(max-width:760px){.timeline-bar{grid-template-columns:repeat(2,1fr)}}
+  .tl{padding:12px;border-radius:8px;background:#f8fafc}
+  .tl .when{font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;color:var(--accent)}
+  .tl .what{font-size:13px;font-weight:700;margin-top:3px}
+  .tl .desc{font-size:11.5px;color:var(--mute);margin-top:3px;line-height:1.3}
+
+  .section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:18px}
+  .section h2{margin:0 0 14px;font-size:20px}
+  .section h3{margin:18px 0 8px;font-size:15px}
+  .section p{margin:0 0 10px;font-size:14.5px;color:var(--ink)}
+  .section ul{padding-left:18px;font-size:14px}
+  .section ul li{margin-bottom:5px;color:var(--mute)}
+  .section ul li b{color:var(--ink)}
+
+  .math-box{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border-radius:10px;padding:18px 22px;margin:14px 0}
+  .math-box h4{margin:0 0 10px;font-size:14px;color:#fff}
+  .math-box table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .math-box td{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.18)}
+  .math-box td:last-child{text-align:right;font-weight:700;font-family:ui-monospace,Menlo,monospace}
+  .math-box tr:last-child td{border-bottom:0;font-weight:800;font-size:14.5px;color:#f5d172}
+
+  .scenario{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin-bottom:14px}
+  .scenario h4{margin:0 0 6px;font-size:15px}
+  .scenario p{margin:0 0 6px;font-size:14px;color:var(--mute)}
+  .scenario .answer{background:#e8f6ee;border:1px solid #b3e0c7;padding:8px 12px;border-radius:6px;font-size:13.5px;color:#0a5a3a;margin-top:8px}
+
+  .alert{background:#fff8e6;border:1px solid #f0c961;border-radius:10px;padding:14px 18px;font-size:14px;color:#7a5a00;margin:14px 0}
+  .alert b{color:#5a4200}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details[open] summary{margin-bottom:8px}
+  details p{margin:0;color:var(--mute);font-size:14px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power <span class="biz-tag">FOR BUSINESSES</span></div>
+    <div class="nav-links">
+      <a href="biz-faq.html">Biz FAQ</a>
+      <a href="biz-tax-guide.html">Tax guide</a>
+      <a href="biz-revenue-calc.html">ROI calc</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Business · Operations · Cash flow & settlement</div>
+  <h1>How LYMX affects your cash flow</h1>
+  <p class="lead">Understanding the timing — when LYMX hits your books, when it doesn't, and how to plan for the wholesale-cost impact. Most Businesses overestimate the cash-flow impact; the reality is usually small and predictable.</p>
+
+  <div class="summary-box">
+    <h3>The 60-second summary</h3>
+    <ul>
+      <li><b>Settlement is weekly</b> — every Wednesday for the prior week's activity</li>
+      <li><b>You receive net</b> — LYMX issuance cost (~3% network fee) auto-deducted; redemption cost (80% when LYMX issued elsewhere is redeemed at your Business) auto-deducted</li>
+      <li><b>The 80% rule is the biggest line</b> — but only kicks in when other Businesses' LYMX is redeemed at yours; usually small in early months</li>
+      <li><b>Cash flow is positive</b> — you keep 100% of customer purchases (cash/card) immediately; LYMX cost is settled separately, weekly</li>
+    </ul>
+  </div>
+
+  <div class="timeline-bar">
+    <div class="tl"><div class="when">Mon-Sun</div><div class="what">Activity week</div><div class="desc">Customers earn + redeem</div></div>
+    <div class="tl"><div class="when">Mon (next)</div><div class="what">Settlement calc</div><div class="desc">Math runs overnight</div></div>
+    <div class="tl"><div class="when">Tue</div><div class="what">Statement ready</div><div class="desc">Visible in dashboard</div></div>
+    <div class="tl"><div class="when">Wed</div><div class="what">Payout sent</div><div class="desc">ACH initiated</div></div>
+    <div class="tl"><div class="when">Thu/Fri</div><div class="what">Hits bank</div><div class="desc">1-2 day ACH window</div></div>
+  </div>
+
+  <!-- 1. The line items -->
+  <div class="section">
+    <h2>1. Settlement statement — the line items</h2>
+    <p>Every Wednesday, your dashboard shows a fresh settlement statement for the prior week. It breaks down into 4 line items.</p>
+
+    <h3>Line 1 — LYMX issued at your Business</h3>
+    <p>Total LYMX you awarded customers this week. Each LYMX has a $0.01 redemption value. You pay the network ~3% of issuance value as a service fee.</p>
+
+    <h3>Line 2 — LYMX redeemed at your Business</h3>
+    <p>Customers spent LYMX with you this week. Two sub-cases:</p>
+    <ul>
+      <li><b>Customer redeeming LYMX they earned at YOUR Business:</b> No cost to you — they're spending against credit you'd already paid the network for at issuance.</li>
+      <li><b>Customer redeeming LYMX earned ELSEWHERE:</b> You pay 80% of redemption value to the network at settlement (the 80% Redemption Cost Rule). The remaining 20% is your customer-acquisition cost — you get the customer, you eat 20% of their LYMX value.</li>
+    </ul>
+
+    <h3>Line 3 — Subscription</h3>
+    <p>$199/mo flat (or $249 / $299 / etc. for multi-location). Charged once a month, deducted from settlement.</p>
+
+    <h3>Line 4 — Network fees</h3>
+    <p>3% LYMX issuance fee + any platform service fees. Auto-applied.</p>
+  </div>
+
+  <!-- 2. Worked example -->
+  <div class="section">
+    <h2>2. Worked example — coffee shop, week 1</h2>
+    <p>Single-location café, $10K weekly revenue, 5 LYMX per dollar issuance rate, week of operations.</p>
+
+    <div class="math-box">
+      <h4>Coffee shop weekly settlement</h4>
+      <table>
+        <tr><td>Total customer purchases (week)</td><td>$10,000</td></tr>
+        <tr><td>LYMX issued (5/$1 × $10K)</td><td>50,000 LYMX = $500</td></tr>
+        <tr><td>LYMX redeemed at coffee shop (own customers)</td><td>$200 (no cost — pre-paid)</td></tr>
+        <tr><td>LYMX redeemed at coffee shop (from other Businesses' customers)</td><td>$120 → 80% cost = $96</td></tr>
+        <tr><td>Network fee (3% × $500 issued)</td><td>$15</td></tr>
+        <tr><td>Subscription (weekly equivalent of $199/mo)</td><td>$46</td></tr>
+        <tr><td>Total LYMX cost this week</td><td>$157</td></tr>
+        <tr><td>Net contribution to coffee shop (revenue minus cost)</td><td>$9,843</td></tr>
+      </table>
+    </div>
+
+    <p style="font-size:13.5px;color:var(--mute);margin-top:14px">In this example, LYMX costs the coffee shop ~1.6% of weekly revenue. The customer-acquisition lift (12-18% incremental revenue typical) more than offsets that.</p>
+  </div>
+
+  <!-- 3. Cash flow impact -->
+  <div class="section">
+    <h2>3. The cash flow impact in plain English</h2>
+
+    <h3>What's going OUT every week</h3>
+    <ul>
+      <li><b>Weekly settlement deduction</b> — the net of network fees + redemption cost + subscription portion. For a $10K/week business: ~$150-250 typical.</li>
+      <li><b>That's it.</b> No upfront LYMX inventory to buy. No pre-funding. No deposits.</li>
+    </ul>
+
+    <h3>What's coming IN every day</h3>
+    <ul>
+      <li><b>100% of cash/card customer purchases</b> — these never touch LYMX. Whatever your customer pays at the register goes straight to your POS settlement (Square/Toast/etc.).</li>
+      <li><b>LYMX is deducted SEPARATELY at the weekly settlement</b> — not from each transaction.</li>
+    </ul>
+
+    <h3>The result</h3>
+    <p>Your daily cash flow looks the same as it did before LYMX. The LYMX impact appears as a single weekly line item in your books — predictable, easy to forecast, easy to budget.</p>
+
+    <div class="alert"><b>Common misconception:</b> "LYMX takes a cut of every sale." It doesn't. LYMX is a separate weekly settlement against your account, not a per-transaction deduction. Your POS keeps doing what it does.</div>
+  </div>
+
+  <!-- 4. Plan for it -->
+  <div class="section">
+    <h2>4. How to plan for it in your books</h2>
+
+    <h3>Treat LYMX as a marketing line item</h3>
+    <p>Most LYMX Businesses categorize the weekly settlement deduction as "marketing & promotions" — comparable to how you'd categorize Yelp ads or Google ads. It's a customer-acquisition spend.</p>
+
+    <h3>Budget rule of thumb</h3>
+    <ul>
+      <li><b>2-3% of LYMX-tagged revenue</b> — typical total LYMX cost in early months</li>
+      <li><b>1-2% of total revenue</b> — when LYMX represents 50% of customers (mature state)</li>
+      <li><b>Plus the $199/mo flat</b> — fixed regardless of activity</li>
+    </ul>
+
+    <h3>For QuickBooks / Xero</h3>
+    <p>Auto-sync handles this. See <a href="biz-integration-quickbooks.html">QuickBooks integration</a> or <a href="biz-integration-xero.html">Xero integration</a>. They categorize LYMX as a marketing expense by default.</p>
+
+    <h3>Tax treatment</h3>
+    <p>LYMX cost is fully deductible as marketing & promotions expense. See <a href="biz-tax-guide.html">biz-tax-guide</a> for full breakdown.</p>
+  </div>
+
+  <!-- 5. Common scenarios -->
+  <h2 style="font-size:22px;margin:32px 0 14px">Common scenarios</h2>
+
+  <div class="scenario">
+    <h4>"I'm new to LYMX — what's the cost like in week 1?"</h4>
+    <p>Tiny. You haven't built up cross-redemption volume yet, so 80% costs are near zero. Most week-1 settlements are: subscription portion + 3% network fee = under $80 for a small Business.</p>
+    <div class="answer">Expect $50-100 first-week settlement deduction, then growing as your customers earn + spend across the network.</div>
+  </div>
+
+  <div class="scenario">
+    <h4>"What if I'm cash-strapped and can't afford the weekly deduction?"</h4>
+    <p>Weekly settlement reflects net of revenue earned vs. cost owed. You'll never owe more than you've earned in LYMX activity that week — except for the flat subscription portion.</p>
+    <div class="answer">If you're worried, talk to your <a href="biz-success-coaches.html">success coach</a>. We can defer subscription payment up to 30 days during cash-flow crunches. Used judiciously.</div>
+  </div>
+
+  <div class="scenario">
+    <h4>"My LYMX cost spiked this week — what happened?"</h4>
+    <p>Most spikes are caused by: (1) a viral promo bringing in heavy LYMX redemption from other Businesses' customers, (2) a refund batch hitting LYMX too, (3) a one-time multi-location add fee.</p>
+    <div class="answer">Run reconciliation report (Dashboard → Reports → Settlement detail). It shows line-by-line where the cost came from.</div>
+  </div>
+
+  <div class="scenario">
+    <h4>"Can I delay LYMX issuance to manage cash flow?"</h4>
+    <p>You can pause LYMX issuance temporarily (Dashboard → Settings → Pause issuance for X days). Customers will see your listing as "Currently not issuing LYMX — still accepting redemption."</p>
+    <div class="answer">Use sparingly — pausing hurts customer trust. Better to address cash flow root cause.</div>
+  </div>
+
+  <div class="scenario">
+    <h4>"Do I get paid faster with same-day settlement?"</h4>
+    <p>LYMX settlement is weekly, not per-transaction. Your daily POS sales (Square/Toast/etc.) are NOT affected — those settle on your POS's normal schedule (next-day for Square, etc.).</p>
+    <div class="answer">There's no LYMX cash-flow speed-up to opt into. The weekly settlement is the schedule.</div>
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">FAQ</h2>
+  <details><summary>What if I owe MORE than I earned in LYMX activity that week?</summary><p>Only happens if you ran a heavy promo with very low issuance but high redemption. Typically the deficit is under $50. Auto-deducted from your settlement account; if account is empty, deferred to next week's settlement.</p></details>
+  <details><summary>Does LYMX charge interest on deferred settlements?</summary><p>No interest charged within standard 30-day cash-flow grace. Past 30 days: 1.5%/month service fee. We'll always notify you well before that triggers.</p></details>
+  <details><summary>Can I prepay several months of subscription?</summary><p>Yes — prepay 12 months for a 5% discount ($199 × 12 = $2,388 → $2,269). Email biz-support to set up annual prepay.</p></details>
+  <details><summary>What happens to settlement if I pause my account?</summary><p>Your account can be paused for up to 90 days (vacation, renovation, etc.). During pause: no subscription charge, no LYMX issuance, but customers can still redeem if you opt in. Settlement runs as normal for any redemption activity.</p></details>
+  <details><summary>How is multi-location settlement handled?</summary><p>Single weekly settlement statement covers all locations. You can see per-location breakdown in dashboard. One ACH payout to your designated account.</p></details>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="biz-tax-guide.html" style="color:#5a6373">Tax guide</a> · <a href="biz-revenue-calc.html" style="color:#5a6373">ROI calculator</a> · <a href="settlement.html" style="color:#5a6373">Settlement detail</a>
+</footer>
+</body>
+</html>

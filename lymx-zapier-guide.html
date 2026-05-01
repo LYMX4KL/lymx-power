@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Zapier integration guide · LYMX</title>
+<meta name="description" content="Connect LYMX to 5,000+ apps via Zapier. Trigger emails, Slack messages, spreadsheet updates, and CRM events from LYMX activity.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--orange:#ff4a00}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:38px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .hero-card{background:linear-gradient(135deg,#ff4a00,#cc3a00);color:#fff;border-radius:16px;padding:32px 36px;margin-bottom:36px;display:grid;grid-template-columns:2fr 1fr;gap:24px;align-items:center}
+  @media(max-width:760px){.hero-card{grid-template-columns:1fr}}
+  .hero-card h2{margin:0 0 8px;color:#fff;font-size:24px}
+  .hero-card p{margin:0;color:#ffe2d4;font-size:15px}
+  .hero-card .stats{background:rgba(255,255,255,.12);border-radius:10px;padding:18px}
+  .hero-card .stats div{margin-bottom:10px}
+  .hero-card .stats div:last-child{margin-bottom:0}
+  .hero-card .stats .n{font-size:24px;font-weight:800;color:#fff;line-height:1}
+  .hero-card .stats .l{font-size:11.5px;color:#ffe2d4;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+
+  .triggers{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:32px}
+  @media(max-width:760px){.triggers{grid-template-columns:1fr}}
+  .trigger{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+  .trigger .h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .trigger .h .ico{font-size:24px}
+  .trigger h3{margin:0;font-size:15px}
+  .trigger p{margin:0 0 8px;font-size:13.5px;color:var(--mute)}
+  .trigger code{background:#f1f3f5;padding:2px 8px;border-radius:5px;font-size:11.5px;font-family:ui-monospace,Menlo,monospace;color:var(--ink)}
+
+  .recipe{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 26px;margin-bottom:14px}
+  .recipe-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+  .recipe h3{margin:0;font-size:16px}
+  .recipe .difficulty{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:3px 10px;border-radius:99px;background:#e8f6ee;color:#0a7a4d}
+  .recipe .difficulty.med{background:#fff8e6;color:#7a5a00}
+  .recipe .difficulty.adv{background:#fde8e6;color:#8a2820}
+  .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:14px;align-items:center;margin-bottom:10px}
+  @media(max-width:760px){.flow{grid-template-columns:1fr;gap:8px}}
+  .flow-step{background:#f8fafc;border-radius:8px;padding:12px 14px;font-size:13px;text-align:center}
+  .flow-step .platform{font-size:10.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:4px}
+  .flow-step .action{font-weight:700;font-size:13px}
+  .flow-arrow{font-size:20px;color:var(--mute);font-weight:800;text-align:center}
+  @media(max-width:760px){.flow-arrow{transform:rotate(90deg);justify-self:center}}
+  .recipe p.use{margin:8px 0 0;font-size:13px;color:var(--mute);line-height:1.55}
+
+  .setup-section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:24px}
+  .setup-section h2{margin:0 0 14px;font-size:20px}
+  .setup-section ol{padding-left:20px;font-size:14.5px;color:var(--ink)}
+  .setup-section ol li{margin-bottom:8px}
+  .setup-section ol li code{background:#f1f3f5;padding:2px 8px;border-radius:5px;font-size:13px;font-family:ui-monospace,Menlo,monospace}
+  .setup-section ol li b{color:var(--ink)}
+
+  .alt-services{background:linear-gradient(135deg,#5b3697,#3d1f6b);color:#fff;border-radius:14px;padding:22px 26px;margin:24px 0}
+  .alt-services h3{margin:0 0 8px;color:#fff;font-size:17px}
+  .alt-services p{margin:0;color:#e8d8f5;font-size:14px}
+  .alt-services .alt-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .alt-services .alt-tag{padding:6px 14px;background:rgba(255,255,255,.12);border-radius:99px;font-size:13px;font-weight:700}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details[open] summary{margin-bottom:8px}
+  details p{margin:0;color:var(--mute);font-size:14px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power</div>
+    <div class="nav-links">
+      <a href="api.html">API</a>
+      <a href="api-examples.html">Code samples</a>
+      <a href="integrations.html">All integrations</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Tech · Integrations · Zapier</div>
+  <h1>LYMX × Zapier — connect to 5,000+ apps</h1>
+  <p class="lead">LYMX exposes events that Zapier can trigger from. Connect LYMX to your CRM, email tool, Slack, Google Sheets, accounting software — anything Zapier supports. No coding required.</p>
+
+  <div class="hero-card">
+    <div>
+      <h2>Why Zapier?</h2>
+      <p>Most LYMX Businesses don't want to write code. Zapier is the no-code bridge between LYMX events and the rest of your stack. If you can drag-and-drop, you can build powerful automations.</p>
+    </div>
+    <div class="stats">
+      <div><div class="n">5,000+</div><div class="l">Connected apps</div></div>
+      <div><div class="n">10 min</div><div class="l">Typical setup time</div></div>
+      <div><div class="n">$20-49/mo</div><div class="l">Zapier pricing tiers</div></div>
+    </div>
+  </div>
+
+  <h2 style="font-size:24px;margin:0 0 14px">LYMX events Zapier can listen to</h2>
+  <div class="triggers">
+    <div class="trigger"><div class="h"><span class="ico">💳</span><h3>New transaction</h3></div><p>Customer pays at your Business and earns LYMX. Fires immediately.</p><code>transaction.completed</code></div>
+    <div class="trigger"><div class="h"><span class="ico">🎉</span><h3>New customer</h3></div><p>First-time wallet holder activates at your Business.</p><code>customer.first_visit</code></div>
+    <div class="trigger"><div class="h"><span class="ico">💰</span><h3>LYMX redeemed</h3></div><p>A customer redeems LYMX at your Business (any amount).</p><code>redemption.completed</code></div>
+    <div class="trigger"><div class="h"><span class="ico">⚠️</span><h3>Lapsed customer</h3></div><p>Customer hasn't visited in 30/60/90 days (configurable).</p><code>customer.lapsed</code></div>
+    <div class="trigger"><div class="h"><span class="ico">⭐</span><h3>VIP threshold</h3></div><p>Customer crosses your defined VIP threshold (e.g., 20+ visits).</p><code>customer.vip</code></div>
+    <div class="trigger"><div class="h"><span class="ico">🎂</span><h3>Birthday week</h3></div><p>Customer enters their birthday week (auto-trigger).</p><code>customer.birthday</code></div>
+    <div class="trigger"><div class="h"><span class="ico">⚙️</span><h3>Settlement complete</h3></div><p>Weekly settlement statement is generated.</p><code>settlement.weekly</code></div>
+    <div class="trigger"><div class="h"><span class="ico">📢</span><h3>Promo expiring</h3></div><p>One of your scheduled promos is about to end.</p><code>promo.expiring</code></div>
+  </div>
+
+  <h2 style="font-size:24px;margin:0 0 14px">10 ready-to-use Zapier recipes</h2>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>1. Slack notification when a VIP visits</h3><span class="difficulty">Easy</span></div>
+    <div class="flow">
+      <div class="flow-step"><div class="platform">LYMX</div><div class="action">Trigger: customer.vip transaction</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">Zapier</div><div class="action">Filter: amount &gt; $50</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">Slack</div><div class="action">Send to #front-of-house</div></div>
+    </div>
+    <p class="use">Use case: Cashier sees "VIP Maria L. just visited at 12:14pm" in Slack. Quick heads-up = better service for top customers.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>2. Auto-add new customers to Mailchimp segment</h3><span class="difficulty">Easy</span></div>
+    <div class="flow">
+      <div class="flow-step"><div class="platform">LYMX</div><div class="action">Trigger: customer.first_visit</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">Mailchimp</div><div class="action">Add to "New LYMX customers"</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">Mailchimp</div><div class="action">Trigger welcome drip</div></div>
+    </div>
+    <p class="use">Use case: First-time customers automatically enter your welcome email sequence. (Note: customer doesn't share email with you — uses LYMX's wallet ID.)</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>3. Log every transaction in Google Sheets</h3><span class="difficulty">Easy</span></div>
+    <div class="flow">
+      <div class="flow-step"><div class="platform">LYMX</div><div class="action">Trigger: transaction.completed</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">Google Sheets</div><div class="action">Append row</div></div>
+    </div>
+    <p class="use">Use case: Live transaction log for your accountant. Auto-updates. Filters by date/amount/customer.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>4. Lapsed-customer recovery email via your CRM</h3><span class="difficulty med">Medium</span></div>
+    <div class="flow">
+      <div class="flow-step"><div class="platform">LYMX</div><div class="action">Trigger: customer.lapsed (45 days)</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">HubSpot</div><div class="action">Find contact + tag "Lapsed"</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">HubSpot</div><div class="action">Send "we miss you" sequence</div></div>
+    </div>
+    <p class="use">Use case: Auto-recovery for lapsed customers via your existing CRM. Pairs with retention playbook tactic #1.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>5. Settlement amount → QuickBooks line item</h3><span class="difficulty med">Medium</span></div>
+    <div class="flow">
+      <div class="flow-step"><div class="platform">LYMX</div><div class="action">Trigger: settlement.weekly</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">QuickBooks</div><div class="action">Create expense entry</div></div>
+    </div>
+    <p class="use">Use case: Manual entry alternative if you don't want to use the native QuickBooks integration. Customizable categorization.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>6. Birthday week → SMS + free item</h3><span class="difficulty med">Medium</span></div>
+    <div class="flow">
+      <div class="flow-step"><div class="platform">LYMX</div><div class="action">Trigger: customer.birthday</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">Twilio</div><div class="action">Send personalized SMS</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">LYMX</div><div class="action">Issue 200 LYMX bonus</div></div>
+    </div>
+    <p class="use">Use case: Birthday touchpoint that feels personal. The SMS comes from your number; the LYMX from your account.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>7. New customer → POS staff training reminder</h3><span class="difficulty">Easy</span></div>
+    <div class="flow">
+      <div class="flow-step"><div class="platform">LYMX</div><div class="action">Trigger: customer.first_visit</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">Slack</div><div class="action">DM cashier on shift: "New customer scenario"</div></div>
+    </div>
+    <p class="use">Use case: Friendly nudge to your cashier to do the new-customer welcome script. Improves first-impression consistency.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>8. Dispute filed → urgent Slack alert</h3><span class="difficulty">Easy</span></div>
+    <div class="flow">
+      <div class="flow-step"><div class="platform">LYMX</div><div class="action">Trigger: dispute.filed</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">Slack</div><div class="action">@channel #management</div></div>
+    </div>
+    <p class="use">Use case: Catch disputes within minutes. Faster response = better outcome (most disputes resolve in customer's favor if you don't respond in 24h).</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>9. Daily revenue summary to email at 9am</h3><span class="difficulty">Easy</span></div>
+    <div class="flow">
+      <div class="flow-step"><div class="platform">Schedule</div><div class="action">Daily 9am</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">LYMX</div><div class="action">Get yesterday's stats</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">Email</div><div class="action">Send formatted summary</div></div>
+    </div>
+    <p class="use">Use case: Owner gets a daily 9am email with previous day's LYMX activity. Keeps you tuned in without logging into dashboard.</p>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head"><h3>10. Big redemption → owner gets text</h3><span class="difficulty adv">Advanced</span></div>
+    <div class="flow">
+      <div class="flow-step"><div class="platform">LYMX</div><div class="action">Trigger: redemption.completed</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">Zapier</div><div class="action">Filter: amount &gt; $25</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="platform">Twilio</div><div class="action">SMS owner: "$X redeemed"</div></div>
+    </div>
+    <p class="use">Use case: For owners who want to feel the heartbeat of their Business. Pairs with cross-redemption tracking.</p>
+  </div>
+
+  <div class="setup-section">
+    <h2>Set up your first Zap in 10 minutes</h2>
+    <ol>
+      <li><b>Get your LYMX API key.</b> Dashboard → Settings → API → Create new key. Scope to "events read-only" for safety.</li>
+      <li><b>Sign up for Zapier</b> at <code>zapier.com</code>. Free tier covers 5 Zaps. Paid tiers ($20+/mo) for more.</li>
+      <li><b>Search "LYMX" in Zapier's app directory.</b> (Currently in beta — request access via <code>partnerships@lymx.com</code> if not visible to you yet.)</li>
+      <li><b>Click "Make a Zap" → choose LYMX as trigger.</b> Pick the event from the 8 listed above.</li>
+      <li><b>Connect your LYMX account.</b> Paste your API key. Test connection.</li>
+      <li><b>Choose action app.</b> Slack, Sheets, Mailchimp, etc. Connect that account.</li>
+      <li><b>Map fields.</b> Drag LYMX trigger fields into the action's expected fields.</li>
+      <li><b>Test the Zap.</b> Make a test transaction at your Business. Confirm action fires.</li>
+      <li><b>Turn it on.</b> You're live. Zap runs forever (or until you turn it off).</li>
+    </ol>
+  </div>
+
+  <div class="alt-services">
+    <h3>If you don't use Zapier</h3>
+    <p>LYMX events are also available via direct webhooks (free, requires custom code), Make.com (similar to Zapier, sometimes cheaper), or n8n (self-hosted).</p>
+    <div class="alt-grid">
+      <span class="alt-tag">Direct webhook</span>
+      <span class="alt-tag">Make.com</span>
+      <span class="alt-tag">n8n</span>
+      <span class="alt-tag">Power Automate</span>
+      <span class="alt-tag">Workato</span>
+    </div>
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">FAQ</h2>
+  <details><summary>Is the LYMX Zapier app currently public?</summary><p>Beta as of August 2026. Public release scheduled for Q1 2027. Beta access available to all LYMX Businesses by request: <code>partnerships@lymx.com</code>.</p></details>
+  <details><summary>How real-time are the triggers?</summary><p>Sub-30-second latency for transaction.completed and redemption.completed. Up to 5-minute latency for derived events like customer.lapsed (which run on a schedule).</p></details>
+  <details><summary>Does my Zap count against any LYMX rate limit?</summary><p>Reasonable use is fine. We allow up to 1,000 events per day per Business at no extra charge. Heavy users (10K+ events/day) may need an enterprise tier.</p></details>
+  <details><summary>Can I trigger LYMX actions from Zapier (issue LYMX, send notifications)?</summary><p>Yes — beyond reading events, the LYMX Zapier app supports actions: issue retroactive LYMX, send wallet notification, schedule promo. Each action requires elevated API permissions.</p></details>
+  <details><summary>What about HIPAA / data privacy concerns?</summary><p>Zaps run on Zapier's servers. Customer data flowing through them is subject to Zapier's privacy policy. If you're handling sensitive customer data, prefer direct webhooks (data stays in your control).</p></details>
+  <details><summary>Can my Local Manager set up Zaps?</summary><p>API key creation is Owner-only. Local Manager can use a Zap once configured, but can't create new ones (without elevated permission).</p></details>
+
+  <p style="text-align:center;margin-top:32px;font-size:14px;color:var(--mute)">For direct API documentation: <a href="api.html">api.html</a> · For code samples: <a href="api-examples.html">api-examples.html</a></p>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="api.html" style="color:#5a6373">API docs</a> · <a href="integrations.html" style="color:#5a6373">All integrations</a>
+</footer>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Add LYMX wallet to your phone · Step-by-step</title>
+<meta name="description" content="Pin the LYMX wallet to your iPhone or Android home screen for one-tap access. No app store, no download — just a clean install in 30 seconds.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--ios:#000;--android:#34a853}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:38px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .why-banner{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border-radius:14px;padding:24px 28px;margin-bottom:32px;display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:center}
+  @media(max-width:760px){.why-banner{grid-template-columns:1fr}}
+  .why-banner h2{margin:0 0 6px;color:#fff;font-size:22px}
+  .why-banner p{margin:0;color:#e0eefe;font-size:14.5px}
+  .why-banner .lift{background:rgba(255,255,255,.12);border-radius:10px;padding:18px;text-align:center}
+  .why-banner .lift .n{font-size:32px;font-weight:800;color:#f5d172;letter-spacing:-.02em}
+  .why-banner .lift .l{font-size:11.5px;color:#e0eefe;text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:4px}
+
+  .platform-tabs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+  .platform-tab{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:16px 20px;text-align:center;cursor:pointer;transition:all .15s;text-decoration:none;color:var(--ink)}
+  .platform-tab:hover{border-color:var(--accent)}
+  .platform-tab.ios.active{border-color:var(--ios);background:#000;color:#fff}
+  .platform-tab.android.active{border-color:var(--android);background:#34a853;color:#fff}
+  .platform-tab .ico{font-size:22px;margin-right:8px}
+  .platform-tab .name{font-size:16px;font-weight:800;display:inline-block}
+  .platform-tab .sub{font-size:12.5px;opacity:.85;display:block;margin-top:4px}
+
+  .step-section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 32px;margin-bottom:18px}
+  .step-section h2{margin:0 0 18px;font-size:22px}
+
+  .step{display:grid;grid-template-columns:60px 1fr;gap:18px;padding:18px 0;border-bottom:1px solid var(--line);align-items:start}
+  .step:last-child{border-bottom:0}
+  .step .num{width:48px;height:48px;border-radius:50%;background:var(--accent);color:#fff;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .step.ios .num{background:#000}
+  .step.android .num{background:#34a853}
+  .step h3{margin:0 0 6px;font-size:17px}
+  .step p{margin:0 0 8px;font-size:14.5px;color:var(--mute);line-height:1.6}
+  .step p b{color:var(--ink)}
+  .step .visual{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:10px;font-family:ui-monospace,Menlo,monospace;font-size:13px;color:var(--ink);text-align:center}
+  .step .visual.diagram{padding:20px}
+  .step .tip{background:#fff8e6;border-left:3px solid var(--gold);padding:10px 14px;border-radius:6px;font-size:13px;color:#5a4200;margin-top:10px}
+  .step .tip b{color:#3a2f0a;display:block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
+
+  .check-section{background:linear-gradient(135deg,#0a7a4d,#13a26b);color:#fff;border-radius:14px;padding:24px 28px;margin:24px 0}
+  .check-section h2{margin:0 0 12px;color:#fff;font-size:20px}
+  .check-section ul{margin:0;padding-left:22px;font-size:14.5px;color:#d8efe2}
+  .check-section ul li{margin-bottom:6px}
+  .check-section ul li b{color:#fff}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details[open] summary{margin-bottom:8px}
+  details p{margin:0;color:var(--mute);font-size:14px}
+
+  /* Phone mock visual */
+  .phone-mock{background:#1a1f27;border-radius:32px;padding:14px;margin:14px auto;max-width:240px;border:8px solid #0e1116}
+  .phone-mock .screen{background:#000;border-radius:22px;padding:36px 12px 14px;min-height:140px;text-align:center;color:#fff;font-size:11px;position:relative}
+  .phone-mock .icon-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+  .phone-mock .app{aspect-ratio:1;border-radius:11px;background:linear-gradient(135deg,#0a84ff,#0050c7);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
+  .phone-mock .app.lymx{background:linear-gradient(135deg,#d4af37,#b88a2e);box-shadow:0 0 0 2px #f5d172}
+  .phone-mock .app.gray{background:#3a3f47}
+  .phone-mock .app .lbl{position:absolute;font-size:9px;color:#9aa3b0;margin-top:42px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power</div>
+    <div class="nav-links">
+      <a href="customer-faq.html">FAQ</a>
+      <a href="customer-getting-started.html">Getting started</a>
+      <a href="customer-wallet.html">Wallet</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Customer · Wallet · Add to home screen</div>
+  <h1>Pin LYMX to your home screen — 30 seconds</h1>
+  <p class="lead">The LYMX wallet works in any browser, but customers who pin it to their home screen use it 4× more. No app store, no download, no updates ever. Just a clean install via your phone's built-in option.</p>
+
+  <div class="why-banner">
+    <div>
+      <h2>Why bother pinning?</h2>
+      <p>Customers who pin the wallet redeem LYMX 4× more often than browser-only users. Friction kills usage — the home-screen icon eliminates it. Plus the icon works offline-friendly and feels just like an app.</p>
+    </div>
+    <div class="lift">
+      <div class="n">4×</div>
+      <div class="l">More usage</div>
+    </div>
+  </div>
+
+  <h2 style="font-size:22px;margin:0 0 14px">Pick your phone</h2>
+  <div class="platform-tabs">
+    <a href="#ios" class="platform-tab ios active"><span class="ico">📱</span><span class="name">iPhone (iOS)</span><span class="sub">Safari required</span></a>
+    <a href="#android" class="platform-tab android"><span class="ico">🤖</span><span class="name">Android</span><span class="sub">Chrome required</span></a>
+  </div>
+
+  <!-- iOS instructions -->
+  <div class="step-section" id="ios">
+    <h2>📱 iPhone — using Safari</h2>
+
+    <div class="step ios">
+      <div class="num">1</div>
+      <div>
+        <h3>Open Safari (not Chrome — must be Safari for this to work)</h3>
+        <p>iOS only allows the standard Safari browser to add web apps to the home screen. If you're using Chrome on iPhone, switch to Safari for this one step.</p>
+        <div class="visual">📲 Open Safari from home screen or app library</div>
+      </div>
+    </div>
+
+    <div class="step ios">
+      <div class="num">2</div>
+      <div>
+        <h3>Go to <code style="background:#f1f3f5;padding:2px 8px;border-radius:5px">wallet.lymx.com</code></h3>
+        <p>Type that into the address bar (no need to log in yet). The page should load with your LYMX wallet OR the sign-in screen.</p>
+        <div class="visual">🌐 wallet.lymx.com</div>
+      </div>
+    </div>
+
+    <div class="step ios">
+      <div class="num">3</div>
+      <div>
+        <h3>Tap the <strong>Share</strong> icon at the bottom of the screen</h3>
+        <p>It looks like a square with an upward arrow. On older iOS versions it might be at the top instead. Look for the universal share symbol.</p>
+        <div class="visual">⬆ Share icon (square with arrow)</div>
+      </div>
+    </div>
+
+    <div class="step ios">
+      <div class="num">4</div>
+      <div>
+        <h3>Scroll the share menu and tap <strong>"Add to Home Screen"</strong></h3>
+        <p>You may need to scroll down in the share sheet — it appears below the row of contact icons, in the list of actions. Look for the icon with a + on a square.</p>
+        <div class="tip"><b>If you don't see it</b>The share sheet might be cut off. Pull it up from the bottom edge to see all options.</div>
+      </div>
+    </div>
+
+    <div class="step ios">
+      <div class="num">5</div>
+      <div>
+        <h3>Confirm the name "LYMX" and tap <strong>Add</strong> in the top-right</h3>
+        <p>You can rename it before adding (e.g., "My Wallet"), but the default LYMX name is recognizable. Tap Add to finish.</p>
+      </div>
+    </div>
+
+    <div class="step ios">
+      <div class="num">6</div>
+      <div>
+        <h3>You're done — find LYMX on your home screen</h3>
+        <p>The LYMX gold-accent icon now sits on your home screen. Tap it anytime — opens directly to your wallet, full-screen, no Safari chrome around it. Just like an app.</p>
+        <div class="phone-mock">
+          <div class="screen">
+            <div class="icon-grid">
+              <div class="app gray"></div>
+              <div class="app gray"></div>
+              <div class="app lymx">L</div>
+              <div class="app gray"></div>
+              <div class="app gray"></div>
+              <div class="app gray"></div>
+              <div class="app gray"></div>
+              <div class="app gray"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Android instructions -->
+  <div class="step-section" id="android">
+    <h2>🤖 Android — using Chrome</h2>
+
+    <div class="step android">
+      <div class="num">1</div>
+      <div>
+        <h3>Open Chrome (or Brave, Edge, Samsung Internet — any modern browser)</h3>
+        <p>Most Android browsers support PWA install. Chrome is the most reliable. If you don't see the install option in your default browser, try Chrome.</p>
+      </div>
+    </div>
+
+    <div class="step android">
+      <div class="num">2</div>
+      <div>
+        <h3>Go to <code style="background:#f1f3f5;padding:2px 8px;border-radius:5px">wallet.lymx.com</code></h3>
+        <p>Type into the address bar. You may see a small banner at the bottom asking "Install LYMX?" — if so, you can tap that and skip ahead to step 5.</p>
+      </div>
+    </div>
+
+    <div class="step android">
+      <div class="num">3</div>
+      <div>
+        <h3>Tap the <strong>three dots</strong> menu (top-right)</h3>
+        <p>The standard Chrome menu icon. Looks like ⋮ in the top right of the browser.</p>
+      </div>
+    </div>
+
+    <div class="step android">
+      <div class="num">4</div>
+      <div>
+        <h3>Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong></h3>
+        <p>The wording varies by Android version. Look for either "Install app" (newer Chrome) or "Add to Home screen" (older). Both do the same thing.</p>
+        <div class="tip"><b>What's the difference?</b>"Install app" creates a true PWA shortcut with full-screen mode. "Add to Home screen" creates a bookmark-style icon. Either works — install is preferred if available.</div>
+      </div>
+    </div>
+
+    <div class="step android">
+      <div class="num">5</div>
+      <div>
+        <h3>Confirm the name and tap <strong>Install</strong></h3>
+        <p>You'll see a preview of the LYMX icon. Tap Install. Some Android versions also let you choose where on the home screen.</p>
+      </div>
+    </div>
+
+    <div class="step android">
+      <div class="num">6</div>
+      <div>
+        <h3>LYMX is now on your home screen</h3>
+        <p>The icon appears in your app drawer + home screen. Tap to open. Behaves like a real app — full-screen, fast, no browser chrome.</p>
+        <div class="phone-mock">
+          <div class="screen">
+            <div class="icon-grid">
+              <div class="app gray"></div>
+              <div class="app lymx">L</div>
+              <div class="app gray"></div>
+              <div class="app gray"></div>
+              <div class="app gray"></div>
+              <div class="app gray"></div>
+              <div class="app gray"></div>
+              <div class="app gray"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="check-section">
+    <h2>✅ Quick post-install check</h2>
+    <ul>
+      <li><b>Open the LYMX icon</b> — should go directly to your wallet</li>
+      <li><b>No browser bar</b> visible at top (full-screen mode)</li>
+      <li><b>Your name + balance</b> shows on the dashboard</li>
+      <li><b>QR code generation</b> works — try tapping "Pay" to test</li>
+      <li><b>Notifications</b> — accept when prompted (optional but useful for transaction alerts)</li>
+    </ul>
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">FAQ</h2>
+  <details>
+    <summary>Why isn't the install option showing up on my phone?</summary>
+    <p>Three common causes: (1) you're using Chrome on iOS — switch to Safari for iOS PWA install. (2) Your browser is too old — update to latest version. (3) You're in Private/Incognito mode — exit and try again in a regular tab.</p>
+  </details>
+  <details>
+    <summary>Will I lose my balance when I install?</summary>
+    <p>No — install is just a shortcut, no data changes. Your wallet, balance, history all stay intact. The install simply makes the app accessible from your home screen.</p>
+  </details>
+  <details>
+    <summary>Do I need a password every time I open the wallet?</summary>
+    <p>You'll set a 4-digit PIN. After that, the wallet auto-logs-in on your phone. PIN is required only for redemption (security). Other browsing is one-tap.</p>
+  </details>
+  <details>
+    <summary>What if I get a new phone — does the install transfer?</summary>
+    <p>You'll need to re-install on the new phone (same 6-step process). Your balance + history follow your phone number, not the device. See <a href="customer-account-recovery.html">account recovery</a>.</p>
+  </details>
+  <details>
+    <summary>Is this an "app"? Why don't you have one in the App Store?</summary>
+    <p>It's a Progressive Web App (PWA) — modern web technology that behaves like an app without needing the App Store. We chose this on purpose: faster updates, no review delays, works on any phone, no download. Same UX as a native app, simpler maintenance.</p>
+  </details>
+  <details>
+    <summary>What if my phone is older / doesn't support PWAs?</summary>
+    <p>Older iPhones (iOS 12 and below) and old Android (8 and below) may not have full PWA support. The wallet still works in any modern browser — bookmark wallet.lymx.com instead. Just won't have the home-screen icon.</p>
+  </details>
+  <details>
+    <summary>Can I install LYMX on my tablet too?</summary>
+    <p>Yes — same instructions. iPads use Safari + Add to Home Screen. Android tablets use Chrome + Install app. Works identically.</p>
+  </details>
+
+  <p style="text-align:center;margin-top:32px;font-size:14.5px;color:var(--mute)">Trouble with install? Email <code>support@lymx.com</code> or use the <a href="customer-troubleshoot.html">troubleshoot guide</a>.</p>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="customer-wallet.html" style="color:#5a6373">Wallet</a> · <a href="customer-getting-started.html" style="color:#5a6373">Getting started</a> · <a href="customer-faq.html" style="color:#5a6373">FAQ</a>
+</footer>
+
+<script>
+document.querySelectorAll('.platform-tab').forEach(tab => {
+  tab.addEventListener('click', e => {
+    document.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

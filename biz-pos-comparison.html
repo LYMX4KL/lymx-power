@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>POS Integrations Compared — LYMX Power</title>
+<meta name="description" content="Compare LYMX integration with Square, Toast, Clover, Lightspeed, and Shopify side by side. Pick the right one for your Business.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+
+  .hero{padding:64px 24px 36px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#eef3ff 0%,#fafafa 100%)}
+  .hero-inner{max-width:1280px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #c7d6ff}
+  .hero h1{font-size:42px;letter-spacing:-.025em;margin:0 0 12px;font-weight:800}
+  .hero p{color:var(--mute);max-width:620px;margin:0 auto;font-size:16px}
+
+  .wrap{max-width:1280px;margin:0 auto;padding:48px 24px}
+
+  /* Quick picker */
+  .picker{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:32px}
+  .picker h3{margin:0 0 6px;font-size:16px}
+  .picker .sub{color:var(--mute);font-size:13px;margin-bottom:16px}
+  .picker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media (max-width:760px){.picker-grid{grid-template-columns:1fr}}
+  .picker-row{padding:14px;background:#fafafa;border:1px solid var(--line);border-radius:10px;font-size:13.5px}
+  .picker-row strong{display:block;font-size:13px;margin-bottom:4px;color:var(--ink)}
+  .picker-row span{color:var(--accent);font-weight:600}
+
+  /* Comparison table */
+  .compare-section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px;overflow:auto}
+  .compare-section h2{margin:0 0 6px;font-size:24px;letter-spacing:-.025em}
+  .compare-section .sub{color:var(--mute);font-size:13px;margin-bottom:20px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:900px}
+  th{padding:14px 12px;text-align:center;background:#fafafa;border-bottom:2px solid var(--line);font-size:12px}
+  th.feature-h{text-align:left;width:200px;font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  th .platform{font-weight:800;font-size:14px;color:var(--ink)}
+  th .platform-sub{font-size:11px;color:var(--mute);margin-top:2px;font-weight:500}
+  td{padding:12px;border-bottom:1px solid var(--line);text-align:center;vertical-align:top;font-size:13px}
+  td.feat{text-align:left;font-weight:600;font-size:13.5px}
+  .y{color:var(--ok);font-weight:700;font-size:16px}
+  .partial{color:var(--gold);font-weight:700}
+  .n{color:#cbd0d8;font-size:14px}
+  .notes{font-size:11px;color:var(--mute);margin-top:2px;font-weight:500}
+  tr:hover td:not(.feat){background:#fafafa}
+  tr:last-child td{border-bottom:0}
+
+  /* Decision flowchart */
+  .flowchart{background:linear-gradient(135deg,#fef9e7,#fff5c2);border:1px solid var(--gold);border-radius:14px;padding:32px;margin-bottom:32px}
+  .flowchart h2{margin:0 0 14px;font-size:22px;color:#3a2f0a}
+  .flowchart-q{margin-bottom:18px;padding:14px 18px;background:rgba(255,255,255,.7);border-radius:10px}
+  .flowchart-q strong{display:block;font-size:14px;color:#3a2f0a;margin-bottom:8px}
+  .answers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  @media (max-width:680px){.answers{grid-template-columns:1fr}}
+  .answer{padding:8px 12px;background:#fff;border:1px solid #f0d97a;border-radius:8px;font-size:12.5px;color:#5d4d18}
+  .answer strong{font-size:12px;color:#3a2f0a;margin-bottom:2px}
+
+  /* Detail cards */
+  .detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:32px}
+  @media (max-width:760px){.detail-grid{grid-template-columns:1fr}}
+  .detail-card{padding:24px;background:var(--card);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column}
+  .detail-card .h{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .detail-card .logo-tile{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0}
+  .detail-card .logo-tile.square{background:#3e4348}
+  .detail-card .logo-tile.toast{background:#FF4F03}
+  .detail-card .logo-tile.clover{background:#00B66B}
+  .detail-card .logo-tile.lightspeed{background:#FF3300}
+  .detail-card .logo-tile.shopify{background:#95BF47}
+  .detail-card h3{margin:0 0 2px;font-size:16px}
+  .detail-card .tagline{font-size:12px;color:var(--mute)}
+  .detail-card .pros{margin:0 0 12px;padding:0;list-style:none;font-size:13px}
+  .detail-card .pros li{padding:4px 0;color:#1f2530}
+  .detail-card .pros li::before{content:"✓ ";color:var(--ok);font-weight:800;margin-right:4px}
+  .detail-card .best-for{padding:10px 14px;background:#fafafa;border-radius:8px;font-size:12.5px;color:var(--mute);margin-top:auto}
+  .detail-card .best-for strong{color:var(--ink)}
+  .detail-card a{margin-top:14px;padding:9px 14px;background:var(--ink);color:#fff;border-radius:8px;font-weight:700;font-size:13px;text-align:center}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="integrations.html">All integrations</a>
+      <a href="business.html">For Businesses</a>
+      <a href="biz-faq.html">Business FAQ</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">POS integrations · Side by side</div>
+    <h1>Which POS works best with LYMX?</h1>
+    <p>5 major POS platforms have direct LYMX integrations. They're all capable — but each has trade-offs. Pick the right one based on your category and what you already use.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- QUICK PICKER -->
+<div class="picker">
+  <h3>The 30-second answer</h3>
+  <p class="sub">If you don't want to read the whole comparison, here's the rule of thumb.</p>
+  <div class="picker-grid">
+    <div class="picker-row"><strong>Café, retail, services</strong><span>→ Square</span></div>
+    <div class="picker-row"><strong>Restaurant (full-service)</strong><span>→ Toast</span></div>
+    <div class="picker-row"><strong>Quick-service / counter</strong><span>→ Clover</span></div>
+    <div class="picker-row"><strong>Independent retail / boutique</strong><span>→ Lightspeed</span></div>
+    <div class="picker-row"><strong>Online + in-store</strong><span>→ Shopify</span></div>
+    <div class="picker-row"><strong>Already have a POS</strong><span>→ Use what you have</span></div>
+  </div>
+</div>
+
+<!-- COMPARISON TABLE -->
+<div class="compare-section">
+  <h2>Feature-by-feature comparison</h2>
+  <p class="sub">All 5 LYMX integrations side by side. ✓ = supported · ◑ = limited · ✗ = not supported.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="feature-h">Feature</th>
+        <th><div class="platform">Square</div><div class="platform-sub">Café · Retail · Services</div></th>
+        <th><div class="platform">Toast</div><div class="platform-sub">Restaurants</div></th>
+        <th><div class="platform">Clover</div><div class="platform-sub">QSR · Retail</div></th>
+        <th><div class="platform">Lightspeed</div><div class="platform-sub">Retail · Restaurant</div></th>
+        <th><div class="platform">Shopify</div><div class="platform-sub">E-commerce + in-store</div></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="feat">Setup time</td>
+        <td>~12 min</td>
+        <td>~18 min</td>
+        <td>~15 min</td>
+        <td>~20 min</td>
+        <td>~14 min</td>
+      </tr>
+      <tr>
+        <td class="feat">Real-time transaction sync</td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Per-item LYMX multipliers</td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span><div class="notes">SKU-level</div></td>
+        <td><span class="y">✓</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Course-by-course awarding</td>
+        <td><span class="n">—</span></td>
+        <td><span class="y">✓</span><div class="notes">Per-line</div></td>
+        <td><span class="n">—</span></td>
+        <td><span class="y">✓</span><div class="notes">K-Series only</div></td>
+        <td><span class="n">—</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Tip-aware accrual</td>
+        <td><span class="partial">◑</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="partial">◑</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="n">—</span><div class="notes">No tip flow</div></td>
+      </tr>
+      <tr>
+        <td class="feat">Online order support</td>
+        <td><span class="y">✓</span><div class="notes">Square Online</div></td>
+        <td><span class="y">✓</span><div class="notes">Toast online</div></td>
+        <td><span class="partial">◑</span></td>
+        <td><span class="y">✓</span><div class="notes">eCom add-on</div></td>
+        <td><span class="y">✓</span><div class="notes">Native</div></td>
+      </tr>
+      <tr>
+        <td class="feat">Multi-location</td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Inventory-aware promos</td>
+        <td><span class="partial">◑</span></td>
+        <td><span class="n">—</span></td>
+        <td><span class="partial">◑</span></td>
+        <td><span class="y">✓</span><div class="notes">Stock-aware auto-disable</div></td>
+        <td><span class="y">✓</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Customer split-checks</td>
+        <td><span class="partial">◑</span></td>
+        <td><span class="y">✓</span><div class="notes">Per guest</div></td>
+        <td><span class="partial">◑</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="n">—</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Receipt printing of LYMX line</td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Server-level reporting</td>
+        <td><span class="partial">◑</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="partial">◑</span></td>
+        <td><span class="partial">◑</span></td>
+        <td><span class="n">—</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Auto-disable Business loyalty</td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Refund auto-reversal</td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+        <td><span class="y">✓</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Subscription billing</td>
+        <td><span class="partial">◑</span></td>
+        <td><span class="n">—</span></td>
+        <td><span class="partial">◑</span></td>
+        <td><span class="partial">◑</span></td>
+        <td><span class="y">✓</span><div class="notes">Recharge etc.</div></td>
+      </tr>
+      <tr>
+        <td class="feat">Stability rating (LYMX users)</td>
+        <td>4.9/5</td>
+        <td>4.7/5</td>
+        <td>4.5/5</td>
+        <td>4.6/5</td>
+        <td>4.8/5</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- DECISION FLOWCHART -->
+<div class="flowchart">
+  <h2>🤔 Need help deciding?</h2>
+  <p style="color:#5d4d18;font-size:13.5px;margin:0 0 18px">Answer 3 quick questions and we'll narrow it down.</p>
+
+  <div class="flowchart-q">
+    <strong>1. Are you a restaurant?</strong>
+    <div class="answers">
+      <div class="answer"><strong>Yes — full-service</strong>Toast (course-by-course, split checks, tip-aware)</div>
+      <div class="answer"><strong>Yes — quick-service</strong>Square or Clover</div>
+      <div class="answer"><strong>No — non-restaurant</strong>Skip to Q2</div>
+    </div>
+  </div>
+
+  <div class="flowchart-q">
+    <strong>2. Do you sell online?</strong>
+    <div class="answers">
+      <div class="answer"><strong>Online + in-store</strong>Shopify (best online integration)</div>
+      <div class="answer"><strong>Mostly in-store, some online</strong>Square or Lightspeed</div>
+      <div class="answer"><strong>In-store only</strong>Skip to Q3</div>
+    </div>
+  </div>
+
+  <div class="flowchart-q">
+    <strong>3. Inventory matters to you?</strong>
+    <div class="answers">
+      <div class="answer"><strong>Yes — heavy inventory</strong>Lightspeed (SKU-level depth)</div>
+      <div class="answer"><strong>Some inventory</strong>Square or Clover</div>
+      <div class="answer"><strong>Service-only</strong>Square (simplest setup)</div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL CARDS -->
+<div class="detail-grid">
+
+  <div class="detail-card">
+    <div class="h">
+      <div class="logo-tile square">▣</div>
+      <div>
+        <h3>Square</h3>
+        <div class="tagline">The most popular LYMX integration</div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li>Fastest setup (12 min)</li>
+      <li>Highest stability rating (4.9/5)</li>
+      <li>Supports retail, café, services equally well</li>
+      <li>Great for first-time POS users</li>
+      <li>Built-in customer matching</li>
+    </ul>
+    <div class="best-for"><strong>Best for:</strong> Cafés, salons, gyms, retail boutiques. Anything where the POS is the central tool.</div>
+    <a href="biz-integration-square.html">See Square setup →</a>
+  </div>
+
+  <div class="detail-card">
+    <div class="h">
+      <div class="logo-tile toast">🍞</div>
+      <div>
+        <h3>Toast</h3>
+        <div class="tagline">Restaurant-grade integration</div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li>Course-by-course LYMX awarding</li>
+      <li>Tip-aware (subtotal-only)</li>
+      <li>Multi-guest split checks</li>
+      <li>Server-level reporting</li>
+      <li>Toast Pay tableside flow integrated</li>
+    </ul>
+    <div class="best-for"><strong>Best for:</strong> Full-service restaurants, fine dining, breweries with kitchens. Anywhere the check is complex.</div>
+    <a href="biz-integration-toast.html">See Toast setup →</a>
+  </div>
+
+  <div class="detail-card">
+    <div class="h">
+      <div class="logo-tile clover">🍀</div>
+      <div>
+        <h3>Clover</h3>
+        <div class="tagline">App Market simplicity</div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li>App Market install (no separate sign-in)</li>
+      <li>Works on Mini, Mobile, Station, Flex</li>
+      <li>Multi-merchant rollup</li>
+      <li>Coexists with Clover Loyalty</li>
+      <li>Solid for QSR + counter retail</li>
+    </ul>
+    <div class="best-for"><strong>Best for:</strong> Quick-service restaurants, food trucks, fast-casual, counter retail. Multi-tier hardware shops.</div>
+    <a href="biz-integration-clover.html">See Clover setup →</a>
+  </div>
+
+  <div class="detail-card">
+    <div class="h">
+      <div class="logo-tile lightspeed">LS</div>
+      <div>
+        <h3>Lightspeed</h3>
+        <div class="tagline">Inventory-aware power</div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li>SKU-level multipliers (most granular)</li>
+      <li>Stock-aware auto-disable on out-of-stock</li>
+      <li>Brand attribution (multi-brand stores)</li>
+      <li>Both Retail (X-Series) + Restaurant (K-Series)</li>
+      <li>Best returns reconciliation</li>
+    </ul>
+    <div class="best-for"><strong>Best for:</strong> Independent retailers with deep inventory — bookstores, music shops, specialty retail, boutiques.</div>
+    <a href="biz-integration-lightspeed.html">See Lightspeed setup →</a>
+  </div>
+
+  <div class="detail-card">
+    <div class="h">
+      <div class="logo-tile shopify">🛍️</div>
+      <div>
+        <h3>Shopify</h3>
+        <div class="tagline">Online + in-store bridge</div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li>Earn online → redeem in-store (and vice versa)</li>
+      <li>Same wallet, both worlds</li>
+      <li>Subscription product support</li>
+      <li>Abandoned cart triggers</li>
+      <li>Shopify Plus checkout extensibility</li>
+    </ul>
+    <div class="best-for"><strong>Best for:</strong> Direct-to-consumer brands with both an online store and physical retail. Hybrid retailers.</div>
+    <a href="biz-integration-shopify.html">See Shopify setup →</a>
+  </div>
+
+  <div class="detail-card">
+    <div class="h">
+      <div class="logo-tile" style="background:#5d6470">?</div>
+      <div>
+        <h3>Don't have a POS yet?</h3>
+        <div class="tagline">Or have one not listed</div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li>LYMX has a public API for any POS</li>
+      <li>CSV export works with any spreadsheet-friendly system</li>
+      <li>POS-less setup possible (manual entry)</li>
+      <li>We help you pick a POS during onboarding</li>
+      <li>Vendor marketplace has POS installers</li>
+    </ul>
+    <div class="best-for"><strong>Best for:</strong> Brand-new Businesses or those running custom systems. We've integrated with non-standard POS via API too.</div>
+    <a href="api.html">API docs →</a>
+  </div>
+
+</div>
+
+<!-- BIG QUOTE -->
+<div style="background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:36px;text-align:center;margin-bottom:32px">
+  <h2 style="margin:0 0 14px;font-size:22px;color:#fff">Still unsure? Talk to a coach.</h2>
+  <p style="color:#b8c2d6;max-width:540px;margin:0 auto 20px;font-size:14.5px">Our customer success team has worked with hundreds of Businesses across all 5 POS platforms. Free 30-min consult.</p>
+  <a href="biz-success-coaches.html" style="display:inline-block;background:var(--gold);color:#0e1116;padding:11px 22px;border-radius:8px;font-weight:700;font-size:14px">Book a coach →</a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · POS comparison · <a href="integrations.html">All integrations</a> · <a href="business.html">For Businesses</a> · <a href="biz-faq.html">FAQ</a>
+</div>
+
+</body>
+</html>

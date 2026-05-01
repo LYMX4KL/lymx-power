@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LYMX Vegas events calendar · Customer</title>
+<meta name="description" content="LYMX-hosted and Business-hosted events across Las Vegas. Food festivals, charity nights, customer meetups, anniversary parties.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--orange:#d97706;--red:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:1000px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:38px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .hero-banner{background:linear-gradient(135deg,#5b3697,#3d1f6b);color:#fff;border-radius:14px;padding:28px 32px;margin-bottom:32px;display:grid;grid-template-columns:2fr 1fr;gap:24px;align-items:center}
+  @media(max-width:760px){.hero-banner{grid-template-columns:1fr}}
+  .hero-banner h2{margin:0 0 6px;color:#fff;font-size:22px}
+  .hero-banner p{margin:0;color:#e8d8f5;font-size:14.5px}
+  .hero-banner .stats{background:rgba(255,255,255,.12);border-radius:10px;padding:18px;text-align:center}
+  .hero-banner .stats .n{font-size:32px;font-weight:800;color:#f5d172;letter-spacing:-.02em}
+  .hero-banner .stats .l{font-size:11.5px;color:#e8d8f5;text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:4px}
+
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;border-bottom:1px solid var(--line);padding-bottom:16px}
+  .filter-pill{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:600;background:#fff;cursor:pointer;color:var(--ink)}
+  .filter-pill.on{background:var(--purple);color:#fff;border-color:var(--purple)}
+
+  .month-section{margin-bottom:32px}
+  .month-h{font-size:24px;font-weight:800;color:var(--accent);margin:0 0 14px;border-bottom:2px solid var(--accent);padding-bottom:6px}
+
+  .event{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 26px;margin-bottom:14px;display:grid;grid-template-columns:90px 1fr auto;gap:20px;align-items:start}
+  @media(max-width:760px){.event{grid-template-columns:70px 1fr;gap:14px} .event .rsvp{grid-column:2/3;justify-self:start;margin-top:8px}}
+  .event .date{text-align:center;background:#f8fafc;border-radius:10px;padding:10px;border:1px solid var(--line)}
+  .event .date .day{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1;color:var(--ink)}
+  .event .date .mo{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:3px}
+  .event .body h3{margin:0 0 4px;font-size:17px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .event .body .tag{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:2px 8px;border-radius:5px}
+  .event .body .tag.food{background:#fef9e7;color:#7a5a00}
+  .event .body .tag.charity{background:#e8f6ee;color:#0a7a4d}
+  .event .body .tag.community{background:#f3e8fd;color:#5b3697}
+  .event .body .tag.biz{background:#e6f0ff;color:#0050c7}
+  .event .body .tag.lymx{background:#fef9e7;color:var(--gold);border:1px solid var(--gold)}
+  .event .body .where{font-size:13.5px;color:var(--mute);margin:0 0 6px}
+  .event .body .desc{font-size:14px;color:var(--ink);margin:0 0 6px;line-height:1.55}
+  .event .body .meta{font-size:13px;color:var(--mute)}
+  .event .body .meta b{color:var(--ink)}
+  .event .rsvp{padding:7px 14px;background:var(--ink);color:#fff;border-radius:7px;font-size:13px;font-weight:700;text-decoration:none;align-self:center;white-space:nowrap}
+  .event .rsvp:hover{background:#1f2530}
+  .event.past{opacity:.5}
+
+  .submit-event{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin:32px 0;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+  .submit-event h3{margin:0 0 4px;font-size:18px}
+  .submit-event p{margin:0;font-size:13.5px;color:var(--mute)}
+  .submit-event a{padding:10px 18px;background:var(--accent);color:#fff;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power</div>
+    <div class="nav-links">
+      <a href="customer-faq.html">FAQ</a>
+      <a href="customer-charity.html">Donate</a>
+      <a href="anniversary-event.html">Anniversary</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Customer · Vegas events calendar</div>
+  <h1>LYMX events around Vegas</h1>
+  <p class="lead">Free + paid events hosted by LYMX, partner Businesses, and our nonprofit partners. Food festivals, charity nights, anniversary parties, customer meetups. Updated weekly.</p>
+
+  <div class="hero-banner">
+    <div>
+      <h2>Get your wallet active. Get out and meet your network.</h2>
+      <p>Most events earn you bonus LYMX just for showing up. Some are free. All are open to LYMX customers + their guests.</p>
+    </div>
+    <div class="stats">
+      <div class="n">12</div>
+      <div class="l">Upcoming events</div>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <span class="filter-pill on">All events</span>
+    <span class="filter-pill">Food</span>
+    <span class="filter-pill">Charity</span>
+    <span class="filter-pill">Community</span>
+    <span class="filter-pill">Business-hosted</span>
+    <span class="filter-pill">LYMX-hosted</span>
+  </div>
+
+  <!-- May -->
+  <div class="month-section">
+    <h2 class="month-h">May 2026</h2>
+
+    <div class="event">
+      <div class="date"><div class="day">8</div><div class="mo">May · Sat</div></div>
+      <div class="body">
+        <h3>Spring Mountain Chinatown food crawl <span class="tag food">Food</span></h3>
+        <p class="where">Spring Mountain Rd, 4-9pm · Free entry</p>
+        <p class="desc">14 LYMX Businesses opening doors with $5 sample plates. Earn 2x LYMX at every participating spot. Live music outside Pho So 1.</p>
+        <p class="meta"><b>Earn:</b> 2x LYMX all day · <b>Bring:</b> Friends · <b>Hosted by:</b> LYMX + Spring Mountain Business Association</p>
+      </div>
+      <a class="rsvp" href="#">RSVP →</a>
+    </div>
+
+    <div class="event">
+      <div class="date"><div class="day">15</div><div class="mo">May · Sat</div></div>
+      <div class="body">
+        <h3>Donate-LYMX night for Three Square Food Bank <span class="tag charity">Charity</span></h3>
+        <p class="where">Container Park, Downtown · 6-9pm · Free entry</p>
+        <p class="desc">Donate any LYMX in your wallet to Three Square. LYMX matches 1:1. Live music. Food trucks (LYMX accepted). Goal: $20k for the food bank in one night.</p>
+        <p class="meta"><b>Match:</b> 1:1 LYMX cash match · <b>Hosted by:</b> LYMX + Three Square</p>
+      </div>
+      <a class="rsvp" href="#">RSVP →</a>
+    </div>
+
+    <div class="event">
+      <div class="date"><div class="day">21</div><div class="mo">May · Fri</div></div>
+      <div class="body">
+        <h3>CycleHaus first-ride night for new LYMX customers <span class="tag biz">Business</span></h3>
+        <p class="where">CycleHaus Studio, Summerlin · 6:30pm class</p>
+        <p class="desc">Andre Lucia's "first-class with LYMX" promo. New LYMX customers get 1,500 LYMX bonus + $5 first ride. Limited to 28 spots.</p>
+        <p class="meta"><b>Bonus:</b> 1,500 LYMX · <b>Hosted by:</b> CycleHaus Studio</p>
+      </div>
+      <a class="rsvp" href="#">RSVP →</a>
+    </div>
+
+    <div class="event">
+      <div class="date"><div class="day">28</div><div class="mo">May · Fri</div></div>
+      <div class="body">
+        <h3>Henderson neighborhood meetup <span class="tag community">Community</span></h3>
+        <p class="where">Brew &amp; Bean Coffee, Henderson · 7-9pm · Free entry</p>
+        <p class="desc">Casual meetup for Henderson LYMX customers + Business owners. Coffee + pastries (Sage &amp; Stone). Just hang out, meet your local network.</p>
+        <p class="meta"><b>Earn:</b> 200 LYMX for showing up · <b>Hosted by:</b> Brew &amp; Bean + LYMX</p>
+      </div>
+      <a class="rsvp" href="#">RSVP →</a>
+    </div>
+  </div>
+
+  <!-- June -->
+  <div class="month-section">
+    <h2 class="month-h">June 2026</h2>
+
+    <div class="event">
+      <div class="date"><div class="day">7</div><div class="mo">Jun · Sun</div></div>
+      <div class="body">
+        <h3>Father's Day brunch crawl <span class="tag food">Food</span></h3>
+        <p class="where">Multiple LYMX restaurants · 10am-2pm</p>
+        <p class="desc">8 participating Vegas restaurants doing Father's Day brunch specials. 2x LYMX all day. Map + brunch passport at each location.</p>
+        <p class="meta"><b>Earn:</b> 2x LYMX all day · <b>Hosted by:</b> 8 participating Businesses</p>
+      </div>
+      <a class="rsvp" href="#">RSVP →</a>
+    </div>
+
+    <div class="event">
+      <div class="date"><div class="day">14</div><div class="mo">Jun · Sun</div></div>
+      <div class="body">
+        <h3>Animal Foundation adoption + LYMX day <span class="tag charity">Charity</span></h3>
+        <p class="where">Animal Foundation, 655 N Mojave Rd · 12-5pm · Free</p>
+        <p class="desc">Adoption drive with LYMX donations matched 1:1. Local LYMX restaurants providing food (Pho So 1, NW Pizza). Pet supplies discounted via LYMX redemption at participating shops.</p>
+        <p class="meta"><b>Match:</b> 1:1 cash on every LYMX donated · <b>Hosted by:</b> LYMX + Animal Foundation</p>
+      </div>
+      <a class="rsvp" href="#">RSVP →</a>
+    </div>
+
+    <div class="event">
+      <div class="date"><div class="day">22</div><div class="mo">Jun · Mon</div></div>
+      <div class="body">
+        <h3>UNLV alumni LYMX meetup <span class="tag community">Community</span></h3>
+        <p class="where">UNLV Pizza Co, Maryland Pkwy · 6:30-9pm</p>
+        <p class="desc">UNLV grads on LYMX getting together. Pizza + drinks + networking. 2x LYMX. Bring a friend who graduated UNLV — both get 500 LYMX bonus.</p>
+        <p class="meta"><b>Bonus:</b> 500 LYMX referral · <b>Hosted by:</b> UNLV Pizza Co</p>
+      </div>
+      <a class="rsvp" href="#">RSVP →</a>
+    </div>
+
+    <div class="event">
+      <div class="date"><div class="day">28</div><div class="mo">Jun · Sun</div></div>
+      <div class="body">
+        <h3>Salon Verde 1-year-on-LYMX celebration <span class="tag biz">Business</span></h3>
+        <p class="where">Salon Verde, Henderson · 12-4pm · Free</p>
+        <p class="desc">Cristina Vega celebrating 1 year on LYMX with thank-you discounts for her LYMX customers. Free champagne. 3x LYMX on day-of services.</p>
+        <p class="meta"><b>Earn:</b> 3x LYMX · <b>Hosted by:</b> Salon Verde</p>
+      </div>
+      <a class="rsvp" href="#">RSVP →</a>
+    </div>
+  </div>
+
+  <!-- July -->
+  <div class="month-section">
+    <h2 class="month-h">July 2026</h2>
+
+    <div class="event">
+      <div class="date"><div class="day">4</div><div class="mo">Jul · Sat</div></div>
+      <div class="body">
+        <h3>July 4th Independence Day promo across the network <span class="tag lymx">★ LYMX</span></h3>
+        <p class="where">All participating LYMX Businesses · All day</p>
+        <p class="desc">Network-wide 2x LYMX day. Shop at multiple LYMX Businesses; earn double everywhere. Some Businesses doing fireworks viewings + special hours.</p>
+        <p class="meta"><b>Earn:</b> 2x LYMX all day, all Businesses · <b>Hosted by:</b> LYMX + 200+ Businesses</p>
+      </div>
+      <a class="rsvp" href="#">RSVP →</a>
+    </div>
+
+    <div class="event">
+      <div class="date"><div class="day">15</div><div class="mo">Jul · Wed</div></div>
+      <div class="body">
+        <h3>Customer Q&amp;A with Kenny (founder) <span class="tag lymx">★ LYMX</span></h3>
+        <p class="where">Brew &amp; Bean Coffee, Henderson · 7-8pm · Free</p>
+        <p class="desc">Kenny answering customer questions about LYMX, the roadmap, what's next. Casual format. Coffee provided. Bring questions.</p>
+        <p class="meta"><b>Earn:</b> 100 LYMX for attending · <b>Hosted by:</b> LYMX</p>
+      </div>
+      <a class="rsvp" href="#">RSVP →</a>
+    </div>
+
+    <div class="event">
+      <div class="date"><div class="day">25</div><div class="mo">Jul · Sat</div></div>
+      <div class="body">
+        <h3>Donate-LYMX day for back-to-school <span class="tag charity">Charity</span></h3>
+        <p class="where">Three Square Books HQ · 1-5pm · Free</p>
+        <p class="desc">Donate LYMX → school supplies for CCSD students. LYMX matches 1:1. Free book giveaway. 18 LYMX Businesses providing snacks (free).</p>
+        <p class="meta"><b>Match:</b> 1:1 cash on donations · <b>Hosted by:</b> LYMX + Three Square Books</p>
+      </div>
+      <a class="rsvp" href="#">RSVP →</a>
+    </div>
+
+    <div class="event">
+      <div class="date"><div class="day">31</div><div class="mo">Jul · Fri</div></div>
+      <div class="body">
+        <h3>FREE Partner sign-up window closes — celebration <span class="tag lymx">★ LYMX</span></h3>
+        <p class="where">Container Park, Downtown · 6-10pm · Free</p>
+        <p class="desc">Last day Partner sign-up is free. Celebrating the cohort. Live music + food. Local Businesses pop-up. 2x LYMX all evening.</p>
+        <p class="meta"><b>Earn:</b> 2x LYMX · <b>Hosted by:</b> LYMX</p>
+      </div>
+      <a class="rsvp" href="#">RSVP →</a>
+    </div>
+  </div>
+
+  <div class="submit-event">
+    <div>
+      <h3>Hosting an event at your LYMX Business?</h3>
+      <p>Submit it to be added to this calendar. Free placement for LYMX Businesses + nonprofits.</p>
+    </div>
+    <a href="mailto:events@lymx.com">Submit event →</a>
+  </div>
+
+  <p style="font-size:14px;color:var(--mute);margin-top:24px;text-align:center">All events are open to LYMX customers + their guests unless otherwise noted. Network-wide promotions auto-activate on customer wallets — no opt-in needed.</p>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="anniversary-event.html" style="color:#5a6373">1-year anniversary</a> · <a href="customer-charity.html" style="color:#5a6373">Donate LYMX</a> · <a href="customer-faq.html" style="color:#5a6373">Customer FAQ</a>
+</footer>
+</body>
+</html>

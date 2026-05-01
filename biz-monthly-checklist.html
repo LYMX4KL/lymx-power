@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Monthly Business checklist · LYMX</title>
+<meta name="description" content="The standing monthly rhythm for LYMX Businesses. Pipeline, promo planning, settlement review, customer retention, staff training, in 30 minutes a month.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:38px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .promise{background:linear-gradient(135deg,#0a7a4d,#13a26b);color:#fff;border-radius:14px;padding:22px 28px;margin-bottom:36px}
+  .promise h3{margin:0 0 8px;color:#fff;font-size:18px}
+  .promise p{margin:0;color:#d8efe2;font-size:14.5px}
+  .promise b{color:#fff}
+
+  .quad-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:36px}
+  @media(max-width:760px){.quad-grid{grid-template-columns:1fr}}
+  .quad{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .quad h3{margin:0 0 6px;font-size:16px;display:flex;align-items:center;gap:8px}
+  .quad h3 .ico{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;font-size:14px;background:#e8f6ee;color:#0a7a4d}
+  .quad p{margin:0;font-size:13.5px;color:var(--mute)}
+  .quad .mins{font-size:11.5px;color:var(--ok);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-top:6px}
+
+  .checklist-section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:18px}
+  .checklist-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+  .checklist-section h2{margin:0;font-size:20px}
+  .checklist-section .when{background:#fef9e7;color:#7a5a00;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700}
+  .checklist-section ul{margin:0;padding-left:0;list-style:none}
+  .checklist-section li{padding:10px 0 10px 28px;border-bottom:1px solid var(--line);font-size:14.5px;position:relative}
+  .checklist-section li::before{content:"☐";position:absolute;left:0;top:9px;font-size:18px;color:var(--mute)}
+  .checklist-section li:last-child{border-bottom:0}
+  .checklist-section li b{display:block;margin-bottom:3px}
+  .checklist-section li span{color:var(--mute);font-size:13.5px}
+  .checklist-section li code{background:#f1f3f5;padding:1px 6px;border-radius:4px;font-size:12.5px}
+
+  .red-flags{background:#fde8e6;border:1px solid #f0b6b3;border-radius:12px;padding:18px 22px;margin:24px 0}
+  .red-flags h3{margin:0 0 8px;color:#8a2820;font-size:16px}
+  .red-flags ul{margin:0;padding-left:18px;color:#6a1810;font-size:14px}
+  .red-flags ul li{margin-bottom:5px}
+
+  .calendar{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:24px}
+  .calendar h2{margin:0 0 14px;font-size:20px}
+  .cal-row{display:grid;grid-template-columns:130px 1fr 100px;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;align-items:center}
+  .cal-row:last-child{border-bottom:0}
+  .cal-row .when{font-weight:700;font-size:13.5px}
+  .cal-row .desc{color:var(--mute);font-size:13.5px}
+  .cal-row .mins{padding:4px 10px;border-radius:6px;font-size:11.5px;font-weight:700;text-align:center;background:#e8f6ee;color:#0a7a4d}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details[open] summary{margin-bottom:8px}
+  details p{margin:0;color:var(--mute);font-size:14px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power <span class="biz-tag">FOR BUSINESSES</span></div>
+    <div class="nav-links">
+      <a href="biz-faq.html">Biz FAQ</a>
+      <a href="biz-promo-planner.html">Promo planner</a>
+      <a href="biz-success-coaches.html">Success coach</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Business · Cadence · Monthly checklist</div>
+  <h1>30 minutes a month — that's all this takes</h1>
+  <p class="lead">Most LYMX Businesses set autopilot and run their loyalty rewards in the background. But a 30-minute monthly check keeps things tuned. Here's the standing rhythm that takes the worry out of LYMX.</p>
+
+  <div class="promise">
+    <h3>The promise</h3>
+    <p>If you do this 30-minute checklist <b>once a month</b>, you'll catch settlement issues before they grow, find promo opportunities you'd miss, retain customers other Businesses lose, and stay ahead of any disputes. Owners who skip it spend 3-5x more time firefighting later.</p>
+  </div>
+
+  <div class="quad-grid">
+    <div class="quad"><h3><span class="ico">📊</span>Numbers review</h3><p>Skim dashboard for surprises. 5 min.</p><div class="mins">~5 min</div></div>
+    <div class="quad"><h3><span class="ico">💰</span>Settlement audit</h3><p>Verify last month's payout matches your math.</p><div class="mins">~7 min</div></div>
+    <div class="quad"><h3><span class="ico">🎯</span>Promo planning</h3><p>Schedule next month's promo. Adjust this month's.</p><div class="mins">~8 min</div></div>
+    <div class="quad"><h3><span class="ico">🤝</span>Customer & staff</h3><p>Lapsed customers + cashier check-in.</p><div class="mins">~10 min</div></div>
+  </div>
+
+  <!-- Numbers review -->
+  <div class="checklist-section">
+    <div class="checklist-head"><h2>1. Numbers review</h2><span class="when">5 minutes</span></div>
+    <ul>
+      <li><b>Open Business dashboard, last 30 days view</b><span>Quick glance at: total LYMX-tagged sales, customer count, average ticket size.</span></li>
+      <li><b>Compare vs. prior 30-day period</b><span>Up or down? More than 15% swing in either direction is worth investigating.</span></li>
+      <li><b>Check LYMX adoption rate</b><span>Of all your customers this month, what % were on LYMX? Healthy: 35%+. Below 25%: cashiers may be forgetting to ask.</span></li>
+      <li><b>Spot any odd days</b><span>One Tuesday with 0 LYMX activity? Could be sync issue you didn't catch. Flag for biz-troubleshoot.</span></li>
+      <li><b>Top 5 LYMX customers list</b><span>Note who they are. These are your VIPs — when they lapse, you'll want to know fast.</span></li>
+    </ul>
+  </div>
+
+  <!-- Settlement audit -->
+  <div class="checklist-section">
+    <div class="checklist-head"><h2>2. Settlement audit</h2><span class="when">7 minutes</span></div>
+    <ul>
+      <li><b>Pull last month's settlement statement</b><span>Dashboard → Reports → Settlement detail.</span></li>
+      <li><b>Verify subscription line: $199/mo (or $249/$299/etc. for multi-location)</b><span>If different, contact biz-support. Mistakes are rare but happen during multi-location adds.</span></li>
+      <li><b>Check 80% redemption-cost line</b><span>If LYMX issued elsewhere was redeemed at your Business, you pay 80% at settlement. Verify the math: redeemed amount × 0.80.</span></li>
+      <li><b>Confirm 3% network fee charged correctly</b><span>3% on LYMX issuance, deducted at settlement. Should match your issued LYMX × 0.03.</span></li>
+      <li><b>Reconcile against POS reports</b><span>POS LYMX-tagged sales should match dashboard within ~2-3% (refunds, tip-vs-subtotal differences).</span></li>
+      <li><b>Flag anything unexpected</b><span>Use <a href="settlement-dispute.html">settlement-dispute</a> within 30 days of receiving statement.</span></li>
+    </ul>
+  </div>
+
+  <!-- Promo planning -->
+  <div class="checklist-section">
+    <div class="checklist-head"><h2>3. Promo planning</h2><span class="when">8 minutes</span></div>
+    <ul>
+      <li><b>Review last month's promos</b><span>Did the 2x Tuesday lift Tuesday revenue? Did the first-50 customer bonus actually fill seats?</span></li>
+      <li><b>Schedule next month's promo</b><span>Use <a href="biz-promo-planner.html">biz-promo-planner</a> calendar template. Aim for 1 promo/month minimum.</span></li>
+      <li><b>Always set a daily cap</b><span>"First 50 customers" or "$X LYMX max." Open-ended promos are how Businesses lose 4-figures in a weekend.</span></li>
+      <li><b>Time it for slow days/hours</b><span>Promote into slow time, capture peak time at full margin.</span></li>
+      <li><b>Coordinate with seasonal calendar</b><span>Mother's Day in May? Halloween costumes in October? See Vegas peak calendar for which dates lift naturally.</span></li>
+      <li><b>Push promo on socials with templates</b><span>Use <a href="biz-marketing-kit.html">biz-marketing-kit</a> 5 days, 3 days, 1 day before.</span></li>
+    </ul>
+  </div>
+
+  <!-- Customer & staff -->
+  <div class="checklist-section">
+    <div class="checklist-head"><h2>4. Customer + staff check</h2><span class="when">10 minutes</span></div>
+    <ul>
+      <li><b>Lapsed customer list</b><span>Dashboard → Customers → Lapsed (auto-segmented). Anyone who used to come weekly hasn't visited in 6+ weeks?</span></li>
+      <li><b>Send "we miss you" through LYMX</b><span>Marketing → "Send to my LYMX customers" → Lapsed segment. Attaches a small bonus (100 LYMX) to entice return. Goes through LYMX wallet, not your direct email.</span></li>
+      <li><b>Top 5 VIPs — personal touch</b><span>If any of them haven't visited in a while, find a way to reach them. A phone call, text, handwritten note.</span></li>
+      <li><b>Cashier check-in</b><span>Spot-check: are cashiers still asking "are you on LYMX?" before payment? Run a 1-day mystery audit if unsure.</span></li>
+      <li><b>Staff feedback</b><span>30 seconds with each cashier: any LYMX-related friction this month? They see it before you do.</span></li>
+      <li><b>Update staff training if needed</b><span>If sync issues / scanner problems came up, quick refresher. Use <a href="biz-troubleshoot.html">biz-troubleshoot</a> as reference.</span></li>
+    </ul>
+  </div>
+
+  <div class="red-flags">
+    <h3>🚩 Red flags this rhythm catches early</h3>
+    <ul>
+      <li>Settlement amounts off by more than 5% (sync bug or misconfiguration)</li>
+      <li>LYMX adoption rate dropping (cashiers losing the habit of asking)</li>
+      <li>VIPs going dark for 6+ weeks (relationship maintenance opportunity)</li>
+      <li>Sync issues on specific days (unnoticed POS-LYMX gap)</li>
+      <li>Promos that didn't lift the metric (stop running ineffective ones)</li>
+      <li>Cashier confusion on edge cases (refunds, splits, gift cards)</li>
+    </ul>
+  </div>
+
+  <div class="calendar">
+    <h2>The optimal monthly schedule</h2>
+    <p style="color:var(--mute);font-size:13.5px;margin:0 0 14px">Most owners do this on the 1st of the month, after morning coffee. Block 30 minutes.</p>
+    <div class="cal-row"><div class="when">1st of month</div><div class="desc">Numbers review + settlement audit</div><div class="mins">~12 min</div></div>
+    <div class="cal-row"><div class="when">3rd of month</div><div class="desc">Promo planning + scheduling</div><div class="mins">~8 min</div></div>
+    <div class="cal-row"><div class="when">7th of month</div><div class="desc">Customer + staff check-in</div><div class="mins">~10 min</div></div>
+    <div class="cal-row"><div class="when">15th — mid-month</div><div class="desc">Quick dashboard skim, no formal review</div><div class="mins">~3 min</div></div>
+    <div class="cal-row"><div class="when">25th — end of month</div><div class="desc">Confirm next-month promo is scheduled</div><div class="mins">~2 min</div></div>
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">Always-on tasks</h2>
+  <ul style="font-size:14.5px;color:var(--mute);padding-left:18px">
+    <li><b>Daily:</b> Glance at dashboard during your usual close-out. 30 seconds.</li>
+    <li><b>Daily:</b> If a customer mentions a LYMX issue, log it (use <a href="biz-troubleshoot.html">biz-troubleshoot</a>) — don't let it go unfixed.</li>
+    <li><b>Weekly:</b> Verify weekly settlement hits your bank. Bank holidays push by 1 day.</li>
+    <li><b>Weekly:</b> Skim customer reviews on Yelp/Google — any LYMX-specific complaints?</li>
+    <li><b>Quarterly:</b> Review with your <a href="biz-success-coaches.html">success coach</a>. They have data you don't.</li>
+  </ul>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">FAQ</h2>
+  <details><summary>What if I miss a month?</summary><p>One missed month is fine — most issues build slowly. Two consecutive misses, and you're in firefight mode. Get back on rhythm or schedule a coach call.</p></details>
+  <details><summary>Can my manager run this checklist instead?</summary><p>Most steps yes — Manager role can see all the data. But settlement audit + cancellation/billing changes are Owner-only. See <a href="biz-staff-roles.html">biz-staff-roles</a>.</p></details>
+  <details><summary>How does this differ from quarterly business reviews (QBRs)?</summary><p>This is operational. QBRs (with your success coach) are strategic — comparing you against benchmarks, planning growth. Both matter; they're not the same thing.</p></details>
+  <details><summary>Should I run the checklist for each location separately?</summary><p>Yes for multi-location. Each location has its own LYMX adoption + settlement detail. The dashboard supports per-location filter.</p></details>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="biz-faq.html" style="color:#5a6373">Business FAQ</a> · <a href="biz-success-coaches.html" style="color:#5a6373">Success coaches</a>
+</footer>
+</body>
+</html>

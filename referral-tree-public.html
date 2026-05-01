@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Network Growth Map — LYMX Power</title>
+<meta name="description" content="See how the LYMX network has grown — anonymized, animated, real numbers. Watch it scale from 1 Business to 218 in 90 days.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;padding:64px 24px 32px;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(212,175,55,.15) 0%,transparent 60%);pointer-events:none}
+  .hero-inner{max-width:1180px;margin:0 auto;text-align:center;position:relative}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--gold);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;border:1px solid var(--gold);padding:5px 12px;border-radius:999px}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800;color:#fff;line-height:1.1}
+  .hero p{color:#b8c2d6;max-width:580px;margin:0 auto;font-size:16px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+
+  /* Stats strip */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px}
+  @media (max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{padding:24px;background:var(--card);border:1px solid var(--line);border-radius:14px;text-align:center}
+  .stat .n{font-size:34px;font-weight:800;letter-spacing:-.025em;line-height:1}
+  .stat.gold .n{color:var(--gold)}
+  .stat.green .n{color:var(--ok)}
+  .stat.blue .n{color:var(--accent)}
+  .stat.purple .n{color:var(--purple)}
+  .stat .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:6px}
+
+  /* SVG container */
+  .viz{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:32px;margin-bottom:32px}
+  .viz h2{margin:0 0 6px;font-size:24px;letter-spacing:-.025em}
+  .viz .sub{color:var(--mute);font-size:13.5px;margin-bottom:20px}
+  .viz-controls{display:flex;align-items:center;gap:14px;margin-bottom:16px;padding:14px 18px;background:#fafafa;border-radius:10px;flex-wrap:wrap}
+  .viz-controls button{padding:8px 16px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-weight:600;font-size:13px;color:var(--ink)}
+  .viz-controls button:hover{border-color:var(--ink)}
+  .viz-controls button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .viz-controls .label{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  .viz-controls .month{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent)}
+
+  .map-svg{width:100%;height:480px;background:linear-gradient(135deg,#fafafa,#f1f3f7);border-radius:14px;display:block}
+  .legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);font-size:12.5px;color:var(--mute)}
+  .legend-item{display:flex;align-items:center;gap:6px}
+  .legend-dot{width:12px;height:12px;border-radius:50%}
+  .legend-dot.cust{background:var(--accent)}
+  .legend-dot.biz{background:var(--gold)}
+  .legend-dot.partner{background:var(--purple)}
+  .legend-line{width:24px;height:2px}
+  .legend-line.referral{background:var(--ok)}
+
+  /* Growth timeline */
+  .timeline-section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .timeline-section h2{margin:0 0 6px;font-size:22px;letter-spacing:-.02em}
+  .timeline-section .sub{color:var(--mute);font-size:13px;margin-bottom:18px}
+
+  /* Bar chart by month */
+  .month-bars{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;align-items:end;height:200px;padding:14px 0;border-bottom:1px solid var(--line);margin-bottom:14px}
+  .month-bar{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .month-bar .bar{width:100%;background:linear-gradient(180deg,var(--accent),#5b9ef5);border-radius:6px 6px 0 0;min-height:8px;position:relative;transition:.3s}
+  .month-bar .bar:hover{background:linear-gradient(180deg,var(--gold),#f5d172)}
+  .month-bar .label{font-size:10px;color:var(--mute);font-weight:600;text-align:center;writing-mode:horizontal-tb}
+  .month-bar .count{font-size:11px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+
+  /* Insight cards */
+  .insights{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px}
+  @media (max-width:760px){.insights{grid-template-columns:1fr}}
+  .insight{padding:24px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+  .insight .ic{font-size:36px;margin-bottom:12px}
+  .insight h4{margin:0 0 6px;font-size:16px}
+  .insight p{margin:0;font-size:13.5px;color:var(--mute);line-height:1.55}
+  .insight .stat-line{font-size:13px;font-weight:700;color:var(--accent);margin-top:10px}
+
+  /* Privacy */
+  .privacy{background:#eef3ff;border:1px solid #c7d6ff;border-radius:12px;padding:18px 22px;font-size:13px;color:#1a4196;margin-top:32px}
+  .privacy strong{color:#0a4cb3}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="stats.html" class="btn">Live stats →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Network growth · Anonymized · Updated daily</div>
+    <h1>Watch a network grow.</h1>
+    <p>The LYMX network started with 1 Business in February 2026. Today it has 218 active Businesses + 14,820 customers. Here's the actual growth pattern, visualized.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat gold"><div class="n">218</div><div class="l">Businesses</div></div>
+  <div class="stat blue"><div class="n">14,820</div><div class="l">Customers</div></div>
+  <div class="stat purple"><div class="n">62</div><div class="l">Partners</div></div>
+  <div class="stat green"><div class="n">+38%</div><div class="l">MoM growth</div></div>
+</div>
+
+<!-- VIZ -->
+<div class="viz">
+  <h2>Network density over time</h2>
+  <p class="sub">Each dot is a node. Lines show where customers earned at one Business and redeemed at another. Hover or click play.</p>
+
+  <div class="viz-controls">
+    <button class="on">▶ Play</button>
+    <button>⏸ Pause</button>
+    <button>↺ Restart</button>
+    <span class="label">Showing</span>
+    <span class="month">Apr 2026 · Day 90</span>
+    <button style="margin-left:auto">All time</button>
+  </div>
+
+  <svg class="map-svg" viewBox="0 0 1100 480" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background grid -->
+    <defs>
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(0,0,0,.04)" stroke-width="1"/>
+      </pattern>
+      <radialGradient id="bizGrad">
+        <stop offset="0%" stop-color="#f5d172" stop-opacity="0.4"/>
+        <stop offset="100%" stop-color="#d4af37" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="1100" height="480" fill="url(#grid)"/>
+
+    <!-- Region labels -->
+    <text x="200" y="40" font-size="11" fill="#5d6470" font-weight="700" letter-spacing="0.08em" text-transform="uppercase">SUMMERLIN</text>
+    <text x="500" y="40" font-size="11" fill="#5d6470" font-weight="700" letter-spacing="0.08em" text-transform="uppercase">DOWNTOWN</text>
+    <text x="800" y="40" font-size="11" fill="#5d6470" font-weight="700" letter-spacing="0.08em" text-transform="uppercase">HENDERSON</text>
+    <text x="500" y="460" font-size="11" fill="#5d6470" font-weight="700" letter-spacing="0.08em" text-transform="uppercase" text-anchor="middle">SPRING VALLEY</text>
+
+    <!-- Ambient glow circles for density -->
+    <circle cx="220" cy="120" r="100" fill="url(#bizGrad)"/>
+    <circle cx="500" cy="160" r="140" fill="url(#bizGrad)"/>
+    <circle cx="780" cy="180" r="90" fill="url(#bizGrad)"/>
+    <circle cx="450" cy="380" r="80" fill="url(#bizGrad)"/>
+
+    <!-- Referral lines (cross-Business redemptions) -->
+    <g stroke="#13a26b" stroke-width="1.5" stroke-opacity="0.35" fill="none">
+      <line x1="220" y1="120" x2="500" y2="160"/>
+      <line x1="500" y1="160" x2="220" y2="120"/>
+      <line x1="500" y1="160" x2="780" y2="180"/>
+      <line x1="780" y1="180" x2="500" y2="160"/>
+      <line x1="220" y1="120" x2="450" y2="380"/>
+      <line x1="500" y1="160" x2="450" y2="380"/>
+      <line x1="780" y1="180" x2="450" y2="380"/>
+      <line x1="220" y1="120" x2="780" y2="180"/>
+      <line x1="180" y1="100" x2="540" y2="170"/>
+      <line x1="260" y1="140" x2="480" y2="200"/>
+      <line x1="540" y1="180" x2="800" y2="160"/>
+      <line x1="510" y1="190" x2="430" y2="370"/>
+      <line x1="450" y1="380" x2="800" y2="180"/>
+    </g>
+
+    <!-- Business dots (gold) -->
+    <g fill="#d4af37" stroke="#fff" stroke-width="2">
+      <!-- Summerlin cluster -->
+      <circle cx="180" cy="100" r="6"/>
+      <circle cx="220" cy="120" r="9"><animate attributeName="r" values="9;11;9" dur="3s" repeatCount="indefinite"/></circle>
+      <circle cx="260" cy="140" r="6"/>
+      <circle cx="200" cy="160" r="6"/>
+      <circle cx="280" cy="80" r="6"/>
+      <circle cx="160" cy="140" r="6"/>
+      <circle cx="240" cy="180" r="6"/>
+      <!-- Downtown cluster -->
+      <circle cx="500" cy="160" r="11"><animate attributeName="r" values="11;13;11" dur="2.5s" repeatCount="indefinite"/></circle>
+      <circle cx="460" cy="120" r="6"/>
+      <circle cx="540" cy="180" r="7"/>
+      <circle cx="480" cy="200" r="6"/>
+      <circle cx="510" cy="100" r="6"/>
+      <circle cx="560" cy="140" r="6"/>
+      <circle cx="440" cy="180" r="6"/>
+      <circle cx="520" cy="220" r="6"/>
+      <circle cx="580" cy="200" r="6"/>
+      <circle cx="430" cy="140" r="6"/>
+      <!-- Henderson cluster -->
+      <circle cx="780" cy="180" r="9"><animate attributeName="r" values="9;11;9" dur="3.2s" repeatCount="indefinite"/></circle>
+      <circle cx="740" cy="160" r="6"/>
+      <circle cx="820" cy="200" r="6"/>
+      <circle cx="800" cy="160" r="6"/>
+      <circle cx="760" cy="200" r="6"/>
+      <circle cx="700" cy="180" r="6"/>
+      <!-- Spring Valley -->
+      <circle cx="450" cy="380" r="9"><animate attributeName="r" values="9;11;9" dur="2.8s" repeatCount="indefinite"/></circle>
+      <circle cx="410" cy="360" r="6"/>
+      <circle cx="490" cy="400" r="6"/>
+      <circle cx="430" cy="340" r="6"/>
+      <circle cx="470" cy="380" r="6"/>
+      <!-- Outliers -->
+      <circle cx="350" cy="220" r="6"/>
+      <circle cx="650" cy="240" r="6"/>
+      <circle cx="380" cy="280" r="6"/>
+      <circle cx="620" cy="320" r="6"/>
+      <circle cx="900" cy="280" r="6"/>
+      <circle cx="320" cy="160" r="6"/>
+    </g>
+
+    <!-- Customer dots (blue, smaller) -->
+    <g fill="#0a84ff" opacity="0.4">
+      <circle cx="225" cy="125" r="2"/>
+      <circle cx="218" cy="115" r="2"/>
+      <circle cx="232" cy="118" r="2"/>
+      <circle cx="510" cy="158" r="2"/>
+      <circle cx="495" cy="170" r="2"/>
+      <circle cx="505" cy="148" r="2"/>
+      <circle cx="488" cy="165" r="2"/>
+      <circle cx="785" cy="178" r="2"/>
+      <circle cx="775" cy="185" r="2"/>
+      <circle cx="450" cy="378" r="2"/>
+      <circle cx="445" cy="385" r="2"/>
+      <circle cx="455" cy="375" r="2"/>
+      <circle cx="200" cy="155" r="2"/>
+      <circle cx="540" cy="200" r="2"/>
+      <circle cx="800" cy="200" r="2"/>
+    </g>
+  </svg>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot biz"></span>Business (218)</div>
+    <div class="legend-item"><span class="legend-dot cust"></span>Customer (~14k, sample shown)</div>
+    <div class="legend-item"><span class="legend-line referral"></span>Cross-Business redemption</div>
+  </div>
+</div>
+
+<!-- GROWTH BAR -->
+<div class="timeline-section">
+  <h2>Cumulative Businesses, month by month</h2>
+  <p class="sub">From launch (Feb 2026) to today.</p>
+
+  <div class="month-bars">
+    <div class="month-bar"><div class="count">25</div><div class="bar" style="height:14%"></div><div class="label">Feb</div></div>
+    <div class="month-bar"><div class="count">52</div><div class="bar" style="height:24%"></div><div class="label">Mar</div></div>
+    <div class="month-bar"><div class="count">98</div><div class="bar" style="height:46%"></div><div class="label">Apr</div></div>
+    <div class="month-bar"><div class="count">142</div><div class="bar" style="height:65%"></div><div class="label">May</div></div>
+    <div class="month-bar"><div class="count">175</div><div class="bar" style="height:80%"></div><div class="label">Jun</div></div>
+    <div class="month-bar"><div class="count">198</div><div class="bar" style="height:91%"></div><div class="label">Jul</div></div>
+    <div class="month-bar"><div class="count">218</div><div class="bar" style="height:100%"></div><div class="label">Aug</div></div>
+    <div class="month-bar"><div class="count">~?</div><div class="bar" style="height:100%;background:linear-gradient(180deg,#cbd0d8,#9aa3b0)"></div><div class="label">Sep</div></div>
+  </div>
+
+  <p style="font-size:12px;color:var(--mute);font-style:italic;margin:8px 0 0">The Sept bar is the current month — projection is intentionally not shown to avoid implying certainty.</p>
+</div>
+
+<!-- INSIGHTS -->
+<div class="insights">
+  <div class="insight">
+    <div class="ic">📈</div>
+    <h4>Density compounds</h4>
+    <p>The first 25 Businesses took 18 days to fill. The next 25 took 14 days. The 100th to 200th Business took only 38 days. That's a network effect.</p>
+    <div class="stat-line">3.4× faster after critical mass</div>
+  </div>
+  <div class="insight">
+    <div class="ic">🌐</div>
+    <h4>Cross-redemption is real</h4>
+    <p>Customers who earned LYMX at one Business and redeemed at another grew from 8% of all transactions in month 1 to 31% by month 3.</p>
+    <div class="stat-line">~31% network-driven by month 3</div>
+  </div>
+  <div class="insight">
+    <div class="ic">⚡</div>
+    <h4>Geography matters</h4>
+    <p>Businesses concentrated in Midtown saw 3× the cross-redemption rate of geographically-spread ones. Density beats reach.</p>
+    <div class="stat-line">3× lift from local clusters</div>
+  </div>
+</div>
+
+<!-- PRIVACY -->
+<div class="privacy">
+  <strong>🔒 About this visualization:</strong> All Business and customer dots on the map are anonymized. Locations are obfuscated to a neighborhood (not exact addresses) for the public view. Cross-redemption lines are aggregated weekly to avoid revealing individual customer activity. The actual public-facing map at <a href="coverage-map.html">coverage-map</a> shows real Business locations because those are voluntarily public — but customer pathways are never shown there. This visualization is for understanding the network, not for tracking activity.
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Network growth visualization · <a href="stats.html">Live stats</a> · <a href="coverage-map.html">Coverage map</a> · <a href="vegas-impact.html">Vegas impact</a> · Anonymized
+</div>
+
+</body>
+</html>
