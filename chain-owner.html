@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>For chain & multi-location owners · LYMX</title>
+<meta name="description" content="LYMX for multi-location operators — local managers, per-location permissions, consolidated reporting, single subscription. Scale loyalty rewards across all your locations.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:1200px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+
+  /* Hero */
+  .hero{background:linear-gradient(135deg,#0e1116,#1f2530);color:#fff;border-radius:18px;padding:60px 44px 50px;margin-bottom:36px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(10,132,255,.15),transparent 70%);right:-200px;top:-200px;pointer-events:none}
+  .hero .badge{display:inline-block;background:rgba(10,132,255,.18);color:#a3c5ff;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;padding:6px 16px;border-radius:99px;margin-bottom:18px;position:relative}
+  .hero h1{margin:0 0 14px;font-size:54px;font-weight:800;letter-spacing:-.025em;line-height:1.05;color:#fff;position:relative;max-width:800px}
+  .hero h1 .grad{background:linear-gradient(90deg,#0a84ff,#5fd198);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.lede{margin:0 auto 28px 0;font-size:18px;color:#c6ccd4;max-width:680px;line-height:1.55;position:relative}
+  .hero .cta-row{display:flex;gap:12px;flex-wrap:wrap;position:relative}
+  .hero .cta{display:inline-block;background:#fff;color:#0e1116;padding:14px 28px;border-radius:12px;font-weight:800;font-size:15.5px;text-decoration:none}
+  .hero .cta-ghost{display:inline-block;background:transparent;color:#fff;padding:14px 24px;border-radius:12px;font-weight:700;font-size:15.5px;border:1px solid rgba(255,255,255,.3);text-decoration:none}
+
+  /* Pain points */
+  .pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:36px}
+  @media(max-width:760px){.pain-grid{grid-template-columns:1fr}}
+  .pain{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;text-align:center}
+  .pain .ico{width:52px;height:52px;border-radius:14px;background:#fde8e6;color:#8a2820;font-size:24px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px}
+  .pain h3{margin:0 0 6px;font-size:16px}
+  .pain p{margin:0;font-size:13.5px;color:var(--mute)}
+
+  /* Feature grid */
+  .features{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:36px}
+  @media(max-width:760px){.features{grid-template-columns:1fr}}
+  .feature{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px}
+  .feature .ico{font-size:32px;margin-bottom:12px}
+  .feature h3{margin:0 0 8px;font-size:18px}
+  .feature p{margin:0 0 12px;font-size:14.5px;color:var(--mute)}
+  .feature ul{margin:0;padding-left:18px;font-size:14px}
+  .feature ul li{margin-bottom:5px;color:var(--mute)}
+  .feature ul li b{color:var(--ink)}
+
+  /* Pricing */
+  .pricing-box{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border-radius:14px;padding:32px 36px;margin-bottom:32px}
+  .pricing-box h2{margin:0 0 14px;color:#fff;font-size:24px}
+  .pricing-table{background:rgba(255,255,255,.08);border-radius:10px;padding:18px 22px;margin-top:14px}
+  .pricing-row{display:grid;grid-template-columns:1fr 100px;gap:14px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.18);font-size:14px}
+  .pricing-row:last-child{border-bottom:0;font-weight:800;font-size:15px;color:#f5d172}
+  .pricing-row .v{text-align:right;font-family:ui-monospace,Menlo,monospace}
+
+  /* Customer */
+  .testimonial{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px 36px;margin-bottom:32px;display:grid;grid-template-columns:80px 1fr;gap:24px;align-items:start}
+  @media(max-width:680px){.testimonial{grid-template-columns:1fr}}
+  .testimonial .av{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px}
+  .testimonial blockquote{margin:0 0 14px;font-size:17px;line-height:1.55;font-style:italic;color:var(--ink)}
+  .testimonial .who{font-size:13.5px;color:var(--mute)}
+  .testimonial .who b{color:var(--ink)}
+
+  /* Process */
+  .process-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px}
+  @media(max-width:760px){.process-strip{grid-template-columns:repeat(2,1fr)}}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+  .step .num{width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;font-size:15px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px}
+  .step h4{margin:0 0 6px;font-size:15px}
+  .step p{margin:0;font-size:13px;color:var(--mute)}
+
+  /* CTA section */
+  .cta-section{background:linear-gradient(135deg,#0a7a4d,#13a26b);color:#fff;border-radius:14px;padding:36px 40px;text-align:center;margin-bottom:32px}
+  .cta-section h2{margin:0 0 12px;color:#fff;font-size:26px}
+  .cta-section p{margin:0 0 20px;color:#d8efe2;font-size:15.5px;max-width:560px;margin-left:auto;margin-right:auto}
+  .cta-section .btn{display:inline-block;background:#fff;color:#0a7a4d;padding:14px 28px;border-radius:11px;font-weight:800;font-size:15px;text-decoration:none}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details[open] summary{margin-bottom:8px}
+  details p{margin:0;color:var(--mute);font-size:14px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power <span class="biz-tag">FOR BUSINESSES</span></div>
+    <div class="nav-links">
+      <a href="business.html">Pricing</a>
+      <a href="biz-multi-location.html">Multi-location</a>
+      <a href="chain-permissions.html">See the dashboard</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Business · For chain + multi-location owners</div>
+
+  <div class="hero">
+    <span class="badge">Built for chain operators</span>
+    <h1>Run LYMX across <span class="grad">all your locations</span> — one dashboard, your way</h1>
+    <p class="lede">Whether you operate 2 cafés or 25, LYMX is built for chain owners. Per-location managers with their own permissions. Consolidated reporting at the corporate level. One subscription, scaled cleanly.</p>
+    <div class="cta-row">
+      <a class="cta" href="chain-permissions.html">See the permissions dashboard →</a>
+      <a class="cta-ghost" href="business.html">Standard pricing</a>
+    </div>
+  </div>
+
+  <h2 style="font-size:26px;margin:0 0 14px">The pain we solve</h2>
+  <div class="pain-grid">
+    <div class="pain">
+      <div class="ico">📊</div>
+      <h3>Per-location reporting hell</h3>
+      <p>You're running 6 locations and want to see which one's LYMX-tagged sales are growing. Most loyalty platforms force you to log in per location. We don't.</p>
+    </div>
+    <div class="pain">
+      <div class="ico">👥</div>
+      <h3>Manager permission chaos</h3>
+      <p>Your Henderson manager shouldn't see Summerlin numbers — and definitely shouldn't be able to change rates company-wide. Per-location role boundaries matter.</p>
+    </div>
+    <div class="pain">
+      <div class="ico">🔒</div>
+      <h3>One bad cashier shouldn't risk everything</h3>
+      <p>A staff member with full access at one location shouldn't have visibility (or worse, refund power) across all your other stores.</p>
+    </div>
+  </div>
+
+  <h2 style="font-size:26px;margin:0 0 14px">What you get</h2>
+  <div class="features">
+    <div class="feature">
+      <div class="ico">🏢</div>
+      <h3>One Owner account, many locations</h3>
+      <p>Add as many locations as you operate. Each one is a node in your tree, with its own POS integration, staff, and reporting.</p>
+      <ul>
+        <li><b>Single login</b> for the corporate Owner</li>
+        <li><b>Switch between locations</b> with one click</li>
+        <li><b>Aggregate view</b> for company-wide totals</li>
+      </ul>
+    </div>
+
+    <div class="feature">
+      <div class="ico">🎯</div>
+      <h3>Local Managers with scoped permissions</h3>
+      <p>Each location gets a Local Manager role. They see + run their location only. Owner-level actions stay locked to you.</p>
+      <ul>
+        <li><b>Per-location roles</b> — Manager / Cashier / Viewer</li>
+        <li><b>16-row permission matrix</b> per role per location</li>
+        <li><b>Audit trail</b> for every action across the chain</li>
+      </ul>
+    </div>
+
+    <div class="feature">
+      <div class="ico">📈</div>
+      <h3>Consolidated reporting</h3>
+      <p>Roll-up dashboards that show the whole chain, with drill-down to any specific location.</p>
+      <ul>
+        <li><b>Chain-wide stats</b> on customer base, LYMX activity, settlement</li>
+        <li><b>Per-location P&L</b> with LYMX cost as a separate line item</li>
+        <li><b>Export everything</b> to QuickBooks, Xero, your CFO's spreadsheet</li>
+      </ul>
+    </div>
+
+    <div class="feature">
+      <div class="ico">⚙️</div>
+      <h3>Centralized rate + promo control</h3>
+      <p>Set network-wide promotions from the corporate level. Or let each location run their own. You decide.</p>
+      <ul>
+        <li><b>Chain-wide promos</b> — push a 2x LYMX promotion across all locations in one click</li>
+        <li><b>Location-specific overrides</b> — different rates by neighborhood demographics</li>
+        <li><b>Permission gates</b> — only Owner can change rates globally</li>
+      </ul>
+    </div>
+
+    <div class="feature">
+      <div class="ico">💰</div>
+      <h3>One settlement statement</h3>
+      <p>Weekly settlement consolidates all locations into one statement. One ACH payout. Your accountant will thank you.</p>
+      <ul>
+        <li><b>One Wednesday payout</b> covering all locations</li>
+        <li><b>Per-location breakdown</b> for accounting allocation</li>
+        <li><b>3-second reconciliation</b> against POS systems via integrations</li>
+      </ul>
+    </div>
+
+    <div class="feature">
+      <div class="ico">🤝</div>
+      <h3>Dedicated success coach for chains</h3>
+      <p>Once you hit 3+ locations, a dedicated success coach is assigned to you. Quarterly chain-level QBRs included.</p>
+      <ul>
+        <li><b>Quarterly Business Review</b> with chain-level data</li>
+        <li><b>Direct line to leadership</b> for escalations</li>
+        <li><b>Custom training</b> for your manager team</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="testimonial">
+    <div class="av">JM</div>
+    <div>
+      <blockquote>"I run 4 cafés in Vegas. Before LYMX, every loyalty platform I tried wanted me to onboard each location separately. LYMX was 10 minutes per location and now I see the whole chain in one dashboard. My Summerlin manager doesn't see Henderson numbers and can't accidentally change my company-wide rate. Saved my Sunday."</blockquote>
+      <div class="who"><b>Jamie Marquez</b> · Owner, Brew & Bean Coffee (4 locations)</div>
+    </div>
+  </div>
+
+  <div class="pricing-box">
+    <h2>Pricing for multi-location</h2>
+    <p style="color:#e0eefe;font-size:14.5px;margin:0">Same simple model. No hidden chain-tier surprises. No volume gates.</p>
+    <div class="pricing-table">
+      <div class="pricing-row"><div>Base subscription (single location)</div><div class="v">$199/mo</div></div>
+      <div class="pricing-row"><div>Each additional location</div><div class="v">+$50/mo</div></div>
+      <div class="pricing-row"><div>One-time sign-up fee (per chain)</div><div class="v">$850</div></div>
+      <div class="pricing-row"><div>3 months free included</div><div class="v">All locations</div></div>
+      <div class="pricing-row"><div>2-location chain monthly cost</div><div class="v">$249/mo</div></div>
+      <div class="pricing-row"><div>5-location chain monthly cost</div><div class="v">$399/mo</div></div>
+      <div class="pricing-row"><div>10-location chain monthly cost</div><div class="v">$649/mo</div></div>
+      <div class="pricing-row"><div>25-location chain monthly cost</div><div class="v">$1,399/mo</div></div>
+    </div>
+  </div>
+
+  <h2 style="font-size:24px;margin:0 0 14px">How it works — onboarding flow</h2>
+  <div class="process-strip">
+    <div class="step"><div class="num">1</div><h4>Talk to chain coach</h4><p>30-min discovery call. We map your locations, POS, current loyalty stack.</p></div>
+    <div class="step"><div class="num">2</div><h4>Sign + pay</h4><p>One sign-up. One $850 fee. All your locations covered.</p></div>
+    <div class="step"><div class="num">3</div><h4>Onboarding sprint</h4><p>2-week project plan: integrate each POS, create Local Manager accounts, train staff.</p></div>
+    <div class="step"><div class="num">4</div><h4>Go live</h4><p>All locations on the network. Customers earn + redeem across your chain + the broader LYMX network.</p></div>
+  </div>
+
+  <div class="cta-section">
+    <h2>Ready to talk?</h2>
+    <p>Run a chain? Book a 30-minute discovery call with our chain success team. We'll map your specific locations + POS setup + show you the live dashboard.</p>
+    <a class="btn" href="chain-permissions.html">See the dashboard mockup →</a>
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">FAQ</h2>
+  <details><summary>How big is "chain" considered?</summary><p>Anything 2+ locations qualifies for chain-owner features. Most of our chains are 2-15 locations (independent owner-operators). 25+ location operations get bespoke treatment via the <a href="white-label.html">white-label tier</a>.</p></details>
+  <details><summary>Can I assign different LYMX rates per location?</summary><p>Yes. Each location can have its own LYMX rate (5/$1, 3/$1, etc.). Useful if your downtown location has different margins than your suburban one.</p></details>
+  <details><summary>Can I add or remove locations after sign-up?</summary><p>Yes. Add a location: $50/mo + $0 incremental sign-up (already paid). Remove a location: 90-day wind-down for that location only; rest of chain unaffected.</p></details>
+  <details><summary>What happens if I sell one location?</summary><p>Asset transfer — the new owner takes over LYMX for that location only. Your chain account keeps the remaining locations. See <a href="business-agreement.html">business agreement</a> section 10b.</p></details>
+  <details><summary>Does each location need its own POS integration?</summary><p>Yes — each location's POS is integrated separately because each handles its own transactions. The unified dashboard pulls them all together.</p></details>
+  <details><summary>What about franchises — owners vs. franchisor?</summary><p>If you're the franchisor (you grant franchises), each franchisee signs up independently. If you're a franchisee with multiple owned units (e.g., 3 Subway franchises you personally own), the chain features apply to you.</p></details>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="biz-multi-location.html" style="color:#5a6373">Multi-location playbook</a> · <a href="chain-detail.html" style="color:#5a6373">Chain case study</a> · <a href="white-label.html" style="color:#5a6373">25+ location enterprise</a>
+</footer>
+</body>
+</html>

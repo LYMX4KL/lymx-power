@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>What LYMX is — and isn't · LYMX</title>
+<meta name="description" content="LYMX is a loyalty rewards program. It's not money, not currency, not crypto, not a security. Plain-English explanation of how LYMX is structured.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:42px;margin:0 0 14px;letter-spacing:-.025em;line-height:1.1}
+  .lead{color:var(--mute);font-size:17px;max-width:680px;margin-bottom:32px}
+
+  .tldr{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border-radius:14px;padding:24px 28px;margin-bottom:36px}
+  .tldr h2{margin:0 0 8px;color:#fff;font-size:20px}
+  .tldr p{margin:0 0 8px;color:#e0eefe;font-size:15.5px}
+  .tldr p:last-child{margin-bottom:0}
+  .tldr b{color:#f5d172}
+
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:36px}
+  @media(max-width:760px){.twocol{grid-template-columns:1fr}}
+  .col{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px}
+  .col h2{margin:0 0 14px;font-size:20px;display:flex;align-items:center;gap:8px}
+  .col.is{border-color:var(--ok)}
+  .col.is h2{color:var(--ok)}
+  .col.isnot{border-color:var(--err)}
+  .col.isnot h2{color:var(--err)}
+  .col ul{margin:0;padding:0;list-style:none}
+  .col ul li{padding:12px 0 12px 28px;border-bottom:1px solid var(--line);font-size:14.5px;position:relative}
+  .col ul li:last-child{border-bottom:0}
+  .col ul li b{display:block;margin-bottom:3px}
+  .col ul li span{color:var(--mute);font-size:13.5px}
+  .col.is ul li::before{content:"✓";position:absolute;left:0;top:11px;color:var(--ok);font-weight:800;font-size:18px}
+  .col.isnot ul li::before{content:"✕";position:absolute;left:0;top:11px;color:var(--err);font-weight:800;font-size:18px}
+
+  .why-section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 32px;margin-bottom:18px}
+  .why-section h2{margin:0 0 14px;font-size:22px}
+  .why-section h3{margin:18px 0 8px;font-size:16px;color:var(--purple)}
+  .why-section p{margin:0 0 12px;font-size:15px;color:var(--ink)}
+  .why-section blockquote{margin:14px 0;padding:14px 20px;border-left:3px solid var(--purple);background:#f8f4fc;border-radius:0 8px 8px 0;font-style:italic;color:#3d1f6b;font-size:14.5px}
+  .why-section ul{padding-left:22px;font-size:14.5px}
+  .why-section ul li{margin-bottom:6px;color:var(--mute)}
+  .why-section ul li b{color:var(--ink)}
+
+  .compare-table{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:24px 0}
+  .compare-table table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .compare-table th{background:#fafafa;padding:14px 16px;text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);font-weight:600;border-bottom:1px solid var(--line)}
+  .compare-table td{padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+  .compare-table tr:last-child td{border-bottom:0}
+  .compare-table td:first-child{font-weight:600}
+  .compare-table td.same{background:#e8f6ee;color:#0a5a3a}
+  .compare-table td.diff{background:#fde8e6;color:#8a2820}
+  .compare-table td.partial{background:#fff8e6;color:#7a5a00}
+
+  .legal-note{background:#fdecea;border:1px solid #f0b6b3;border-radius:12px;padding:18px 22px;margin:24px 0;font-size:13.5px;color:#6a1810}
+  .legal-note b{color:#8a2820}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details[open] summary{margin-bottom:8px}
+  details p{margin:0;color:var(--mute);font-size:14px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power</div>
+    <div class="nav-links">
+      <a href="what-is-lymx.html">What is LYMX</a>
+      <a href="terms.html">Terms</a>
+      <a href="disclaimer.html">Disclaimer</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">About · Plain-English positioning</div>
+  <h1>LYMX is rewards. Not money, not currency, not crypto.</h1>
+  <p class="lead">A clean explanation of what LYMX actually is and what it isn't, designed to clear up confusion before it starts. If you've ever wondered "wait, is this like Bitcoin?" — this page answers it.</p>
+
+  <div class="tldr">
+    <h2>The 30-second version</h2>
+    <p>LYMX is a <b>shared loyalty rewards program</b> for local Businesses. Like a coffee shop punch card, but the punch card works at every Business in the network instead of just one.</p>
+    <p>You earn LYMX when you buy from a participating Business. You redeem LYMX for $0.01 in goods or services per LYMX at any other participating Business.</p>
+    <p>It's <b>not money</b>. It's <b>not a currency</b>. It's <b>not crypto</b>. It's <b>not an investment</b>. It's a promotional credit unit — useful only for redemption at participating Businesses, with a fixed redemption value.</p>
+  </div>
+
+  <div class="twocol">
+    <div class="col is">
+      <h2>✅ What LYMX is</h2>
+      <ul>
+        <li><b>A loyalty rewards program</b><span>Like Starbucks Rewards, airline miles, or a punch card — but shared across many local Businesses instead of one.</span></li>
+        <li><b>A promotional credit unit</b><span>1 LYMX = $0.01 of redemption value at any participating Business. Fixed, never floats.</span></li>
+        <li><b>Earned through purchases</b><span>You earn LYMX when you spend with a Business that participates. Like points on a credit card.</span></li>
+        <li><b>Redeemable for goods + services</b><span>You can get $0.01 of merchandise or service per LYMX. Cannot be converted to cash.</span></li>
+        <li><b>Network-wide</b><span>Earn at one Business, redeem at any other in the network. The shared part is the innovation.</span></li>
+        <li><b>Free to use</b><span>Customers don't pay anything to join or hold LYMX. Businesses pay a subscription.</span></li>
+      </ul>
+    </div>
+
+    <div class="col isnot">
+      <h2>❌ What LYMX is NOT</h2>
+      <ul>
+        <li><b>Not money or legal tender</b><span>You can't pay rent, taxes, or general bills with LYMX. It's only redeemable at participating Businesses for goods/services.</span></li>
+        <li><b>Not a currency</b><span>It doesn't trade against the dollar. It has a fixed redemption value, doesn't float, doesn't get exchanged on markets.</span></li>
+        <li><b>Not cryptocurrency</b><span>No blockchain, no mining, no tokens. It's a database entry in a centralized loyalty system, like Starbucks Rewards.</span></li>
+        <li><b>Not a security or investment</b><span>You can't buy LYMX as an investment. Doesn't appreciate. Designed specifically NOT to be a store of value.</span></li>
+        <li><b>Not a stored monetary balance</b><span>Your LYMX wallet doesn't hold money. It tracks a redemption right against participating Businesses.</span></li>
+        <li><b>Not convertible to cash</b><span>You can't withdraw your LYMX as dollars. Only redeem for goods/services at network Businesses.</span></li>
+        <li><b>Not a stablecoin or digital asset</b><span>Despite having a fixed redemption value, it's structured as a loyalty program, not a financial product.</span></li>
+        <li><b>Not transferable to non-network venues</b><span>You can send LYMX to another LYMX user's wallet, but the LYMX still only redeems at participating Businesses.</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="why-section">
+    <h2>Why this matters — the regulatory positioning</h2>
+    <p>The way a loyalty program is structured determines what regulations apply to it. We chose a structure that places LYMX firmly in "loyalty rewards" territory and explicitly OUT of "money / securities / crypto" territory. This protects everyone.</p>
+
+    <h3>Three structural choices that keep LYMX as rewards, not money</h3>
+    <ul>
+      <li><b>Fixed redemption value, no appreciation.</b> 1 LYMX = $0.01 redemption value, today and forever. If the value floated upward, LYMX would become an investment. By locking it, customers spend rather than hoard.</li>
+      <li><b>Redeemable only at participating Businesses, not for cash.</b> If LYMX could be cashed out, it would become a stored monetary balance subject to money-transmitter regulation. By limiting redemption to goods/services at participating Businesses, it stays in loyalty territory.</li>
+      <li><b>No active secondary market.</b> You can transfer LYMX to another wallet (gift to a friend), but you can't trade LYMX on an exchange or sell it for dollars to a stranger. Without a secondary market, no security analysis is triggered.</li>
+    </ul>
+
+    <h3>What it means in practice</h3>
+    <ul>
+      <li><b>For customers:</b> Same protections as a punch card or rewards program. Not FDIC-insured (because it's not a deposit). Not subject to securities laws (because it's not an investment).</li>
+      <li><b>For Businesses:</b> Participating in LYMX is no different than running your own loyalty program from a regulatory standpoint. No money-transmitter license required.</li>
+      <li><b>For the platform (us):</b> We don't have to register as a money services business, broker-dealer, or crypto exchange. We're a loyalty program platform, like Square Loyalty or Toast Loyalty — just with shared redemption.</li>
+    </ul>
+
+    <blockquote>If a unit can appreciate, it stops being a reward and becomes an investment. People hoard investments — they don't redeem them. That's why we locked the value.</blockquote>
+  </div>
+
+  <div class="why-section">
+    <h2>Comparison: where does LYMX fit?</h2>
+    <p>Quick comparison to common things people might confuse LYMX with.</p>
+
+    <div class="compare-table">
+      <table>
+        <thead>
+          <tr><th>Feature</th><th>Cash / dollars</th><th>Cryptocurrency</th><th>Securities (stocks)</th><th>Punch card</th><th>LYMX</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Legal tender</td><td class="same">Yes</td><td class="diff">No</td><td class="diff">No</td><td class="diff">No</td><td class="diff">No</td></tr>
+          <tr><td>Floats in value</td><td class="partial">Inflation</td><td class="diff">Yes</td><td class="diff">Yes</td><td class="same">No</td><td class="same">No</td></tr>
+          <tr><td>Convertible to cash</td><td class="same">Itself</td><td class="diff">Yes</td><td class="diff">Yes</td><td class="same">No</td><td class="same">No</td></tr>
+          <tr><td>Secondary market</td><td class="same">Yes (forex)</td><td class="diff">Yes</td><td class="diff">Yes</td><td class="same">No</td><td class="same">No</td></tr>
+          <tr><td>Earned via purchases</td><td class="diff">No</td><td class="diff">No</td><td class="diff">No</td><td class="same">Yes</td><td class="same">Yes</td></tr>
+          <tr><td>Redeemable for goods at issuer</td><td class="diff">N/A</td><td class="diff">No</td><td class="diff">No</td><td class="same">Yes</td><td class="same">Yes</td></tr>
+          <tr><td>Redeemable across network of merchants</td><td class="same">Universal</td><td class="partial">Limited</td><td class="diff">No</td><td class="diff">No (closed-loop)</td><td class="same">Yes (LYMX network)</td></tr>
+          <tr><td>Regulatory category</td><td class="same">Money</td><td class="diff">Varies — securities or commodity</td><td class="diff">Securities</td><td class="same">Loyalty rewards</td><td class="same">Loyalty rewards</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>LYMX shares structural traits with traditional punch cards — earned via purchases, redeemable only for goods/services, no cash conversion. The innovation isn't a new financial instrument; it's a wider redemption network.</p>
+  </div>
+
+  <div class="why-section">
+    <h2>"But wait — what about [specific feature]?"</h2>
+
+    <h3>"You have a digital wallet. Doesn't that make it crypto?"</h3>
+    <p>The Starbucks app has a digital wallet too. So does Sephora's Beauty Insider. So does United MileagePlus. "Digital wallet" describes a software interface — it doesn't determine the underlying nature of what's stored.</p>
+
+    <h3>"You can transfer LYMX to friends. Isn't that like Venmo?"</h3>
+    <p>Punch cards historically couldn't be transferred between people, but most modern loyalty programs allow gifting (Sephora can transfer points to family). Transferability between wallets within the network is normal for loyalty programs. It's not a peer-to-peer payment system because the recipient still can only redeem at participating Businesses.</p>
+
+    <h3>"You have a fixed redemption value of $0.01. Isn't that a stablecoin?"</h3>
+    <p>A stablecoin is structured to maintain peg through reserves, redeemable for the underlying currency. LYMX has no reserve mechanism, can't be redeemed for cash, and isn't a coin in any technical sense — it's a database entry. Same as a Starbucks Reward star (worth $0.16 per star).</p>
+
+    <h3>"Businesses settle in dollars. Doesn't that make LYMX a payment system?"</h3>
+    <p>When a customer redeems LYMX at Business A that was earned at Business B, our settlement system reconciles between the two Businesses' accounts in dollars. That's accounting infrastructure — not customer-facing payments. The customer doesn't see or interact with the dollar settlement; they just redeem LYMX for goods.</p>
+  </div>
+
+  <div class="legal-note">
+    <b>Final note on regulatory positioning:</b> We've structured LYMX in good faith as a loyalty program based on legal review. State + federal financial regulations evolve, and a regulator could in the future re-classify LYMX. If that happened, we'd update these definitions and notify all users. For now: rewards. Not money. Not crypto. Not securities.
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">FAQ</h2>
+  <details><summary>Could LYMX become a currency or crypto in the future?</summary><p>No plans to. Our entire structure is designed AROUND not being a currency. Doing so would change the regulatory profile substantially and isn't something we'd undertake lightly.</p></details>
+  <details><summary>What if LYMX shuts down — can I get my balance as cash?</summary><p>No, but yes — let me explain. LYMX balance can't be converted to cash by design. If LYMX shuts down, the wind-down protocol gives customers an extended redemption window (90+ days) to spend remaining LYMX at participating Businesses. After that window, residual balances are donated to a charitable cause. See <a href="trust-and-safety.html">trust-and-safety</a>.</p></details>
+  <details><summary>Why don't you just call it a punch card?</summary><p>"Punch card" implies single-Business redemption. LYMX is multi-Business. We use "shared loyalty rewards" or "loyalty rewards network" to capture the difference.</p></details>
+  <details><summary>Are LYMX rewards taxable?</summary><p>For customers: generally no. Loyalty rewards earned in the course of personal purchases are typically not taxable income (per IRS rev rul 76-96 etc.). For Businesses: LYMX-related expenses are deductible as marketing & promotions. See <a href="biz-tax-guide.html">biz-tax-guide</a>.</p></details>
+  <details><summary>If I'm a Partner, are my commissions taxable?</summary><p>Yes — Partner commissions are 1099 income. See <a href="partner-tax-guide.html">partner-tax-guide</a>.</p></details>
+  <details><summary>Where can I read the full legal language?</summary><p><a href="terms.html">terms.html</a> and <a href="disclaimer.html">disclaimer.html</a> have the full legal positioning, including state-specific notices.</p></details>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="terms.html" style="color:#5a6373">Terms</a> · <a href="disclaimer.html" style="color:#5a6373">Disclaimer</a> · <a href="trust-and-safety.html" style="color:#5a6373">Trust & safety</a>
+</footer>
+</body>
+</html>

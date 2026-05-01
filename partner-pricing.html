@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Partner pricing — FREE for a limited time · LYMX</title>
+<meta name="description" content="LYMX Partner sign-up is FREE for a limited time. Sign up before 7/31/2027 — lock in waived fees and earn commissions on every Business you bring to the network.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--err:#c0392b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .partner-tag{font-size:11px;background:#f3e8fd;color:#5b3697;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:1000px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+
+  /* Hero */
+  .hero{background:linear-gradient(135deg,#0a7a4d,#13a26b);color:#fff;border-radius:18px;padding:48px 44px;margin-bottom:36px;position:relative;overflow:hidden;text-align:center}
+  .hero::after{content:"";position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(245,209,114,.18),transparent 70%);right:50%;transform:translateX(50%);top:-200px;pointer-events:none}
+  .hero .badge{display:inline-block;background:rgba(255,255,255,.18);color:#fff;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;padding:6px 16px;border-radius:99px;margin-bottom:20px;position:relative;backdrop-filter:blur(10px)}
+  .hero h1{margin:0 0 12px;font-size:58px;font-weight:800;letter-spacing:-.025em;line-height:1.05;color:#fff;position:relative}
+  .hero h1 .gold{color:#f5d172}
+  .hero p.lede{margin:0 auto 24px;font-size:18px;color:#d8efe2;max-width:560px;line-height:1.55;position:relative}
+  .hero .cta{display:inline-block;background:#fff;color:#0a7a4d;padding:14px 28px;border-radius:12px;font-weight:800;font-size:16px;text-decoration:none;position:relative;transition:transform .15s}
+  .hero .cta:hover{transform:translateY(-2px)}
+  .hero .deadline{margin-top:18px;font-size:13.5px;color:#fff;font-weight:700;letter-spacing:.04em;position:relative}
+  .hero .deadline strong{color:#f5d172}
+
+  /* Countdown banner */
+  .countdown{background:linear-gradient(135deg,#fef9e7,#fff5c2);border:2px solid var(--gold);border-radius:14px;padding:24px 28px;margin-bottom:32px;display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+  .countdown .left{flex:1;min-width:280px}
+  .countdown .left h3{margin:0 0 4px;font-size:18px;color:#5a4200}
+  .countdown .left p{margin:0;font-size:14px;color:#7a5a00}
+  .countdown .right{font-size:15px;color:#5a4200;font-weight:800;background:#fff;padding:10px 16px;border-radius:10px;border:1px solid var(--gold)}
+  .countdown .right strong{color:var(--gold);font-size:22px;display:block;letter-spacing:-.02em}
+
+  /* Timeline */
+  .timeline{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 32px;margin-bottom:32px}
+  .timeline h2{margin:0 0 18px;font-size:22px}
+  .tl-row{display:grid;grid-template-columns:140px 1fr 120px;gap:18px;padding:14px 0;border-bottom:1px solid var(--line);align-items:start}
+  @media(max-width:760px){.tl-row{grid-template-columns:1fr;gap:6px}}
+  .tl-row:last-child{border-bottom:0}
+  .tl-row .when{font-weight:800;font-size:14px;color:var(--ink)}
+  .tl-row .what{font-size:14.5px;color:var(--ink)}
+  .tl-row .what b{color:var(--ink)}
+  .tl-row .what span{color:var(--mute);font-size:13px;display:block;margin-top:2px}
+  .tl-row .price{text-align:right;font-weight:800;font-size:14px;padding:5px 12px;border-radius:6px;background:#e8f6ee;color:#0a7a4d;align-self:start}
+  .tl-row .price.paid{background:#fde8e6;color:#8a2820}
+  .tl-row .price.partial{background:#fff8e6;color:#7a5a00}
+  @media(max-width:760px){.tl-row .price{text-align:left;display:inline-block}}
+
+  /* Pricing cards */
+  .price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px}
+  @media(max-width:880px){.price-grid{grid-template-columns:1fr}}
+  .price-card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:28px;display:flex;flex-direction:column;position:relative}
+  .price-card.featured{border-color:var(--ok);transform:scale(1.02)}
+  .price-card.featured::before{content:"⭐ MOST POPULAR";position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;font-size:10.5px;letter-spacing:.08em;font-weight:800;padding:5px 14px;border-radius:99px}
+  .price-card.gold{border-color:var(--gold)}
+  .price-card.gold::before{content:"★ FOUNDING 25 ONLY";position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff;font-size:10.5px;letter-spacing:.08em;font-weight:800;padding:5px 14px;border-radius:99px}
+  .price-card h3{margin:0 0 6px;font-size:18px}
+  .price-card .sub{font-size:13px;color:var(--mute);margin:0 0 18px}
+  .price-card .price{font-size:42px;font-weight:800;letter-spacing:-.025em;line-height:1;margin-bottom:6px}
+  .price-card .price .unit{font-size:15px;color:var(--mute);font-weight:600;margin-left:4px}
+  .price-card .strikethrough{font-size:14px;color:var(--mute);text-decoration:line-through;margin-bottom:14px}
+  .price-card ul{margin:0 0 20px;padding-left:0;list-style:none;flex:1}
+  .price-card ul li{padding:8px 0 8px 26px;font-size:14px;position:relative;border-bottom:1px solid var(--line)}
+  .price-card ul li:last-child{border-bottom:0}
+  .price-card ul li::before{content:"✓";position:absolute;left:0;top:8px;color:var(--ok);font-weight:800;font-size:14px}
+  .price-card .btn{display:block;text-align:center;padding:13px;border-radius:10px;font-weight:700;font-size:14.5px;text-decoration:none}
+  .price-card .btn-primary{background:var(--ink);color:#fff}
+  .price-card .btn-primary:hover{background:#1f2530}
+  .price-card .btn-gold{background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff}
+
+  /* What's free now */
+  .free-now{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border-radius:14px;padding:28px 32px;margin-bottom:32px}
+  .free-now h2{margin:0 0 14px;color:#fff;font-size:22px}
+  .free-now ul{margin:0;padding-left:20px;font-size:14.5px;color:#e0eefe}
+  .free-now ul li{margin-bottom:6px}
+  .free-now ul li b{color:#fff}
+
+  /* FAQ */
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details[open] summary{margin-bottom:8px}
+  details p{margin:0;color:var(--mute);font-size:14px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power <span class="partner-tag">FOR PARTNERS</span></div>
+    <div class="nav-links">
+      <a href="partners.html">Partners</a>
+      <a href="partner-faq.html">FAQ</a>
+      <a href="partner-signup.html">Sign up</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Partner · Pricing</div>
+
+  <div class="hero">
+    <span class="badge">Limited Time · Founding Cohort</span>
+    <h1>Become a LYMX Partner — <span class="gold">FREE</span></h1>
+    <p class="lede">Right now, joining as a Partner is completely free. No sign-up fee, no monthly dashboard fee. Just sign up, start recruiting Businesses, earn MGC commissions across 4 generations.</p>
+    <a class="cta" href="partner-signup.html">Sign up free →</a>
+    <div class="deadline">⏳ Free sign-up ends <strong>July 31, 2027</strong></div>
+  </div>
+
+  <div class="countdown">
+    <div class="left">
+      <h3>Why "limited time"?</h3>
+      <p>Once we hit critical network density, sign-up + monthly dashboard fees kick in. Sign up before July 31, 2027 and you skip the sign-up fee permanently AND the monthly fee is waived for your first 12 months. Founding 25 Partners get all fees waived for life.</p>
+    </div>
+    <div class="right">
+      <strong>Until 7/31/2027</strong>
+      Free to join
+    </div>
+  </div>
+
+  <div class="free-now">
+    <h2>What free Partner sign-up gets you (right now)</h2>
+    <ul>
+      <li><b>Personal referral code + Partner dashboard</b> — track every Business you bring to the network</li>
+      <li><b>$500 cash bonus per Business activation</b> ($250 day 7 + $250 day 30)</li>
+      <li><b>9% recurring override</b> on every Direct Business's monthly subscription, ongoing</li>
+      <li><b>3% / 2% / 1% overrides</b> across G1 / G2 / G3 of your downline</li>
+      <li><b>LYMX commissions across all 4 generations</b> (network-redeemable)</li>
+      <li><b>Path to Founding 25 status</b> — first 25 Partners to hit 5 Direct activations get permanent grandfather perks</li>
+      <li><b>All Partner training, resources, mentorship</b> — included</li>
+    </ul>
+  </div>
+
+  <div class="timeline">
+    <h2>Your fees — past, present, and future</h2>
+    <div class="tl-row">
+      <div class="when">Today → 7/31/2027</div>
+      <div class="what"><b>Sign up FREE</b><span>No sign-up fee. No monthly dashboard fee. Full Partner access.</span></div>
+      <div class="price">$0</div>
+    </div>
+    <div class="tl-row">
+      <div class="when">7/31/2027 onwards</div>
+      <div class="what"><b>Standard fees kick in for new Partners only</b><span>$25 one-time sign-up fee. $12.95/mo or $100/year dashboard access fee.</span></div>
+      <div class="price paid">$25 + $12.95/mo</div>
+    </div>
+    <div class="tl-row">
+      <div class="when">Pre-7/31/27 sign-ups</div>
+      <div class="what"><b>You signed up early — first 12 months waived</b><span>If you sign up before 7/31/2027, your monthly dashboard fee is waived for the next 12 months (until 7/31/2028 for the latest entrants). Sign-up fee waived permanently.</span></div>
+      <div class="price partial">$12.95/mo<br>after 7/31/2028</div>
+    </div>
+    <div class="tl-row">
+      <div class="when">Founding 25 Partners</div>
+      <div class="what"><b>Permanent fee waiver — for life</b><span>If you earn Founding 25 status (first 25 Partners to hit 5 Direct activations), all fees are permanently waived. Forever.</span></div>
+      <div class="price">$0 forever</div>
+    </div>
+  </div>
+
+  <h2 style="font-size:24px;margin:0 0 14px">Three paths to becoming a Partner</h2>
+
+  <div class="price-grid">
+    <div class="price-card">
+      <h3>Sign up after 7/31/2027</h3>
+      <p class="sub">The standard rate (future)</p>
+      <div class="price">$25<span class="unit">one-time</span></div>
+      <div style="font-size:14px;color:var(--mute);margin-bottom:14px">+ $12.95/mo dashboard fee</div>
+      <ul>
+        <li>$25 sign-up fee</li>
+        <li>$12.95/mo OR $100/yr dashboard fee</li>
+        <li>Full commission structure</li>
+        <li>All training + resources</li>
+        <li>Path to Founding 25 (closes when 25 reached)</li>
+      </ul>
+      <a class="btn btn-primary" href="partner-signup.html">Future rate</a>
+    </div>
+
+    <div class="price-card featured">
+      <h3>Sign up BEFORE 7/31/2027</h3>
+      <p class="sub">Early-mover advantage</p>
+      <div class="price">$0<span class="unit">today</span></div>
+      <div class="strikethrough">$25 sign-up + $12.95/mo</div>
+      <ul>
+        <li>Free sign-up forever</li>
+        <li>12 months free dashboard (then $12.95/mo)</li>
+        <li>Same commission structure</li>
+        <li>Same training + resources</li>
+        <li>Eligible for Founding 25 (if among first 25)</li>
+        <li><b>Saves you $180+ in year 1</b></li>
+      </ul>
+      <a class="btn btn-primary" href="partner-signup.html">Sign up free →</a>
+    </div>
+
+    <div class="price-card gold">
+      <h3>Earn Founding 25 status</h3>
+      <p class="sub">For the first 25 to hit 5 Direct activations</p>
+      <div class="price">$0<span class="unit">forever</span></div>
+      <div style="font-size:14px;color:var(--mute);margin-bottom:14px">All fees waived for life</div>
+      <ul>
+        <li>Permanent fee waiver</li>
+        <li>1.5× sign-up bonus ($750 vs $500)</li>
+        <li>+2% Direct override (11% vs 9%)</li>
+        <li>Lifetime quarterly summit</li>
+        <li>Direct WhatsApp to Kenny</li>
+        <li>Maintained via cooperative qualifying</li>
+      </ul>
+      <a class="btn btn-gold" href="founding-partners-qualifying.html">Earn it →</a>
+    </div>
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">FAQ</h2>
+  <details><summary>Why charge a Partner fee at all?</summary><p>The $25 sign-up + $12.95/mo are filtering mechanisms, not revenue plays. We want Partners who are committed enough to put a small skin in the game. The fees barely cover dashboard hosting + support. Until 7/31/2027 they're waived to remove all friction during launch.</p></details>
+  <details><summary>What if I sign up free now and become inactive — do fees retroactively apply?</summary><p>No. Once you sign up during the free window, your sign-up is free permanently. Monthly fees only kick in 12 months later — and only if you're still actively using the dashboard.</p></details>
+  <details><summary>Can I pay annually for the $100 to save money?</summary><p>Yes — $100/year is cheaper than $12.95 × 12 = $155.40. Save 35% by paying annually. Available once paid fees activate (post-grace).</p></details>
+  <details><summary>What if I cancel my Partner status?</summary><p>You can cancel anytime. Already-earned commissions stay paid. Future MGC overrides freeze. If you re-activate within 6 months, status restored. After 6 months: re-sign as new Partner (subject to whatever fees are current).</p></details>
+  <details><summary>Are Founding 25 Partners actually exempt forever?</summary><p>Yes — provided they maintain their cooperative qualifying status (3 credits/year). See <a href="founding-partners-qualifying.html">founding-partners-qualifying.html</a>. If they fail qualifying for 3 consecutive years, they revert to standard fees going forward.</p></details>
+  <details><summary>Does the $25 fee apply to spouses / business partners on my account?</summary><p>One Partner login per Partner account. Spouses or business partners would each need their own Partner sign-up. Volume-discount for multi-Partner shops not available — each operates independently.</p></details>
+
+  <p style="text-align:center;margin-top:40px;font-size:14px;color:var(--mute)">Have other questions? Email <code>partner-success@lymx.com</code></p>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="partner-faq.html" style="color:#5a6373">Partner FAQ</a> · <a href="founding-partners-qualifying.html" style="color:#5a6373">Founding 25</a> · <a href="partner-agreement.html" style="color:#5a6373">Agreement</a>
+</footer>
+</body>
+</html>

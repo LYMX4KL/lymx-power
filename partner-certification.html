@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Partner certification ladder · LYMX</title>
+<meta name="description" content="The LYMX Partner certification ladder — Bronze → Silver → Gold → Master. What each tier unlocks. How to earn the next level.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--bronze:#b07b2e;--silver:#8a939e;--gold-tier:#d4af37}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .partner-tag{font-size:11px;background:#f3e8fd;color:#5b3697;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:1100px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:38px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .ladder-viz{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:36px 40px;margin-bottom:32px}
+  .ladder-viz h2{margin:0 0 18px;font-size:22px;text-align:center}
+  .ladder-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;position:relative}
+  @media(max-width:760px){.ladder-row{grid-template-columns:1fr;gap:18px}}
+  .tier-card{background:#fff;border:2px solid var(--line);border-radius:14px;padding:24px;text-align:center;position:relative}
+  .tier-card.bronze{border-color:var(--bronze);background:linear-gradient(180deg,#fff,#fef4e6)}
+  .tier-card.silver{border-color:var(--silver);background:linear-gradient(180deg,#fff,#f4f6f8)}
+  .tier-card.gold{border-color:var(--gold-tier);background:linear-gradient(180deg,#fff,#fef9e7)}
+  .tier-card.master{border-color:var(--purple);background:linear-gradient(180deg,#fff,#f3e8fd)}
+  .tier-card .ico{font-size:38px;margin-bottom:6px}
+  .tier-card h3{margin:0 0 4px;font-size:18px}
+  .tier-card.bronze h3{color:var(--bronze)}
+  .tier-card.silver h3{color:var(--silver)}
+  .tier-card.gold h3{color:#7a5a00}
+  .tier-card.master h3{color:var(--purple)}
+  .tier-card .threshold{font-size:13px;color:var(--mute);font-weight:600;margin-bottom:10px}
+  .tier-card .biz-count{font-size:36px;font-weight:800;letter-spacing:-.025em;line-height:1;margin-bottom:8px}
+  .tier-card.bronze .biz-count{color:var(--bronze)}
+  .tier-card.silver .biz-count{color:var(--silver)}
+  .tier-card.gold .biz-count{color:#7a5a00}
+  .tier-card.master .biz-count{color:var(--purple)}
+  .tier-card .biz-count .lbl{font-size:11px;color:var(--mute);font-weight:600;display:block;margin-top:3px}
+
+  .tier-detail{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 32px;margin-bottom:18px}
+  .tier-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+  .tier-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+  .tier-badge.bronze{background:rgba(176,123,46,.16);color:var(--bronze)}
+  .tier-badge.silver{background:rgba(138,147,158,.16);color:#5a626d}
+  .tier-badge.gold{background:rgba(212,175,55,.18);color:#7a5a00}
+  .tier-badge.master{background:rgba(91,54,151,.16);color:var(--purple)}
+  .tier-detail h2{margin:0;font-size:22px}
+  .tier-detail .req{background:#f8fafc;border-left:3px solid var(--accent);padding:10px 16px;border-radius:6px;font-size:14px;margin:14px 0}
+  .tier-detail .req b{color:var(--accent);display:block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
+
+  .perks-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}
+  @media(max-width:680px){.perks-grid{grid-template-columns:1fr}}
+  .perk-row{padding:10px 14px;background:#fafafa;border-radius:8px;font-size:13.5px;display:flex;align-items:center;gap:10px}
+  .perk-row .check{color:var(--ok);font-weight:800}
+  .perk-row.locked{opacity:.5}
+  .perk-row.locked .check{color:var(--mute)}
+
+  .progression{background:linear-gradient(135deg,#5b3697,#3d1f6b);color:#fff;border-radius:14px;padding:24px 28px;margin:24px 0}
+  .progression h3{margin:0 0 8px;color:#fff;font-size:18px}
+  .progression p{margin:0;color:#e8d8f5;font-size:14.5px}
+
+  .timing-table{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:24px}
+  .timing-table h2{margin:0 0 14px;font-size:20px}
+  .tt-row{display:grid;grid-template-columns:140px 1fr 100px;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;align-items:center}
+  .tt-row:last-child{border-bottom:0}
+  .tt-row .when{font-weight:700}
+  .tt-row .desc{color:var(--mute);font-size:13.5px}
+  .tt-row .pct{font-weight:800;text-align:right;color:var(--accent)}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details[open] summary{margin-bottom:8px}
+  details p{margin:0;color:var(--mute);font-size:14px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power <span class="partner-tag">FOR PARTNERS</span></div>
+    <div class="nav-links">
+      <a href="partners.html">Partners</a>
+      <a href="partner-faq.html">FAQ</a>
+      <a href="partner-resources.html">Resources</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Partner · The certification ladder</div>
+  <h1>Partner certification — Bronze → Master</h1>
+  <p class="lead">As you bring more Businesses onto the network, you progress through 4 tiers. Each tier unlocks tools, support, and recognition. Founding 25 Partners are a separate honorific track — orthogonal to the certification ladder.</p>
+
+  <div class="ladder-viz">
+    <h2>The 4 tiers</h2>
+    <div class="ladder-row">
+      <div class="tier-card bronze">
+        <div class="ico">🥉</div>
+        <h3>Bronze</h3>
+        <div class="threshold">All new Partners</div>
+        <div class="biz-count">0–4<span class="lbl">Direct Businesses</span></div>
+      </div>
+      <div class="tier-card silver">
+        <div class="ico">🥈</div>
+        <h3>Silver</h3>
+        <div class="threshold">Activated 5+ Businesses</div>
+        <div class="biz-count">5–9<span class="lbl">Direct Businesses</span></div>
+      </div>
+      <div class="tier-card gold">
+        <div class="ico">🥇</div>
+        <h3>Gold</h3>
+        <div class="threshold">Active downline + 10+ Direct</div>
+        <div class="biz-count">10–24<span class="lbl">Direct Businesses</span></div>
+      </div>
+      <div class="tier-card master">
+        <div class="ico">👑</div>
+        <h3>Master</h3>
+        <div class="threshold">Sustained scale</div>
+        <div class="biz-count">25+<span class="lbl">Direct Businesses</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bronze -->
+  <div class="tier-detail">
+    <div class="tier-head"><span class="tier-badge bronze">🥉 Bronze</span><h2>Welcome — your starting tier</h2></div>
+    <p style="font-size:14.5px;color:var(--mute);margin:0 0 12px">Every new Partner starts at Bronze. The basics are here — Partner dashboard, commission structure, training resources. Goal: get to Silver as fast as you can (median: 60 days).</p>
+
+    <div class="req"><b>Requirement</b>0-4 active Direct Businesses (lifetime). All new Partners default to Bronze.</div>
+
+    <h4 style="margin:14px 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);font-weight:700">What's included</h4>
+    <div class="perks-grid">
+      <div class="perk-row"><span class="check">✓</span>Personal referral code + Partner dashboard</div>
+      <div class="perk-row"><span class="check">✓</span>$500 sign-up bonus per Business activation</div>
+      <div class="perk-row"><span class="check">✓</span>9% Direct override + 3/2/1% on G1/G2/G3</div>
+      <div class="perk-row"><span class="check">✓</span>Partner training + bootcamp access</div>
+      <div class="perk-row"><span class="check">✓</span>Mentor pairing (free)</div>
+      <div class="perk-row"><span class="check">✓</span>Sales toolkit + objection playbook</div>
+    </div>
+  </div>
+
+  <!-- Silver -->
+  <div class="tier-detail">
+    <div class="tier-head"><span class="tier-badge silver">🥈 Silver</span><h2>Established Partner</h2></div>
+    <p style="font-size:14.5px;color:var(--mute);margin:0 0 12px">Silver Partners have proven the model — 5+ activations means you can pitch and close. New benefits unlock here: better support tier, beta access to features, increased visibility.</p>
+
+    <div class="req"><b>Requirement</b>5+ active Direct Businesses + at least 1 G1 Partner in your downline.</div>
+
+    <h4 style="margin:14px 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);font-weight:700">What unlocks (in addition to Bronze)</h4>
+    <div class="perks-grid">
+      <div class="perk-row"><span class="check">✓</span>Silver badge on Partner directory</div>
+      <div class="perk-row"><span class="check">✓</span>Priority support (24h vs 48h)</div>
+      <div class="perk-row"><span class="check">✓</span>Beta feature access (early)</div>
+      <div class="perk-row"><span class="check">✓</span>Partner spotlight rotation eligibility</div>
+      <div class="perk-row"><span class="check">✓</span>Quarterly group coaching call</div>
+      <div class="perk-row"><span class="check">✓</span>Custom referral landing page (yourname.lymx.com)</div>
+    </div>
+  </div>
+
+  <!-- Gold -->
+  <div class="tier-detail">
+    <div class="tier-head"><span class="tier-badge gold">🥇 Gold</span><h2>Senior Partner</h2></div>
+    <p style="font-size:14.5px;color:var(--mute);margin:0 0 12px">Gold Partners have built a real network — 10+ direct activations and a producing downline. Premium support, advanced training, and meaningful recognition unlock here.</p>
+
+    <div class="req"><b>Requirement</b>10+ active Direct Businesses + 3+ G1 Partners with at least 1 activation each. Sustained for 90 days.</div>
+
+    <h4 style="margin:14px 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);font-weight:700">What unlocks (in addition to Silver)</h4>
+    <div class="perks-grid">
+      <div class="perk-row"><span class="check">✓</span>Gold badge — most visible on directory</div>
+      <div class="perk-row"><span class="check">✓</span>Dedicated success coach</div>
+      <div class="perk-row"><span class="check">✓</span>Quarterly Partner summit invite (in-person)</div>
+      <div class="perk-row"><span class="check">✓</span>Annual review with Kenny</div>
+      <div class="perk-row"><span class="check">✓</span>Speaking slot at Partner training events</div>
+      <div class="perk-row"><span class="check">✓</span>Co-host approval for cooperative events</div>
+      <div class="perk-row"><span class="check">✓</span>Master Partner mentorship eligibility</div>
+      <div class="perk-row"><span class="check">✓</span>Featured in Partner case studies</div>
+    </div>
+  </div>
+
+  <!-- Master -->
+  <div class="tier-detail">
+    <div class="tier-head"><span class="tier-badge master">👑 Master</span><h2>Master Partner</h2></div>
+    <p style="font-size:14.5px;color:var(--mute);margin:0 0 12px">Master Partners are the elder generation of the network. 25+ active Direct Businesses, established multi-generation downline. They mentor others, shape strategy, and have access to the full <a href="master-playbook.html">Master Playbook</a>.</p>
+
+    <div class="req"><b>Requirement</b>25+ active Direct Businesses + 5+ G1 Partners actively producing + sustained for 180 days.</div>
+
+    <h4 style="margin:14px 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);font-weight:700">What unlocks (in addition to Gold)</h4>
+    <div class="perks-grid">
+      <div class="perk-row"><span class="check">✓</span>Master Partner badge — top tier on directory</div>
+      <div class="perk-row"><span class="check">✓</span>+1% bonus override on Direct (10% total)</div>
+      <div class="perk-row"><span class="check">✓</span>Direct slack/text to Kenny + leadership</div>
+      <div class="perk-row"><span class="check">✓</span>Roadmap input — quarterly vote</div>
+      <div class="perk-row"><span class="check">✓</span>Master Playbook (90-day Sienna playbook)</div>
+      <div class="perk-row"><span class="check">✓</span>$100/mo monthly stipend (LYMX-redeemable)</div>
+      <div class="perk-row"><span class="check">✓</span>Global network access (as cities expand)</div>
+      <div class="perk-row"><span class="check">✓</span>Shape new-Partner training curriculum</div>
+    </div>
+  </div>
+
+  <div class="progression">
+    <h3>How tier progression works</h3>
+    <p>Tiers are forward-looking — once you hit a tier, you stay there as long as your numbers stay above the threshold. If you drop below (e.g., a Direct Business cancels and you fall from 11 to 9 active), you stay at Gold for a 90-day grace period to recover. After that, you move down a tier. <b>You're never permanently demoted</b> — re-earn the next tier any time.</p>
+  </div>
+
+  <div class="timing-table">
+    <h2>How long it typically takes</h2>
+    <p style="color:var(--mute);font-size:13.5px;margin:0 0 14px">Median Partner journey based on 2026 data.</p>
+    <div class="tt-row"><div class="when">Week 1-4</div><div class="desc">Bronze tier — first activation usually within 30 days</div><div class="pct">100%</div></div>
+    <div class="tt-row"><div class="when">Month 2-4</div><div class="desc">Silver tier (5+ Direct) — most active Partners</div><div class="pct">~62%</div></div>
+    <div class="tt-row"><div class="when">Month 6-12</div><div class="desc">Gold tier — sustained network builders</div><div class="pct">~22%</div></div>
+    <div class="tt-row"><div class="when">12+ months</div><div class="desc">Master Partner — top performers, multi-gen downline</div><div class="pct">~6%</div></div>
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">Founding 25 vs. certification tiers</h2>
+  <p style="color:var(--mute);font-size:14.5px;margin-bottom:14px">These are <b>orthogonal</b> tracks. Founding 25 is an honorific for the first 25 Partners to hit 5 Direct activations — earned in launch phase. The certification ladder (Bronze → Master) is the ongoing tier system. A Master Partner can also be Founding 25 (and is a stronger Partner for it). They overlap but aren't the same thing.</p>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">FAQ</h2>
+  <details><summary>Do I lose my tier when a Business cancels?</summary><p>Not immediately. 90-day grace period before tier demotion. Most Businesses renew during that window. If you stay below threshold for 90+ days, tier moves down — but you can re-earn anytime.</p></details>
+  <details><summary>How is "Direct Business" counted?</summary><p>A Business YOU personally signed (not via your downline). They appear in your "Production" tree, not in G1/G2/G3.</p></details>
+  <details><summary>Can I be Master Partner AND Founding 25?</summary><p>Yes — and it's the strongest combination. About 4 of the 25 Founding Partners have already hit Master tier. The honorifics stack.</p></details>
+  <details><summary>What if I miss the Master threshold by 1?</summary><p>You stay at Gold until you hit 25. We don't grade on a curve. The threshold is the threshold. Most Partners who get close push through within the next 30 days.</p></details>
+  <details><summary>Is the 90-day grace period only for demotions?</summary><p>Yes. Promotions are immediate when you hit threshold. Demotions wait 90 days to give recovery time.</p></details>
+  <details><summary>Can I skip a tier?</summary><p>No — tiers are sequential. You earn each on the way up. (E.g., if you signed 25 Businesses immediately, you'd hit Bronze → Silver → Gold → Master in days, but progression is still through each tier.)</p></details>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="partners.html" style="color:#5a6373">Partner directory</a> · <a href="founding-partners-qualifying.html" style="color:#5a6373">Founding 25</a> · <a href="master-playbook.html" style="color:#5a6373">Master Playbook</a>
+</footer>
+</body>
+</html>
