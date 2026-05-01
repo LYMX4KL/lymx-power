@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Meet Kenny Lin, founder of LYMX Power. The story behind why LYMX exists and where it's going." />
+<title>Meet Kenny · LYMX Founder Story</title>
+<meta property="og:title" content="Meet Kenny — LYMX Founder Story" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.7;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none;font-weight:700}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--ink)}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  .nav-links a{color:var(--ink-2);font-weight:600}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .hero{padding:60px 0 40px;background:linear-gradient(180deg,#0e1116,#1a1f27);color:#fff;position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.16),transparent 70%);right:-200px;top:-200px;pointer-events:none}
+  .hero-grid{position:relative;display:grid;grid-template-columns:1fr 1.4fr;gap:42px;align-items:center}
+  @media(max-width:900px){.hero-grid{grid-template-columns:1fr}}
+  .pre{display:inline-block;background:rgba(212,175,55,.18);color:#f5d172;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .hero h1{margin:0 0 14px;font-size:48px;font-weight:800;letter-spacing:-.02em;line-height:1.05;color:#fff}
+  .hero h1 .gold{color:#f5d172}
+  .hero p.lede{font-size:18px;color:#cdd2da;line-height:1.55;margin:0 0 20px}
+  .hero .meta{display:flex;gap:22px;flex-wrap:wrap;font-size:13.5px;color:#9aa3b0;margin-top:18px}
+  .hero .meta a{color:#f5d172}
+
+  .portrait{position:relative}
+  .portrait .frame{width:100%;aspect-ratio:1/1;max-width:340px;margin:0 auto;border-radius:24px;background:linear-gradient(135deg,#a01644,#6e0e2f);position:relative;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+  .portrait .frame::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(245,209,114,.4),transparent 50%)}
+  .portrait .name{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:104px;font-weight:800;font-family:Georgia,serif;font-style:italic;text-shadow:0 8px 30px rgba(0,0,0,.4);z-index:2;letter-spacing:-.03em}
+  .portrait .badge{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);background:#f5d172;color:#0e1116;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:6px 14px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.3);z-index:3}
+
+  /* Body */
+  article{max-width:780px;margin:40px auto;padding:0 24px 60px}
+  article h2{margin:42px 0 12px;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  article h3{margin:26px 0 8px;font-size:18px;font-weight:800}
+  article p{margin:0 0 14px;font-size:17px;color:var(--ink-2)}
+  article p strong{color:var(--ink);font-weight:800}
+
+  .quote{margin:18px 0;padding:18px 26px;background:var(--bg-soft);border-left:4px solid var(--gold);border-radius:0 12px 12px 0;font-style:italic;font-size:18px;color:var(--ink-2);line-height:1.55}
+
+  /* Timeline */
+  .tl{margin:18px 0;padding-left:30px;border-left:2px solid var(--line)}
+  .tl-item{padding:10px 0 10px 16px;position:relative}
+  .tl-item::before{content:"";position:absolute;left:-37px;top:18px;width:14px;height:14px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:0 0 0 1px var(--line)}
+  .tl-item .when{font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .tl-item h4{margin:3px 0;font-size:15px;font-weight:800}
+  .tl-item p{margin:0;font-size:14.5px;color:var(--ink-2)}
+
+  /* CTA */
+  .cta-block{margin:30px 0;padding:24px 28px;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);text-align:center}
+  .cta-block h3{color:#f5d172;margin:0 0 8px;font-size:18px;font-weight:800}
+  .cta-block p{margin:0 0 14px;color:#9aa3b0;font-size:14.5px}
+  .cta-block a{padding:11px 20px;background:#f5d172;color:#0e1116;border-radius:9px;font-weight:800;font-size:14px;text-decoration:none;display:inline-block;margin:0 4px}
+  .cta-block a:hover{background:#fff;text-decoration:none}
+  .cta-block a.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3)}
+  .cta-block a.ghost:hover{border-color:#fff}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:28px 0;font-size:13px;text-align:center}
+  footer a{color:#9aa3b0}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px;color:var(--ink)"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="about.html">About</a>
+      <a href="about-kenny.html" style="color:var(--accent);font-weight:700">Founder</a>
+      <a href="careers.html">Careers</a>
+      <a href="press.html">Press</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="portrait">
+      <div class="frame">
+        <div class="name">K</div>
+        <div class="badge">Founder &amp; CEO</div>
+      </div>
+    </div>
+    <div>
+      <span class="pre">★ Founder Story</span>
+      <h1>Why I built <span class="gold">LYMX</span></h1>
+      <p class="lede">"I've owned more than a dozen restaurants, run furniture import &amp; retail, taken over Wickes and Levitz showrooms, and flipped over 800 homes. I'm not telling you this to brag — none of those small businesses are still open today. That's the typical small-business cycle. LYMX is the tool I wish I'd had."</p>
+      <div class="meta">
+        <span><a href="mailto:kenny@getlymx.com">kenny@getlymx.com</a></span>
+        <span>📍 Las Vegas, NV</span>
+        <span>40 years in small business</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<article>
+  <h2>The 30-second version</h2>
+  <p>I came to the U.S. in 1985 and started in a restaurant kitchen in New York. Over the next 40 years, I opened and closed restaurants in four states, ran furniture import and retail, took over former Wickes and Levitz showrooms during the 2008 crash, and eventually moved to Las Vegas to flip over 800 homes and build a real estate company.</p>
+  <p>None of those small businesses are still open today. That's not a confession — that's the <strong>typical small-business cycle</strong>. And after 40 years inside it, I built LYMX to fix the single hardest part of running a small business: <strong>the marketing tax that bleeds you whether it works or not.</strong></p>
+
+  <h2>The pattern that almost killed every business I owned</h2>
+  <p>Every single small business I've ever operated had to spend roughly <strong>10% of revenue on advertising</strong> — Yelp, Google, newspaper, radio, mailers, social — or we wouldn't stay in business. That math is the same for almost every independent operator.</p>
+
+  <p>Here's the part that nobody talks about: <strong>most of the time, the ads don't actually work.</strong> Money goes down the drain. You can't tell which dollars are bringing in customers and which are pure waste. But you can't stop spending — because the moment you do, you fall behind. So you keep buying ads on hope.</p>
+
+  <div class="quote">"You're paying for maybe-customers. People who maybe saw your ad. Who maybe will come in. You'd never run any other part of your business this way — but with marketing, every small operator does, because the alternative is to disappear."</div>
+
+  <p>That's the trap I lived in for 40 years. It killed restaurants of mine. It killed friends' businesses. It's killed every business I helped my real estate clients open. Marketing is the only line item where you pay first and hope for results — and where, when results don't come, you have to pay again next month anyway.</p>
+
+  <h2>What if you only paid for marketing when it actually worked?</h2>
+  <p>That's LYMX, in one sentence. The Business doesn't pay for ads. Doesn't pay for impressions. Doesn't pay for clicks. The Business only pays when a real customer walks through the door and transacts — and then only at 80 cents on the dollar of the value the customer redeems. The 20% gap is the discount the customer earned, the network's referral mechanism is built into the math, and there's no separate ad budget. <strong>If no customer comes, the Business owes nothing.</strong></p>
+  <p>That's the model I wish I'd had at every restaurant, every furniture store, every property I tried to make work. It would have changed which ones survived.</p>
+
+  <h2>How I got here</h2>
+  <div class="tl">
+    <div class="tl-item">
+      <div class="when">1985 — 1995</div>
+      <h4>New York · Restaurant kitchens, then ownership</h4>
+      <p>Came to the U.S. with limited English and a willingness to work. Started in a New York kitchen. Opened my first restaurants in NY, NJ, Kentucky, and Tennessee. Most failed. The lesson came years later: <strong>I had bought the buildings.</strong> When restaurants closed, I kept the property and rented to the next operator. That accidental landlord income later funded everything.</p>
+    </div>
+    <div class="tl-item">
+      <div class="when">2000 — 2008</div>
+      <h4>Los Angeles · 4 more restaurants, plus furniture</h4>
+      <p>Moved west. Opened four more restaurants. Started a furniture import + retail business. The same pattern: most businesses struggled to break even after marketing costs.</p>
+    </div>
+    <div class="tl-item">
+      <div class="when">2008 — 2011</div>
+      <h4>The Great Recession · distressed inventory + showroom takeovers</h4>
+      <p>While many operators stopped, I kept moving. Bought distressed furniture inventory. Took over former Wickes and Levitz showrooms when they vacated. Survived the crisis — but the marketing-tax problem was as bad as ever.</p>
+    </div>
+    <div class="tl-item">
+      <div class="when">2011 — 2025</div>
+      <h4>Las Vegas · Real estate, 800+ flips, then LYMX</h4>
+      <p>Moved to Vegas. Started buying foreclosures, renovating, flipping for friends and clients. Set up small investment funds for individual flips. Within a few years: 800+ homes flipped, rental properties, my own real estate company. Real estate finally gave me the margin and freedom to look at the small-business problem from the outside — and ask why nobody had built a tool that flipped the marketing model on its head.</p>
+    </div>
+    <div class="tl-item">
+      <div class="when">2025 — now</div>
+      <h4>LYMX Power · founder &amp; CEO</h4>
+      <p>Built LYMX in Las Vegas. The first 25 Businesses signed up in 18 days. Public launch was September 2026. Now expanding to Phoenix, Reno, Salt Lake, Denver. Every Business on the network is one I'd have wanted to know about when I was running my own.</p>
+    </div>
+  </div>
+
+  <h2>What I believe — that LYMX comes from</h2>
+  <ol>
+    <li><strong>Small business is brutal.</strong> Most don't survive. Most of mine didn't survive. The ones that do, do it on margins so thin that one bad ad month can sink them. Tools that help operators on margin actually matter.</li>
+    <li><strong>The advertising tax is the hidden killer.</strong> 10% of revenue, paid forever, with no guarantee. That math has destroyed more independent businesses than any other single factor I've watched up close.</li>
+    <li><strong>Pay for outcomes, not for guesses.</strong> A loyalty network where the Business only pays when a real customer transacts is the inverse of the ad model. The Business never owes anyone money for marketing that didn't work.</li>
+    <li><strong>Network effects beat features.</strong> A loyalty product that connects 200 Businesses is more valuable to each one than the slickest stand-alone product. The customer earned at the coffee shop becomes the bookstore's customer for free.</li>
+    <li><strong>Honest math wins.</strong> 1 LYMX = $0.01. Always. No expiration. No fine print. Customers can do arithmetic — stop trying to obscure the value.</li>
+    <li><strong>Founders should be reachable.</strong> I read my own customer support email. If I stop, I've stopped running the company.</li>
+  </ol>
+
+  <h2>What 40 years of running small businesses taught me</h2>
+  <ul>
+    <li><strong>Cash flow beats brilliance.</strong> A great idea with bad cash flow dies. A mediocre idea with strong cash flow survives long enough to find a great idea. Plan the cash before you plan the menu.</li>
+    <li><strong>Buy the building when you can.</strong> The single best business decision I ever made by accident — keeping the property after each restaurant closed — became the foundation for everything that followed. Operators forget that they can be landlords too.</li>
+    <li><strong>Most ad spend doesn't work — and you can't tell which doesn't.</strong> If you can't measure it, treat it as a sunk cost from day one. Don't keep doubling down because you "don't know which half is working."</li>
+    <li><strong>The customer who came back twice is worth 10× the new customer.</strong> Every system that helps you keep an existing customer is worth more than every system that brings in new ones. (LYMX does both — but the retention is the real win.)</li>
+    <li><strong>Don't rely on luck.</strong> Every time I survived a downturn, it was a mix of luck and forced change. I don't want the next 40 years of small businesses to depend on luck. That's why this exists.</li>
+  </ul>
+
+  <h2>How to reach me</h2>
+  <p>The fastest way is email — <a href="mailto:kenny@getlymx.com">kenny@getlymx.com</a>. I read everything. I respond to most of it within a business day.</p>
+  <p>If you're a Business owner curious about LYMX, the fastest path is the <a href="demo.html">30-min demo</a>. I sit in on most of them.</p>
+  <p>If you're a journalist, <a href="press-kit.html">press-kit</a> is the starting point.</p>
+
+  <div class="cta-block">
+    <h3>If you've made it this far — thank you</h3>
+    <p>If you're a small-business owner reading this, you already know what I'm talking about. I'd love to hear your story.</p>
+    <a href="mailto:kenny@getlymx.com">Email Kenny</a>
+    <a class="ghost" href="business.html">List your Business</a>
+  </div>
+</article>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · <a href="founder-blog.html">Founder blog</a> · <a href="about.html">About LYMX</a> · <a href="press-kit.html">Press kit</a> · <a href="careers.html">Careers</a></div>
+</footer>
+</body>
+</html>

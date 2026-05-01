@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sales Toolkit — LYMX Partner</title>
+<meta name="description" content="One-pagers, scripts, slide decks, objection handlers — everything you need to pitch LYMX to a Business owner.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--err:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .partner-tag{font-size:11px;background:#fef9e7;color:#8b6f1f;padding:3px 8px;border-radius:6px;font-weight:700}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+
+  .hero{background:linear-gradient(180deg,#fef9e7 0%,#fafafa 100%);padding:60px 24px 36px;border-bottom:1px solid var(--line)}
+  .hero-inner{max-width:1180px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#8b6f1f;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid var(--gold)}
+  .hero h1{font-size:42px;letter-spacing:-.025em;margin:0 0 12px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:16px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+
+  .toc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:32px;display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  @media (max-width:760px){.toc{grid-template-columns:repeat(2,1fr)}}
+  .toc a{padding:8px 12px;text-align:center;font-size:13px;border-radius:6px;color:var(--ink);font-weight:500}
+  .toc a:hover{background:#fef9e7;color:#8b6f1f}
+
+  .section{margin-bottom:48px;scroll-margin-top:80px}
+  .section-h{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:20px}
+  .section-h h2{margin:0;font-size:26px;letter-spacing:-.02em}
+  .section-h .ct{color:var(--mute);font-size:13px;margin-left:auto}
+
+  .resource-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:880px){.resource-grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:520px){.resource-grid{grid-template-columns:1fr}}
+  .res{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+  .res .preview{aspect-ratio:1.4/1;background:linear-gradient(135deg,#0e1116,#1a2a4a);display:flex;align-items:center;justify-content:center;font-size:38px;color:#fff;position:relative}
+  .res .preview.gold{background:linear-gradient(135deg,#d4af37,#f5d172);color:#3a2f0a}
+  .res .preview.green{background:linear-gradient(135deg,#0a7a4d,#13a26b)}
+  .res .preview.purple{background:linear-gradient(135deg,#5b3697,#a374e6)}
+  .res .preview.gray{background:linear-gradient(135deg,#5d6470,#9aa3b0)}
+  .res .preview .filetype{position:absolute;top:10px;right:10px;font-size:10px;font-weight:800;background:rgba(255,255,255,.2);padding:3px 7px;border-radius:4px;letter-spacing:.04em}
+  .res-body{padding:18px;flex:1;display:flex;flex-direction:column}
+  .res h3{margin:0 0 4px;font-size:15px}
+  .res p{margin:0 0 10px;font-size:13px;color:var(--mute);flex:1}
+  .res .meta{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--mute);margin-bottom:12px}
+  .res .download{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;background:#fff;color:var(--ink);font-size:13px;font-weight:600;text-align:center}
+  .res .download:hover{background:var(--ink);color:#fff}
+
+  /* Script */
+  .script{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:14px}
+  .script-h{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .script .stage{width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+  .script-h h3{margin:0;font-size:16px}
+  .script .quote{background:#f7faff;border-left:3px solid var(--accent);padding:14px 18px;border-radius:0 8px 8px 0;font-size:14px;color:#1f2530;font-style:italic;line-height:1.6}
+  .script .note{font-size:12px;color:var(--mute);margin-top:8px;font-style:italic}
+
+  /* Objections */
+  .obj{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:10px}
+  .obj summary{cursor:pointer;font-weight:600;font-size:15px;display:flex;align-items:center;gap:10px;list-style:none}
+  .obj summary::-webkit-details-marker{display:none}
+  .obj summary::before{content:"+";width:24px;height:24px;border-radius:6px;background:#f1f3f7;display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:var(--mute);flex-shrink:0}
+  .obj[open] summary::before{content:"−";background:var(--ink);color:#fff}
+  .obj summary .their-words{color:var(--err);font-style:italic;font-weight:500}
+  .obj-body{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:14px;color:#1f2530}
+  .obj-body p{margin:0 0 10px}
+  .obj-body strong{color:var(--ink)}
+  .obj-body .response{background:#e8f6ee;border-left:3px solid var(--ok);padding:14px 18px;border-radius:0 8px 8px 0;margin-top:10px;font-size:14px;color:#0a4d2f}
+
+  /* Stats panel */
+  .stats-panel{background:linear-gradient(135deg,#fef9e7,#fff5c2);border:1px solid var(--gold);border-radius:14px;padding:24px;margin-bottom:32px}
+  .stats-panel h3{margin:0 0 6px;font-size:18px}
+  .stats-panel .sub{color:#5d4d18;font-size:13px;margin-bottom:18px}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media (max-width:680px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+  .stat{text-align:center;padding:8px}
+  .stat .n{font-size:30px;font-weight:800;color:#3a2f0a;letter-spacing:-.02em;line-height:1}
+  .stat .l{font-size:11px;color:#5d4d18;text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:6px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="rep-dashboard.html">LYMX <span>Power</span> <span class="partner-tag">Partner</span></a>
+    <nav class="nav-links">
+      <a href="rep-dashboard.html">Dashboard</a>
+      <a href="partner-academy.html">Academy</a>
+      <a href="partner-resources.html" class="on">Toolkit</a>
+      <a href="partner-events.html">Events</a>
+      <a href="partner-social-kit.html">Social</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Partner sales toolkit · Updated weekly</div>
+    <h1>Everything you need to pitch LYMX.</h1>
+    <p>One-pagers, slide decks, scripts for cold outreach, objection handlers, and the latest network stats. Use them, modify them, share them with prospects.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="toc">
+  <a href="#docs">Docs &amp; one-pagers</a>
+  <a href="#scripts">Scripts</a>
+  <a href="#objections">Objections</a>
+  <a href="#decks">Slide decks</a>
+  <a href="#stats">Latest stats</a>
+</div>
+
+<!-- ===== STATS ===== -->
+<div class="stats-panel" id="stats">
+  <h3>Latest network stats — use in your pitches</h3>
+  <p class="sub">These update weekly. Always cite "as of Apr 28, 2026" so prospects know they're current.</p>
+  <div class="stats-grid">
+    <div class="stat"><div class="n">218</div><div class="l">Active Businesses</div></div>
+    <div class="stat"><div class="n">14,820</div><div class="l">Active Customers</div></div>
+    <div class="stat"><div class="n">+38%</div><div class="l">MoM Customer growth</div></div>
+    <div class="stat"><div class="n">$184k</div><div class="l">Monthly transactions</div></div>
+  </div>
+</div>
+
+<!-- ===== DOCS ===== -->
+<section class="section" id="docs">
+  <div class="section-h"><h2>One-pagers &amp; reference docs</h2><span class="ct">8 documents · PDF + editable</span></div>
+
+  <div class="resource-grid">
+
+    <div class="res">
+      <div class="preview gold"><span>📄</span><span class="filetype">PDF</span></div>
+      <div class="res-body">
+        <h3>The LYMX one-pager</h3>
+        <p>One-page summary of the LYMX value prop. What it is, why it works, what it costs. Best for cold-leaving with a Business owner.</p>
+        <div class="meta"><span>Updated Apr 22</span><span>1.2 MB</span></div>
+        <a class="download" href="#">↓ Download PDF</a>
+      </div>
+    </div>
+
+    <div class="res">
+      <div class="preview"><span>📊</span><span class="filetype">PDF</span></div>
+      <div class="res-body">
+        <h3>The math: how LYMX pays for itself</h3>
+        <p>2-page breakdown of the $850 + $199/mo investment math, including ROI examples for café, restaurant, retail.</p>
+        <div class="meta"><span>Updated Apr 22</span><span>800 KB</span></div>
+        <a class="download" href="#">↓ Download PDF</a>
+      </div>
+    </div>
+
+    <div class="res">
+      <div class="preview green"><span>✅</span><span class="filetype">PDF</span></div>
+      <div class="res-body">
+        <h3>"Is LYMX a fit?" checklist</h3>
+        <p>10-question qualifier. If a prospect ticks 7+, they're a strong fit. Saves hours of pitching to bad leads.</p>
+        <div class="meta"><span>Updated Apr 14</span><span>340 KB</span></div>
+        <a class="download" href="#">↓ Download PDF</a>
+      </div>
+    </div>
+
+    <div class="res">
+      <div class="preview purple"><span>📝</span><span class="filetype">DOCX</span></div>
+      <div class="res-body">
+        <h3>Editable proposal template</h3>
+        <p>Word doc you can customize per Business. Fills in their name + category, leaves the price + timeline auto-populated.</p>
+        <div class="meta"><span>Updated Apr 14</span><span>120 KB</span></div>
+        <a class="download" href="#">↓ Download DOCX</a>
+      </div>
+    </div>
+
+    <div class="res">
+      <div class="preview gray"><span>⚖️</span><span class="filetype">PDF</span></div>
+      <div class="res-body">
+        <h3>Compliance brief for Partners</h3>
+        <p>What you can &amp; can't say in your pitches. FTC income disclosure rules. Promo wording dos &amp; don'ts. Avoid common mistakes.</p>
+        <div class="meta"><span>Updated Mar 31</span><span>280 KB</span></div>
+        <a class="download" href="#">↓ Download PDF</a>
+      </div>
+    </div>
+
+    <div class="res">
+      <div class="preview gold"><span>🏆</span><span class="filetype">PDF</span></div>
+      <div class="res-body">
+        <h3>Founding 25 program brief</h3>
+        <p>For pitching the first-25 perks (gold badge, homepage feature, locked pricing). Use only with Las Vegas prospects.</p>
+        <div class="meta"><span>Updated Apr 7</span><span>720 KB</span></div>
+        <a class="download" href="#">↓ Download PDF</a>
+      </div>
+    </div>
+
+    <div class="res">
+      <div class="preview" style="background:linear-gradient(135deg,#0a84ff,#5b9ef5)"><span>📋</span><span class="filetype">PDF</span></div>
+      <div class="res-body">
+        <h3>Intake form coaching guide</h3>
+        <p><strong>Important:</strong> Partners must guide prospects through the activation intake form (it doubles as the application). Especially the LYMX issuance rate decision — most Businesses choose 5/$1 or 3/$1 based on their margin. Includes competitor-comparison talking points (Square Loyalty, Toast, Yelp).</p>
+        <div class="meta"><span>Updated Apr 30</span><span>410 KB</span></div>
+        <a class="download" href="#">↓ Download PDF</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== SCRIPTS ===== -->
+<section class="section" id="scripts">
+  <div class="section-h"><h2>Cold-outreach scripts</h2><span class="ct">Use as a starting point — make them your own</span></div>
+
+  <div class="script">
+    <div class="script-h"><div class="stage">1</div><h3>Cold-call opener (under 30 seconds)</h3></div>
+    <div class="quote">"Hi [name], this is [your name]. I work with a small group of local Businesses on a shared loyalty network called LYMX. The reason I'm calling is short — Brew &amp; Bean Café joined a couple months ago and they've added about 140 new customers a month from other Businesses on the network. I think it'd work really well for [Business name] too. Could I take 5 minutes to walk you through it?"</div>
+    <div class="note">Why it works: leads with a peer (Brew &amp; Bean), gives a specific number, asks for a small commitment (5 min). Don't drop "MLM" or "commission" in the opener — focus on Business outcome.</div>
+  </div>
+
+  <div class="script">
+    <div class="script-h"><div class="stage">2</div><h3>Email subject lines (high open rate)</h3></div>
+    <div class="quote">• "Brew &amp; Bean's loyalty story — thought of you"<br>• "Quick question about your loyalty program at [Business]"<br>• "Small Business idea from a neighbor"<br>• "(Re: 5 min about LYMX) — [Your name]"</div>
+    <div class="note">Avoid all-caps, "FREE", or anything spammy. Best open rate: questions + named-peer references.</div>
+  </div>
+
+  <div class="script">
+    <div class="script-h"><div class="stage">3</div><h3>In-person walk-in (under 60 seconds)</h3></div>
+    <div class="quote">"Hi — quick visit, not a sale. I'm a LYMX Partner — that's a shared loyalty network a few Businesses around here are part of. Brew &amp; Bean signed up in February and saw [stat]. I left this one-pager — if it sounds interesting, my number's on it and I'd love to swing by when you have 10 min. Thanks for your time."</div>
+    <div class="note">Always lead with "not a sale" if you're walking in. Drop the one-pager, don't push. Follow up in 3–4 days.</div>
+  </div>
+
+  <div class="script">
+    <div class="script-h"><div class="stage">4</div><h3>The follow-up email (after first meeting)</h3></div>
+    <div class="quote">"[Name] — thanks for the time today. As promised, attached are: (1) the one-pager I mentioned, (2) the ROI math doc tailored for [their category], and (3) Brew &amp; Bean's case study. Quick note: the Founding 25 program in [city] currently has [X] spots left. No pressure — just wanted you to have the info. Talk soon, [your name]."</div>
+    <div class="note">Always include attachments. Always reference what they said in the meeting. End with a soft scarcity nudge if Founding 25 is open.</div>
+  </div>
+</section>
+
+<!-- ===== OBJECTIONS ===== -->
+<section class="section" id="objections">
+  <div class="section-h"><h2>Objection handlers</h2><span class="ct">12 most common · click any to expand</span></div>
+
+  <details class="obj">
+    <summary><span class="their-words">"I already have a loyalty program — Square Loyalty / Toast / Yelp."</span></summary>
+    <div class="obj-body">
+      <p><strong>The frame:</strong> they're not wrong — they DO have something. Don't argue. Acknowledge, then reframe.</p>
+      <div class="response"><strong>Try:</strong> "Yeah, Square Loyalty is solid for tracking visits. The one thing it can't do is bring you customers from other Businesses — which is the part LYMX adds. Most LYMX Businesses keep Square as their POS and just plug LYMX in alongside. Doesn't have to be either/or."</div>
+    </div>
+  </details>
+
+  <details class="obj">
+    <summary><span class="their-words">"$850 is too expensive."</span></summary>
+    <div class="obj-body">
+      <p><strong>The frame:</strong> $850 sounds big. Break it into the parts so they see what they're getting.</p>
+      <div class="response"><strong>Try:</strong> "Totally fair. Let me unbundle it — the $850 includes 3 months free subscription ($600 value), homepage feature spot at launch (worth several hundred in equivalent ad spend), email blast to all local LYMX customers, and the actual sign-up. Effectively the cash cost is closer to $250 once you net out the included value. Plus most peers break even within 6–8 weeks."</div>
+    </div>
+  </details>
+
+  <details class="obj">
+    <summary><span class="their-words">"I don't have time to set up another thing."</span></summary>
+    <div class="obj-body">
+      <p><strong>The frame:</strong> they're right that time is the bigger ask. Compress your ask.</p>
+      <div class="response"><strong>Try:</strong> "Setup is genuinely 30 minutes. You give us your menu, we configure your dashboard, your existing POS keeps working. The most-time-intensive part — staff training — is a 5-minute video for cashiers. We can also send someone to do it on-site on launch day."</div>
+    </div>
+  </details>
+
+  <details class="obj">
+    <summary><span class="their-words">"What if it doesn't work?"</span></summary>
+    <div class="obj-body">
+      <p><strong>The frame:</strong> de-risk it.</p>
+      <div class="response"><strong>Try:</strong> "Fair concern. Two things — first, our refund policy is 30 days no-questions. Second, we measure by Business outcome, not platform usage — if you don't see an ROI by month 3, we work with you on it (free promotional credits, optimization help). We have a refund policy posted publicly: <a href='refund-policy.html'>getlymx.com/refund</a>."</div>
+    </div>
+  </details>
+
+  <details class="obj">
+    <summary><span class="their-words">"This sounds like an MLM."</span></summary>
+    <div class="obj-body">
+      <p><strong>The frame:</strong> directly address — don't dodge.</p>
+      <div class="response"><strong>Try:</strong> "I understand why it might look that way. Two big differences. One — Businesses pay $850 + $199/mo. They get a real product (POS, customer base, analytics). They're not buying inventory or recruiting other Businesses. Two — Partners (like me) earn commission for sign-ups, but we don't pay to be Partners. The Partner tier is a referral program, not a buy-in."</div>
+    </div>
+  </details>
+
+  <details class="obj">
+    <summary><span class="their-words">"I need to think about it."</span></summary>
+    <div class="obj-body">
+      <p><strong>The frame:</strong> always understand what they want to think about. Don't push, but probe.</p>
+      <div class="response"><strong>Try:</strong> "Of course — what specifically do you want to think through? If it's the cost, I can walk you through the math. If it's whether your category fits, I can pull peer numbers. If it's just timing — when's a better moment to follow up?"</div>
+    </div>
+  </details>
+
+  <details class="obj">
+    <summary><span class="their-words">"Where else are you in?"</span></summary>
+    <div class="obj-body">
+      <p><strong>The frame:</strong> be honest about footprint. Don't oversell.</p>
+      <div class="response"><strong>Try:</strong> "Right now we're concentrated in Las Vegas — 218 Businesses live, ~15,000 customers active. Phoenix and Reno are next, Q4 2026. The honest answer is we're new, but we're growing 38% month-over-month and the network density in Vegas is starting to compound."</div>
+    </div>
+  </details>
+</section>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Sales toolkit · <a href="rep-dashboard.html">Back to dashboard</a> · <a href="partner-academy.html">Academy</a> · <a href="partner-events.html">Training events</a>
+</div>
+
+</body>
+</html>
