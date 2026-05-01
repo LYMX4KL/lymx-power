@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX press releases archive — every press release, with PDF and full text. For journalists." />
+<title>Press releases archive · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4af37;--radius:14px;--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none;font-weight:700}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--ink)}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  .nav-links a{color:var(--ink-2);font-weight:600}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .head{padding:48px 0 22px;border-bottom:1px solid var(--line)}
+  .head .pre{display:inline-block;background:rgba(165,69,255,.12);color:#7426c4;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .head h1{margin:0 0 8px;font-size:36px;font-weight:800;letter-spacing:-.01em}
+  .head .meta{display:flex;gap:22px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
+  .head .meta a{color:var(--accent-2)}
+
+  /* Search */
+  .search-box{margin:24px 0 14px;position:relative}
+  .search-box input{width:100%;background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 16px 12px 42px;font-size:14.5px;font-family:inherit}
+  .search-box input:focus{outline:0;border-color:var(--accent)}
+  .search-box::before{content:"🔍";position:absolute;left:14px;top:50%;transform:translateY(-50%)}
+
+  /* Filter row */
+  .filters{display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
+  .chip{padding:7px 13px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer;font-family:inherit}
+  .chip:hover{border-color:var(--ink)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* Year header */
+  .year-h{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:30px 0 12px;padding:6px 0;border-bottom:1px solid var(--line)}
+
+  /* Release */
+  .release{padding:20px 24px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);margin-bottom:10px;display:grid;grid-template-columns:120px 1fr auto;gap:24px;align-items:start;cursor:pointer;transition:.15s}
+  @media(max-width:780px){.release{grid-template-columns:1fr}}
+  .release:hover{border-color:var(--ink)}
+  .release .date{font-size:13px;color:var(--muted);font-weight:700}
+  .release .body h3{margin:0 0 4px;font-size:17px;font-weight:800;letter-spacing:-.005em;line-height:1.3;color:var(--ink)}
+  .release .body p{margin:0 0 8px;font-size:14px;color:var(--ink-2);line-height:1.5}
+  .release .pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .release .pill{padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .pill.launch{background:rgba(212,175,55,.18);color:#7a5e10}
+  .pill.funding{background:rgba(19,162,107,.14);color:#0d7d51}
+  .pill.product{background:rgba(10,132,255,.1);color:var(--accent-2)}
+  .pill.partner{background:rgba(165,69,255,.12);color:#7426c4}
+  .pill.milestone{background:rgba(240,160,32,.16);color:#a06808}
+  .release .actions{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+  @media(max-width:780px){.release .actions{flex-direction:row;align-items:center}}
+  .release .btn{padding:7px 12px;font-size:11.5px;font-weight:800;border-radius:7px;background:var(--bg-soft);border:1px solid var(--line);color:var(--ink-2);cursor:pointer;text-decoration:none}
+  .release .btn:hover{background:var(--ink);color:#fff;border-color:var(--ink);text-decoration:none}
+
+  /* Coverage strip */
+  .coverage-strip{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+  .coverage-strip strong{color:var(--ink-2);font-weight:800}
+  .coverage-strip a{font-size:12px}
+
+  /* Empty state */
+  .empty{padding:50px 30px;text-align:center;color:var(--muted)}
+
+  /* Subscribe banner */
+  .sub-banner{padding:24px 28px;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);margin:32px 0;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .sub-banner .ic{font-size:30px;flex-shrink:0}
+  .sub-banner .body{flex:1;min-width:240px}
+  .sub-banner h3{color:#f5d172;margin:0 0 4px;font-size:16px;font-weight:800}
+  .sub-banner p{margin:0;color:#9aa3b0;font-size:13.5px}
+  .sub-banner .btn-w{padding:10px 18px;background:#f5d172;color:#0e1116;border-radius:9px;font-weight:800;font-size:13.5px;text-decoration:none}
+  .sub-banner .btn-w:hover{background:#fff;text-decoration:none}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:30px}
+  footer a{color:#9aa3b0}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px;color:var(--ink)"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="press.html">Press</a>
+      <a href="press-archive.html" style="color:var(--accent);font-weight:700">Archive</a>
+      <a href="press-kit.html">Press kit</a>
+      <a href="testimonials.html">Testimonials</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="head">
+    <span class="pre">📰 Press Archive</span>
+    <h1>Press releases &amp; coverage</h1>
+    <div class="meta">
+      <span>📁 8 releases since launch</span>
+      <span>📞 Press inquiries: <a href="mailto:press@getlymx.com">press@getlymx.com</a></span>
+      <span>📋 <a href="press-kit.html">Get the press kit</a></span>
+    </div>
+  </div>
+
+  <div class="search-box">
+    <input type="search" id="search" placeholder="Search releases…" />
+  </div>
+
+  <div class="filters" id="filters">
+    <button class="chip on" data-c="all">All</button>
+    <button class="chip" data-c="launch">Launch</button>
+    <button class="chip" data-c="funding">Funding</button>
+    <button class="chip" data-c="product">Product</button>
+    <button class="chip" data-c="partner">Partner</button>
+    <button class="chip" data-c="milestone">Milestone</button>
+  </div>
+
+  <!-- 2026 -->
+  <div class="year-h">2026</div>
+
+  <div class="release" data-c="milestone">
+    <div class="date">April 28, 2026</div>
+    <div class="body">
+      <h3>LYMX Names First Master Partner; Las Vegas Network Hits 8,400 Customers</h3>
+      <p>The shared loyalty network for local Businesses recognizes Sienna Vega as its first Master Partner — 42 Businesses recruited in 9 months — and crosses 8,400 active customer wallets.</p>
+      <div class="pills"><span class="pill milestone">Milestone</span><span class="pill partner">Partner</span></div>
+      <div class="coverage-strip">📺 Coverage: <strong>Vegas Magazine</strong>, <strong>KTNV-13 morning</strong>, <strong>Las Vegas Sun</strong> · <a href="#">3 outlets</a></div>
+    </div>
+    <div class="actions">
+      <a class="btn" href="#">📄 Read full</a>
+      <a class="btn" href="#">⬇ PDF</a>
+    </div>
+  </div>
+
+  <div class="release" data-c="funding">
+    <div class="date">April 18, 2026</div>
+    <div class="body">
+      <h3>LYMX Closes $750K of $1.5M Seed Round at $7.5M Cap</h3>
+      <p>The Las Vegas-based shared loyalty network announces it has closed half of its $1.5M seed round, with participation from Founders Park, Local Ventures (LV1), and angel investors. Round expected to fully close Q2 2026.</p>
+      <div class="pills"><span class="pill funding">Funding</span></div>
+      <div class="coverage-strip">📺 Coverage: <strong>TechCrunch</strong>, <strong>Vegas Inc</strong> · <a href="#">2 outlets</a></div>
+    </div>
+    <div class="actions">
+      <a class="btn" href="#">📄 Read full</a>
+      <a class="btn" href="#">⬇ PDF</a>
+    </div>
+  </div>
+
+  <div class="release" data-c="product">
+    <div class="date">March 22, 2026</div>
+    <div class="body">
+      <h3>LYMX Ships Settlement Engine v2; QuickBooks Export 4× Faster</h3>
+      <p>LYMX completes scheduled migration to its v2 settlement schema, improving QuickBooks CSV export performance and adding native dispute tracking. Zero customer data affected during the 22-minute maintenance window.</p>
+      <div class="pills"><span class="pill product">Product</span></div>
+    </div>
+    <div class="actions">
+      <a class="btn" href="#">📄 Read full</a>
+      <a class="btn" href="#">⬇ PDF</a>
+    </div>
+  </div>
+
+  <div class="release" data-c="partner">
+    <div class="date">March 6, 2026</div>
+    <div class="body">
+      <h3>Brew &amp; Bean Coffee Co. Joins LYMX as Founding Business #2</h3>
+      <p>Las Vegas independent café Brew &amp; Bean activates on the LYMX shared loyalty network, becoming the second Founding Business after a 90-minute setup. Owner Daniel Whitley credits the network model with a 14% increase in repeat traffic over 8 weeks.</p>
+      <div class="pills"><span class="pill partner">Partner</span></div>
+      <div class="coverage-strip">📺 Coverage: <strong>Eater Vegas</strong>, <strong>The Spread</strong> · <a href="#">2 outlets</a></div>
+    </div>
+    <div class="actions">
+      <a class="btn" href="#">📄 Read full</a>
+      <a class="btn" href="#">⬇ PDF</a>
+    </div>
+  </div>
+
+  <div class="release" data-c="milestone">
+    <div class="date">February 14, 2026</div>
+    <div class="body">
+      <h3>LYMX Records First Cross-Business Redemption</h3>
+      <p>A customer who earned LYMX at Brew &amp; Bean Coffee redeems them at Oakline Kitchen Restaurant — the network's first multi-Business spend, validating the shared-loyalty thesis 6 weeks into operation.</p>
+      <div class="pills"><span class="pill milestone">Milestone</span></div>
+    </div>
+    <div class="actions">
+      <a class="btn" href="#">📄 Read full</a>
+      <a class="btn" href="#">⬇ PDF</a>
+    </div>
+  </div>
+
+  <div class="release" data-c="launch">
+    <div class="date">January 12, 2026</div>
+    <div class="body">
+      <h3>LYMX Activates First Founding Business; Las Vegas Soft Launch Begins</h3>
+      <p>The shared loyalty network for local Businesses formally goes live in Las Vegas with its first activated Business. Phase 1 targets 25 Founding Businesses across The Strip and Downtown LV.</p>
+      <div class="pills"><span class="pill launch">Launch</span></div>
+    </div>
+    <div class="actions">
+      <a class="btn" href="#">📄 Read full</a>
+      <a class="btn" href="#">⬇ PDF</a>
+    </div>
+  </div>
+
+  <!-- 2025 -->
+  <div class="year-h">2025</div>
+
+  <div class="release" data-c="funding">
+    <div class="date">December 4, 2025</div>
+    <div class="body">
+      <h3>Pre-Launch SAFE Closes; Founding Investors Join LYMX Power</h3>
+      <p>LYMX Power, Inc. secures pre-launch SAFE financing from a group of angel investors and product operators. Funding to support Las Vegas pilot operations and engineering build-out through 2026.</p>
+      <div class="pills"><span class="pill funding">Funding</span></div>
+    </div>
+    <div class="actions">
+      <a class="btn" href="#">📄 Read full</a>
+      <a class="btn" href="#">⬇ PDF</a>
+    </div>
+  </div>
+
+  <div class="release" data-c="launch">
+    <div class="date">October 1, 2025</div>
+    <div class="body">
+      <h3>Stealth Stage: LYMX Power, Inc. Incorporates in Nevada</h3>
+      <p>Founder Kenny Lin announces formation of LYMX Power, Inc. — a Las Vegas-based company building the first shared loyalty network for local Businesses. Initial focus on customer + Business-side product development.</p>
+      <div class="pills"><span class="pill launch">Launch</span></div>
+    </div>
+    <div class="actions">
+      <a class="btn" href="#">📄 Read full</a>
+      <a class="btn" href="#">⬇ PDF</a>
+    </div>
+  </div>
+
+  <!-- Subscribe -->
+  <div class="sub-banner">
+    <div class="ic">📬</div>
+    <div class="body">
+      <h3>Get press releases as they go out</h3>
+      <p>Journalists + investors: subscribe to the LYMX press list to receive future releases on the day they ship.</p>
+    </div>
+    <a class="btn-w" href="newsletter.html">Subscribe →</a>
+  </div>
+
+  <div id="empty" class="empty" style="display:none">
+    <h3>No releases match.</h3>
+    <p>Try a different keyword or filter — or check the <a href="changelog.html">changelog</a> for product updates.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · Press inquiries: <a href="mailto:press@getlymx.com">press@getlymx.com</a> · <a href="press-kit.html">Press kit</a></div>
+</footer>
+
+<script>
+  let activeFilter = 'all';
+  let searchQ = '';
+
+  function render(){
+    let visibleCount = 0;
+    document.querySelectorAll('.release').forEach(r=>{
+      const matchesFilter = activeFilter === 'all' || r.dataset.c === activeFilter;
+      const matchesSearch = !searchQ || r.textContent.toLowerCase().includes(searchQ);
+      const visible = matchesFilter && matchesSearch;
+      r.style.display = visible ? 'grid' : 'none';
+      if(visible) visibleCount++;
+    });
+    document.getElementById('empty').style.display = visibleCount === 0 ? 'block' : 'none';
+  }
+
+  document.querySelectorAll('#filters .chip').forEach(c=>{
+    c.onclick = ()=>{
+      document.querySelectorAll('#filters .chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      activeFilter = c.dataset.c;
+      render();
+    };
+  });
+  document.getElementById('search').oninput = e=>{ searchQ = e.target.value.toLowerCase(); render(); };
+</script>
+</body>
+</html>

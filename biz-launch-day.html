@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Launch Day Playbook — LYMX Business</title>
+<meta name="description" content="The exact playbook for Day 1 of LYMX at your Business — staff briefing, customer announcement, signage, first transactions.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--warn:#d97706;--err:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700}
+  .nav-link{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{padding:64px 24px 36px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fef9e7 0%,#fafafa 100%)}
+  .hero-inner{max-width:1100px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#8b6f1f;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid var(--gold)}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 12px;font-weight:800}
+  .hero p{color:var(--mute);max-width:580px;margin:0 auto;font-size:17px}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  .stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px}
+  @media (max-width:680px){.stat-strip{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;text-align:center}
+  .stat .n{font-size:28px;font-weight:800;letter-spacing:-.02em;color:var(--ok)}
+  .stat .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-top:4px}
+
+  /* Timeline */
+  .timeline{position:relative;padding-left:40px;margin-bottom:48px}
+  .timeline::before{content:"";position:absolute;left:14px;top:0;bottom:0;width:2px;background:var(--line)}
+  .tl-h{font-size:24px;letter-spacing:-.02em;margin:0 0 24px}
+
+  .moment{position:relative;margin-bottom:28px;padding-bottom:24px;border-bottom:1px dashed var(--line)}
+  .moment:last-child{border-bottom:0;padding-bottom:0}
+  .moment::before{content:"";position:absolute;left:-40px;top:6px;width:30px;height:30px;border-radius:50%;background:var(--card);border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:var(--accent)}
+  .moment.green::before{border-color:var(--ok);color:var(--ok)}
+  .moment.gold::before{border-color:var(--gold);color:#8b6f1f}
+  .moment.red::before{border-color:var(--err);color:var(--err)}
+  .moment[data-time="t0"]::before{content:"0"}
+  .moment[data-time="t1"]::before{content:"1"}
+  .moment[data-time="t2"]::before{content:"2"}
+  .moment[data-time="t3"]::before{content:"3"}
+  .moment[data-time="t4"]::before{content:"4"}
+  .moment[data-time="t5"]::before{content:"5"}
+  .moment[data-time="t6"]::before{content:"6"}
+  .moment[data-time="t7"]::before{content:"7"}
+
+  .moment-h{display:flex;align-items:baseline;gap:14px;margin-bottom:6px;flex-wrap:wrap}
+  .moment-h .when{font-size:11px;color:var(--mute);background:#f1f3f7;padding:3px 9px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .moment-h h3{margin:0;font-size:18px}
+  .moment-h .est{font-size:11px;color:var(--accent);font-weight:600}
+  .moment-body{padding:16px 18px;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:10px}
+  .moment-body p{margin:0 0 10px;font-size:14.5px}
+  .moment-body p:last-child{margin-bottom:0}
+  .moment-body ul{margin:0;padding-left:20px;font-size:14px}
+  .moment-body li{margin-bottom:6px}
+  .moment-body strong{color:var(--ink)}
+  .moment-body code{background:#f1f3f7;padding:2px 7px;border-radius:5px;font-size:13px;color:#1a4196;font-family:"SF Mono",Menlo,Consolas,monospace}
+
+  .pull{background:#fffbe6;border-left:4px solid var(--gold);padding:14px 18px;border-radius:0 8px 8px 0;font-size:13px;color:#5d4d18;margin-top:10px}
+  .pull strong{color:#3a2f0a}
+
+  /* Checklist */
+  .checklist{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;margin-bottom:48px}
+  .checklist h2{margin:0 0 6px;font-size:22px;letter-spacing:-.02em}
+  .checklist .sub{color:var(--mute);font-size:13px;margin-bottom:18px}
+  .check-row{display:flex;align-items:flex-start;gap:14px;padding:12px;border-radius:8px;cursor:pointer}
+  .check-row:hover{background:#fafafa}
+  .check-row.done{opacity:.5}
+  .check-box{width:22px;height:22px;border:2px solid var(--line);border-radius:6px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff}
+  .check-row.done .check-box{background:var(--ok);border-color:var(--ok)}
+  .check-row.done .check-box::after{content:"✓"}
+  .check-row .body{flex:1}
+  .check-row h4{margin:0 0 2px;font-size:14px}
+  .check-row p{margin:0;font-size:13px;color:var(--mute)}
+  .check-row.done h4{text-decoration:line-through}
+
+  /* Don'ts */
+  .donts{background:#fdecea;border:1px solid #fbd5d0;border-radius:14px;padding:24px;margin-bottom:48px}
+  .donts h2{margin:0 0 14px;font-size:18px;color:#a32114}
+  .donts ul{margin:0;padding-left:22px;font-size:14px;color:#7d2014}
+  .donts li{margin-bottom:8px}
+  .donts li strong{color:#a32114}
+
+  .cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:16px;padding:36px;text-align:center;margin-bottom:48px}
+  .cta h2{margin:0 0 8px;font-size:24px;color:#fff}
+  .cta p{color:#b8c2d6;max-width:520px;margin:0 auto 18px}
+  .cta a{display:inline-block;background:var(--gold);color:#0e1116;padding:11px 22px;border-radius:8px;font-weight:700;font-size:14px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="biz-dashboard.html">LYMX <span>Power</span> <span class="biz-tag">Business</span></a>
+    <a href="biz-dashboard.html" class="nav-link">← Dashboard</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Day 1 playbook · For new LYMX Businesses</div>
+    <h1>Launch day, hour by hour.</h1>
+    <p>The exact sequence we recommend for a smooth Day 1. Used by all 25 Founding Businesses. Estimated total active time: ~2 hours, spread across the day.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="stat-strip">
+  <div class="stat"><div class="n">94%</div><div class="l">Of Businesses ring up first transaction within Day 1</div></div>
+  <div class="stat"><div class="n">~12</div><div class="l">Avg LYMX sign-ups on Day 1</div></div>
+  <div class="stat"><div class="n">2 hrs</div><div class="l">Active owner time</div></div>
+  <div class="stat"><div class="n">5 min</div><div class="l">Cashier training per person</div></div>
+</div>
+
+<h2 class="tl-h">The day, hour by hour</h2>
+
+<div class="timeline">
+
+  <div class="moment green" data-time="t0">
+    <div class="moment-h">
+      <span class="when">T-1 day · evening</span>
+      <h3>Pre-launch sanity check</h3>
+      <span class="est">~20 min</span>
+    </div>
+    <div class="moment-body">
+      <p>The night before launch — light setup, no live transactions yet. Just confirming everything's wired correctly.</p>
+      <ul>
+        <li>Log into your <a href="biz-dashboard.html">LYMX Business dashboard</a> and confirm: menu items synced, multipliers set, payment method on file</li>
+        <li>Print the <a href="biz-print-kit.html">window cling</a> + table tents — stick the window cling at eye level on your front door</li>
+        <li>Run a $1 test transaction (refund yourself afterward). Confirm LYMX issuance shows up on the dashboard within 30 sec</li>
+        <li>Send the cashier-training video to your team in a group text. <a href="onboarding-video.html">Video link</a> · 6 min</li>
+      </ul>
+      <div class="pull"><strong>Why this matters:</strong> 90% of Day 1 issues happen because something basic was off the night before. Spend 20 min the day before — sleep better.</div>
+    </div>
+  </div>
+
+  <div class="moment" data-time="t1">
+    <div class="moment-h">
+      <span class="when">7:30 AM · before opening</span>
+      <h3>Staff huddle</h3>
+      <span class="est">~10 min</span>
+    </div>
+    <div class="moment-body">
+      <p>Before the doors open, gather your team. Don't lecture — keep it concrete.</p>
+      <ul>
+        <li>Show them the <a href="biz-print-kit.html">register card</a> ("Tap to pay" prompt)</li>
+        <li>Walk through the new flow: customer says "I have LYMX" → you scan their QR → ring up Square as normal → LYMX auto-issues</li>
+        <li>If a customer doesn't have LYMX, hand them the table tent — sign-up is 30 sec at the table</li>
+        <li>Make it clear: there's no quota, no commission for cashiers, no pressure. Just answer "what is this?" if asked.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="moment" data-time="t2">
+    <div class="moment-h">
+      <span class="when">8:00 AM · doors open</span>
+      <h3>First transactions</h3>
+      <span class="est">~30 min of attention</span>
+    </div>
+    <div class="moment-body">
+      <p>The first hour, watch from a distance. Don't hover — but be available if the cashier has a question. Most owners report this hour feels surprisingly normal.</p>
+      <ul>
+        <li>Check your <a href="biz-dashboard.html">dashboard</a> twice during this hour. Confirm transactions are coming through.</li>
+        <li>If something's off (transaction not appearing, customer can't redeem), call LYMX support directly — we have a Day 1 Slack channel for new Businesses</li>
+        <li>Take a screenshot of your first LYMX transaction. Send it to whoever helped you decide to sign up — your Partner, your friend, etc.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="moment gold" data-time="t3">
+    <div class="moment-h">
+      <span class="when">10:00 AM</span>
+      <h3>Tell your customers</h3>
+      <span class="est">~20 min</span>
+    </div>
+    <div class="moment-body">
+      <p>Now that the system's working, announce it publicly. Don't make it big — soft launch.</p>
+      <ul>
+        <li>Post the <strong>announcement social post</strong> from the <a href="biz-marketing-kit.html">Marketing kit</a> (Instagram + Facebook)</li>
+        <li>If you have an email list, send the <strong>"We're now on LYMX" email template</strong></li>
+        <li>Pin the announcement to your IG profile + add a story</li>
+        <li>For the first week, leave a stack of <a href="biz-print-kit.html">table tents</a> at every table or by the register — works better than asking</li>
+      </ul>
+      <div class="pull"><strong>Tone:</strong> understated is better than salesy. "We joined a shared loyalty network — earn here, spend anywhere on the network." That's all.</div>
+    </div>
+  </div>
+
+  <div class="moment" data-time="t4">
+    <div class="moment-h">
+      <span class="when">12:00 PM · lunch rush</span>
+      <h3>Second-shift training</h3>
+      <span class="est">~5 min per cashier</span>
+    </div>
+    <div class="moment-body">
+      <p>If your morning crew is different from your lunch crew, the first lunch shift is your second training opportunity. Same flow as the morning huddle.</p>
+      <ul>
+        <li>Pair them with the morning cashier for 10 min if possible — peer training is way faster than owner training</li>
+        <li>Watch the first 3–5 LYMX transactions of the lunch crew. Coach if the rhythm is off.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="moment" data-time="t5">
+    <div class="moment-h">
+      <span class="when">3:00 PM · afternoon check-in</span>
+      <h3>First half-day review</h3>
+      <span class="est">~10 min</span>
+    </div>
+    <div class="moment-body">
+      <p>Halfway through Day 1. Open the dashboard and look at the actual numbers — not to evaluate, just to learn the rhythm.</p>
+      <ul>
+        <li>How many LYMX transactions so far?</li>
+        <li>How many new wallet sign-ups?</li>
+        <li>Are there any redemptions yet (these come from network customers — exciting first sign of network value)?</li>
+        <li>Any cashier confusion or customer questions repeated more than once?</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="moment" data-time="t6">
+    <div class="moment-h">
+      <span class="when">6:30 PM · close-of-day</span>
+      <h3>End-of-day digest</h3>
+      <span class="est">~15 min</span>
+    </div>
+    <div class="moment-body">
+      <p>After close, do the EOD review. This is the most important habit you'll build — most successful Businesses do this every Friday for the first 4 weeks.</p>
+      <ul>
+        <li>Check the daily digest email (auto-sent at close — delivery to <code>[your email]</code> by 7 PM)</li>
+        <li>Note any cashier issues + write a quick "tomorrow we should…" line</li>
+        <li>Reply to any customer questions on social</li>
+        <li>Optional: post a "first day" thank-you on social ("142 of you earned LYMX with us today — thanks for being early")</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="moment green" data-time="t7">
+    <div class="moment-h">
+      <span class="when">+1 week · Day 7 review</span>
+      <h3>One-week debrief</h3>
+      <span class="est">~30 min</span>
+    </div>
+    <div class="moment-body">
+      <p>One week in, do a real review. By now you should have meaningful numbers and a sense of the cashier rhythm.</p>
+      <ul>
+        <li>Pull your first <a href="biz-analytics.html">analytics</a> view — adoption rate, transaction count, redemption pattern</li>
+        <li>Set your first <a href="promotions.html">multiplier promo</a> (typical first week 2 promo: 2× on a single bundle item)</li>
+        <li>Review your <a href="benchmarks.html">benchmarks</a> for the first time — even though you only have 7 days of data</li>
+        <li>Schedule the first <strong>recurring 30-min weekly review</strong> on your calendar</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- Checklist -->
+<div class="checklist">
+  <h2>Quick checklist (clickable)</h2>
+  <p class="sub">Click each item as you do it. Saves locally — survives page refreshes.</p>
+
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Test transaction confirmed (T-1 day)</h4><p>$1 test ringup → check dashboard issuance</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Window cling installed</h4><p>Eye level on front door</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Table tents on every table / register</h4><p>Or near register if no tables</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Cashier training video sent to team</h4><p>6 min, all staff watch before Day 1</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Pre-shift huddle done (7:30 AM)</h4><p>Walk through new flow with morning crew</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>First real transaction confirmed</h4><p>Screenshot the dashboard for the memory</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Customer announcement posted on social</h4><p>Use the Marketing kit template</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Email blast to customer list (if applicable)</h4><p>Marketing kit has the email template</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Lunch crew trained</h4><p>If different from morning crew</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>3 PM check-in done</h4><p>Quick dashboard review</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>EOD digest reviewed</h4><p>Auto-sent at close</p></div></div>
+  <div class="check-row" onclick="toggle(this)"><div class="check-box"></div><div class="body"><h4>Day 7 review scheduled on calendar</h4><p>30-min recurring weekly review for first 4 weeks</p></div></div>
+</div>
+
+<!-- Don'ts -->
+<div class="donts">
+  <h2>What NOT to do on Day 1</h2>
+  <ul>
+    <li><strong>Don't change your menu or prices.</strong> Run LYMX in parallel with everything else exactly as-is for the first week. Isolate the variable.</li>
+    <li><strong>Don't run a multiplier promo on Day 1.</strong> You need a baseline before you start running promos. Wait until week 2.</li>
+    <li><strong>Don't pressure cashiers to push sign-ups.</strong> Forcing it makes the experience feel scammy. Customers sign up at 35–55% naturally with just signage.</li>
+    <li><strong>Don't ask your support team to memorize anything.</strong> If a customer has a question, the answer is "I'll help you sign up — it's easier to show you." That's the only script needed.</li>
+    <li><strong>Don't expect a redemption on Day 1.</strong> Customers earn first, redeem later. Your first redemption usually comes on Day 4–7.</li>
+  </ul>
+</div>
+
+<div class="cta">
+  <h2>Need help on launch day?</h2>
+  <p>We have a dedicated Day 1 Slack channel for new Businesses. We're also reachable by phone — for the first 30 days you have priority support.</p>
+  <a href="support.html">Get help →</a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Launch day playbook · <a href="biz-launch-week.html">Week 2-4 playbook →</a> · <a href="biz-dashboard.html">Back to dashboard</a> · <a href="biz-onboarding-checklist.html">Setup checklist</a>
+</div>
+
+<script>
+  // Persist checklist state in localStorage
+  const KEY = 'lymx_launch_day_checks';
+  const state = JSON.parse(localStorage.getItem(KEY) || '{}');
+
+  document.querySelectorAll('.check-row').forEach((row, i) => {
+    if (state[i]) row.classList.add('done');
+  });
+
+  function toggle(el) {
+    el.classList.toggle('done');
+    const idx = Array.from(document.querySelectorAll('.check-row')).indexOf(el);
+    state[idx] = el.classList.contains('done');
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Business — your first 7 days. Activation checklist with POS install, listing setup, first promo, staff training, and customer kickoff." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Your first 7 days · LYMX Business</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(19,162,107,.15);color:#0d7d51;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  @media(max-width:960px){.nav-links{display:none}}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:14.5px;max-width:560px}
+  .btn{padding:10px 16px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13.5px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+  .btn:hover{opacity:.92}
+
+  /* Progress hero */
+  .hero{background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;border-radius:var(--radius);padding:26px 32px;margin-bottom:18px;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:24px;align-items:center;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(245,209,114,.16),transparent 70%);right:-100px;top:-100px;pointer-events:none}
+  @media(max-width:780px){.hero{grid-template-columns:1fr 1fr}}
+  .hero .lab{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:#c5edd9;margin-bottom:5px;position:relative}
+  .hero h2{margin:0 0 6px;font-size:24px;font-weight:800;letter-spacing:-.01em;position:relative;color:#fff}
+  .hero .sub{font-size:13.5px;color:#c5edd9;position:relative;margin-bottom:10px}
+  .progress-bar{height:10px;background:rgba(255,255,255,.18);border-radius:6px;overflow:hidden;position:relative}
+  .progress-bar > div{background:linear-gradient(90deg,#f5d172,#fff);height:100%;border-radius:6px;transition:width .4s}
+  .progress-text{font-size:11.5px;color:#c5edd9;margin-top:6px;position:relative}
+  .hero .v{font-size:32px;font-weight:800;color:#f5d172;letter-spacing:-.01em;position:relative}
+  .hero .vsub{font-size:12.5px;color:#c5edd9;position:relative}
+
+  /* Day pill row */
+  .days{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+  .day-pill{padding:7px 14px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer;white-space:nowrap;flex-shrink:0}
+  .day-pill:hover{border-color:var(--ink)}
+  .day-pill.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .day-pill .ct{display:inline-block;background:rgba(255,255,255,.18);padding:1px 7px;border-radius:6px;margin-left:5px;font-size:11px}
+  .day-pill:not(.on) .ct{background:var(--bg-soft);color:var(--muted)}
+
+  /* Checklist */
+  .list{display:flex;flex-direction:column;gap:10px}
+  .item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px 20px;display:flex;gap:14px;align-items:flex-start;transition:.15s}
+  .item:hover{border-color:var(--ink)}
+  .item.done{background:linear-gradient(180deg,#fff,rgba(19,162,107,.04));border-color:rgba(19,162,107,.3)}
+  .item.done .title{text-decoration:line-through;color:var(--muted)}
+  .check{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);background:#fff;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;transition:.15s;margin-top:2px}
+  .check:hover{border-color:var(--ink)}
+  .item.done .check{background:var(--ok);border-color:var(--ok)}
+  .body{flex:1;min-width:0}
+  .item .day{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--accent-2);background:rgba(10,132,255,.1);padding:2px 8px;border-radius:5px;margin-bottom:4px}
+  .item .day.urgent{color:#a01644;background:rgba(224,65,62,.1)}
+  .item .day.optional{color:var(--muted);background:var(--bg-soft)}
+  .title{font-size:16px;font-weight:800;margin:0 0 4px;line-height:1.3}
+  .desc{font-size:13.5px;color:var(--ink-2);margin:0 0 8px;line-height:1.5}
+  .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .actions a{padding:6px 11px;background:var(--bg-soft);border:1px solid var(--line);border-radius:7px;font-size:12.5px;font-weight:700;color:var(--ink-2)}
+  .actions a:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .actions a.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .actions a.primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
+
+  .right-col{flex-shrink:0;min-width:80px;text-align:right}
+  .right-col .est{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  .right-col .est-v{font-size:14px;font-weight:800;color:var(--ink)}
+
+  /* Side column with help / contact */
+  .layout{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+  @media(max-width:1000px){.layout{grid-template-columns:1fr}}
+
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:14px}
+  .panel h3{margin:0 0 10px;font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .panel p{margin:0 0 10px;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+  .panel a{color:var(--accent-2);font-weight:700}
+  .panel a:hover{text-decoration:underline}
+
+  .csm{display:flex;gap:10px;align-items:center;padding:12px 14px;background:var(--bg-soft);border-radius:11px;margin-top:10px}
+  .csm .av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+  .csm .name{font-size:13.5px;font-weight:800}
+  .csm .role{font-size:11.5px;color:var(--muted)}
+  .csm .actions{display:flex;gap:6px;margin-top:6px}
+  .csm a.book{padding:5px 10px;background:var(--ink);color:#fff;border-radius:6px;font-size:11.5px;font-weight:700}
+
+  /* Reward state when 100% */
+  .reward{display:none;padding:24px;background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:var(--radius);margin-bottom:18px;text-align:center}
+  .reward.on{display:block}
+  .reward h2{margin:0 0 6px;color:#f5d172;font-size:22px;letter-spacing:-.01em}
+  .reward p{margin:0;color:#9aa3b0;font-size:14px}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Business</span>
+    </div>
+    <nav class="nav-links">
+      <a href="biz-dashboard.html">Dashboard</a>
+      <a href="biz-analytics.html">Analytics</a>
+      <a href="pos.html">POS</a>
+      <a href="promotions.html">Promotions</a>
+      <a href="settlement.html">Settlement</a>
+      <a href="biz-onboarding-checklist.html" class="on">Setup</a>
+    </nav>
+    <a href="support.html" class="btn ghost">Help</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>Welcome to LYMX, Brew &amp; Bean!</h1>
+        <p>Your first 7 days. We've broken activation into bite-sized tasks across the week — most Businesses finish in under 4 hours of total work.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ghost" onclick="resetAll()">Reset progress</button>
+        <a class="btn" href="biz-dashboard.html">Open dashboard</a>
+      </div>
+    </div>
+
+    <!-- Reward when complete -->
+    <div class="reward" id="reward">
+      <h2>🎉 Activation complete!</h2>
+      <p>You've finished all 12 setup tasks. Your activation badge has been added to your public listing — customers can see you're a verified active LYMX Business.</p>
+    </div>
+
+    <!-- Progress hero -->
+    <div class="hero">
+      <div>
+        <div class="lab">Activation progress</div>
+        <h2 id="hero-status">Just getting started</h2>
+        <div class="sub" id="hero-sub">Complete the checklist to unlock your activation badge.</div>
+        <div class="progress-bar"><div id="bar" style="width:0"></div></div>
+        <div class="progress-text" id="bar-text">0 of 12 tasks · Day 0 of 7</div>
+      </div>
+      <div><div class="lab">Done today</div><div class="v" id="done-today">0</div><div class="vsub">tasks completed</div></div>
+      <div><div class="lab">Time invested</div><div class="v" id="time-invested">0m</div><div class="vsub">est. so far</div></div>
+      <div><div class="lab">Next milestone</div><div class="v" id="next-ms" style="font-size:18px;line-height:1.1">First customer</div><div class="vsub" id="next-sub">2 tasks away</div></div>
+    </div>
+
+    <!-- Day filter -->
+    <div class="days" id="days">
+      <div class="day-pill on" data-d="all">All <span class="ct" id="ct-all">12</span></div>
+      <div class="day-pill" data-d="day1">Day 1 <span class="ct" id="ct-day1">0</span></div>
+      <div class="day-pill" data-d="day2">Day 2 <span class="ct" id="ct-day2">0</span></div>
+      <div class="day-pill" data-d="day3">Day 3-4 <span class="ct" id="ct-day34">0</span></div>
+      <div class="day-pill" data-d="day5">Day 5-7 <span class="ct" id="ct-day57">0</span></div>
+      <div class="day-pill" data-d="optional">Optional <span class="ct" id="ct-opt">0</span></div>
+    </div>
+
+    <!-- Layout -->
+    <div class="layout">
+      <div>
+        <div class="list" id="list"></div>
+      </div>
+
+      <!-- Side -->
+      <div>
+        <div class="panel">
+          <h3>Your activation specialist</h3>
+          <p>Stuck on something? Get a 1:1 walk-through with someone who's done this hundreds of times.</p>
+          <div class="csm">
+            <div class="av">SR</div>
+            <div style="flex:1;min-width:0">
+              <div class="name">Sam Reyes</div>
+              <div class="role">Activation specialist · Las Vegas</div>
+              <div class="actions">
+                <a class="book" href="demo.html">Book a call</a>
+                <a class="book" style="background:#fff;color:var(--ink);border:1px solid var(--line)" href="mailto:sam@getlymx.com">Email Sam</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Resources</h3>
+          <p><a href="help-center.html">📚 Help center</a> — 42 articles on POS, promos, settlement</p>
+          <p><a href="business-agreement.html">📄 Business Agreement</a> — what you signed</p>
+          <p><a href="catering.html">🎁 Bulk gifts (B2B)</a> — sell LYMX to local companies</p>
+          <p><a href="status.html">⚡ System status</a> — live uptime</p>
+        </div>
+
+        <div class="panel">
+          <h3>Why finish all 12?</h3>
+          <p>Businesses that complete the full checklist see <strong style="color:var(--ok)">3.4× more LYMX activity in their first month</strong> than those who stop at task 5.</p>
+          <p>Most-skipped task: <em>"Write your welcome promo."</em> Don't skip it — first-time customers convert 2× higher when they get a hello bonus.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · Your first 7 days · We're rooting for you.</div>
+</footer>
+
+<script>
+  const TASKS = [
+    {id:'t1', day:'day1', urgent:true, est:15, title:'Confirm your Business listing',
+     desc:'Review your public listing on getlymx.com — name, address, hours, photos. Customers find you here. 5-min review.',
+     actions:[{label:'Open listing →', href:'biz-brew-and-bean.html', primary:true},{label:'Edit details', href:'biz-dashboard.html'}]},
+    {id:'t2', day:'day1', urgent:true, est:25, title:'Install the LYMX POS app',
+     desc:'iPad / Android tablet at the counter. Sign in with your Business email. Most owners install it themselves in under 25 minutes.',
+     actions:[{label:'POS install guide →', href:'help-center.html', primary:true},{label:'Open POS preview', href:'pos.html'}]},
+    {id:'t3', day:'day1', urgent:false, est:10, title:'Pick your locked LYMX rate',
+     desc:'Set how many LYMX customers earn per dollar spent. We recommend 5 LYMX per $1 to start — easy math, generous welcome.',
+     actions:[{label:'Set rate', href:'pos.html', primary:true}]},
+    {id:'t4', day:'day2', urgent:false, est:20, title:'Train your staff (15-min video + 5-min Q&amp;A)',
+     desc:'Short training video covers how to issue and accept LYMX, what to say to first-time customers, and how to handle the most common questions.',
+     actions:[{label:'Watch training →', href:'help-center.html', primary:true}]},
+    {id:'t5', day:'day2', urgent:false, est:15, title:'Write your welcome promo',
+     desc:'A small first-time-customer multiplier (e.g., 2× LYMX on first purchase) doubles activation. Takes 5 minutes to set up.',
+     actions:[{label:'Create promo', href:'promotions.html', primary:true},{label:'See examples', href:'content-hub.html'}]},
+    {id:'t6', day:'day3', urgent:false, est:20, title:'Print &amp; place your QR signage',
+     desc:'We mailed you 4 branded QR table tents and 2 counter signs. Place them where customers can see + scan with their phone.',
+     actions:[{label:'Re-order signage', href:'help-center.html'}]},
+    {id:'t7', day:'day3', urgent:false, est:15, title:'Add 4–6 photos to your listing',
+     desc:'Listings with at least 4 photos get 2.3× more views in the directory. Storefront, interior, signature item, the team.',
+     actions:[{label:'Upload photos', href:'biz-dashboard.html', primary:true}]},
+    {id:'t8', day:'day3', urgent:false, est:10, title:'Email your existing customer list',
+     desc:'Tell your regulars about LYMX. We have a 3-paragraph template ready — copy-paste into Mailchimp / Klaviyo.',
+     actions:[{label:'Email template', href:'content-hub.html', primary:true}]},
+    {id:'t9', day:'day5', urgent:false, est:10, title:'Schedule a Happy-Hour multiplier',
+     desc:'A 2× LYMX block during your slow window pulls customers off the street. Pick 2 hours, days of the week.',
+     actions:[{label:'Schedule', href:'promotions.html', primary:true}]},
+    {id:'t10', day:'day5', urgent:false, est:5, title:'Set up monthly settlement reminders',
+     desc:'Email + SMS reminder on the 5th of each month so you never miss your settlement statement.',
+     actions:[{label:'Notification settings', href:'biz-dashboard.html', primary:true}]},
+    {id:'t11', day:'day5', urgent:false, est:15, title:'Connect your Square / Toast / Clover',
+     desc:'Optional but recommended — automated syncing means LYMX accrual happens without your staff lifting a finger.',
+     actions:[{label:'POS integrations', href:'help-center.html', primary:true}]},
+    {id:'t12', day:'optional', urgent:false, est:30, title:'Run your first social media post',
+     desc:'Tell your followers you joined LYMX. We have 3 caption templates and a brand-kit logo pack ready.',
+     actions:[{label:'Brand kit + captions', href:'press-kit.html', primary:true}]}
+  ];
+
+  const STORAGE_KEY = 'lymx-biz-onboarding-v1';
+  let done = {};
+  try { done = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ done = {}; }
+  let filter = 'all';
+
+  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); } catch(e){} }
+
+  function toggle(id){
+    done[id] = !done[id];
+    save();
+    render();
+  }
+
+  function resetAll(){
+    if(!confirm('Reset all checklist progress? This cannot be undone.')) return;
+    done = {};
+    save();
+    render();
+  }
+
+  function dayLabel(d){
+    return ({day1:'Day 1',day2:'Day 2',day3:'Day 3-4',day5:'Day 5-7',optional:'Optional'})[d];
+  }
+
+  function render(){
+    const total = TASKS.length;
+    const doneCount = TASKS.filter(t=>done[t.id]).length;
+    const pct = Math.round((doneCount/total)*100);
+
+    document.getElementById('bar').style.width = pct+'%';
+    document.getElementById('bar-text').textContent = doneCount+' of '+total+' tasks · '+pct+'% complete';
+    document.getElementById('done-today').textContent = doneCount;
+    document.getElementById('time-invested').textContent = TASKS.filter(t=>done[t.id]).reduce((a,b)=>a+b.est,0)+'m';
+
+    // hero status
+    let status, sub;
+    if(doneCount === 0){ status = 'Just getting started'; sub = 'Complete the checklist to unlock your activation badge.'; }
+    else if(doneCount < 4){ status = "You're on Day 1"; sub = 'Knock out the urgent items first, then keep going.'; }
+    else if(doneCount < 8){ status = 'Halfway there'; sub = 'Strong pace. The next batch focuses on driving customers in.'; }
+    else if(doneCount < total){ status = 'Almost done'; sub = 'Final stretch — just a few more.'; }
+    else { status = 'Activation complete 🎉'; sub = 'You finished. Your activation badge is now live on your listing.'; }
+    document.getElementById('hero-status').textContent = status;
+    document.getElementById('hero-sub').textContent = sub;
+    document.getElementById('reward').classList.toggle('on', doneCount === total);
+
+    // Next milestone
+    const milestones = [
+      {at:3, name:'POS live'},
+      {at:6, name:'First customer'},
+      {at:9, name:'First promo run'},
+      {at:total, name:'Activation badge'}
+    ];
+    const next = milestones.find(m=>doneCount<m.at) || milestones[milestones.length-1];
+    document.getElementById('next-ms').textContent = next.name;
+    document.getElementById('next-sub').textContent = (next.at - doneCount) + ' tasks away';
+
+    // Day counts
+    const cts = {all:total, day1:0, day2:0, day34:0, day57:0, opt:0};
+    TASKS.forEach(t=>{
+      if(t.day==='day1') cts.day1++;
+      else if(t.day==='day2') cts.day2++;
+      else if(t.day==='day3') cts.day34++;
+      else if(t.day==='day5') cts.day57++;
+      else if(t.day==='optional') cts.opt++;
+    });
+    document.getElementById('ct-all').textContent = cts.all;
+    document.getElementById('ct-day1').textContent = cts.day1;
+    document.getElementById('ct-day2').textContent = cts.day2;
+    document.getElementById('ct-day34').textContent = cts.day34;
+    document.getElementById('ct-day57').textContent = cts.day57;
+    document.getElementById('ct-opt').textContent = cts.opt;
+
+    // Filter + render list
+    const items = TASKS.filter(t=>{
+      if(filter === 'all') return true;
+      if(filter === 'day3') return t.day === 'day3';
+      if(filter === 'day5') return t.day === 'day5';
+      return t.day === filter;
+    });
+
+    const list = document.getElementById('list');
+    list.innerHTML = items.map(t=>{
+      const isDone = !!done[t.id];
+      const dayClass = t.day === 'optional' ? 'optional' : (t.urgent ? 'urgent' : '');
+      return `<div class="item ${isDone?'done':''}">
+        <div class="check" onclick="toggle('${t.id}')">${isDone?'✓':''}</div>
+        <div class="body">
+          <span class="day ${dayClass}">${dayLabel(t.day)}${t.urgent?' · Start here':''}</span>
+          <h4 class="title">${t.title}</h4>
+          <p class="desc">${t.desc}</p>
+          <div class="actions">
+            ${t.actions.map(a=>`<a class="${a.primary?'primary':''}" href="${a.href}">${a.label}</a>`).join('')}
+          </div>
+        </div>
+        <div class="right-col">
+          <div class="est">Est.</div>
+          <div class="est-v">${t.est}m</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  document.querySelectorAll('.day-pill').forEach(p=>{
+    p.onclick = ()=>{
+      document.querySelectorAll('.day-pill').forEach(x=>x.classList.remove('on'));
+      p.classList.add('on');
+      filter = p.dataset.d;
+      render();
+    };
+  });
+
+  render();
+</script>
+</body>
+</html>

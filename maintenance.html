@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX is briefly down for scheduled maintenance. We'll be back shortly." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Be right back · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 30px 80px rgba(14,17,22,.16)}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;min-height:100vh}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:linear-gradient(180deg,#0e1116 0%,#1a1f27 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;-webkit-font-smoothing:antialiased;position:relative;overflow:hidden}
+  body::before{content:"";position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(10,132,255,.18),transparent 70%);left:-200px;top:-200px;pointer-events:none}
+  body::after{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.16),transparent 70%);right:-150px;bottom:-150px;pointer-events:none}
+  a{color:inherit;text-decoration:none}
+
+  .card{position:relative;background:#fff;border-radius:24px;padding:48px 48px 36px;max-width:560px;width:100%;box-shadow:var(--shadow);text-align:center}
+  @media(max-width:600px){.card{padding:36px 28px 24px}}
+
+  .brand{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:800;font-size:24px;color:var(--ink);margin-bottom:24px}
+  .brand .dot{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+
+  .icon-wrap{display:flex;justify-content:center;margin-bottom:18px}
+  .icon{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:38px;position:relative;overflow:hidden}
+  .icon::before{content:"";position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:18px;right:14px;opacity:.4}
+  .icon .gear{display:inline-block;animation:spin 6s linear infinite}
+  @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+  h1{margin:0 0 6px;font-size:30px;font-weight:800;letter-spacing:-.01em;line-height:1.15}
+  p.lede{margin:0 0 24px;color:var(--muted);font-size:16px;line-height:1.55}
+
+  /* Countdown */
+  .countdown{background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:14px;padding:22px 24px;margin-bottom:22px}
+  .countdown .lab{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9aa3b0;margin-bottom:8px}
+  .timer{display:flex;justify-content:center;gap:14px}
+  @media(max-width:480px){.timer{gap:8px}}
+  .seg{text-align:center}
+  .seg .n{font-size:36px;font-weight:800;color:#f5d172;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+  .seg .u{font-size:11px;color:#9aa3b0;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-top:5px}
+  .colon{font-size:36px;font-weight:800;color:#5a6373;line-height:1}
+
+  /* What we're doing */
+  .working{margin-bottom:22px;text-align:left}
+  .working h3{margin:0 0 10px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:center}
+  .working .item{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg-soft);border-radius:10px;margin-bottom:6px;font-size:13.5px;color:var(--ink-2)}
+  .working .item .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex-shrink:0;animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .working .item.done .dot{background:var(--ok);animation:none}
+  .working .item.done{color:var(--muted)}
+  .working .item.done .what{text-decoration:line-through}
+
+  /* Action row */
+  .actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+  .btn{display:inline-block;padding:10px 18px;border-radius:10px;font-weight:800;font-size:13.5px;cursor:pointer;border:0;text-decoration:none}
+  .btn.primary{background:var(--ink);color:#fff}
+  .btn.primary:hover{background:var(--accent-2)}
+  .btn.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--ink)}
+
+  .small-links{font-size:13px;color:var(--muted);margin-top:4px}
+  .small-links a{color:var(--accent-2);font-weight:700}
+  .small-links a:hover{text-decoration:underline}
+
+  .meta{margin-top:24px;padding-top:18px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted);line-height:1.6}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <span class="dot"></span> LYMX
+    </div>
+
+    <div class="icon-wrap">
+      <div class="icon"><span class="gear">⚙️</span></div>
+    </div>
+
+    <h1>Be right back</h1>
+    <p class="lede">LYMX is briefly down for scheduled maintenance. The Web Wallet, POS, and Partner dashboards will all be back shortly.</p>
+
+    <div class="countdown">
+      <div class="lab">Estimated time remaining</div>
+      <div class="timer">
+        <div class="seg"><div class="n" id="hh">00</div><div class="u">Hours</div></div>
+        <div class="colon">:</div>
+        <div class="seg"><div class="n" id="mm">22</div><div class="u">Minutes</div></div>
+        <div class="colon">:</div>
+        <div class="seg"><div class="n" id="ss">00</div><div class="u">Seconds</div></div>
+      </div>
+    </div>
+
+    <div class="working">
+      <h3>What we're working on</h3>
+      <div class="item done"><span class="dot"></span><span class="what">Migrate POS settlement service to v2 schema</span></div>
+      <div class="item done"><span class="dot"></span><span class="what">Apply Q2 Partner override calculation update</span></div>
+      <div class="item"><span class="dot"></span><span class="what">Re-index Business directory with new categories</span></div>
+      <div class="item"><span class="dot"></span><span class="what">Smoke-test wallet QR generation</span></div>
+    </div>
+
+    <div class="actions">
+      <a href="status.html" class="btn primary">View status page</a>
+      <a href="https://twitter.com/lymxpower" class="btn ghost" rel="noopener">Updates on X</a>
+    </div>
+
+    <div class="small-links">
+      Need urgent help? Email <a href="mailto:support@getlymx.com">support@getlymx.com</a>
+    </div>
+
+    <div class="meta">
+      Maintenance window started 2026-04-29 at 03:00 UTC · scheduled for 30 minutes ·
+      <span id="incident-id">REF: MAINT-20260429-03</span>
+    </div>
+  </div>
+
+<script>
+  // Countdown — defaults to 22 minutes from page load.
+  // In production, set window.MAINTENANCE_END = "2026-04-29T03:30:00Z" via a build-time inject.
+  const end = (window.MAINTENANCE_END && new Date(window.MAINTENANCE_END))
+              || new Date(Date.now() + 22*60*1000);
+
+  function tick(){
+    const now = new Date();
+    let s = Math.max(0, Math.floor((end - now)/1000));
+    const h = Math.floor(s/3600); s -= h*3600;
+    const m = Math.floor(s/60); s -= m*60;
+    document.getElementById('hh').textContent = String(h).padStart(2,'0');
+    document.getElementById('mm').textContent = String(m).padStart(2,'0');
+    document.getElementById('ss').textContent = String(s).padStart(2,'0');
+    if (h===0 && m===0 && s===0){
+      document.querySelector('h1').textContent = 'Wrapping up — refresh in a moment';
+    }
+  }
+  tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>

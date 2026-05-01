@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Business — file a dispute on a settlement transaction. Pick the reason, attach evidence, get a same-day response from the LYMX support team." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Dispute a transaction · LYMX Business</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(19,162,107,.15);color:#0d7d51;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .page{padding:30px 0 64px}
+  .page-head{margin-bottom:20px}
+  .page-head h1{margin:0 0 6px;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .breadcrumb{font-size:13px;color:var(--muted);margin-bottom:8px}
+  .breadcrumb a{color:var(--accent-2);font-weight:700}
+  .breadcrumb a:hover{text-decoration:underline}
+
+  /* Step indicator */
+  .steps{display:flex;justify-content:center;gap:8px;margin:0 0 24px}
+  .pip{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:700}
+  .pip .num{width:26px;height:26px;border-radius:50%;background:var(--line);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800}
+  .pip.on .num{background:var(--ink);color:#fff}
+  .pip.done .num{background:var(--ok);color:#fff}
+  .pip.done .num::after{content:"✓";font-size:13px}
+  .pip.done .num span{display:none}
+  .pip-line{width:32px;height:2px;background:var(--line);align-self:center}
+  @media(max-width:600px){.pip-line{width:14px}.pip{font-size:12px}}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);max-width:780px;margin:0 auto;padding:32px}
+  @media(max-width:640px){.card{padding:22px}}
+
+  .step{display:none}
+  .step.on{display:block}
+  .step h2{margin:0 0 6px;font-size:20px;font-weight:800;letter-spacing:-.01em}
+  .step p.sub{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.5}
+
+  /* Transaction summary */
+  .tx-card{padding:18px 22px;background:linear-gradient(180deg,#fff,var(--bg-soft));border:1px solid var(--line);border-radius:11px;margin-bottom:18px;display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center}
+  @media(max-width:600px){.tx-card{grid-template-columns:1fr}}
+  .tx-card .ic{width:46px;height:46px;border-radius:11px;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .tx-card .body .who{font-weight:800;font-size:15px}
+  .tx-card .body .when{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .tx-card .body .id{font-size:11.5px;color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace;margin-top:4px}
+  .tx-card .amt{text-align:right}
+  .tx-card .amt .v{font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+  .tx-card .amt .vsub{font-size:12px;color:var(--muted)}
+
+  /* Reason cards */
+  .reasons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:600px){.reasons{grid-template-columns:1fr}}
+  .reason{padding:16px 18px;background:#fff;border:2px solid var(--line);border-radius:11px;cursor:pointer;transition:.15s;display:flex;gap:12px;align-items:flex-start}
+  .reason:hover{border-color:var(--ink)}
+  .reason.on{border-color:var(--accent);background:rgba(10,132,255,.04)}
+  .reason .ic{width:32px;height:32px;border-radius:8px;background:var(--bg-soft);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .reason.on .ic{background:rgba(10,132,255,.12)}
+  .reason h3{margin:0 0 3px;font-size:14.5px;font-weight:800}
+  .reason p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.4}
+
+  /* Form fields */
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  .field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:11px 14px;font-size:14.5px;font-family:inherit}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:0;border-color:var(--accent)}
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:600px){.field-grid{grid-template-columns:1fr}}
+  .field .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+
+  /* Outcome chips */
+  .outcomes{display:flex;gap:8px;flex-wrap:wrap}
+  .outcome{padding:9px 14px;border:2px solid var(--line);border-radius:10px;font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer;background:#fff;transition:.15s}
+  .outcome:hover{border-color:var(--ink)}
+  .outcome.on{border-color:var(--accent);background:rgba(10,132,255,.06);color:var(--accent-2)}
+
+  /* File upload */
+  .upload{padding:22px;border:2px dashed var(--line);border-radius:11px;text-align:center;cursor:pointer;transition:.15s}
+  .upload:hover{border-color:var(--ink);background:var(--bg-soft)}
+  .upload .ic{font-size:32px;margin-bottom:6px}
+  .upload .h{font-size:14px;font-weight:800;margin-bottom:3px}
+  .upload .d{font-size:12.5px;color:var(--muted)}
+  .upload .files{margin-top:12px;display:flex;flex-direction:column;gap:5px;text-align:left}
+  .upload .file{font-size:12.5px;color:var(--ink-2);background:var(--bg-soft);padding:6px 11px;border-radius:7px;display:flex;justify-content:space-between}
+  .upload .file .rm{cursor:pointer;color:var(--danger);font-weight:700}
+
+  /* Buttons */
+  .row-btn{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:24px;flex-wrap:wrap}
+  .btn{padding:12px 22px;border-radius:10px;font-weight:800;font-size:14.5px;cursor:pointer;border:0;text-decoration:none;display:inline-block}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:var(--accent-2)}
+  .btn-primary:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+  .btn-ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--ink)}
+
+  /* Summary review */
+  .review{background:var(--bg-soft);border-radius:11px;padding:18px 22px;margin-bottom:18px}
+  .review .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px;gap:12px}
+  .review .row:last-child{border-bottom:0}
+  .review .row .l{color:var(--muted);font-weight:700;flex-shrink:0}
+  .review .row .r{color:var(--ink-2);font-weight:600;text-align:right;max-width:60%;word-break:break-word}
+
+  /* Confirmed */
+  .ok-state{text-align:center;padding:30px 10px}
+  .ok-state .check{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;font-size:38px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+  .ok-state h2{margin:0 0 6px;font-size:24px;font-weight:800;letter-spacing:-.01em}
+  .ok-state p{margin:0 0 18px;color:var(--muted);font-size:15px}
+  .ok-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:11px;padding:18px 22px;text-align:left;max-width:480px;margin:0 auto 18px}
+  .ok-card .row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .ok-card .row:last-child{border-bottom:0}
+  .ok-card .row .l{color:var(--muted)}
+  .ok-card .row .r{color:var(--ink-2);font-weight:700}
+  .ok-state .actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+  .freeze-banner{padding:11px 16px;background:rgba(240,160,32,.12);border:1px solid rgba(240,160,32,.3);color:#7a4d0a;border-radius:9px;font-size:13px;line-height:1.5;margin-bottom:14px}
+  .freeze-banner strong{font-weight:800}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Business</span>
+    </div>
+    <nav class="nav-links">
+      <a href="biz-dashboard.html">Dashboard</a>
+      <a href="biz-analytics.html">Analytics</a>
+      <a href="pos.html">POS</a>
+      <a href="promotions.html">Promotions</a>
+      <a href="settlement.html" class="on">Settlement</a>
+    </nav>
+    <a href="support.html" class="btn btn-ghost">Help</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div class="breadcrumb"><a href="settlement.html">Settlement</a> · April 2026 · Dispute transaction</div>
+      <h1>Dispute a transaction</h1>
+    </div>
+
+    <div class="steps">
+      <div class="pip on" id="pip-1"><div class="num"><span>1</span></div>Reason</div>
+      <div class="pip-line"></div>
+      <div class="pip" id="pip-2"><div class="num"><span>2</span></div>Details</div>
+      <div class="pip-line"></div>
+      <div class="pip" id="pip-3"><div class="num"><span>3</span></div>Evidence</div>
+      <div class="pip-line"></div>
+      <div class="pip" id="pip-4"><div class="num"><span>4</span></div>Review</div>
+      <div class="pip-line"></div>
+      <div class="pip" id="pip-5"><div class="num"><span>5</span></div>Filed</div>
+    </div>
+
+    <div class="card">
+      <!-- Transaction we're disputing -->
+      <div class="tx-card" id="tx-card">
+        <div class="ic">🧾</div>
+        <div class="body">
+          <div class="who">LYMX redeemed at checkout</div>
+          <div class="when">April 14, 2026 · 4:08 PM · Customer J. Reyes</div>
+          <div class="id">TX-20260414-04086 · POS Terminal #2</div>
+        </div>
+        <div class="amt">
+          <div class="v">2,400 LYMX</div>
+          <div class="vsub">≈ $24.00 · buy-back: $19.20</div>
+        </div>
+      </div>
+
+      <div class="freeze-banner">
+        <strong>What happens when you file:</strong> the disputed amount is held back from your next settlement. We'll review within 1 business day. If it's our error, we credit you immediately. If we need more from you, we'll email.
+      </div>
+
+      <!-- Step 1: Reason -->
+      <div class="step on" id="step-1">
+        <h2>What's wrong with this transaction?</h2>
+        <p class="sub">Pick the closest match. You can add details on the next step.</p>
+        <div class="reasons" id="reasons">
+          <div class="reason" data-r="not-mine" onclick="pickReason('not-mine',this)">
+            <div class="ic">❓</div>
+            <div><h3>I don't recognize this transaction</h3><p>This wasn't a real customer or staff person at our location.</p></div>
+          </div>
+          <div class="reason" data-r="wrong-amount" onclick="pickReason('wrong-amount',this)">
+            <div class="ic">⚖️</div>
+            <div><h3>Amount doesn't match</h3><p>The LYMX deducted is different from what we entered at the POS.</p></div>
+          </div>
+          <div class="reason" data-r="duplicate" onclick="pickReason('duplicate',this)">
+            <div class="ic">🔁</div>
+            <div><h3>Duplicate transaction</h3><p>Same charge appears twice in my settlement statement.</p></div>
+          </div>
+          <div class="reason" data-r="customer-claim" onclick="pickReason('customer-claim',this)">
+            <div class="ic">📞</div>
+            <div><h3>Customer says they didn't authorize</h3><p>The customer contacted us claiming the redemption is fraudulent.</p></div>
+          </div>
+          <div class="reason" data-r="promo-error" onclick="pickReason('promo-error',this)">
+            <div class="ic">🎟️</div>
+            <div><h3>Promo multiplier didn't apply correctly</h3><p>A scheduled promo (e.g., 2× Happy Hour) wasn't honored on this transaction.</p></div>
+          </div>
+          <div class="reason" data-r="other" onclick="pickReason('other',this)">
+            <div class="ic">⋯</div>
+            <div><h3>Something else</h3><p>I'll describe it on the next step.</p></div>
+          </div>
+        </div>
+        <div class="row-btn">
+          <a class="btn btn-ghost" href="settlement.html">← Cancel</a>
+          <button class="btn btn-primary" id="step1-next" disabled onclick="next(1)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Details -->
+      <div class="step" id="step-2">
+        <h2>Tell us what happened</h2>
+        <p class="sub">More detail = faster resolution. Be specific about times, what you saw, and what you expected.</p>
+        <div class="field">
+          <label>What happened</label>
+          <textarea id="d-desc" rows="5" placeholder="Example: At 4:08 PM, the POS showed I was issuing 1,200 LYMX (the customer's $12 ticket × 100). My settlement shows 2,400 LYMX redeemed. Customer paid in cash, didn't redeem any LYMX."></textarea>
+          <div class="hint">Minimum 30 characters. Plain English is fine.</div>
+        </div>
+        <div class="field-grid">
+          <div class="field">
+            <label>Expected amount (LYMX)</label>
+            <input type="number" id="d-expected" placeholder="1200" />
+            <div class="hint">What it should have been</div>
+          </div>
+          <div class="field">
+            <label>Actual amount (LYMX)</label>
+            <input type="number" id="d-actual" value="2400" disabled />
+            <div class="hint">Locked from the transaction</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>What outcome are you looking for?</label>
+          <div class="outcomes" id="outcomes">
+            <div class="outcome" data-o="reverse" onclick="pickOutcome('reverse',this)">Fully reverse</div>
+            <div class="outcome" data-o="adjust" onclick="pickOutcome('adjust',this)">Adjust amount</div>
+            <div class="outcome" data-o="investigate" onclick="pickOutcome('investigate',this)">Investigate first</div>
+            <div class="outcome" data-o="explain" onclick="pickOutcome('explain',this)">Explain why this is correct</div>
+          </div>
+        </div>
+        <div class="row-btn">
+          <button class="btn btn-ghost" onclick="back(2)">← Back</button>
+          <button class="btn btn-primary" id="step2-next" disabled onclick="next(2)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Evidence -->
+      <div class="step" id="step-3">
+        <h2>Attach evidence (optional but speeds review)</h2>
+        <p class="sub">Receipts, photos of the POS screen, video clips, customer messages — anything that supports your dispute.</p>
+        <div class="upload" onclick="document.getElementById('file-input').click()">
+          <div class="ic">📎</div>
+          <div class="h">Click to upload or drag &amp; drop</div>
+          <div class="d">PDF, JPG, PNG, MP4 · up to 25 MB each · max 5 files</div>
+          <input type="file" id="file-input" multiple accept=".pdf,.jpg,.jpeg,.png,.mp4" style="display:none" />
+          <div class="files" id="files-list"></div>
+        </div>
+        <div style="margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.5">
+          📌 <strong>Tip:</strong> a photo of the POS terminal showing the original entry is the single most useful piece of evidence in 70% of disputes.
+        </div>
+        <div class="row-btn">
+          <button class="btn btn-ghost" onclick="back(3)">← Back</button>
+          <button class="btn btn-primary" onclick="next(3)">Continue (skip if no evidence) →</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Review -->
+      <div class="step" id="step-4">
+        <h2>Review &amp; submit</h2>
+        <p class="sub">Take one last look. After you submit, the disputed amount is held back from your next settlement until our review is complete.</p>
+        <div class="review" id="review-panel"></div>
+        <div class="field">
+          <label>Your name (filing this dispute)</label>
+          <input type="text" id="d-name" placeholder="Daniel Whitley" />
+        </div>
+        <div class="field">
+          <label>Your email (for the dispute thread)</label>
+          <input type="email" id="d-email" placeholder="daniel@brewandbean.co" />
+        </div>
+        <label style="display:flex;gap:8px;font-size:13px;color:var(--ink-2);margin-top:8px;align-items:flex-start">
+          <input type="checkbox" id="d-attest" style="margin-top:3px" />
+          <span>I attest that the information I've provided is accurate to the best of my knowledge. False or fraudulent disputes may result in account suspension per the Business Activation Agreement.</span>
+        </label>
+        <div class="row-btn">
+          <button class="btn btn-ghost" onclick="back(4)">← Back</button>
+          <button class="btn btn-primary" id="submit-btn" disabled onclick="submitDispute()">File dispute</button>
+        </div>
+      </div>
+
+      <!-- Step 5: Confirmed -->
+      <div class="step" id="step-5">
+        <div class="ok-state">
+          <div class="check">✓</div>
+          <h2>Dispute filed</h2>
+          <p>Your dispute is in the queue. We aim to respond within 1 business day.</p>
+          <div class="ok-card">
+            <div class="row"><span class="l">Dispute ID</span><span class="r" id="ok-id">—</span></div>
+            <div class="row"><span class="l">Transaction</span><span class="r">TX-20260414-04086</span></div>
+            <div class="row"><span class="l">Amount on hold</span><span class="r">2,400 LYMX</span></div>
+            <div class="row"><span class="l">Status</span><span class="r" style="color:var(--warn)">Under review</span></div>
+            <div class="row"><span class="l">Next update by</span><span class="r" id="ok-eta">—</span></div>
+          </div>
+          <p style="font-size:12.5px;color:var(--muted)">You'll get email + SMS updates. You can also check status from <a href="settlement.html" style="color:var(--accent-2);font-weight:700">your settlement page</a> any time.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="settlement.html">Back to settlement</a>
+            <a class="btn btn-ghost" href="biz-dashboard.html">Open dashboard</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · Disputes typically resolve in 1-2 business days · See <a href="business-agreement.html" style="color:#cdd2da">Business Agreement §9</a></div>
+</footer>
+
+<script>
+  const REASON_LABELS = {
+    'not-mine':"I don't recognize this transaction",
+    'wrong-amount':'Amount doesn\'t match',
+    'duplicate':'Duplicate transaction',
+    'customer-claim':'Customer says they didn\'t authorize',
+    'promo-error':'Promo multiplier didn\'t apply correctly',
+    'other':'Other'
+  };
+  const OUTCOME_LABELS = {reverse:'Fully reverse', adjust:'Adjust amount', investigate:'Investigate first', explain:'Explain why this is correct'};
+
+  const state = {reason:null, desc:'', expected:'', outcome:null, files:[]};
+
+  function pickReason(r, el){
+    state.reason = r;
+    document.querySelectorAll('.reason').forEach(x=>x.classList.remove('on'));
+    el.classList.add('on');
+    document.getElementById('step1-next').disabled = false;
+  }
+
+  function pickOutcome(o, el){
+    state.outcome = o;
+    document.querySelectorAll('.outcome').forEach(x=>x.classList.remove('on'));
+    el.classList.add('on');
+    checkStep2Ready();
+  }
+
+  function checkStep2Ready(){
+    const desc = document.getElementById('d-desc').value.trim();
+    const ok = desc.length >= 30 && state.outcome;
+    document.getElementById('step2-next').disabled = !ok;
+  }
+  document.getElementById('d-desc').oninput = checkStep2Ready;
+  document.getElementById('d-expected').oninput = ()=>{ state.expected = document.getElementById('d-expected').value; };
+
+  // File upload
+  document.getElementById('file-input').onchange = e=>{
+    const files = Array.from(e.target.files);
+    state.files = state.files.concat(files).slice(0, 5);
+    renderFiles();
+  };
+  function renderFiles(){
+    const list = document.getElementById('files-list');
+    list.innerHTML = state.files.map((f,i)=>`<div class="file"><span>📄 ${f.name} · ${(f.size/1024).toFixed(0)} KB</span><span class="rm" onclick="event.stopPropagation();removeFile(${i})">Remove</span></div>`).join('');
+  }
+  function removeFile(i){
+    state.files.splice(i,1);
+    renderFiles();
+  }
+
+  // Steps
+  function setStep(n){
+    document.querySelectorAll('.step').forEach((el,i)=>{
+      el.classList.toggle('on', i+1 === n);
+    });
+    [1,2,3,4,5].forEach(i=>{
+      const pip = document.getElementById('pip-'+i);
+      pip.classList.remove('on','done');
+      if(i<n) pip.classList.add('done');
+      if(i===n) pip.classList.add('on');
+    });
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function next(n){
+    if(n===1){ setStep(2); }
+    else if(n===2){
+      state.desc = document.getElementById('d-desc').value.trim();
+      state.expected = document.getElementById('d-expected').value;
+      setStep(3);
+    }
+    else if(n===3){ renderReview(); setStep(4); }
+  }
+  function back(n){ setStep(n-1); }
+
+  function renderReview(){
+    const r = document.getElementById('review-panel');
+    r.innerHTML = `
+      <div class="row"><span class="l">Transaction</span><span class="r">TX-20260414-04086 · 2,400 LYMX · April 14</span></div>
+      <div class="row"><span class="l">Reason</span><span class="r">${REASON_LABELS[state.reason] || '—'}</span></div>
+      <div class="row"><span class="l">Outcome requested</span><span class="r">${OUTCOME_LABELS[state.outcome] || '—'}</span></div>
+      <div class="row"><span class="l">Expected amount</span><span class="r">${state.expected ? state.expected+' LYMX' : '— (not provided)'}</span></div>
+      <div class="row"><span class="l">Description</span><span class="r" style="font-style:italic">${escapeHTML(state.desc.slice(0,200))}${state.desc.length>200?'…':''}</span></div>
+      <div class="row"><span class="l">Evidence files</span><span class="r">${state.files.length} attached</span></div>
+    `;
+    checkSubmitReady();
+  }
+
+  function checkSubmitReady(){
+    const name = document.getElementById('d-name').value.trim();
+    const email = document.getElementById('d-email').value.trim();
+    const attest = document.getElementById('d-attest').checked;
+    document.getElementById('submit-btn').disabled = !(name && /@/.test(email) && attest);
+  }
+  ['d-name','d-email','d-attest'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', checkSubmitReady);
+    document.getElementById(id).addEventListener('change', checkSubmitReady);
+  });
+
+  function submitDispute(){
+    const id = 'DSP-'+Math.floor(100000+Math.random()*900000);
+    const eta = new Date(Date.now() + 24*60*60*1000);
+    document.getElementById('ok-id').textContent = id;
+    document.getElementById('ok-eta').textContent = eta.toLocaleString('en-US', {weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
+    setStep(5);
+  }
+
+  function escapeHTML(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+</script>
+</body>
+</html>

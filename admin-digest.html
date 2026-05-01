@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX weekly digest — Kenny's Monday-morning view of the network. KPIs, top movers, watchlist, action items." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Weekly Digest · LYMX Admin</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:1100px){.nav-links{display:none}}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:14px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{padding:9px 14px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+
+  /* TL;DR */
+  .tldr{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:var(--radius);padding:24px 28px;margin-bottom:18px;position:relative;overflow:hidden}
+  .tldr::after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.16),transparent 70%);right:-100px;top:-100px;pointer-events:none}
+  .tldr h2{margin:0 0 8px;color:#f5d172;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;position:relative}
+  .tldr p{margin:0;font-size:17px;color:#fff;line-height:1.6;font-weight:600;position:relative}
+  .tldr p strong{color:#f5d172;font-weight:800}
+
+  /* KPI strip */
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:18px}
+  @media(max-width:1000px){.kpis{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:#fff;padding:16px 20px}
+  .kpi .l{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+  .kpi .v{font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .kpi .v.green{color:var(--ok)}
+  .kpi .v.gold{color:var(--gold)}
+  .kpi .v.red{color:var(--danger)}
+  .kpi .delta{font-size:11.5px;font-weight:700;margin-top:3px}
+  .kpi .delta.up{color:var(--ok)}
+  .kpi .delta.down{color:var(--danger)}
+  .kpi .delta.flat{color:var(--muted)}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;align-items:start}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}}
+
+  /* Sections */
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:14px}
+  .panel-h{padding:14px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--bg-soft)}
+  .panel-h h3{margin:0;font-size:15px;font-weight:800}
+  .panel-h .meta{font-size:12.5px;color:var(--muted);font-weight:700}
+  .panel-body{padding:6px 0}
+
+  /* Mover row */
+  .mover{display:flex;align-items:center;gap:14px;padding:13px 22px;border-bottom:1px solid var(--line);font-size:13.5px}
+  .mover:last-child{border-bottom:0}
+  .mover .ic{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;font-weight:800}
+  .mover .ic.up{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .mover .ic.down{background:linear-gradient(135deg,#e0413e,#a01644)}
+  .mover .body{flex:1;min-width:0}
+  .mover .name{font-weight:800;font-size:14px}
+  .mover .desc{font-size:12px;color:var(--muted);line-height:1.4}
+  .mover .v{flex-shrink:0;font-weight:800;font-size:14.5px;text-align:right}
+  .mover .v.up{color:var(--ok)}
+  .mover .v.down{color:var(--danger)}
+
+  /* Watchlist */
+  .watch-row{display:flex;align-items:center;gap:12px;padding:13px 22px;border-bottom:1px solid var(--line)}
+  .watch-row:last-child{border-bottom:0}
+  .watch-row .pill{padding:3px 9px;border-radius:5px;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0}
+  .pill.alert{background:rgba(224,65,62,.13);color:#a01644}
+  .pill.warn{background:rgba(240,160,32,.16);color:#a06808}
+  .pill.info{background:rgba(10,132,255,.1);color:var(--accent-2)}
+  .watch-row .body{flex:1;min-width:0}
+  .watch-row h4{margin:0 0 2px;font-size:13.5px;font-weight:800;line-height:1.3}
+  .watch-row p{margin:0;font-size:12px;color:var(--muted);line-height:1.4}
+  .watch-row a.go{font-size:11.5px;font-weight:800;color:var(--accent-2);flex-shrink:0}
+
+  /* Action items */
+  .action{display:flex;gap:12px;align-items:flex-start;padding:13px 22px;border-bottom:1px solid var(--line)}
+  .action:last-child{border-bottom:0}
+  .action .check{width:22px;height:22px;border-radius:5px;border:2px solid var(--line);background:#fff;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;margin-top:2px}
+  .action .check.done{background:var(--ok);border-color:var(--ok);color:#fff}
+  .action .body{flex:1;min-width:0}
+  .action .body h4{margin:0 0 2px;font-size:13.5px;font-weight:800}
+  .action.done .body h4{text-decoration:line-through;color:var(--muted)}
+  .action .body p{margin:0;font-size:12px;color:var(--muted);line-height:1.4}
+  .action .due{font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:var(--bg-soft);padding:2px 7px;border-radius:5px;margin-top:4px;display:inline-block}
+  .action .due.urgent{background:rgba(224,65,62,.12);color:#a01644}
+
+  /* Funnel */
+  .funnel{padding:14px 22px}
+  .funnel-step{display:flex;justify-content:space-between;align-items:center;padding:10px 0;font-size:13px;border-bottom:1px solid var(--line)}
+  .funnel-step:last-child{border-bottom:0}
+  .funnel-step .lbl{font-weight:700;color:var(--ink-2)}
+  .funnel-step .v{font-weight:800}
+  .funnel-step .pct{font-size:11.5px;color:var(--muted);margin-left:8px}
+
+  /* Quote */
+  .quote-row{padding:14px 22px;font-size:13.5px;color:var(--ink-2);font-style:italic;line-height:1.55;background:rgba(212,175,55,.06);border-top:1px solid rgba(212,175,55,.2)}
+  .quote-row strong{color:var(--ink);font-weight:800;font-style:normal}
+
+  /* Email signature feel */
+  .signoff{padding:18px 22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--line);background:var(--bg-soft)}
+  .signoff strong{color:var(--ink-2);font-weight:800}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Admin</span>
+    </div>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Home</a>
+      <a href="admin-digest.html" class="on">Digest</a>
+      <a href="admin-businesses.html">Businesses</a>
+      <a href="admin-customers.html">Customers</a>
+      <a href="admin-tickets.html">Tickets</a>
+      <a href="admin-investors.html">Investors</a>
+      <a href="admin-compliance.html">Compliance</a>
+    </nav>
+    <div class="admin-avatar">KL</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>Weekly digest — Apr 28, 2026</h1>
+        <p>Your Monday-morning view of the network. Sent every Monday at 7 AM PT to <strong>kenny@getlymx.com</strong>.</p>
+      </div>
+      <div class="toolbar">
+        <button class="btn ghost" onclick="window.print()">🖨 Print</button>
+        <button class="btn ghost">← Last week</button>
+        <a class="btn" href="admin-dashboard.html">Live dashboard</a>
+      </div>
+    </div>
+
+    <!-- TL;DR -->
+    <div class="tldr">
+      <h2>This week, in one paragraph</h2>
+      <p>We added <strong>+1 active Business</strong> (Sage &amp; Stone Bakery in Henderson — closed by Tomás Reyes) and <strong>+312 new customers</strong>. LYMX issued was up 14% week-over-week, driven by a Friday Happy Hour 2× promo at Brew &amp; Bean. Two items need attention: <strong>Yumi Sushi's settlement is showing a 25 LYMX discrepancy</strong> we owe Maria a call on, and the <strong>NV money-transmitter counsel review is now 2 weeks past target</strong>.</p>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="kpi"><div class="l">Active customers</div><div class="v">8,420</div><div class="delta up">+312 wow</div></div>
+      <div class="kpi"><div class="l">Active Businesses</div><div class="v green">13</div><div class="delta up">+1 this week</div></div>
+      <div class="kpi"><div class="l">LYMX issued (wk)</div><div class="v gold">540K</div><div class="delta up">+14% wow</div></div>
+      <div class="kpi"><div class="l">LYMX redeemed (wk)</div><div class="v">348K</div><div class="delta up">+8% wow</div></div>
+      <div class="kpi"><div class="l">Open support tickets</div><div class="v">11</div><div class="delta flat">+1 wow</div></div>
+      <div class="kpi"><div class="l">SAFE round</div><div class="v gold">$750K</div><div class="delta flat">$750K open</div></div>
+    </div>
+
+    <div class="layout">
+      <!-- Left column -->
+      <div>
+        <!-- Top movers -->
+        <div class="panel">
+          <div class="panel-h"><h3>📈 Top movers this week</h3><span class="meta">vs. last week</span></div>
+          <div class="panel-body">
+            <div class="mover">
+              <div class="ic up">↑</div>
+              <div class="body">
+                <div class="name">Brew &amp; Bean Coffee</div>
+                <div class="desc">+38% LYMX issued · Friday Happy Hour 2× drove ~7,400 LYMX in 3 hours</div>
+              </div>
+              <div class="v up">+38%</div>
+            </div>
+            <div class="mover">
+              <div class="ic up">↑</div>
+              <div class="body">
+                <div class="name">Sienna Vega (Master Partner)</div>
+                <div class="desc">3 new G1 Partners signed in 7 days · downline grew from 11 → 14</div>
+              </div>
+              <div class="v up">+3 G1</div>
+            </div>
+            <div class="mover">
+              <div class="ic up">↑</div>
+              <div class="body">
+                <div class="name">Customer referrals</div>
+                <div class="desc">142 referrals processed this week · 42 → 64 customers from a single Maya Hopkins post</div>
+              </div>
+              <div class="v up">+142</div>
+            </div>
+            <div class="mover">
+              <div class="ic down">↓</div>
+              <div class="body">
+                <div class="name">Sunlit Salon Studio</div>
+                <div class="desc">−18% LYMX issued · Aida is on vacation, no covering staff trained</div>
+              </div>
+              <div class="v down">−18%</div>
+            </div>
+            <div class="mover">
+              <div class="ic down">↓</div>
+              <div class="body">
+                <div class="name">Square integration build</div>
+                <div class="desc">No progress this week, contractor was OOO. Slipping past May target.</div>
+              </div>
+              <div class="v down">2wk slip</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Watchlist -->
+        <div class="panel">
+          <div class="panel-h"><h3>👀 Watchlist</h3><span class="meta">5 items</span></div>
+          <div class="panel-body">
+            <div class="watch-row">
+              <span class="pill alert">Alert</span>
+              <div class="body">
+                <h4>Yumi Sushi — settlement discrepancy of 25 LYMX</h4>
+                <p>Maria emailed Friday. Worth a call before Monday EOD.</p>
+              </div>
+              <a class="go" href="admin-businesses.html">Open →</a>
+            </div>
+            <div class="watch-row">
+              <span class="pill alert">Alert</span>
+              <div class="body">
+                <h4>NV money-transmitter counsel — 2 weeks past target</h4>
+                <p>Counsel is on it but slow. Worth a follow-up Monday.</p>
+              </div>
+              <a class="go" href="admin-compliance.html">Compliance →</a>
+            </div>
+            <div class="watch-row">
+              <span class="pill warn">Watch</span>
+              <div class="body">
+                <h4>Sunlit Salon — owner OOO, no covering staff trained</h4>
+                <p>POS usage dropped 18%. Sam should reach out about temp staff training.</p>
+              </div>
+              <a class="go" href="admin-tickets.html">Tickets →</a>
+            </div>
+            <div class="watch-row">
+              <span class="pill warn">Watch</span>
+              <div class="body">
+                <h4>Square integration — engineering blocked</h4>
+                <p>Contractor needs unblocking on rate-limit handling. Maybe pull in eng candidate for a half-day?</p>
+              </div>
+              <a class="go" href="admin-hiring.html">Hiring →</a>
+            </div>
+            <div class="watch-row">
+              <span class="pill info">Heads-up</span>
+              <div class="body">
+                <h4>Brushwood Capital — DD finishing this week</h4>
+                <p>$300K check. Send Q1 cohort retention deck Monday morning.</p>
+              </div>
+              <a class="go" href="admin-investors.html">Investors →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Funnel -->
+        <div class="panel">
+          <div class="panel-h"><h3>🚪 Customer funnel — last 7 days</h3><span class="meta">Conversion %</span></div>
+          <div class="funnel">
+            <div class="funnel-step"><span class="lbl">Visited getlymx.com</span><span><span class="v">2,840</span><span class="pct">100%</span></span></div>
+            <div class="funnel-step"><span class="lbl">Started signup</span><span><span class="v">624</span><span class="pct">22%</span></span></div>
+            <div class="funnel-step"><span class="lbl">Verified phone (OTP)</span><span><span class="v">468</span><span class="pct">75%</span></span></div>
+            <div class="funnel-step"><span class="lbl">Completed wallet setup</span><span><span class="v">412</span><span class="pct">88%</span></span></div>
+            <div class="funnel-step"><span class="lbl">First LYMX earned (any Biz)</span><span><span class="v">312</span><span class="pct">76%</span></span></div>
+            <div class="funnel-step"><span class="lbl">Returned within 7 days</span><span><span class="v">198</span><span class="pct">63%</span></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div>
+        <!-- Action items -->
+        <div class="panel">
+          <div class="panel-h"><h3>✓ Your action items</h3><span class="meta" id="ai-meta">3 of 6 done</span></div>
+          <div class="panel-body" id="actions">
+            <div class="action done">
+              <div class="check done" data-i="0">✓</div>
+              <div class="body">
+                <h4>Reply to Maria @ Yumi about settlement</h4>
+                <p>Email or call. She's worried about money owed.</p>
+                <span class="due">Mon 9 AM</span>
+              </div>
+            </div>
+            <div class="action done">
+              <div class="check done" data-i="1">✓</div>
+              <div class="body">
+                <h4>Follow up with NV counsel on MT review</h4>
+                <p>2 weeks past. Email this morning.</p>
+                <span class="due">Mon 10 AM</span>
+              </div>
+            </div>
+            <div class="action done">
+              <div class="check done" data-i="2">✓</div>
+              <div class="body">
+                <h4>Send Q1 cohort retention deck to Brushwood</h4>
+                <p>Marcus asked Friday. Closing depends on this.</p>
+                <span class="due urgent">Mon EOD</span>
+              </div>
+            </div>
+            <div class="action">
+              <div class="check" data-i="3"></div>
+              <div class="body">
+                <h4>Schedule Sienna's coaching call for next 3 G1 Partners</h4>
+                <p>30 min each, this week.</p>
+                <span class="due">By Wed</span>
+              </div>
+            </div>
+            <div class="action">
+              <div class="check" data-i="4"></div>
+              <div class="body">
+                <h4>Approve Square integration spec doc from contractor</h4>
+                <p>2-page spec in Notion. Should take 20 min.</p>
+                <span class="due">By Wed</span>
+              </div>
+            </div>
+            <div class="action">
+              <div class="check" data-i="5"></div>
+              <div class="body">
+                <h4>Draft Q2 board memo</h4>
+                <p>Going out April 30. Keep it under 800 words.</p>
+                <span class="due">By Thu</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- This week's quote -->
+        <div class="panel">
+          <div class="panel-h"><h3>💬 Customer of the week</h3></div>
+          <div class="quote-row">
+            "I keep telling people: this isn't another points app. I earned LYMX at the bakery and spent it on dinner the same week. That used to be impossible."
+            <br><br>
+            <strong>— Maya Hopkins</strong>, Las Vegas customer · referred 42 friends this quarter
+          </div>
+        </div>
+
+        <!-- Sign-off -->
+        <div class="panel">
+          <div class="signoff">
+            <p style="margin:0">Have a good week. <strong>Reply with anything broken</strong> — I read every reply.</p>
+            <p style="margin:8px 0 0;font-size:12px">— Kenny<br>Founder, LYMX Power<br><a href="mailto:kenny@getlymx.com" style="color:var(--accent-2);font-weight:700">kenny@getlymx.com</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Internal weekly digest · noindex · Sent every Monday at 7 AM PT</div>
+</footer>
+
+<script>
+  const STORAGE_KEY = 'lymx-digest-actions-v1';
+  let done = {0:true,1:true,2:true};
+  try { done = JSON.parse(localStorage.getItem(STORAGE_KEY)) || done; } catch(e){}
+
+  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); } catch(e){} }
+  function render(){
+    document.querySelectorAll('.action').forEach((a,i)=>{
+      const isDone = !!done[i];
+      a.classList.toggle('done', isDone);
+      const c = a.querySelector('.check');
+      c.classList.toggle('done', isDone);
+      c.textContent = isDone ? '✓' : '';
+    });
+    const ct = Object.values(done).filter(Boolean).length;
+    document.getElementById('ai-meta').textContent = ct + ' of 6 done';
+  }
+  document.querySelectorAll('.check').forEach(c=>{
+    c.onclick = ()=>{
+      const i = parseInt(c.dataset.i, 10);
+      done[i] = !done[i];
+      save();
+      render();
+    };
+  });
+  render();
+</script>
+</body>
+</html>

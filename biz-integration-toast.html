@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Toast Integration — LYMX Power</title>
+<meta name="description" content="Connect LYMX with your Toast POS. Restaurant-grade ticket-line integration. Setup takes ~18 minutes.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--toast:#FF4F03}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+
+  .hero{padding:72px 24px 48px;border-bottom:1px solid var(--line);background:#fff}
+  .hero-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.3fr 1fr;gap:56px;align-items:center}
+  @media (max-width:880px){.hero-inner{grid-template-columns:1fr;gap:32px}}
+  .hero .pre{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .hero .lymx-tile{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+  .hero .lymx-tile span{color:var(--gold)}
+  .hero .plus{font-size:24px;color:var(--mute);font-weight:300}
+  .hero .toast-tile{width:48px;height:48px;border-radius:12px;background:var(--toast);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;letter-spacing:.04em}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800;line-height:1.1}
+  .hero p{color:var(--mute);font-size:18px;max-width:520px;margin-bottom:24px}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn-primary{padding:12px 22px;background:var(--ink);color:#fff;border-radius:10px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:6px}
+  .btn-ghost{padding:12px 22px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:10px;font-weight:700;font-size:15px}
+
+  .hero-illust{aspect-ratio:1.1/1;background:linear-gradient(135deg,#fff5ed 0%,#fafafa 100%);border-radius:18px;border:1px solid var(--line);position:relative;display:flex;align-items:center;justify-content:center;padding:32px}
+  .arrow-flow{display:flex;align-items:center;gap:18px;font-size:14px;color:var(--mute)}
+  .blk{padding:14px 20px;background:#fff;border:2px solid var(--line);border-radius:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:120px}
+  .blk.lymx{border-color:var(--gold)}
+  .blk.toast{border-color:var(--toast)}
+  .blk .ic{font-size:28px}
+  .arrow-flow .arr{font-size:24px;color:var(--toast);font-weight:700;animation:slide 1.6s infinite}
+  @keyframes slide{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  .syncs{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:48px}
+  .syncs h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .syncs .sub{color:var(--mute);font-size:14px;margin-bottom:24px}
+  .sync-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media (max-width:680px){.sync-grid{grid-template-columns:1fr}}
+  .sync-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:#fafafa}
+  .sync-row .ic{width:36px;height:36px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .sync-row .body{min-width:0}
+  .sync-row .body strong{display:block;font-size:14px;margin-bottom:2px}
+  .sync-row .body span{font-size:12px;color:var(--mute)}
+  .direction{font-size:14px;color:var(--toast);font-weight:700;letter-spacing:.04em}
+  .freq{font-size:10px;background:#e8f6ee;color:#0a7a4d;padding:3px 7px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
+  .freq.realtime{background:#fff5ed;color:#a83000}
+
+  .restaurant-special{background:linear-gradient(135deg,#fff5ed,#ffe8d6);border:1px solid #ffc7a3;border-radius:14px;padding:28px;margin-bottom:32px}
+  .restaurant-special h3{margin:0 0 8px;font-size:18px;color:#7d2f00}
+  .restaurant-special p{margin:0 0 14px;font-size:13.5px;color:#7d2f00}
+  .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+  @media (max-width:680px){.feat-grid{grid-template-columns:1fr}}
+  .feat{background:rgba(255,255,255,.7);padding:14px;border-radius:10px;display:flex;gap:12px}
+  .feat .ic{flex-shrink:0;font-size:22px}
+  .feat strong{display:block;font-size:13px;color:#7d2f00;margin-bottom:2px}
+  .feat span{font-size:12.5px;color:#a83000}
+
+  .steps{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:48px}
+  .steps h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .steps .sub{color:var(--mute);font-size:14px;margin-bottom:24px;display:flex;align-items:center;gap:14px}
+  .steps .sub .timer{background:#fff5ed;color:#7d2f00;padding:5px 12px;border-radius:999px;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:18px;padding:18px 0;border-top:1px solid var(--line)}
+  .step:first-of-type{border-top:0;padding-top:0}
+  .step-n{width:40px;height:40px;border-radius:50%;background:var(--toast);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0}
+  .step h3{margin:0 0 4px;font-size:16px}
+  .step .desc{font-size:14px;color:var(--mute);margin:0 0 10px}
+  .step .est{font-size:11px;color:var(--toast);background:#fff5ed;padding:3px 9px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;display:inline-block}
+  .step code{background:#f1f3f7;padding:2px 7px;border-radius:5px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13px;color:#1a4196}
+  .step kbd{background:#fff;border:1px solid var(--line);box-shadow:inset 0 -1px 0 var(--line);padding:1px 6px;border-radius:5px;font-size:12px;font-family:"SF Mono",Menlo,Consolas,monospace}
+
+  .faq{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:48px}
+  .faq h2{margin:0 0 18px;font-size:24px;letter-spacing:-.02em}
+  details{padding:14px 0;border-top:1px solid var(--line)}
+  details:first-of-type{border-top:0;padding-top:0}
+  summary{cursor:pointer;font-weight:600;font-size:15px;list-style:none;display:flex;align-items:center;gap:12px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";width:24px;height:24px;border-radius:6px;background:#f1f3f7;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:var(--mute);flex-shrink:0}
+  details[open] summary::before{content:"−";background:var(--ink);color:#fff}
+  details[open] summary{margin-bottom:10px}
+  .faq-body{font-size:14px;color:#1f2530;line-height:1.65;padding-left:36px}
+
+  .cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:32px;text-align:center;margin-bottom:48px}
+  .cta h2{margin:0 0 8px;color:#fff;font-size:24px}
+  .cta p{color:#b8c2d6;margin:0 auto 18px;max-width:520px;font-size:14px}
+  .cta a{display:inline-block;background:var(--gold);color:#0e1116;padding:12px 22px;border-radius:8px;font-weight:700}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="integrations.html">All integrations</a>
+      <a href="biz-integration-square.html">Square</a>
+      <a href="api.html">API</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="pre">
+        <div class="lymx-tile">L<span>★</span></div>
+        <div class="plus">×</div>
+        <div class="toast-tile">TOAST</div>
+      </div>
+      <h1>LYMX + Toast — built for restaurants.</h1>
+      <p>Toast handles your tickets and menu. LYMX handles your loyalty across the local network. Customers earn on every check; redeem any time at any LYMX Business.</p>
+      <div class="cta">
+        <a href="biz-dashboard.html" class="btn-primary">Connect Toast →</a>
+        <a href="#how" class="btn-ghost">See how it works</a>
+      </div>
+    </div>
+    <div class="hero-illust">
+      <div class="arrow-flow">
+        <div class="blk toast"><div class="ic">🍽️</div>Toast POS</div>
+        <div class="arr">⇄</div>
+        <div class="blk lymx"><div class="ic">★</div>LYMX</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- WHAT SYNCS -->
+<div class="syncs">
+  <h2>What syncs between Toast &amp; LYMX</h2>
+  <p class="sub">Two-way sync, all automatic. Optimized for restaurant operations — ticket-aware, tip-aware, refund-aware.</p>
+
+  <div class="sync-grid">
+    <div class="sync-row">
+      <div class="ic">📋</div>
+      <div class="body"><strong>Menu items</strong><span>By category, with modifiers</span></div>
+      <span class="direction">⇄</span>
+      <span class="freq">Every 5 min</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">🧾</div>
+      <div class="body"><strong>Ticket-line LYMX accrual</strong><span>Per-line, not just total</span></div>
+      <span class="direction">→</span>
+      <span class="freq realtime">Real-time</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">💸</div>
+      <div class="body"><strong>Tip-aware accrual</strong><span>LYMX awards on subtotal, NOT tip</span></div>
+      <span class="direction">→</span>
+      <span class="freq realtime">Real-time</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">🎁</div>
+      <div class="body"><strong>Apply LYMX as payment line</strong><span>Shows on guest receipt</span></div>
+      <span class="direction">←</span>
+      <span class="freq realtime">Real-time</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">🏠</div>
+      <div class="body"><strong>Multi-location support</strong><span>One Toast account, multiple locations</span></div>
+      <span class="direction">⇄</span>
+      <span class="freq">Hourly</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">↩️</div>
+      <div class="body"><strong>Refunds &amp; voids</strong><span>Auto-reverses LYMX issuance</span></div>
+      <span class="direction">→</span>
+      <span class="freq realtime">Real-time</span>
+    </div>
+  </div>
+</div>
+
+<!-- RESTAURANT SPECIAL -->
+<div class="restaurant-special">
+  <h3>Why Toast users get features Square users don't</h3>
+  <p>Toast is purpose-built for restaurants. So is our integration. Beyond the basics, here's what's restaurant-specific:</p>
+  <div class="feat-grid">
+    <div class="feat">
+      <div class="ic">🍷</div>
+      <div><strong>Course-by-course awarding</strong><span>If a guest orders apps + entrees + dessert separately, LYMX is awarded on each course as it lands. No "wait for the close" delay.</span></div>
+    </div>
+    <div class="feat">
+      <div class="ic">👥</div>
+      <div><strong>Multi-guest split checks</strong><span>If 4 guests split a check, each guest's share earns LYMX into their own wallet (if they're LYMX members). Splits clean.</span></div>
+    </div>
+    <div class="feat">
+      <div class="ic">🪑</div>
+      <div><strong>Table-side mobile pay</strong><span>Toast's mobile pay flow shows the LYMX QR option without any extra steps. Guests can apply LYMX from their phone before paying.</span></div>
+    </div>
+    <div class="feat">
+      <div class="ic">📊</div>
+      <div><strong>Server-level reporting</strong><span>See which servers' tables drove the most LYMX engagement. Useful for training and recognition.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<div class="steps" id="how">
+  <h2>How to connect Toast</h2>
+  <p class="sub">Step-by-step setup. <span class="timer">⏱️ Total: ~18 min</span></p>
+
+  <div class="step">
+    <div class="step-n">1</div>
+    <div>
+      <h3>Open Integrations in your LYMX dashboard</h3>
+      <p class="desc">From your <a href="biz-dashboard.html">Business dashboard</a>, click <kbd>Settings</kbd> → <kbd>Integrations</kbd>. Find <strong>Toast</strong> and click <kbd>Connect</kbd>.</p>
+      <span class="est">~30 sec</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">2</div>
+    <div>
+      <h3>Sign in to Toast Web (admin account required)</h3>
+      <p class="desc">Toast OAuth opens. You'll need <strong>Restaurant Admin</strong> permissions to authorize integrations. If you don't have that, ask your operator. Toast's permission scope: read menu, read transactions, read locations.</p>
+      <span class="est">~3 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">3</div>
+    <div>
+      <h3>Pick locations to sync</h3>
+      <p class="desc">If you operate multiple restaurants, choose which to sync. Most owners select all — but you may want to test on one location first. You can change this later.</p>
+      <span class="est">~1 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">4</div>
+    <div>
+      <h3>Configure ticket-line LYMX behavior</h3>
+      <p class="desc">Two restaurant-specific decisions. <strong>Per-course or per-check awarding?</strong> Per-course is the default (better for higher engagement). <strong>Tip handling?</strong> LYMX awards on pre-tip subtotal by default. You can adjust either.</p>
+      <span class="est">~3 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">5</div>
+    <div>
+      <h3>Map menu categories to LYMX multipliers</h3>
+      <p class="desc">Toast menus often have detailed category structures. Walk through and confirm or set the multiplier per category (default 1×). For higher-margin items (cocktails, desserts), boost to 2× to drive attach.</p>
+      <span class="est">~6 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">6</div>
+    <div>
+      <h3>Test with a $1 ticket</h3>
+      <p class="desc">Ring up a test guest check. Confirm the LYMX issuance flows through within 30 sec. Refund the test ticket — confirm the LYMX issuance reverses automatically.</p>
+      <span class="est">~2 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">7</div>
+    <div>
+      <h3>Train your servers (5-min video)</h3>
+      <p class="desc">Servers' new flow: ask guests if they have LYMX → if yes, prompt them at the table-side mobile pay screen. Guests apply directly from their phone. Watch the <a href="onboarding-video.html">server training video</a>.</p>
+      <span class="est">~5 min</span>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq">
+  <h2>Frequently asked questions</h2>
+
+  <details>
+    <summary>Does this work with Toast Pay (table-side mobile pay)?</summary>
+    <div class="faq-body"><p>Yes. The LYMX option appears in the Toast Pay flow without server intervention. Guests can scan their LYMX QR or apply LYMX from their phone before paying.</p></div>
+  </details>
+
+  <details>
+    <summary>Does it work with Toast for online ordering?</summary>
+    <div class="faq-body"><p>Yes. Online orders sync the same way as in-house. Guests enter their LYMX wallet phone number at checkout. We tested this extensively with Oakline Kitchen.</p></div>
+  </details>
+
+  <details>
+    <summary>What about delivery (DoorDash, UberEats integrations through Toast)?</summary>
+    <div class="faq-body"><p>Third-party delivery transactions don't sync to LYMX by default — they're considered third-party orders. If a guest orders through DoorDash, LYMX isn't awarded. Only direct in-house and Toast online orders earn LYMX.</p></div>
+  </details>
+
+  <details>
+    <summary>How does it handle tips?</summary>
+    <div class="faq-body"><p>By default, LYMX is awarded on the pre-tip subtotal. The reasoning: tips go to your servers, not the restaurant — so LYMX awarded on tips would inflate the restaurant's LYMX cost without being a true sale. You can adjust this in Settings if you prefer post-tip.</p></div>
+  </details>
+
+  <details>
+    <summary>Multi-location: does each restaurant get separate LYMX accounting?</summary>
+    <div class="faq-body"><p>Yes. Each location is its own LYMX entity for billing &amp; settlement, but shares menu data + branding from the parent. Reports can be viewed per-location or rolled up.</p></div>
+  </details>
+
+  <details>
+    <summary>Does this affect my Toast subscription tier?</summary>
+    <div class="faq-body"><p>No. The LYMX integration uses Toast's API, which is included in all paid Toast plans. No tier upgrade needed.</p></div>
+  </details>
+</div>
+
+<div class="cta">
+  <h2>Ready to connect?</h2>
+  <p>If you're a Toast user already on LYMX, head to your dashboard and connect in under 20 minutes. If you're not on LYMX yet, sign up first.</p>
+  <a href="business.html">Get started →</a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Toast integration · <a href="biz-integration-square.html">Square</a> · <a href="integrations.html">All integrations</a> · <a href="api.html">API docs</a>
+</div>
+
+</body>
+</html>

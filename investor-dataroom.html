@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX investor data room — pitch, strategy, live prototype, legal structure, financial model. For VC and investor due diligence." />
+<title>Investor data room · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta name="robots" content="noindex,nofollow" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1080px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  /* Top */
+  header.top{background:#fff;border-bottom:1px solid var(--line);padding:18px 0}
+  .top-inner{display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--ink)}
+  .stamp{display:inline-block;background:rgba(208,32,84,.08);color:#a01644;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:99px}
+  .top-cta a{font-size:13px;color:var(--accent-2);font-weight:700}
+
+  /* Hero */
+  .hero{padding:48px 0 32px;background:#fff;border-bottom:1px solid var(--line)}
+  .hero h1{margin:0;font-size:38px;font-weight:800;letter-spacing:-.015em}
+  .hero .lede{font-size:16px;color:var(--muted);max-width:680px;margin:12px 0 0;line-height:1.6}
+  .hero .meta{margin-top:18px;display:flex;gap:24px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+  .hero .meta strong{color:var(--ink-2);font-weight:800}
+
+  /* Section */
+  .page{padding:36px 0 60px}
+  .section{margin-bottom:36px}
+  .sec-h{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+  .sec-h h2{margin:0;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .sec-h .pill{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;padding:3px 10px;border-radius:99px}
+  .sec-h .pill.open{background:rgba(19,162,107,.14);color:var(--ok)}
+  .sec-h .pill.gated{background:rgba(240,160,32,.16);color:#a06a0c}
+  .sec-h .desc{font-size:13px;color:var(--muted)}
+
+  .docs{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:780px){.docs{grid-template-columns:1fr}}
+  .doc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 20px;display:block;transition:.15s;color:var(--ink)}
+  .doc:hover{border-color:var(--ink);transform:translateY(-1px);box-shadow:var(--shadow)}
+  .doc.gated{border-style:dashed;background:#fff7e6}
+  .doc .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+  .doc .nm{font-weight:800;font-size:15px}
+  .doc .fmt{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg-soft);padding:2px 7px;border-radius:5px}
+  .doc.gated .fmt{background:#f0d289;color:#5a4308}
+  .doc .desc{font-size:12.5px;color:var(--muted);line-height:1.55;margin-bottom:8px}
+  .doc .footer{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--accent-2);font-weight:700}
+  .doc.gated .footer{color:#86670c}
+  .doc .arrow{font-size:14px}
+
+  /* CTA card */
+  .cta-card{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:16px;padding:26px 28px;margin-bottom:30px;display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:center;position:relative;overflow:hidden}
+  @media(max-width:780px){.cta-card{grid-template-columns:1fr}}
+  .cta-card::after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);right:-100px;top:-100px;pointer-events:none}
+  .cta-card .lab{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#9aa3b0;font-weight:800;margin-bottom:8px;position:relative}
+  .cta-card h3{margin:0 0 6px;font-size:20px;font-weight:800;color:#fff;position:relative}
+  .cta-card p{margin:0;font-size:14px;color:#c6ccd4;line-height:1.6;position:relative}
+  .cta-card .btn{background:#f5d172;color:var(--ink);padding:13px 22px;border-radius:11px;font-weight:800;font-size:14px;border:0;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;position:relative}
+  .cta-card .btn:hover{background:#fff}
+
+  /* Status box */
+  .status-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 24px;margin-bottom:30px}
+  .status-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .status-row:last-child{border-bottom:0}
+  .status-row .l{color:var(--muted)}
+  .status-row .v{font-weight:800}
+  .status-row .v.green{color:var(--ok)}
+  .status-row .v.warn{color:var(--warn)}
+  .status-row .v.muted{color:var(--muted)}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:30px 0;font-size:12.5px;text-align:center}
+  footer a{color:#c6ccd4;margin:0 10px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-inner">
+    <a class="brand" href="index.html">LYMX</a>
+    <span class="stamp">Confidential · Investor data room</span>
+    <div class="top-cta"><a href="mailto:kenny@getlymx.com?subject=LYMX investor data room access">Request full access →</a></div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <h1>Investor data room</h1>
+    <p class="lede">Everything you need to evaluate LYMX, organized by category. Most documents are open for review; the financial model and legal structure inquiry are gated to active conversations — request access from the founder by email.</p>
+    <div class="meta">
+      <div><strong>Stage:</strong> Pre-seed</div>
+      <div><strong>Raising:</strong> $1.5M SAFE</div>
+      <div><strong>Pilot launch:</strong> Q3 2026</div>
+      <div><strong>Founder:</strong> Kenny Lin</div>
+      <div><strong>Last updated:</strong> Apr 28, 2026</div>
+    </div>
+  </div>
+</section>
+
+<main class="page">
+  <div class="wrap">
+
+    <!-- Status -->
+    <div class="status-box">
+      <div class="status-row"><div class="l">Round status</div><div class="v warn">Active · 0 of $1.5M committed</div></div>
+      <div class="status-row"><div class="l">Target close</div><div class="v">End of Q2 2026</div></div>
+      <div class="status-row"><div class="l">Lead investor</div><div class="v muted">Open</div></div>
+      <div class="status-row"><div class="l">Operating launch</div><div class="v">Q3 2026 — Las Vegas, NV</div></div>
+      <div class="status-row"><div class="l">Founding 25 cohort</div><div class="v">5 of 25 in onboarding pipeline</div></div>
+    </div>
+
+    <!-- Pitch -->
+    <div class="section">
+      <div class="sec-h">
+        <h2>Pitch &amp; overview</h2>
+        <span class="pill open">Open</span>
+        <span class="desc">Start here. The story in 5 minutes.</span>
+      </div>
+      <div class="docs">
+        <a class="doc" href="investor.html">
+          <div class="top"><div class="nm">Investor brief</div><div class="fmt">Web</div></div>
+          <div class="desc">9-section one-pager: problem, solution, unit economics, network flywheel, two-sided advantage, market, team, $1.5M ask, use of funds.</div>
+          <div class="footer">Read pitch <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="why-lymx.html">
+          <div class="top"><div class="nm">Why LYMX (vs. existing rewards)</div><div class="fmt">Web</div></div>
+          <div class="desc">Concrete customer-pain stories. 8-row comparison table. Business-side cost comparison ($2,000/mo Yelp+Google+Facebook vs. $320/mo LYMX). Two-sided wins.</div>
+          <div class="footer">View comparison <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="press-kit.html">
+          <div class="top"><div class="nm">Press kit</div><div class="fmt">Web</div></div>
+          <div class="desc">Boilerplate copy (3 lengths), fact sheet, founder bio, brand assets, screenshots. For independent due diligence and reference checks.</div>
+          <div class="footer">Open press kit <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="investor-update.html">
+          <div class="top"><div class="nm">Q1 2026 quarterly update</div><div class="fmt">Web</div></div>
+          <div class="desc">Latest investor update. TL;DR + 4 KPIs + wins + lowlights + 4 specific asks + runway/burn + hiring + Q2 plan. Print-friendly.</div>
+          <div class="footer">Read update <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="about.html">
+          <div class="top"><div class="nm">About / Team page</div><div class="fmt">Web</div></div>
+          <div class="desc">Founder, mission, where we are. Public-facing version.</div>
+          <div class="footer">View about <span class="arrow">→</span></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Live prototype -->
+    <div class="section">
+      <div class="sec-h">
+        <h2>Live prototype walkthrough</h2>
+        <span class="pill open">Open</span>
+        <span class="desc">Click any of these to use the actual product. ~10 min walkthrough.</span>
+      </div>
+      <div class="docs">
+        <a class="doc" href="customer-wallet.html">
+          <div class="top"><div class="nm">Customer wallet</div><div class="fmt">Live page</div></div>
+          <div class="desc">Mobile-first web wallet. Balance, QR-to-pay, recent activity, find Businesses. No native app required.</div>
+          <div class="footer">Open wallet <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="pos.html">
+          <div class="top"><div class="nm">Business POS</div><div class="fmt">Live page</div></div>
+          <div class="desc">Point-of-sale: Issue LYMX (locked rate, with promo multiplier visible) and Accept LYMX (with full buy/sell math preview).</div>
+          <div class="footer">Open POS <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="settlement.html">
+          <div class="top"><div class="nm">Business settlement</div><div class="fmt">Live page</div></div>
+          <div class="desc">Monthly settlement: unit purchases vs. buy-backs, transaction log, QuickBooks CSV export.</div>
+          <div class="footer">Open settlement <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="biz-analytics.html">
+          <div class="top"><div class="nm">Business analytics</div><div class="fmt">Live page</div></div>
+          <div class="desc">Cohort retention, peak-hours heatmap, LYMX vs cash-only LTV, top items, promo ROI. Mock data.</div>
+          <div class="footer">Open analytics <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="rep-dashboard.html">
+          <div class="top"><div class="nm">Partner dashboard</div><div class="fmt">Live page</div></div>
+          <div class="desc">Recruiter view. Tier ladder (Bronze→Platinum), referral tree, leaderboard, Founding 25 program.</div>
+          <div class="footer">Open Partner side <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="commission-backend.html">
+          <div class="top"><div class="nm">Commission engine (admin)</div><div class="fmt">Live page</div></div>
+          <div class="desc">Internal payout engine. By Partner / By Business breakdown. ACH CSV export.</div>
+          <div class="footer">Open admin <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="team.html">
+          <div class="top"><div class="nm">Full prototype index</div><div class="fmt">Web</div></div>
+          <div class="desc">All 50+ pages organized by audience (public marketing, customer, Business, Partner, admin). One link to share with anyone reviewing the product.</div>
+          <div class="footer">Open full index <span class="arrow">→</span></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Strategy & operations -->
+    <div class="section">
+      <div class="sec-h">
+        <h2>Strategy &amp; operations</h2>
+        <span class="pill open">Open</span>
+        <span class="desc">How we plan to run it.</span>
+      </div>
+      <div class="docs">
+        <a class="doc" href="PARTNER-PLAYBOOK.md">
+          <div class="top"><div class="nm">Partner Playbook</div><div class="fmt">Markdown</div></div>
+          <div class="desc">10-section recruiter strategy: compensation structure, tier ladder, territory program, sales kit organization, recognition, career path. The how-we-actually-run-this doc.</div>
+          <div class="footer">Open playbook <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="content-hub.html">
+          <div class="top"><div class="nm">Sales kit / content hub</div><div class="fmt">Web</div></div>
+          <div class="desc">Verbatim Partner pitch scripts, opening hooks (3 customer-pain stories), email templates, SMS templates, FAQ. Field-tested before any field exists.</div>
+          <div class="footer">Open content hub <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="territory-program.html">
+          <div class="top"><div class="nm">Territory program (3-phase)</div><div class="fmt">Web</div></div>
+          <div class="desc">How LYMX expands metro-by-metro. Phase 1 (no formal territories, aggressive recruiting), Phase 2 (City Champion), Phase 3 (Territory Leader with city-wide override).</div>
+          <div class="footer">View territory model <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="projection.html">
+          <div class="top"><div class="nm">Income projection (Partner-side)</div><div class="fmt">Live calculator</div></div>
+          <div class="desc">Interactive sliders for Direct + G1/G2/G3 counts. Live cash + LYMX projection. Helps you stress-test recruiter unit economics.</div>
+          <div class="footer">Try the calculator <span class="arrow">→</span></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Legal positioning -->
+    <div class="section">
+      <div class="sec-h">
+        <h2>Legal &amp; regulatory positioning</h2>
+        <span class="pill open">Open</span>
+        <span class="desc">How we stay outside money-transmitter / securities regulation.</span>
+      </div>
+      <div class="docs">
+        <a class="doc" href="LYMX-Legal-Inquiry.docx">
+          <div class="top"><div class="nm">Legal structure inquiry to counsel</div><div class="fmt">Word DOC</div></div>
+          <div class="desc">9-section attorney inquiry covering: NV money-transmitter (NRS Chapter 671), stored-value (NRS 598B / 120A), escrow / trust law, processing-fee structure, FTC + NV pyramid statutes, tax treatment, platform-issued promo units, customer-facing disclosures. ~115 paragraphs.</div>
+          <div class="footer">⬇ Download .docx</div>
+        </a>
+        <a class="doc" href="disclaimer.html">
+          <div class="top"><div class="nm">LYMX Disclaimer (public)</div><div class="fmt">Web</div></div>
+          <div class="desc">Public-facing disclosure. Plain-English IS / IS NOT (not money, not cash, not crypto, not security). Single source of truth for the regulatory positioning. Linked from every footer on the live site.</div>
+          <div class="footer">View disclaimer <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="terms.html">
+          <div class="top"><div class="nm">Terms of Service (draft)</div><div class="fmt">Web</div></div>
+          <div class="desc">13-section ToS — Customer / Business / Partner role-specific terms, the unit-nature disclosure, NV arbitration clause. Placeholder pending counsel review.</div>
+          <div class="footer">View terms <span class="arrow">→</span></div>
+        </a>
+        <a class="doc" href="privacy.html">
+          <div class="top"><div class="nm">Privacy Policy (draft)</div><div class="fmt">Web</div></div>
+          <div class="desc">11-section privacy policy. Plain-English. Placeholder pending counsel review.</div>
+          <div class="footer">View privacy <span class="arrow">→</span></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- GATED -->
+    <div class="section">
+      <div class="sec-h">
+        <h2>Sensitive materials</h2>
+        <span class="pill gated">Request access</span>
+        <span class="desc">For active investor conversations only.</span>
+      </div>
+
+      <div class="cta-card">
+        <div>
+          <div class="lab">Sensitive · request access</div>
+          <h3>Financial model + cap table + customer pipeline</h3>
+          <p>Detailed 5-year financial model, current cap table, and named pipeline of Las Vegas Businesses in onboarding. Shared after a 30-min intro call and signed NDA.</p>
+        </div>
+        <a class="btn" href="mailto:kenny@getlymx.com?subject=LYMX data room — request sensitive access">Request access via email</a>
+      </div>
+
+      <div class="docs">
+        <div class="doc gated">
+          <div class="top"><div class="nm">5-year financial model</div><div class="fmt">XLSX</div></div>
+          <div class="desc">Per-Business unit economics × growth assumptions × geographic expansion plan. Sensitivity analysis on Partner commission rates and breakage assumptions.</div>
+          <div class="footer">🔒 Gated · email to request</div>
+        </div>
+        <div class="doc gated">
+          <div class="top"><div class="nm">Current cap table</div><div class="fmt">PDF</div></div>
+          <div class="desc">Founder ownership, employee option pool reserve, SAFE structure proposal.</div>
+          <div class="footer">🔒 Gated · email to request</div>
+        </div>
+        <div class="doc gated">
+          <div class="top"><div class="nm">Las Vegas Business pipeline</div><div class="fmt">Sheet</div></div>
+          <div class="desc">Named list of Businesses in early onboarding conversations and stage of each. Anonymized for first review; named version on signed NDA.</div>
+          <div class="footer">🔒 Gated · email to request</div>
+        </div>
+        <div class="doc gated">
+          <div class="top"><div class="nm">Founder references</div><div class="fmt">List</div></div>
+          <div class="desc">Reference contacts who can speak to operating experience. Provided after first call.</div>
+          <div class="footer">🔒 Gated · ask after intro call</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-card" style="margin-top:36px">
+      <div>
+        <div class="lab">Next step</div>
+        <h3>Want a 30-minute walkthrough?</h3>
+        <p>Live demo of the prototype, founder Q&amp;A, and a candid conversation about what would actually make LYMX work in a metro. Pick a time that works for you.</p>
+      </div>
+      <a class="btn" href="mailto:kenny@getlymx.com?subject=LYMX 30-min walkthrough">Schedule a call</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>© <span id="yr"></span> LYMX · Confidential · For investor evaluation only · <a href="mailto:kenny@getlymx.com">kenny@getlymx.com</a></div>
+    <div style="margin-top:8px;font-size:11px;color:#5b6472;max-width:680px;margin-left:auto;margin-right:auto;line-height:1.55">This data room is not an offer to sell securities. Forward-looking projections are estimates based on current assumptions and may differ materially from actual outcomes. LYMX promotional credit units are not securities, not cash, and not stored monetary balances.</div>
+  </div>
+</footer>
+<script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+</body>
+</html>

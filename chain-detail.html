@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Enterprise Case Study: Vegas Wellness Group — LYMX Power</title>
+<meta name="description" content="How a 6-location wellness chain consolidated three loyalty programs into one network and added 14% to monthly revenue.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--err:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1080px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;padding:80px 24px 48px;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 70% 20%,rgba(212,175,55,.18) 0%,transparent 50%);pointer-events:none}
+  .hero-inner{max-width:1080px;margin:0 auto;position:relative}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--gold);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:18px;border:1px solid var(--gold);padding:5px 12px;border-radius:999px}
+  .hero h1{font-size:48px;letter-spacing:-.025em;margin:0 0 16px;font-weight:800;line-height:1.1;max-width:840px}
+  .hero p{color:#b8c2d6;font-size:18px;max-width:680px}
+  .hero-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:32px}
+  @media (max-width:680px){.hero-meta{grid-template-columns:repeat(2,1fr)}}
+  .hm-item{padding:18px 0;border-top:1px solid #2a3a5a}
+  .hm-item .l{font-size:11px;color:#8a9bb8;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+  .hm-item .v{font-size:16px;color:#fff;margin-top:4px;font-weight:600}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:64px 24px;font-size:16px}
+  h2{font-size:30px;letter-spacing:-.025em;margin:48px 0 14px}
+  h3{font-size:20px;margin:32px 0 10px}
+  p{margin:0 0 16px}
+  .lead-p{font-size:18px;color:#1f2530;margin-bottom:24px}
+
+  .pull{margin:40px 0;padding:28px 32px;background:#fffbe6;border-left:5px solid var(--gold);border-radius:0 12px 12px 0;font-size:20px;font-weight:600;line-height:1.4;color:#3a2f0a}
+  .pull cite{display:block;font-size:13px;color:#8b6f1f;margin-top:14px;font-style:normal;font-weight:600}
+
+  .stats-block{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:32px;margin:40px 0}
+  .stats-block h3{margin:0 0 24px;font-size:18px;letter-spacing:.04em;text-transform:uppercase;color:var(--mute);font-weight:700}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+  @media (max-width:680px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+  .stat-num{font-size:38px;font-weight:800;letter-spacing:-.02em;color:var(--ok);line-height:1}
+  .stat-num.gold{color:var(--gold)}
+  .stat-num.purple{color:var(--purple)}
+  .stat-num.accent{color:var(--accent)}
+  .stat-l{font-size:13px;color:var(--mute);margin-top:6px;line-height:1.3}
+  .stat-cmp{font-size:11px;color:var(--mute);margin-top:4px;font-weight:600}
+
+  .locations{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin:32px 0}
+  .locations h3{margin:0 0 6px;font-size:18px}
+  .locations .sub{color:var(--mute);font-size:13px;margin-bottom:20px}
+  .loc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:680px){.loc-grid{grid-template-columns:1fr}}
+  .loc{padding:14px 16px;background:#fafafa;border:1px solid var(--line);border-radius:10px}
+  .loc h4{margin:0 0 4px;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+  .loc .neighborhood{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  .loc-stats{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:12px}
+  .loc-stats .ms strong{display:block;color:var(--ink);font-weight:700}
+  .loc-stats .ms span{color:var(--mute)}
+
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:32px 0}
+  @media (max-width:680px){.compare{grid-template-columns:1fr}}
+  .col{padding:24px;border-radius:14px}
+  .col.before{background:#fdecea;border:1px solid #fbd5d0}
+  .col.after{background:#e8f6ee;border:1px solid #c2e8d2}
+  .col h4{margin:0 0 14px;font-size:14px;letter-spacing:.04em;text-transform:uppercase;font-weight:700}
+  .col.before h4{color:#a32114}
+  .col.after h4{color:#0a7a4d}
+  .col ul{margin:0;padding-left:20px;font-size:14px}
+  .col li{margin-bottom:8px}
+
+  .quote-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin:32px 0;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+  @media (max-width:680px){.quote-card{grid-template-columns:1fr;text-align:center}}
+  .qc-avatar{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#13a26b,#9adfb6);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff}
+  .quote-card blockquote{margin:0;font-size:18px;font-style:italic;color:#1f2530;line-height:1.5}
+  .quote-card cite{display:block;font-size:13px;color:var(--mute);margin-top:12px;font-style:normal;font-weight:600}
+  .quote-card cite strong{color:var(--ink);font-size:14px}
+
+  .enterprise-perks{background:linear-gradient(135deg,#fef9e7,#fff5c2);border:1px solid var(--gold);border-radius:14px;padding:32px;margin:32px 0}
+  .enterprise-perks h3{margin:0 0 14px;font-size:18px;color:#3a2f0a}
+  .perks-list{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media (max-width:680px){.perks-list{grid-template-columns:1fr}}
+  .perk{padding:14px;background:rgba(255,255,255,.7);border-radius:10px;display:flex;gap:12px}
+  .perk .ic{flex-shrink:0;font-size:22px}
+  .perk strong{display:block;font-size:13px;color:#3a2f0a;margin-bottom:2px}
+  .perk span{font-size:12px;color:#5d4d18}
+
+  .cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:16px;padding:40px;text-align:center;margin:48px 0}
+  .cta h2{margin:0 0 8px;font-size:26px;color:#fff}
+  .cta p{color:#b8c2d6;max-width:540px;margin:0 auto 20px}
+  .cta a{display:inline-block;background:var(--gold);color:#0e1116;padding:12px 24px;border-radius:8px;font-weight:700}
+
+  .footer{text-align:center;padding:60px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="enterprise.html" class="btn">Enterprise tier →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Enterprise case study · Multi-location chain</div>
+    <h1>How Vegas Wellness Group consolidated 3 loyalty programs across 6 locations and added 14% to monthly revenue.</h1>
+    <p>Vegas Wellness Group operates 6 locations across the Las Vegas metro — three Pilates studios, two yoga studios, and one wellness spa. Joining LYMX Enterprise in November 2025 unified their fragmented loyalty stack and turned cross-location visits into a network growth engine.</p>
+
+    <div class="hero-meta">
+      <div class="hm-item"><div class="l">Company</div><div class="v">Vegas Wellness Group</div></div>
+      <div class="hm-item"><div class="l">Locations</div><div class="v">6 studios + spa</div></div>
+      <div class="hm-item"><div class="l">Joined LYMX</div><div class="v">November 2025</div></div>
+      <div class="hm-item"><div class="l">Tier</div><div class="v">Enterprise</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<p class="lead-p">Pilar Mendoza built Vegas Wellness Group over 11 years, starting with a single Pilates studio in 2014 and adding locations gradually. By 2025 she had three Pilates studios (Henderson, Summerlin, Spring Valley), two yoga studios (downtown + Boulder City) and one full-service wellness spa. Each had grown organically — and each had picked up its own loyalty system along the way.</p>
+
+<h2>Three loyalty systems, one customer base</h2>
+
+<div class="compare">
+  <div class="col before">
+    <h4>The fragmented stack</h4>
+    <ul>
+      <li>Pilates studios: <strong>Mindbody Loyalty</strong> ($89/mo per location × 3 = $267)</li>
+      <li>Yoga studios: <strong>Glofox Loyalty</strong> ($65/mo × 2 = $130)</li>
+      <li>Spa: <strong>Mangomint Rewards</strong> ($120/mo)</li>
+      <li>Total monthly loyalty cost: <strong>$517</strong></li>
+      <li>Customers had 3 different point balances they couldn't combine</li>
+    </ul>
+  </div>
+  <div class="col before">
+    <h4>The customer experience problem</h4>
+    <ul>
+      <li>A customer who took Pilates AND yoga had two separate loyalty accounts</li>
+      <li>Spa visits earned points unredeemable at any studio</li>
+      <li>Cross-location booking referrals were invisible — no attribution</li>
+      <li>~22% of Pilar's customers used multiple locations, but the loyalty stack treated them as 6 different customers</li>
+    </ul>
+  </div>
+</div>
+
+<div class="pull">
+  "I had been talking to Mindbody for two years about adding cross-program point transfers. They had no plans to. The one thing all three of my systems had in common: each of them assumed they were the only loyalty program a customer needed. They weren't."
+  <cite>Pilar Mendoza, CEO &amp; Founder</cite>
+</div>
+
+<h2>Why LYMX Enterprise was the right fit</h2>
+
+<p>Pilar joined the LYMX Enterprise tier in November 2025 — before public launch. The Enterprise tier offers consolidated billing across multiple locations, a single LYMX program shared across all locations, custom reporting per location AND across the chain, and dedicated account management.</p>
+
+<blockquote class="pull">
+  "I'd been waiting for someone to build a loyalty network that worked the way real customers behave — across multiple Businesses, with one balance. LYMX was the first one that didn't try to lock my customers into a single brand experience. It treated them like the multi-Business customers they actually are."
+  <cite>Pilar Mendoza, CEO &amp; Founder</cite>
+</blockquote>
+
+<h2>The 6 locations</h2>
+
+<div class="locations">
+  <h3>Vegas Wellness Group locations</h3>
+  <p class="sub">All on a single LYMX program. Customers earn at any location, redeem at any location.</p>
+  <div class="loc-grid">
+    <div class="loc">
+      <h4>Pilates Henderson <span class="neighborhood">EST. 2014</span></h4>
+      <div class="loc-stats"><div class="ms"><strong>1,840</strong><span>customers</span></div><div class="ms"><strong>$48k</strong><span>mo revenue</span></div></div>
+    </div>
+    <div class="loc">
+      <h4>Pilates Summerlin <span class="neighborhood">EST. 2017</span></h4>
+      <div class="loc-stats"><div class="ms"><strong>1,520</strong><span>customers</span></div><div class="ms"><strong>$42k</strong><span>mo revenue</span></div></div>
+    </div>
+    <div class="loc">
+      <h4>Pilates Spring Valley <span class="neighborhood">EST. 2019</span></h4>
+      <div class="loc-stats"><div class="ms"><strong>1,180</strong><span>customers</span></div><div class="ms"><strong>$33k</strong><span>mo revenue</span></div></div>
+    </div>
+    <div class="loc">
+      <h4>Yoga Downtown <span class="neighborhood">EST. 2020</span></h4>
+      <div class="loc-stats"><div class="ms"><strong>980</strong><span>customers</span></div><div class="ms"><strong>$28k</strong><span>mo revenue</span></div></div>
+    </div>
+    <div class="loc">
+      <h4>Yoga Boulder City <span class="neighborhood">EST. 2022</span></h4>
+      <div class="loc-stats"><div class="ms"><strong>620</strong><span>customers</span></div><div class="ms"><strong>$18k</strong><span>mo revenue</span></div></div>
+    </div>
+    <div class="loc">
+      <h4>The Spa <span class="neighborhood">EST. 2023</span></h4>
+      <div class="loc-stats"><div class="ms"><strong>540</strong><span>customers</span></div><div class="ms"><strong>$36k</strong><span>mo revenue</span></div></div>
+    </div>
+  </div>
+</div>
+
+<h2>The Enterprise perks Pilar uses</h2>
+
+<div class="enterprise-perks">
+  <h3>What Enterprise tier delivers (vs standard)</h3>
+  <div class="perks-list">
+    <div class="perk">
+      <div class="ic">📊</div>
+      <div><strong>Cross-location reporting</strong><span>See LYMX activity per location AND rolled up. Drill into specific cohorts.</span></div>
+    </div>
+    <div class="perk">
+      <div class="ic">🔄</div>
+      <div><strong>Cross-location promotions</strong><span>Run "2× LYMX at any location" promos. Customers redeem network-wide.</span></div>
+    </div>
+    <div class="perk">
+      <div class="ic">💰</div>
+      <div><strong>Consolidated settlement</strong><span>One monthly settlement across all 6 locations, simpler bookkeeping.</span></div>
+    </div>
+    <div class="perk">
+      <div class="ic">👥</div>
+      <div><strong>Unified customer view</strong><span>One Pilar customer = one LYMX customer, even across 6 locations + the public network.</span></div>
+    </div>
+    <div class="perk">
+      <div class="ic">🎓</div>
+      <div><strong>Dedicated CSM</strong><span>One point of contact at LYMX HQ. Quarterly reviews. Roadmap input.</span></div>
+    </div>
+    <div class="perk">
+      <div class="ic">🔌</div>
+      <div><strong>API integrations</strong><span>Direct integrations with Mindbody (Pilates) + Glofox (yoga) + Mangomint (spa). All sync.</span></div>
+    </div>
+  </div>
+</div>
+
+<h2>The results, 6 months in</h2>
+
+<div class="stats-block">
+  <h3>By the numbers</h3>
+  <div class="stats-grid">
+    <div>
+      <div class="stat-num">+14%</div>
+      <div class="stat-l">Monthly revenue (chain-wide)</div>
+      <div class="stat-cmp">$205k → $234k/mo</div>
+    </div>
+    <div>
+      <div class="stat-num gold">−$367/mo</div>
+      <div class="stat-l">Loyalty stack savings</div>
+      <div class="stat-cmp">$517 old vs $150 LYMX Enterprise</div>
+    </div>
+    <div>
+      <div class="stat-num purple">+38%</div>
+      <div class="stat-l">Cross-location visits</div>
+      <div class="stat-cmp">Customer trying a new location</div>
+    </div>
+    <div>
+      <div class="stat-num accent">+22%</div>
+      <div class="stat-l">Spa attach from studios</div>
+      <div class="stat-cmp">Studio customers booking spa</div>
+    </div>
+  </div>
+</div>
+
+<div class="quote-card">
+  <div class="qc-avatar">PM</div>
+  <blockquote>
+    "The unexpected upside was cross-Business referrals. Customers who earned LYMX at the Pilates studio kept coming up at the Spa redeeming. We hadn't actively marketed across locations — we'd built each as separate brands. LYMX broke down those silos for our customers in a way I couldn't have done myself."
+    <cite><strong>Pilar Mendoza</strong> · CEO &amp; Founder, Vegas Wellness Group</cite>
+  </blockquote>
+</div>
+
+<h2>What's next for Vegas Wellness Group</h2>
+
+<p>Pilar is now adding a 7th location — a Pilates studio in North Las Vegas opening Q3 2026 — and plans to add it directly to the LYMX Enterprise program from day 1. She's also exploring a deeper partnership with LYMX HQ for the Phoenix expansion: when LYMX goes live in Phoenix in Q4 2026, Vegas Wellness Group is considering opening a Phoenix Pilates studio as a co-launch Business.</p>
+
+<p>Vegas Wellness Group ranked #1 in <a href="benchmarks.html">benchmark performance</a> for fitness/services category in the most recent network refresh.</p>
+
+<div class="cta">
+  <h2>Are you a multi-location operator?</h2>
+  <p>The LYMX Enterprise tier is designed for chains with 5+ locations. Custom pricing, dedicated CSM, cross-location reporting, API integrations, and unified billing.</p>
+  <a href="enterprise.html">Explore Enterprise →</a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Enterprise case study · <a href="enterprise.html">Enterprise tier</a> · <a href="case-study-cafe.html">Brew &amp; Bean</a> · <a href="case-study-restaurant.html">Oakline Kitchen</a> · <a href="case-study-retail.html">The Quiet Library</a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>What is LYMX? — LYMX Power</title>
+<meta name="description" content="A simple explanation of LYMX in plain English. Earn loyalty credit at one shop, spend it at another. Free for customers.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.7}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:880px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{padding:80px 24px 48px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#eef3ff 0%,#fafafa 100%);text-align:center}
+  .hero-inner{max-width:680px;margin:0 auto}
+  .hero .lymx-mark{font-size:80px;font-weight:800;letter-spacing:-.04em;color:var(--ink);line-height:1;margin-bottom:14px}
+  .hero .lymx-mark span{color:var(--gold)}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 12px;font-weight:800}
+  .hero p{color:var(--mute);font-size:19px}
+
+  .wrap{max-width:680px;margin:0 auto;padding:48px 24px;font-size:17px}
+
+  .section{margin-bottom:48px}
+  .section h2{font-size:32px;letter-spacing:-.025em;margin:0 0 18px;font-weight:800}
+  .section p{margin:0 0 18px}
+
+  /* Big simple example */
+  .example{background:var(--card);border:2px solid var(--gold);border-radius:18px;padding:36px;margin:24px 0;text-align:center}
+  .example .step{display:flex;align-items:center;gap:18px;justify-content:center;font-size:18px;margin:14px 0;flex-wrap:wrap}
+  .example .step .ic{font-size:36px;flex-shrink:0}
+  .example .step .body{text-align:left;max-width:320px}
+  .example .step .body strong{display:block;font-size:17px;margin-bottom:2px}
+  .example .step .body span{font-size:14px;color:var(--mute)}
+  .example .arrow{font-size:28px;color:var(--mute);margin:0 8px}
+
+  /* Compare table */
+  .compare{margin:24px 0;font-size:15px}
+  .compare-row{display:grid;grid-template-columns:auto 1fr 1fr;gap:18px;padding:14px 0;border-top:1px solid var(--line);align-items:start}
+  .compare-row:first-of-type{border-top:0;padding-top:0}
+  .compare-row .what{font-weight:700;font-size:14px}
+  .compare-row .yes{font-size:13.5px;color:var(--ok);font-weight:600;display:flex;align-items:center;gap:6px}
+  .compare-row .yes::before{content:"✓";font-size:18px}
+  .compare-row .no{font-size:13.5px;color:var(--mute);display:flex;align-items:center;gap:6px}
+  .compare-row .no::before{content:"✗";color:var(--mute);font-size:14px}
+
+  /* Visual grid */
+  .pill-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:24px 0}
+  @media (max-width:600px){.pill-grid{grid-template-columns:1fr}}
+  .pill-card{padding:20px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+  .pill-card .ic{font-size:32px;margin-bottom:10px}
+  .pill-card h3{margin:0 0 6px;font-size:16px}
+  .pill-card p{margin:0;font-size:13.5px;color:var(--mute);line-height:1.5}
+
+  /* Big number */
+  .stat-block{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;text-align:center;margin:24px 0}
+  .stat-block .n{font-size:64px;font-weight:800;color:var(--gold);letter-spacing:-.03em;line-height:1}
+  .stat-block .l{font-size:14px;color:var(--mute);margin-top:8px}
+  .stat-block p{margin:18px 0 0;font-size:14.5px;color:#1f2530}
+
+  /* Quote */
+  .pull-quote{margin:32px 0;padding:24px 32px;background:#f7faff;border-left:3px solid var(--accent);border-radius:0 12px 12px 0;font-size:18px;font-style:italic;color:#1f2530;line-height:1.5}
+  .pull-quote cite{display:block;margin-top:12px;font-size:13px;color:var(--mute);font-style:normal;font-weight:600}
+
+  /* CTA */
+  .cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:16px;padding:40px;text-align:center;margin-top:48px}
+  .cta h2{margin:0 0 8px;font-size:26px;color:#fff}
+  .cta p{color:#b8c2d6;max-width:520px;margin:0 auto 20px;font-size:15px}
+  .cta a{display:inline-block;background:var(--gold);color:#0e1116;padding:14px 28px;border-radius:8px;font-weight:700;font-size:15px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="customer-signup.html" class="btn">Sign up free →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="lymx-mark">LYMX <span>★</span></div>
+    <h1>What is LYMX, exactly?</h1>
+    <p>A simple explanation, in plain English. No jargon. No marketing fluff.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- The simplest answer -->
+<div class="section">
+  <h2>The shortest answer.</h2>
+  <p>LYMX is a loyalty credit you earn at one local Business and can spend at any other LYMX Business in your city.</p>
+  <p>Think: punch card, but the punch works at every coffee shop, restaurant, gym, and bookstore in town. Not just one.</p>
+</div>
+
+<!-- Real example -->
+<div class="section">
+  <h2>An actual example.</h2>
+  <p>Imagine your morning. You stop at a coffee shop. You buy a $4 latte. You earn 20 LYMX. (5 LYMX per dollar.)</p>
+
+  <div class="example">
+    <div class="step">
+      <span class="ic">☕</span>
+      <div class="body">
+        <strong>Spend $4 on coffee</strong>
+        <span>At Brew &amp; Bean, your local café</span>
+      </div>
+      <span class="arrow">→</span>
+      <span class="ic">⭐</span>
+      <div class="body">
+        <strong>Earn 20 LYMX</strong>
+        <span>= 20¢ of credit, in your wallet</span>
+      </div>
+    </div>
+  </div>
+
+  <p>Later that week, you walk into the bookstore down the street. You see a paperback you want — $14. You show your LYMX QR. They subtract 20 LYMX from your balance. You pay $13.80.</p>
+
+  <div class="example">
+    <div class="step">
+      <span class="ic">📚</span>
+      <div class="body">
+        <strong>Buy a $14 book</strong>
+        <span>At The Quiet Library</span>
+      </div>
+      <span class="arrow">→</span>
+      <span class="ic">💰</span>
+      <div class="body">
+        <strong>Pay $13.80</strong>
+        <span>20 LYMX = 20¢ off</span>
+      </div>
+    </div>
+  </div>
+
+  <p>That's LYMX. The credit you earned at the coffee shop just bought you a 20¢ discount at the bookstore. Two completely independent Businesses, sharing one loyalty currency.</p>
+</div>
+
+<!-- Big number -->
+<div class="stat-block">
+  <div class="n">1 LYMX</div>
+  <div class="l">= $0.01 of redemption value</div>
+  <p>Forever. Always. At every LYMX Business. The redemption rate doesn't float, doesn't expire, doesn't get watered down.</p>
+</div>
+
+<!-- Why it matters -->
+<div class="section">
+  <h2>Why does this matter?</h2>
+  <p>For decades, every Business has tried to lock you into <em>their</em> loyalty program. Stamp cards. Apps. Points that only work at Starbucks. Or only at Sephora. Or only at one airline.</p>
+
+  <p>The result is everyone's wallet has 50 forgotten loyalty programs and one or two they actually use. The system was never designed for the customer.</p>
+
+  <p>LYMX flips this. Local Businesses pool their loyalty into a shared currency. The customer benefits because the credit becomes <em>useful</em> — you can actually spend it. The Businesses benefit because the network effect drives traffic between them.</p>
+</div>
+
+<!-- Comparison -->
+<div class="section">
+  <h2>How LYMX compares to other things you might know.</h2>
+  <div class="compare">
+    <div class="compare-row">
+      <div class="what">A stamp card</div>
+      <div class="yes">Free for customer</div>
+      <div class="no">Only works at one shop</div>
+    </div>
+    <div class="compare-row">
+      <div class="what">Starbucks Rewards</div>
+      <div class="yes">Free for customer</div>
+      <div class="no">Only works at Starbucks</div>
+    </div>
+    <div class="compare-row">
+      <div class="what">Airline miles</div>
+      <div class="yes">Useful</div>
+      <div class="no">Restrictions, blackouts, expiration</div>
+    </div>
+    <div class="compare-row">
+      <div class="what">Cryptocurrency</div>
+      <div class="yes">Universal</div>
+      <div class="no">Volatile · few merchants accept</div>
+    </div>
+    <div class="compare-row">
+      <div class="what"><strong>LYMX</strong></div>
+      <div class="yes">Free, useful, universal across local network</div>
+      <div class="yes">Fixed redemption value, no expiration</div>
+    </div>
+  </div>
+</div>
+
+<!-- Visual grid -->
+<div class="section">
+  <h2>4 things people usually want to know.</h2>
+  <div class="pill-grid">
+    <div class="pill-card">
+      <div class="ic">💰</div>
+      <h3>Is it free?</h3>
+      <p>Yes, completely free for customers. We never charge fees, never sell your data. Businesses pay to be on the network — that's how we fund operations.</p>
+    </div>
+    <div class="pill-card">
+      <div class="ic">📱</div>
+      <h3>Do I need an app?</h3>
+      <p>No. The wallet runs in your phone's browser. You can save it to your home screen for one-tap access — looks like an app, but no install.</p>
+    </div>
+    <div class="pill-card">
+      <div class="ic">🌍</div>
+      <h3>Where does it work?</h3>
+      <p>Currently Las Vegas (218 Businesses), with Phoenix and Reno launching late 2026. <a href="city-waitlist.html">Vote for your city</a> if you're elsewhere.</p>
+    </div>
+    <div class="pill-card">
+      <div class="ic">⏱️</div>
+      <h3>Does it expire?</h3>
+      <p>No. As long as you stay active (any LYMX activity within 24 months), your balance stays put. We've never deleted anyone's LYMX.</p>
+    </div>
+  </div>
+</div>
+
+<!-- The deeper why -->
+<div class="section">
+  <h2>The deeper "why."</h2>
+  <p>Independent local Businesses face a hard math problem. They can't compete with chains on advertising spend. They can't match the data sophistication of a Starbucks or a Sephora. So they lose customers in slow, hard-to-attribute ways.</p>
+
+  <p>LYMX tries to fix this by treating local Businesses as a network instead of competitors. When the bookstore down the street has a customer base, the coffee shop next door benefits. And vice versa. Every Business adds value to every other Business on the network.</p>
+
+  <p>It's a small idea but in practice it changes how local Businesses think about each other — from competitors to allies.</p>
+
+  <div class="pull-quote">
+    "I came in skeptical. The math told me it would work, but the math always does. What changed my mind was watching customers redeem points they earned at Brew &amp; Bean to buy books at my store. They were customers I never would have had."
+    <cite>— Alma R., owner of The Quiet Library</cite>
+  </div>
+</div>
+
+<!-- Read more -->
+<div class="section">
+  <h2>Want to go deeper?</h2>
+  <p>If this rings true for you, here's where to go next:</p>
+  <ul style="padding-left:20px">
+    <li><a href="customer-signup.html">Sign up for a wallet (free, 30 sec)</a></li>
+    <li><a href="browse.html">See which Businesses are on the network</a></li>
+    <li><a href="customer-faq.html">Read more questions and answers</a></li>
+    <li><a href="why-lymx.html">Read why LYMX exists (the longer version)</a></li>
+    <li><a href="founder-blog.html">Read the founder's blog</a> — what we've learned building it</li>
+  </ul>
+</div>
+
+<!-- CTA -->
+<div class="cta">
+  <h2>Try it free.</h2>
+  <p>Free wallet. No app. No commitment. You'll know in 30 seconds whether it's something you'll use.</p>
+  <a href="customer-signup.html">Sign up for free →</a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · A simple introduction · <a href="customer-signup.html">Sign up</a> · <a href="customer-faq.html">FAQ</a> · <a href="why-lymx.html">Why LYMX</a>
+</div>
+
+</body>
+</html>

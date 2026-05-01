@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Security &amp; Trust — how we protect customer and Business data. Encryption, sub-processors, incident response, certifications target." />
+<title>Security &amp; Trust · LYMX</title>
+<meta property="og:title" content="LYMX Security &amp; Trust" />
+<meta property="og:description" content="How LYMX protects your data — encryption, sub-processors, incident response, certifications target." />
+<meta property="og:image" content="og-image.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px}
+  .brand .dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:24px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .hero{padding:60px 0 48px;background:linear-gradient(180deg,var(--bg-soft),#fff);border-bottom:1px solid var(--line);text-align:center}
+  .hero .pre{display:inline-block;background:rgba(19,162,107,.14);color:#0d7d51;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .hero h1{margin:0 0 12px;font-size:42px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .hero p.lede{margin:0 auto;font-size:17px;color:var(--ink-2);max-width:640px;line-height:1.55}
+  .hero-actions{margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .btn{padding:11px 18px;background:var(--ink);color:#fff;border-radius:10px;font-weight:800;font-size:14px;text-decoration:none;display:inline-block;cursor:pointer;border:0}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn:hover{opacity:.9}
+
+  /* Pillars */
+  .pillars{padding:48px 0;background:var(--bg-soft)}
+  .pillars h2{margin:0 0 24px;font-size:28px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .pillar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:780px){.pillar-grid{grid-template-columns:1fr}}
+  .pillar{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px}
+  .pillar .ic{width:48px;height:48px;border-radius:11px;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+  .pillar .ic.green{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .pillar .ic.gold{background:linear-gradient(135deg,#d4af37,#a08020)}
+  .pillar h3{margin:0 0 6px;font-size:17px;font-weight:800}
+  .pillar p{margin:0;font-size:14px;color:var(--muted);line-height:1.55}
+
+  /* Sections */
+  section.body-sec{padding:48px 0;border-bottom:1px solid var(--line)}
+  section.body-sec:last-of-type{border-bottom:0}
+  .sec-grid{display:grid;grid-template-columns:280px 1fr;gap:40px;align-items:start}
+  @media(max-width:880px){.sec-grid{grid-template-columns:1fr}}
+  .sec-side h2{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .sec-side p{margin:0;font-size:14px;color:var(--muted);line-height:1.55}
+  .sec-body p{margin:0 0 14px;font-size:15.5px;color:var(--ink-2)}
+  .sec-body strong{color:var(--ink);font-weight:800}
+
+  /* Practice rows */
+  .practice{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-top:1px solid var(--line)}
+  .practice:first-of-type{border-top:0;padding-top:0}
+  .practice .ic{width:32px;height:32px;border-radius:8px;background:rgba(19,162,107,.12);color:#0d7d51;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:800}
+  .practice .ic.todo{background:rgba(240,160,32,.16);color:#a06808}
+  .practice .ic.todo::before{content:"○"}
+  .practice .ic.done::before{content:"✓"}
+  .practice h4{margin:0 0 3px;font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .practice h4 .pill{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:5px;background:rgba(19,162,107,.14);color:#0d7d51}
+  .practice h4 .pill.target{background:rgba(240,160,32,.16);color:#a06808}
+  .practice p{margin:0;font-size:14px;color:var(--muted);line-height:1.5}
+
+  /* Sub-processors table */
+  .vendors{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-top:14px}
+  .vendors th, .vendors td{text-align:left;padding:12px 16px;font-size:14px;border-bottom:1px solid var(--line)}
+  .vendors th{background:var(--bg-soft);font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .vendors tr:last-child td{border-bottom:0}
+  .vendors td .name{font-weight:800;color:var(--ink)}
+  .vendors td .meta{font-size:12px;color:var(--muted);margin-top:2px}
+
+  /* Incident timeline */
+  .incidents{margin-top:14px}
+  .inc-row{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+  .inc-row:last-child{border-bottom:0}
+  .inc-date{flex-shrink:0;font-size:12px;font-weight:800;color:var(--muted);min-width:80px;padding-top:2px}
+  .inc-body{flex:1;min-width:0}
+  .inc-body h5{margin:0 0 3px;font-size:14px;font-weight:800}
+  .inc-body p{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
+  .inc-status{padding:3px 9px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0}
+  .inc-status.resolved{background:rgba(19,162,107,.14);color:#0d7d51}
+
+  /* Bug-bounty card */
+  .bounty{background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);padding:28px 32px;margin:0 0 14px}
+  .bounty h3{margin:0 0 8px;color:#f5d172;font-size:18px;font-weight:800}
+  .bounty p{margin:0 0 12px;color:#9aa3b0;font-size:14.5px;line-height:1.55}
+  .bounty p strong{color:#fff;font-weight:800}
+  .bounty .scope{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+  @media(max-width:600px){.bounty .scope{grid-template-columns:1fr}}
+  .bounty .scope .row{padding:10px 12px;background:rgba(255,255,255,.06);border-radius:9px;font-size:13px}
+  .bounty .scope .row .lab{font-size:10.5px;font-weight:800;color:#9aa3b0;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+  .bounty a.cta{display:inline-block;padding:10px 16px;background:#f5d172;color:#0e1116;border-radius:9px;font-weight:800;font-size:13.5px}
+  .bounty a.cta:hover{background:#fff}
+
+  /* FAQ */
+  .faq h3{margin:18px 0 6px;font-size:15.5px;font-weight:800}
+  .faq p{margin:0 0 10px;font-size:14px;color:var(--ink-2);line-height:1.6}
+
+  /* Footer */
+  footer{background:var(--ink);color:#9aa3b0;padding:38px 0 24px;font-size:13px}
+  .foot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-bottom:18px}
+  @media(max-width:780px){.foot-grid{grid-template-columns:repeat(2,1fr)}}
+  .foot-grid h4{color:#fff;font-size:13px;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
+  .foot-grid a{display:block;padding:3px 0;color:#9aa3b0}
+  .foot-grid a:hover{color:#fff}
+  .foot-bot{padding-top:16px;border-top:1px solid rgba(255,255,255,.1);text-align:center;font-size:12.5px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="business.html">For Business</a>
+      <a href="security.html" style="color:var(--accent);font-weight:700">Security</a>
+      <a href="status.html">Status</a>
+      <a href="support.html">Support</a>
+    </nav>
+    <a href="business.html" class="btn">List my Business</a>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="wrap">
+    <span class="pre">🔒 Security &amp; Trust</span>
+    <h1>How we protect your data</h1>
+    <p class="lede">LYMX handles customer wallet balances, Business transaction history, and personal contact info. Here's exactly how that data is stored, who can see it, and what happens if something goes wrong.</p>
+    <div class="hero-actions">
+      <a href="bug-bounty.html" class="btn">Bug bounty program</a>
+      <a href="trust-and-safety.html" class="btn ghost">Trust &amp; safety</a>
+      <a href="privacy.html" class="btn ghost">Privacy policy</a>
+    </div>
+  </div>
+</section>
+
+<!-- 3 pillars -->
+<section class="pillars">
+  <div class="wrap">
+    <h2>Our three security commitments</h2>
+    <div class="pillar-grid">
+      <div class="pillar">
+        <div class="ic">🔐</div>
+        <h3>Data is encrypted everywhere</h3>
+        <p>TLS 1.3 in transit. AES-256 at rest. Wallet balances and transaction logs are end-to-end encrypted in our database.</p>
+      </div>
+      <div class="pillar">
+        <div class="ic green">👥</div>
+        <h3>Least-privilege access</h3>
+        <p>Only authorized engineers can access production. SSH keys, 2FA, role-based limits, and full audit logs on every access.</p>
+      </div>
+      <div class="pillar">
+        <div class="ic gold">🚨</div>
+        <h3>You hear from us first</h3>
+        <p>If anything affects your data, you get notified within 72 hours. No exceptions, no hiding behind PR teams.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Practices -->
+<section class="body-sec">
+  <div class="wrap">
+    <div class="sec-grid">
+      <div class="sec-side">
+        <h2>Security practices</h2>
+        <p>What we have in place today, and what's targeted for the next 12 months.</p>
+      </div>
+      <div class="sec-body">
+        <div class="practice">
+          <div class="ic done"></div>
+          <div>
+            <h4>Encryption in transit (TLS 1.3) <span class="pill">In place</span></h4>
+            <p>Every connection between your phone, the wallet, the POS, and our servers uses TLS 1.3 — no fallback to older protocols.</p>
+          </div>
+        </div>
+        <div class="practice">
+          <div class="ic done"></div>
+          <div>
+            <h4>Encryption at rest (AES-256) <span class="pill">In place</span></h4>
+            <p>Customer PII, wallet balances, transaction history, and Partner records are encrypted at rest in our managed Postgres database.</p>
+          </div>
+        </div>
+        <div class="practice">
+          <div class="ic done"></div>
+          <div>
+            <h4>Multi-factor authentication on all admin accounts <span class="pill">In place</span></h4>
+            <p>Every staff member with prod access uses hardware-backed 2FA. We don't allow SMS-based 2FA for admin roles (vulnerable to SIM-swap).</p>
+          </div>
+        </div>
+        <div class="practice">
+          <div class="ic done"></div>
+          <div>
+            <h4>Audit logs on every prod access <span class="pill">In place</span></h4>
+            <p>Every database query, deploy, and config change against production is logged with the actor, timestamp, and IP. Logs retained 13 months.</p>
+          </div>
+        </div>
+        <div class="practice">
+          <div class="ic done"></div>
+          <div>
+            <h4>Daily encrypted backups <span class="pill">In place</span></h4>
+            <p>Postgres snapshots every 24h, retained 35 days. Weekly snapshots retained 12 months. All backups encrypted with separate keys from prod.</p>
+          </div>
+        </div>
+        <div class="practice">
+          <div class="ic todo"></div>
+          <div>
+            <h4>SOC 2 Type II audit <span class="pill target">In progress · target Q4 2026</span></h4>
+            <p>Engaging an audit partner in Q3. Expected report by year-end. Required by larger Business prospects and most institutional partners.</p>
+          </div>
+        </div>
+        <div class="practice">
+          <div class="ic todo"></div>
+          <div>
+            <h4>Penetration test (annual) <span class="pill target">Target Q3 2026</span></h4>
+            <p>Independent third-party pen test before public launch. We'll publish a summary report (without remediation specifics) here after.</p>
+          </div>
+        </div>
+        <div class="practice">
+          <div class="ic todo"></div>
+          <div>
+            <h4>HIPAA / PCI scope avoidance <span class="pill">By design</span></h4>
+            <p>We never collect health information and never touch raw payment cards (Stripe handles all card data). LYMX is intentionally <em>out</em> of PCI/HIPAA scope.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Sub-processors -->
+<section class="body-sec">
+  <div class="wrap">
+    <div class="sec-grid">
+      <div class="sec-side">
+        <h2>Sub-processors</h2>
+        <p>Third-party services that may process customer or Business data on our behalf. Updated whenever we add or remove a vendor.</p>
+      </div>
+      <div class="sec-body">
+        <table class="vendors">
+          <thead>
+            <tr><th>Vendor</th><th>Purpose</th><th>Region</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><div class="name">Netlify</div><div class="meta">Static site hosting</div></td><td>Web hosting + CDN for getlymx.com</td><td>USA</td></tr>
+            <tr><td><div class="name">Supabase</div><div class="meta">Managed Postgres + auth</div></td><td>Primary database, customer auth, realtime</td><td>USA (US-East-1)</td></tr>
+            <tr><td><div class="name">Stripe</div><div class="meta">Payment processing</div></td><td>Business plan billing, Partner ACH payouts, bulk-order invoicing</td><td>USA</td></tr>
+            <tr><td><div class="name">Twilio</div><div class="meta">SMS</div></td><td>Customer phone OTP, transaction notifications, support SMS</td><td>USA</td></tr>
+            <tr><td><div class="name">SendGrid</div><div class="meta">Transactional email</div></td><td>Receipts, password resets, system notifications</td><td>USA</td></tr>
+            <tr><td><div class="name">Cloudflare</div><div class="meta">DNS + DDoS protection</div></td><td>DNS, edge caching, bot mitigation</td><td>Global</td></tr>
+            <tr><td><div class="name">Sentry</div><div class="meta">Error monitoring</div></td><td>Application error tracking — scrubbed of PII before transmit</td><td>USA</td></tr>
+            <tr><td><div class="name">Plausible</div><div class="meta">Analytics</div></td><td>Cookieless web analytics — no individual tracking</td><td>EU (Germany)</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:12.5px;color:var(--muted);margin-top:10px">Email <a href="mailto:security@getlymx.com" style="color:var(--accent-2);font-weight:700">security@getlymx.com</a> to subscribe to sub-processor change notifications.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Incident response -->
+<section class="body-sec">
+  <div class="wrap">
+    <div class="sec-grid">
+      <div class="sec-side">
+        <h2>Incident response</h2>
+        <p>How we handle security or availability incidents — the playbook, not the marketing.</p>
+      </div>
+      <div class="sec-body">
+        <p>If something goes wrong — a vulnerability, a service outage, a data exposure — we follow this playbook:</p>
+        <ol style="margin:0 0 14px 22px;padding:0;font-size:15px;color:var(--ink-2);line-height:1.7">
+          <li><strong>Within 1 hour:</strong> the on-call engineer is paged and starts triage.</li>
+          <li><strong>Within 4 hours:</strong> the incident is classified (Sev1 / Sev2 / Sev3) and an internal Slack war-room is opened.</li>
+          <li><strong>Within 24 hours:</strong> if customer or Business data is affected, our legal counsel is engaged.</li>
+          <li><strong>Within 72 hours:</strong> if data is affected, we notify every impacted customer and Business directly via the email tied to their account.</li>
+          <li><strong>Within 14 days:</strong> we publish a public post-mortem on the <a href="status.html" style="color:var(--accent-2);font-weight:700">status page</a>: timeline, root cause, what we changed.</li>
+        </ol>
+
+        <h3 style="margin:22px 0 6px;font-size:15.5px;font-weight:800">Recent incidents</h3>
+        <div class="incidents">
+          <div class="inc-row">
+            <div class="inc-date">2026-03-22</div>
+            <div class="inc-body">
+              <h5>Scheduled maintenance window — 22 minutes</h5>
+              <p>POS settlement service migration to v2 schema. Customers and Businesses saw a maintenance page during the window. No data affected.</p>
+            </div>
+            <span class="inc-status resolved">Resolved</span>
+          </div>
+          <div class="inc-row">
+            <div class="inc-date">—</div>
+            <div class="inc-body">
+              <h5>No security or data incidents to date</h5>
+              <p>This list will only grow when something happens. Our Q1 2026 was clean. We'll log every incident here, no exceptions.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Bug bounty / disclosure -->
+<section class="body-sec" id="bounty">
+  <div class="wrap">
+    <div class="bounty">
+      <h3>Found a security issue?</h3>
+      <p>We run a coordinated disclosure program. Report a vulnerability and we'll respond within <strong>1 business day</strong>, fix the issue with you, and credit you publicly (if you want).</p>
+
+      <div class="scope">
+        <div class="row">
+          <div class="lab">In scope</div>
+          getlymx.com · *.getlymx.com · the LYMX Web Wallet · POS &amp; Partner dashboards
+        </div>
+        <div class="row">
+          <div class="lab">Out of scope</div>
+          DoS / volumetric attacks · social engineering · physical attacks · third-party services (report to them)
+        </div>
+        <div class="row">
+          <div class="lab">Reward</div>
+          Critical: $1,500. High: $500. Medium: $200. Low: a thank-you + brand swag.
+        </div>
+        <div class="row">
+          <div class="lab">Safe harbor</div>
+          Good-faith research is welcome. We won't pursue legal action against researchers who follow our policy.
+        </div>
+      </div>
+
+      <a class="cta" href="mailto:security@getlymx.com?subject=%5BVulnerability%5D%20...">📧 security@getlymx.com</a>
+      <span style="font-size:12.5px;color:#9aa3b0;margin-left:12px">PGP key on request</span>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="body-sec">
+  <div class="wrap">
+    <div class="sec-grid">
+      <div class="sec-side">
+        <h2>Frequent questions</h2>
+        <p>From prospect Businesses, customers, and procurement reviewers.</p>
+      </div>
+      <div class="sec-body faq">
+        <h3>Where is data stored?</h3>
+        <p>Primary data lives in Supabase (managed Postgres) in US-East-1. Daily backups encrypted with a separate key. Cloudflare provides edge caching globally. We don't store customer data outside the United States.</p>
+
+        <h3>Do you sell customer data?</h3>
+        <p><strong>No.</strong> We don't sell, rent, or share customer or Business data with marketers, ad networks, data brokers, or AI training services. Read the <a href="privacy.html">privacy policy</a> for the full text.</p>
+
+        <h3>What about the buyback math — is that exposed publicly?</h3>
+        <p>Aggregate platform stats (total LYMX issued, customers, Businesses) are public — see the <a href="coverage-map.html">coverage map</a> and the <a href="changelog.html">changelog</a>. Per-Business or per-customer numbers are private.</p>
+
+        <h3>Can a Business owner see their customers' data?</h3>
+        <p>A Business sees the customers who transacted with <em>them</em> (transaction list, frequency). They don't see customer activity at other Businesses on the network. That's a hard wall.</p>
+
+        <h3>Can I request all my data and delete it?</h3>
+        <p>Yes — both. Use the <a href="customer-settings.html">customer-settings page</a> to download or delete your data. We process deletions within 30 days. Backups are scrubbed within 90.</p>
+
+        <h3>Are you SOC 2 compliant?</h3>
+        <p>Not yet — Type II audit is in progress, targeting Q4 2026. We've already implemented the controls; the audit is the third-party verification step.</p>
+
+        <h3>Can my procurement team get a security questionnaire response?</h3>
+        <p>Yes. Email <a href="mailto:security@getlymx.com">security@getlymx.com</a>. We have a CAIQ-Lite response prepared and a SIG-Lite response in draft.</p>
+
+        <h3>What's your business continuity / disaster recovery target?</h3>
+        <p>RPO (max data loss): 1 hour. RTO (max time to restore): 4 hours. We test quarterly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>Trust</h4>
+        <a href="security.html">Security</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="status.html">Status</a>
+      </div>
+      <div>
+        <h4>Customers</h4>
+        <a href="why-lymx.html">Why LYMX</a>
+        <a href="browse.html">Browse Businesses</a>
+        <a href="customer-settings.html">My data</a>
+        <a href="help-center.html">Help center</a>
+      </div>
+      <div>
+        <h4>Businesses</h4>
+        <a href="business.html">List your Business</a>
+        <a href="business-agreement.html">Business Agreement</a>
+        <a href="api.html">API docs</a>
+      </div>
+      <div>
+        <h4>LYMX</h4>
+        <a href="about.html">About</a>
+        <a href="careers.html">Careers</a>
+        <a href="press.html">Press</a>
+        <a href="mailto:security@getlymx.com">security@getlymx.com</a>
+      </div>
+    </div>
+    <div class="foot-bot">© 2026 LYMX Power · Las Vegas, NV · Last updated April 30, 2026</div>
+  </div>
+</footer>
+</body>
+</html>

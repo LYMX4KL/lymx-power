@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Accessibility Statement — our commitment to WCAG 2.1 AA, supported assistive technology, accommodation contact, and complaint procedure." />
+<title>Accessibility · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.7;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none;font-weight:700}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  /* Skip link */
+  .skip-link{position:absolute;left:-9999px;top:0;background:var(--ink);color:#fff;padding:10px 16px;font-weight:800;z-index:100}
+  .skip-link:focus{left:14px;top:14px;text-decoration:none}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--ink)}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  .nav-links a{color:var(--ink-2);font-weight:600}
+  .nav-links a:hover{color:var(--accent);text-decoration:none}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .head{padding:50px 0 24px;border-bottom:1px solid var(--line)}
+  .head .pre{display:inline-block;background:rgba(10,132,255,.1);color:var(--accent-2);font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .head h1{margin:0 0 8px;font-size:36px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+  .head .meta{color:var(--muted);font-size:14px}
+
+  /* Commitment banner */
+  .commit{background:linear-gradient(180deg,#fff,var(--bg-soft));border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;margin:24px 0 32px;display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+  .commit .ic{width:48px;height:48px;border-radius:11px;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+  .commit .body{flex:1;min-width:240px}
+  .commit h2{margin:0 0 4px;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .commit p{margin:0;font-size:16.5px;color:var(--ink-2);line-height:1.55}
+  .commit p strong{color:var(--ink);font-weight:800}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:240px 1fr;gap:36px;padding:0 0 60px;align-items:start}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}.toc-side{display:none}}
+
+  /* TOC */
+  .toc{position:sticky;top:88px}
+  .toc h4{margin:0 0 8px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .toc ul{list-style:none;margin:0;padding:0;border-left:2px solid var(--line)}
+  .toc li{padding:0}
+  .toc a{display:block;padding:6px 14px;font-size:13px;color:var(--ink-2);border-left:2px solid transparent;margin-left:-2px;font-weight:600;transition:.1s}
+  .toc a:hover{color:var(--accent);text-decoration:none}
+  .toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:700;background:rgba(10,132,255,.04)}
+
+  /* Article */
+  article{max-width:780px}
+  article h2{margin:36px 0 12px;font-size:24px;font-weight:800;letter-spacing:-.01em;scroll-margin-top:90px;color:var(--ink)}
+  article h3{margin:24px 0 8px;font-size:17px;font-weight:800;scroll-margin-top:90px;color:var(--ink)}
+  article p{margin:0 0 14px;font-size:16px;color:var(--ink-2)}
+  article ul, article ol{margin:0 0 14px 22px;padding:0}
+  article li{margin:6px 0;font-size:16px;color:var(--ink-2);line-height:1.6}
+  article strong{color:var(--ink);font-weight:800}
+
+  /* WCAG checklist */
+  .wcag-table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff;margin:14px 0}
+  .wcag-table th, .wcag-table td{padding:12px 16px;text-align:left;font-size:14px;border-bottom:1px solid var(--line)}
+  .wcag-table th{background:var(--bg-soft);font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .wcag-table tr:last-child td{border-bottom:0}
+  .wcag-table .principle{font-weight:800;color:var(--ink)}
+  .wcag-table .level{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:rgba(10,132,255,.1);color:var(--accent-2);padding:2px 7px;border-radius:5px}
+  .wcag-table .pill-ok{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:rgba(19,162,107,.14);color:#0d7d51;padding:2px 9px;border-radius:5px}
+  .wcag-table .pill-progress{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:rgba(240,160,32,.16);color:#a06808;padding:2px 9px;border-radius:5px}
+
+  /* Tools card */
+  .tools{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  @media(max-width:600px){.tools{grid-template-columns:1fr}}
+  .tool{padding:14px 16px;background:var(--bg-soft);border:1px solid var(--line);border-radius:11px}
+  .tool .ic{font-size:22px;margin-bottom:6px}
+  .tool h4{margin:0 0 3px;font-size:14px;font-weight:800}
+  .tool p{margin:0;font-size:13px;color:var(--ink-2);line-height:1.5}
+
+  /* Contact card */
+  .contact-card{background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);padding:24px 28px;margin:18px 0}
+  .contact-card h3{color:#f5d172;margin:0 0 8px;font-size:17px;font-weight:800}
+  .contact-card p{margin:0 0 10px;color:#9aa3b0;font-size:14.5px;line-height:1.55}
+  .contact-card a{color:#f5d172}
+  .contact-card .row{display:grid;grid-template-columns:140px 1fr;gap:8px;font-size:13.5px;color:#cdd2da;padding:6px 0;border-top:1px solid rgba(255,255,255,.1)}
+  .contact-card .row:first-of-type{border-top:0;padding-top:14px;margin-top:8px}
+  .contact-card .row .lab{font-weight:800;color:#f5d172}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:28px 0 22px;font-size:13px}
+  footer a{color:#9aa3b0}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px;color:var(--ink)"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links" aria-label="Footer">
+      <a href="terms.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="accessibility.html">Accessibility</a>
+      <a href="security.html">Security</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap" id="main">
+  <div class="head">
+    <span class="pre">♿ Accessibility</span>
+    <h1>Accessibility Statement</h1>
+    <p class="meta">Effective April 30, 2026 · Last updated April 30, 2026 · Reach us at <a href="mailto:accessibility@getlymx.com">accessibility@getlymx.com</a></p>
+  </div>
+
+  <div class="commit">
+    <div class="ic">♿</div>
+    <div class="body">
+      <h2>Our commitment</h2>
+      <p>LYMX is built so that <strong>everyone</strong> can earn, spend, and manage their LYMX wallet — including people who use screen readers, keyboard-only navigation, voice control, switch devices, magnifiers, or who have cognitive or motor differences. We aim to meet <strong>WCAG 2.1 Level AA</strong> across getlymx.com, the customer wallet, and the Business POS.</p>
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside class="toc-side">
+      <nav class="toc" id="toc" aria-label="Page contents">
+        <h4>On this page</h4>
+        <ul>
+          <li><a href="#standard" class="on">1. Our standard</a></li>
+          <li><a href="#wcag">2. WCAG 2.1 AA progress</a></li>
+          <li><a href="#assistive">3. Supported assistive tech</a></li>
+          <li><a href="#features">4. Built-in features</a></li>
+          <li><a href="#known">5. Known issues</a></li>
+          <li><a href="#accommodate">6. Request an accommodation</a></li>
+          <li><a href="#feedback">7. Report a barrier</a></li>
+          <li><a href="#legal">8. Legal &amp; complaints</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <article>
+      <h2 id="standard">1. Our standard</h2>
+      <p>We measure ourselves against the <strong>Web Content Accessibility Guidelines 2.1, Level AA</strong> — the standard published by the W3C. We don't currently claim a third-party audit certification; we're targeting one in Q4 2026 alongside our SOC 2.</p>
+      <p>Where the WCAG standard is met or exceeded, we say so. Where we're still working, we say so too. We prefer "we're not there yet" to false claims of compliance.</p>
+
+      <h2 id="wcag">2. WCAG 2.1 AA progress</h2>
+      <p>An honest snapshot of where we are by WCAG principle.</p>
+      <table class="wcag-table" aria-label="WCAG 2.1 AA progress by principle">
+        <thead>
+          <tr><th>Principle</th><th>Level</th><th>Status</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="principle">1. Perceivable</span></td><td><span class="level">AA</span></td><td><span class="pill-ok">Met</span></td><td>Color-contrast checks pass everywhere except 2 known buttons (see §5).</td></tr>
+          <tr><td><span class="principle">2. Operable</span></td><td><span class="level">AA</span></td><td><span class="pill-ok">Met</span></td><td>Full keyboard navigation, visible focus states on every interactive element.</td></tr>
+          <tr><td><span class="principle">3. Understandable</span></td><td><span class="level">AA</span></td><td><span class="pill-ok">Met</span></td><td>Plain-English copy, predictable navigation, error identification.</td></tr>
+          <tr><td><span class="principle">4. Robust</span></td><td><span class="level">AA</span></td><td><span class="pill-progress">In progress</span></td><td>Some custom widgets (the Partner-tree SVG, the leaderboard podium) need ARIA polish before claim.</td></tr>
+        </tbody>
+      </table>
+      <p>Independent audit target: <strong>Q4 2026</strong>. We publish the audit summary alongside the SOC 2 report when complete.</p>
+
+      <h2 id="assistive">3. Supported assistive technology</h2>
+      <p>We test LYMX with the following combinations. If you use something else and hit a wall, please <a href="#feedback">let us know</a>.</p>
+      <ul>
+        <li><strong>VoiceOver + Safari</strong> on macOS (latest 2 major versions)</li>
+        <li><strong>VoiceOver + Safari</strong> on iOS (latest 2 major versions) — primary mobile target for the Web Wallet</li>
+        <li><strong>NVDA + Chrome / Firefox</strong> on Windows</li>
+        <li><strong>JAWS + Chrome</strong> on Windows (commercial)</li>
+        <li><strong>TalkBack + Chrome</strong> on Android (latest 2 major versions)</li>
+        <li><strong>Keyboard-only navigation</strong> in any modern browser — full feature parity with mouse users</li>
+        <li><strong>Voice Control</strong> (macOS / iOS) and <strong>Voice Access</strong> (Android) for hands-free operation of the wallet</li>
+      </ul>
+
+      <h2 id="features">4. Accessibility features built into LYMX</h2>
+      <p>What you'll find without any setup or special mode.</p>
+      <div class="tools">
+        <div class="tool">
+          <div class="ic">⌨️</div>
+          <h4>Full keyboard navigation</h4>
+          <p>Every page is fully usable with Tab / Shift+Tab / Enter / Escape. Visible focus rings on all interactive elements.</p>
+        </div>
+        <div class="tool">
+          <div class="ic">🎨</div>
+          <h4>WCAG-AA color contrast</h4>
+          <p>4.5:1 ratio for body text, 3:1 for large text and UI controls. We check before we ship.</p>
+        </div>
+        <div class="tool">
+          <div class="ic">🔍</div>
+          <h4>Browser-zoom-friendly</h4>
+          <p>Layouts reflow gracefully up to 200% zoom without horizontal scrolling.</p>
+        </div>
+        <div class="tool">
+          <div class="ic">🏷️</div>
+          <h4>Screen-reader labels</h4>
+          <p>Every form field, button, and image has a descriptive label. Decorative elements are hidden from screen readers.</p>
+        </div>
+        <div class="tool">
+          <div class="ic">⏸</div>
+          <h4>No auto-playing motion</h4>
+          <p>Animations respect <code>prefers-reduced-motion</code>. The countdown on the launch page is the only continuously updating element, and it's text.</p>
+        </div>
+        <div class="tool">
+          <div class="ic">🌐</div>
+          <h4>Spanish-language version</h4>
+          <p>Full Spanish translation of the homepage at <a href="index-es.html">getlymx.com/es</a>. Wallet translation in progress for Q3.</p>
+        </div>
+      </div>
+
+      <h2 id="known">5. Known accessibility issues</h2>
+      <p>What we've found and not yet fixed. Our policy: report it, fix it, log it here.</p>
+      <ul>
+        <li><strong>Customer-wallet QR-code refresh</strong> — when the QR expires (every 90 seconds), the screen reader doesn't currently announce the change. <em>Fix targeted: May 2026.</em></li>
+        <li><strong>Partner-tree SVG visualization</strong> — the SVG node labels aren't yet exposed to assistive tech. We're adding an alternate "list view" toggle. <em>Fix targeted: May 2026.</em></li>
+        <li><strong>Two button color combinations</strong> — the gold-on-light-yellow CTA on the launch page falls below 3:1 contrast at small sizes. <em>Fix targeted: May 2026.</em></li>
+        <li><strong>POS keyboard order</strong> — the Issue/Redeem tabs don't have an explicit tab order on POS — currently relies on DOM order. <em>Fix targeted: June 2026.</em></li>
+      </ul>
+
+      <h2 id="accommodate">6. Request an accommodation</h2>
+      <p>Some access needs we can't (or don't yet) solve through the product alone. For those, we accommodate one-on-one. Common requests:</p>
+      <ul>
+        <li><strong>Large-print printed receipts</strong> — Businesses that use our thermal-printer template can switch to 80mm + larger font.</li>
+        <li><strong>Phone-based wallet operations</strong> — for people who can't use a smartphone wallet, we can issue an account-linked cardholder ID that works at the counter. Email accessibility@.</li>
+        <li><strong>Alternative formats of policies</strong> — large print, audio, or plain-text versions of Terms / Privacy / Refunds available on request.</li>
+        <li><strong>ASL interpreters at events</strong> — confirmed for the Sept 12 launch event with 7 days' notice. Use the form on the <a href="launch-event.html">launch page</a> or email accessibility@.</li>
+      </ul>
+
+      <h2 id="feedback">7. Report a barrier</h2>
+      <p>The fastest way to make LYMX more accessible is to tell us when something doesn't work. We commit to <strong>respond within 2 business days</strong>.</p>
+      <ul>
+        <li><strong>Email:</strong> <a href="mailto:accessibility@getlymx.com">accessibility@getlymx.com</a></li>
+        <li><strong>Phone:</strong> 702-555-LYMX (5969) — voicemail accepted, including TTY/relay calls</li>
+        <li><strong>Web form:</strong> <a href="support.html">getlymx.com/support</a></li>
+      </ul>
+      <p>Tell us: where you got stuck, what assistive tech you were using, and what would have helped. The more specific, the faster we fix.</p>
+
+      <h2 id="legal">8. Legal &amp; complaint procedure</h2>
+      <p>If you've reported a barrier and feel we haven't responded in good faith, the following formal procedure applies:</p>
+      <ol>
+        <li>Send a written complaint to <a href="mailto:accessibility@getlymx.com">accessibility@getlymx.com</a> with the subject "Formal accessibility complaint." We respond within 10 business days with a written status update and timeline.</li>
+        <li>If unresolved, escalate to Kenny Lin (founder &amp; CEO) at <a href="mailto:kenny@getlymx.com">kenny@getlymx.com</a>.</li>
+        <li>You retain the right to file a complaint with the U.S. Department of Justice (Civil Rights Division) under Title III of the Americans with Disabilities Act, the Nevada Commission on Disability Affairs, or in state or federal court. We do not require pre-arbitration of accessibility claims.</li>
+      </ol>
+
+      <div class="contact-card">
+        <h3>Quick reference — accessibility contacts</h3>
+        <p>One destination for any accessibility question, accommodation, or complaint.</p>
+        <div class="row"><span class="lab">Email</span><span><a href="mailto:accessibility@getlymx.com">accessibility@getlymx.com</a></span></div>
+        <div class="row"><span class="lab">Phone</span><span>702-555-LYMX (5969) · TTY/relay welcome</span></div>
+        <div class="row"><span class="lab">Response time</span><span>2 business days for inquiries · 10 business days for formal complaints</span></div>
+        <div class="row"><span class="lab">Last review</span><span>April 30, 2026</span></div>
+      </div>
+    </article>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap" style="text-align:center">© 2026 LYMX Power · Las Vegas, NV · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="accessibility.html">Accessibility</a> · <a href="security.html">Security</a></div>
+</footer>
+
+<script>
+  // TOC scroll-spy
+  const tocLinks = document.querySelectorAll('#toc a');
+  const sections = Array.from(tocLinks).map(a=>document.querySelector(a.getAttribute('href')));
+  window.addEventListener('scroll', ()=>{
+    let active = sections[0];
+    for(const s of sections){
+      if(!s) continue;
+      if(s.getBoundingClientRect().top < 120) active = s;
+    }
+    tocLinks.forEach(a=>a.classList.toggle('on', a.getAttribute('href') === '#'+active.id));
+  }, {passive:true});
+  tocLinks.forEach(a=>{
+    a.onclick = e=>{
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+    };
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Square Integration — LYMX Power</title>
+<meta name="description" content="Connect LYMX with your existing Square POS. Auto-sync menu, customers, and transactions. Setup takes 12 minutes.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--square:#3e4348}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+
+  .hero{padding:72px 24px 48px;border-bottom:1px solid var(--line);background:#fff}
+  .hero-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.3fr 1fr;gap:56px;align-items:center}
+  @media (max-width:880px){.hero-inner{grid-template-columns:1fr;gap:32px}}
+  .hero .pre{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .hero .lymx-tile{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+  .hero .lymx-tile span{color:var(--gold)}
+  .hero .plus{font-size:24px;color:var(--mute);font-weight:300}
+  .hero .square-tile{width:48px;height:48px;border-radius:12px;background:var(--square);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800;line-height:1.1}
+  .hero p{color:var(--mute);font-size:18px;max-width:520px;margin-bottom:24px}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn-primary{padding:12px 22px;background:var(--ink);color:#fff;border-radius:10px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:6px}
+  .btn-ghost{padding:12px 22px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:10px;font-weight:700;font-size:15px}
+
+  .hero-illust{aspect-ratio:1.1/1;background:linear-gradient(135deg,#f7faff 0%,#fafafa 100%);border-radius:18px;border:1px solid var(--line);position:relative;display:flex;align-items:center;justify-content:center;padding:32px}
+  .arrow-flow{position:absolute;display:flex;align-items:center;justify-content:center;gap:18px;font-size:14px;color:var(--mute)}
+  .blk{padding:14px 20px;background:#fff;border:2px solid var(--line);border-radius:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:120px}
+  .blk.lymx{border-color:var(--gold)}
+  .blk.square{border-color:var(--square)}
+  .blk .ic{font-size:28px}
+  .arrow-flow .arr{font-size:24px;color:var(--accent);font-weight:700;animation:slide 1.6s infinite}
+  @keyframes slide{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  /* What syncs */
+  .syncs{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:48px}
+  .syncs h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .syncs .sub{color:var(--mute);font-size:14px;margin-bottom:24px}
+  .sync-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media (max-width:680px){.sync-grid{grid-template-columns:1fr}}
+  .sync-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:#fafafa}
+  .sync-row .ic{width:36px;height:36px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .sync-row .body{min-width:0}
+  .sync-row .body strong{display:block;font-size:14px;margin-bottom:2px}
+  .sync-row .body span{font-size:12px;color:var(--mute)}
+  .direction{font-size:14px;color:var(--accent);font-weight:700;letter-spacing:.04em}
+  .freq{font-size:10px;background:#e8f6ee;color:#0a7a4d;padding:3px 7px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
+  .freq.realtime{background:#fef9e7;color:#8b6f1f}
+
+  /* Steps */
+  .steps{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:48px}
+  .steps h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .steps .sub{color:var(--mute);font-size:14px;margin-bottom:24px;display:flex;align-items:center;gap:14px}
+  .steps .sub .timer{background:#e8f6ee;color:#0a7a4d;padding:5px 12px;border-radius:999px;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:18px;padding:18px 0;border-top:1px solid var(--line)}
+  .step:first-of-type{border-top:0;padding-top:0}
+  .step-n{width:40px;height:40px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0}
+  .step h3{margin:0 0 4px;font-size:16px}
+  .step .desc{font-size:14px;color:var(--mute);margin:0 0 10px}
+  .step .est{font-size:11px;color:var(--accent);background:#eef3ff;padding:3px 9px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;display:inline-block}
+  .step code{background:#f1f3f7;padding:2px 7px;border-radius:5px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13px;color:#1a4196}
+  .step kbd{background:#fff;border:1px solid var(--line);box-shadow:inset 0 -1px 0 var(--line);padding:1px 6px;border-radius:5px;font-size:12px;font-family:"SF Mono",Menlo,Consolas,monospace}
+
+  /* FAQ */
+  .faq{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:48px}
+  .faq h2{margin:0 0 18px;font-size:24px;letter-spacing:-.02em}
+  details{padding:14px 0;border-top:1px solid var(--line)}
+  details:first-of-type{border-top:0;padding-top:0}
+  summary{cursor:pointer;font-weight:600;font-size:15px;list-style:none;display:flex;align-items:center;gap:12px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";width:24px;height:24px;border-radius:6px;background:#f1f3f7;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:var(--mute);flex-shrink:0}
+  details[open] summary::before{content:"−";background:var(--ink);color:#fff}
+  details[open] summary{margin-bottom:10px}
+  .faq-body{font-size:14px;color:#1f2530;line-height:1.65;padding-left:36px}
+  .faq-body p{margin:0 0 8px}
+  .faq-body p:last-child{margin-bottom:0}
+
+  /* Compare */
+  .compare-table{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:48px;overflow:auto}
+  .compare-table h2{margin:0 0 16px;font-size:22px;letter-spacing:-.02em}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line)}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);font-weight:700}
+  td.mark{text-align:center}
+  .yes{color:var(--ok);font-weight:700}
+  .no{color:#c0392b}
+  .partial{color:var(--warn);font-weight:700}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="integrations.html">All integrations</a>
+      <a href="api.html">API</a>
+      <a href="business.html">For Businesses</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="pre">
+        <div class="lymx-tile">L<span>★</span></div>
+        <div class="plus">×</div>
+        <div class="square-tile">▣</div>
+      </div>
+      <h1>LYMX + Square — auto-sync in 12 minutes.</h1>
+      <p>Keep your Square POS. Layer LYMX on top. Menu items, customer records, and transactions sync both ways automatically.</p>
+      <div class="cta">
+        <a href="biz-dashboard.html" class="btn-primary">Connect Square →</a>
+        <a href="#how" class="btn-ghost">See how it works</a>
+      </div>
+    </div>
+    <div class="hero-illust">
+      <div class="arrow-flow">
+        <div class="blk square"><div class="ic">▣</div>Square POS</div>
+        <div class="arr">⇄</div>
+        <div class="blk lymx"><div class="ic">★</div>LYMX</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- WHAT SYNCS -->
+<div class="syncs">
+  <h2>What syncs between Square &amp; LYMX</h2>
+  <p class="sub">Two-way sync, all automatic. No manual exports / imports — ever.</p>
+
+  <div class="sync-grid">
+    <div class="sync-row">
+      <div class="ic">📋</div>
+      <div class="body"><strong>Menu items</strong><span>Categories, prices, photos</span></div>
+      <span class="direction">⇄</span>
+      <span class="freq">Every 5 min</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">💳</div>
+      <div class="body"><strong>Transactions</strong><span>Every Square sale becomes a LYMX issuance</span></div>
+      <span class="direction">→</span>
+      <span class="freq realtime">Real-time</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">👥</div>
+      <div class="body"><strong>Customer records</strong><span>Names, emails, visit history</span></div>
+      <span class="direction">⇄</span>
+      <span class="freq">Hourly</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">🎁</div>
+      <div class="body"><strong>LYMX redemptions</strong><span>Discount applied as Square line item</span></div>
+      <span class="direction">←</span>
+      <span class="freq realtime">Real-time</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">📊</div>
+      <div class="body"><strong>Sales reports</strong><span>Revenue, item popularity, customer cohorts</span></div>
+      <span class="direction">→</span>
+      <span class="freq">Hourly</span>
+    </div>
+    <div class="sync-row">
+      <div class="ic">🧾</div>
+      <div class="body"><strong>Refunds &amp; voids</strong><span>Auto-reverse the LYMX issuance</span></div>
+      <span class="direction">→</span>
+      <span class="freq realtime">Real-time</span>
+    </div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<div class="steps" id="how">
+  <h2>How to connect Square</h2>
+  <p class="sub">Step-by-step setup. <span class="timer">⏱️ Total: ~12 min</span></p>
+
+  <div class="step">
+    <div class="step-n">1</div>
+    <div>
+      <h3>Open the Integrations page in your LYMX dashboard</h3>
+      <p class="desc">From your <a href="biz-dashboard.html">Business dashboard</a>, click <kbd>Settings</kbd> → <kbd>Integrations</kbd>. Find the <strong>Square</strong> card and click <kbd>Connect</kbd>.</p>
+      <span class="est">~30 sec</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">2</div>
+    <div>
+      <h3>Sign in to Square &amp; authorize LYMX</h3>
+      <p class="desc">A Square OAuth window opens. Sign in with your Square admin credentials. Review the requested permissions (read menu, read/write transactions, read customers). Click <kbd>Authorize</kbd>.</p>
+      <span class="est">~2 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">3</div>
+    <div>
+      <h3>Choose which Square locations to sync</h3>
+      <p class="desc">If you have multiple Square locations, pick the ones to sync. Most Businesses select all. You can change this later under <code>Integrations → Square → Locations</code>.</p>
+      <span class="est">~1 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">4</div>
+    <div>
+      <h3>Map your menu categories</h3>
+      <p class="desc">LYMX shows your Square menu. For each category, confirm or set the LYMX multiplier (default 1×). You can change individual items in <a href="biz-menu.html">Menu</a> later.</p>
+      <span class="est">~5 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">5</div>
+    <div>
+      <h3>Run a test transaction</h3>
+      <p class="desc">In Square, ring up a $1 test sale. The LYMX dashboard should show the issuance within 30 seconds — 5 LYMX awarded. If you don't see it, click <kbd>Re-sync</kbd> in Integrations.</p>
+      <span class="est">~2 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">6</div>
+    <div>
+      <h3>Train your cashiers (5-min video)</h3>
+      <p class="desc">The new flow at checkout: ask the customer if they have LYMX → if yes, scan their QR → ring up Square as normal. LYMX auto-issues. Watch <a href="onboarding-video.html">the cashier training video</a>.</p>
+      <span class="est">~5 min</span>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARE -->
+<div class="compare-table">
+  <h2>What works in Square Loyalty vs. LYMX</h2>
+  <table>
+    <thead>
+      <tr><th>Feature</th><th class="mark">Square Loyalty</th><th class="mark">LYMX</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Earn loyalty at YOUR store</td><td class="mark yes">Yes</td><td class="mark yes">Yes</td></tr>
+      <tr><td>Redeem at YOUR store</td><td class="mark yes">Yes</td><td class="mark yes">Yes</td></tr>
+      <tr><td>Earn at other Businesses → spend at yours</td><td class="mark no">No</td><td class="mark yes">Yes</td></tr>
+      <tr><td>Customer can spend their loyalty across multiple Businesses</td><td class="mark no">No</td><td class="mark yes">Yes</td></tr>
+      <tr><td>No app download for customers</td><td class="mark partial">Partial</td><td class="mark yes">Yes</td></tr>
+      <tr><td>Per-item multipliers</td><td class="mark no">No</td><td class="mark yes">Yes</td></tr>
+      <tr><td>Network referrals from other Businesses</td><td class="mark no">No</td><td class="mark yes">Yes</td></tr>
+      <tr><td>Monthly cost (after free trial)</td><td class="mark">$45/mo</td><td class="mark">$200/mo</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:14px;font-size:13px;color:var(--mute)">Most LYMX Businesses run BOTH — Square as their POS, LYMX as the loyalty network on top. They're complementary, not exclusive.</p>
+</div>
+
+<!-- FAQ -->
+<div class="faq">
+  <h2>Frequently asked questions</h2>
+
+  <details>
+    <summary>Do I need to replace my Square POS?</summary>
+    <div class="faq-body">
+      <p>No. LYMX layers on top — Square remains your point of sale, payments processor, and inventory tool. We just talk to Square via its API.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>What happens to my existing Square Loyalty stamps?</summary>
+    <div class="faq-body">
+      <p>They stay in Square. We don't migrate them automatically — that's your call. Some Businesses run both side-by-side for a transition period, then turn off Square Loyalty after 30–60 days. Others turn it off immediately and offer existing stamp customers a one-time LYMX bonus.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>What if Square has a data outage?</summary>
+    <div class="faq-body">
+      <p>If Square's API is down, we queue any pending syncs and replay them once Square comes back up. LYMX issuances captured during the outage period are reconciled within 30 minutes of recovery. Customer-facing wallet balances continue to work normally — they don't depend on Square.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Can I disconnect later?</summary>
+    <div class="faq-body">
+      <p>Yes. Click <code>Integrations → Square → Disconnect</code>. Your menu, customer, and historical transaction data stays in LYMX (we don't delete it). Future Square sales just won't auto-issue LYMX until you re-connect.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Does LYMX see customer credit card data?</summary>
+    <div class="faq-body">
+      <p>No. We never see card numbers, CVCs, or any PCI-scope data. Square handles all of that. LYMX only receives transaction metadata: total amount, item names, customer ID (if you have one). See our <a href="security.html">security overview</a> for details.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>What about Square Online sales?</summary>
+    <div class="faq-body">
+      <p>Online sales sync the same way as in-store. Customer can earn LYMX online → redeem in-store. Or vice versa. The customer just enters their LYMX wallet phone number at checkout.</p>
+    </div>
+  </details>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Square integration · <a href="integrations.html">All integrations</a> · <a href="api.html">API docs</a> · <a href="biz-dashboard.html">Business dashboard</a>
+</div>
+
+</body>
+</html>

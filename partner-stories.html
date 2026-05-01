@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Partner Stories — LYMX Power</title>
+<meta name="description" content="Real stories from LYMX Partners — what they did, what they earned, and what surprised them along the way.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(180deg,#fef9e7 0%,#fafafa 100%);padding:64px 24px 40px;border-bottom:1px solid var(--line)}
+  .hero-inner{max-width:1180px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#8b6f1f;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid var(--gold)}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+  .hero p{color:var(--mute);max-width:580px;margin:0 auto 22px;font-size:17px}
+
+  .filter{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+  .chip{padding:7px 16px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:600;background:#fff;cursor:pointer}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+
+  /* Featured */
+  .featured{background:var(--card);border:2px solid var(--gold);border-radius:18px;overflow:hidden;margin-bottom:48px;box-shadow:0 12px 30px rgba(212,175,55,.15)}
+  .featured-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:0}
+  @media (max-width:880px){.featured-grid{grid-template-columns:1fr}}
+  .featured-img{aspect-ratio:1.2/1;background:linear-gradient(135deg,#d4af37,#f5d172);display:flex;align-items:center;justify-content:center;font-size:120px;color:#3a2f0a;position:relative}
+  .featured-img .fb{position:absolute;top:18px;left:18px;font-size:11px;font-weight:800;background:rgba(255,255,255,.85);color:#3a2f0a;padding:5px 12px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase}
+  .featured-body{padding:36px}
+  .featured-tier{font-size:11px;color:#8b6f1f;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+  .featured h2{margin:0 0 8px;font-size:32px;letter-spacing:-.02em}
+  .featured .role{color:var(--mute);font-size:14px;margin-bottom:20px}
+  .featured blockquote{margin:0 0 24px;font-size:18px;font-style:italic;color:#1f2530;line-height:1.5;border-left:3px solid var(--gold);padding-left:18px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px}
+  .stat .n{font-size:24px;font-weight:800;color:var(--gold);letter-spacing:-.02em}
+  .stat .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-top:2px}
+  .read-more{display:inline-block;padding:10px 18px;background:var(--ink);color:#fff;border-radius:8px;font-weight:600;font-size:14px}
+
+  /* Stories grid */
+  .stories{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media (max-width:760px){.stories{grid-template-columns:1fr}}
+  .story{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;transition:.15s}
+  .story:hover{border-color:var(--ink);transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.06)}
+  .story-h{display:flex;gap:14px;margin-bottom:14px;align-items:center}
+  .av{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;flex-shrink:0}
+  .av.a{background:linear-gradient(135deg,#5b9ef5,#a3c5ff)}
+  .av.b{background:linear-gradient(135deg,#13a26b,#9adfb6)}
+  .av.c{background:linear-gradient(135deg,#5b3697,#a374e6)}
+  .av.d{background:linear-gradient(135deg,#e07b5e,#f5a18a)}
+  .av.e{background:linear-gradient(135deg,#d4af37,#f5d172);color:#3a2f0a}
+  .av.f{background:linear-gradient(135deg,#0e1116,#3a4452)}
+  .who h3{margin:0;font-size:16px}
+  .who .role{font-size:12px;color:var(--mute)}
+  .tier{font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;margin-left:auto;flex-shrink:0;height:fit-content}
+  .tier.master{background:#fef9e7;color:#8b6f1f}
+  .tier.active{background:#e8f6ee;color:#0a7a4d}
+  .tier.side{background:#eef3ff;color:var(--accent)}
+  .story blockquote{margin:0 0 14px;font-size:14px;font-style:italic;color:#1f2530;line-height:1.55}
+  .story .ministats{display:flex;gap:18px;margin-top:auto;padding-top:14px;border-top:1px dashed var(--line);font-size:12px;color:var(--mute)}
+  .story .ministats .ms strong{display:block;font-size:15px;color:var(--ink);font-weight:800;letter-spacing:-.01em}
+
+  .cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:16px;padding:40px;text-align:center;margin-top:48px}
+  .cta h2{margin:0 0 8px;font-size:26px;color:#fff}
+  .cta p{color:#b8c2d6;max-width:520px;margin:0 auto 20px}
+  .cta a{display:inline-block;background:var(--gold);color:#0e1116;padding:12px 24px;border-radius:8px;font-weight:700}
+  .cta a.alt{background:transparent;color:var(--gold);border:1px solid var(--gold);margin-left:10px}
+
+  .legal{background:#fef9e7;border-left:4px solid var(--gold);padding:18px 22px;border-radius:0 12px 12px 0;font-size:12px;color:#5d4d18;margin-top:32px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="partner-signup.html" class="btn">Become a Partner →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Partner stories · Real numbers · Real Partners</div>
+    <h1>What it actually looks like to be a Partner.</h1>
+    <p>Six Partner stories at different stages — side hustle, active, full-time. What they did, what they earned, what surprised them.</p>
+
+    <div class="filter">
+      <span class="chip on" data-f="all" onclick="setFilter(this, 'all')">All stories</span>
+      <span class="chip" data-f="side" onclick="setFilter(this, 'side')">Side hustle</span>
+      <span class="chip" data-f="active" onclick="setFilter(this, 'active')">Active</span>
+      <span class="chip" data-f="master" onclick="setFilter(this, 'master')">Master</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- Featured -->
+<div class="featured" data-tier="master">
+  <div class="featured-grid">
+    <div class="featured-img">
+      <span class="fb">★ Featured · Master Partner</span>
+      <span>👩🏻‍💼</span>
+    </div>
+    <div class="featured-body">
+      <div class="featured-tier">Master Partner · Las Vegas</div>
+      <h2>Sienna Vega</h2>
+      <div class="role">Real estate agent → full-time LYMX Master Partner · Joined Dec 2025 · Production: 8 Businesses · 26 Partners across G1–G3</div>
+
+      <blockquote>"I came in skeptical. The math told me it would work, but the math always does. What surprised me was that the Businesses I signed in month 1 were still active 4 months later — and they were sending me referrals to other Businesses without me asking. That's when I went full-time."</blockquote>
+
+      <div class="stats">
+        <div class="stat"><div class="n">$11,440</div><div class="l">Last month</div></div>
+        <div class="stat"><div class="n">26</div><div class="l">Partners downline</div></div>
+        <div class="stat"><div class="n">8</div><div class="l">Own Businesses</div></div>
+      </div>
+
+      <a href="master-playbook.html" class="read-more">Read Sienna's playbook →</a>
+    </div>
+  </div>
+</div>
+
+<div class="stories">
+
+  <div class="story" data-tier="active">
+    <div class="story-h">
+      <div class="av a">MR</div>
+      <div class="who"><h3>Marcus Ruiz</h3><div class="role">Bartender + Partner · Henderson · Joined Feb 2026</div></div>
+      <span class="tier active">Active</span>
+    </div>
+    <blockquote>"My day job is bartending nights. Days were dead. So I started walking into local Businesses and dropping off the LYMX one-pager. By month 2 I had 4 sign-ups. The commission has paid my rent for two months running. I'm not quitting bartending — but it's nice to have a second thing."</blockquote>
+    <div class="ministats">
+      <div class="ms"><strong>$1,840</strong>last month</div>
+      <div class="ms"><strong>4</strong>own Businesses</div>
+      <div class="ms"><strong>3</strong>G1 Partners</div>
+    </div>
+  </div>
+
+  <div class="story" data-tier="active">
+    <div class="story-h">
+      <div class="av b">RP</div>
+      <div class="who"><h3>Riya Patel</h3><div class="role">Yoga instructor + Partner · Las Vegas · Joined Jan 2026</div></div>
+      <span class="tier active">Active</span>
+    </div>
+    <blockquote>"I started signing studio owners — yoga, pilates, gyms — because that's my world. The pitch is easy when you know the category. My niche worked: 6 sign-ups in the first 90 days, and three of them have signed Partners themselves."</blockquote>
+    <div class="ministats">
+      <div class="ms"><strong>$2,310</strong>last month</div>
+      <div class="ms"><strong>6</strong>own Businesses</div>
+      <div class="ms"><strong>3</strong>G1 Partners</div>
+    </div>
+  </div>
+
+  <div class="story" data-tier="side">
+    <div class="story-h">
+      <div class="av c">JT</div>
+      <div class="who"><h3>Jamie Tran</h3><div class="role">Marketing consultant + Partner · Reno · Joined Mar 2026</div></div>
+      <span class="tier side">Side hustle</span>
+    </div>
+    <blockquote>"I've been pitching this to my own consulting clients as a marketing channel. Three of them said yes in the first month. The commission turned a regular consulting engagement into one with recurring upside — they pay me to set up the loyalty program AND I get override on it."</blockquote>
+    <div class="ministats">
+      <div class="ms"><strong>$640</strong>last month</div>
+      <div class="ms"><strong>3</strong>own Businesses</div>
+      <div class="ms"><strong>0</strong>G1 Partners</div>
+    </div>
+  </div>
+
+  <div class="story" data-tier="active">
+    <div class="story-h">
+      <div class="av d">DW</div>
+      <div class="who"><h3>Dana Whitfield</h3><div class="role">Former Yelp rep · Las Vegas · Joined Nov 2025</div></div>
+      <span class="tier active">Active</span>
+    </div>
+    <blockquote>"I sold Yelp Ads for 4 years. The pitch was always 'this MIGHT bring you customers.' LYMX is the first thing I've ever pitched where I can show actual peer ROI numbers. That changes the conversion rate from 'maybe' to 'when can I sign up.'"</blockquote>
+    <div class="ministats">
+      <div class="ms"><strong>$3,420</strong>last month</div>
+      <div class="ms"><strong>11</strong>own Businesses</div>
+      <div class="ms"><strong>5</strong>G1 Partners</div>
+    </div>
+  </div>
+
+  <div class="story" data-tier="side">
+    <div class="story-h">
+      <div class="av e">KO</div>
+      <div class="who"><h3>Kevin O'Connor</h3><div class="role">Bartender + Partner · Las Vegas · Joined Apr 2026</div></div>
+      <span class="tier side">Side hustle</span>
+    </div>
+    <blockquote>"Most of my prospects are people I see every day at the bar. Restaurant owners, gym owners, retail. The bar shift is from 6 PM. I do LYMX from 11 AM to 4 PM most days — walk-ins, follow-ups, signings. It's not a hustle, it's just a routine."</blockquote>
+    <div class="ministats">
+      <div class="ms"><strong>$420</strong>last month</div>
+      <div class="ms"><strong>2</strong>own Businesses</div>
+      <div class="ms"><strong>0</strong>G1 Partners</div>
+    </div>
+  </div>
+
+  <div class="story" data-tier="master">
+    <div class="story-h">
+      <div class="av f">AL</div>
+      <div class="who"><h3>Andre Lim</h3><div class="role">Former territory manager · Phoenix-bound · Joined Oct 2025</div></div>
+      <span class="tier master">Master</span>
+    </div>
+    <blockquote>"I was the second Master Partner approved, before LYMX even launched in LV publicly. I built the Phoenix waitlist. We're queuing up around 30 Businesses for the Phoenix Q4 launch. The downline is small now — but the moment Phoenix goes live it'll be a step function."</blockquote>
+    <div class="ministats">
+      <div class="ms"><strong>$5,820</strong>last month</div>
+      <div class="ms"><strong>14</strong>own Businesses</div>
+      <div class="ms"><strong>9</strong>G1 Partners</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="legal">
+  <strong>Income disclosure:</strong> The figures above are real for these specific Partners as of April 2026 — they are NOT representative of all Partners and they are NOT a guarantee of earnings. Most Partners earn modest income; a small percentage earn significantly more. Income depends on effort, location, market conditions, and individual results. By becoming a Partner you agree to the <a href="partner-agreement.html">Partner Agreement</a>.
+</div>
+
+<div class="cta">
+  <h2>Want to be the next story?</h2>
+  <p>Partner applications are reviewed weekly. We approve people we think will represent the network well. Application takes 5 minutes.</p>
+  <a href="partner-signup.html">Start application →</a>
+  <a href="partner-commission-calc.html" class="alt">Run the calculator</a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Partner stories · <a href="partners.html">Partner program</a> · <a href="partner-commission-calc.html">Commission calculator</a> · <a href="partner-signup.html">Apply</a>
+</div>
+
+<script>
+  function setFilter(el, f) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.f === f));
+    document.querySelectorAll('.story, .featured').forEach(s => {
+      const tier = s.dataset.tier;
+      s.style.display = (f === 'all' || tier === f) ? '' : 'none';
+    });
+  }
+</script>
+
+</body>
+</html>

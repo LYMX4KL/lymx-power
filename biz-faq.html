@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Business FAQ — LYMX Power</title>
+<meta name="description" content="The most common questions Business owners ask before joining LYMX. Pricing, settlement, churn, multi-location, technical setup.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.7}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1080px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(180deg,#e8f6ee 0%,#fafafa 100%);padding:64px 24px 36px;border-bottom:1px solid var(--line)}
+  .hero-inner{max-width:1080px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#0a7a4d;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #c2e8d2}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+  .hero p{color:var(--mute);max-width:580px;margin:0 auto;font-size:17px}
+
+  .search-box{max-width:520px;margin:24px auto 0;position:relative}
+  .search-box input{width:100%;padding:14px 18px 14px 46px;border:2px solid var(--line);border-radius:12px;font-size:15px;background:#fff}
+  .search-box input:focus{outline:none;border-color:var(--accent)}
+  .search-box .ic{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--mute)}
+
+  .layout{max-width:1080px;margin:0 auto;padding:48px 24px;display:grid;grid-template-columns:200px 1fr;gap:40px}
+  @media (max-width:880px){.layout{grid-template-columns:1fr}.toc{display:none}}
+  .toc{position:sticky;top:80px;height:fit-content}
+  .toc h3{margin:0 0 10px;font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+  .toc a{display:block;padding:6px 12px;border-radius:6px;color:var(--mute);font-size:13px;margin-bottom:2px}
+  .toc a:hover{background:#e8f6ee;color:#0a7a4d}
+
+  .section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;margin-bottom:18px;scroll-margin-top:80px}
+  .section h2{margin:0 0 16px;font-size:22px;letter-spacing:-.02em;display:flex;align-items:baseline;gap:10px}
+  .section h2 .ct{font-size:12px;color:var(--mute);font-weight:600}
+
+  details{padding:14px 0;border-top:1px solid var(--line)}
+  details:first-of-type{border-top:0;padding-top:0}
+  summary{cursor:pointer;font-weight:600;font-size:15px;display:flex;align-items:center;gap:12px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";width:24px;height:24px;border-radius:6px;background:#f1f3f7;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:var(--mute);flex-shrink:0;font-weight:600}
+  details[open] summary::before{content:"−";background:var(--ink);color:#fff}
+  details[open] summary{margin-bottom:10px}
+  details > div{padding-left:36px;font-size:14.5px;color:#1f2530;line-height:1.7}
+  details code{background:#f1f3f7;padding:2px 7px;border-radius:5px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13px}
+
+  .empty{text-align:center;padding:48px 24px;color:var(--mute);background:var(--card);border:1px dashed var(--line);border-radius:12px;display:none;margin-bottom:18px}
+  .empty.show{display:block}
+
+  .cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:32px;text-align:center;margin-top:32px}
+  .cta h3{margin:0 0 8px;color:#fff;font-size:22px}
+  .cta p{color:#b8c2d6;margin:0 auto 18px;max-width:520px;font-size:14px}
+  .cta a{display:inline-block;background:var(--gold);color:#0e1116;padding:11px 22px;border-radius:8px;font-weight:700;font-size:14px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="business.html" class="btn">List your Business →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Business FAQ · For owners considering joining</div>
+    <h1>Common questions, answered.</h1>
+    <p>The 24 questions Business owners ask most often before signing up. Pricing, settlement, churn, multi-location, technical setup.</p>
+    <div class="search-box">
+      <span class="ic">🔍</span>
+      <input type="text" id="search" placeholder="Search 24 questions…" oninput="filterFAQ()">
+    </div>
+  </div>
+</section>
+
+<div class="layout">
+
+  <aside class="toc">
+    <h3>Sections</h3>
+    <a href="#pricing">Pricing &amp; cost</a>
+    <a href="#setup">Getting started</a>
+    <a href="#daily">Day-to-day</a>
+    <a href="#multi">Multi-location</a>
+    <a href="#leaving">Cancel/leave</a>
+    <a href="#tech">Technical</a>
+  </aside>
+
+  <main>
+
+<div class="empty" id="empty">No questions match your search. Try different keywords or <a href="support.html">contact us</a>.</div>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <h2>Pricing &amp; cost <span class="ct">5 questions</span></h2>
+
+  <details>
+    <summary>How much does LYMX really cost?</summary>
+    <div>
+      <p><strong>$850 one-time + $199/month after a 3-month free trial.</strong> The $850 includes the 3 months free, your homepage feature spot at launch, an email blast to all local LYMX customers, and your sign-up. After month 3, it's $199/mo flat. Plus the LYMX wholesale rate ($0.008 per LYMX issued — typically $20–40/mo for a small café, scaling with sales).</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>What's the wholesale rate and how does it work?</summary>
+    <div>
+      <p>You decide your LYMX issuance rate at activation. Common choices are 5 LYMX per $1 (5% effective return, like a generous loyalty program) or 3 LYMX per $1 (3%, more conservative). Your Partner walks you through the decision during intake — and shows what your competitors offer. Once locked, the rate doesn't change without re-activation. Customers redeem at the network-wide $0.01 per LYMX. When LYMX is redeemed at another Business, you pay only 80% of face value at settlement (the 20% is an automatic referral discount). Plus a 3% processing fee on every redemption (charged in LYMX, auto-deducted at settlement).</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Can I run LYMX alongside my existing loyalty program?</summary>
+    <div>
+      <p>Yes. Most LYMX Businesses run both for the first 30–60 days as a transition. After that, ~85% of Businesses retire their old loyalty program because LYMX covers the same use case plus delivers network referrals. Square Loyalty, Toast Loyalty, Fivestars, and Belly are all compatible — they don't interfere with LYMX.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>What's the ROI typically?</summary>
+    <div>
+      <p>For an active café (~150 cust/day, $9 avg ticket), the typical month-2 ROI is 8–12× the LYMX cost (subscription + wholesale). Restaurants and retail tend to higher ROIs (12–25×) because of the larger ticket sizes. Higher-traffic Businesses see 20×+ in steady state. Use the <a href="biz-revenue-calc.html">ROI calculator</a> to model your specific situation.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Are there hidden fees I should know about?</summary>
+    <div>
+      <p>No. The full price is: $850 (with included perks) + $199/mo + $0.008/LYMX issued. We don't charge transaction fees, scan fees, account-setup fees, or upgrade tiers. Any new feature we add is included. Read our <a href="business.html#economics">complete pricing page</a> for the full breakdown.</p>
+    </div>
+  </details>
+</section>
+
+<!-- SETUP -->
+<section class="section" id="setup">
+  <h2>Getting started <span class="ct">5 questions</span></h2>
+
+  <details>
+    <summary>How long does setup take?</summary>
+    <div>
+      <p>Account creation + integration: ~12 minutes for Square or ~18 minutes for Toast. Cashier training: 5 minutes per person. Soft launch: 1 day. Full ramp to steady state: 4–6 weeks. See the <a href="biz-onboarding-checklist.html">onboarding checklist</a> for the exact 12-step flow.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Do I need to replace my POS?</summary>
+    <div>
+      <p>No. LYMX layers on top of your existing POS. We integrate with <a href="biz-integration-square.html">Square</a> and <a href="biz-integration-toast.html">Toast</a> directly. For other POS systems (Clover, Lightspeed), we have a CSV-based reconciliation flow and a public API. See the <a href="integrations.html">integrations page</a>.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>What happens to my existing customers' data?</summary>
+    <div>
+      <p>Your existing customer data stays in your POS. LYMX only sees customer data when a LYMX customer chooses to enter their phone number at your checkout — and even then we only see their name, phone, and transaction. We never see card numbers or billing addresses.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Do my employees need to learn anything?</summary>
+    <div>
+      <p>About 5 minutes of new flow. The new step at checkout is: ask the customer "do you have LYMX?" → if yes, scan their QR. That's it. We have a <a href="onboarding-video.html">5-min cashier training video</a> they can watch.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Can I get help with setup?</summary>
+    <div>
+      <p>Yes — for the first 30 days you have priority support including a dedicated Slack channel for new Businesses. We also have an option for on-site help on launch day if you're in Las Vegas (free for Founding 25, $200 for others). See the <a href="biz-launch-day.html">Day 1 launch playbook</a>.</p>
+    </div>
+  </details>
+</section>
+
+<!-- DAILY -->
+<section class="section" id="daily">
+  <h2>Day-to-day operations <span class="ct">5 questions</span></h2>
+
+  <details>
+    <summary>How do customers know to use LYMX at my register?</summary>
+    <div>
+      <p>Three ways. First, signage — we send a free <a href="biz-print-kit.html">print kit</a> with window clings and table tents. Second, in your store on the LYMX <a href="browse.html">browse map</a>. Third, customers who earn LYMX at one Business get prompted to use it at others nearby. The first two get you started; the third compounds.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>What if a customer's QR doesn't scan?</summary>
+    <div>
+      <p>Cashier can manually enter the customer's phone number instead. The wallet looks up by phone. Takes ~10 sec. We document this in the cashier training video.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Can I run promotions/multipliers?</summary>
+    <div>
+      <p>Yes — that's one of LYMX's biggest features. <a href="promotions.html">Promotions</a> can be time-of-day, day-of-week, item-specific, customer-specific (first-timers, birthdays), or category-wide. The <a href="holidays.html">annual playbook</a> has 12 months of recipe-style promo ideas.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>What does my dashboard show me?</summary>
+    <div>
+      <p>Real-time transaction count, daily/weekly/monthly revenue lift attributable to LYMX, customer adoption rate, top-performing menu items, multiplier ROI, peer benchmarks. Also includes individual customer-level history (with privacy protections) and settlement reports. See <a href="biz-analytics.html">the full analytics page</a>.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Will LYMX customers spend more or less than non-LYMX customers?</summary>
+    <div>
+      <p>More — typically 12–18% more per ticket. The reason: most LYMX customers have a positive balance and treat LYMX redemptions as "found money," which lowers their psychological friction on add-ons. They also visit more often (3.8 visits/mo vs 2.6 for non-LYMX customers in cafés).</p>
+    </div>
+  </details>
+</section>
+
+<!-- MULTI -->
+<section class="section" id="multi">
+  <h2>Multi-location <span class="ct">3 questions</span></h2>
+
+  <details>
+    <summary>Do I pay $199/mo per location?</summary>
+    <div>
+      <p>No — multi-location is much cheaper than that. Your first location is $199/mo. Each additional location is just <strong>$50/mo</strong>. So 3 locations = $199 + $50 + $50 = $299/mo. 5 locations = $199 + (4 × $50) = $399/mo. Centralized LYMX ledger across all locations. Beyond ~10 locations talk to us about <a href="enterprise.html">Enterprise tier</a>.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Can I have a single LYMX program across all my locations?</summary>
+    <div>
+      <p>Yes. You can either (a) have each location issue + redeem independently (good for Businesses with different concepts), or (b) consolidate everything as one Business with multiple locations (good for chain-style operations). LYMX customers see them as the same Business in mode (b).</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>What about chains with 10+ locations?</summary>
+    <div>
+      <p>That's our Enterprise tier. We work with 5+ regional chains. Custom pricing, dedicated account management, custom analytics, multi-store API support. Contact us at <a href="mailto:enterprise@getlymx.com">enterprise@getlymx.com</a>.</p>
+    </div>
+  </details>
+</section>
+
+<!-- LEAVING -->
+<section class="section" id="leaving">
+  <h2>If I want to leave <span class="ct">3 questions</span></h2>
+
+  <details>
+    <summary>Can I cancel? What's the refund policy?</summary>
+    <div>
+      <p>Yes — anytime through your dashboard. The $850 is partially refundable within 30 days of sign-up (we keep $250 to cover platform setup costs). After that: when you submit cancellation, your outstanding LYMX balance is auto-capped (you can't issue new LYMX during the wind-down). Your getlymx.com listing flips to a "Leaving the LYMX network — still accepting LYMX" banner with days remaining. You continue accepting LYMX for 90 days OR until your balance hits $0 — whichever comes first. After 90 days, listing is removed from the public site. Read our full <a href="refund-policy.html">refund policy</a>.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>What happens to my customers' LYMX if I leave?</summary>
+    <div>
+      <p>Customer LYMX balances are network-wide — they continue to be spendable at all OTHER LYMX Businesses. Your departure doesn't affect their balance. You stop issuing new LYMX immediately upon cancellation; existing redemptions you've collected continue to settle through to the cancellation date.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>What if I sell my Business?</summary>
+    <div>
+      <p>The LYMX account transfers as part of the asset sale — the new owner takes over the Business's LYMX history, customer base, and current balance. Condition: the new owner stays in the LYMX network. If they decline LYMX, the standard 90-day cancellation window applies. Update us at <a href="mailto:hello@getlymx.com">hello@getlymx.com</a> at least 30 days before the sale closes.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Can I pause instead of cancel?</summary>
+    <div>
+      <p>Yes — up to 60 days. Useful for seasonal Businesses or owners taking extended vacation. Pause means: no monthly subscription billed, customers can't redeem LYMX at your Business during pause, your menu &amp; settings preserved. Resume anytime. Pause requests via support.</p>
+    </div>
+  </details>
+</section>
+
+<!-- TECH -->
+<section class="section" id="tech">
+  <h2>Technical questions <span class="ct">3 questions</span></h2>
+
+  <details>
+    <summary>What POS systems do you support?</summary>
+    <div>
+      <p>Direct integration: <a href="biz-integration-square.html">Square</a>, <a href="biz-integration-toast.html">Toast</a>. Beta: Clover, Lightspeed, Aloha. CSV reconciliation: any system that can export daily sales. Public API for everything else: <a href="api.html">api.html</a>. See the <a href="integrations.html">full integrations list</a>.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>How does data sync work? Real-time?</summary>
+    <div>
+      <p>Transactions sync real-time (within 30 seconds). Menu items sync every 5 minutes. Customer records hourly. Refunds &amp; voids real-time. If your POS is offline, transactions queue and replay on reconnection — nothing is lost.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Is my data encrypted? Are you SOC 2 compliant?</summary>
+    <div>
+      <p>All data encrypted at rest (AES-256) and in transit (TLS 1.3). SOC 2 Type 2 certification target: Q4 2026 (we're in audit now). PCI compliance: we never see card data — Square / Stripe handle that. See <a href="security.html">security page</a> for the full breakdown.</p>
+    </div>
+  </details>
+</section>
+
+<!-- CTA -->
+<div class="cta">
+  <h3>Have a question we didn't answer?</h3>
+  <p>Email us — we read every message and most get responded to within 24 hours.</p>
+  <a href="mailto:hello@getlymx.com">Email us →</a>
+</div>
+
+  </main>
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Business FAQ · <a href="business.html">Pricing</a> · <a href="biz-revenue-calc.html">ROI calculator</a> · <a href="master-faq.html">Full FAQ (all audiences)</a>
+</div>
+
+<script>
+  function filterFAQ() {
+    const q = document.getElementById('search').value.toLowerCase();
+    const items = document.querySelectorAll('details');
+    let visible = 0;
+    items.forEach(item => {
+      const text = item.textContent.toLowerCase();
+      const match = !q || text.includes(q);
+      item.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    // Hide sections with no visible items
+    document.querySelectorAll('.section').forEach(s => {
+      const visibleItems = Array.from(s.querySelectorAll('details')).filter(d => d.style.display !== 'none');
+      s.style.display = visibleItems.length > 0 ? '' : 'none';
+    });
+    document.getElementById('empty').classList.toggle('show', visible === 0);
+  }
+</script>
+
+</body>
+</html>

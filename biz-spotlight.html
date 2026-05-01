@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Business of the Month — Brew &amp; Bean Coffee. How a 2-year-old café used the LYMX network to grow 14% in repeat traffic in 8 weeks." />
+<title>Business of the Month — Brew &amp; Bean · LYMX</title>
+<meta property="og:title" content="LYMX Business Spotlight — Brew &amp; Bean" />
+<meta property="og:image" content="og-image.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px}
+  .brand .dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:24px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .btn{padding:10px 16px;border-radius:10px;font-weight:800;font-size:14px;text-decoration:none;display:inline-block}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:var(--accent-2)}
+  .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .hero{padding:60px 0 50px;background:linear-gradient(180deg,#0e1116,#1a1f27);color:#fff;position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.16),transparent 70%);left:-200px;top:-200px;pointer-events:none}
+  .hero::after{content:"";position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(10,132,255,.18),transparent 70%);right:-150px;bottom:-150px;pointer-events:none}
+  .hero-grid{position:relative;display:grid;grid-template-columns:1fr 1.2fr;gap:42px;align-items:center}
+  @media(max-width:900px){.hero-grid{grid-template-columns:1fr}}
+  .month-pill{display:inline-block;background:rgba(212,175,55,.18);color:#f5d172;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .hero h1{font-size:48px;font-weight:800;letter-spacing:-.02em;line-height:1.05;margin:0 0 8px;color:#fff}
+  .hero h1 .first{color:#f5d172}
+  .hero .role{font-size:15px;color:#9aa3b0;margin-bottom:20px}
+  .hero .pull{font-size:18px;line-height:1.5;color:#fff;margin:0 0 24px;font-style:italic;border-left:3px solid #f5d172;padding-left:14px;max-width:560px}
+  .hero-cta{display:flex;gap:10px;flex-wrap:wrap}
+  .btn-gold{background:#f5d172;color:#0e1116}
+  .btn-gold:hover{background:#fff}
+  .btn-outline-w{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3)}
+  .btn-outline-w:hover{border-color:#fff}
+
+  .portrait{position:relative}
+  .portrait .frame{width:100%;aspect-ratio:1/1;max-width:380px;margin:0 auto;border-radius:24px;background:linear-gradient(135deg,#7a4d0a,#3d2705);position:relative;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+  .portrait .frame::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(245,209,114,.4),transparent 50%)}
+  .portrait .name{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:96px;font-weight:800;letter-spacing:-.04em;font-style:italic;text-shadow:0 8px 30px rgba(0,0,0,.4);z-index:2;font-family:Georgia,serif}
+  .portrait .badge{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);background:#f5d172;color:#0e1116;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:6px 14px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.3);z-index:3}
+
+  /* Stat strip */
+  .stats{padding:36px 0 0}
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  @media(max-width:780px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#fff;padding:22px 24px}
+  .stat .l{font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+  .stat .v{font-size:30px;font-weight:800;letter-spacing:-.01em;color:var(--ink)}
+  .stat .v.gold{color:var(--gold)}
+  .stat .v.green{color:var(--ok)}
+  .stat .sub{font-size:12.5px;color:var(--muted);margin-top:3px}
+
+  /* Story */
+  .story{padding:56px 0 24px}
+  .story h2{margin:0 0 24px;font-size:32px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .story-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:920px;margin:0 auto}
+  @media(max-width:780px){.story-grid{grid-template-columns:1fr}}
+  .story-block h3{margin:0 0 8px;font-size:17px;font-weight:800;color:var(--accent-2)}
+  .story-block p{margin:0 0 12px;font-size:15px;color:var(--ink-2);line-height:1.65}
+
+  /* Big quote */
+  .quote{padding:60px 0;background:linear-gradient(180deg,#0e1116,#1a1f27);color:#fff;text-align:center}
+  .quote blockquote{margin:0 auto;max-width:780px;font-size:26px;font-weight:600;line-height:1.4;letter-spacing:-.01em;font-style:italic}
+  .quote cite{display:block;margin-top:18px;font-size:14px;color:#9aa3b0;font-style:normal}
+  .quote cite strong{color:#f5d172;font-weight:800}
+
+  /* What changed */
+  .changed{padding:48px 0;background:var(--bg-soft)}
+  .changed h2{margin:0 0 22px;font-size:28px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .change-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:780px){.change-grid{grid-template-columns:1fr}}
+  .change-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px;display:flex;flex-direction:column;gap:8px}
+  .change-card .ic{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:4px}
+  .change-card h3{margin:0;font-size:16px;font-weight:800}
+  .change-card .v{font-size:24px;font-weight:800;color:var(--ok);letter-spacing:-.01em}
+  .change-card p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.55}
+
+  /* CTA */
+  .cta-block{padding:56px 0;text-align:center}
+  .cta-block h2{margin:0 0 8px;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .cta-block p{margin:0 0 18px;color:var(--muted);font-size:16px}
+  .cta-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+  /* Past spotlights */
+  .past{padding:30px 0;border-top:1px solid var(--line);background:var(--bg-soft)}
+  .past h3{margin:0 0 14px;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;text-align:center}
+  .past-grid{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .past-pill{padding:7px 14px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--ink-2);cursor:pointer}
+  .past-pill:hover{background:var(--ink);color:#fff}
+  .past-pill .who{font-weight:800;margin-right:4px}
+  .past-pill .when{color:var(--muted);font-size:12px}
+  .past-pill:hover .when{color:#9aa3b0}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:28px 0 20px;font-size:12.5px;text-align:center;margin-top:30px}
+  footer a{color:#9aa3b0}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="browse.html">Browse</a>
+      <a href="founding-25.html">Founding 25</a>
+      <a href="biz-spotlight.html" style="color:var(--accent);font-weight:700">Spotlight</a>
+      <a href="business.html">For Business</a>
+    </nav>
+    <a href="business.html" class="btn btn-primary">List my Business</a>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="portrait">
+      <div class="frame">
+        <div class="name">B&amp;B</div>
+        <div class="badge">★ Business of the Month</div>
+      </div>
+    </div>
+    <div>
+      <span class="month-pill">★ April 2026</span>
+      <h1><span class="first">Brew &amp; Bean</span><br>Coffee Co.</h1>
+      <div class="role">Independent café · Founding Business #2 · The Strip · 1 location</div>
+      <p class="pull">"In 8 weeks on LYMX our repeat traffic was up 14%. Three months in, we have customers who tell us they came in <em>because</em> they saw a LYMX promo at another shop. That's the network effect — actually working."</p>
+      <div class="hero-cta">
+        <a href="biz-brew-and-bean.html" class="btn btn-gold">Visit Brew &amp; Bean →</a>
+        <a href="business.html" class="btn btn-outline-w">List your Business</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="stats">
+  <div class="wrap">
+    <div class="stat-grid">
+      <div class="stat"><div class="l">Months on LYMX</div><div class="v">3</div><div class="sub">Joined Jan 2026</div></div>
+      <div class="stat"><div class="l">Repeat traffic</div><div class="v green">+14%</div><div class="sub">Year-over-year</div></div>
+      <div class="stat"><div class="l">LYMX referred Businesses</div><div class="v gold">2</div><div class="sub">Both activated</div></div>
+      <div class="stat"><div class="l">Customer rating</div><div class="v">4.8★</div><div class="sub">142 reviews</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Story -->
+<section class="story">
+  <div class="wrap">
+    <h2>How Daniel runs the place</h2>
+    <div class="story-grid">
+      <div class="story-block">
+        <h3>Before LYMX</h3>
+        <p>Brew &amp; Bean opened in 2024 — independent, single location, 5 baristas, ~600 daily transactions. Owner Daniel Whitley had already tried 3 different "punch card" loyalty programs. Customers kept losing the cards. Cardless options needed customers to download yet another app.</p>
+        <p>"By the end of 2025 I'd given up on loyalty as a concept. People want coffee, they don't want a relationship with my POS system."</p>
+      </div>
+      <div class="story-block">
+        <h3>What flipped it</h3>
+        <p>"What flipped it was the network angle. I'd been a customer of two other Founding Businesses for months. The day my customer used LYMX they earned at Oakline Kitchen <em>at my counter</em>, the math made sense. They didn't want a relationship with my POS — they wanted a relationship with the neighborhood."</p>
+        <p>"I signed in week 4. My welcome promo doubles LYMX on first visits. About 30% of new customers I see now mention they tried me because of LYMX."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Big quote -->
+<section class="quote">
+  <div class="wrap">
+    <blockquote>"Loyalty programs used to ask my customers to download apps for me. LYMX asks them to take part in something bigger than my coffee shop. That's a different conversation."</blockquote>
+    <cite><strong>Daniel Whitley</strong> · Owner, Brew &amp; Bean Coffee · April 2026 Spotlight</cite>
+  </div>
+</section>
+
+<!-- What changed -->
+<section class="changed">
+  <div class="wrap">
+    <h2>What changed in 90 days</h2>
+    <div class="change-grid">
+      <div class="change-card">
+        <div class="ic">↑</div>
+        <h3>Repeat traffic</h3>
+        <div class="v">+14%</div>
+        <p>YoY same-store. Mostly new customers from the LYMX network earning at Brew &amp; Bean for the first time.</p>
+      </div>
+      <div class="change-card">
+        <div class="ic">⏱</div>
+        <h3>Avg time-to-second-visit</h3>
+        <div class="v">−6 days</div>
+        <p>Customers come back faster when they have LYMX in their wallet at Brew &amp; Bean. Fewer one-and-dones.</p>
+      </div>
+      <div class="change-card">
+        <div class="ic">🔁</div>
+        <h3>Lapsed customers reactivated</h3>
+        <div class="v">42</div>
+        <p>Customers who hadn't been in 90+ days came back after seeing Brew &amp; Bean in their LYMX wallet.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Closing CTA -->
+<section class="cta-block">
+  <div class="wrap">
+    <h2>Want to be next month's spotlight?</h2>
+    <p>Join the network and we'll feature one Business per month — picked on growth and customer love.</p>
+    <div class="cta-row">
+      <a href="business.html" class="btn btn-primary">List my Business →</a>
+      <a href="founding-25.html" class="btn btn-ghost">See the Founding 25</a>
+      <a href="demo.html" class="btn btn-ghost">Schedule a demo</a>
+    </div>
+  </div>
+</section>
+
+<!-- Past spotlights -->
+<section class="past">
+  <div class="wrap">
+    <h3>Past Business spotlights</h3>
+    <div class="past-grid">
+      <a class="past-pill" href="#"><span class="who">Oakline Kitchen</span><span class="when">March 2026</span></a>
+      <a class="past-pill" href="#"><span class="who">Sunlit Salon Studio</span><span class="when">February 2026</span></a>
+      <a class="past-pill" href="#"><span class="who">Yumi Sushi</span><span class="when">January 2026</span></a>
+      <a class="past-pill" href="#"><span class="who">Pink Note Co</span><span class="when">December 2025</span></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · <a href="biz-spotlight.html">Spotlight</a> · <a href="founding-25.html">Founding 25</a> · <a href="business.html">For Business</a></div>
+</footer>
+</body>
+</html>

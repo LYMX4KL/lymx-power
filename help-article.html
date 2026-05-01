@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="How to redeem LYMX at a Business — step-by-step guide. Open your wallet, show the QR code, and the Business deducts the LYMX amount. Spend across the network." />
+<title>How to redeem LYMX at a Business · LYMX Help Center</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Search bar */
+  .search-bar{padding:18px 0;background:linear-gradient(180deg,var(--bg-soft),#fff);border-bottom:1px solid var(--line)}
+  .search-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .search-input{flex:1;min-width:240px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 16px;font-size:14.5px}
+  .search-input:focus{outline:0;border-color:var(--accent)}
+  .breadcrumb{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+  .breadcrumb a{color:var(--accent-2);font-weight:700}
+  .breadcrumb a:hover{text-decoration:underline}
+  .breadcrumb .sep{color:var(--line)}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:240px 1fr 280px;gap:40px;padding:40px 0 60px;align-items:start}
+  @media(max-width:1100px){.layout{grid-template-columns:1fr}}
+  @media(max-width:1100px){.toc-side{display:none}}
+
+  /* TOC */
+  .toc{position:sticky;top:90px}
+  .toc h4{margin:0 0 10px;font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .toc ul{list-style:none;margin:0;padding:0;border-left:2px solid var(--line)}
+  .toc li{padding:0}
+  .toc a{display:block;padding:7px 14px;font-size:13.5px;color:var(--ink-2);border-left:2px solid transparent;margin-left:-2px;transition:.1s}
+  .toc a:hover{color:var(--accent)}
+  .toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:700;background:rgba(10,132,255,.04)}
+
+  /* Article */
+  article{max-width:720px}
+  .meta-row{font-size:13px;color:var(--muted);display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+  .meta-row .pill{padding:3px 9px;background:rgba(10,132,255,.1);color:var(--accent-2);border-radius:6px;font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  article h1{margin:0 0 8px;font-size:36px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  article .lede{font-size:18px;color:var(--ink-2);line-height:1.55;margin:0 0 32px}
+
+  article h2{margin:42px 0 12px;font-size:24px;font-weight:800;letter-spacing:-.01em;scroll-margin-top:90px}
+  article h3{margin:28px 0 10px;font-size:18px;font-weight:800;scroll-margin-top:90px}
+  article p{margin:0 0 14px;font-size:16px;color:var(--ink-2);line-height:1.65}
+  article ul,article ol{margin:0 0 14px 22px;padding:0}
+  article li{margin:8px 0;font-size:16px;color:var(--ink-2);line-height:1.55}
+  article strong{color:var(--ink);font-weight:800}
+  article code{background:var(--bg-soft);border:1px solid var(--line);border-radius:5px;padding:2px 7px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;color:#a01644}
+
+  /* Step blocks */
+  .step{display:flex;gap:18px;align-items:flex-start;padding:18px;background:var(--bg-soft);border-radius:13px;margin:14px 0;border-left:3px solid var(--accent)}
+  .step .num{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+  .step .body h4{margin:0 0 4px;font-size:16px;font-weight:800}
+  .step .body p{margin:0;font-size:14.5px;color:var(--ink-2);line-height:1.55}
+
+  /* Mock screenshot */
+  .screenshot{margin:18px 0;padding:24px;background:linear-gradient(135deg,#f6f7f9,#fff);border:1px solid var(--line);border-radius:13px;display:flex;justify-content:center;align-items:center;min-height:240px;flex-direction:column;gap:12px}
+  .screenshot .frame{width:240px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 6px 20px rgba(14,17,22,.08)}
+  .screenshot .frame .head{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  .screenshot .frame .balance{font-size:24px;font-weight:800;color:var(--accent-2)}
+  .screenshot .frame .qr{margin-top:10px;width:100%;aspect-ratio:1/1;background:linear-gradient(45deg,#0e1116 25%,#fff 25%,#fff 50%,#0e1116 50%,#0e1116 75%,#fff 75%);background-size:20px 20px;border-radius:9px;border:6px solid #fff;outline:2px solid var(--ink)}
+  .screenshot .caption{font-size:12.5px;color:var(--muted);font-style:italic;text-align:center}
+
+  /* Callout box */
+  .callout{padding:16px 20px;background:rgba(10,132,255,.06);border:1px solid rgba(10,132,255,.2);border-radius:11px;margin:18px 0}
+  .callout .h{font-size:13.5px;font-weight:800;color:var(--accent-2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+  .callout p{margin:0;font-size:14.5px;color:var(--ink-2);line-height:1.6}
+  .callout.warn{background:rgba(240,160,32,.1);border-color:rgba(240,160,32,.3)}
+  .callout.warn .h{color:#7a4d0a}
+
+  /* Was this helpful */
+  .feedback{margin-top:42px;padding:24px;border:1px solid var(--line);border-radius:13px;text-align:center}
+  .feedback h3{margin:0 0 12px;font-size:16px;font-weight:800}
+  .feedback .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .fb-btn{padding:10px 18px;background:#fff;border:1px solid var(--line);border-radius:9px;font-size:14px;font-weight:700;color:var(--ink-2);cursor:pointer;transition:.1s}
+  .fb-btn:hover{border-color:var(--ink)}
+  .fb-btn.on{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .fb-btn.on.no{background:var(--danger);border-color:var(--danger)}
+  .feedback .followup{display:none;margin-top:14px}
+  .feedback .followup.on{display:block}
+  .feedback textarea{width:100%;max-width:480px;border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-size:13.5px;font-family:inherit;margin-bottom:8px;min-height:60px}
+
+  /* Right rail */
+  .rail{position:sticky;top:90px}
+  .rail-card{background:var(--bg-soft);border-radius:13px;padding:18px 22px;margin-bottom:14px}
+  .rail-card h4{margin:0 0 10px;font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .rail-card a{display:block;padding:8px 0;font-size:13.5px;color:var(--ink-2);border-bottom:1px solid var(--line)}
+  .rail-card a:last-child{border-bottom:0}
+  .rail-card a:hover{color:var(--accent)}
+  .rail-card a .arr{color:var(--muted);font-weight:600;margin-left:4px}
+  .rail-card.contact{background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff}
+  .rail-card.contact h4{color:#9aa3b0}
+  .rail-card.contact p{margin:0 0 12px;font-size:13.5px;color:#9aa3b0;line-height:1.5}
+  .rail-card.contact a.btn{display:inline-block;padding:9px 14px;background:#f5d172;color:#0e1116;border-radius:8px;font-weight:800;font-size:13px;border:0}
+
+  /* Footer */
+  footer{background:var(--ink);color:#9aa3b0;padding:32px 0 22px;font-size:13px;margin-top:36px}
+  .foot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-bottom:18px}
+  @media(max-width:780px){.foot-grid{grid-template-columns:repeat(2,1fr)}}
+  .foot-grid h4{color:#fff;font-size:13px;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
+  .foot-grid a{display:block;padding:3px 0;color:#9aa3b0}
+  .foot-grid a:hover{color:#fff}
+  .foot-bot{padding-top:16px;border-top:1px solid rgba(255,255,255,.1);text-align:center;font-size:12.5px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="help-center.html">Help center</a>
+      <a href="status.html">Status</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="support.html">Contact support</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Search + breadcrumb -->
+<section class="search-bar">
+  <div class="wrap search-row">
+    <input class="search-input" type="search" placeholder="Search the help center… (e.g., 'how to refer a friend')" />
+    <div class="breadcrumb">
+      <a href="help-center.html">Help center</a>
+      <span class="sep">/</span>
+      <a href="help-center.html#customers">For customers</a>
+      <span class="sep">/</span>
+      <span>How to redeem LYMX</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="layout">
+    <!-- TOC -->
+    <aside class="toc-side">
+      <nav class="toc" id="toc">
+        <h4>On this page</h4>
+        <ul>
+          <li><a href="#what" class="on">What you'll need</a></li>
+          <li><a href="#steps">The 5 steps</a></li>
+          <li><a href="#math">How the math works</a></li>
+          <li><a href="#partial">Partial redemption</a></li>
+          <li><a href="#troubleshoot">If something goes wrong</a></li>
+          <li><a href="#faq">Quick FAQ</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Article -->
+    <article>
+      <div class="meta-row">
+        <span class="pill">For customers</span>
+        <span>Updated April 28, 2026</span>
+        <span>·</span>
+        <span>3 min read</span>
+      </div>
+      <h1>How to redeem LYMX at a Business</h1>
+      <p class="lede">Spending LYMX is the same flow at every Business in the network: open your wallet, tap Pay, show the QR code, the Business scans, done. Here's the full walk-through.</p>
+
+      <h2 id="what">What you'll need</h2>
+      <ul>
+        <li>Your <strong>LYMX Web Wallet</strong> open on your phone (or installed as a Web App on your home screen)</li>
+        <li>An <strong>active LYMX balance</strong> — even 100 LYMX (the welcome bonus) is enough to start</li>
+        <li>You're at a <strong>participating LYMX Business</strong> — look for the LYMX QR signage at the counter, or check the <a href="browse.html">directory</a></li>
+      </ul>
+
+      <h2 id="steps">The 5 steps</h2>
+
+      <div class="step">
+        <div class="num">1</div>
+        <div class="body">
+          <h4>Open your wallet on your phone</h4>
+          <p>Tap the LYMX icon on your home screen. If you haven't installed it as a Web App yet, just open <code>getlymx.com/wallet</code> in your phone browser.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">2</div>
+        <div class="body">
+          <h4>Tap "Pay with QR" on the balance card</h4>
+          <p>It's the gold button on the blue balance card. A full-screen QR code appears.</p>
+        </div>
+      </div>
+
+      <div class="screenshot">
+        <div class="frame">
+          <div class="head">Pay with QR</div>
+          <div class="balance">2,450 LYMX</div>
+          <div class="qr"></div>
+        </div>
+        <div class="caption">Your wallet showing the Pay-with-QR screen. Code refreshes every 90 seconds for security.</div>
+      </div>
+
+      <div class="step">
+        <div class="num">3</div>
+        <div class="body">
+          <h4>Tell the cashier "I'd like to use my LYMX balance"</h4>
+          <p>The cashier opens their LYMX POS app and selects "Accept LYMX" — they enter the dollar amount you want to apply, scan your QR, and the LYMX equivalent is deducted from your balance.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">4</div>
+        <div class="body">
+          <h4>Approve the amount on your phone (if it's over your auto-approve limit)</h4>
+          <p>By default, redemptions over $20 require a quick tap-to-approve on your phone. You can change this limit in <a href="customer-settings.html">Settings</a>.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">5</div>
+        <div class="body">
+          <h4>Done — you'll see a receipt notification</h4>
+          <p>Both you and the Business get a confirmation. The receipt shows up in your <a href="notifications.html">inbox</a> within seconds, and you can find it again later in your <a href="customer-dashboard.html">activity history</a>.</p>
+        </div>
+      </div>
+
+      <h2 id="math">How the math works</h2>
+      <p>Each LYMX = <strong>$0.01 of spending power</strong> at any participating Business. Some quick examples:</p>
+      <ul>
+        <li><strong>1,000 LYMX</strong> = $10 of value applied to your bill</li>
+        <li><strong>5,000 LYMX</strong> = $50 of value</li>
+        <li><strong>10,000 LYMX</strong> = $100 of value</li>
+      </ul>
+      <p>If your bill is $14.50 and you have 2,000 LYMX, you can apply your full $20 of LYMX value (which covers your $14.50 bill — the remaining $5.50 of value stays in your wallet) <em>or</em> apply just $14.50 worth (1,450 LYMX) and keep 550 LYMX for next time. <a href="#partial">More on partial redemption below.</a></p>
+
+      <div class="callout">
+        <div class="h">Earning vs. spending — they're the same balance</div>
+        <p>If a Business gives you 2× LYMX during their Happy Hour multiplier, those new LYMX go straight into the same wallet. There's no "earn balance" and "spend balance" — just one number.</p>
+      </div>
+
+      <h2 id="partial">Partial redemption</h2>
+      <p>You don't have to spend all your LYMX at once. The cashier asks you, <em>"How much LYMX would you like to apply?"</em> and you can pick any amount up to your balance.</p>
+      <p>Common patterns:</p>
+      <ol>
+        <li><strong>Full coverage:</strong> apply enough LYMX to cover your whole bill. Pay $0 in cash.</li>
+        <li><strong>Partial coverage:</strong> apply some LYMX, pay the rest in cash or card. Helpful when you're saving up for a big redemption later.</li>
+        <li><strong>Top-off only:</strong> apply just enough to round your bill to a nice number. Some customers find this satisfying.</li>
+      </ol>
+
+      <h2 id="troubleshoot">If something goes wrong</h2>
+
+      <h3>QR scanner won't read my code</h3>
+      <p>The QR refreshes every 90 seconds for security. If the cashier can't scan, tap the <strong>Refresh</strong> button on the QR screen and try again. If it still doesn't work, brighten your phone screen — most issues are dim displays under bright counter lighting.</p>
+
+      <h3>The deducted amount doesn't match what the cashier entered</h3>
+      <p>Stop the transaction immediately. Tap <strong>Dispute</strong> on the receipt screen — it opens a support ticket and freezes the transaction until our team reviews it. Both you and the Business owner get an email with next steps.</p>
+
+      <div class="callout warn">
+        <div class="h">Never give your QR code to anyone outside the Business</div>
+        <p>Your QR is a one-time-use redemption ticket. Don't text it, email it, or post it online. The Business scans it directly from your phone screen — that's the only way to use it.</p>
+      </div>
+
+      <h3>I don't have enough LYMX to cover my bill</h3>
+      <p>That's fine — apply what you have. Pay the difference with cash or card as you normally would. The Business POS handles split payment automatically.</p>
+
+      <h3>The Business says they don't accept LYMX</h3>
+      <p>Sometimes a Business is listed but their POS isn't activated yet. Check the LYMX QR at the counter — if there's no signage, ask the manager. If they say they're not on LYMX, <a href="browse.html">find a different LYMX Business</a> nearby. We're growing the network fast.</p>
+
+      <h2 id="faq">Quick FAQ</h2>
+
+      <h3>Do my LYMX expire?</h3>
+      <p><strong>No.</strong> LYMX has no expiration. You can earn them today and spend them next year.</p>
+
+      <h3>Can I transfer LYMX to a friend?</h3>
+      <p>Not directly, but you can <a href="customer-referral.html">refer them</a> — both of you get 200 LYMX when they sign up. It's the simplest way to "share."</p>
+
+      <h3>Can I get cash for my LYMX?</h3>
+      <p>No. LYMX is a promotional credit, not money. It's spendable across LYMX Businesses, but not redeemable for cash. <a href="disclaimer.html">More about how LYMX works.</a></p>
+
+      <h3>Do I need a separate app?</h3>
+      <p>No native app — LYMX runs as a Web App from your browser. Add it to your home screen via <a href="app.html">these instructions</a> for the smoothest experience.</p>
+
+      <!-- Was this helpful -->
+      <div class="feedback" id="feedback">
+        <h3>Was this article helpful?</h3>
+        <div class="row">
+          <button class="fb-btn" onclick="rate('yes')">👍 Yes</button>
+          <button class="fb-btn" onclick="rate('no')">👎 Not really</button>
+        </div>
+        <div class="followup" id="followup">
+          <textarea id="fb-text" placeholder="What would have made this article more helpful?"></textarea>
+          <button class="fb-btn" onclick="submitFeedback()">Send feedback</button>
+        </div>
+      </div>
+    </article>
+
+    <!-- Right rail -->
+    <aside>
+      <div class="rail">
+        <div class="rail-card">
+          <h4>Related articles</h4>
+          <a href="help-article.html">How to refer a friend (and earn 200 LYMX)<span class="arr">→</span></a>
+          <a href="help-article.html">What's the LYMX welcome bonus?<span class="arr">→</span></a>
+          <a href="help-article.html">How to install the Web Wallet on iPhone<span class="arr">→</span></a>
+          <a href="help-article.html">How to install the Web Wallet on Android<span class="arr">→</span></a>
+          <a href="help-article.html">Why my balance shows pending LYMX<span class="arr">→</span></a>
+        </div>
+
+        <div class="rail-card">
+          <h4>Popular this week</h4>
+          <a href="help-article.html">How LYMX promotions work<span class="arr">→</span></a>
+          <a href="help-article.html">Lost my phone — recover wallet<span class="arr">→</span></a>
+          <a href="help-article.html">Get a printed receipt<span class="arr">→</span></a>
+        </div>
+
+        <div class="rail-card contact">
+          <h4>Still need help?</h4>
+          <p>Our support team replies within 2 business hours during weekdays.</p>
+          <a class="btn" href="support.html">Contact support →</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>Help</h4>
+        <a href="help-center.html">Help center</a>
+        <a href="support.html">Contact support</a>
+        <a href="status.html">System status</a>
+        <a href="changelog.html">Changelog</a>
+      </div>
+      <div>
+        <h4>Customers</h4>
+        <a href="why-lymx.html">Why LYMX</a>
+        <a href="browse.html">Browse Businesses</a>
+        <a href="app.html">Web Wallet</a>
+        <a href="customer-referral.html">Refer friends</a>
+      </div>
+      <div>
+        <h4>Businesses</h4>
+        <a href="business.html">List your Business</a>
+        <a href="catering.html">Bulk gifts</a>
+        <a href="founding-25.html">Founding 25</a>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="disclaimer.html">Disclaimer</a>
+      </div>
+    </div>
+    <div class="foot-bot">© 2026 LYMX Power · Las Vegas, NV · Promotional credit, not money.</div>
+  </div>
+</footer>
+
+<script>
+  // TOC active section as you scroll
+  const tocLinks = document.querySelectorAll('#toc a');
+  const sections = Array.from(tocLinks).map(a=>document.querySelector(a.getAttribute('href')));
+  function onScroll(){
+    let active = sections[0];
+    for(const s of sections){
+      if(!s) continue;
+      if(s.getBoundingClientRect().top < 120) active = s;
+    }
+    tocLinks.forEach(a=>{
+      a.classList.toggle('on', a.getAttribute('href') === '#'+active.id);
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+
+  // Smooth scroll
+  tocLinks.forEach(a=>{
+    a.onclick = e=>{
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+    };
+  });
+
+  // Feedback
+  function rate(v){
+    document.querySelectorAll('.fb-btn').forEach(b=>b.classList.remove('on','no'));
+    const yes = document.querySelectorAll('.fb-btn')[0];
+    const no = document.querySelectorAll('.fb-btn')[1];
+    if(v==='yes'){ yes.classList.add('on'); document.getElementById('followup').classList.remove('on'); setTimeout(()=>{yes.textContent='👍 Thanks!'},150); }
+    else { no.classList.add('on','no'); document.getElementById('followup').classList.add('on'); }
+  }
+  function submitFeedback(){
+    const text = document.getElementById('fb-text').value.trim();
+    if(!text){ alert('Tell us what would have helped, and we\'ll improve the article.'); return; }
+    document.getElementById('feedback').innerHTML = '<h3>✓ Thanks for the feedback</h3><p style="margin:0;color:var(--muted)">We\'ll review and update this article. If you need urgent help, <a href="support.html" style="color:var(--accent-2);font-weight:700">contact support</a>.</p>';
+  }
+</script>
+</body>
+</html>

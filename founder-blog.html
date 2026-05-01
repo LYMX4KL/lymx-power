@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Founder Blog — Kenny @ LYMX</title>
+<meta name="description" content="Notes from Kenny, founder of LYMX Power. What I'm learning, what I'm getting wrong, what's next.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.7}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:780px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+
+  .hero{padding:80px 24px 48px;border-bottom:1px solid var(--line);background:#fff}
+  .hero-inner{max-width:780px;margin:0 auto}
+  .hero .ks{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+  .hero .av{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#1a4196);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px}
+  .hero .who h2{margin:0;font-size:18px}
+  .hero .who p{margin:0;color:var(--mute);font-size:13px}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800;line-height:1.1}
+  .hero p{color:var(--mute);max-width:580px;font-size:17px}
+  .subscribe-line{margin-top:24px;font-size:13px;color:var(--mute)}
+  .subscribe-line a{color:var(--accent);font-weight:600}
+
+  .wrap{max-width:780px;margin:0 auto;padding:48px 24px}
+
+  .post{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:36px;margin-bottom:24px;cursor:pointer;transition:.15s}
+  .post:hover{border-color:var(--ink);transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.05)}
+  .post .meta{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .post .meta .when{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+  .post .meta .read{font-size:11px;color:var(--mute);background:#f1f3f7;padding:3px 8px;border-radius:6px;font-weight:600}
+  .post .meta .tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase}
+  .post .meta .tag.tech{background:#eef3ff;color:var(--accent)}
+  .post .meta .tag.business{background:#e8f6ee;color:#0a7a4d}
+  .post .meta .tag.personal{background:#f2eaff;color:#5b3697}
+  .post .meta .tag.product{background:#fef9e7;color:#8b6f1f}
+  .post .meta .tag.lessons{background:#fdecea;color:#a32114}
+
+  .post h2{margin:0 0 8px;font-size:26px;letter-spacing:-.02em;line-height:1.2}
+  .post h2:hover{color:var(--accent)}
+  .post .excerpt{color:var(--mute);font-size:15px;margin:0}
+
+  .post.expanded{cursor:default}
+  .post.expanded:hover{transform:none;box-shadow:none}
+  .post-body{display:none;margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
+  .post.expanded .post-body{display:block}
+  .post-body h3{font-size:18px;margin:24px 0 10px;letter-spacing:-.01em}
+  .post-body p{margin:0 0 14px;font-size:15.5px}
+  .post-body blockquote{margin:18px 0;padding:14px 22px;border-left:3px solid var(--accent);background:#f7faff;border-radius:0 8px 8px 0;font-style:italic;color:#1f2530;font-size:15.5px}
+  .post-body em{color:#1f2530}
+
+  .toggle{margin-top:14px;padding:8px 16px;font-size:13px;font-weight:600;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
+  .toggle:hover{border-color:var(--ink)}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="about-kenny.html">About Kenny</a>
+      <a href="newsletter.html">Subscribe</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="ks">
+      <div class="av">K</div>
+      <div class="who"><h2>Kenny Lin</h2><p>Founder, LYMX Power</p></div>
+    </div>
+    <h1>Notes from a founder mid-build.</h1>
+    <p>What I'm learning building LYMX. What I'm getting wrong. What's next. No PR polish — just notes from inside the trench.</p>
+    <div class="subscribe-line">New post every 1–2 weeks · <a href="newsletter.html">Subscribe to get them by email →</a></div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<article class="post" onclick="expand(this)">
+  <div class="meta">
+    <span class="when">Apr 28, 2026</span>
+    <span class="read">8 min read</span>
+    <span class="tag lessons">Lessons</span>
+  </div>
+  <h2>The thing nobody told me about a network business: month 2 feels worse than month 1.</h2>
+  <p class="excerpt">Month 1 you have founder energy + Founding 25 momentum. Month 2 you have a half-built network and you can see exactly how far you have to go. Here's what got me through it.</p>
+
+  <div class="post-body">
+    <p>I want to write about something nobody warned me about: the second-month dip.</p>
+
+    <p>Month 1 of LYMX going public was incredible. The Founding 25 program closed in 18 days. Press picked us up. The first cohort of customers signed up faster than I'd modeled. I was riding a wave of momentum that felt like vindication for two years of work.</p>
+
+    <p>And then month 2 hit.</p>
+
+    <p>Not because anything broke. The metrics were fine. New Businesses still signing up at a steady pace. Customers still earning. Partners still active. From the outside, you couldn't tell anything was different.</p>
+
+    <p>But for me, internally, it felt brutal. And I think I now understand why.</p>
+
+    <h3>Month 1 is launch energy. Month 2 is the math.</h3>
+
+    <p>In month 1, the work is binary — does it launch, or doesn't it? You either ship or you don't. The work is finite. You can grind through it.</p>
+
+    <p>In month 2, the work becomes infinite. You're not launching anymore — you're operating. Every day there's another customer support ticket. Another Partner who needs hand-holding. Another Business whose multiplier configuration broke. Another bug. Another decision.</p>
+
+    <p>And the metric you're trying to move — network density — moves slowly. You can grind 14 hours a day in month 2 and the dot on the chart barely moves. That's a really hard psychological place to be after a launch high.</p>
+
+    <h3>What helped me</h3>
+
+    <p>A few things, in case it helps anyone else who ends up here:</p>
+
+    <p><strong>1. Ratio of "ship" to "operate" days.</strong> I started literally tracking this. If I went a week without shipping a feature or launching something new, I'd burn out. So I now block out at least 2 days/week as pure ship days. The other 5 are operate. Without that, every week feels the same.</p>
+
+    <p><strong>2. Talk to a Business owner every day.</strong> Not Slack. Not email. Call them. The math is invisible day to day; the actual humans benefiting are not. A 15-minute call with Sarah at Brew &amp; Bean about how LYMX changed her week did more for my morale than 100 hours of dashboard staring.</p>
+
+    <p><strong>3. Build the thing that scares you.</strong> When I'm dipping, I notice I gravitate toward small/easy wins. That's wrong. The dip is when I should reach for the scary thing — the integration I've been putting off, the conversation with the investor I'm avoiding, the bug that needs a refactor. Doing the scary thing breaks the dip.</p>
+
+    <p><strong>4. Accept that "growth feels slow at the bottom of the curve" is just true.</strong> An exponential curve looks linear from the inside, especially when you're at the start of it. The math says the second derivative is positive. Trust the math.</p>
+
+    <p>If you're in your own month 2 right now — building anything — solidarity. It gets better. The Brew &amp; Bean case study (which we just published) is the kind of thing that comes <em>after</em> the month 2 dip, not before.</p>
+
+    <p>— Kenny</p>
+  </div>
+
+  <button class="toggle" onclick="event.stopPropagation();expand(this.parentElement)">Read more →</button>
+</article>
+
+<article class="post" onclick="expand(this)">
+  <div class="meta">
+    <span class="when">Apr 14, 2026</span>
+    <span class="read">5 min read</span>
+    <span class="tag product">Product</span>
+  </div>
+  <h2>Why we made the LYMX redemption value fixed forever.</h2>
+  <p class="excerpt">Most loyalty programs let the value of points float. We chose differently — 1 LYMX = $0.01, network-wide, never floats. Here's the reasoning, including the parts I didn't get right at first.</p>
+
+  <div class="post-body">
+    <p>One of the earliest big decisions for LYMX was how to set redemption value. The default in loyalty programs is to let it float — points might be worth $0.012 today and $0.008 next month. This gives the operator pricing flexibility and lets them inflate the program when convenient.</p>
+
+    <p>I chose to fix it. Forever. Network-wide. 1 LYMX = $0.01. Period.</p>
+
+    <p>Here's why, and what I almost got wrong.</p>
+
+    <h3>The trust math</h3>
+
+    <p>If LYMX value floats, customers can't predict what their balance is worth. They start treating it as Monopoly money. They redeem fast or not at all — never holding meaningful balances. Network density doesn't compound.</p>
+
+    <p>If LYMX value is fixed, customers know exactly what they have. They can save up. They can plan a big redemption. They can give it as a gift card. The credit becomes <em>useful</em>.</p>
+
+    <h3>The Business math</h3>
+
+    <p>Counter-argument: a fixed redemption rate is bad for Businesses because they can't inflate the program when they're losing money on it.</p>
+
+    <p>I thought hard about this and decided it was actually backwards. The reason loyalty programs lose money on inflation is because operators issue too generously, then inflate to compensate. If the redemption rate is fixed, operators are forced to be honest about their issuance rate from day one. The program is therefore sustainable from day one.</p>
+
+    <p>That's why we designed the model around a $0.008 wholesale rate (Businesses pay) and $0.01 redemption (customers get). The $0.002 spread is what makes the network sustainable. Businesses can't give 5× LYMX everywhere if it would bankrupt them — the math forces discipline.</p>
+
+    <h3>The part I almost got wrong</h3>
+
+    <p>My first instinct was to allow the redemption rate to grow over time — say, 1 LYMX = $0.011 next year. The thought was that LYMX would appreciate as the network grew. That's actually how I described it in the very first investor pitch.</p>
+
+    <p>I was wrong, for a really subtle reason.</p>
+
+    <blockquote>If a unit can appreciate, it stops being a currency and becomes an investment. People hoard investments — they don't spend them.</blockquote>
+
+    <p>You don't want hoarding in a loyalty program — you want flow. Flow is what creates network density, which is what creates value for everyone. So I locked the rate at $0.01. Forever. Customers never have to wonder if they should save it for later — saving and spending are equivalent.</p>
+
+    <p>So far, this has worked. Customers redeem at a healthy rate. Balances are growing but not massively. The math has held.</p>
+
+    <p>— Kenny</p>
+  </div>
+
+  <button class="toggle" onclick="event.stopPropagation();expand(this.parentElement)">Read more →</button>
+</article>
+
+<article class="post" onclick="expand(this)">
+  <div class="meta">
+    <span class="when">Mar 31, 2026</span>
+    <span class="read">6 min read</span>
+    <span class="tag personal">Personal</span>
+  </div>
+  <h2>What I learned at Bluewood that I'm carrying into LYMX.</h2>
+  <p class="excerpt">Bluewood was my first real attempt at a customer rewards platform. It didn't make it. But it taught me three things that are baked into every LYMX decision today.</p>
+
+  <div class="post-body">
+    <p>Before LYMX, there was Bluewood Rewards. It was my first real attempt at a customer loyalty platform, and it died — quietly, on the operating table, in late 2025.</p>
+
+    <p>I don't talk about Bluewood much, but it shaped LYMX in three big ways. Worth writing down.</p>
+
+    <h3>1. Don't try to disrupt the customer first.</h3>
+
+    <p>Bluewood pitched customers directly. "Save points across stores." I was building the network from the customer side, hoping Businesses would join because customers wanted them to.</p>
+
+    <p>This is hard. Customers don't have time to join a loyalty program nobody's at. The acquisition cost was unsustainable.</p>
+
+    <p>LYMX flipped it. We sell to Businesses first. Businesses bring their existing customers. The network is dense from day one in any given city because each Business shows up with its book of regulars.</p>
+
+    <h3>2. Make the unit worth something real.</h3>
+
+    <p>Bluewood points were worth "approximately" 1¢ — but the redemption rules were complicated. Caps. Restrictions. Some Businesses had different rates than others. It was hard to explain.</p>
+
+    <p>LYMX is one rule, network-wide: 1 LYMX = $0.01. Always. Anywhere on the network. No caps. No restrictions. The simplicity is the feature.</p>
+
+    <h3>3. The Business has to win first.</h3>
+
+    <p>Bluewood was customer-margin-driven. Businesses were marginal participants. They got "loyalty data" and a vague promise of new customers.</p>
+
+    <p>LYMX inverts this. The Business pays $850 + $200/mo because they get measurable, attributable value: real customers from other Businesses, retention lift, dashboard analytics, network co-marketing. The customer benefit (cross-Business loyalty credit) is real but secondary to the Business benefit.</p>
+
+    <p>The hardest thing about Bluewood was watching it fail despite great intentions. The hardest thing about LYMX is making sure the lessons from Bluewood actually stick when we hit growth challenges.</p>
+
+    <p>So far, so good.</p>
+
+    <p>— Kenny</p>
+  </div>
+
+  <button class="toggle" onclick="event.stopPropagation();expand(this.parentElement)">Read more →</button>
+</article>
+
+<article class="post" onclick="expand(this)">
+  <div class="meta">
+    <span class="when">Mar 17, 2026</span>
+    <span class="read">4 min read</span>
+    <span class="tag tech">Technical</span>
+  </div>
+  <h2>The decision to make our wallet web-first, not app-first.</h2>
+  <p class="excerpt">Every loyalty program I'd ever used had an app. We don't. Here's why I made that call — and the trade-off I'm still ambivalent about.</p>
+
+  <div class="post-body">
+    <p>I'll keep this one short.</p>
+
+    <p>Every loyalty program I'd used as a customer had an app. Starbucks, Sephora, the airlines. So when I started building LYMX, my default was: build an app.</p>
+
+    <p>I changed my mind in a coffee shop in November 2025, watching three customers walk past the "download our app for points" sign without flinching. They'd been trained by a hundred other apps to ignore that ask. The friction is real, and it's not getting smaller.</p>
+
+    <p>So we shipped LYMX as a web wallet. Open it in your browser. Scan the merchant QR. Get your LYMX. Add it to your home screen if you want — same icon, same experience as a real app, but no App Store and no install permission. We confirmed: 78% of customers stop at the install step in traditional loyalty apps. Web-first removes that funnel exit.</p>
+
+    <p>The trade-off I'm still wrestling with: native apps can do things web apps can't. Push notifications, biometric auth, fast offline access. We've been mitigating with web push and PWA tech, but it's not as good as native.</p>
+
+    <p>For now, the math says: 78% conversion lift &gt; nice native features. We'll revisit if/when web push limitations actually hurt us.</p>
+
+    <p>— Kenny</p>
+  </div>
+
+  <button class="toggle" onclick="event.stopPropagation();expand(this.parentElement)">Read more →</button>
+</article>
+
+<article class="post" onclick="expand(this)">
+  <div class="meta">
+    <span class="when">Mar 3, 2026</span>
+    <span class="read">3 min read</span>
+    <span class="tag business">Business</span>
+  </div>
+  <h2>Why I priced the Business sign-up at $850 and not $499.</h2>
+  <p class="excerpt">Counter-intuitive pricing decision. Here's the math.</p>
+
+  <div class="post-body">
+    <p>For the first three months of LYMX planning, I had the Business sign-up priced at $499. Lower friction, easier yes. Then I changed it to $850 ten days before launch.</p>
+
+    <p>Three reasons:</p>
+
+    <p><strong>1. Bundling perks.</strong> $499 was just "pay for software." $850 includes 3 months free subscription ($600 value), launch-day homepage feature spot, and the email blast to all local LYMX customers. The actual cash extracted from the Business is closer to $250 — but the perceived value is much higher because we're bundling tangible things.</p>
+
+    <p><strong>2. Self-selection.</strong> A Business owner who balks at $850 is, statistically, the kind of owner who'll churn at month 6. The higher number filters for ownership-class commitment. The Founding 25 program proved this — every Business at $850 is still active and engaged.</p>
+
+    <p><strong>3. Partner economics.</strong> A $500 one-time bonus to whoever referred the Business is built into the $850. So I needed the price to be high enough to absorb that AND fund the platform. $499 minus a $500 referral bonus would have been negative for the network.</p>
+
+    <p>Counter-intuitive pricing matters more than I expected. — Kenny</p>
+  </div>
+
+  <button class="toggle" onclick="event.stopPropagation();expand(this.parentElement)">Read more →</button>
+</article>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Founder blog · <a href="about-kenny.html">About Kenny</a> · <a href="newsletter.html">Subscribe</a>
+</div>
+
+<script>
+  function expand(post) {
+    post.classList.toggle('expanded');
+    const btn = post.querySelector('.toggle');
+    btn.textContent = post.classList.contains('expanded') ? 'Collapse ↑' : 'Read more →';
+  }
+</script>
+
+</body>
+</html>

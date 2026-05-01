@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Mailchimp Integration — LYMX Power</title>
+<meta name="description" content="Connect Mailchimp with LYMX. Auto-sync customer list, segment by LYMX activity, trigger emails based on behavior. Setup ~12 minutes.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--mc:#FFE01B}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+
+  .hero{padding:72px 24px 48px;border-bottom:1px solid var(--line);background:#fff}
+  .hero-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.3fr 1fr;gap:56px;align-items:center}
+  @media (max-width:880px){.hero-inner{grid-template-columns:1fr;gap:32px}}
+  .hero .pre{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .hero .lymx-tile{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+  .hero .lymx-tile span{color:var(--gold)}
+  .hero .plus{font-size:24px;color:var(--mute);font-weight:300}
+  .hero .mc-tile{width:48px;height:48px;border-radius:12px;background:var(--mc);color:#0e1116;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800;line-height:1.1}
+  .hero p{color:var(--mute);font-size:18px;max-width:520px;margin-bottom:24px}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn-primary{padding:12px 22px;background:var(--ink);color:#fff;border-radius:10px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:6px}
+  .btn-ghost{padding:12px 22px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:10px;font-weight:700;font-size:15px}
+
+  .hero-illust{aspect-ratio:1.1/1;background:linear-gradient(135deg,#fffce0 0%,#fafafa 100%);border-radius:18px;border:1px solid var(--line);position:relative;display:flex;align-items:center;justify-content:center;padding:32px}
+  .arrow-flow{display:flex;align-items:center;gap:18px;font-size:14px;color:var(--mute)}
+  .blk{padding:14px 20px;background:#fff;border:2px solid var(--line);border-radius:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:120px}
+  .blk.lymx{border-color:var(--gold)}
+  .blk.mc{border-color:var(--mc)}
+  .blk .ic{font-size:28px}
+  .arrow-flow .arr{font-size:24px;color:#cfb415;font-weight:700;animation:slide 1.6s infinite}
+  @keyframes slide{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  .syncs{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .syncs h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .syncs .sub{color:var(--mute);font-size:14px;margin-bottom:24px}
+  .sync-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media (max-width:680px){.sync-grid{grid-template-columns:1fr}}
+  .sync-row{padding:18px;border:1px solid var(--line);border-radius:10px;background:#fafafa}
+  .sync-h{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .sync-h .ic{width:36px;height:36px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .sync-h h4{margin:0;font-size:14px;flex:1}
+  .freq{font-size:10px;background:#e8f6ee;color:#0a7a4d;padding:3px 7px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .freq.realtime{background:#fffce0;color:#5d4400}
+  .sync-row p{margin:0;font-size:13px;color:var(--mute)}
+
+  /* Segments */
+  .segments{background:linear-gradient(135deg,#fffce0,#fff5b3);border:1px solid var(--mc);border-radius:14px;padding:32px;margin-bottom:32px}
+  .segments h2{margin:0 0 6px;font-size:22px;color:#5d4400}
+  .segments .sub{color:#7d5a00;font-size:14px;margin-bottom:20px}
+  .seg-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  @media (max-width:680px){.seg-grid{grid-template-columns:1fr}}
+  .seg{background:rgba(255,255,255,.7);padding:14px;border-radius:10px;display:flex;gap:12px}
+  .seg .ic{flex-shrink:0;font-size:22px}
+  .seg strong{display:block;font-size:13px;color:#3a2f0a;margin-bottom:2px}
+  .seg span{font-size:12.5px;color:#5d4400;line-height:1.5}
+
+  .steps{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .steps h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .steps .sub{color:var(--mute);font-size:14px;margin-bottom:24px;display:flex;align-items:center;gap:14px}
+  .steps .sub .timer{background:#fffce0;color:#5d4400;padding:5px 12px;border-radius:999px;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:18px;padding:18px 0;border-top:1px solid var(--line)}
+  .step:first-of-type{border-top:0;padding-top:0}
+  .step-n{width:40px;height:40px;border-radius:50%;background:var(--mc);color:#0e1116;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0}
+  .step h3{margin:0 0 4px;font-size:16px}
+  .step .desc{font-size:14px;color:var(--mute);margin:0 0 10px}
+  .step .est{font-size:11px;color:#5d4400;background:#fffce0;padding:3px 9px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;display:inline-block}
+  .step kbd{background:#fff;border:1px solid var(--line);box-shadow:inset 0 -1px 0 var(--line);padding:1px 6px;border-radius:5px;font-size:12px}
+
+  .faq{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .faq h2{margin:0 0 18px;font-size:24px;letter-spacing:-.02em}
+  details{padding:14px 0;border-top:1px solid var(--line)}
+  details:first-of-type{border-top:0;padding-top:0}
+  summary{cursor:pointer;font-weight:600;font-size:15px;list-style:none;display:flex;align-items:center;gap:12px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";width:24px;height:24px;border-radius:6px;background:#f1f3f7;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:var(--mute);flex-shrink:0}
+  details[open] summary::before{content:"−";background:var(--ink);color:#fff}
+  details[open] summary{margin-bottom:10px}
+  .faq-body{font-size:14px;color:#1f2530;line-height:1.65;padding-left:36px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="integrations.html">All integrations</a>
+      <a href="biz-marketing-kit.html">Marketing kit</a>
+      <a href="api.html">API</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="pre">
+        <div class="lymx-tile">L<span>★</span></div>
+        <div class="plus">×</div>
+        <div class="mc-tile">📧</div>
+      </div>
+      <h1>LYMX + Mailchimp — segment by behavior.</h1>
+      <p>Sync your LYMX customer list to Mailchimp. Build segments based on real behavior — heavy spenders, lapsed customers, network-referred. Trigger emails automatically.</p>
+      <div class="cta">
+        <a href="biz-dashboard.html" class="btn-primary">Connect Mailchimp →</a>
+        <a href="#how" class="btn-ghost">See how it works</a>
+      </div>
+    </div>
+    <div class="hero-illust">
+      <div class="arrow-flow">
+        <div class="blk lymx"><div class="ic">★</div>LYMX</div>
+        <div class="arr">→</div>
+        <div class="blk mc"><div class="ic">📧</div>Mailchimp</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- WHAT SYNCS -->
+<div class="syncs">
+  <h2>What syncs to Mailchimp</h2>
+  <p class="sub">One-way sync: LYMX is the source of truth, Mailchimp is the email engine.</p>
+
+  <div class="sync-grid">
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">👥</div><h4>Customer contact list</h4><span class="freq">Every 4 hr</span></div>
+      <p>Email + phone + name pushed to your Mailchimp audience. Customers who opted out of marketing don't sync.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">🏷️</div><h4>Behavioral tags</h4><span class="freq">Every 4 hr</span></div>
+      <p>Tags like "first-time-customer", "network-referred", "lapsed-30d", "high-spender", "birthday-this-month" auto-applied.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">📊</div><h4>Custom merge fields</h4><span class="freq">Daily</span></div>
+      <p>LYMX balance, last visit date, lifetime spend, top category — usable in email personalization.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">⚡</div><h4>Trigger events</h4><span class="freq realtime">Real-time</span></div>
+      <p>First-visit triggers welcome series. 30-day-no-visit triggers winback. Birthday triggers birthday email.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">🚫</div><h4>Unsubscribes</h4><span class="freq realtime">Real-time</span></div>
+      <p>If a customer unsubscribes in Mailchimp, their LYMX marketing-opt-in flag updates immediately. CAN-SPAM compliant.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">📨</div><h4>Email-open back-flow</h4><span class="freq">Daily</span></div>
+      <p>Mailchimp open + click data flows back to LYMX so you can correlate marketing engagement with foot traffic.</p>
+    </div>
+  </div>
+</div>
+
+<!-- AUTO SEGMENTS -->
+<div class="segments">
+  <h2>📬 Auto-generated segments</h2>
+  <p class="sub">LYMX automatically tags your contacts with these behavioral segments. Use them in Mailchimp campaigns immediately — no manual segmentation needed.</p>
+
+  <div class="seg-grid">
+    <div class="seg"><div class="ic">🌟</div><div><strong>First-time customers (last 7 days)</strong><span>Send the welcome series. Pin to bookmark of LYMX value.</span></div></div>
+    <div class="seg"><div class="ic">🔥</div><div><strong>Top 10% spenders</strong><span>VIP segment. Birthday gifts, exclusive previews, anniversary thank-yous.</span></div></div>
+    <div class="seg"><div class="ic">😴</div><div><strong>Lapsed (no visit in 30 days)</strong><span>Winback campaign. Send a small bonus LYMX offer.</span></div></div>
+    <div class="seg"><div class="ic">🎂</div><div><strong>Birthday this month</strong><span>2× LYMX birthday boost auto-trigger. Personalize the email subject.</span></div></div>
+    <div class="seg"><div class="ic">🌐</div><div><strong>Network-referred (came from another LYMX Business)</strong><span>Welcome these — they're often higher-value than walk-ins.</span></div></div>
+    <div class="seg"><div class="ic">📈</div><div><strong>High frequency (4+ visits/mo)</strong><span>Already loyal. Don't waste promo dollars — instead, ask for reviews.</span></div></div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<div class="steps" id="how">
+  <h2>How to connect Mailchimp</h2>
+  <p class="sub">One-time setup. <span class="timer">⏱️ Total: ~12 min</span></p>
+
+  <div class="step">
+    <div class="step-n">1</div>
+    <div>
+      <h3>Open Integrations in your LYMX dashboard</h3>
+      <p class="desc">From your <a href="biz-dashboard.html">Business dashboard</a>, click <kbd>Settings</kbd> → <kbd>Integrations</kbd>. Find <strong>Mailchimp</strong> and click <kbd>Connect</kbd>.</p>
+      <span class="est">~30 sec</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">2</div>
+    <div>
+      <h3>Authorize via Mailchimp OAuth</h3>
+      <p class="desc">Sign in to your Mailchimp account. Authorize LYMX. Permissions: read/write to one audience (you pick which).</p>
+      <span class="est">~2 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">3</div>
+    <div>
+      <h3>Pick which Mailchimp audience to sync</h3>
+      <p class="desc">If you have multiple audiences in Mailchimp, pick one. Most Businesses have one main audience for their customers. Custom: you can create a new "LYMX Customers" audience just for this sync.</p>
+      <span class="est">~1 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">4</div>
+    <div>
+      <h3>Map LYMX merge fields to Mailchimp</h3>
+      <p class="desc">Map LYMX-specific fields (balance, last visit, total spend, top category) to Mailchimp merge tags. Defaults work for 90% of cases — review and confirm.</p>
+      <span class="est">~3 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">5</div>
+    <div>
+      <h3>Set up automation triggers</h3>
+      <p class="desc">Choose which automated emails to enable: welcome series, winback, birthday, anniversary. Each comes with a starter template you can customize.</p>
+      <span class="est">~5 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">6</div>
+    <div>
+      <h3>Run a test sync</h3>
+      <p class="desc">Click "Sync Now" — your LYMX contacts pull into Mailchimp. Verify they show up with correct tags + merge fields. Done.</p>
+      <span class="est">~2 min</span>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq">
+  <h2>Frequently asked questions</h2>
+
+  <details>
+    <summary>What about Klaviyo, ConvertKit, ActiveCampaign, etc.?</summary>
+    <div class="faq-body"><p>Klaviyo integration is available (similar setup). ConvertKit + ActiveCampaign are on the roadmap (Q3 2026). For now, those work via CSV export.</p></div>
+  </details>
+
+  <details>
+    <summary>Will customers who opt out of LYMX marketing also opt out of my Mailchimp?</summary>
+    <div class="faq-body"><p>Yes. We respect the unsubscribe in either direction. If a customer hits "unsubscribe" in Mailchimp, their LYMX marketing-opt-in goes off. If they opt out in LYMX, they're removed from your Mailchimp sync.</p></div>
+  </details>
+
+  <details>
+    <summary>What if I run my own emails outside Mailchimp?</summary>
+    <div class="faq-body"><p>You can also build a Mailchimp campaign without LYMX-triggered automation. The integration still gives you better segmentation. Or skip Mailchimp entirely — use the LYMX dashboard's built-in email tools.</p></div>
+  </details>
+
+  <details>
+    <summary>How does this affect my Mailchimp pricing?</summary>
+    <div class="faq-body"><p>Mailchimp prices by audience size. The LYMX integration adds your LYMX customers to your audience, which may increase your Mailchimp tier. We recommend creating a separate "LYMX Customers" audience to control this.</p></div>
+  </details>
+
+  <details>
+    <summary>Can I sync only a subset of customers?</summary>
+    <div class="faq-body"><p>Yes. In setup step 3, you can apply a filter (e.g., "only sync customers with at least 1 transaction"). This keeps your Mailchimp list focused.</p></div>
+  </details>
+
+  <details>
+    <summary>What about GDPR / CAN-SPAM compliance?</summary>
+    <div class="faq-body"><p>We sync only customers who have opted in to marketing emails through their LYMX wallet (explicit consent). The opt-in is stored as a merge field. CAN-SPAM compliant by design.</p></div>
+  </details>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Mailchimp integration · <a href="biz-marketing-kit.html">Marketing kit</a> · <a href="integrations.html">All integrations</a> · <a href="email-sequence.html">Customer email sequence</a>
+</div>
+
+</body>
+</html>

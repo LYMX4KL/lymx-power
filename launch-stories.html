@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Founding 25 Launch Stories — LYMX Power</title>
+<meta name="description" content="How the first 25 LYMX Businesses launched. 8 stories, 8 categories — what they did, what they got, what they'd do differently.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(180deg,#fef9e7 0%,#fafafa 100%);padding:64px 24px 40px;border-bottom:1px solid var(--line)}
+  .hero-inner{max-width:1180px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#8b6f1f;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid var(--gold)}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto 22px;font-size:17px}
+
+  .filter{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+  .chip{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:600;background:#fff;cursor:pointer}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+
+  .meta-strip{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:32px;display:grid;grid-template-columns:repeat(4,1fr);gap:18px;text-align:center}
+  @media (max-width:680px){.meta-strip{grid-template-columns:repeat(2,1fr)}}
+  .meta-strip .n{font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--gold)}
+  .meta-strip .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:4px}
+
+  .stories{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media (max-width:760px){.stories{grid-template-columns:1fr}}
+
+  .story{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:.15s}
+  .story:hover{border-color:var(--ink);transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.06)}
+
+  .story-cover{height:120px;display:flex;align-items:center;justify-content:center;font-size:60px;position:relative;color:#fff}
+  .story-cover.cafe{background:linear-gradient(135deg,#d4a86a,#f5e6d3);color:#3a2f0a}
+  .story-cover.restaurant{background:linear-gradient(135deg,#c0392b,#e74c3c)}
+  .story-cover.bakery{background:linear-gradient(135deg,#f8d7a3,#e0c4a0);color:#3a2f0a}
+  .story-cover.fitness{background:linear-gradient(135deg,#13a26b,#9adfb6)}
+  .story-cover.retail{background:linear-gradient(135deg,#5b3697,#a374e6)}
+  .story-cover.ev{background:linear-gradient(135deg,#0a84ff,#5b9ef5)}
+  .story-cover.spa{background:linear-gradient(135deg,#ff8aa6,#ffd9e0);color:#7a2c47}
+  .story-cover.bar{background:linear-gradient(135deg,#0e1116,#3a4452)}
+
+  .story-cover .num{position:absolute;top:12px;left:14px;font-size:11px;font-weight:800;background:rgba(255,255,255,.85);color:var(--ink);padding:3px 10px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase}
+  .story-cover.cafe .num,.story-cover.bakery .num,.story-cover.spa .num{background:rgba(255,255,255,.95)}
+
+  .story-body{padding:22px;flex:1;display:flex;flex-direction:column}
+  .story-h{margin-bottom:14px}
+  .story-h h3{margin:0 0 4px;font-size:18px;letter-spacing:-.01em}
+  .story-h .meta{font-size:12px;color:var(--mute)}
+  .story-h .meta .cat{font-weight:700;color:var(--ink)}
+  .story-q{font-size:14px;font-style:italic;color:#1f2530;margin:0 0 14px;line-height:1.55}
+  .story-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:auto;padding-top:14px;border-top:1px dashed var(--line)}
+  .story-stats .ms{text-align:center}
+  .story-stats .v{font-size:14px;font-weight:800;color:var(--ink)}
+  .story-stats .l{font-size:10px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-top:2px}
+
+  .lessons{background:linear-gradient(135deg,#fef9e7,#fff5c2);border:1px solid var(--gold);border-radius:14px;padding:32px;margin:48px 0}
+  .lessons h2{margin:0 0 18px;font-size:24px;color:#3a2f0a}
+  .lessons-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media (max-width:760px){.lessons-grid{grid-template-columns:1fr}}
+  .lesson{background:rgba(255,255,255,.7);padding:18px;border-radius:10px}
+  .lesson h4{margin:0 0 6px;font-size:14px;color:#3a2f0a;display:flex;align-items:center;gap:8px}
+  .lesson h4 .ic{font-size:18px}
+  .lesson p{margin:0;font-size:13px;color:#5d4d18}
+
+  .cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:16px;padding:40px;text-align:center;margin-top:48px}
+  .cta h2{margin:0 0 8px;font-size:26px;color:#fff}
+  .cta p{color:#b8c2d6;max-width:520px;margin:0 auto 20px}
+  .cta a{display:inline-block;background:var(--gold);color:#0e1116;padding:12px 24px;border-radius:8px;font-weight:700}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="business.html" class="btn">List your Business →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Founding 25 launch stories · Las Vegas</div>
+    <h1>How 25 small Businesses launched together.</h1>
+    <p>Eight stories from the first cohort of LYMX Businesses. What they did, what they got, what they'd do differently.</p>
+    <div class="filter">
+      <span class="chip on" data-c="all" onclick="setFilter(this, 'all')">All categories</span>
+      <span class="chip" data-c="food" onclick="setFilter(this, 'food')">Food</span>
+      <span class="chip" data-c="retail" onclick="setFilter(this, 'retail')">Retail</span>
+      <span class="chip" data-c="services" onclick="setFilter(this, 'services')">Services</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="meta-strip">
+  <div><div class="n">25</div><div class="l">Founding Businesses</div></div>
+  <div><div class="n">18 days</div><div class="l">From open to filled</div></div>
+  <div><div class="n">100%</div><div class="l">Still active 90 days later</div></div>
+  <div><div class="n">+148%</div><div class="l">Avg traffic lift, month 1</div></div>
+</div>
+
+<div class="stories">
+
+  <div class="story" data-c="food">
+    <div class="story-cover cafe"><span class="num">F25 #1</span>☕</div>
+    <div class="story-body">
+      <div class="story-h"><h3>Brew &amp; Bean Café</h3><div class="meta"><span class="cat">Café</span> · Midtown · Sarah Chen, Owner</div></div>
+      <p class="story-q">"I thought I was buying a loyalty program. What I actually got was a shared customer pipeline plus the analytics I should have had years ago."</p>
+      <div class="story-stats">
+        <div class="ms"><div class="v">−60%</div><div class="l">Loyalty cost</div></div>
+        <div class="ms"><div class="v">+142</div><div class="l">New cust/mo</div></div>
+        <div class="ms"><div class="v">+27pts</div><div class="l">Retention</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="story" data-c="food">
+    <div class="story-cover restaurant"><span class="num">F25 #2</span>🥘</div>
+    <div class="story-body">
+      <div class="story-h"><h3>Oakline Kitchen</h3><div class="meta"><span class="cat">Restaurant</span> · Arts District · Daniel Whitley, Chef-owner</div></div>
+      <p class="story-q">"Our customer mix completely shifted in month 2. We started seeing a wave of LYMX redemptions from people we'd never seen — coming from Brew &amp; Bean two blocks away. Network effect, real-time."</p>
+      <div class="story-stats">
+        <div class="ms"><div class="v">31%</div><div class="l">From other LYMX biz</div></div>
+        <div class="ms"><div class="v">$3.8k</div><div class="l">Net mo lift</div></div>
+        <div class="ms"><div class="v">4.6/5</div><div class="l">NPS lift</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="story" data-c="food">
+    <div class="story-cover bakery"><span class="num">F25 #3</span>🥐</div>
+    <div class="story-body">
+      <div class="story-h"><h3>Sage &amp; Stone Bakery</h3><div class="meta"><span class="cat">Bakery</span> · Henderson · Riya Patel, Owner</div></div>
+      <p class="story-q">"My customer base doubled in 60 days. Half from network referrals. The other half were existing customers I just hadn't tracked before. Either way, the visibility is the gift."</p>
+      <div class="story-stats">
+        <div class="ms"><div class="v">2.0×</div><div class="l">Customer base</div></div>
+        <div class="ms"><div class="v">$2.1k</div><div class="l">Mo revenue lift</div></div>
+        <div class="ms"><div class="v">8.4×</div><div class="l">Multiplier ROI</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="story" data-c="services">
+    <div class="story-cover fitness"><span class="num">F25 #4</span>🧘</div>
+    <div class="story-body">
+      <div class="story-h"><h3>CityRow Studio</h3><div class="meta"><span class="cat">Fitness</span> · Summerlin · Jordan Park, Owner</div></div>
+      <p class="story-q">"Drop-in customers redeeming LYMX from coffee shops? I would not have predicted that. They come in once, see what we offer, half of them sign up for a class pack."</p>
+      <div class="story-stats">
+        <div class="ms"><div class="v">+34</div><div class="l">Drop-ins/mo</div></div>
+        <div class="ms"><div class="v">38%</div><div class="l">Convert to pack</div></div>
+        <div class="ms"><div class="v">$4.2k</div><div class="l">Mo lift</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="story" data-c="retail">
+    <div class="story-cover retail"><span class="num">F25 #5</span>📚</div>
+    <div class="story-body">
+      <div class="story-h"><h3>The Quiet Library</h3><div class="meta"><span class="cat">Bookstore</span> · Summerlin · Alma Reyes, Owner</div></div>
+      <p class="story-q">"Books aren't a high-frequency purchase. But customers earn LYMX at coffee shops and use them on books here. We're a destination for redemption now, in a way we never were before."</p>
+      <div class="story-stats">
+        <div class="ms"><div class="v">42%</div><div class="l">Tx as redemption</div></div>
+        <div class="ms"><div class="v">$1.6k</div><div class="l">Mo lift</div></div>
+        <div class="ms"><div class="v">+12pts</div><div class="l">Repeat rate</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="story" data-c="services">
+    <div class="story-cover ev"><span class="num">F25 #6</span>⚡</div>
+    <div class="story-body">
+      <div class="story-h"><h3>EverGrid EV Hub</h3><div class="meta"><span class="cat">EV charging</span> · Spring Valley · Marcus Lee, Manager</div></div>
+      <p class="story-q">"Charging an EV takes 40 minutes. Now those 40 minutes earn LYMX, which our customers spend at the cafe + restaurant on the same lot. It turned dead time into a network engagement loop."</p>
+      <div class="story-stats">
+        <div class="ms"><div class="v">+89</div><div class="l">Mo charging sessions</div></div>
+        <div class="ms"><div class="v">14 min</div><div class="l">Avg dwell time +</div></div>
+        <div class="ms"><div class="v">$5.4k</div><div class="l">Mo lift</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="story" data-c="services">
+    <div class="story-cover spa"><span class="num">F25 #7</span>💆</div>
+    <div class="story-body">
+      <div class="story-h"><h3>Olive &amp; Oak Spa</h3><div class="meta"><span class="cat">Spa &amp; wellness</span> · Henderson · Diane Wu, Owner</div></div>
+      <p class="story-q">"My customers are wealthy and don't usually care about loyalty. But LYMX gift cards became gift-of-choice for our clientele's friends and family. We sell more gift cards now than at Christmas."</p>
+      <div class="story-stats">
+        <div class="ms"><div class="v">+212%</div><div class="l">Gift card sales</div></div>
+        <div class="ms"><div class="v">68%</div><div class="l">Recipient repeat</div></div>
+        <div class="ms"><div class="v">$3.1k</div><div class="l">Mo lift</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="story" data-c="food">
+    <div class="story-cover bar"><span class="num">F25 #8</span>🍺</div>
+    <div class="story-body">
+      <div class="story-h"><h3>Block 22 Brewery</h3><div class="meta"><span class="cat">Brewery</span> · Downtown · Tom Ruiz, Co-owner</div></div>
+      <p class="story-q">"Our taproom is busy at peak times. We boosted the LYMX multiplier on slow afternoons — turns out customers from other LYMX Businesses come in specifically because they want to spend their balance."</p>
+      <div class="story-stats">
+        <div class="ms"><div class="v">+44%</div><div class="l">Slow-hr traffic</div></div>
+        <div class="ms"><div class="v">2.3×</div><div class="l">Multiplier ROI</div></div>
+        <div class="ms"><div class="v">$2.8k</div><div class="l">Mo lift</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="lessons">
+  <h2>What we learned from the Founding 25</h2>
+  <div class="lessons-grid">
+    <div class="lesson">
+      <h4><span class="ic">🤝</span>Density beats reach</h4>
+      <p>Eight Businesses concentrated in Midtown drove more network referrals than 30 spread across the metro. Geographic density compounds. We're using this for Phoenix &amp; Reno launches.</p>
+    </div>
+    <div class="lesson">
+      <h4><span class="ic">⏱️</span>Network effect kicks in at week 3–4</h4>
+      <p>The first 2–3 weeks felt like a regular loyalty program. By week 4, redemptions from <em>other</em> Businesses started appearing. Weeks 5–8 they ramped sharply.</p>
+    </div>
+    <div class="lesson">
+      <h4><span class="ic">🔁</span>Day-of-week patterns are real</h4>
+      <p>Weekday daytime LYMX activity was driven by office-worker patterns. Weekend activity skewed retail/spa/restaurant. Most Founding Businesses now run different multipliers on different days.</p>
+    </div>
+    <div class="lesson">
+      <h4><span class="ic">📈</span>Owner cadence matters</h4>
+      <p>The Businesses with weekly 30-min review habits (5 of 8) outperformed the others on every metric. Setup is cheap; ongoing engagement is the differentiator.</p>
+    </div>
+  </div>
+</div>
+
+<div class="cta">
+  <h2>Want to be in the next launch cohort?</h2>
+  <p>Phoenix Q4 2026 — Founding 25 spots open soon. Reno Q4 2026. SLC + Denver Q1 2027. Apply now to lock in your city.</p>
+  <a href="business.html">List your Business →</a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Founding 25 stories · <a href="founding-25.html">Founding 25 program</a> · <a href="case-study-cafe.html">Brew &amp; Bean case study</a> · <a href="city-waitlist.html">Vote for your city</a>
+</div>
+
+<script>
+  function setFilter(el, c) {
+    document.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x.dataset.c === c));
+    document.querySelectorAll('.story').forEach(s => {
+      s.style.display = (c === 'all' || s.dataset.c === c) ? '' : 'none';
+    });
+  }
+</script>
+
+</body>
+</html>

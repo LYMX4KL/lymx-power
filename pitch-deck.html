@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX seed round pitch deck preview — 12 slides. Visual companion to the investor brief." />
+<meta name="robots" content="noindex,nofollow" />
+<title>LYMX Pitch Deck · Seed 2026</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4af37;--radius:14px;--maxw:1200px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.bar{background:#fff;border-bottom:1px solid var(--line);padding:12px 0;font-size:13px;color:var(--muted);position:sticky;top:0;z-index:50}
+  .bar-inner{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+  .bar-inner strong{color:var(--ink-2)}
+  .bar-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{padding:8px 14px;background:var(--ink);color:#fff;border-radius:8px;font-weight:800;font-size:12.5px;border:0;cursor:pointer;text-decoration:none}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+
+  .deck{padding:30px 0 60px}
+  .deck-h{text-align:center;margin-bottom:20px}
+  .deck-h h1{margin:0 0 6px;font-size:28px;font-weight:800;letter-spacing:-.02em}
+  .deck-h p{margin:0;color:var(--muted);font-size:14px}
+
+  /* Slide grid */
+  .slides{display:grid;grid-template-columns:1fr;gap:14px;max-width:1080px;margin:0 auto}
+  .slide{background:#fff;aspect-ratio:16/9;border-radius:14px;border:1px solid var(--line);position:relative;overflow:hidden;display:flex;padding:50px 60px;color:#fff}
+  @media(max-width:780px){.slide{padding:30px 32px;aspect-ratio:auto;min-height:380px}}
+  .slide .slide-num{position:absolute;top:18px;right:24px;font-size:11px;font-weight:800;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase}
+  .slide .lymx-mark{position:absolute;top:18px;left:24px;font-size:13px;font-weight:800;letter-spacing:.06em;color:rgba(255,255,255,.7)}
+  .slide-body{margin:auto 0;width:100%}
+
+  /* Slide variants */
+  .slide.cover{background:linear-gradient(135deg,#0e1116 0%,#1a1f27 100%);align-items:flex-end}
+  .slide.cover::after{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);right:-180px;top:-180px}
+  .slide.cover .pre{font-size:11.5px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:#f5d172;margin-bottom:18px;position:relative}
+  .slide.cover h2{margin:0 0 12px;font-size:54px;font-weight:800;letter-spacing:-.03em;line-height:1;color:#fff;position:relative}
+  .slide.cover h2 .gold{color:#f5d172}
+  .slide.cover .sub{font-size:18px;color:#9aa3b0;font-weight:600;line-height:1.4;position:relative;max-width:640px}
+  .slide.cover .meta{margin-top:18px;font-size:13px;color:#cdd2da;position:relative}
+
+  .slide.section{background:linear-gradient(135deg,#1a1f27,#0e1116);align-items:center;justify-content:center;text-align:center}
+  .slide.section .pre{font-size:11.5px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:#f5d172;margin-bottom:18px}
+  .slide.section h2{margin:0;font-size:48px;font-weight:800;letter-spacing:-.02em;color:#fff;line-height:1.05}
+
+  .slide.problem{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  .slide.solution{background:linear-gradient(135deg,#13a26b,#0d4d31)}
+  .slide.market{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .slide.flywheel{background:linear-gradient(135deg,#7426c4,#4d1888)}
+  .slide.traction{background:linear-gradient(135deg,#d4af37,#7a5e10);color:#0e1116}
+  .slide.traction .lymx-mark, .slide.traction .slide-num{color:rgba(14,17,22,.6)}
+  .slide.economics{background:linear-gradient(135deg,#0e1116,#1a1f27)}
+  .slide.team{background:linear-gradient(135deg,#1a1f27,#0e1116)}
+  .slide.ask{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .slide.use{background:linear-gradient(135deg,#13a26b,#0d4d31)}
+  .slide.contact{background:linear-gradient(135deg,#0e1116,#1a1f27);align-items:center;text-align:center;justify-content:center}
+
+  .slide h3{margin:0 0 18px;font-size:36px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .slide .big-stat{font-size:88px;font-weight:800;letter-spacing:-.04em;line-height:1;color:#fff;margin:14px 0}
+  .slide.traction .big-stat, .slide.traction h3{color:#0e1116}
+  .slide ul{margin:14px 0 0 22px;padding:0;font-size:18px;line-height:1.8}
+  .slide ul li{margin:6px 0;color:rgba(255,255,255,.92)}
+  .slide.traction ul li{color:rgba(14,17,22,.85)}
+  .slide ul li strong{color:#fff;font-weight:800}
+  .slide.traction ul li strong{color:#0e1116;font-weight:800}
+
+  .slide .two-col{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:14px}
+  @media(max-width:780px){.slide .two-col{grid-template-columns:1fr;gap:18px}}
+  .slide .col-h{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:8px}
+  .slide.traction .col-h{color:rgba(14,17,22,.55)}
+  .slide .col-v{font-size:32px;font-weight:800;letter-spacing:-.02em;color:#fff}
+  .slide.traction .col-v{color:#0e1116}
+
+  .slide .small{font-size:14px;color:rgba(255,255,255,.7);margin-top:18px}
+  .slide.traction .small{color:rgba(14,17,22,.6)}
+
+  /* Stat row */
+  .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:14px}
+  @media(max-width:780px){.stat-row{grid-template-columns:repeat(2,1fr)}}
+  .stat-row .v{font-size:36px;font-weight:800;color:#fff;letter-spacing:-.02em;line-height:1}
+  .slide.traction .stat-row .v{color:#0e1116}
+  .stat-row .l{font-size:11px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.06em;margin-top:5px;font-weight:700}
+  .slide.traction .stat-row .l{color:rgba(14,17,22,.55)}
+
+  /* Team grid */
+  .team-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:14px}
+  @media(max-width:780px){.team-grid{grid-template-columns:1fr}}
+  .team-mem{display:flex;gap:14px;align-items:center}
+  .team-mem .av{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;flex-shrink:0}
+  .team-mem h4{margin:0;font-size:16px;font-weight:800;color:#fff}
+  .team-mem .role{font-size:12.5px;color:rgba(255,255,255,.7);margin-top:2px;line-height:1.4}
+
+  /* Print */
+  @media print {
+    @page { size:landscape; margin:0; }
+    body{background:#fff}
+    header.bar{display:none}
+    .deck-h{display:none}
+    .slides{gap:0;max-width:none;padding:0;margin:0}
+    .slide{page-break-after:always;break-after:always;border-radius:0;border:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap bar-inner">
+    <div>📊 <strong>LYMX seed deck</strong> · 12 slides · April 2026 · Confidential</div>
+    <div class="bar-actions">
+      <button class="btn ghost" onclick="window.print()">🖨 Print / PDF</button>
+      <a class="btn ghost" href="investor.html">Investor brief</a>
+      <a class="btn ghost" href="investor-dataroom.html">Data room</a>
+      <a class="btn" href="mailto:kenny@getlymx.com">Reply to Kenny</a>
+    </div>
+  </div>
+</header>
+
+<div class="deck">
+  <div class="wrap deck-h">
+    <h1>Pitch deck preview</h1>
+    <p>Visual companion to the <a href="investor.html" style="color:var(--accent-2);font-weight:700">investor brief</a>. 12 slides, scrollable. Print or save as PDF for sharing.</p>
+  </div>
+
+  <div class="slides">
+    <!-- Cover -->
+    <div class="slide cover">
+      <span class="lymx-mark">LYMX</span>
+      <span class="slide-num">01 / 12</span>
+      <div class="slide-body">
+        <div class="pre">★ Seed round · April 2026</div>
+        <h2>One credit. <span class="gold">Every Business.</span></h2>
+        <div class="sub">A shared loyalty network for local Businesses. Earn at one. Spend at any other in the network.</div>
+        <div class="meta">Kenny Lin · Founder &amp; CEO · kenny@getlymx.com</div>
+      </div>
+    </div>
+
+    <!-- Section 1: problem -->
+    <div class="slide section">
+      <span class="lymx-mark">LYMX</span>
+      <span class="slide-num">02 / 12</span>
+      <div class="slide-body">
+        <div class="pre">Section 1</div>
+        <h2>The problem</h2>
+      </div>
+    </div>
+
+    <!-- Problem -->
+    <div class="slide problem">
+      <span class="lymx-mark">LYMX</span>
+      <span class="slide-num">03 / 12</span>
+      <div class="slide-body">
+        <h3>Local loyalty programs are designed to make customers give up</h3>
+        <ul>
+          <li><strong>~80% of points</strong> across loyalty programs are <strong>never redeemed</strong>.</li>
+          <li>The "breakage" is the program's profit margin — by design.</li>
+          <li>Local Businesses pay $200/month for a system optimized for someone else's outcome.</li>
+          <li>Customers carry 11 punch cards in their wallet and use almost none.</li>
+        </ul>
+        <p class="small">Sources: Bond Brand Loyalty 2025 · McKinsey 2024 · 47 Las Vegas Business owner interviews</p>
+      </div>
+    </div>
+
+    <!-- Solution -->
+    <div class="slide solution">
+      <span class="lymx-mark">LYMX</span>
+      <span class="slide-num">04 / 12</span>
+      <div class="slide-body">
+        <h3>LYMX: shared loyalty for local Businesses</h3>
+        <ul>
+          <li><strong>Earn at one Business, spend at any other</strong> in the network.</li>
+          <li><strong>1 LYMX = $0.01, always.</strong> No expiration. No fine print.</li>
+          <li><strong>No app required</strong> — runs in the browser, add to home screen.</li>
+          <li>Each Business pays a flat $200/mo + a $850 sign-up. Customer-acquisition cost is the network.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Market -->
+    <div class="slide market">
+      <span class="lymx-mark">LYMX</span>
+      <span class="slide-num">05 / 12</span>
+      <div class="slide-body">
+        <h3>Market</h3>
+        <div class="stat-row">
+          <div><div class="v">$45B</div><div class="l">US loyalty industry (2025)</div></div>
+          <div><div class="v">5.1M</div><div class="l">Independent local Businesses</div></div>
+          <div><div class="v">$15B</div><div class="l">Loyalty SaaS subset (TAM)</div></div>
+          <div><div class="v">$1.5B</div><div class="l">Initial 5-city target (SOM)</div></div>
+        </div>
+        <p class="small" style="margin-top:24px">Bottom-up: 25K addressable Las Vegas + Henderson + Summerlin + North LV Businesses × $200/mo subscription = $60M/yr LTV city-only at saturation. Phase 3 multi-city expansion brings it to ~$1.5B.</p>
+      </div>
+    </div>
+
+    <!-- Network flywheel -->
+    <div class="slide flywheel">
+      <span class="lymx-mark">LYMX</span>
+      <span class="slide-num">06 / 12</span>
+      <div class="slide-body">
+        <h3>The network flywheel</h3>
+        <ul>
+          <li>Average LYMX Business = <strong>$100K monthly volume</strong> ÷ $20 ticket = <strong>5,000 customers/mo</strong>.</li>
+          <li>70% repeat rate → <strong>1,500 net new customers per Business per month</strong>.</li>
+          <li>10 Businesses on LYMX Month 1 = <strong>15,000 net new customers</strong> (zero LYMX CAC).</li>
+          <li>Each new customer is a potential cross-Business spender → next Business sees more demand → joins faster.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Section 2: traction -->
+    <div class="slide section">
+      <span class="lymx-mark">LYMX</span>
+      <span class="slide-num">07 / 12</span>
+      <div class="slide-body">
+        <div class="pre">Section 2</div>
+        <h2>Traction</h2>
+      </div>
+    </div>
+
+    <!-- Traction -->
+    <div class="slide traction">
+      <span class="lymx-mark">LYMX</span>
+      <span class="slide-num">08 / 12</span>
+      <div class="slide-body">
+        <h3>Traction (April 2026)</h3>
+        <div class="stat-row">
+          <div><div class="v">13</div><div class="l">Active Businesses</div></div>
+          <div><div class="v">8,420</div><div class="l">Active customers</div></div>
+          <div><div class="v">2.4M</div><div class="l">LYMX issued (≈ $24K)</div></div>
+          <div><div class="v">84%</div><div class="l">D-90 customer retention</div></div>
+        </div>
+        <p class="small" style="margin-top:24px"><strong>+38%</strong> beating Q1 customer-acquisition plan. <strong>+14% YoY</strong> repeat traffic on Founding Businesses. Q1 cohort retention <strong>40 pts above projection</strong>.</p>
+      </div>
+    </div>
+
+    <!-- Unit economics -->
+    <div class="slide economics">
+      <span class="lymx-mark">LYMX</span>
+      <span class="slide-num">09 / 12</span>
+      <div class="slide-body">
+        <h3>Unit economics — per Business</h3>
+        <div class="two-col">
+          <div>
+            <div class="col-h">Year 1 revenue</div>
+            <div class="col-v">$3,250</div>
+            <p class="small" style="margin-top:6px">$850 sign-up + $200 × 12 mo</p>
+          </div>
+          <div>
+            <div class="col-h">Year 1 gross margin</div>
+            <div class="col-v">~78%</div>
+            <p class="small" style="margin-top:6px">Stripe + infra + support cost</p>
+          </div>
+          <div>
+            <div class="col-h">CAC (current)</div>
+            <div class="col-v">~$420</div>
+            <p class="small" style="margin-top:6px">Mostly Partner sign-up bonuses</p>
+          </div>
+          <div>
+            <div class="col-h">Payback</div>
+            <div class="col-v">3.4 mo</div>
+            <p class="small" style="margin-top:6px">Down from 5.1 mo at launch</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Team -->
+    <div class="slide team">
+      <span class="lymx-mark">LYMX</span>
+      <span class="slide-num">10 / 12</span>
+      <div class="slide-body">
+        <h3>Team</h3>
+        <div class="team-grid">
+          <div class="team-mem">
+            <div class="av">KL</div>
+            <div><h4>Kenny Lin</h4><div class="role">Founder &amp; CEO · 40 yrs in small business — restaurants, furniture import, real estate · 800+ home flips · Las Vegas</div></div>
+          </div>
+          <div class="team-mem">
+            <div class="av" style="background:linear-gradient(135deg,#13a26b,#0d7d51)">SR</div>
+            <div><h4>Sam Reyes</h4><div class="role">Activation Specialist · Las Vegas (contract) · ex-Stripe Atlas onboarding</div></div>
+          </div>
+          <div class="team-mem">
+            <div class="av" style="background:linear-gradient(135deg,#d4af37,#a08020)">SV</div>
+            <div><h4>Sienna Vega</h4><div class="role">Master Partner · 42 Businesses recruited in 9 months</div></div>
+          </div>
+          <div class="team-mem">
+            <div class="av" style="background:linear-gradient(135deg,#0a84ff,#0050c7)">?</div>
+            <div><h4>Sr. Engineer</h4><div class="role">Open · hiring Q2 · <a href="careers-detail.html" style="color:#f5d172">careers-detail.html</a></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ask -->
+    <div class="slide ask">
+      <span class="lymx-mark">LYMX</span>
+      <span class="slide-num">11 / 12</span>
+      <div class="slide-body">
+        <h3>The ask</h3>
+        <div class="big-stat">$1.5M</div>
+        <ul>
+          <li><strong>$750K already closed</strong> at $7.5M post-money SAFE cap, 20% discount</li>
+          <li><strong>$750K open</strong> · final close target Q2 2026</li>
+        </ul>
+        <p class="small" style="margin-top:18px"><strong>Use of funds:</strong> Sr. Engineer ($350K), founding Ops Lead ($150K), brand designer ($75K), 18 months runway, marketing for the Phase 2 cohort.</p>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="slide contact">
+      <span class="lymx-mark">LYMX</span>
+      <span class="slide-num">12 / 12</span>
+      <div class="slide-body" style="max-width:600px">
+        <h3 style="margin-bottom:8px">Let's talk.</h3>
+        <p style="font-size:18px;color:rgba(255,255,255,.78);line-height:1.55">Kenny Lin · Founder &amp; CEO</p>
+        <p style="font-size:22px;color:#f5d172;font-weight:800;margin-top:14px;letter-spacing:-.01em">kenny@getlymx.com</p>
+        <p style="font-size:14px;color:rgba(255,255,255,.6);margin-top:18px">Data room: <a href="investor-dataroom.html" style="color:#f5d172;font-weight:700">investor-dataroom.html</a><br>Public site: getlymx.com</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>© 2026 LYMX Power · Confidential — for SAFE investors only · noindex · <a href="investor.html" style="color:#9aa3b0">Investor brief</a></footer>
+</body>
+</html>

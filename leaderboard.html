@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Leaderboard — top customer referrers, top Partners, top Businesses by referrals. Quarterly resets, badges, podium." />
+<title>LYMX Leaderboard · Top Referrers</title>
+<meta property="og:title" content="LYMX Leaderboard" />
+<meta property="og:image" content="og-image.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--silver:#c0c0c0;--bronze:#cd7f32;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  .btn{padding:9px 14px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13px;text-decoration:none}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .hero{padding:50px 0 40px;background:linear-gradient(180deg,#0e1116,#1a1f27);color:#fff;position:relative;overflow:hidden;text-align:center}
+  .hero::before{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);left:50%;top:-200px;transform:translateX(-50%);pointer-events:none}
+  .hero .pre{position:relative;display:inline-block;background:rgba(212,175,55,.18);color:#f5d172;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:6px;margin-bottom:14px}
+  .hero h1{position:relative;margin:0 0 8px;font-size:42px;font-weight:800;letter-spacing:-.02em;color:#fff}
+  .hero h1 .gold{color:#f5d172}
+  .hero p.lede{position:relative;margin:0 auto;font-size:16px;color:#9aa3b0;max-width:560px;line-height:1.55}
+  .hero .reset{position:relative;display:inline-block;margin-top:14px;font-size:12.5px;color:#9aa3b0}
+  .hero .reset strong{color:#f5d172;font-weight:800}
+
+  /* Tabs */
+  .tabs{padding:18px 0 8px;display:flex;justify-content:center}
+  .tab-row{display:flex;gap:6px;background:var(--bg-soft);padding:4px;border-radius:11px}
+  .tab{padding:9px 16px;font-size:13px;font-weight:800;color:var(--muted);cursor:pointer;border-radius:8px;border:0;background:transparent;font-family:inherit}
+  .tab.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(14,17,22,.1)}
+
+  /* Podium */
+  .podium-wrap{padding:30px 0}
+  .podium{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:14px;align-items:end;max-width:780px;margin:0 auto}
+  @media(max-width:640px){.podium{grid-template-columns:1fr}}
+  .pod{padding:24px 20px;border-radius:16px;text-align:center;border:1px solid var(--line);background:#fff;position:relative}
+  .pod .rank{position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+  .pod.first{order:2;background:linear-gradient(180deg,#fff,rgba(212,175,55,.06));border-color:rgba(212,175,55,.4);padding-top:36px;padding-bottom:30px}
+  .pod.second{order:1}
+  .pod.third{order:3}
+  .pod.first .rank{background:linear-gradient(135deg,#d4af37,#a08020)}
+  .pod.second .rank{background:linear-gradient(135deg,#c0c0c0,#888)}
+  .pod.third .rank{background:linear-gradient(135deg,#cd7f32,#8b5a2b)}
+  .pod .av{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:22px;margin:0 auto 10px;letter-spacing:-.01em}
+  .pod.first .av{width:78px;height:78px;font-size:26px}
+  .pod h3{margin:0 0 4px;font-size:15.5px;font-weight:800}
+  .pod .role{font-size:11.5px;color:var(--muted);margin-bottom:10px}
+  .pod .v{font-size:24px;font-weight:800;letter-spacing:-.01em}
+  .pod.first .v{font-size:30px;color:var(--gold)}
+  .pod .sub{font-size:11.5px;color:var(--muted);margin-top:3px}
+
+  /* Body / list */
+  .list-shell{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin:24px 0 60px;overflow:hidden}
+  .list-h{padding:14px 22px;border-bottom:1px solid var(--line);background:var(--bg-soft);display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+  .row{display:grid;grid-template-columns:60px 1fr 100px 100px;gap:12px;padding:14px 22px;border-bottom:1px solid var(--line);align-items:center}
+  @media(max-width:640px){.row{grid-template-columns:50px 1fr 90px}.row .badge-count{display:none}}
+  .row:last-child{border-bottom:0}
+  .row.head{background:transparent;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:10px 22px;border-bottom:0}
+  .row.you{background:rgba(212,175,55,.08)}
+  .row .rank-cell{font-size:18px;font-weight:800;color:var(--ink-2);font-variant-numeric:tabular-nums}
+  .row .who{display:flex;align-items:center;gap:12px;min-width:0}
+  .row .av{width:36px;height:36px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;letter-spacing:-.01em}
+  .row .name{font-weight:800;font-size:14.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .meta{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .row .v{font-weight:800;color:var(--ok);font-size:15px;text-align:right;font-variant-numeric:tabular-nums}
+  .row .badge-count{display:flex;justify-content:flex-end;gap:3px}
+  .row .b{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+  .b.gold{background:rgba(212,175,55,.18);color:#7a5e10}
+  .b.silver{background:rgba(192,192,192,.3);color:#5a5a5a}
+  .b.bronze{background:rgba(205,127,50,.2);color:#7a4d1e}
+  .b.streak{background:rgba(10,132,255,.1);color:var(--accent-2)}
+
+  /* Color palette per category */
+  .av.cust1{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .av.cust2{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .av.cust3{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  .av.cust4{background:linear-gradient(135deg,#7426c4,#4d1888)}
+  .av.cust5{background:linear-gradient(135deg,#f0a020,#a06808)}
+
+  /* Rules */
+  .rules{padding:30px 0;border-top:1px solid var(--line);background:var(--bg-soft)}
+  .rules h2{margin:0 0 8px;font-size:20px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .rule-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:920px;margin:14px auto 0}
+  @media(max-width:780px){.rule-grid{grid-template-columns:1fr}}
+  .rule{padding:18px 20px;background:#fff;border:1px solid var(--line);border-radius:11px}
+  .rule .ic{font-size:24px;margin-bottom:6px}
+  .rule h3{margin:0 0 4px;font-size:14.5px;font-weight:800}
+  .rule p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.55}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="customer-referral.html">Refer friends</a>
+      <a href="biz-refer.html">Business referrals</a>
+      <a href="leaderboard.html" style="color:var(--accent);font-weight:700">Leaderboard</a>
+    </nav>
+    <a href="customer-referral.html" class="btn">Refer &amp; earn</a>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="wrap">
+    <span class="pre">🏆 Q2 2026 Leaderboard</span>
+    <h1>The <span class="gold">top referrers</span> on the network</h1>
+    <p class="lede">Customers who brought their friends. Partners who built their teams. Businesses who pulled in other Businesses. Updated live.</p>
+    <div class="reset">Quarterly reset · Next reset: <strong>July 1, 2026</strong></div>
+  </div>
+</section>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab-row" id="tabs">
+    <button class="tab on" data-t="customer">Customers</button>
+    <button class="tab" data-t="partner">Partners</button>
+    <button class="tab" data-t="business">Businesses</button>
+  </div>
+</div>
+
+<!-- Podium + List -->
+<div class="wrap">
+  <div class="podium-wrap" id="podium-wrap"></div>
+  <div class="list-shell">
+    <div class="list-h"><span id="list-h-title">Top referrers — Customers</span><span>Updated 2 min ago</span></div>
+    <div class="row head">
+      <div>Rank</div>
+      <div>Who</div>
+      <div style="text-align:right">Referrals</div>
+      <div class="badge-count">Badges</div>
+    </div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<!-- Rules -->
+<section class="rules">
+  <div class="wrap">
+    <h2>How the leaderboard works</h2>
+    <div class="rule-grid">
+      <div class="rule">
+        <div class="ic">📅</div>
+        <h3>Quarterly reset</h3>
+        <p>Counts reset January / April / July / October. Top 3 of each quarter get a permanent badge on their profile.</p>
+      </div>
+      <div class="rule">
+        <div class="ic">✓</div>
+        <h3>What counts</h3>
+        <p>Customers: friends who sign up + earn first LYMX. Partners: Businesses that activate. Businesses: other Businesses that activate.</p>
+      </div>
+      <div class="rule">
+        <div class="ic">🔥</div>
+        <h3>Streak bonus</h3>
+        <p>Anyone who's top-10 in 4 quarters in a row gets a permanent gold-frame badge. Only one customer has it so far.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · Leaderboard updates every 5 minutes · <a href="customer-referral.html" style="color:#a3c5ff">How to refer</a></div>
+</footer>
+
+<script>
+  const DATA = {
+    customer: {
+      title: 'Top referrers — Customers',
+      podium: [
+        {name:'Maya Hopkins', role:'Customer · Las Vegas', av:'cust1', count:42, badges:['gold','streak']},
+        {name:'Liam O\'Connor', role:'Customer · Henderson', av:'cust2', count:38, badges:['silver']},
+        {name:'Asha Gupta', role:'Customer · Summerlin', av:'cust3', count:31, badges:['bronze']}
+      ],
+      list: [
+        {rank:4, name:'Jonathan Reyes', role:'Customer · Las Vegas', av:'cust4', count:24, badges:['streak']},
+        {rank:5, name:'Priya Naidu', role:'Customer · Las Vegas', av:'cust5', count:21, badges:[]},
+        {rank:6, name:'Devon Harper', role:'Customer · Henderson', av:'cust1', count:18, badges:[]},
+        {rank:7, name:'Renée Doucet', role:'Customer · North LV', av:'cust2', count:16, badges:[]},
+        {rank:8, name:'Theo Marquez', role:'Customer · Summerlin', av:'cust3', count:14, badges:[]},
+        {rank:9, name:'Bri Okonkwo', role:'Customer · Las Vegas', av:'cust4', count:12, badges:[]},
+        {rank:10, name:'Carlos Beltrán', role:'Customer · Henderson', av:'cust5', count:11, badges:[]},
+        {rank:11, name:'Hannah Park', role:'Customer · Las Vegas', av:'cust1', count:10, badges:[], you:true},
+        {rank:12, name:'Aida Mendoza', role:'Customer · Henderson', av:'cust2', count:9, badges:[]},
+        {rank:13, name:'Jordan Brooks', role:'Customer · Las Vegas', av:'cust3', count:8, badges:[]},
+        {rank:14, name:'Tariq Ahmed', role:'Customer · Summerlin', av:'cust4', count:8, badges:[]},
+        {rank:15, name:'Imani Davis', role:'Customer · North LV', av:'cust5', count:7, badges:[]}
+      ]
+    },
+    partner: {
+      title: 'Top referrers — Partners',
+      podium: [
+        {name:'Sienna Vega', role:'Master · Las Vegas', av:'cust1', count:42, badges:['gold','streak']},
+        {name:'Marcus Chen', role:'Platinum · Las Vegas', av:'cust2', count:14, badges:['silver']},
+        {name:'Tomás Reyes', role:'Platinum · Henderson', av:'cust3', count:11, badges:['bronze']}
+      ],
+      list: [
+        {rank:4, name:'Bri Okonkwo', role:'Gold · Las Vegas', av:'cust4', count:8, badges:[]},
+        {rank:5, name:'Hannah Park', role:'Silver · Las Vegas', av:'cust5', count:5, badges:[]},
+        {rank:6, name:'Imani Davis', role:'Gold · North LV', av:'cust1', count:5, badges:[]},
+        {rank:7, name:'Carlos Beltrán', role:'Silver · Las Vegas', av:'cust2', count:4, badges:[]},
+        {rank:8, name:'Devon Tate', role:'Gold · Las Vegas', av:'cust3', count:8, badges:[]},
+        {rank:9, name:'Kayla Smith', role:'Gold · Henderson', av:'cust4', count:6, badges:[]},
+        {rank:10, name:'Renée Doucet', role:'Bronze · Henderson', av:'cust5', count:2, badges:[]}
+      ]
+    },
+    business: {
+      title: 'Top referrers — Businesses',
+      podium: [
+        {name:'Two Birds Café', role:'Founding Business · Downtown', av:'cust1', count:5, badges:['gold']},
+        {name:'Brew &amp; Bean', role:'Founding Business · The Strip', av:'cust2', count:2, badges:['silver']},
+        {name:'Pulse Studio', role:'Founding Business · The Strip', av:'cust3', count:2, badges:['bronze']}
+      ],
+      list: [
+        {rank:4, name:'Sage &amp; Stone Bakery', role:'Founding Business · Henderson', av:'cust4', count:1, badges:[]},
+        {rank:5, name:'Pink Note Co', role:'Founding Business · The Strip', av:'cust5', count:1, badges:[]},
+        {rank:6, name:'Oakline Kitchen', role:'Founding Business · Downtown', av:'cust1', count:1, badges:[]},
+        {rank:7, name:'Sunlit Salon Studio', role:'Founding Business · The Strip', av:'cust2', count:0, badges:[]},
+        {rank:8, name:'Yumi Sushi', role:'Founding Business · Downtown', av:'cust3', count:0, badges:[]},
+        {rank:9, name:'CityRow Studio', role:'Founding Business · Summerlin', av:'cust4', count:0, badges:[]},
+        {rank:10, name:'Lavender &amp; Sage', role:'Founding Business · Downtown', av:'cust5', count:0, badges:[]}
+      ]
+    }
+  };
+
+  let active = 'customer';
+
+  function initials(name){
+    return name.replace(/&amp;/g,'&').split(/\s+/).filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  }
+
+  function badgeHTML(b){
+    const labels = {gold:'🥇 1st last Q', silver:'🥈 2nd last Q', bronze:'🥉 3rd last Q', streak:'🔥 4Q streak'};
+    return `<span class="b ${b}">${labels[b]}</span>`;
+  }
+
+  function render(){
+    const data = DATA[active];
+    document.getElementById('list-h-title').textContent = data.title;
+
+    // Podium
+    const ranksOrder = [
+      {key:'second', idx:1, label:'2'},
+      {key:'first', idx:0, label:'1'},
+      {key:'third', idx:2, label:'3'}
+    ];
+    document.getElementById('podium-wrap').innerHTML = '<div class="podium">' + ranksOrder.map(p=>{
+      const e = data.podium[p.idx];
+      return `<div class="pod ${p.key}">
+        <div class="rank">${p.label}</div>
+        <div class="av ${e.av}">${initials(e.name)}</div>
+        <h3>${e.name}</h3>
+        <div class="role">${e.role}</div>
+        <div class="v">${e.count}</div>
+        <div class="sub">referrals this quarter</div>
+        ${e.badges.length ? '<div style="margin-top:8px;display:flex;justify-content:center;gap:4px;flex-wrap:wrap">'+e.badges.map(badgeHTML).join('')+'</div>' : ''}
+      </div>`;
+    }).join('') + '</div>';
+
+    // List
+    document.getElementById('list').innerHTML = data.list.map(e=>{
+      const initialsStr = initials(e.name);
+      return `<div class="row ${e.you?'you':''}">
+        <div class="rank-cell">${e.rank}${e.you?' (you)':''}</div>
+        <div class="who">
+          <div class="av ${e.av}">${initialsStr}</div>
+          <div style="min-width:0">
+            <div class="name">${e.name}</div>
+            <div class="meta">${e.role}</div>
+          </div>
+        </div>
+        <div class="v">${e.count}</div>
+        <div class="badge-count">${e.badges.length ? e.badges.map(badgeHTML).join('') : '<span style="color:var(--muted);font-size:11px;font-weight:600">—</span>'}</div>
+      </div>`;
+    }).join('');
+  }
+
+  document.querySelectorAll('#tabs .tab').forEach(b=>{
+    b.onclick = ()=>{
+      document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      active = b.dataset.t;
+      render();
+    };
+  });
+
+  render();
+</script>
+</body>
+</html>

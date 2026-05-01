@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Partner Bootcamp — LYMX Power</title>
+<meta name="description" content="2-day in-person Partner training in Las Vegas. Held quarterly. Free for active Partners. Curriculum, schedule, registration.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .partner-tag{font-size:11px;background:#fef9e7;color:#8b6f1f;padding:3px 8px;border-radius:6px;font-weight:700}
+  .nav-link{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;padding:80px 24px 48px;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 70% 20%,rgba(212,175,55,.18) 0%,transparent 50%);pointer-events:none}
+  .hero-inner{max-width:1180px;margin:0 auto;text-align:center;position:relative}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--gold);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;border:1px solid var(--gold);padding:5px 12px;border-radius:999px}
+  .hero h1{font-size:56px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800;color:#fff;line-height:1.05}
+  .hero p{color:#b8c2d6;max-width:600px;margin:0 auto 28px;font-size:18px}
+  .hero .next{display:inline-flex;align-items:center;gap:14px;background:rgba(255,255,255,.1);padding:14px 24px;border-radius:14px;border:1px solid rgba(255,255,255,.15)}
+  .hero .next .when{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  .hero .next .date{font-size:18px;font-weight:700;color:#fff}
+  .hero .next .place{font-size:13px;color:#b8c2d6}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+
+  .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:48px}
+  @media (max-width:680px){.stats-strip{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;text-align:center}
+  .stat .n{font-size:32px;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+  .stat.gold .n{color:var(--gold)}
+  .stat .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:6px}
+
+  /* Schedule */
+  .schedule{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .schedule h2{margin:0 0 8px;font-size:26px;letter-spacing:-.02em}
+  .schedule .sub{color:var(--mute);font-size:14px;margin-bottom:24px}
+  .day{margin-bottom:24px}
+  .day:last-child{margin-bottom:0}
+  .day-h{padding:14px 18px;background:linear-gradient(135deg,#fef9e7,#fff5c2);border:1px solid var(--gold);border-radius:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+  .day-h h3{margin:0;font-size:18px;color:#3a2f0a}
+  .day-h .d-date{font-size:12px;color:#5d4d18;font-weight:600}
+  .session{display:grid;grid-template-columns:120px 1fr auto;gap:18px;padding:14px 0;border-bottom:1px dashed var(--line);align-items:start}
+  .session:last-child{border-bottom:0}
+  @media (max-width:680px){.session{grid-template-columns:1fr;gap:6px}.session .ses-time{font-size:12px}}
+  .ses-time{font-size:13px;color:var(--mute);font-weight:700;font-variant-numeric:tabular-nums}
+  .ses-body h4{margin:0 0 4px;font-size:15px}
+  .ses-body p{margin:0;font-size:13px;color:var(--mute);line-height:1.5}
+  .ses-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;height:fit-content;flex-shrink:0}
+  .ses-tag.workshop{background:#eef3ff;color:var(--accent)}
+  .ses-tag.panel{background:#f2eaff;color:var(--purple)}
+  .ses-tag.activity{background:#e8f6ee;color:#0a7a4d}
+  .ses-tag.meal{background:#fef9e7;color:#8b6f1f}
+  .ses-tag.keynote{background:#fdecea;color:#a32114}
+
+  /* Speakers */
+  .speakers{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .speakers h2{margin:0 0 6px;font-size:26px;letter-spacing:-.02em}
+  .speakers .sub{color:var(--mute);font-size:14px;margin-bottom:24px}
+  .speaker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:760px){.speaker-grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:520px){.speaker-grid{grid-template-columns:1fr}}
+  .speaker{padding:18px;border:1px solid var(--line);border-radius:12px;text-align:center}
+  .speaker .av{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;font-weight:700;margin:0 auto 12px}
+  .speaker .av.a{background:linear-gradient(135deg,#0e1116,#1a2a4a)}
+  .speaker .av.b{background:linear-gradient(135deg,#d4af37,#f5d172);color:#3a2f0a}
+  .speaker .av.c{background:linear-gradient(135deg,#5b3697,#a374e6)}
+  .speaker .av.d{background:linear-gradient(135deg,#0a84ff,#5b9ef5)}
+  .speaker .av.e{background:linear-gradient(135deg,#13a26b,#9adfb6)}
+  .speaker .av.f{background:linear-gradient(135deg,#c0392b,#e74c3c)}
+  .speaker h3{margin:0 0 2px;font-size:14px}
+  .speaker .role{font-size:11px;color:var(--mute);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+  .speaker p{margin:0;font-size:12px;color:#1f2530;line-height:1.5}
+
+  /* Past attendees */
+  .quotes-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px}
+  @media (max-width:680px){.quotes-grid{grid-template-columns:1fr}}
+  .quote-card{background:#fafafa;border:1px solid var(--line);border-radius:12px;padding:18px}
+  .quote-card blockquote{margin:0 0 10px;font-size:13px;font-style:italic;color:#1f2530;line-height:1.5}
+  .quote-card cite{font-size:11px;color:var(--mute);font-style:normal;font-weight:600}
+  .quote-card cite strong{color:var(--ink);font-size:12px;display:block;margin-bottom:2px}
+
+  /* Logistics */
+  .logistics{background:linear-gradient(135deg,#fef9e7,#fff5c2);border:1px solid var(--gold);border-radius:14px;padding:32px;margin-bottom:32px}
+  .logistics h2{margin:0 0 14px;font-size:22px;color:#3a2f0a}
+  .log-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media (max-width:680px){.log-grid{grid-template-columns:1fr}}
+  .log-item{padding:14px;background:rgba(255,255,255,.7);border-radius:10px;display:flex;gap:12px}
+  .log-item .ic{flex-shrink:0;font-size:22px}
+  .log-item h4{margin:0 0 4px;font-size:13px;color:#3a2f0a}
+  .log-item p{margin:0;font-size:12.5px;color:#5d4d18}
+
+  /* Register */
+  .register{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:36px;text-align:center;margin-bottom:32px}
+  .register h2{margin:0 0 8px;color:#fff;font-size:26px}
+  .register p{color:#b8c2d6;max-width:560px;margin:0 auto 18px;font-size:14.5px}
+  .register .form{max-width:480px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:10px}
+  @media (max-width:520px){.register .form{grid-template-columns:1fr}}
+  .register input{padding:12px 14px;border:1px solid #2a3a5a;border-radius:8px;background:#1f2530;color:#fff;font-size:14px}
+  .register input:focus{outline:none;border-color:var(--gold)}
+  .register button{padding:12px 22px;background:var(--gold);color:#0e1116;border-radius:8px;font-weight:700;border:0;cursor:pointer;font-size:14px}
+  .register .seats{margin-top:14px;font-size:12px;color:#b8c2d6}
+  .register .seats strong{color:var(--gold)}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="rep-dashboard.html">LYMX <span>Power</span> <span class="partner-tag">Partner</span></a>
+    <a href="rep-dashboard.html" class="nav-link">← Dashboard</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Quarterly Partner training · 2 days</div>
+    <h1>Partner Bootcamp</h1>
+    <p>Two days. In-person. The most concentrated way to level up as a LYMX Partner. Free for active Partners. Held quarterly in Las Vegas.</p>
+    <div class="next">
+      <div>
+        <div class="when">Next bootcamp</div>
+        <div class="date">June 14–15, 2026</div>
+        <div class="place">📍 Plaza Hotel · Downtown Las Vegas</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="stats-strip">
+  <div class="stat gold"><div class="n">2 days</div><div class="l">Intensive curriculum</div></div>
+  <div class="stat"><div class="n">42</div><div class="l">Partners attended last cohort</div></div>
+  <div class="stat gold"><div class="n">FREE</div><div class="l">For active Partners</div></div>
+  <div class="stat"><div class="n">+58%</div><div class="l">Avg post-bootcamp Production lift</div></div>
+</div>
+
+<!-- SCHEDULE -->
+<div class="schedule">
+  <h2>The 2-day curriculum</h2>
+  <p class="sub">Sample schedule from a recent bootcamp. Future bootcamps follow this template with quarterly content updates.</p>
+
+  <div class="day">
+    <div class="day-h">
+      <h3>Day 1 — Foundations</h3>
+      <div class="d-date">Friday · 9 AM – 6 PM</div>
+    </div>
+
+    <div class="session">
+      <div class="ses-time">9:00 – 9:30</div>
+      <div class="ses-body">
+        <h4>Welcome &amp; introductions</h4>
+        <p>Cohort intros, set goals for the 2 days, expectations.</p>
+      </div>
+      <span class="ses-tag activity">Activity</span>
+    </div>
+
+    <div class="session">
+      <div class="ses-time">9:30 – 10:30</div>
+      <div class="ses-body">
+        <h4>Founder keynote: Where LYMX is going</h4>
+        <p>Kenny Lin shares roadmap, traction, what's coming. Q&amp;A.</p>
+      </div>
+      <span class="ses-tag keynote">Keynote</span>
+    </div>
+
+    <div class="session">
+      <div class="ses-time">10:45 – 12:30</div>
+      <div class="ses-body">
+        <h4>Workshop: Cold-outreach mechanics</h4>
+        <p>Live phone-prospecting workshop. Practice scripts. Get feedback. Roleplay common objections.</p>
+      </div>
+      <span class="ses-tag workshop">Workshop</span>
+    </div>
+
+    <div class="session">
+      <div class="ses-time">12:30 – 1:30</div>
+      <div class="ses-body">
+        <h4>Lunch with peers</h4>
+        <p>Catered. Sit with Partners working similar markets — informal collab time.</p>
+      </div>
+      <span class="ses-tag meal">Meal</span>
+    </div>
+
+    <div class="session">
+      <div class="ses-time">1:30 – 3:00</div>
+      <div class="ses-body">
+        <h4>Workshop: Walking pitches</h4>
+        <p>In-person walk-in scenarios. Team up with another Partner, practice the 60-second walk-in pitch on each other. Trade feedback.</p>
+      </div>
+      <span class="ses-tag workshop">Workshop</span>
+    </div>
+
+    <div class="session">
+      <div class="ses-time">3:15 – 4:30</div>
+      <div class="ses-body">
+        <h4>Panel: Master Partners share what works</h4>
+        <p>Sienna Vega + 3 other Master-tier Partners. What they tried, what worked, what didn't. Open Q&amp;A.</p>
+      </div>
+      <span class="ses-tag panel">Panel</span>
+    </div>
+
+    <div class="session">
+      <div class="ses-time">4:30 – 6:00</div>
+      <div class="ses-body">
+        <h4>Real Business pitch sessions</h4>
+        <p>5 actual Las Vegas Business owners come in for a "speed dating" with Partners. Practice live pitches. Owners give honest feedback.</p>
+      </div>
+      <span class="ses-tag workshop">Workshop</span>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-h">
+      <h3>Day 2 — Building your tree</h3>
+      <div class="d-date">Saturday · 9 AM – 4 PM</div>
+    </div>
+
+    <div class="session">
+      <div class="ses-time">9:00 – 10:30</div>
+      <div class="ses-body">
+        <h4>Workshop: Recruiting Partners</h4>
+        <p>The single biggest leverage point for income. How to identify high-potential candidates, run an effective recruitment conversation, set them up for success.</p>
+      </div>
+      <span class="ses-tag workshop">Workshop</span>
+    </div>
+
+    <div class="session">
+      <div class="ses-time">10:45 – 12:00</div>
+      <div class="ses-body">
+        <h4>Workshop: Mentoring your downline</h4>
+        <p>How to coach a G1 Partner who's underperforming. How to celebrate one who's doing well. Cadence + mechanics.</p>
+      </div>
+      <span class="ses-tag workshop">Workshop</span>
+    </div>
+
+    <div class="session">
+      <div class="ses-time">12:00 – 1:00</div>
+      <div class="ses-body">
+        <h4>Lunch + small group cohorts</h4>
+        <p>Cohort assignments based on goals — small groups (4-6) you'll stay in touch with after bootcamp.</p>
+      </div>
+      <span class="ses-tag meal">Meal</span>
+    </div>
+
+    <div class="session">
+      <div class="ses-time">1:00 – 2:30</div>
+      <div class="ses-body">
+        <h4>Compliance &amp; ethics deep-dive</h4>
+        <p>FTC requirements, what you can/can't claim, common pitfalls. Required for all Partners. Includes Q&amp;A with our outside counsel via video.</p>
+      </div>
+      <span class="ses-tag workshop">Workshop</span>
+    </div>
+
+    <div class="session">
+      <div class="ses-time">2:30 – 3:30</div>
+      <div class="ses-body">
+        <h4>90-day plan workshop</h4>
+        <p>Each Partner builds their own 90-day plan with specific Business + recruit targets. Get peer feedback. Leave with actionable plan.</p>
+      </div>
+      <span class="ses-tag workshop">Workshop</span>
+    </div>
+
+    <div class="session">
+      <div class="ses-time">3:30 – 4:00</div>
+      <div class="ses-body">
+        <h4>Closing + next steps</h4>
+        <p>Recap, accountability commitments to your cohort, photo, certificates.</p>
+      </div>
+      <span class="ses-tag activity">Activity</span>
+    </div>
+  </div>
+</div>
+
+<!-- LOGISTICS -->
+<div class="logistics">
+  <h2>📋 What you need to know</h2>
+  <div class="log-grid">
+    <div class="log-item"><div class="ic">✅</div><div><h4>Eligibility</h4><p>Active LYMX Partners only. You don't need a minimum production level — new Partners welcome.</p></div></div>
+    <div class="log-item"><div class="ic">💵</div><div><h4>Cost</h4><p>FREE for active Partners. We cover venue, lunches, materials. You handle travel + lodging.</p></div></div>
+    <div class="log-item"><div class="ic">🏨</div><div><h4>Lodging discount</h4><p>Plaza Hotel offers 30% off room rates for bootcamp attendees. Book through link in confirmation email.</p></div></div>
+    <div class="log-item"><div class="ic">📍</div><div><h4>Location</h4><p>Plaza Hotel, downtown Las Vegas. Walking distance from Brew &amp; Bean (yes, we'll all go there for coffee).</p></div></div>
+    <div class="log-item"><div class="ic">📜</div><div><h4>Certificate</h4><p>You get an official LYMX Partner Certified badge for your profile + LinkedIn upon completion.</p></div></div>
+    <div class="log-item"><div class="ic">🤝</div><div><h4>Cohort connection</h4><p>You'll be in a small group of 4-6 Partners after bootcamp. Monthly accountability check-ins for 90 days.</p></div></div>
+  </div>
+</div>
+
+<!-- SPEAKERS -->
+<div class="speakers">
+  <h2>Speakers &amp; panelists</h2>
+  <p class="sub">Past Master Partners, founders, and outside experts.</p>
+
+  <div class="speaker-grid">
+    <div class="speaker">
+      <div class="av a">KL</div>
+      <h3>Kenny Lin</h3>
+      <div class="role">Founder, LYMX</div>
+      <p>Opens both days. Available for 1:1 questions during meals.</p>
+    </div>
+    <div class="speaker">
+      <div class="av b">SV</div>
+      <h3>Sienna Vega</h3>
+      <div class="role">#1 Master Partner</div>
+      <p>Panel + workshop on building a Master-tier downline.</p>
+    </div>
+    <div class="speaker">
+      <div class="av c">AL</div>
+      <h3>Andre Lim</h3>
+      <div class="role">Master Partner · Phoenix</div>
+      <p>How to launch a city before LYMX goes live.</p>
+    </div>
+    <div class="speaker">
+      <div class="av d">DW</div>
+      <h3>Dana Whitfield</h3>
+      <div class="role">Active Partner · Vegas</div>
+      <p>Yelp Ads alumni — converting from sales backgrounds.</p>
+    </div>
+    <div class="speaker">
+      <div class="av e">JC</div>
+      <h3>Jenna Costa</h3>
+      <div class="role">Head of Customer Success</div>
+      <p>Compliance &amp; ethics workshop, ongoing support.</p>
+    </div>
+    <div class="speaker">
+      <div class="av f">CR</div>
+      <h3>Carla Rodriguez, JD</h3>
+      <div class="role">Outside counsel · LYMX legal</div>
+      <p>FTC compliance Q&amp;A (video). 15 years partner-program law.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PAST ATTENDEES -->
+<div class="schedule">
+  <h2>What past attendees said</h2>
+  <p class="sub">Quotes from the most recent (March 2026) bootcamp.</p>
+
+  <div class="quotes-grid">
+    <div class="quote-card">
+      <blockquote>"Walked in nervous as a brand-new Partner. Walked out with a 90-day plan, 5 Partner peers I now talk to weekly, and 3 specific Business prospects I knew exactly how to approach. Worth way more than the time."</blockquote>
+      <cite><strong>Maya Hopkins</strong> · 60-day Partner</cite>
+    </div>
+    <div class="quote-card">
+      <blockquote>"I'd been winging it for 4 months. Bootcamp gave me the structure I didn't know I was missing. My first month after bootcamp doubled my Partner income."</blockquote>
+      <cite><strong>Jordan Park</strong> · Active Partner</cite>
+    </div>
+    <div class="quote-card">
+      <blockquote>"The roleplay sessions were uncomfortable in the best way. Hearing yourself pitch out loud, getting peer feedback — that's the only way to actually improve. Online courses don't do this."</blockquote>
+      <cite><strong>Riya Patel</strong> · Active Partner</cite>
+    </div>
+    <div class="quote-card">
+      <blockquote>"Sienna's panel was the highlight. Real Master Partners answering real questions about real challenges. Worth the trip alone."</blockquote>
+      <cite><strong>Andre Lim</strong> · Master Partner</cite>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER -->
+<div class="register">
+  <h2>Register for the June 14–15 bootcamp</h2>
+  <p>Free for active Partners. We have 50 seats. Past bootcamps have filled in 12–14 days.</p>
+
+  <form class="form" onsubmit="alert('Registration submitted! Confirmation email coming within 24 hours.');return false">
+    <input type="email" placeholder="your@email.com" required>
+    <button type="submit">Reserve seat →</button>
+  </form>
+
+  <div class="seats"><strong>34 seats remaining</strong> · Updated daily</div>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Partner bootcamp · <a href="rep-dashboard.html">Back to dashboard</a> · <a href="partner-events.html">Other Partner events</a> · <a href="partner-academy.html">Online academy</a>
+</div>
+
+</body>
+</html>

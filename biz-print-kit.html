@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Print Kit — LYMX Business</title>
+<meta name="description" content="Free downloadable signage, window clings, table tents, and register cards — print at home or send to a local printer.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700}
+  .nav-link{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(135deg,#fffbe6,#fff5c2);padding:60px 24px 36px;border-bottom:1px solid var(--line)}
+  .hero-inner{max-width:1180px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#8b6f1f;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid var(--gold)}
+  .hero h1{font-size:42px;letter-spacing:-.025em;margin:0 0 12px;font-weight:800}
+  .hero p{color:#5d4d18;max-width:580px;margin:0 auto;font-size:16px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+
+  .ctrl{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:32px}
+  .ctrl h3{margin:0 0 6px;font-size:15px}
+  .ctrl p{margin:0 0 14px;font-size:13px;color:var(--mute)}
+  .ctrl-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  @media (max-width:760px){.ctrl-row{grid-template-columns:1fr}}
+  .ctrl-row label{display:block;font-size:12px;color:var(--mute);font-weight:600;margin-bottom:6px}
+  .ctrl-row input{width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
+  .ctrl-help{font-size:11px;color:var(--mute);margin-top:8px}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}}
+
+  .item{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+  .preview{aspect-ratio:1.4/1;background:#f1f3f7;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line);position:relative;overflow:hidden;padding:24px}
+  .preview .canvas{background:#fff;border:1px solid #d5d8de;box-shadow:0 4px 14px rgba(0,0,0,.08);width:90%;height:90%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;text-align:center}
+  .canvas .lymx-logo{font-size:13px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+  .canvas .lymx-logo span{color:var(--gold)}
+  .canvas .head{font-size:18px;font-weight:800;letter-spacing:-.02em;margin:8px 0 4px;line-height:1.15}
+  .canvas .sub{font-size:11px;color:var(--mute)}
+  .canvas .qr{width:42px;height:42px;background:#0e1116;margin:8px auto;border-radius:6px;background-image:repeating-linear-gradient(0deg,#fff 0 2px,transparent 2px 4px),repeating-linear-gradient(90deg,#fff 0 2px,transparent 2px 4px);background-size:6px 6px}
+  .canvas.boost{background:linear-gradient(135deg,#fffbe6,#fff5c2);border-color:var(--gold)}
+  .canvas.boost .head{color:#3a2f0a}
+  .canvas.dark{background:#0e1116;color:#fff}
+  .canvas.dark .lymx-logo{color:#fff}
+  .canvas.dark .sub{color:#b8c2d6}
+  .canvas.dark .head{color:#fff}
+
+  .item-body{padding:20px;flex:1;display:flex;flex-direction:column}
+  .item-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .item-h h3{margin:0;font-size:16px}
+  .pill{font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;background:#eef3ff;color:var(--accent);letter-spacing:.04em;text-transform:uppercase}
+  .pill.gold{background:#fef9e7;color:#8b6f1f}
+  .pill.green{background:#e8f6ee;color:#0a7a4d}
+  .item p{margin:0 0 14px;font-size:13.5px;color:var(--mute);flex:1}
+  .item .specs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .spec{font-size:11px;color:var(--mute);background:#fafafa;padding:3px 8px;border-radius:6px;font-weight:600}
+  .actions{display:flex;gap:8px;margin-top:auto}
+  .btn{padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:0;flex:1;text-align:center}
+  .btn-pdf{background:var(--ink);color:#fff}
+  .btn-pdf:hover{background:#1f2530}
+  .btn-png{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn-png:hover{border-color:var(--ink)}
+
+  .tip{display:flex;gap:14px;background:#eef3ff;border:1px solid #c7d6ff;border-radius:12px;padding:18px;margin-top:32px;font-size:13px;color:#1a4196}
+  .tip .ic{flex-shrink:0;font-size:22px}
+  .tip strong{color:#0a4cb3}
+
+  .printers{margin-top:48px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px}
+  .printers h2{margin:0 0 6px;font-size:22px;letter-spacing:-.02em}
+  .printers .sub{color:var(--mute);font-size:13px;margin-bottom:18px}
+  .printer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:760px){.printer-grid{grid-template-columns:1fr}}
+  .printer{padding:14px;border:1px solid var(--line);border-radius:10px;font-size:13px}
+  .printer h4{margin:0 0 4px;font-size:14px}
+  .printer .desc{color:var(--mute);font-size:12px;margin-bottom:10px}
+  .printer .row{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);margin-bottom:4px}
+  .printer .row strong{color:var(--ink);font-weight:600}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="biz-dashboard.html">LYMX <span>Power</span> <span class="biz-tag">Business</span></a>
+    <a href="biz-marketing-kit.html" class="nav-link">← Back to marketing kit</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Free for all Businesses · Print-ready PDFs</div>
+    <h1>Print &amp; signage kit</h1>
+    <p>Window clings, table tents, register signs, and posters. PDF print-ready files with bleed marks. Print at home or send to a local printer.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="ctrl">
+  <h3>Customize your prints</h3>
+  <p>These details get baked into the PDFs you download below. Saves you from fiddling in Adobe.</p>
+  <div class="ctrl-row">
+    <div>
+      <label>Business name</label>
+      <input type="text" value="Brew &amp; Bean Café" id="bizName">
+    </div>
+    <div>
+      <label>Sign-up URL</label>
+      <input type="text" value="getlymx.com/r/brewbean" id="bizUrl">
+    </div>
+    <div>
+      <label>Bonus offer (optional)</label>
+      <input type="text" placeholder="100 LYMX on first scan" id="bizBonus">
+    </div>
+  </div>
+  <div class="ctrl-help">QR codes are auto-generated from your sign-up URL. Updates apply to PDFs downloaded after the change.</div>
+</div>
+
+<div class="grid">
+
+  <div class="item">
+    <div class="preview">
+      <div class="canvas">
+        <div class="lymx-logo">LYMX <span>★</span></div>
+        <div class="head">We accept LYMX here</div>
+        <div class="sub">Earn at every visit · Redeem anywhere on the network</div>
+        <div class="qr"></div>
+        <div class="sub" style="font-size:9px">Scan to sign up · 100 LYMX bonus</div>
+      </div>
+    </div>
+    <div class="item-body">
+      <div class="item-h"><h3>Window cling — minimal</h3><span class="pill">Front-of-house</span></div>
+      <div class="specs">
+        <span class="spec">4 × 6 in</span>
+        <span class="spec">Transparent vinyl</span>
+        <span class="spec">300 DPI · CMYK</span>
+      </div>
+      <p>Light, branded, professional. Best for cafés &amp; clean storefronts. Removes cleanly with no residue.</p>
+      <div class="actions">
+        <a class="btn btn-pdf" href="#">↓ PDF (print-ready)</a>
+        <a class="btn btn-png" href="#">↓ PNG preview</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="preview">
+      <div class="canvas dark">
+        <div class="lymx-logo">LYMX <span>★</span></div>
+        <div class="head" style="font-size:20px">EARN HERE.<br>SPEND ANYWHERE.</div>
+        <div class="sub">Loyalty that crosses storefronts.</div>
+        <div class="qr" style="background-color:#fff"></div>
+      </div>
+    </div>
+    <div class="item-body">
+      <div class="item-h"><h3>Window cling — bold</h3><span class="pill">Front-of-house</span></div>
+      <div class="specs">
+        <span class="spec">4 × 6 in</span>
+        <span class="spec">Black vinyl + white ink</span>
+        <span class="spec">300 DPI</span>
+      </div>
+      <p>High-contrast, eye-catching, more obvious from the sidewalk. Best for restaurants, retail, gyms.</p>
+      <div class="actions">
+        <a class="btn btn-pdf" href="#">↓ PDF (print-ready)</a>
+        <a class="btn btn-png" href="#">↓ PNG preview</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="preview">
+      <div class="canvas" style="width:60%;height:90%;justify-content:flex-start;padding-top:14px">
+        <div class="lymx-logo" style="font-size:11px">LYMX <span>★</span></div>
+        <div class="head" style="font-size:14px;margin-top:6px">Earn LYMX<br>at every visit.</div>
+        <div class="qr" style="margin:6px 0"></div>
+        <div class="sub" style="font-size:9px">Scan to sign up<br>brewandbean.com</div>
+      </div>
+    </div>
+    <div class="item-body">
+      <div class="item-h"><h3>Table tent / register card</h3><span class="pill">In-store</span></div>
+      <div class="specs">
+        <span class="spec">4 × 6 in folded</span>
+        <span class="spec">3-panel</span>
+        <span class="spec">110# cardstock recommended</span>
+      </div>
+      <p>Stands on tables or by the register. Front: sign-up CTA + QR. Inside: "What is LYMX?" 3-bullet explainer. Back: nearby LYMX Businesses.</p>
+      <div class="actions">
+        <a class="btn btn-pdf" href="#">↓ PDF (3-up on letter)</a>
+        <a class="btn btn-png" href="#">↓ PNG preview</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="preview">
+      <div class="canvas boost">
+        <div class="lymx-logo">LYMX <span style="color:#d4af37">★</span></div>
+        <div class="head" style="color:#3a2f0a">2× LYMX<br>this week</div>
+        <div class="sub" style="color:#5d4d18">on cold brew</div>
+        <div class="sub" style="color:#5d4d18;font-size:9px;margin-top:4px">Brew &amp; Bean · Apr 22–28</div>
+      </div>
+    </div>
+    <div class="item-body">
+      <div class="item-h"><h3>Multiplier promo poster</h3><span class="pill gold">Time-limited</span></div>
+      <div class="specs">
+        <span class="spec">8.5 × 11 in</span>
+        <span class="spec">Editable promo + dates</span>
+        <span class="spec">Standard letter</span>
+      </div>
+      <p>Customize with your current promo (multiplier, item, dates). Print on standard letter at home or post-digitally on social. Perfect for the holiday playbook.</p>
+      <div class="actions">
+        <a class="btn btn-pdf" href="#">↓ PDF (editable)</a>
+        <a class="btn btn-png" href="#">↓ PNG preview</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="preview">
+      <div class="canvas" style="aspect-ratio:1/1;width:auto;height:90%">
+        <div class="lymx-logo">LYMX <span>★</span></div>
+        <div class="head" style="font-size:13px">Tap to pay</div>
+        <div class="qr" style="width:54px;height:54px;margin:8px 0"></div>
+        <div class="sub" style="font-size:9px">Show your LYMX QR<br>at checkout</div>
+      </div>
+    </div>
+    <div class="item-body">
+      <div class="item-h"><h3>Counter card — "Tap to pay"</h3><span class="pill green">Register</span></div>
+      <div class="specs">
+        <span class="spec">3 × 3 in</span>
+        <span class="spec">Square</span>
+        <span class="spec">Adhesive backing recommended</span>
+      </div>
+      <p>Sticks to the front of your POS or register area. Reminds customers to show their LYMX QR before swiping their card.</p>
+      <div class="actions">
+        <a class="btn btn-pdf" href="#">↓ PDF</a>
+        <a class="btn btn-png" href="#">↓ PNG preview</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="preview">
+      <div class="canvas" style="aspect-ratio:.8/1;width:auto;height:90%;background:#fef9e7;border-color:#f0d97a">
+        <div class="lymx-logo">LYMX <span>★</span></div>
+        <div class="sub" style="font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#8b6f1f">FOUNDING BUSINESS</div>
+        <div class="head" style="font-size:13px;margin-top:4px">Brew &amp; Bean Café</div>
+        <div class="sub" style="font-size:9px;color:#5d4d18">Founding 25 · Las Vegas</div>
+        <div class="sub" style="font-size:9px;margin-top:8px">Joined Feb 2026</div>
+      </div>
+    </div>
+    <div class="item-body">
+      <div class="item-h"><h3>Founding 25 plaque <span class="pill gold">Founding only</span></h3></div>
+      <div class="specs">
+        <span class="spec">5 × 7 in</span>
+        <span class="spec">Gold-foil ready</span>
+        <span class="spec">Frame-friendly</span>
+      </div>
+      <p>For Founding 25 Businesses only. Frames nicely for your wall — proof you were here at the start. We can also send you a metal version (mailing fee applies).</p>
+      <div class="actions">
+        <a class="btn btn-pdf" href="#">↓ PDF (gold-foil)</a>
+        <a class="btn btn-png" href="founding-25-detail.html">Order metal version →</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="tip">
+  <span class="ic">🖨️</span>
+  <div><strong>Print recommendations:</strong> For window clings, send the PDF to a local sign shop — most can do a 4×6 vinyl decal for $8–15. For table tents and posters, your home printer + 110# cardstock works fine. We list a few recommended local printers below.</div>
+</div>
+
+<div class="printers">
+  <h2>Recommended Las Vegas printers</h2>
+  <p class="sub">Vetted by other LYMX Businesses. Mention "LYMX" for 10% off your first order.</p>
+  <div class="printer-grid">
+    <div class="printer">
+      <h4>QuickPrint Vegas</h4>
+      <div class="desc">Same-day vinyl &amp; cardstock. Online ordering. Pick up or local delivery.</div>
+      <div class="row"><span>Window clings</span><strong>$8–12</strong></div>
+      <div class="row"><span>Table tents (50)</span><strong>$32</strong></div>
+      <div class="row"><span>Turnaround</span><strong>Same day</strong></div>
+    </div>
+    <div class="printer">
+      <h4>Strip Signs &amp; Print</h4>
+      <div class="desc">Higher-end. Foil stamping for Founding 25 plaques. Custom sizes.</div>
+      <div class="row"><span>Window clings</span><strong>$15–28</strong></div>
+      <div class="row"><span>Foil plaque</span><strong>$48</strong></div>
+      <div class="row"><span>Turnaround</span><strong>2–3 days</strong></div>
+    </div>
+    <div class="printer">
+      <h4>Office Depot (anywhere)</h4>
+      <div class="desc">National chain. Online upload, pick up at any location. Print kit PDFs are pre-sized for them.</div>
+      <div class="row"><span>Window clings</span><strong>$11.99</strong></div>
+      <div class="row"><span>Letter posters</span><strong>$1.49</strong></div>
+      <div class="row"><span>Turnaround</span><strong>1–2 hr</strong></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Print kit · <a href="biz-dashboard.html">Back to dashboard</a> · <a href="biz-marketing-kit.html">Marketing kit</a> · <a href="brand-guide.html">Brand guide</a>
+</div>
+
+</body>
+</html>

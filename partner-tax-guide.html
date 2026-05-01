@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Tax Guide — LYMX Partner</title>
+<meta name="description" content="What you need to know about taxes as a LYMX Partner — 1099-NEC, deductions, quarterly estimates, common mistakes.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--warn:#d97706;--err:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.7}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .partner-tag{font-size:11px;background:#fef9e7;color:#8b6f1f;padding:3px 8px;border-radius:6px;font-weight:700}
+  .nav-link{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{padding:64px 24px 36px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#f0faf3 0%,#fafafa 100%)}
+  .hero-inner{max-width:1100px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#0a7a4d;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #c2e8d2}
+  .hero h1{font-size:42px;letter-spacing:-.025em;margin:0 0 12px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:16px}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  .disclaimer{background:#fdecea;border-left:4px solid var(--err);padding:18px 22px;border-radius:0 12px 12px 0;font-size:13px;color:#7d2014;margin-bottom:32px}
+  .disclaimer strong{color:#a32114}
+
+  .layout{display:grid;grid-template-columns:200px 1fr;gap:40px}
+  @media (max-width:880px){.layout{grid-template-columns:1fr}.toc{display:none}}
+  .toc{position:sticky;top:80px;height:fit-content}
+  .toc h3{margin:0 0 10px;font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+  .toc a{display:block;padding:6px 12px;border-radius:6px;color:var(--mute);font-size:13px;margin-bottom:2px}
+  .toc a:hover{background:#fef9e7;color:#8b6f1f}
+
+  h2{margin:48px 0 14px;font-size:28px;letter-spacing:-.025em;scroll-margin-top:80px}
+  h2:first-of-type{margin-top:0}
+  h3{margin:28px 0 8px;font-size:18px}
+
+  p{margin:0 0 14px;font-size:15px}
+  strong{color:var(--ink)}
+
+  .callout{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin:18px 0;display:grid;grid-template-columns:auto 1fr;gap:14px}
+  .callout .ic{flex-shrink:0;width:36px;height:36px;border-radius:8px;background:#eef3ff;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800}
+  .callout.gold .ic{background:#fef9e7;color:#8b6f1f}
+  .callout.green .ic{background:#e8f6ee;color:var(--ok)}
+  .callout.red .ic{background:#fdecea;color:var(--err)}
+  .callout h4{margin:0 0 4px;font-size:15px}
+  .callout p{margin:0;font-size:14px}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:18px 0;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line)}
+  th{background:#fafafa;font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  tr:last-child td{border-bottom:0}
+  td.num{font-variant-numeric:tabular-nums;font-weight:600}
+
+  .deduct-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:18px 0}
+  @media (max-width:680px){.deduct-list{grid-template-columns:1fr}}
+  .deduct{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+  .deduct h4{margin:0 0 4px;font-size:14px;display:flex;align-items:center;gap:8px}
+  .deduct h4 .ic{font-size:18px}
+  .deduct p{margin:0;font-size:13px;color:var(--mute);line-height:1.5}
+
+  .quarterly{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin:24px 0}
+  .quarterly h3{margin-top:0}
+  .qbar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+  @media (max-width:520px){.qbar{grid-template-columns:repeat(2,1fr)}}
+  .q{padding:14px;border:1px solid var(--line);border-radius:8px;text-align:center}
+  .q.due{background:#fdecea;border-color:#fbd5d0}
+  .q .qn{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  .q .qd{font-size:16px;font-weight:800;margin:4px 0}
+  .q.due .qd{color:#a32114}
+  .q .qm{font-size:11px;color:var(--mute)}
+
+  details{padding:14px 0;border-top:1px solid var(--line)}
+  details:first-of-type{border-top:0;padding-top:0}
+  summary{cursor:pointer;font-weight:600;font-size:15px;display:flex;align-items:center;gap:12px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";width:24px;height:24px;border-radius:6px;background:#f1f3f7;display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:var(--mute);flex-shrink:0}
+  details[open] summary::before{content:"−";background:var(--ink);color:#fff}
+  details[open] summary{margin-bottom:10px}
+  details > div{padding-left:36px;font-size:14px;line-height:1.7}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="rep-dashboard.html">LYMX <span>Power</span> <span class="partner-tag">Partner</span></a>
+    <a href="rep-dashboard.html" class="nav-link">← Dashboard</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">For LYMX Partners · Updated April 2026</div>
+    <h1>Partner tax guide</h1>
+    <p>What you need to know about taxes as a LYMX Partner. 1099-NEC, deductions, quarterly estimates, common mistakes — explained simply.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="disclaimer">
+  <strong>This is general guidance, not personalized tax advice.</strong> LYMX is not a CPA firm. Tax situations vary widely based on your state, total income, dependents, and other factors. For anything beyond the basics — or anything where the answer matters — talk to a tax professional. We list a few in our <a href="vendor-marketplace.html">Vendor marketplace</a>.
+</div>
+
+<div class="layout">
+
+  <aside class="toc">
+    <h3>Sections</h3>
+    <a href="#basics">The basics</a>
+    <a href="#1099">Your 1099-NEC</a>
+    <a href="#schedule-c">Schedule C</a>
+    <a href="#deductions">Deductions</a>
+    <a href="#quarterly">Quarterly estimates</a>
+    <a href="#mistakes">Common mistakes</a>
+    <a href="#faq">FAQ</a>
+  </aside>
+
+  <main>
+
+<h2 id="basics">The basics — how Partner income is taxed</h2>
+
+<p>LYMX Partner commissions are <strong>self-employment income</strong>. That's different from W-2 employee income in three big ways:</p>
+
+<ol>
+  <li>You're responsible for paying both halves of FICA (Social Security + Medicare) — about 15.3% on top of regular income tax. The IRS calls this "self-employment tax."</li>
+  <li>You don't have an employer withholding taxes. You pay them yourself, usually quarterly.</li>
+  <li>You can deduct legitimate business expenses against your Partner income, which most W-2 employees can't.</li>
+</ol>
+
+<div class="callout green">
+  <div class="ic">✓</div>
+  <div>
+    <h4>Plan for ~30% of gross commission going to taxes</h4>
+    <p>For most Partners, between federal income tax (10–24%) + self-employment tax (15.3%) — roughly 25–35% of your gross commissions ends up as tax. Set aside 30% as a default.</p>
+  </div>
+</div>
+
+<h2 id="1099">Your 1099-NEC</h2>
+
+<p>If LYMX paid you <strong>$600 or more</strong> in commission across the calendar year, you'll get a 1099-NEC by January 31 of the following year. We send it electronically (PDF) and physically (mail) by default.</p>
+
+<table>
+  <thead>
+    <tr><th>You earned in 2026…</th><th>You'll get…</th><th>Sent by</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Less than $600 total</td><td>No 1099 (but you still owe tax)</td><td>—</td></tr>
+    <tr><td>$600 – $20,000</td><td>1099-NEC, electronic + mailed</td><td>Jan 31, 2027</td></tr>
+    <tr><td>$20,000+</td><td>1099-NEC + an annual summary</td><td>Jan 31, 2027</td></tr>
+  </tbody>
+</table>
+
+<p>Your 1099-NEC reports your gross commission. It does <em>not</em> include any reimbursements or non-cash perks (those would go on a separate form if applicable).</p>
+
+<div class="callout">
+  <div class="ic">📅</div>
+  <div>
+    <h4>When you get it</h4>
+    <p>Available in your Partner dashboard by Jan 25. Mailed to your address on file by Jan 31. Update your address in Partner settings before Dec 1, 2026.</p>
+  </div>
+</div>
+
+<h2 id="schedule-c">Schedule C — your tax form</h2>
+
+<p>Partner income is reported on <strong>Schedule C</strong> (Profit or Loss from Business) of your federal tax return. The flow looks like this:</p>
+
+<ol>
+  <li>Add up your gross commission (matches your 1099-NEC) → enter as <strong>gross receipts</strong> on Schedule C</li>
+  <li>Subtract legitimate business expenses (see below) → calculate <strong>net profit</strong></li>
+  <li>Net profit flows to your 1040 as ordinary income, taxed at your marginal rate</li>
+  <li>Same net profit also flows to <strong>Schedule SE</strong> (Self-Employment Tax) — you owe 15.3% on top of income tax</li>
+</ol>
+
+<p>If your net Partner profit is under $400, you don't owe self-employment tax — but you still owe regular income tax on it.</p>
+
+<h2 id="deductions">Common deductions</h2>
+
+<p>Anything you spend that's <strong>ordinary and necessary</strong> for your Partner work is potentially deductible. Some common ones:</p>
+
+<div class="deduct-list">
+  <div class="deduct">
+    <h4><span class="ic">🚗</span>Mileage</h4>
+    <p>Driving to prospect Businesses, training events, networking. 70¢/mile in 2026 (verify current rate). Track in a mileage log.</p>
+  </div>
+  <div class="deduct">
+    <h4><span class="ic">📱</span>Phone</h4>
+    <p>Business-use portion of your phone bill. Most Partners deduct 30–50%.</p>
+  </div>
+  <div class="deduct">
+    <h4><span class="ic">💻</span>Software &amp; tools</h4>
+    <p>CRM, scheduling tools, design tools, even Notion/Trello if used for prospect tracking.</p>
+  </div>
+  <div class="deduct">
+    <h4><span class="ic">📚</span>Training &amp; events</h4>
+    <p>Conferences, books, courses, LYMX-organized training events you traveled to.</p>
+  </div>
+  <div class="deduct">
+    <h4><span class="ic">🍽️</span>Business meals</h4>
+    <p>50% deductible. Includes meeting a prospect for coffee or lunch. Keep receipts + a note about the business purpose.</p>
+  </div>
+  <div class="deduct">
+    <h4><span class="ic">🏠</span>Home office</h4>
+    <p>Dedicated home workspace, calculated by % of home sq ft. Strict criteria — read up before claiming.</p>
+  </div>
+  <div class="deduct">
+    <h4><span class="ic">💼</span>Equipment</h4>
+    <p>Laptop, tablet, business cards, branded clothing if used solely for Partner work.</p>
+  </div>
+  <div class="deduct">
+    <h4><span class="ic">🌐</span>Marketing &amp; ads</h4>
+    <p>Paid social, business cards, website, professional photos, anything you spend to get prospects.</p>
+  </div>
+</div>
+
+<div class="callout gold">
+  <div class="ic">📋</div>
+  <div>
+    <h4>Keep receipts &amp; track everything</h4>
+    <p>The IRS doesn't accept "I think I spent…" Keep digital copies of all receipts (Quickbooks, Wave, or even a Google Drive folder works). Track mileage in an app — MileIQ, Stride, or just a spreadsheet. The hour/week you spend on this saves you thousands at tax time.</p>
+  </div>
+</div>
+
+<h2 id="quarterly">Quarterly estimated taxes</h2>
+
+<p>If you expect to owe more than <strong>$1,000</strong> in federal tax for the year, the IRS expects you to pay it in 4 quarterly chunks instead of all at once in April. Most active Partners hit this threshold by month 3.</p>
+
+<div class="quarterly">
+  <h3>2026 quarterly tax due dates</h3>
+  <p>Pay these to avoid underpayment penalties. Most Partners pay through <a href="https://www.irs.gov/payments/direct-pay" target="_blank" rel="noopener">IRS Direct Pay</a>.</p>
+  <div class="qbar">
+    <div class="q"><div class="qn">Q1</div><div class="qd">Apr 15</div><div class="qm">For Jan–Mar income</div></div>
+    <div class="q due"><div class="qn">Q2</div><div class="qd">Jun 15</div><div class="qm">For Apr–May income</div></div>
+    <div class="q"><div class="qn">Q3</div><div class="qd">Sep 15</div><div class="qm">For Jun–Aug income</div></div>
+    <div class="q"><div class="qn">Q4</div><div class="qd">Jan 15, 2027</div><div class="qm">For Sep–Dec income</div></div>
+  </div>
+</div>
+
+<p><strong>Quick estimate:</strong> Take last quarter's net Partner profit. Multiply by 30%. That's roughly your federal estimated payment.</p>
+
+<div class="callout green">
+  <div class="ic">💡</div>
+  <div>
+    <h4>Tip: open a separate "tax savings" account</h4>
+    <p>The day commission hits your account, transfer 30% to a separate savings account. When the quarterly due date arrives, the money is sitting there. Most Partners who get caught by tax bills are the ones who didn't separate the money.</p>
+  </div>
+</div>
+
+<h2 id="mistakes">5 common mistakes Partners make</h2>
+
+<details>
+  <summary>1. Spending all the commission, then getting hit with a tax bill in April</summary>
+  <div>
+    <p>Classic mistake — you earn $4k in commissions, spend it like income, then in April you owe $1,200 in tax you didn't set aside. Solution: 30% transfer rule above.</p>
+  </div>
+</details>
+
+<details>
+  <summary>2. Missing the Q1 quarterly deadline</summary>
+  <div>
+    <p>If you started in October 2025 but didn't pay anything until April 2026, you may owe a small underpayment penalty for Q4 2025. It's usually small ($20–80) — but it's avoidable. As soon as you become a Partner, set quarterly deadlines on your calendar.</p>
+  </div>
+</details>
+
+<details>
+  <summary>3. Not tracking mileage</summary>
+  <div>
+    <p>If you drive 200 miles a month for prospecting, that's 2,400 miles/year. At 70¢/mile, that's $1,680 in deductions you missed if you didn't track. Get a mileage app on day 1.</p>
+  </div>
+</details>
+
+<details>
+  <summary>4. Trying to deduct things that aren't actually business expenses</summary>
+  <div>
+    <p>Just because you bought it doesn't mean it's deductible. The standard is "ordinary and necessary for your Partner work." Coffee with a friend who isn't a prospect? Not deductible. New AirPods you use 95% for personal? Not fully deductible. Be honest — the IRS audits aggressive deductions.</p>
+  </div>
+</details>
+
+<details>
+  <summary>5. Forgetting state taxes</summary>
+  <div>
+    <p>Federal tax isn't the only one. Most states (including Nevada — wait, Nevada has no state income tax actually) have state income tax. If you're in California or Arizona, you'll owe state too. Check your state's quarterly schedule separately.</p>
+  </div>
+</details>
+
+<h2 id="faq">FAQ</h2>
+
+<details>
+  <summary>I made $400 last year. Do I need to file?</summary>
+  <div><p>If your net Partner profit is $400+, you owe self-employment tax and need to file Schedule SE. Even if your income otherwise wouldn't require filing, this might.</p></div>
+</details>
+
+<details>
+  <summary>Is my $500 Business sign-up bonus taxable?</summary>
+  <div><p>Yes. All Partner commissions including the one-time bonus are taxable income reported on your 1099-NEC.</p></div>
+</details>
+
+<details>
+  <summary>What about LYMX I earned as a customer in my own wallet — is that taxable?</summary>
+  <div><p>No. LYMX you earn as a customer (not as a Partner) is treated as a discount, not income. It's not on a 1099 and you don't owe tax on it. This applies to LYMX you earn at any Business including your own.</p></div>
+</details>
+
+<details>
+  <summary>Should I form an LLC for my Partner work?</summary>
+  <div><p>Most Partners with $&lt;$50k in annual commission don't need one. The pass-through tax treatment of an LLC isn't different from sole proprietorship for federal purposes (state may differ). But an LLC can offer some liability protection and looks more professional. Talk to a tax pro if you're earning $30k+/yr.</p></div>
+</details>
+
+<details>
+  <summary>Can LYMX hold tax for me?</summary>
+  <div><p>No. As a self-employed independent contractor, you're responsible for your own taxes. LYMX cannot withhold federal or state income tax from your commission payments.</p></div>
+</details>
+
+  </main>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Partner tax guide · <a href="rep-dashboard.html">Back to dashboard</a> · <a href="vendor-marketplace.html">Find a tax pro</a> · <a href="partner-payouts.html">Payouts &amp; commission</a>
+</div>
+
+</body>
+</html>

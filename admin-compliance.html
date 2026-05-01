@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — pre-launch compliance checklist. Track Nevada money-transmitter, MLM, tax, disclosures, privacy, and insurance items before going live." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Pre-launch compliance · LYMX Admin</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:1100px){.nav-links{display:none}}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:14px;max-width:600px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{padding:9px 14px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+  .btn:hover{opacity:.92}
+
+  /* Launch readiness hero */
+  .hero{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:var(--radius);padding:24px 28px;margin-bottom:18px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:24px;align-items:center;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.16),transparent 70%);right:-100px;top:-100px}
+  @media(max-width:780px){.hero{grid-template-columns:1fr 1fr}}
+  .hero .lab{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:#9aa3b0;margin-bottom:5px;position:relative}
+  .hero h2{margin:0 0 4px;font-size:24px;font-weight:800;letter-spacing:-.01em;position:relative;color:#fff}
+  .hero .sub{font-size:13px;color:#9aa3b0;margin-bottom:10px;position:relative}
+  .progress-bar{height:10px;background:rgba(255,255,255,.18);border-radius:6px;overflow:hidden;position:relative}
+  .progress-bar > div{background:linear-gradient(90deg,#13a26b,#5fd198);height:100%;border-radius:6px;transition:width .4s}
+  .progress-text{font-size:11.5px;color:#9aa3b0;margin-top:6px;position:relative}
+  .hero .v{font-size:28px;font-weight:800;letter-spacing:-.01em;position:relative}
+  .hero .v.gold{color:#f5d172}
+  .hero .v.green{color:#5fd198}
+  .hero .v.danger{color:#ff8b88}
+  .hero .vsub{font-size:12px;color:#9aa3b0;position:relative}
+
+  /* Filters */
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:7px 12px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .chip:hover{border-color:var(--ink)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .ct{margin-left:5px;background:var(--bg-soft);color:var(--muted);padding:1px 7px;border-radius:5px;font-size:10.5px}
+  .chip.on .ct{background:rgba(255,255,255,.18);color:#fff}
+
+  /* Categories */
+  .cats{display:grid;grid-template-columns:1fr;gap:14px}
+  .cat{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .cat-h{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:var(--bg-soft)}
+  .cat-h .left{display:flex;gap:12px;align-items:center}
+  .cat-h .ic{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0}
+  .cat-h .ic.mt{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  .cat-h .ic.mlm{background:linear-gradient(135deg,#7426c4,#4d1888)}
+  .cat-h .ic.tax{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .cat-h .ic.disc{background:linear-gradient(135deg,#f0a020,#d6892a)}
+  .cat-h .ic.priv{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .cat-h .ic.ins{background:linear-gradient(135deg,#5b6472,#1a1f27)}
+  .cat-h h3{margin:0;font-size:15px;font-weight:800}
+  .cat-h .sub{font-size:12.5px;color:var(--muted);margin-top:1px}
+  .cat-h .right{display:flex;align-items:center;gap:14px}
+  .cat-prog{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--ink-2)}
+  .cat-prog .bar{width:80px;height:6px;background:var(--bg-soft);border-radius:3px;overflow:hidden}
+  .cat-prog .bar > div{height:100%;background:var(--ok);border-radius:3px}
+
+  /* Items */
+  .items{padding:0}
+  .it{padding:14px 20px;display:flex;gap:12px;align-items:flex-start;border-bottom:1px solid var(--line)}
+  .it:last-child{border-bottom:0}
+  .it:hover{background:var(--bg-soft)}
+  .check{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);background:#fff;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px;margin-top:2px}
+  .check:hover{border-color:var(--ink)}
+  .check.done{background:var(--ok);border-color:var(--ok)}
+  .check.progress{background:var(--warn);border-color:var(--warn)}
+  .check.blocked{background:var(--danger);border-color:var(--danger)}
+  .it-body{flex:1;min-width:0}
+  .it .title{font-size:14.5px;font-weight:800;margin:0 0 3px;line-height:1.3}
+  .it .desc{font-size:12.5px;color:var(--muted);margin:0 0 6px;line-height:1.5}
+  .it .row{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);align-items:center}
+  .badge{padding:2px 7px;border-radius:5px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .badge.legal{background:rgba(208,32,84,.12);color:#a01644}
+  .badge.required{background:rgba(224,65,62,.12);color:#a01644}
+  .badge.target{background:rgba(10,132,255,.1);color:var(--accent-2)}
+  .it .owner{display:inline-flex;align-items:center;gap:5px;font-weight:700;color:var(--ink-2)}
+  .it .owner .av{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;font-size:9.5px;display:flex;align-items:center;justify-content:center;font-weight:800}
+  .it .owner .av.k{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  .it .owner .av.s{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .it .owner .av.l{background:linear-gradient(135deg,#7426c4,#4d1888)}
+  .it .links{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto}
+  .it a.lnk{padding:3px 9px;background:var(--bg-soft);border:1px solid var(--line);border-radius:6px;font-size:11px;font-weight:700;color:var(--ink-2)}
+  .it a.lnk:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .status-pill{padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+  .status-pill.todo{background:rgba(91,100,114,.12);color:var(--muted)}
+  .status-pill.progress{background:rgba(240,160,32,.16);color:#a06808}
+  .status-pill.done{background:rgba(19,162,107,.14);color:#0d7d51}
+  .status-pill.blocked{background:rgba(224,65,62,.13);color:#a01644}
+
+  /* Right panel */
+  .layout{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+  @media(max-width:1100px){.layout{grid-template-columns:1fr}}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px;margin-bottom:14px}
+  .panel h3{margin:0 0 10px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .panel p{margin:0 0 8px;font-size:13px;color:var(--ink-2);line-height:1.5}
+  .panel a{color:var(--accent-2);font-weight:700}
+  .gates{display:flex;flex-direction:column;gap:6px}
+  .gate{padding:11px 13px;border-radius:9px;font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center;background:var(--bg-soft)}
+  .gate.go{background:rgba(19,162,107,.1);color:#0d7d51}
+  .gate.no-go{background:rgba(224,65,62,.1);color:#a01644}
+  .gate.warn{background:rgba(240,160,32,.12);color:#7a4d0a}
+  .gate .v{font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Admin</span>
+    </div>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Home</a>
+      <a href="admin-businesses.html">Businesses</a>
+      <a href="admin-customers.html">Customers</a>
+      <a href="admin-tickets.html">Tickets</a>
+      <a href="admin-investors.html">Investors</a>
+      <a href="admin-hiring.html">Hiring</a>
+      <a href="admin-emails.html">Emails</a>
+      <a href="admin-compliance.html" class="on">Compliance</a>
+    </nav>
+    <div class="admin-avatar">KL</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>Pre-launch compliance</h1>
+        <p>What we need to clear before flipping the public switch on getlymx.com. Six categories. Click any item to change status, assign owner, or attach a doc.</p>
+      </div>
+      <div class="toolbar">
+        <button class="btn ghost" onclick="exportCSV()">Export CSV</button>
+        <a class="btn ghost" href="LYMX-Legal-Inquiry.docx">Legal inquiry doc</a>
+        <button class="btn" onclick="resetAll()">Reset all</button>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div>
+        <div class="lab">Launch readiness</div>
+        <h2 id="hero-status">—</h2>
+        <div class="sub" id="hero-sub">—</div>
+        <div class="progress-bar"><div id="bar" style="width:0"></div></div>
+        <div class="progress-text" id="bar-text">— complete</div>
+      </div>
+      <div><div class="lab">Required for go-live</div><div class="v gold" id="m-required">—</div><div class="vsub">items remaining</div></div>
+      <div><div class="lab">Blocked</div><div class="v danger" id="m-blocked">—</div><div class="vsub">need unblocking</div></div>
+      <div><div class="lab">Done</div><div class="v green" id="m-done">—</div><div class="vsub">of total</div></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-row">
+      <div class="chips" id="status-chips">
+        <div class="chip on" data-f="all">All</div>
+        <div class="chip" data-f="todo">Not started</div>
+        <div class="chip" data-f="progress">In progress</div>
+        <div class="chip" data-f="blocked">Blocked</div>
+        <div class="chip" data-f="done">Done</div>
+      </div>
+      <div class="chips" id="req-chips" style="margin-left:8px">
+        <div class="chip" data-r="required">Required only</div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- Categories -->
+      <div class="cats" id="cats"></div>
+
+      <!-- Right panel -->
+      <div>
+        <div class="panel">
+          <h3>Go / no-go gates</h3>
+          <div class="gates" id="gates"></div>
+          <p style="margin-top:10px;font-size:11.5px;color:var(--muted)">All required items + zero blockers needed for a green-light to launch.</p>
+        </div>
+
+        <div class="panel">
+          <h3>Outside counsel</h3>
+          <p>Send the Legal Inquiry doc to outside counsel before the next milestone. We've drafted ~115 paragraphs covering all 6 categories.</p>
+          <a class="btn" style="margin-top:6px" href="LYMX-Legal-Inquiry.docx">Open inquiry doc</a>
+        </div>
+
+        <div class="panel">
+          <h3>Status legend</h3>
+          <p>○ <strong>Not started</strong> — needs an owner</p>
+          <p>◐ <strong>In progress</strong> — assigned, working</p>
+          <p>● <strong>Done</strong> — verified, attach evidence</p>
+          <p>⊘ <strong>Blocked</strong> — needs to be unblocked before launch</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Internal compliance tracker · noindex · Always cross-check with outside counsel before relying on this checklist for go-live.</div>
+</footer>
+
+<script>
+  const CATS = [
+    {id:'mt', name:'Money Transmission (Nevada NRS 671)', icon:'mt', emoji:'💵', sub:'Avoid the money-transmitter classification', items:[
+      {id:'mt1', title:'Confirm LYMX is promotional credit, not stored value', desc:'Get written counsel opinion that LYMX as designed (Business buys/sells units, never customer-buyback) is outside NRS 671.', owner:'L', required:true, status:'progress', links:[{label:'Inquiry §1', href:'LYMX-Legal-Inquiry.docx'},{label:'Disclaimer', href:'disclaimer.html'}]},
+      {id:'mt2', title:'Document customer-buyback exclusion in all agreements', desc:'Business Activation Agreement §7, Terms of Service, and Disclaimer must all explicitly state: LYMX never repurchases units from end customers.', owner:'K', required:true, status:'done', links:[{label:'Business Agreement §7', href:'business-agreement.html'},{label:'Terms', href:'terms.html'}]},
+      {id:'mt3', title:'Confirm we are NOT regulated as gift certificate (NRS 598B)', desc:'Counsel review: LYMX expiration / disclosure rules under Nevada gift certificate law. Verify our no-expiration design is fully compliant.', owner:'L', required:true, status:'todo', links:[{label:'Inquiry §2', href:'LYMX-Legal-Inquiry.docx'}]},
+      {id:'mt4', title:'Settlement banking — confirm not a "money services" trigger', desc:'Our monthly net-settlement to Businesses must use a bank that classifies it as merchant settlement, not money transmission.', owner:'K', required:true, status:'progress', links:[]}
+    ]},
+
+    {id:'mlm', name:'MLM / Pyramid (Nevada NRS 207.235 + FTC)', icon:'mlm', emoji:'🤝', sub:'Partner program structure', items:[
+      {id:'ml1', title:'Confirm anti-pyramid no-purchase clause is enforceable', desc:'Counsel review: Partner Agreement §2 must hold up — Partners earn only from real third-party Business sales, never from Partner recruitment alone.', owner:'L', required:true, status:'progress', links:[{label:'Partner Agreement §2', href:'partner-agreement.html'}]},
+      {id:'ml2', title:'Income disclosure statement published', desc:'Required for all MLM-style comp plans. Discloses median Partner earnings, % earning $0, distribution chart. Must be linked from every recruitment page.', owner:'K', required:true, status:'todo', links:[{label:'Partner Agreement §6', href:'partner-agreement.html'}]},
+      {id:'ml3', title:'FTC disclosure language on every Partner-recruitment page', desc:'Partners must disclose paid-relationship status when promoting LYMX. Audit content-hub.html, partner-signup.html, partner-spotlight.html for FTC-compliant language.', owner:'S', required:true, status:'progress', links:[{label:'Spotlight (audit)', href:'partner-spotlight.html'},{label:'Content hub', href:'content-hub.html'}]},
+      {id:'ml4', title:'Sponsor-change policy documented + auditable', desc:'NRS-compliant: sponsor changes only within 14 days of signup, no commissions earned. Add audit log in commission-backend.html.', owner:'K', required:false, status:'done', links:[{label:'Policy §7', href:'partner-agreement.html'}]},
+      {id:'ml5', title:'Earnings-claim review: no unsubstantiated promises', desc:'Audit every Partner-facing page for income claims. The "$11,840 last month" figure on partner-spotlight.html must have a corresponding individual disclosure.', owner:'L', required:true, status:'progress', links:[{label:'Spotlight', href:'partner-spotlight.html'}]}
+    ]},
+
+    {id:'tax', name:'Tax (federal + Nevada state)', icon:'tax', emoji:'📊', sub:'Sales tax, 1099, withholding', items:[
+      {id:'tx1', title:'Sales-tax treatment when LYMX is used as payment', desc:'Confirm with NV Dept of Taxation: when a customer pays with LYMX, the Business still owes sales tax on the full ticket value (not the LYMX-discounted value).', owner:'K', required:true, status:'progress', links:[{label:'Inquiry §4', href:'LYMX-Legal-Inquiry.docx'}]},
+      {id:'tx2', title:'1099-NEC issuance for Partners ($600+ threshold)', desc:'Annual 1099 to all Partners earning $600+. Stripe / payroll vendor must be set up before first month\'s payouts.', owner:'K', required:true, status:'done', links:[{label:'Payouts', href:'partner-payouts.html'}]},
+      {id:'tx3', title:'W-9 collection before first payout', desc:'No W-9, no payout. Already enforced in Partner onboarding flow.', owner:'K', required:true, status:'done', links:[{label:'Onboarding', href:'partner-onboarding-checklist.html'}]},
+      {id:'tx4', title:'Bulk-gift orders (catering.html) — sales tax handling', desc:'When a corporate buyer purchases LYMX in bulk, is that a taxable sale? Get counsel opinion before catering.html goes live.', owner:'L', required:false, status:'todo', links:[{label:'Catering', href:'catering.html'}]},
+      {id:'tx5', title:'Nevada Modified Business Tax registration', desc:'Required once we have W-2 employees. Currently 0 employees, but worth registering before first hire.', owner:'K', required:false, status:'todo', links:[]}
+    ]},
+
+    {id:'disc', name:'Disclosures & Marketing Claims', icon:'disc', emoji:'📢', sub:'Truth-in-advertising + transparency', items:[
+      {id:'ds1', title:'LYMX disclaimer on every public page', desc:'"LYMX is a promotional credit, not money" must appear in the footer of every customer-facing page. Audit + verify.', owner:'K', required:true, status:'progress', links:[{label:'Disclaimer', href:'disclaimer.html'}]},
+      {id:'ds2', title:'Founding 25 marketing — "first 25" claim is verifiable', desc:'Don\'t exceed 25 in the cohort. Audit the admin-businesses table to confirm a hard cap.', owner:'K', required:true, status:'done', links:[{label:'Founding 25', href:'founding-25.html'}]},
+      {id:'ds3', title:'Cookie consent + tracking disclosure', desc:'GDPR / CCPA-friendly cookie banner already on key pages. Sweep remaining pages.', owner:'S', required:false, status:'done', links:[{label:'Cookie consent', href:'index.html'}]},
+      {id:'ds4', title:'Email marketing — CAN-SPAM compliant unsubscribe', desc:'All system emails must have a 1-click unsubscribe + physical mailing address in the footer.', owner:'K', required:true, status:'progress', links:[{label:'Admin emails', href:'admin-emails.html'}]},
+      {id:'ds5', title:'Promotional credit math disclosure', desc:'1 LYMX = $0.01 face value disclosure on the customer wallet, every Business POS, every help article.', owner:'K', required:true, status:'done', links:[{label:'Help article', href:'help-article.html'}]}
+    ]},
+
+    {id:'priv', name:'Privacy & Data Protection', icon:'priv', emoji:'🔒', sub:'PII handling, retention, access controls', items:[
+      {id:'pr1', title:'Privacy policy reviewed by counsel', desc:'Current draft is placeholder. Needs counsel sign-off before launch — covers what we collect, how long we retain, who we share with.', owner:'L', required:true, status:'progress', links:[{label:'Privacy', href:'privacy.html'}]},
+      {id:'pr2', title:'Customer data retention policy documented', desc:'How long do we keep transaction history, IP logs, support tickets? Default 7 years for financial records, 90 days for support / IP.', owner:'K', required:true, status:'todo', links:[]},
+      {id:'pr3', title:'Right-to-delete flow tested end-to-end', desc:'Customer can request data deletion via customer-settings → admin processes within 30 days → data confirmed scrubbed from production + backups within 90.', owner:'S', required:true, status:'progress', links:[{label:'Customer settings', href:'customer-settings.html'}]},
+      {id:'pr4', title:'Vendor list / data-flow mapping', desc:'Document every third-party that touches customer PII (Stripe, Twilio, Sendgrid, Netlify). Required for incident response.', owner:'K', required:false, status:'todo', links:[]},
+      {id:'pr5', title:'Employee access controls — least-privilege audit', desc:'Confirm no employees / contractors have prod database access without SSH keys + 2FA + role-based limits.', owner:'K', required:true, status:'blocked', links:[]}
+    ]},
+
+    {id:'ins', name:'Insurance & Banking', icon:'ins', emoji:'🛡️', sub:'Coverage + relationships', items:[
+      {id:'in1', title:'General liability + cyber liability insurance', desc:'Quotes from 3 carriers in hand. Pick + bind before public launch. Targeting $2M GL / $5M cyber.', owner:'K', required:true, status:'progress', links:[]},
+      {id:'in2', title:'Errors & Omissions for the Partner program', desc:'Required given the Partner Agreement disclaimers. Counsel + insurance broker working on language.', owner:'L', required:false, status:'todo', links:[]},
+      {id:'in3', title:'Operating bank — settlement account opened', desc:'Currently using a personal bank account for testing. Open an LLC operating account before first real settlement.', owner:'K', required:true, status:'done', links:[]},
+      {id:'in4', title:'Reserve fund for buyback obligations', desc:'Hold N months of expected buyback liability in segregated reserve. Defines our default float requirement.', owner:'K', required:true, status:'progress', links:[]}
+    ]}
+  ];
+
+  const STATUS_NEXT = {todo:'progress', progress:'done', done:'todo', blocked:'todo'};
+  const STATUS_LABEL = {todo:'Not started', progress:'In progress', done:'Done', blocked:'Blocked'};
+
+  const STORAGE_KEY = 'lymx-compliance-v1';
+  let overrides = {};
+  try { overrides = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ overrides = {}; }
+  let filterStatus = 'all';
+  let filterRequired = false;
+
+  function statusOf(item){ return overrides[item.id] || item.status; }
+  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides)); } catch(e){} }
+
+  function cycleStatus(itemId){
+    const all = [];
+    CATS.forEach(c=>c.items.forEach(i=>all.push(i)));
+    const item = all.find(i=>i.id===itemId);
+    if(!item) return;
+    const current = statusOf(item);
+    overrides[item.id] = STATUS_NEXT[current];
+    save();
+    render();
+  }
+
+  function setStatus(itemId, status){
+    overrides[itemId] = status;
+    save();
+    render();
+  }
+
+  function resetAll(){
+    if(!confirm('Reset all compliance status to defaults?')) return;
+    overrides = {};
+    save();
+    render();
+  }
+
+  function render(){
+    const all = CATS.flatMap(c=>c.items.map(i=>({...i, cat:c.id})));
+    const total = all.length;
+    const required = all.filter(i=>i.required);
+    const requiredDone = required.filter(i=>statusOf(i)==='done').length;
+    const blocked = all.filter(i=>statusOf(i)==='blocked').length;
+    const done = all.filter(i=>statusOf(i)==='done').length;
+    const requiredRemaining = required.length - requiredDone;
+    const pct = Math.round((done/total)*100);
+
+    document.getElementById('bar').style.width = pct+'%';
+    document.getElementById('bar-text').textContent = done+' of '+total+' items · '+pct+'% complete';
+    document.getElementById('m-required').textContent = requiredRemaining;
+    document.getElementById('m-blocked').textContent = blocked;
+    document.getElementById('m-done').textContent = done + '/' + total;
+
+    let status, sub;
+    if(blocked > 0){ status = 'Blocked — no-go'; sub = blocked+' item(s) need unblocking before launch.'; }
+    else if(requiredRemaining > 5){ status = 'Pre-launch — early days'; sub = 'Lots of required items still to go. Focus on the highest-risk categories first.'; }
+    else if(requiredRemaining > 0){ status = 'Pre-launch — closing in'; sub = requiredRemaining+' required items left. Counsel sign-off pending.'; }
+    else { status = '🟢 Ready to launch'; sub = 'All required compliance items cleared. Counsel signed off.'; }
+    document.getElementById('hero-status').textContent = status;
+    document.getElementById('hero-sub').textContent = sub;
+
+    // Gates
+    const gates = [
+      {label:'Money transmission cleared', cat:'mt'},
+      {label:'MLM / pyramid cleared', cat:'mlm'},
+      {label:'Privacy policy reviewed', cat:'priv'},
+      {label:'Insurance bound', cat:'ins'},
+      {label:'No blocked items', allCheck: ()=>blocked===0}
+    ];
+    document.getElementById('gates').innerHTML = gates.map(g=>{
+      let pass;
+      if(g.allCheck) pass = g.allCheck();
+      else {
+        const cat = CATS.find(c=>c.id===g.cat);
+        pass = cat.items.filter(i=>i.required).every(i=>statusOf(i)==='done');
+      }
+      const cls = pass ? 'go' : (blocked>0 && g.allCheck ? 'no-go' : 'warn');
+      return `<div class="gate ${cls}"><span>${g.label}</span><span class="v">${pass?'✓ Go':'Pending'}</span></div>`;
+    }).join('');
+
+    // Categories
+    const target = document.getElementById('cats');
+    target.innerHTML = CATS.map(cat=>{
+      const filteredItems = cat.items.filter(i=>{
+        if(filterStatus !== 'all' && statusOf(i) !== filterStatus) return false;
+        if(filterRequired && !i.required) return false;
+        return true;
+      });
+      const catTotal = cat.items.length;
+      const catDone = cat.items.filter(i=>statusOf(i)==='done').length;
+      const catPct = Math.round((catDone/catTotal)*100);
+      if(filteredItems.length === 0) return '';
+      return `<div class="cat">
+        <div class="cat-h">
+          <div class="left">
+            <div class="ic ${cat.icon}">${cat.emoji}</div>
+            <div>
+              <h3>${cat.name}</h3>
+              <div class="sub">${cat.sub}</div>
+            </div>
+          </div>
+          <div class="right">
+            <div class="cat-prog">
+              <div class="bar"><div style="width:${catPct}%"></div></div>
+              ${catDone}/${catTotal}
+            </div>
+          </div>
+        </div>
+        <div class="items">
+          ${filteredItems.map(i=>{
+            const s = statusOf(i);
+            const checkClass = s === 'done' ? 'done' : s === 'progress' ? 'progress' : s === 'blocked' ? 'blocked' : '';
+            const checkSym = s === 'done' ? '✓' : s === 'progress' ? '◐' : s === 'blocked' ? '⊘' : '';
+            const ownerName = {K:'Kenny',S:'Sam',L:'Counsel'}[i.owner] || '—';
+            return `<div class="it">
+              <div class="check ${checkClass}" onclick="cycleStatus('${i.id}')" title="Click to cycle status">${checkSym}</div>
+              <div class="it-body">
+                <div class="title">${i.title}</div>
+                <div class="desc">${i.desc}</div>
+                <div class="row">
+                  <span class="status-pill ${s}" onclick="cycleStatus('${i.id}')">${STATUS_LABEL[s]}</span>
+                  ${i.required ? '<span class="badge required">Required</span>' : '<span class="badge target">Optional</span>'}
+                  <span class="owner"><span class="av ${i.owner.toLowerCase()}">${i.owner}</span>${ownerName}</span>
+                  <div class="links">
+                    ${(i.links||[]).map(l=>`<a class="lnk" href="${l.href}">${l.label}</a>`).join('')}
+                  </div>
+                </div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('') || '<div class="cat" style="padding:40px;text-align:center;color:var(--muted)">No items match the current filter.</div>';
+  }
+
+  // Filter listeners
+  document.querySelectorAll('#status-chips .chip').forEach(c=>{
+    c.onclick = ()=>{
+      document.querySelectorAll('#status-chips .chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      filterStatus = c.dataset.f;
+      render();
+    };
+  });
+  document.querySelectorAll('#req-chips .chip').forEach(c=>{
+    c.onclick = ()=>{
+      filterRequired = !filterRequired;
+      c.classList.toggle('on', filterRequired);
+      render();
+    };
+  });
+
+  function exportCSV(){
+    const rows = [['category','title','status','required','owner','description']];
+    CATS.forEach(c=>c.items.forEach(i=>{
+      rows.push([c.name, i.title, statusOf(i), i.required?'yes':'no', i.owner, i.desc]);
+    }));
+    const csv = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob = new Blob([csv],{type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'lymx-compliance-'+new Date().toISOString().slice(0,10)+'.csv';
+    a.click();
+  }
+
+  render();
+</script>
+</body>
+</html>

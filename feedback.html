@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX feedback — tell us how we're doing. NPS-style score + open feedback." />
+<title>Feedback · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 14px 40px rgba(14,17,22,.12);--maxw:680px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100vh}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{background:#fff;border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px;max-width:1200px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--ink)}
+  .nav-links a{font-size:14px;color:var(--muted);margin-left:18px}
+
+  main{flex:1;padding:48px 0}
+
+  /* Hero */
+  .hero{text-align:center;margin-bottom:30px}
+  .hero h1{margin:0;font-size:34px;font-weight:800;letter-spacing:-.015em}
+  .hero .lede{font-size:15.5px;color:var(--muted);max-width:520px;margin:14px auto 0;line-height:1.6}
+
+  /* Card */
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:30px 32px;box-shadow:var(--shadow)}
+  @media(max-width:520px){.card{padding:22px}}
+
+  /* Question */
+  .q{margin-bottom:22px}
+  .q-h{font-size:16px;font-weight:800;margin-bottom:14px;letter-spacing:-.005em}
+  .q-h .req{color:var(--danger)}
+
+  /* NPS scale */
+  .nps{display:grid;grid-template-columns:repeat(11,1fr);gap:6px;margin-bottom:8px}
+  @media(max-width:520px){.nps{grid-template-columns:repeat(6,1fr);gap:5px}}
+  .nps-btn{padding:14px 0;background:#fff;border:1.5px solid var(--line);border-radius:9px;font-weight:800;font-size:14.5px;color:var(--ink-2);cursor:pointer;font-family:inherit;transition:.15s}
+  .nps-btn:hover{border-color:var(--ink)}
+  .nps-btn.on{background:var(--ink);color:#fff;border-color:var(--ink);transform:scale(1.05);box-shadow:0 4px 12px rgba(14,17,22,.18)}
+  .nps-btn.on.detractor{background:#e0413e;border-color:#e0413e}
+  .nps-btn.on.passive{background:#f0a020;border-color:#f0a020}
+  .nps-btn.on.promoter{background:#13a26b;border-color:#13a26b}
+  .nps-labels{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:6px;font-weight:600}
+
+  /* Role pick */
+  .roles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  @media(max-width:480px){.roles{grid-template-columns:1fr 1fr}}
+  .role{padding:12px;border:1.5px solid var(--line);border-radius:10px;cursor:pointer;text-align:center;background:#fff;font-family:inherit;transition:.15s}
+  .role:hover{border-color:var(--ink)}
+  .role.on{border-color:var(--accent);background:rgba(10,132,255,.05)}
+  .role .ic{font-size:20px;margin-bottom:3px;display:block}
+  .role .nm{font-weight:800;font-size:13px}
+
+  /* Form fields */
+  label{display:block;font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px}
+  textarea,.input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:14.5px;font-family:inherit}
+  textarea{resize:vertical;min-height:90px;line-height:1.55}
+  textarea:focus,.input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+
+  .submit-btn{width:100%;padding:14px;background:var(--ink);color:#fff;border:0;border-radius:11px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;transition:.15s;margin-top:6px}
+  .submit-btn:hover{background:#000}
+  .submit-btn:disabled{background:#c6ccd4;cursor:not-allowed}
+
+  .small{margin-top:12px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.55}
+
+  /* Success */
+  .success{display:none;text-align:center;padding:46px 32px}
+  .success.on{display:block}
+  .success .ic{width:80px;height:80px;margin:0 auto 14px;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:38px;box-shadow:0 8px 24px rgba(19,162,107,.32)}
+  .success h2{margin:0;font-size:26px;font-weight:800}
+  .success p{margin:12px auto;font-size:15px;color:var(--muted);max-width:380px;line-height:1.6}
+  .success .next{margin-top:18px}
+  .success .next a{padding:11px 18px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;background:var(--ink);color:#fff;display:inline-block}
+
+  /* Stats */
+  .stats-mini{margin-top:24px;display:flex;justify-content:center;gap:20px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);text-align:center}
+  .stats-mini div strong{color:var(--ink);font-weight:800;font-size:18px;display:block}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:20px 0;font-size:12.5px;text-align:center}
+  footer a{color:#c6ccd4;margin:0 10px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">LYMX</a>
+    <nav class="nav-links">
+      <a href="help-center.html">Help Center</a>
+      <a href="support.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="hero">
+      <h1>How are we doing?</h1>
+      <p class="lede">Two minutes. Honest answers. We read every one — and the team brings the most-mentioned issues to weekly review.</p>
+    </div>
+
+    <div class="card" id="form-card">
+      <!-- Q1: NPS -->
+      <div class="q">
+        <div class="q-h">How likely are you to recommend LYMX to a friend or peer? <span class="req">*</span></div>
+        <div class="nps" id="nps">
+          <button type="button" class="nps-btn detractor" data-score="0" onclick="pickScore(this, 0)">0</button>
+          <button type="button" class="nps-btn detractor" data-score="1" onclick="pickScore(this, 1)">1</button>
+          <button type="button" class="nps-btn detractor" data-score="2" onclick="pickScore(this, 2)">2</button>
+          <button type="button" class="nps-btn detractor" data-score="3" onclick="pickScore(this, 3)">3</button>
+          <button type="button" class="nps-btn detractor" data-score="4" onclick="pickScore(this, 4)">4</button>
+          <button type="button" class="nps-btn detractor" data-score="5" onclick="pickScore(this, 5)">5</button>
+          <button type="button" class="nps-btn detractor" data-score="6" onclick="pickScore(this, 6)">6</button>
+          <button type="button" class="nps-btn passive" data-score="7" onclick="pickScore(this, 7)">7</button>
+          <button type="button" class="nps-btn passive" data-score="8" onclick="pickScore(this, 8)">8</button>
+          <button type="button" class="nps-btn promoter" data-score="9" onclick="pickScore(this, 9)">9</button>
+          <button type="button" class="nps-btn promoter" data-score="10" onclick="pickScore(this, 10)">10</button>
+        </div>
+        <div class="nps-labels">
+          <span>Not likely</span>
+          <span>Extremely likely</span>
+        </div>
+      </div>
+
+      <!-- Q2: Role -->
+      <div class="q">
+        <div class="q-h">I'm a… <span class="req">*</span></div>
+        <div class="roles">
+          <button type="button" class="role on" data-role="customer" onclick="pickRole(this)">
+            <span class="ic">👤</span>
+            <div class="nm">Customer</div>
+          </button>
+          <button type="button" class="role" data-role="business" onclick="pickRole(this)">
+            <span class="ic">🏪</span>
+            <div class="nm">Business</div>
+          </button>
+          <button type="button" class="role" data-role="partner" onclick="pickRole(this)">
+            <span class="ic">🤝</span>
+            <div class="nm">Partner</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Q3: Open -->
+      <div class="q">
+        <div class="q-h" id="q3-label">What's the main reason for your score?</div>
+        <textarea id="reason" placeholder="Be honest — we'd rather hear the messy truth than polite vagueness."></textarea>
+      </div>
+
+      <!-- Q4: One thing -->
+      <div class="q">
+        <div class="q-h">If you could change one thing about LYMX, what would it be?</div>
+        <textarea id="onething" placeholder="Optional. Be specific if you can."></textarea>
+      </div>
+
+      <!-- Q5: Contact -->
+      <div class="q">
+        <div class="q-h">Want us to follow up?</div>
+        <input class="input" id="email" type="email" placeholder="Email (optional) — we'll only contact you about this feedback" />
+      </div>
+
+      <button class="submit-btn" id="submit-btn" onclick="submitFeedback()" disabled>Send feedback</button>
+
+      <p class="small">By submitting, you agree to our <a href="privacy.html">Privacy Policy</a>. We won't share your responses with anyone outside LYMX.</p>
+    </div>
+
+    <!-- Success state -->
+    <div class="card success" id="success">
+      <div class="ic">🙏</div>
+      <h2>Thank you, <span id="success-role">friend</span>.</h2>
+      <p id="success-msg">We've logged your feedback. The team reads every response.</p>
+      <div class="next">
+        <a href="index.html">Back to home →</a>
+      </div>
+    </div>
+
+    <div class="stats-mini">
+      <div><strong>847</strong>responses · last 30 days</div>
+      <div><strong>62</strong>NPS score</div>
+      <div><strong>91%</strong>response rate</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div>© <span id="yr"></span> LYMX · <a href="support.html">Contact support</a> · <a href="privacy.html">Privacy</a></div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  let score = null;
+  let pickedRole = 'customer';
+
+  function pickScore(btn, s){
+    score = s;
+    document.querySelectorAll('.nps-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    // Adjust the q3 prompt based on score
+    const lab = document.getElementById('q3-label');
+    if (s <= 6) lab.textContent = "We're sorry — what's the main reason for the low score?";
+    else if (s <= 8) lab.textContent = "What's holding you back from a 9 or 10?";
+    else lab.textContent = "What's the main reason you'd recommend LYMX?";
+    checkValid();
+  }
+
+  function pickRole(btn){
+    pickedRole = btn.dataset.role;
+    document.querySelectorAll('.role').forEach(r => r.classList.remove('on'));
+    btn.classList.add('on');
+    checkValid();
+  }
+
+  function checkValid(){
+    document.getElementById('submit-btn').disabled = score === null;
+  }
+
+  function submitFeedback(){
+    document.getElementById('form-card').style.display = 'none';
+    document.getElementById('success').classList.add('on');
+    document.getElementById('success-role').textContent = {
+      customer: 'friend',
+      business: 'partner',
+      partner: 'recruiter'
+    }[pickedRole];
+    if (score >= 9) {
+      document.getElementById('success-msg').textContent = "We've logged your feedback — thank you for the high score. If you ever want to talk on the record, email kenny@getlymx.com.";
+    } else if (score <= 6) {
+      document.getElementById('success-msg').textContent = "Thank you for being honest. The team reviews every detractor response in our weekly meeting and reaches out to anyone who left an email.";
+    } else {
+      document.getElementById('success-msg').textContent = "We've logged your feedback. The team reads every response — your one-thing-to-change goes straight to the product roadmap discussion.";
+    }
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

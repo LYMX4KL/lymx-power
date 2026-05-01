@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Partner downline — your G1 / G2 / G3 Partners visualized. Generations track recruited Partners only; your own Businesses are your production." />
+<meta name="robots" content="noindex,nofollow" />
+<title>My downline · LYMX Partner</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg-soft);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(212,175,55,.18);color:#7a5e10;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  @media(max-width:1000px){.nav-links{display:none}}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:14px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{padding:9px 14px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+  .btn:hover{opacity:.92}
+
+  /* Model explainer banner */
+  .model{background:rgba(10,132,255,.06);border:1px solid rgba(10,132,255,.2);color:var(--accent-2);padding:12px 18px;border-radius:11px;margin-bottom:16px;font-size:13px;line-height:1.6;display:flex;gap:12px;align-items:flex-start}
+  .model .ic{font-size:18px;flex-shrink:0;margin-top:1px}
+  .model strong{color:var(--accent-2);font-weight:800}
+
+  /* Stats */
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:18px}
+  @media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#fff;padding:18px 20px}
+  .stat .l{font-size:11.5px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+  .stat .v{font-size:24px;font-weight:800;letter-spacing:-.01em}
+  .stat .v.gold{color:var(--gold)}
+  .stat .v.green{color:var(--ok)}
+  .stat .sub{font-size:11.5px;color:var(--muted);margin-top:3px}
+
+  /* Tree shell */
+  .tree-shell{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .tree-h{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:10px}
+  .tree-h h2{margin:0;font-size:16px;font-weight:800}
+  .tree-h .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+  .legend .leg{display:flex;align-items:center;gap:6px}
+  .legend .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .legend .me{background:linear-gradient(135deg,#d4af37,#a08020)}
+  .legend .g1{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .legend .g2{background:linear-gradient(135deg,#a545ff,#7426c4)}
+  .legend .g3{background:linear-gradient(135deg,#f0a020,#d6892a)}
+
+  .tree-body{padding:30px 18px;overflow-x:auto;background:linear-gradient(180deg,#fbfcfd,#f6f7f9)}
+  .tree-svg-wrap{min-width:800px;display:flex;justify-content:center}
+
+  /* Generations grid */
+  .gens{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:18px 22px;border-top:1px solid var(--line);background:#fff}
+  @media(max-width:780px){.gens{grid-template-columns:repeat(2,1fr)}}
+  .gen{padding:14px;background:var(--bg-soft);border-radius:11px;border-left:4px solid var(--line)}
+  .gen.production{border-left-color:#d4af37}
+  .gen.g1{border-left-color:#13a26b}
+  .gen.g2{border-left-color:#a545ff}
+  .gen.g3{border-left-color:#f0a020}
+  .gen .gh{display:flex;justify-content:space-between;align-items:baseline}
+  .gen .lab{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .gen .pct{font-size:11.5px;font-weight:800;color:var(--ink-2)}
+  .gen .ct{font-size:24px;font-weight:800;letter-spacing:-.01em;margin:4px 0}
+  .gen .ct .unit{font-size:13px;font-weight:700;color:var(--muted);margin-left:4px}
+  .gen .income{font-size:13px;font-weight:700;color:var(--ok)}
+  .gen .income .lab2{color:var(--muted);font-weight:600}
+
+  /* Side panel */
+  .layout{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start;margin-top:18px}
+  @media(max-width:1000px){.layout{grid-template-columns:1fr}}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px}
+  .panel h3{margin:0 0 12px;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+
+  .top-list .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);gap:10px}
+  .top-list .row:last-child{border-bottom:0}
+  .top-list .who{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+  .top-list .av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:11px;flex-shrink:0}
+  .top-list .av.g1{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .top-list .av.g2{background:linear-gradient(135deg,#a545ff,#7426c4)}
+  .top-list .av.g3{background:linear-gradient(135deg,#f0a020,#d6892a)}
+  .top-list .name{font-size:13.5px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .top-list .meta{font-size:11px;color:var(--muted)}
+  .top-list .v{font-size:14px;font-weight:800;color:var(--ok);text-align:right}
+  .top-list .v small{display:block;font-size:10.5px;color:var(--muted);font-weight:600}
+
+  /* Modal */
+  .ovr{position:fixed;inset:0;background:rgba(14,17,22,.45);z-index:90;display:none;align-items:center;justify-content:center;padding:20px}
+  .ovr.on{display:flex}
+  .modal{background:#fff;border-radius:var(--radius);max-width:520px;width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .modal h3{margin:0 0 4px;font-size:18px;font-weight:800}
+  .modal p{margin:0;color:var(--muted);font-size:13.5px}
+  .m-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+  .m-stats .ms{padding:10px 12px;background:var(--bg-soft);border-radius:9px}
+  .m-stats .ms .l{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .m-stats .ms .v{font-size:18px;font-weight:800;margin-top:2px}
+  .m-stats .ms .v.gold{color:var(--gold)}
+  .m-stats .ms .v.green{color:var(--ok)}
+  .m-actions{display:flex;gap:8px;justify-content:end;margin-top:14px}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Partner</span>
+    </div>
+    <nav class="nav-links">
+      <a href="rep-dashboard.html">Dashboard</a>
+      <a href="projection.html">Projection</a>
+      <a href="partner-crm.html">CRM</a>
+      <a href="content-hub.html">Content</a>
+      <a href="territory-program.html">Territory</a>
+      <a href="partner-tree.html" class="on">Downline</a>
+      <a href="partner-payouts.html">Payouts</a>
+    </nav>
+    <a href="partner-spotlight.html" class="btn ghost">Master spotlight</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>My downline</h1>
+        <p>Your 3-generation Partner downline visualized. Click any Partner to see their stats. Generations track <em>Partners</em> only — Businesses you sign up are your <strong>own production</strong>.</p>
+      </div>
+      <div class="toolbar">
+        <button class="btn ghost" onclick="exportTree()">Export CSV</button>
+        <a class="btn" href="partner-crm.html">+ Recruit</a>
+      </div>
+    </div>
+
+    <!-- Model explainer -->
+    <div class="model">
+      <span class="ic">ℹ️</span>
+      <div>
+        <strong>How generations work:</strong> Generations track <strong>Partners you recruit</strong>, not Businesses. The Businesses you personally sign up are your own <strong>Production</strong> ($500 sign-up + 9% override). When you recruit another Partner, they become your <strong>G1</strong> — and you earn 3% override on their production. Their recruited Partners become your <strong>G2</strong> (2% override), and so on, three generations deep.
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat"><div class="l">Your production</div><div class="v gold" id="ct-prod">—</div><div class="sub">Businesses you signed up · 9% + $500</div></div>
+      <div class="stat"><div class="l">G1 Partners</div><div class="v" id="ct-g1">—</div><div class="sub">Direct recruits · 3% override</div></div>
+      <div class="stat"><div class="l">G2 Partners</div><div class="v" id="ct-g2">—</div><div class="sub">G1's recruits · 2% override</div></div>
+      <div class="stat"><div class="l">G3 Partners</div><div class="v" id="ct-g3">—</div><div class="sub">G2's recruits · 1% override</div></div>
+      <div class="stat"><div class="l">Last-month total income</div><div class="v green" id="m-income">—</div><div class="sub">Production + all 3 generations</div></div>
+    </div>
+
+    <div class="layout">
+      <!-- Tree -->
+      <div class="tree-shell">
+        <div class="tree-h">
+          <h2>Downline visualization</h2>
+          <div class="legend">
+            <div class="leg"><span class="dot me"></span>You</div>
+            <div class="leg"><span class="dot g1"></span>G1</div>
+            <div class="leg"><span class="dot g2"></span>G2</div>
+            <div class="leg"><span class="dot g3"></span>G3</div>
+          </div>
+        </div>
+        <div class="tree-body">
+          <div class="tree-svg-wrap">
+            <svg id="tree-svg" width="1100" height="500" viewBox="0 0 1100 500" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+        </div>
+        <div class="gens">
+          <div class="gen production">
+            <div class="gh"><div class="lab">Your production</div><div class="pct">9% + $500</div></div>
+            <div class="ct" id="g-prod-ct">—<span class="unit">Businesses</span></div>
+            <div class="income"><span id="g-prod-inc">$—</span> <span class="lab2">last month</span></div>
+          </div>
+          <div class="gen g1">
+            <div class="gh"><div class="lab">G1 — your recruits</div><div class="pct">3%</div></div>
+            <div class="ct" id="g-g1-ct">—<span class="unit">Partners</span></div>
+            <div class="income"><span id="g-g1-inc">$—</span> <span class="lab2">override last month</span></div>
+          </div>
+          <div class="gen g2">
+            <div class="gh"><div class="lab">G2 — G1's recruits</div><div class="pct">2%</div></div>
+            <div class="ct" id="g-g2-ct">—<span class="unit">Partners</span></div>
+            <div class="income"><span id="g-g2-inc">$—</span> <span class="lab2">override last month</span></div>
+          </div>
+          <div class="gen g3">
+            <div class="gh"><div class="lab">G3 — G2's recruits</div><div class="pct">1%</div></div>
+            <div class="ct" id="g-g3-ct">—<span class="unit">Partners</span></div>
+            <div class="income"><span id="g-g3-inc">$—</span> <span class="lab2">override last month</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top contributors -->
+      <div class="panel">
+        <h3>Top downline contributors</h3>
+        <div class="top-list" id="top-list"></div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted);line-height:1.5">
+          Each Partner's contribution to you = override % (3 / 2 / 1 by generation) on their <em>own production</em> Businesses' subscriptions, summed across the 30-day window.
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Detail modal -->
+<div class="ovr" id="ovr">
+  <div class="modal" id="modal-body"></div>
+</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Partner tools · Generations track recruited Partners only · Override 9% / 3% / 2% / 1% across Production + G1 + G2 + G3.</div>
+</footer>
+
+<script>
+  // CORRECTED MODEL:
+  // Tree nodes = Partners (you + G1 + G2 + G3 only).
+  // Each Partner has their own production (count of Businesses they signed up).
+  // Generations track downline Partners, NOT Businesses.
+
+  const TREE = {
+    name: 'Sienna Vega', tier:'Master', generation:'me',
+    production: 42,                  // your own Businesses (production)
+    productionIncome: 9420,          // 9% override on your production + sign-up bonuses earned
+    children: [
+      {name:'Marcus Chen', tier:'Platinum', generation:'g1', production:14, productionIncome:1840, children:[
+        {name:'Devon Tate', tier:'Gold', generation:'g2', production:8, productionIncome:560, children:[
+          {name:'Alex Vu', tier:'Silver', generation:'g3', production:4, productionIncome:120}
+        ]},
+        {name:'Sam Hao', tier:'Bronze', generation:'g2', production:1, productionIncome:50}
+      ]},
+      {name:'Tomás Reyes', tier:'Platinum', generation:'g1', production:11, productionIncome:1620, children:[
+        {name:'Kayla Smith', tier:'Gold', generation:'g2', production:6, productionIncome:380, children:[
+          {name:'Beth N.', tier:'Bronze', generation:'g3', production:1, productionIncome:35}
+        ]},
+        {name:'Renée D.', tier:'Bronze', generation:'g2', production:2, productionIncome:75}
+      ]},
+      {name:'Bri Okonkwo', tier:'Gold', generation:'g1', production:8, productionIncome:980, children:[
+        {name:'Imani Davis', tier:'Gold', generation:'g2', production:5, productionIncome:280}
+      ]},
+      {name:'Hannah Park', tier:'Silver', generation:'g1', production:5, productionIncome:540},
+      {name:'Carlos B.', tier:'Silver', generation:'g1', production:4, productionIncome:430}
+    ]
+  };
+
+  const COLOR = {me:'#d4af37', g1:'#13a26b', g2:'#a545ff', g3:'#f0a020'};
+  const DARKER = {me:'#a08020', g1:'#0d7d51', g2:'#7426c4', g3:'#d6892a'};
+  const OVERRIDE_PCT = {g1:0.03, g2:0.02, g3:0.01};
+
+  // Layout
+  function layout(node){
+    const levels = [[node]];
+    let cur = [node];
+    while(cur.length){
+      const next = [];
+      cur.forEach(n=>(n.children||[]).forEach(c=>next.push(c)));
+      if(next.length) levels.push(next);
+      cur = next;
+    }
+    const SVG_W = 1100;
+    const SVG_H = 500;
+    const TOP = 50;
+    const BOT = 440;
+    const yStep = (BOT - TOP) / Math.max(1, levels.length-1);
+    levels.forEach((row, i)=>{
+      const y = TOP + i*yStep;
+      const xStep = SVG_W / (row.length + 1);
+      row.forEach((n, j)=>{
+        n._x = (j+1) * xStep;
+        n._y = y;
+      });
+    });
+    return levels;
+  }
+
+  function renderTree(){
+    layout(TREE);
+    const svg = document.getElementById('tree-svg');
+    let html = '';
+
+    function walkEdges(n){
+      (n.children||[]).forEach(c=>{
+        const mid = (n._y + c._y)/2;
+        html += `<path d="M ${n._x} ${n._y+22} C ${n._x} ${mid}, ${c._x} ${mid}, ${c._x} ${c._y-22}" stroke="#cdd2da" stroke-width="1.5" fill="none" />`;
+        walkEdges(c);
+      });
+    }
+    walkEdges(TREE);
+
+    function walkNodes(n, idx){
+      const c = COLOR[n.generation];
+      const dc = DARKER[n.generation];
+      const r = n.generation === 'me' ? 28 : 20;
+      const initials = n.name.split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+      const labelY = n._y + r + 14;
+      const overrideToYou = n.generation === 'me' ? n.productionIncome : Math.round(n.productionIncome * (OVERRIDE_PCT[n.generation] / 0.09));
+      // Note: productionIncome of downline = 9% on their production (their own income).
+      // Override TO YOU = (3 / 2 / 1)% on their production = (1/3, 2/9, 1/9) of their productionIncome.
+      // Actually: their productionIncome ≈ 9% of subscription. Your override = X% of subscription = (X/9) * their productionIncome.
+      const tagline = n.generation === 'me'
+        ? `${n.production} Businesses · You`
+        : `${n.tier} · ${n.production} Businesses · $${overrideToYou.toLocaleString()} to you`;
+      html += `
+        <g class="node" style="cursor:pointer" onclick="showDetail(${idx})">
+          <defs><linearGradient id="g${idx}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c}"/><stop offset="1" stop-color="${dc}"/></linearGradient></defs>
+          <circle cx="${n._x}" cy="${n._y}" r="${r+3}" fill="#fff" />
+          <circle cx="${n._x}" cy="${n._y}" r="${r}" fill="url(#g${idx})" />
+          <text x="${n._x}" y="${n._y+4}" text-anchor="middle" fill="#fff" font-weight="800" font-size="${n.generation==='me'?14:11}" font-family="-apple-system,Segoe UI,Inter,sans-serif">${initials}</text>
+          <text x="${n._x}" y="${labelY}" text-anchor="middle" fill="#1a1f27" font-weight="800" font-size="11.5" font-family="-apple-system,Segoe UI,Inter,sans-serif">${n.name}</text>
+          <text x="${n._x}" y="${labelY+13}" text-anchor="middle" fill="#5b6472" font-weight="600" font-size="10.5" font-family="-apple-system,Segoe UI,Inter,sans-serif">${tagline}</text>
+        </g>
+      `;
+      (n.children||[]).forEach((c,i)=>walkNodes(c, idx*100+i+1));
+    }
+    walkNodes(TREE, 0);
+    svg.innerHTML = html;
+
+    // Stats
+    const counts = {g1:0,g2:0,g3:0};
+    const overrideToMe = {g1:0,g2:0,g3:0};
+    function tally(n){
+      (n.children||[]).forEach(c=>{
+        counts[c.generation]++;
+        // Override to me from this Partner = (override% / 9%) * their productionIncome
+        const myShare = Math.round(c.productionIncome * (OVERRIDE_PCT[c.generation] / 0.09));
+        overrideToMe[c.generation] += myShare;
+        c._overrideToMe = myShare;
+        tally(c);
+      });
+    }
+    tally(TREE);
+
+    document.getElementById('ct-prod').textContent = TREE.production;
+    document.getElementById('ct-g1').textContent = counts.g1;
+    document.getElementById('ct-g2').textContent = counts.g2;
+    document.getElementById('ct-g3').textContent = counts.g3;
+    const total = TREE.productionIncome + overrideToMe.g1 + overrideToMe.g2 + overrideToMe.g3;
+    document.getElementById('m-income').textContent = '$' + total.toLocaleString();
+
+    document.getElementById('g-prod-ct').firstChild.nodeValue = TREE.production;
+    document.getElementById('g-prod-inc').textContent = '$' + TREE.productionIncome.toLocaleString();
+    document.getElementById('g-g1-ct').firstChild.nodeValue = counts.g1;
+    document.getElementById('g-g1-inc').textContent = '$' + overrideToMe.g1.toLocaleString();
+    document.getElementById('g-g2-ct').firstChild.nodeValue = counts.g2;
+    document.getElementById('g-g2-inc').textContent = '$' + overrideToMe.g2.toLocaleString();
+    document.getElementById('g-g3-ct').firstChild.nodeValue = counts.g3;
+    document.getElementById('g-g3-inc').textContent = '$' + overrideToMe.g3.toLocaleString();
+
+    // Top contributors
+    const flat = [];
+    function flatten(n){
+      if(n.generation !== 'me') flat.push(n);
+      (n.children||[]).forEach(flatten);
+    }
+    flatten(TREE);
+    flat.sort((a,b)=>(b._overrideToMe||0)-(a._overrideToMe||0));
+    document.getElementById('top-list').innerHTML = flat.slice(0,8).map(n=>{
+      const initials = n.name.split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+      const genLabel = {g1:'G1',g2:'G2',g3:'G3'}[n.generation];
+      const pct = (OVERRIDE_PCT[n.generation]*100) + '%';
+      return `<div class="row">
+        <div class="who">
+          <div class="av ${n.generation}">${initials}</div>
+          <div style="min-width:0">
+            <div class="name">${n.name}</div>
+            <div class="meta">${n.tier} · ${genLabel} (${pct}) · ${n.production} Businesses</div>
+          </div>
+        </div>
+        <div class="v">$${(n._overrideToMe||0).toLocaleString()}<small>to you</small></div>
+      </div>`;
+    }).join('');
+  }
+
+  function showDetail(idx){
+    function find(n, target, cur){
+      if(cur === target) return n;
+      const kids = n.children||[];
+      for(let i=0;i<kids.length;i++){
+        const c = kids[i];
+        const childIdx = cur*100 + i + 1;
+        if(childIdx === target) return c;
+        const found = find(c, target, childIdx);
+        if(found) return found;
+      }
+      return null;
+    }
+    const node = find(TREE, idx, 0);
+    if(!node) return;
+    const directChildren = (node.children||[]).length;
+    const totalChildren = countDescendants(node);
+    const genLabel = {me:'You',g1:'G1 (your direct recruit)',g2:'G2',g3:'G3'}[node.generation];
+    const pctText = node.generation === 'me' ? '9% on your own production' : (OVERRIDE_PCT[node.generation]*100) + '% override to you';
+    const m = document.getElementById('modal-body');
+    m.innerHTML = `
+      <h3>${node.name}</h3>
+      <p>${node.tier} · ${genLabel}</p>
+      <div class="m-stats">
+        <div class="ms"><div class="l">Their production</div><div class="v">${node.production} Biz</div></div>
+        <div class="ms"><div class="l">Their direct recruits</div><div class="v">${directChildren} Partners</div></div>
+        <div class="ms"><div class="l">Their full downline</div><div class="v">${totalChildren} Partners</div></div>
+        <div class="ms"><div class="l">${node.generation==='me'?'Your production income':'Override to you'}</div><div class="v ${node.generation==='me'?'gold':'green'}">$${(node.generation==='me'?node.productionIncome:(node._overrideToMe||0)).toLocaleString()}</div></div>
+      </div>
+      <p style="font-size:12.5px;color:var(--muted);margin:8px 0 0">${pctText}.</p>
+      <div class="m-actions">
+        <button class="btn ghost" onclick="closeDetail()">Close</button>
+        <a class="btn" href="rep-dashboard.html">Open dashboard</a>
+      </div>
+    `;
+    document.getElementById('ovr').classList.add('on');
+  }
+  function countDescendants(n){
+    let c = 0;
+    (n.children||[]).forEach(child=>{ c++; c += countDescendants(child); });
+    return c;
+  }
+  function closeDetail(){ document.getElementById('ovr').classList.remove('on'); }
+  document.getElementById('ovr').onclick = e=>{ if(e.target.id==='ovr') closeDetail(); };
+
+  function exportTree(){
+    const rows = [['name','tier','generation','their_production_businesses','override_pct_to_you','your_override_income_last_month']];
+    function walk(n){
+      if(n.generation !== 'me'){
+        rows.push([n.name, n.tier, n.generation, n.production, (OVERRIDE_PCT[n.generation]*100)+'%', n._overrideToMe||0]);
+      }
+      (n.children||[]).forEach(walk);
+    }
+    walk(TREE);
+    const csv = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob = new Blob([csv],{type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'lymx-downline-'+new Date().toISOString().slice(0,10)+'.csv';
+    a.click();
+  }
+
+  renderTree();
+</script>
+</body>
+</html>

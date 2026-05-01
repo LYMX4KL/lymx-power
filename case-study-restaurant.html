@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Case Study: Oakline Kitchen — LYMX Power</title>
+<meta name="description" content="How a 38-seat farm-to-table restaurant filled its slow nights and added $3,800 of net monthly revenue using LYMX.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1080px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(180deg,#fdecea 0%,#fafafa 100%);padding:80px 24px 40px;border-bottom:1px solid var(--line)}
+  .hero-inner{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:center}
+  @media (max-width:880px){.hero-inner{grid-template-columns:1fr}}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#a32114;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #fbd5d0}
+  .hero h1{font-size:46px;letter-spacing:-.03em;margin:0 0 16px;font-weight:800;line-height:1.1}
+  .hero p{color:var(--mute);font-size:17px;max-width:560px}
+  .hero-img{aspect-ratio:1.2/1;background:linear-gradient(135deg,#c0392b,#e74c3c);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:120px;color:#fff;box-shadow:0 20px 50px rgba(192,57,43,.3)}
+
+  .meta-strip{background:var(--ink);color:#fff;padding:24px 0}
+  .meta-inner{max-width:1080px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+  @media (max-width:680px){.meta-inner{grid-template-columns:repeat(2,1fr)}}
+  .meta-item .l{font-size:11px;color:#8a9bb8;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+  .meta-item .v{font-size:16px;font-weight:600;margin-top:4px;color:#fff}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:64px 24px;font-size:16px}
+  h2{font-size:30px;letter-spacing:-.025em;margin:48px 0 14px}
+  h3{font-size:20px;margin:32px 0 10px}
+  p{margin:0 0 16px}
+  .lead-p{font-size:18px;color:#1f2530;margin-bottom:24px}
+
+  .pull{margin:40px 0;padding:28px 32px;background:#fdecea;border-left:5px solid var(--err);border-radius:0 12px 12px 0;font-size:20px;font-weight:600;line-height:1.4;color:#7d2014}
+  .pull cite{display:block;font-size:13px;color:#a32114;margin-top:14px;font-style:normal;font-weight:600}
+
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:32px 0}
+  @media (max-width:680px){.compare{grid-template-columns:1fr}}
+  .col{padding:24px;border-radius:14px}
+  .col.before{background:#fdecea;border:1px solid #fbd5d0}
+  .col.after{background:#e8f6ee;border:1px solid #c2e8d2}
+  .col h4{margin:0 0 14px;font-size:14px;letter-spacing:.04em;text-transform:uppercase;font-weight:700}
+  .col.before h4{color:#a32114}
+  .col.after h4{color:#0a7a4d}
+  .col ul{margin:0;padding-left:20px;font-size:14px}
+  .col li{margin-bottom:8px}
+
+  .stats-block{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:32px;margin:40px 0}
+  .stats-block h3{margin:0 0 24px;font-size:18px;letter-spacing:.04em;text-transform:uppercase;color:var(--mute);font-weight:700}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+  @media (max-width:680px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+  .stat-num{font-size:38px;font-weight:800;letter-spacing:-.02em;color:var(--ok);line-height:1}
+  .stat-num.gold{color:var(--gold)}
+  .stat-num.purple{color:#5b3697}
+  .stat-num.accent{color:var(--accent)}
+  .stat-l{font-size:13px;color:var(--mute);margin-top:6px;line-height:1.3}
+  .stat-cmp{font-size:11px;color:var(--mute);margin-top:4px;font-weight:600}
+
+  .timeline{margin:32px 0;position:relative;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:var(--line)}
+  .tl-item{position:relative;padding-bottom:24px}
+  .tl-item::before{content:"";position:absolute;left:-32px;top:6px;width:18px;height:18px;border-radius:50%;background:var(--card);border:3px solid var(--accent)}
+  .tl-item.gold::before{border-color:var(--gold);background:#fffbe6}
+  .tl-item.ok::before{border-color:var(--ok)}
+  .tl-item .when{font-size:11px;color:var(--mute);letter-spacing:.04em;text-transform:uppercase;font-weight:700;margin-bottom:2px}
+  .tl-item h4{margin:0 0 4px;font-size:15px}
+  .tl-item p{margin:0;color:var(--mute);font-size:14px}
+
+  .quote-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin:32px 0;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+  @media (max-width:680px){.quote-card{grid-template-columns:1fr;text-align:center}}
+  .qc-avatar{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#c0392b,#e74c3c);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff}
+  .quote-card blockquote{margin:0;font-size:18px;font-style:italic;color:#1f2530;line-height:1.5}
+  .quote-card cite{display:block;font-size:13px;color:var(--mute);margin-top:12px;font-style:normal;font-weight:600}
+  .quote-card cite strong{color:var(--ink);font-size:14px}
+
+  .cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:16px;padding:40px;text-align:center;margin:48px 0}
+  .cta h2{margin:0 0 8px;font-size:26px;color:#fff}
+  .cta p{color:#b8c2d6;max-width:500px;margin:0 auto 20px}
+  .cta a{display:inline-block;background:var(--gold);color:#0e1116;padding:12px 24px;border-radius:8px;font-weight:700}
+
+  .more-cs{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:32px}
+  @media (max-width:680px){.more-cs{grid-template-columns:1fr}}
+  .cs{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;gap:14px;align-items:center}
+  .cs .ic{flex-shrink:0;width:48px;height:48px;border-radius:50%;background:#fef9e7;display:flex;align-items:center;justify-content:center;font-size:22px}
+  .cs .t{font-size:14px;font-weight:700;margin-bottom:2px}
+  .cs .d{font-size:12px;color:var(--mute)}
+
+  .footer{text-align:center;padding:60px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="business.html" class="btn">List your Business →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow">Case study · Restaurant</div>
+      <h1>How a 38-seat restaurant filled Tuesday nights and added $3,800/mo in revenue.</h1>
+      <p>Oakline Kitchen, a farm-to-table restaurant two blocks from Brew &amp; Bean, joined LYMX as a Founding 25 Business in February 2026. Eight weeks later: their slow nights were full, their late-table-turn problem was solved, and they had a steady stream of new customers from coffee shops and bookstores nearby.</p>
+    </div>
+    <div class="hero-img">🥘</div>
+  </div>
+</section>
+
+<section class="meta-strip">
+  <div class="meta-inner">
+    <div class="meta-item"><div class="l">Business</div><div class="v">Oakline Kitchen</div></div>
+    <div class="meta-item"><div class="l">Type</div><div class="v">Farm-to-table · 38 seats</div></div>
+    <div class="meta-item"><div class="l">Joined LYMX</div><div class="v">February 2026</div></div>
+    <div class="meta-item"><div class="l">Owner</div><div class="v">Daniel Whitley</div></div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<p class="lead-p">Daniel Whitley opened Oakline Kitchen in 2022, betting that Las Vegas was ready for elevated farm-to-table beyond the Strip. Three years later, he had a small loyal following, a glowing review in Las Vegas Magazine, and a chronic problem: Tuesday and Wednesday nights were dead. Friday and Saturday were packed; the rest of the week he was burning rent.</p>
+
+<h2>The setup before LYMX</h2>
+
+<div class="compare">
+  <div class="col before">
+    <h4>Daniel's marketing stack</h4>
+    <ul>
+      <li><strong>$420/mo on Yelp Ads</strong> for the restaurant listing</li>
+      <li><strong>$200/mo on Klaviyo</strong> for monthly newsletter (650 subs)</li>
+      <li><strong>$150/mo on Instagram boosting</strong></li>
+      <li><strong>2 third-party delivery apps</strong> (DoorDash + UberEats) at 28% commission per order</li>
+      <li><strong>Total: $770/mo</strong> in marketing + ~$3,200/mo in delivery commissions</li>
+    </ul>
+  </div>
+  <div class="col before">
+    <h4>The problem</h4>
+    <ul>
+      <li>Tuesday/Wednesday: 8–14 covers (38-seat restaurant — 24% utilization)</li>
+      <li>Friday/Saturday: 75–95 covers across two seatings (200%+ rotation)</li>
+      <li>Marketing was driving NEW customers but not filling SLOW nights</li>
+      <li>Couldn't justify a third hire because of weekday slowness</li>
+      <li>Yelp Ad attribution was unclear at best</li>
+    </ul>
+  </div>
+</div>
+
+<div class="pull">
+  "I was good at filling Saturdays. I had no idea how to fill Tuesdays. Yelp didn't help — the new customers it sent came on weekends, when I didn't need them. The problem wasn't acquisition. It was demand-shaping."
+  <cite>Daniel Whitley, Chef-owner</cite>
+</div>
+
+<h2>Why he tried LYMX</h2>
+
+<p>Sarah at Brew &amp; Bean (two blocks down) joined as Founding 25 Business #1 and mentioned the network economics over coffee. Daniel was skeptical of loyalty programs in general — restaurants and points have a fraught history. The thing that flipped him was the multiplier mechanic.</p>
+
+<blockquote class="pull">
+  "Sarah explained that she could run a 3× LYMX multiplier on Wednesdays only. That's a tool I didn't have. Cancel the Yelp Ads, replace them with this — even if all I did was pull Tuesday/Wednesday from the dead, that's a win."
+  <cite>Daniel Whitley, Chef-owner</cite>
+</blockquote>
+
+<h2>The 8-week rollout</h2>
+
+<div class="timeline">
+
+  <div class="tl-item gold">
+    <div class="when">Week 1 · Feb 14, 2026</div>
+    <h4>Sign-up + setup</h4>
+    <p>$850 sign-up + $200/mo. Cancelled Yelp Ads ($420/mo savings) and IG boosting ($150/mo savings) immediately. Kept Klaviyo &amp; delivery apps in place to isolate the variable.</p>
+  </div>
+
+  <div class="tl-item">
+    <div class="when">Week 2</div>
+    <h4>First multiplier promo: 3× LYMX, Tuesday + Wednesday only</h4>
+    <p>Set the multiplier in <a href="promotions.html">promotions</a>. Posted on Instagram once: "Tuesday + Wednesday now 3× LYMX. Yes, ALL menu items." Cost: ~$0 in marketing.</p>
+  </div>
+
+  <div class="tl-item">
+    <div class="when">Week 3</div>
+    <h4>First Tuesday lift</h4>
+    <p>Tuesday Feb 24: 22 covers, up from 11 the previous Tuesday. 8 of them were LYMX customers; 4 of those were redemptions from Brew &amp; Bean. Daniel called Sarah that night to confirm.</p>
+  </div>
+
+  <div class="tl-item">
+    <div class="when">Week 4–5</div>
+    <h4>Pattern stabilizes</h4>
+    <p>Tuesday/Wednesday counts settle at 18–24 covers (vs 8–14 before). Friday/Saturday traffic slightly UP, not down — meaning LYMX wasn't cannibalizing weekend demand, it was creating new midweek demand.</p>
+  </div>
+
+  <div class="tl-item ok">
+    <div class="when">Week 6</div>
+    <h4>Hit break-even on monthly cost</h4>
+    <p>Incremental Tuesday/Wednesday revenue from new + repeat customers: $3,200/mo. Subtract LYMX wholesale + subscription ($240) — net +$2,960. Comfortably positive.</p>
+  </div>
+
+  <div class="tl-item ok">
+    <div class="when">Week 8 · Apr 11, 2026</div>
+    <h4>Cancelled Klaviyo + cut UberEats</h4>
+    <p>Klaviyo replaced by the LYMX in-wallet engagement system. UberEats cut because the delivery commissions were higher than the LYMX wholesale rate AND the LYMX customers were dine-in. Net savings: $200/mo Klaviyo + ~$1,400/mo UberEats commissions.</p>
+  </div>
+
+</div>
+
+<h2>The results, week 8</h2>
+
+<div class="stats-block">
+  <h3>By the numbers</h3>
+  <div class="stats-grid">
+    <div>
+      <div class="stat-num">+148%</div>
+      <div class="stat-l">Tuesday/Wednesday covers</div>
+      <div class="stat-cmp">~10 → ~24 average</div>
+    </div>
+    <div>
+      <div class="stat-num gold">31%</div>
+      <div class="stat-l">Of new customers from network</div>
+      <div class="stat-cmp">From Brew &amp; Bean, Library, others</div>
+    </div>
+    <div>
+      <div class="stat-num accent">−$2,170</div>
+      <div class="stat-l">Marketing spend / mo</div>
+      <div class="stat-cmp">$770 ad spend + $1,400 UberEats</div>
+    </div>
+    <div>
+      <div class="stat-num purple">+$3,800</div>
+      <div class="stat-l">Net monthly revenue lift</div>
+      <div class="stat-cmp">After all LYMX costs</div>
+    </div>
+  </div>
+</div>
+
+<div class="quote-card">
+  <div class="qc-avatar">DW</div>
+  <blockquote>
+    "Tuesday is now my second-busiest weeknight. The cost of getting there was $850 + a Wednesday afternoon flipping a switch. The platform paid for itself in week 6 and is now adding meaningful revenue every month. The unexpected upside is that LYMX customers tip better than delivery customers — a 22% tip vs. 0% on delivery commission. That math is brutal."
+    <cite><strong>Daniel Whitley</strong> · Chef-owner, Oakline Kitchen</cite>
+  </blockquote>
+</div>
+
+<h2>What surprised him</h2>
+
+<p>Three things, in his words.</p>
+
+<p><strong>1. The customers from other Businesses had a different conversion profile.</strong> When someone redeemed LYMX they earned at Brew &amp; Bean, they were 3× more likely to be a first-time visitor than someone who walked in cold. They'd already heard about Oakline through Sarah's customer base — they were warm, not cold, leads. The conversion rate to a second visit was 64%, vs. 28% for walk-ins.</p>
+
+<p><strong>2. The LYMX wholesale rate is way cheaper than delivery commissions.</strong> The math: 5 LYMX per dollar of customer spend × $0.008 wholesale = 4¢ per dollar. UberEats charges 28% per order. Even with multipliers running at 2× or 3× on certain nights, LYMX was 8× cheaper than delivery. After realizing this, cutting UberEats was easy.</p>
+
+<p><strong>3. The dashboard surfaced patterns he'd missed.</strong> Tuesday/Wednesday weren't just "low traffic" — they were "low traffic at specific 7–9 PM hours." The 5–7 PM was actually fine. Once he saw the hourly heatmap, he changed the multiplier to apply only to 7 PM+ tickets, which doubled the impact per LYMX issued.</p>
+
+<div class="pull">
+  "I came in to fix Tuesdays. I left understanding my whole demand pattern. The data was the unexpected gift."
+  <cite>Daniel Whitley, Chef-owner</cite>
+</div>
+
+<h2>What's next for Oakline</h2>
+
+<p>Daniel is now opening a second location in Henderson (slated for Q4 2026) and plans to launch with LYMX from Day 1. He's also become a Partner — earning override commission on the 3 restaurants he's referred to date. His first month of Partner income covered most of his Oakline subscription.</p>
+
+<p>Oakline ranked #1 in <a href="benchmarks.html">benchmark performance</a> for restaurants in the most recent network refresh.</p>
+
+<div class="cta">
+  <h2>Want results like Oakline?</h2>
+  <p>Founding 25 spots are limited. As of today there are 7 spots remaining for Las Vegas — and Phoenix Q4 launches just opened.</p>
+  <a href="business.html">List your Business →</a>
+</div>
+
+<h2>More case studies</h2>
+<div class="more-cs">
+  <a href="case-study-cafe.html" class="cs"><span class="ic">☕</span><div><div class="t">Brew &amp; Bean Café</div><div class="d">Café · Founding 25 #1 · Joined Feb 2026</div></div></a>
+  <a href="case-study-retail.html" class="cs"><span class="ic">📚</span><div><div class="t">The Quiet Library</div><div class="d">Bookstore · Founding 25 #5 · Joined Feb 2026</div></div></a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Case study: Oakline Kitchen · <a href="business.html">For Businesses</a> · <a href="launch-stories.html">All Founding 25 stories</a>
+</div>
+
+</body>
+</html>

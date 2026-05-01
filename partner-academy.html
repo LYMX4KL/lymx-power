@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Partner Academy — 24-article training library covering prospecting, pitching, closing, objection-handling, and downline-building. Track your progress." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Partner Academy · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(212,175,55,.18);color:#7a5e10;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  @media(max-width:1100px){.nav-links{display:none}}
+  .btn{padding:9px 14px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:14.5px;max-width:600px;line-height:1.5}
+
+  /* Progress hero */
+  .hero{background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);padding:24px 28px;margin-bottom:18px;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:24px;align-items:center;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);right:-100px;top:-100px;pointer-events:none}
+  @media(max-width:780px){.hero{grid-template-columns:1fr 1fr}}
+  .hero .lab{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:#9aa3b0;margin-bottom:5px;position:relative}
+  .hero h2{margin:0 0 4px;font-size:22px;font-weight:800;letter-spacing:-.01em;position:relative;color:#fff}
+  .hero .sub{font-size:13px;color:#9aa3b0;position:relative;margin-bottom:10px}
+  .progress-bar{height:9px;background:rgba(255,255,255,.18);border-radius:5px;overflow:hidden;position:relative}
+  .progress-bar > div{background:linear-gradient(90deg,#13a26b,#5fd198);height:100%;border-radius:5px;transition:width .4s}
+  .hero .v{font-size:30px;font-weight:800;letter-spacing:-.01em;color:#fff;position:relative;line-height:1}
+  .hero .v.gold{color:#f5d172}
+  .hero .vsub{font-size:12px;color:#9aa3b0;margin-top:3px;position:relative}
+
+  /* Filter row */
+  .filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+  .label{font-size:12.5px;color:var(--muted);font-weight:700}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:7px 13px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .chip:hover{border-color:var(--ink)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .ct{margin-left:5px;background:var(--bg-soft);color:var(--muted);padding:1px 7px;border-radius:5px;font-size:10.5px}
+  .chip.on .ct{background:rgba(255,255,255,.18);color:#fff}
+  .search{flex:1;min-width:200px;max-width:280px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:13.5px;font-family:inherit}
+  .search:focus{outline:0;border-color:var(--accent)}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:240px 1fr;gap:24px;align-items:start}
+  @media(max-width:1000px){.layout{grid-template-columns:1fr}}
+
+  /* Module sidebar */
+  .modules{position:sticky;top:88px}
+  .module{background:#fff;border:1px solid var(--line);border-radius:11px;margin-bottom:8px;overflow:hidden}
+  .module-h{padding:13px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:.1s}
+  .module-h:hover{background:var(--bg-soft)}
+  .module-h .info{display:flex;align-items:center;gap:10px;min-width:0}
+  .module-h .ic{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;flex-shrink:0}
+  .module-h .ic.found{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .module-h .ic.prospect{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .module-h .ic.pitch{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  .module-h .ic.close{background:linear-gradient(135deg,#d4af37,#a08020)}
+  .module-h .ic.obj{background:linear-gradient(135deg,#f0a020,#a06808)}
+  .module-h .ic.team{background:linear-gradient(135deg,#7426c4,#4d1888)}
+  .module-h .ic.compl{background:linear-gradient(135deg,#5b6472,#1a1f27)}
+  .module-h .name{font-size:13.5px;font-weight:800}
+  .module-h .meta{font-size:11px;color:var(--muted);font-weight:700}
+  .module.on .module-h{background:var(--bg-soft)}
+  .module.on .module-h .name{color:var(--accent-2)}
+
+  /* Articles */
+  .articles{display:flex;flex-direction:column;gap:8px}
+  .art{background:#fff;border:1px solid var(--line);border-radius:11px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;transition:.15s;cursor:pointer}
+  .art:hover{border-color:var(--ink);transform:translateY(-1px)}
+  .art.done{background:linear-gradient(180deg,#fff,rgba(19,162,107,.04));border-color:rgba(19,162,107,.3)}
+  .check{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);background:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px;cursor:pointer;transition:.15s;margin-top:1px}
+  .check:hover{border-color:var(--ink)}
+  .art.done .check{background:var(--ok);border-color:var(--ok)}
+  .art-body{flex:1;min-width:0}
+  .art .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:3px;flex-wrap:wrap}
+  .art h3{margin:0;font-size:15px;font-weight:800;line-height:1.3}
+  .art.done h3{color:var(--muted);text-decoration:line-through}
+  .art .pill{padding:2px 7px;border-radius:5px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
+  .art .pill.video{background:rgba(224,65,62,.13);color:#a01644}
+  .art .pill.read{background:rgba(10,132,255,.1);color:var(--accent-2)}
+  .art .pill.exer{background:rgba(212,175,55,.18);color:#7a5e10}
+  .art .pill.role{background:rgba(165,69,255,.12);color:#7426c4}
+  .art p{margin:0 0 6px;font-size:13px;color:var(--muted);line-height:1.5}
+  .art .meta{font-size:11.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+  .art .meta strong{color:var(--ink-2);font-weight:700}
+
+  /* Article detail panel */
+  .detail{display:none;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px 32px;animation:fadeIn .2s ease}
+  .detail.on{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .detail .crumb{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .detail .crumb a{color:var(--accent-2);font-weight:700;cursor:pointer}
+  .detail h2{margin:0 0 6px;font-size:24px;font-weight:800;letter-spacing:-.01em;line-height:1.2}
+  .detail .lede{margin:0 0 16px;color:var(--muted);font-size:14.5px}
+  .detail .body p{margin:0 0 14px;font-size:15px;color:var(--ink-2);line-height:1.65}
+  .detail .body ul,.detail .body ol{margin:0 0 14px 22px;padding:0}
+  .detail .body li{margin:6px 0;font-size:15px;color:var(--ink-2);line-height:1.55}
+  .detail .body strong{color:var(--ink);font-weight:800}
+  .detail .body h3{margin:22px 0 8px;font-size:17px;font-weight:800}
+  .detail .actions{display:flex;gap:8px;justify-content:space-between;margin-top:24px;padding-top:18px;border-top:1px solid var(--line);flex-wrap:wrap}
+  .detail-mark-btn{padding:10px 18px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13.5px;border:0;cursor:pointer}
+  .detail-mark-btn.done{background:var(--ok)}
+
+  .empty{text-align:center;padding:50px 30px;color:var(--muted)}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Partner</span>
+    </div>
+    <nav class="nav-links">
+      <a href="rep-dashboard.html">Dashboard</a>
+      <a href="projection.html">Projection</a>
+      <a href="partner-crm.html">CRM</a>
+      <a href="partner-tree.html">Downline</a>
+      <a href="content-hub.html">Content</a>
+      <a href="partner-academy.html" class="on">Academy</a>
+      <a href="partner-social-kit.html">Social</a>
+      <a href="partner-payouts.html">Payouts</a>
+    </nav>
+    <a href="partner-spotlight.html" class="btn ghost">Master spotlight</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>Partner Academy</h1>
+        <p>24 training articles across 7 modules. Mark each one done as you complete it — your progress saves automatically. Top performers complete the foundation module in week 1.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ghost" onclick="resetProgress()">Reset progress</button>
+        <a class="btn" href="partner-onboarding-checklist.html">Onboarding</a>
+      </div>
+    </div>
+
+    <!-- Progress hero -->
+    <div class="hero">
+      <div>
+        <div class="lab">Your training progress</div>
+        <h2 id="hero-status">—</h2>
+        <div class="sub" id="hero-sub">—</div>
+        <div class="progress-bar"><div id="bar" style="width:0"></div></div>
+      </div>
+      <div><div class="lab">Articles done</div><div class="v" id="m-done">—</div><div class="vsub" id="m-done-sub">of 24</div></div>
+      <div><div class="lab">Modules done</div><div class="v gold" id="m-mod">—</div><div class="vsub">of 7</div></div>
+      <div><div class="lab">Time invested</div><div class="v" id="m-time">—</div><div class="vsub">est. so far</div></div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-row">
+      <span class="label">Type:</span>
+      <div class="chips" id="type-chips">
+        <div class="chip on" data-t="all">All</div>
+        <div class="chip" data-t="video">Video</div>
+        <div class="chip" data-t="read">Read</div>
+        <div class="chip" data-t="exer">Exercise</div>
+        <div class="chip" data-t="role">Roleplay</div>
+      </div>
+      <input class="search" type="search" id="search" placeholder="Search articles…" />
+    </div>
+
+    <div class="layout">
+      <!-- Modules sidebar -->
+      <aside>
+        <div class="modules" id="mod-list"></div>
+      </aside>
+
+      <!-- Article list / detail -->
+      <div>
+        <div id="art-list" class="articles"></div>
+        <div class="detail" id="detail"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Partner Academy · Earnings disclosure: Most Partners earn substantially less than the maximum projected.</div>
+</footer>
+
+<script>
+  const MODULES = [
+    {id:'found', name:'Foundation', ic:'📚', desc:'Start here'},
+    {id:'prospect', name:'Prospecting', ic:'🎯', desc:'Building your list'},
+    {id:'pitch', name:'Pitching', ic:'🎤', desc:'The conversation'},
+    {id:'obj', name:'Objection handling', ic:'💬', desc:'Common pushback'},
+    {id:'close', name:'Closing', ic:'✍️', desc:'Sealing the deal'},
+    {id:'team', name:'Building your team', ic:'🤝', desc:'Recruit + train Partners'},
+    {id:'compl', name:'Compliance', ic:'⚖️', desc:'FTC + ethics'}
+  ];
+
+  const ARTICLES = [
+    // Foundation
+    {id:'a1', mod:'found', type:'video', t:'How LYMX works in 5 minutes', d:'The whole model — buy/sell mechanic, locked rate, multipliers, settlement. Required watching.', est:5,
+     body:'<p>This is the single most important thing to understand about LYMX before you pitch a Business owner.</p><h3>The buy/sell mechanic</h3><p>Businesses purchase LYMX units from us at $0.008 per LYMX. They give those units to customers as part of promotions. When customers redeem at participating Businesses, those Businesses then sell the redeemed units back to us at the same $0.008 rate. <strong>The 20% face-value gap is the redeeming Business\'s effective discount.</strong></p><h3>What this means for the Business</h3><p>Easy: they pay $0.008 per LYMX they issue, and they get back $0.008 per LYMX redeemed at their store. The math is symmetric across the network.</p><h3>What this means for the customer</h3><p>1 LYMX = $0.01 of spending power, always. No portals, no expiration, no minimums.</p>'},
+    {id:'a2', mod:'found', type:'read', t:'The 4-tier compensation model (MGC)', d:'Direct + G1 + G2 + G3. Generations track Partners, not Businesses.', est:8,
+     body:'<p>Generations track <strong>recruited Partners</strong>, not Businesses. This is the most-confused part of our model — get it right.</p><h3>Production (your own Businesses)</h3><p>Businesses you sign up directly: $500 sign-up bonus + 9% recurring override on their subscription. This is your <em>Production</em>, not "Generation 0."</p><h3>G1 / G2 / G3</h3><p>G1 = Partners you recruit. You earn 3% on their production.<br>G2 = Partners they recruit. You earn 2%.<br>G3 = G2\'s recruits. You earn 1%.</p><h3>Why this design</h3><p>It rewards both individual hustle (production) and team-building (downline). And it caps at 3 generations — keeping the structure tight and FTC-compliant.</p>'},
+    {id:'a3', mod:'found', type:'read', t:'The math behind the network flywheel', d:'Why each Business signed brings ~1,500 new customers/month into the network.', est:6},
+    {id:'a4', mod:'found', type:'video', t:'Sienna\'s first 90 days (Master Partner)', d:'How Sienna closed her first Business by week 4 and got to Platinum by month 7.', est:10},
+
+    // Prospecting
+    {id:'b1', mod:'prospect', type:'read', t:'Building your top-25 prospect list', d:'Walk your neighborhood. Pull from your contacts. Use Google Maps. Specific tactics.', est:6,
+     body:'<p>Your prospect list is the single highest-leverage thing you build in week 1. Most Partners try to skip this and pay for it later.</p><h3>The walk-around</h3><p>Spend an afternoon walking 8-10 blocks of your neighborhood. Note every independent Business that\'s not a national chain. Coffee shops, salons, dry cleaners, bookstores, restaurants. Aim for 25.</p><h3>The contact-list pass</h3><p>Open your phone contacts. Filter for "small business owner" mentally. Friends, friends-of-friends, ex-colleagues who own a Business.</p><h3>The Google Maps sweep</h3><p>Search "coffee shop near [your neighborhood]". Note the ones with 4+ stars and recent reviews — they\'re actively running their Business.</p>'},
+    {id:'b2', mod:'prospect', type:'exer', t:'Exercise — score your top 25', d:'Rate each prospect on warmth, fit, accessibility. Pick the top 5 to start.', est:15},
+    {id:'b3', mod:'prospect', type:'read', t:'Cold email templates that get replies', d:'4 templates. The opener that gets 30% reply rate. What to NEVER write.', est:4},
+    {id:'b4', mod:'prospect', type:'role', t:'Roleplay — the warm intro request', d:'You ask a friend to introduce you to a Business owner. What to say in 60 seconds.', est:10},
+
+    // Pitching
+    {id:'c1', mod:'pitch', type:'video', t:'The 5-minute pitch (full script)', d:'Word-for-word. Memorize, then make it your own. Master Partners use this.', est:6,
+     body:'<p>The 5-minute pitch is structured. Memorize the structure first, then loosen up.</p><h3>Minute 1 — the problem</h3><p>"How do you bring back the customer who tried you once and forgot?" Most owners don\'t have a great answer. That\'s your opening.</p><h3>Minute 2 — the solution</h3><p>"LYMX is a shared loyalty network. When customers earn LYMX at your store, they want to come back. When they earn it elsewhere, they come find you to spend it."</p><h3>Minute 3 — the math</h3><p>"$200/month, locked. We bring you ~1,500 new LYMX customers your first month. ROI: usually 5-8x."</p><h3>Minutes 4-5 — questions and next step</h3><p>"What\'s your biggest concern? — and — Want to try a 30-min demo this week?"</p>'},
+    {id:'c2', mod:'pitch', type:'video', t:'The 60-second elevator version', d:'For when you have less than a minute. The one-line hook.', est:3},
+    {id:'c3', mod:'pitch', type:'role', t:'Roleplay — café owner, "I\'m busy"', d:'Practice the 60-second version against a typical brush-off.', est:12},
+    {id:'c4', mod:'pitch', type:'read', t:'Why we don\'t pitch the deal first', d:'Sienna\'s rule #1: pitch the problem. The deal sells itself once they want the solution.', est:5},
+
+    // Objection handling
+    {id:'d1', mod:'obj', type:'read', t:'"I already have a loyalty program"', d:'How to position LYMX as additive, not replacement. The 30-second response.', est:4},
+    {id:'d2', mod:'obj', type:'read', t:'"It\'s too expensive"', d:'Reframe $200/mo as ROI. The break-even calculation any owner can do in their head.', est:4},
+    {id:'d3', mod:'obj', type:'read', t:'"My customers won\'t use it"', d:'They\'re wrong, but proving it requires data. Use our cohort retention numbers.', est:4},
+    {id:'d4', mod:'obj', type:'role', t:'Roleplay — handling 5 objections in a row', d:'Stress-test. Practice with your sponsor or fellow Partner.', est:15},
+
+    // Closing
+    {id:'e1', mod:'close', type:'video', t:'The 3-step close', d:'Recap → confirm → ask. The structure that works.', est:5},
+    {id:'e2', mod:'close', type:'read', t:'How to handle the "I need to think about it"', d:'Don\'t push. Schedule the followup before leaving the conversation.', est:4},
+    {id:'e3', mod:'close', type:'read', t:'Founding 25 urgency framing', d:'12 spots open as of today. Use scarcity ethically.', est:3},
+    {id:'e4', mod:'close', type:'role', t:'Roleplay — the actual signing moment', d:'How to physically hand them the iPad with the agreement open.', est:10},
+
+    // Team building
+    {id:'f1', mod:'team', type:'read', t:'Why you should recruit Partners early', d:'The math: 1 G1 Partner doing what you do = your production doubles without you working more.', est:5},
+    {id:'f2', mod:'team', type:'video', t:'How to identify a great Partner candidate', d:'Profile of the people who succeed: existing salespeople, real-estate agents, insurance brokers.', est:6},
+    {id:'f3', mod:'team', type:'read', t:'Coaching your G1 Partners', d:'Once they\'re signed, your job is to make them productive. The weekly cadence that works.', est:7},
+    {id:'f4', mod:'team', type:'role', t:'Roleplay — your first downline coaching call', d:'30-min call structure. Wins, blockers, this-week\'s ask.', est:15},
+
+    // Compliance
+    {id:'g1', mod:'compl', type:'read', t:'FTC disclosure rules — required for every post', d:'Every public mention of LYMX must include "I\'m a LYMX Partner — I get paid if you sign up."', est:4,
+     body:'<p>This is a hard rule, not a guideline. The FTC enforces.</p><h3>The required disclosure</h3><p><em>"I\'m a LYMX Partner — I get paid if you sign up through my link."</em> Or any close paraphrase that conveys the same thing.</p><h3>Where it goes</h3><ul><li>Caption of every social media post mentioning LYMX</li><li>Email signature when promoting LYMX</li><li>Verbal disclosure in podcast/video appearances</li><li>Within 3 lines of any income claim</li></ul><h3>What gets you in trouble</h3><p>Hiding the disclosure in a wall of text. Putting it in a "see profile" link instead of in the post. Implying you\'re an unbiased customer.</p>'},
+    {id:'g2', mod:'compl', type:'read', t:'No income claims without the disclosure', d:'You can talk about your earnings. You must include the income disclosure when you do.', est:4},
+    {id:'g3', mod:'compl', type:'read', t:'The anti-pyramid no-purchase clause', d:'Why you must never require Partners to "buy in" to anything. Per NV NRS 207.235.', est:5},
+    {id:'g4', mod:'compl', type:'read', t:'What to do if a prospect asks about regulation', d:'Honest, direct answers. Don\'t guess. Refer them to the inquiry doc.', est:4}
+  ];
+
+  const STORAGE_KEY = 'lymx-academy-v1';
+  let progress = {};
+  try { progress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ progress = {}; }
+  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch(e){} }
+
+  let activeMod = null;
+  let activeType = 'all';
+  let searchQ = '';
+  let activeArt = null;
+
+  function toggleDone(id, e){
+    if(e) e.stopPropagation();
+    progress[id] = !progress[id];
+    save();
+    render();
+  }
+  function resetProgress(){
+    if(!confirm('Reset all training progress?')) return;
+    progress = {};
+    save();
+    render();
+  }
+
+  function selectArticle(id){
+    activeArt = id;
+    render();
+    document.getElementById('detail').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  function backToList(){
+    activeArt = null;
+    render();
+  }
+
+  function selectMod(modId){
+    activeMod = activeMod === modId ? null : modId;
+    activeArt = null;
+    render();
+  }
+
+  function render(){
+    const totalArts = ARTICLES.length;
+    const doneArts = ARTICLES.filter(a=>progress[a.id]).length;
+    const totalMods = MODULES.length;
+    const modsDone = MODULES.filter(m=>{
+      const arts = ARTICLES.filter(a=>a.mod===m.id);
+      return arts.length > 0 && arts.every(a=>progress[a.id]);
+    }).length;
+    const totalTime = ARTICLES.filter(a=>progress[a.id]).reduce((s,a)=>s+a.est,0);
+    const pct = Math.round((doneArts/totalArts)*100);
+
+    document.getElementById('bar').style.width = pct + '%';
+    document.getElementById('m-done').textContent = doneArts;
+    document.getElementById('m-done-sub').textContent = 'of ' + totalArts;
+    document.getElementById('m-mod').textContent = modsDone;
+    document.getElementById('m-time').textContent = totalTime < 60 ? totalTime + 'm' : Math.floor(totalTime/60) + 'h ' + (totalTime%60) + 'm';
+
+    let status, sub;
+    if(doneArts === 0){ status = 'Just getting started'; sub = 'Begin with the Foundation module — covers the model in 30 minutes.'; }
+    else if(doneArts < 6){ status = 'Building the foundation'; sub = 'You\'re on your way. Knock out a couple per day.'; }
+    else if(doneArts < 14){ status = 'Hitting your stride'; sub = 'Now\'s the right time to start practicing pitches with real prospects.'; }
+    else if(doneArts < totalArts){ status = 'Almost there'; sub = 'Final stretch — a few more articles to go.'; }
+    else { status = '🎓 Academy complete'; sub = 'You\'ve completed all 24 articles. Now apply it.'; }
+    document.getElementById('hero-status').textContent = status;
+    document.getElementById('hero-sub').textContent = sub;
+
+    // Module sidebar
+    document.getElementById('mod-list').innerHTML = MODULES.map(m=>{
+      const arts = ARTICLES.filter(a=>a.mod===m.id);
+      const dn = arts.filter(a=>progress[a.id]).length;
+      const onCls = activeMod === m.id ? 'on' : '';
+      return `<div class="module ${onCls}">
+        <div class="module-h" onclick="selectMod('${m.id}')">
+          <div class="info">
+            <div class="ic ${m.id}">${m.ic}</div>
+            <div style="min-width:0">
+              <div class="name">${m.name}</div>
+              <div class="meta">${dn} / ${arts.length} done</div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Article list or detail
+    if(activeArt){
+      const a = ARTICLES.find(x=>x.id===activeArt);
+      const m = MODULES.find(x=>x.id===a.mod);
+      const isDone = !!progress[a.id];
+      document.getElementById('art-list').style.display = 'none';
+      const det = document.getElementById('detail');
+      det.classList.add('on');
+      det.innerHTML = `
+        <div class="crumb"><a onclick="backToList()">← Back to articles</a> · ${m.name}</div>
+        <h2>${escapeHTML(a.t)}</h2>
+        <p class="lede">${escapeHTML(a.d)}</p>
+        <div class="body">
+          ${a.body || `<p style="background:var(--bg-soft);padding:14px 18px;border-radius:11px;color:var(--muted)">📝 Full article content for "${escapeHTML(a.t)}" is in the partner-content library. Estimated read time: <strong>${a.est} minutes</strong>.</p><p>This article is part of the <strong>${m.name}</strong> module. The article covers <em>${a.d}</em> in detail with concrete examples, scripts, and practice exercises.</p>`}
+        </div>
+        <div class="actions">
+          <a class="btn ghost" onclick="backToList()">← Back to list</a>
+          <button class="detail-mark-btn ${isDone?'done':''}" onclick="toggleDone('${a.id}')">${isDone?'✓ Marked done':'Mark as done'}</button>
+        </div>
+      `;
+      return;
+    } else {
+      document.getElementById('art-list').style.display = 'flex';
+      document.getElementById('detail').classList.remove('on');
+    }
+
+    // Filter articles
+    let filtered = ARTICLES.filter(a=>{
+      if(activeMod && a.mod !== activeMod) return false;
+      if(activeType !== 'all' && a.type !== activeType) return false;
+      if(searchQ){
+        const q = searchQ.toLowerCase();
+        if(!a.t.toLowerCase().includes(q) && !a.d.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+
+    const list = document.getElementById('art-list');
+    if(filtered.length === 0){
+      list.innerHTML = '<div class="empty">No articles match. Try a different filter.</div>';
+      return;
+    }
+
+    // Group by module if no active module selected
+    let html;
+    if(activeMod){
+      html = filtered.map(renderArticle).join('');
+    } else {
+      html = MODULES.map(m=>{
+        const arts = filtered.filter(a=>a.mod===m.id);
+        if(arts.length === 0) return '';
+        return `<div style="font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 4px 4px">${m.name}</div>` + arts.map(renderArticle).join('');
+      }).join('');
+    }
+    list.innerHTML = html;
+  }
+
+  function renderArticle(a){
+    const isDone = !!progress[a.id];
+    const typeLabel = {video:'Video',read:'Read',exer:'Exercise',role:'Roleplay'}[a.type];
+    return `<div class="art ${isDone?'done':''}" onclick="selectArticle('${a.id}')">
+      <div class="check ${isDone?'done':''}" onclick="toggleDone('${a.id}',event)">${isDone?'✓':''}</div>
+      <div class="art-body">
+        <div class="top">
+          <h3>${escapeHTML(a.t)}</h3>
+          <span class="pill ${a.type}">${typeLabel}</span>
+        </div>
+        <p>${escapeHTML(a.d)}</p>
+        <div class="meta">
+          <span>⏱ <strong>${a.est} min</strong></span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function escapeHTML(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+  // Filters
+  document.querySelectorAll('#type-chips .chip').forEach(c=>{
+    c.onclick = ()=>{
+      document.querySelectorAll('#type-chips .chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      activeType = c.dataset.t;
+      render();
+    };
+  });
+  document.getElementById('search').oninput = e=>{ searchQ = e.target.value; render(); };
+
+  render();
+</script>
+</body>
+</html>

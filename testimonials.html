@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="What customers, Businesses, and Partners say about LYMX. Real stories, real names, real numbers." />
+<title>Testimonials · LYMX</title>
+<meta property="og:title" content="LYMX Testimonials" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4af37;--radius:14px;--maxw:1240px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .head{padding:48px 0 26px;text-align:center}
+  .head .pre{display:inline-block;background:rgba(212,175,55,.18);color:#7a5e10;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .head h1{margin:0 0 10px;font-size:42px;font-weight:800;letter-spacing:-.02em}
+  .head p{margin:0 auto;color:var(--muted);font-size:16px;max-width:620px;line-height:1.55}
+
+  /* Stats banner */
+  .stats{padding:14px 0 22px}
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;max-width:980px;margin:0 auto}
+  @media(max-width:780px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#fff;padding:18px 22px;text-align:center}
+  .stat .v{font-size:24px;font-weight:800;letter-spacing:-.01em}
+  .stat .v.gold{color:var(--gold)}
+  .stat .l{font-size:11px;color:var(--muted);font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+
+  /* Filter */
+  .filters{padding:14px 0 18px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .chip{padding:8px 14px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer;font-family:inherit}
+  .chip:hover{border-color:var(--ink)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .ct{margin-left:5px;font-size:10.5px;color:var(--muted);background:var(--bg-soft);padding:1px 7px;border-radius:5px}
+  .chip.on .ct{background:rgba(255,255,255,.18);color:#fff}
+
+  /* Grid */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:0 0 60px}
+  @media(max-width:880px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+
+  /* Card */
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px;display:flex;flex-direction:column;gap:14px;position:relative}
+  .card::before{content:"\""; position:absolute;top:14px;right:22px;font-size:64px;font-family:Georgia,serif;color:var(--gold);line-height:1;font-style:italic;opacity:.7}
+  .card.featured{background:linear-gradient(180deg,#fff,rgba(212,175,55,.04));border-color:rgba(212,175,55,.4);grid-column:span 2}
+  @media(max-width:880px){.card.featured{grid-column:auto}}
+  .card .stars{color:var(--gold);font-size:14px;letter-spacing:1px;font-weight:800}
+  .card p{margin:0;font-size:15px;color:var(--ink-2);line-height:1.55;font-style:italic;flex:1}
+  .card.featured p{font-size:18px}
+  .card .who{display:flex;align-items:center;gap:10px;margin-top:auto}
+  .card .av{width:42px;height:42px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;letter-spacing:-.01em}
+  .card .av.cust{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .card .av.biz{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .card .av.partner{background:linear-gradient(135deg,#d4af37,#a08020)}
+  .card .av.press{background:linear-gradient(135deg,#7426c4,#4d1888)}
+  .card .name{font-weight:800;font-size:14px}
+  .card .role{font-size:11.5px;color:var(--muted)}
+  .card .pill{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+  .pill.cust{background:rgba(10,132,255,.1);color:var(--accent-2)}
+  .pill.biz{background:rgba(19,162,107,.14);color:#0d7d51}
+  .pill.partner{background:rgba(212,175,55,.18);color:#7a5e10}
+  .pill.press{background:rgba(165,69,255,.12);color:#7426c4}
+
+  /* CTA */
+  .cta{padding:44px 0;text-align:center;background:linear-gradient(180deg,var(--bg-soft),#fff);border-top:1px solid var(--line)}
+  .cta h2{margin:0 0 8px;font-size:24px;font-weight:800;letter-spacing:-.01em}
+  .cta p{margin:0 0 18px;color:var(--muted);font-size:15px}
+  .btn{padding:12px 22px;background:var(--ink);color:#fff;border-radius:11px;font-weight:800;font-size:14.5px;text-decoration:none;display:inline-block;margin:0 4px}
+  .btn:hover{opacity:.9}
+  .btn.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--line)}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center}
+  footer a{color:#9aa3b0}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="testimonials.html" style="color:var(--accent);font-weight:700">Testimonials</a>
+      <a href="founding-25.html">Founding 25</a>
+      <a href="press.html">Press</a>
+    </nav>
+  </div>
+</header>
+
+<section class="head">
+  <div class="wrap">
+    <span class="pre">★ Real reviews</span>
+    <h1>What people say about LYMX</h1>
+    <p>Real names, real numbers, real stories. Curated from emails, Discord posts, and customer reviews. We never edit a quote without disclosing it.</p>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="wrap stats">
+  <div class="stat-grid">
+    <div class="stat"><div class="v gold">4.8</div><div class="l">Avg rating · 487 reviews</div></div>
+    <div class="stat"><div class="v">87%</div><div class="l">NPS promoters</div></div>
+    <div class="stat"><div class="v">94%</div><div class="l">Would recommend</div></div>
+    <div class="stat"><div class="v">+38%</div><div class="l">Beat Q1 acquisition plan</div></div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="wrap">
+  <div class="filters" id="filters">
+    <button class="chip on" data-c="all">All <span class="ct" id="ct-all">14</span></button>
+    <button class="chip" data-c="cust">Customers <span class="ct" id="ct-cust">6</span></button>
+    <button class="chip" data-c="biz">Businesses <span class="ct" id="ct-biz">4</span></button>
+    <button class="chip" data-c="partner">Partners <span class="ct" id="ct-partner">3</span></button>
+    <button class="chip" data-c="press">Press <span class="ct" id="ct-press">1</span></button>
+  </div>
+</div>
+
+<!-- Grid -->
+<div class="wrap">
+  <div class="grid" id="grid">
+    <!-- Featured business quote -->
+    <div class="card featured" data-c="biz">
+      <div class="stars">★★★★★</div>
+      <p>In 8 weeks on LYMX our repeat traffic was up 14%. Three months in, we have customers who tell us they came in <em>because</em> they saw a LYMX promo at another shop. That's the network effect — actually working.</p>
+      <div class="who">
+        <div class="av biz">DW</div>
+        <div>
+          <div class="name">Daniel Whitley · <span class="pill biz">Business</span></div>
+          <div class="role">Owner, Brew &amp; Bean Coffee · Founding Business #2 · Las Vegas · <a href="case-study-cafe.html" style="color:var(--accent);font-weight:600">Read full case study →</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer -->
+    <div class="card" data-c="cust">
+      <div class="stars">★★★★★</div>
+      <p>I keep telling people: this isn't another points app. I earned LYMX at the bakery and spent it on dinner the same week. That used to be impossible.</p>
+      <div class="who">
+        <div class="av cust">MH</div>
+        <div>
+          <div class="name">Maya Hopkins · <span class="pill cust">Customer</span></div>
+          <div class="role">Las Vegas · 42 friends referred</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Partner featured -->
+    <div class="card featured" data-c="partner">
+      <div class="stars">★★★★★</div>
+      <p>Every Business I sign up is mine forever. That's not a job — that's an asset I'm building. The day I figured that out is the day I stopped looking for jobs.</p>
+      <div class="who">
+        <div class="av partner">SV</div>
+        <div>
+          <div class="name">Sienna Vega · <span class="pill partner">Master Partner</span></div>
+          <div class="role">42 Businesses recruited · 14 downline · Las Vegas</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer -->
+    <div class="card" data-c="cust">
+      <div class="stars">★★★★★</div>
+      <p>The cardamom morning bun at Sage &amp; Stone is worth driving across town. Bonus: paid with LYMX I'd earned at Brew &amp; Bean — felt like getting it for free.</p>
+      <div class="who">
+        <div class="av cust">JR</div>
+        <div>
+          <div class="name">Jonathan Reyes · <span class="pill cust">Customer</span></div>
+          <div class="role">Henderson · LYMX since January</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Business -->
+    <div class="card" data-c="biz">
+      <div class="stars">★★★★★</div>
+      <p>We were skeptical about another loyalty platform. But the math is honest. The integration was painless. Two months in, our first-time-customer conversion is up 22%.</p>
+      <div class="who">
+        <div class="av biz">ML</div>
+        <div>
+          <div class="name">Maria Lopez · <span class="pill biz">Business</span></div>
+          <div class="role">Owner, Oakline Kitchen · Founding #5 · Downtown</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer -->
+    <div class="card" data-c="cust">
+      <div class="stars">★★★★★</div>
+      <p>I had 28,000 airline miles expire on me last year. With LYMX, the math is just easier — I earn it, I see it, I spend it. That's loyalty I can actually touch.</p>
+      <div class="who">
+        <div class="av cust">AG</div>
+        <div>
+          <div class="name">Asha Gupta · <span class="pill cust">Customer</span></div>
+          <div class="role">Summerlin · LYMX customer since February</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Business -->
+    <div class="card" data-c="biz">
+      <div class="stars">★★★★★</div>
+      <p>The settlement is honest, the QuickBooks export saves me 2 hours a month, and the dispute flow took my last "lost LYMX" issue from a week-long support ticket to 30 minutes.</p>
+      <div class="who">
+        <div class="av biz">RP</div>
+        <div>
+          <div class="name">Riya Patel · <span class="pill biz">Business</span></div>
+          <div class="role">Owner, Sage &amp; Stone Bakery · Founding #6 · Henderson</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Partner -->
+    <div class="card" data-c="partner">
+      <div class="stars">★★★★★</div>
+      <p>I'd written off "network marketing" for years. LYMX is something different — there's a real product, real Businesses, real customers. I sign one up and it's mine forever. The math actually works.</p>
+      <div class="who">
+        <div class="av partner">MC</div>
+        <div>
+          <div class="name">Marcus Chen · <span class="pill partner">Partner · Platinum</span></div>
+          <div class="role">14 Businesses recruited · Las Vegas · 7 months in</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer -->
+    <div class="card" data-c="cust">
+      <div class="stars">★★★★★</div>
+      <p>My favorite thing about LYMX: I forgot about it for 2 months and my balance was still there. No "use it or lose it." That alone makes it different from every other rewards thing on my phone.</p>
+      <div class="who">
+        <div class="av cust">LO</div>
+        <div>
+          <div class="name">Liam O'Connor · <span class="pill cust">Customer</span></div>
+          <div class="role">Henderson · Joined March 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Press -->
+    <div class="card" data-c="press">
+      <div class="stars">★★★★★</div>
+      <p>LYMX is the most coherent take I've seen on local-Business loyalty in a decade. The shared-network mechanic is the kind of obvious-in-retrospect idea that creates real moats once it works.</p>
+      <div class="who">
+        <div class="av press">VM</div>
+        <div>
+          <div class="name">Vegas Magazine · <span class="pill press">Press</span></div>
+          <div class="role">Tech &amp; Local Business column · April 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer -->
+    <div class="card" data-c="cust">
+      <div class="stars">★★★★★</div>
+      <p>I refer everyone I know. 200 LYMX per friend, no cap, no app to download, no annoying onboarding for them. It's the most honest "refer-a-friend" I've ever used.</p>
+      <div class="who">
+        <div class="av cust">PN</div>
+        <div>
+          <div class="name">Priya Naidu · <span class="pill cust">Customer</span></div>
+          <div class="role">Las Vegas · 12 friends referred</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Partner -->
+    <div class="card" data-c="partner">
+      <div class="stars">★★★★★</div>
+      <p>I told 4 of my Vegas Business-owner friends about LYMX after my first month. Three signed up. The product sells itself once you're in.</p>
+      <div class="who">
+        <div class="av partner">TR</div>
+        <div>
+          <div class="name">Tomás Reyes · <span class="pill partner">Partner · Platinum</span></div>
+          <div class="role">11 Businesses recruited · Henderson · 5 months in</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer -->
+    <div class="card" data-c="cust">
+      <div class="stars">★★★★★</div>
+      <p>Got a $25 gift card from work. Spent it across 3 different lunches at 3 different Businesses. The flexibility is the entire game.</p>
+      <div class="who">
+        <div class="av cust">DH</div>
+        <div>
+          <div class="name">Devon Harper · <span class="pill cust">Customer</span></div>
+          <div class="role">Henderson · Bulk-gift recipient</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Business -->
+    <div class="card" data-c="biz">
+      <div class="stars">★★★★★</div>
+      <p>I run 4 locations now. Single billing, single dashboard, customers on a single wallet across all 4 stores. Switching us off Toast Loyalty in May was the right call.</p>
+      <div class="who">
+        <div class="av biz">DW</div>
+        <div>
+          <div class="name">Daniel Whitley · <span class="pill biz">Business · Enterprise</span></div>
+          <div class="role">Owner, Brew &amp; Bean (4 locations) · LYMX Enterprise</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="wrap">
+    <h2>Want to leave your own?</h2>
+    <p>Customers can leave a review at any LYMX Business. Businesses can email us their story.</p>
+    <a class="btn" href="customer-signup.html">Get my wallet</a>
+    <a class="btn ghost" href="business.html">List my Business</a>
+    <a class="btn ghost" href="mailto:hello@getlymx.com">Email us your story</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · <a href="why-lymx.html">Why LYMX</a> · <a href="press-archive.html">Press archive</a> · <a href="founding-25.html">Founding 25</a></div>
+</footer>
+
+<script>
+  document.querySelectorAll('#filters .chip').forEach(c=>{
+    c.onclick = ()=>{
+      document.querySelectorAll('#filters .chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      const f = c.dataset.c;
+      document.querySelectorAll('.card').forEach(card=>{
+        card.style.display = (f === 'all' || card.dataset.c === f) ? 'flex' : 'none';
+      });
+    };
+  });
+</script>
+</body>
+</html>

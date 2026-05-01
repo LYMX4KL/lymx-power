@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ROI Calculator — LYMX Power</title>
+<meta name="description" content="See what LYMX could do for your Business. Adjust your daily traffic and average ticket — get a live projected ROI in 30 seconds.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(135deg,#e8f6ee,#fafafa);padding:60px 24px 36px;border-bottom:1px solid var(--line)}
+  .hero-inner{max-width:1180px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#0a7a4d;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #c2e8d2}
+  .hero h1{font-size:42px;letter-spacing:-.025em;margin:0 0 12px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:16px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+
+  .calc{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px}
+  @media (max-width:880px){.calc{grid-template-columns:1fr}}
+
+  .input-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px}
+  .input-card h2{margin:0 0 6px;font-size:18px}
+  .input-card .sub{color:var(--mute);font-size:13px;margin-bottom:24px}
+
+  .preset-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:24px}
+  .preset{padding:14px 8px;border:2px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;text-align:center}
+  .preset.on{border-color:var(--ok);background:#e8f6ee;color:#0a4d2f}
+  .preset .ic{font-size:22px;margin-bottom:4px}
+  .preset .nm{font-size:13px;font-weight:700}
+  .preset .dt{font-size:11px;color:var(--mute);margin-top:2px}
+  .preset.on .dt{color:#0a7a4d}
+
+  .slider{margin-bottom:24px}
+  .slider-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .slider-h label{font-size:13px;font-weight:600}
+  .slider-h .val{font-size:22px;font-weight:800;color:var(--ok);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .slider input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:6px;background:var(--line);border-radius:3px;outline:none}
+  .slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:var(--ok);cursor:pointer;border:3px solid #fff;box-shadow:0 2px 6px rgba(19,162,107,.3)}
+  .slider input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--ok);cursor:pointer;border:3px solid #fff;box-shadow:0 2px 6px rgba(19,162,107,.3)}
+  .slider .scale{display:flex;justify-content:space-between;font-size:11px;color:var(--mute);margin-top:6px}
+  .slider .help{font-size:12px;color:var(--mute);margin-top:6px}
+
+  .out-card{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:28px;position:sticky;top:80px;height:fit-content}
+  .out-card h2{margin:0 0 6px;font-size:18px;color:#fff}
+  .out-card .sub{color:#b8c2d6;font-size:13px;margin-bottom:24px}
+  .total-l{font-size:11px;color:#8a9bb8;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+  .total-n{font-size:48px;font-weight:800;letter-spacing:-.03em;color:var(--gold);line-height:1.1;font-variant-numeric:tabular-nums}
+  .total-sub{font-size:13px;color:#b8c2d6;margin-top:2px}
+  .roi-line{padding:18px 0;border-top:1px solid #2a3a5a;border-bottom:1px solid #2a3a5a;margin:18px 0;display:flex;justify-content:space-between;align-items:baseline}
+  .roi-line span{font-size:13px;color:#b8c2d6}
+  .roi-line strong{font-size:24px;color:#fff;font-variant-numeric:tabular-nums}
+  .breakdown .br-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;padding:6px 0}
+  .br-row .l{color:#b8c2d6}
+  .br-row .v{font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
+  .br-row .v.cost{color:#ff8a8a}
+  .out-cta{margin-top:24px;display:block;background:var(--gold);color:#0e1116;text-align:center;padding:14px;border-radius:10px;font-weight:700;font-size:15px}
+
+  .compare-cards{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;margin-bottom:32px}
+  .compare-cards h2{margin:0 0 18px;font-size:22px;letter-spacing:-.02em}
+  .scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:760px){.scenarios{grid-template-columns:1fr}}
+  .scenario{padding:18px;border:1px solid var(--line);border-radius:10px;cursor:pointer;transition:.15s}
+  .scenario:hover{border-color:var(--ink);transform:translateY(-1px)}
+  .scenario.green{border:2px solid var(--ok);background:#f0faf3}
+  .scenario h3{margin:0 0 4px;font-size:15px}
+  .scenario .role{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:14px}
+  .scenario .income{font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .scenario .income-sub{font-size:12px;color:var(--mute)}
+  .scenario .row{font-size:12px;color:var(--mute);margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+  .scenario .row span{display:block;margin:2px 0}
+
+  .breakdown-explain{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;margin-bottom:32px}
+  .breakdown-explain h2{margin:0 0 14px;font-size:20px}
+  .formula-row{display:grid;grid-template-columns:auto 1fr auto;gap:16px;padding:14px 0;border-top:1px solid var(--line);align-items:center}
+  .formula-row:first-of-type{border-top:0;padding-top:0}
+  .formula-row .ic{width:36px;height:36px;border-radius:8px;background:#eef3ff;color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+  .formula-row .ic.green{background:#e8f6ee;color:#0a7a4d}
+  .formula-row .ic.gold{background:#fef9e7;color:#8b6f1f}
+  .formula-row .ic.red{background:#fdecea;color:#a32114}
+  .formula-row h4{margin:0 0 2px;font-size:14px}
+  .formula-row p{margin:0;color:var(--mute);font-size:12.5px}
+  .formula-row .v{font-weight:800;font-size:16px;letter-spacing:-.02em;text-align:right}
+  .formula-row .v.green{color:var(--ok)}
+  .formula-row .v.red{color:var(--err)}
+
+  .legal{background:#fff8eb;border-left:4px solid var(--gold);padding:16px 20px;border-radius:0 10px 10px 0;font-size:12px;color:#5d4d18;margin-top:24px}
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="business.html" class="btn">List your Business →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">For prospective Businesses · Live calc</div>
+    <h1>What would LYMX do for your Business?</h1>
+    <p>Adjust the sliders for your daily traffic, average ticket, and category. See projected monthly LYMX cost, incremental sales, and ROI in real time.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="calc">
+  <div class="input-card">
+    <h2>Tell us about your Business</h2>
+    <p class="sub">All values can be approximate. We'll use industry averages where relevant.</p>
+
+    <div class="preset-row">
+      <div class="preset on" onclick="setPreset(this, 'cafe')">
+        <div class="ic">☕</div>
+        <div class="nm">Café / Coffee</div>
+        <div class="dt">~150 cust/day · $9 ticket</div>
+      </div>
+      <div class="preset" onclick="setPreset(this, 'restaurant')">
+        <div class="ic">🥘</div>
+        <div class="nm">Restaurant</div>
+        <div class="dt">~80 cust/day · $32 ticket</div>
+      </div>
+      <div class="preset" onclick="setPreset(this, 'retail')">
+        <div class="ic">🛍️</div>
+        <div class="nm">Retail</div>
+        <div class="dt">~50 cust/day · $44 ticket</div>
+      </div>
+    </div>
+
+    <div class="slider">
+      <div class="slider-h"><label>Daily customer count</label><span class="val" id="vTraffic">150</span></div>
+      <input type="range" id="traffic" min="20" max="500" value="150" oninput="recalc()">
+      <div class="scale"><span>20</span><span>100</span><span>250</span><span>400</span><span>500</span></div>
+      <div class="help">Average customers per day across your full open hours.</div>
+    </div>
+
+    <div class="slider">
+      <div class="slider-h"><label>Average ticket</label><span class="val" id="vTicket">$9</span></div>
+      <input type="range" id="ticket" min="3" max="100" value="9" oninput="recalc()">
+      <div class="scale"><span>$3</span><span>$25</span><span>$50</span><span>$75</span><span>$100</span></div>
+      <div class="help">Mean dollar value per transaction.</div>
+    </div>
+
+    <div class="slider">
+      <div class="slider-h"><label>LYMX customer adoption</label><span class="val" id="vAdopt">35%</span></div>
+      <input type="range" id="adopt" min="10" max="80" value="35" oninput="recalc()">
+      <div class="scale"><span>10%</span><span>30%</span><span>50%</span><span>70%</span><span>80%</span></div>
+      <div class="help">% of your customers who have a LYMX wallet. Peers reach 35–55% within 6 months.</div>
+    </div>
+
+    <div class="slider">
+      <div class="slider-h"><label>Network referral lift</label><span class="val" id="vReferral">15%</span></div>
+      <input type="range" id="referral" min="0" max="40" value="15" oninput="recalc()">
+      <div class="scale"><span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span></div>
+      <div class="help">Extra customers per month from other LYMX Businesses. Median peer: 15%.</div>
+    </div>
+
+    <div class="slider">
+      <div class="slider-h"><label>Retention lift from LYMX</label><span class="val" id="vRetention">8%</span></div>
+      <input type="range" id="retention" min="0" max="25" value="8" oninput="recalc()">
+      <div class="scale"><span>0%</span><span>10%</span><span>15%</span><span>20%</span><span>25%</span></div>
+      <div class="help">% increase in customer retention vs your current loyalty (typical: 5–15%).</div>
+    </div>
+  </div>
+
+  <div class="out-card">
+    <h2>Estimated monthly impact</h2>
+    <p class="sub">Live calc — updates as you adjust.</p>
+
+    <div>
+      <div class="total-l">Estimated net monthly value</div>
+      <div class="total-n" id="netValue">$2,420</div>
+      <div class="total-sub">Incremental sales minus all LYMX costs</div>
+    </div>
+
+    <div class="roi-line">
+      <span>ROI vs. cost</span>
+      <strong id="roi">12.1×</strong>
+    </div>
+
+    <div class="breakdown">
+      <div class="br-row"><span class="l">Incremental sales (network)</span><span class="v" id="bNetwork">+$1,620</span></div>
+      <div class="br-row"><span class="l">Incremental sales (retention)</span><span class="v" id="bRetention">+$1,008</span></div>
+      <div class="br-row"><span class="l">LYMX wholesale cost</span><span class="v cost" id="bWholesale">−$418</span></div>
+      <div class="br-row"><span class="l">Subscription</span><span class="v cost" id="bSubscription">−$199</span></div>
+    </div>
+
+    <a href="business.html" class="out-cta">List my Business →</a>
+  </div>
+</div>
+
+<div class="compare-cards">
+  <h2>Compare to peer Businesses</h2>
+  <div class="scenarios">
+    <div class="scenario" onclick="setScenario(80, 14, 30, 10, 6)">
+      <h3>Solo café</h3>
+      <div class="role">~80 customers/day</div>
+      <div class="income">+$640/mo</div>
+      <div class="income-sub">3.2× ROI</div>
+      <div class="row">
+        <span>Mid-size, single location</span>
+        <span>Typical first 6 months</span>
+      </div>
+    </div>
+    <div class="scenario green" onclick="setScenario(150, 9, 35, 15, 8)">
+      <h3>Active café</h3>
+      <div class="role">★ Default scenario</div>
+      <div class="income">+$2,420/mo</div>
+      <div class="income-sub">12.1× ROI</div>
+      <div class="row">
+        <span>Steady traffic, regular promos</span>
+        <span>Most peers reach this</span>
+      </div>
+    </div>
+    <div class="scenario" onclick="setScenario(300, 14, 50, 20, 12)">
+      <h3>High-traffic Business</h3>
+      <div class="role">300+ customers/day</div>
+      <div class="income">+$8,940/mo</div>
+      <div class="income-sub">28× ROI</div>
+      <div class="row">
+        <span>Restaurant or busy retail</span>
+        <span>Top quartile</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="breakdown-explain">
+  <h2>How the math works</h2>
+
+  <div class="formula-row">
+    <div class="ic green">+</div>
+    <div>
+      <h4>Network referral revenue</h4>
+      <p>Customers from other LYMX Businesses redeeming at yours. Calculated as: (daily traffic × ticket × referral lift × open days). They pay full ticket; you net new revenue.</p>
+    </div>
+    <div class="v green" id="exNetwork">+$1,620</div>
+  </div>
+
+  <div class="formula-row">
+    <div class="ic green">+</div>
+    <div>
+      <h4>Retention lift revenue</h4>
+      <p>Existing customers come back more often. Calculated as: (current monthly revenue × retention lift × adoption). Compounds month over month.</p>
+    </div>
+    <div class="v green" id="exRetention">+$1,008</div>
+  </div>
+
+  <div class="formula-row">
+    <div class="ic red">−</div>
+    <div>
+      <h4>Settlement cost (when LYMX is redeemed at another Business)</h4>
+      <p>You pay only 80% of face value at settlement when LYMX you issued is redeemed at another Business — the 20% gap is the network's automatic referral discount. Plus a 3% processing fee in LYMX. Calculator assumes 5 LYMX/$1 issuance rate (the most common choice), but you set your own rate at activation.</p>
+    </div>
+    <div class="v red" id="exWholesale">−$418</div>
+  </div>
+
+  <div class="formula-row">
+    <div class="ic red">−</div>
+    <div>
+      <h4>Monthly subscription</h4>
+      <p>Fixed $199/mo after the 3-month free trial included with your $850 sign-up. Multi-location adds $50/mo per extra location.</p>
+    </div>
+    <div class="v red">−$199</div>
+  </div>
+</div>
+
+<div class="legal">
+  <strong>Disclaimer:</strong> The figures shown here are estimates based on industry averages and peer data. Actual results vary based on location, category, marketing efforts, customer demographics, and market conditions. We don't guarantee any specific outcome — but we publish <a href="benchmarks.html">peer benchmark data</a> so you can compare to similar Businesses before signing up. The $850 one-time sign-up fee and $199/mo subscription are real and not factored as monthly cost above (sign-up amortized).
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · ROI Calculator · <a href="business.html">List your Business</a> · <a href="case-study-cafe.html">Brew &amp; Bean case study</a> · <a href="benchmarks.html">Peer benchmarks</a>
+</div>
+
+<script>
+  function recalc() {
+    const traffic = +document.getElementById('traffic').value;
+    const ticket = +document.getElementById('ticket').value;
+    const adopt = +document.getElementById('adopt').value / 100;
+    const referral = +document.getElementById('referral').value / 100;
+    const retention = +document.getElementById('retention').value / 100;
+
+    document.getElementById('vTraffic').textContent = traffic;
+    document.getElementById('vTicket').textContent = '$' + ticket;
+    document.getElementById('vAdopt').textContent = (adopt * 100).toFixed(0) + '%';
+    document.getElementById('vReferral').textContent = (referral * 100).toFixed(0) + '%';
+    document.getElementById('vRetention').textContent = (retention * 100).toFixed(0) + '%';
+
+    const monthlyRev = traffic * ticket * 30;
+    const networkRev = monthlyRev * referral * 0.6; // 60% of referral lift = real new $
+    const retentionRev = monthlyRev * retention * adopt;
+    const wholesaleCost = monthlyRev * adopt * 0.008 * 5; // 5 LYMX per dollar × $0.008
+    const sub = 199;
+    const net = networkRev + retentionRev - wholesaleCost - sub;
+    const roi = net > 0 && (wholesaleCost + sub) > 0 ? (net / (wholesaleCost + sub)) : 0;
+
+    const fmt = (n) => (n < 0 ? '−$' : '+$') + Math.abs(Math.round(n)).toLocaleString();
+    const fmtNet = (n) => (n < 0 ? '−$' : '$') + Math.abs(Math.round(n)).toLocaleString();
+    document.getElementById('netValue').textContent = fmtNet(net);
+    document.getElementById('roi').textContent = roi.toFixed(1) + '×';
+    document.getElementById('bNetwork').textContent = fmt(networkRev);
+    document.getElementById('bRetention').textContent = fmt(retentionRev);
+    document.getElementById('bWholesale').textContent = fmt(-wholesaleCost);
+    document.getElementById('bSubscription').textContent = '−$199';
+    document.getElementById('exNetwork').textContent = fmt(networkRev);
+    document.getElementById('exRetention').textContent = fmt(retentionRev);
+    document.getElementById('exWholesale').textContent = fmt(-wholesaleCost);
+  }
+
+  function setPreset(el, type) {
+    document.querySelectorAll('.preset').forEach(p => p.classList.remove('on'));
+    el.classList.add('on');
+    if (type === 'cafe') {
+      document.getElementById('traffic').value = 150;
+      document.getElementById('ticket').value = 9;
+    } else if (type === 'restaurant') {
+      document.getElementById('traffic').value = 80;
+      document.getElementById('ticket').value = 32;
+    } else if (type === 'retail') {
+      document.getElementById('traffic').value = 50;
+      document.getElementById('ticket').value = 44;
+    }
+    recalc();
+  }
+
+  function setScenario(traffic, ticket, adopt, referral, retention) {
+    document.getElementById('traffic').value = traffic;
+    document.getElementById('ticket').value = ticket;
+    document.getElementById('adopt').value = adopt;
+    document.getElementById('referral').value = referral;
+    document.getElementById('retention').value = retention;
+    recalc();
+    document.querySelector('.input-card').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  recalc();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Benchmarks — LYMX Power</title>
+<meta name="description" content="See how your Business stacks up against the LYMX network average for your category. Anonymous, aggregated, refreshed weekly.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--warn:#d97706;--err:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav a.btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+  .crumb{max-width:1280px;margin:0 auto;padding:14px 24px;font-size:13px;color:var(--mute)}
+  .wrap{max-width:1280px;margin:0 auto;padding:24px}
+  h1{font-size:36px;letter-spacing:-.025em;margin:0 0 8px}
+  .lead{color:var(--mute);max-width:680px;margin-bottom:24px}
+  .badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px}
+  .badge{font-size:12px;padding:5px 10px;border-radius:999px;background:#eef3ff;color:var(--accent);font-weight:600}
+  .badge.gold{background:#faf3dc;color:#8b6f1f}
+  .badge.ok{background:#e8f6ee;color:#0a7a4d}
+  .ctrl{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:24px}
+  @media (max-width:720px){.ctrl{grid-template-columns:1fr}}
+  .ctrl label{display:block;font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+  .ctrl select,.ctrl input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
+  .summary{background:linear-gradient(135deg,#fffbe6 0%,#fff6c2 100%);border:1px solid var(--gold);border-radius:14px;padding:24px;margin-bottom:32px}
+  .sum-grade{display:flex;align-items:center;gap:18px;margin-bottom:14px}
+  .sum-grade .g{font-size:48px;font-weight:800;color:#8b6f1f;line-height:1}
+  .sum-grade .desc{font-size:14px;color:#5d4d18}
+  .sum-grade .desc strong{display:block;font-size:18px;color:#3a2f0a;margin-bottom:2px}
+  .sum-line{font-size:14px;color:#5d4d18}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:32px}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .stat-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .stat-h h3{margin:0;font-size:15px}
+  .pill{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:#e8f6ee;color:#0a7a4d}
+  .pill.warn{background:#fff4e0;color:#8b5500}
+  .pill.err{background:#fdecea;color:#a32114}
+  .stat-num{font-size:36px;font-weight:800;letter-spacing:-.02em;margin:8px 0 2px}
+  .stat-cmp{font-size:13px;color:var(--mute);margin-bottom:14px}
+  .bars{position:relative;height:42px;margin-top:14px}
+  .bar-track{position:absolute;left:0;right:0;top:18px;height:6px;background:var(--line);border-radius:3px}
+  .bar-avg{position:absolute;top:8px;width:2px;height:26px;background:var(--ink);border-radius:1px}
+  .bar-avg::after{content:"NET AVG";position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--ink);font-weight:700;letter-spacing:.04em;white-space:nowrap}
+  .bar-you{position:absolute;top:5px;width:14px;height:14px;border-radius:50%;background:var(--gold);border:3px solid var(--card);box-shadow:0 0 0 1px var(--gold);transform:translateX(-50%)}
+  .bar-you::after{content:"YOU";position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:#8b6f1f;font-weight:700;letter-spacing:.04em}
+  .scale{display:flex;justify-content:space-between;font-size:10px;color:var(--mute);margin-top:8px;letter-spacing:.04em}
+  .stat-note{font-size:12px;color:var(--mute);margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+  .leader{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:32px}
+  .leader h2{margin:0 0 6px;font-size:22px}
+  .leader-sub{color:var(--mute);font-size:13px;margin-bottom:18px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:11px 8px;border-bottom:1px solid var(--line)}
+  th{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+  tr.you{background:#fffbe6}
+  tr.you td{font-weight:700}
+  .rk{display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;background:var(--line);color:var(--ink);font-size:12px;font-weight:700;margin-right:8px}
+  .rk.gold{background:var(--gold);color:#fff}
+  .insight{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:32px}
+  .insight h2{margin:0 0 18px;font-size:22px}
+  .insight-list{display:grid;gap:14px}
+  .insight-item{padding:14px;border-left:3px solid var(--accent);background:#f7faff;border-radius:0 8px 8px 0}
+  .insight-item.green{border-color:var(--ok);background:#f0faf3}
+  .insight-item.warn{border-color:var(--warn);background:#fff8eb}
+  .insight-item h4{margin:0 0 4px;font-size:14px}
+  .insight-item p{margin:0;font-size:13px;color:var(--mute)}
+  .insight-item a{font-weight:600}
+  .footer{text-align:center;padding:60px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+  .privacy{background:#f0f4ff;border:1px solid #c7d6ff;border-radius:12px;padding:14px 18px;font-size:13px;color:#1a4196;margin-bottom:24px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="biz-dashboard.html" class="btn">← Back to dashboard</a>
+  </div>
+</nav>
+
+<div class="crumb"><a href="biz-dashboard.html">Dashboard</a> / Benchmarks</div>
+
+<div class="wrap">
+
+<h1>Your Benchmarks</h1>
+<p class="lead">See how Brew &amp; Bean stacks up against the LYMX network average — anonymous, aggregated, refreshed every Monday.</p>
+<div class="badge-row">
+  <span class="badge">Category: Coffee &amp; Bakery</span>
+  <span class="badge">Region: Las Vegas</span>
+  <span class="badge gold">Compared to 47 peers</span>
+  <span class="badge ok">Updated Apr 27, 2026</span>
+</div>
+
+<div class="ctrl">
+  <div>
+    <label>Compare against</label>
+    <select>
+      <option>All Coffee &amp; Bakery (47 peers)</option>
+      <option>Coffee &amp; Bakery — Las Vegas only (12 peers)</option>
+      <option>All categories (228 peers)</option>
+    </select>
+  </div>
+  <div>
+    <label>Time window</label>
+    <select>
+      <option>Last 30 days</option>
+      <option>Last 90 days</option>
+      <option>Year-to-date</option>
+    </select>
+  </div>
+</div>
+
+<div class="privacy">
+  <strong>How privacy works:</strong> Benchmarks are aggregated across at least 12 peer Businesses. No individual Business is identifiable in the data shown — including yours. Your stats are visible only to you.
+</div>
+
+<div class="summary">
+  <div class="sum-grade">
+    <div class="g">B+</div>
+    <div class="desc"><strong>Above network average overall</strong>
+    Your customer retention and visit frequency are both top-quartile. Your average ticket is below peers — likely room to grow.</div>
+  </div>
+  <div class="sum-line">5 of 7 metrics are above the network average for Coffee &amp; Bakery. Top opportunity: <strong>average ticket size</strong>.</div>
+</div>
+
+<div class="grid">
+
+  <div class="stat">
+    <div class="stat-h"><h3>Customer retention (90-day)</h3><span class="pill">Top 25%</span></div>
+    <div class="stat-num">68.4%</div>
+    <div class="stat-cmp">Network avg <strong style="color:var(--ink)">54.1%</strong> · You +14.3 pts</div>
+    <div class="bars">
+      <div class="bar-track"></div>
+      <div class="bar-avg" style="left:50%"></div>
+      <div class="bar-you" style="left:78%"></div>
+    </div>
+    <div class="scale"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+    <div class="stat-note">Customers who came back at least once within 90 days of their first visit. Your number is meaningfully above peers — keep doing what you're doing.</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-h"><h3>Visit frequency (per active customer / mo)</h3><span class="pill">Top 25%</span></div>
+    <div class="stat-num">3.8 visits</div>
+    <div class="stat-cmp">Network avg <strong style="color:var(--ink)">2.6 visits</strong> · You +1.2</div>
+    <div class="bars">
+      <div class="bar-track"></div>
+      <div class="bar-avg" style="left:50%"></div>
+      <div class="bar-you" style="left:81%"></div>
+    </div>
+    <div class="scale"><span>0</span><span>1</span><span>2</span><span>3</span><span>4+</span></div>
+    <div class="stat-note">Coffee customers naturally visit more than restaurant customers — but you're still ahead of peer cafés. Habit-forming.</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-h"><h3>Average ticket size</h3><span class="pill warn">Below avg</span></div>
+    <div class="stat-num">$8.40</div>
+    <div class="stat-cmp">Network avg <strong style="color:var(--ink)">$11.20</strong> · You −$2.80</div>
+    <div class="bars">
+      <div class="bar-track"></div>
+      <div class="bar-avg" style="left:50%"></div>
+      <div class="bar-you" style="left:32%"></div>
+    </div>
+    <div class="scale"><span>$0</span><span>$5</span><span>$10</span><span>$15</span><span>$20</span></div>
+    <div class="stat-note">Mainly a menu/upsell signal — peer Coffee &amp; Bakery Businesses are seeing higher attach on pastries &amp; sandwiches. <a href="earn-smarter.html">Try a multiplier promo on bundles</a>.</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-h"><h3>Multiplier ROI</h3><span class="pill">Above avg</span></div>
+    <div class="stat-num">3.2×</div>
+    <div class="stat-cmp">Network avg <strong style="color:var(--ink)">2.4×</strong> · You +0.8×</div>
+    <div class="bars">
+      <div class="bar-track"></div>
+      <div class="bar-avg" style="left:50%"></div>
+      <div class="bar-you" style="left:67%"></div>
+    </div>
+    <div class="scale"><span>1×</span><span>2×</span><span>3×</span><span>4×</span><span>5×</span></div>
+    <div class="stat-note">For every dollar spent on multiplier rewards, you get $3.20 back in incremental sales. Peer median is $2.40.</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-h"><h3>New customer acquisition / mo</h3><span class="pill">Above avg</span></div>
+    <div class="stat-num">142</div>
+    <div class="stat-cmp">Network avg <strong style="color:var(--ink)">98</strong> · You +44</div>
+    <div class="bars">
+      <div class="bar-track"></div>
+      <div class="bar-avg" style="left:50%"></div>
+      <div class="bar-you" style="left:71%"></div>
+    </div>
+    <div class="scale"><span>0</span><span>50</span><span>100</span><span>150</span><span>200+</span></div>
+    <div class="stat-note">New LYMX wallets you onboarded in the last 30 days. Network flywheel is working — keep your tap kit visible at the register.</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-h"><h3>Wholesale rate spend / customer</h3><span class="pill warn">Below avg</span></div>
+    <div class="stat-num">$0.81</div>
+    <div class="stat-cmp">Network avg <strong style="color:var(--ink)">$1.14</strong> · You −$0.33</div>
+    <div class="bars">
+      <div class="bar-track"></div>
+      <div class="bar-avg" style="left:50%"></div>
+      <div class="bar-you" style="left:36%"></div>
+    </div>
+    <div class="scale"><span>$0</span><span>$1</span><span>$2</span><span>$3+</span></div>
+    <div class="stat-note">You're issuing fewer LYMX per dollar than peers. Not necessarily bad — but increases here typically lift retention &amp; visit frequency.</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-h"><h3>Customer satisfaction (NPS)</h3><span class="pill">Top 25%</span></div>
+    <div class="stat-num">+62</div>
+    <div class="stat-cmp">Network avg <strong style="color:var(--ink)">+38</strong> · You +24</div>
+    <div class="bars">
+      <div class="bar-track"></div>
+      <div class="bar-avg" style="left:69%"></div>
+      <div class="bar-you" style="left:81%"></div>
+    </div>
+    <div class="scale"><span>−100</span><span>0</span><span>+50</span><span>+100</span></div>
+    <div class="stat-note">Based on in-app prompts after redemption. <a href="nps-survey.html">View your detailed NPS report</a>.</div>
+  </div>
+
+</div>
+
+<div class="leader">
+  <h2>How peers compare</h2>
+  <p class="leader-sub">Top 10 anonymized Coffee &amp; Bakery Businesses by overall benchmark score — your position is highlighted.</p>
+  <table>
+    <thead>
+      <tr><th>Rank</th><th>Business</th><th>Retention</th><th>Frequency</th><th>Avg ticket</th><th>NPS</th><th>Score</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="rk gold">1</span></td><td>Anon-CB-19</td><td>74.1%</td><td>4.2</td><td>$13.20</td><td>+71</td><td>A+</td></tr>
+      <tr><td><span class="rk gold">2</span></td><td>Anon-CB-04</td><td>72.0%</td><td>4.0</td><td>$12.80</td><td>+68</td><td>A+</td></tr>
+      <tr><td><span class="rk gold">3</span></td><td>Anon-CB-22</td><td>69.8%</td><td>3.9</td><td>$11.95</td><td>+65</td><td>A</td></tr>
+      <tr class="you"><td><span class="rk">4</span></td><td>You (Brew &amp; Bean)</td><td>68.4%</td><td>3.8</td><td>$8.40</td><td>+62</td><td>B+</td></tr>
+      <tr><td><span class="rk">5</span></td><td>Anon-CB-31</td><td>67.2%</td><td>3.5</td><td>$11.40</td><td>+58</td><td>B+</td></tr>
+      <tr><td><span class="rk">6</span></td><td>Anon-CB-12</td><td>62.0%</td><td>3.2</td><td>$10.90</td><td>+52</td><td>B</td></tr>
+      <tr><td><span class="rk">7</span></td><td>Anon-CB-08</td><td>58.4%</td><td>2.9</td><td>$11.10</td><td>+44</td><td>B</td></tr>
+      <tr><td><span class="rk">8</span></td><td>Anon-CB-27</td><td>56.0%</td><td>2.7</td><td>$10.40</td><td>+38</td><td>B−</td></tr>
+      <tr><td><span class="rk">9</span></td><td>Anon-CB-15</td><td>54.0%</td><td>2.6</td><td>$11.20</td><td>+35</td><td>C+</td></tr>
+      <tr><td><span class="rk">10</span></td><td>Anon-CB-33</td><td>52.4%</td><td>2.5</td><td>$10.80</td><td>+30</td><td>C+</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="insight">
+  <h2>Your top opportunities</h2>
+  <div class="insight-list">
+    <div class="insight-item warn">
+      <h4>1. Lift average ticket</h4>
+      <p>You're at $8.40 — peers average $11.20. Try a 2× multiplier on bundle items (coffee + pastry) for a 30-day window. Peers running this saw avg ticket lift to $10.50+. <a href="promotions.html">Set up a promo →</a></p>
+    </div>
+    <div class="insight-item">
+      <h4>2. Spend more on the wholesale rate</h4>
+      <p>At $0.81/customer you're under-investing in habit. Peers at $1.10–$1.30 see ~12% better retention. Increase your default LYMX issuance by 1.5× and watch your retention metric. <a href="biz-settings.html">Adjust issuance →</a></p>
+    </div>
+    <div class="insight-item green">
+      <h4>3. Keep doing what's working</h4>
+      <p>Retention, frequency, and NPS are all top-quartile. Don't break what's working — just shore up the gaps above.</p>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Benchmarks are anonymous &amp; aggregated · Refreshed weekly · <a href="privacy.html">Privacy</a> · <a href="biz-dashboard.html">Back to dashboard</a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX public product roadmap — what's shipped, what we're building now, what's next, what's later. Vote on what we should ship next." />
+<title>Product Roadmap · LYMX</title>
+<meta property="og:title" content="LYMX Public Roadmap" />
+<meta property="og:description" content="What's shipped, what's now, next, and later. Vote on what we ship next." />
+<meta property="og:image" content="og-image.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px}
+  .brand .dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:24px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .btn{padding:10px 16px;background:var(--ink);color:#fff;border-radius:10px;font-weight:800;font-size:14px;text-decoration:none;display:inline-block}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .hero{padding:50px 0 30px;background:linear-gradient(180deg,#fff,var(--bg-soft));border-bottom:1px solid var(--line);text-align:center}
+  .hero .pre{display:inline-block;background:rgba(10,132,255,.1);color:var(--accent-2);font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .hero h1{margin:0 0 10px;font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .hero p.lede{margin:0 auto;font-size:16.5px;color:var(--ink-2);max-width:660px;line-height:1.55}
+
+  /* Filter row */
+  .controls{padding:20px 0 18px}
+  .controls-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .label{font-size:12.5px;color:var(--muted);font-weight:700}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:7px 13px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .chip:hover{border-color:var(--ink)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .search{flex:1;min-width:200px;max-width:280px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:13.5px;font-family:inherit}
+  .search:focus{outline:0;border-color:var(--accent)}
+
+  /* Columns */
+  .columns{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:0 0 60px;align-items:start}
+  @media(max-width:1100px){.columns{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:680px){.columns{grid-template-columns:1fr}}
+
+  .col{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius);padding:14px 14px 18px;min-height:300px}
+  .col-h{display:flex;justify-content:space-between;align-items:baseline;padding:6px 6px 12px;border-bottom:2px solid var(--line);margin-bottom:10px}
+  .col-h .title{font-weight:800;font-size:15px;letter-spacing:-.01em}
+  .col-h .ct{font-size:11px;font-weight:800;color:var(--muted);background:#fff;padding:2px 7px;border-radius:6px}
+  .col.shipped .col-h{border-bottom-color:var(--ok)}
+  .col.shipped .col-h .title{color:var(--ok)}
+  .col.now .col-h{border-bottom-color:var(--accent)}
+  .col.now .col-h .title{color:var(--accent-2)}
+  .col.next .col-h{border-bottom-color:var(--gold)}
+  .col.next .col-h .title{color:#7a5e10}
+  .col.later .col-h{border-bottom-color:var(--muted)}
+  .col.later .col-h .title{color:var(--ink-2)}
+
+  /* Cards */
+  .card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:13px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(14,17,22,.04)}
+  .card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+  .card h3{margin:0;font-size:14px;font-weight:800;line-height:1.3;flex:1}
+  .card .pill{padding:2px 7px;border-radius:5px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
+  .card .pill.business{background:rgba(19,162,107,.14);color:#0d7d51}
+  .card .pill.customer{background:rgba(10,132,255,.1);color:var(--accent-2)}
+  .card .pill.partner{background:rgba(212,175,55,.18);color:#7a5e10}
+  .card .pill.platform{background:rgba(91,100,114,.12);color:var(--muted)}
+  .card .pill.api{background:rgba(165,69,255,.12);color:#7426c4}
+  .card p{margin:0 0 8px;font-size:12.5px;color:var(--muted);line-height:1.5}
+  .card .meta{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);font-weight:700}
+
+  /* Vote button */
+  .vote{display:flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);color:var(--ink-2);padding:5px 10px;border-radius:6px;font-weight:800;font-size:11.5px;cursor:pointer;transition:.15s}
+  .vote:hover{border-color:var(--ink);background:var(--ink);color:#fff}
+  .vote .arrow{font-size:11px}
+  .vote.voted{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .vote.voted .arrow{color:#fff}
+
+  .ship-date{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);font-weight:700}
+  .ship-date.ok{color:var(--ok)}
+
+  /* Bottom CTA */
+  .cta{padding:36px 0;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;text-align:center;border-top:1px solid var(--line)}
+  .cta h2{margin:0 0 6px;color:#f5d172;font-size:22px;font-weight:800}
+  .cta p{margin:0 0 14px;color:#9aa3b0;font-size:14.5px;max-width:620px;margin-left:auto;margin-right:auto}
+  .cta a.primary{display:inline-block;padding:10px 18px;background:#f5d172;color:#0e1116;border-radius:9px;font-weight:800;font-size:13.5px}
+  .cta a.primary:hover{background:#fff}
+  .cta a.alt{display:inline-block;padding:10px 18px;color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:9px;font-weight:800;font-size:13.5px;margin-left:8px}
+  .cta a.alt:hover{border-color:#fff}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:32px 0 22px;font-size:13px}
+  .foot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-bottom:18px}
+  @media(max-width:780px){.foot-grid{grid-template-columns:repeat(2,1fr)}}
+  .foot-grid h4{color:#fff;font-size:13px;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
+  .foot-grid a{display:block;padding:3px 0;color:#9aa3b0}
+  .foot-grid a:hover{color:#fff}
+  .foot-bot{padding-top:16px;border-top:1px solid rgba(255,255,255,.1);text-align:center;font-size:12.5px}
+
+  .legend{padding:6px 0 14px;font-size:12px;color:var(--muted)}
+  .legend strong{color:var(--ink-2);font-weight:800}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="roadmap.html" class="on">Roadmap</a>
+      <a href="status.html">Status</a>
+    </nav>
+    <a class="btn ghost" href="business.html">List my Business</a>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="wrap">
+    <span class="pre">🗺️ Public Roadmap</span>
+    <h1>What we're building</h1>
+    <p class="lede">An honest 4-quarter view. We ship things in the leftmost column, build the next column actively, and have the others scoped at varying detail. Click ↑ to vote on what you want first.</p>
+  </div>
+</section>
+
+<div class="wrap controls">
+  <div class="controls-row">
+    <span class="label">Audience:</span>
+    <div class="chips" id="aud-chips">
+      <div class="chip on" data-a="all">All</div>
+      <div class="chip" data-a="business">For Business</div>
+      <div class="chip" data-a="customer">For Customers</div>
+      <div class="chip" data-a="partner">For Partners</div>
+      <div class="chip" data-a="api">API / Devs</div>
+      <div class="chip" data-a="platform">Platform</div>
+    </div>
+    <input class="search" type="search" id="search" placeholder="Search the roadmap…" />
+  </div>
+  <p class="legend">Public roadmap is updated <strong>every two weeks</strong>. Things shift. Anything past Q3 is more directional than promised.</p>
+</div>
+
+<div class="wrap">
+  <div class="columns">
+    <div class="col shipped">
+      <div class="col-h"><div class="title">✓ Shipped</div><div class="ct" id="ct-shipped">0</div></div>
+      <div class="lane" id="lane-shipped"></div>
+    </div>
+    <div class="col now">
+      <div class="col-h"><div class="title">🚧 Now (Q2 '26)</div><div class="ct" id="ct-now">0</div></div>
+      <div class="lane" id="lane-now"></div>
+    </div>
+    <div class="col next">
+      <div class="col-h"><div class="title">📅 Next (Q3 '26)</div><div class="ct" id="ct-next">0</div></div>
+      <div class="lane" id="lane-next"></div>
+    </div>
+    <div class="col later">
+      <div class="col-h"><div class="title">💭 Later (Q4 '26+)</div><div class="ct" id="ct-later">0</div></div>
+      <div class="lane" id="lane-later"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="wrap">
+    <h2>Want to influence what we build next?</h2>
+    <p>Vote on the roadmap above (votes persist on this device). For deeper feedback, leave a note on our feedback page or email product@.</p>
+    <a class="primary" href="feedback.html">Leave feedback →</a>
+    <a class="alt" href="city-waitlist.html">Vote for your city</a>
+    <a class="alt" href="mailto:product@getlymx.com">Email product@</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>Build</h4>
+        <a href="changelog.html">Changelog</a>
+        <a href="roadmap.html">Roadmap</a>
+        <a href="status.html">Status</a>
+        <a href="api.html">API</a>
+      </div>
+      <div>
+        <h4>Customers</h4>
+        <a href="why-lymx.html">Why LYMX</a>
+        <a href="browse.html">Browse Businesses</a>
+        <a href="customer-rewards-vs.html">Compare</a>
+      </div>
+      <div>
+        <h4>Businesses</h4>
+        <a href="business.html">List your Business</a>
+        <a href="integrations.html">Integrations</a>
+        <a href="catering.html">Bulk gifts</a>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="security.html">Security</a>
+      </div>
+    </div>
+    <div class="foot-bot">© 2026 LYMX Power · Las Vegas, NV · Roadmap updated bi-weekly · Past-Q3 items directional</div>
+  </div>
+</footer>
+
+<script>
+  const ITEMS = [
+    // Shipped
+    {id:'pos', col:'shipped', aud:'business', t:'Web POS (issue + redeem)', d:'iPad-friendly POS app for issuing and accepting LYMX. Locked rate, multipliers, real-time sync.', when:'Mar 2026', votes:142},
+    {id:'wallet', col:'shipped', aud:'customer', t:'Web Wallet (no app download)', d:'Customer wallet runs in the browser. Add to home screen for app-like experience. QR pay built in.', when:'Mar 2026', votes:188},
+    {id:'mgc', col:'shipped', aud:'partner', t:'4-tier Partner program (MGC)', d:'Direct + G1 + G2 + G3 commission tracking. 9% / 3% / 2% / 1% override on production.', when:'Mar 2026', votes:96},
+    {id:'sett', col:'shipped', aud:'business', t:'Monthly settlement engine', d:'Net of unit purchases vs buy-backs. ACH on the 5th business day. QuickBooks CSV export.', when:'Mar 2026', votes:78},
+    {id:'flywheel', col:'shipped', aud:'platform', t:'Founding 25 cohort flywheel', d:'13/25 active. Gold-frame badge, homepage feature, customer email blast at activation.', when:'Mar 2026', votes:64},
+    {id:'spotlight', col:'shipped', aud:'partner', t:'Master Partner spotlight', d:'Monthly aspirational feature. April: Sienna Vega · 42 Businesses · $11,840.', when:'Apr 2026', votes:54},
+    {id:'compl', col:'shipped', aud:'platform', t:'Pre-launch compliance tracker', d:'28-item NV money-transmitter / MLM / tax / privacy / insurance checklist.', when:'Apr 2026', votes:32},
+
+    // Now (Q2)
+    {id:'square', col:'now', aud:'business', t:'Square POS native integration', d:'Currently using receipt-scan fallback. Native sync targeted end-Q2.', when:'May 2026', votes:204},
+    {id:'toast', col:'now', aud:'business', t:'Toast POS native integration', d:'For restaurants on Toast. Apply LYMX as a discount line at checkout.', when:'Jun 2026', votes:163},
+    {id:'eng-hire', col:'now', aud:'platform', t:'First full-time engineer', d:'Senior product engineer. Currently hiring — see careers page.', when:'May 2026', votes:18},
+    {id:'biz-refer', col:'now', aud:'business', t:'Business-to-Business referrals (live)', d:'$200 cash to referrer, $200 LYMX to referred Business. Live this week.', when:'Apr 2026', votes:122},
+    {id:'phase2', col:'now', aud:'platform', t:'Henderson + Summerlin expansion', d:'Phase 2 cohort intake. Target: 25 more Businesses by end of Q2.', when:'Jun 2026', votes:88},
+
+    // Next (Q3)
+    {id:'public-launch', col:'next', aud:'platform', t:'Public launch event (Las Vegas)', d:'Q3 launch. Press push, customer-side marketing campaign, 100+ Businesses target.', when:'Q3 2026', votes:194},
+    {id:'sdks', col:'next', aud:'api', t:'Official Node + Python SDKs', d:'@lymx/node and lymx-python on npm/PyPI. With TypeScript types and full test coverage.', when:'Q3 2026', votes:71},
+    {id:'clover', col:'next', aud:'business', t:'Clover POS native integration', d:'Clover Mini and Station support. Receipt-scan fallback today.', when:'Q3 2026', votes:103},
+    {id:'meta-ads', col:'next', aud:'business', t:'Meta Custom Audience sync', d:'Match LYMX customers to Facebook/Instagram audiences for retention ads.', when:'Q3 2026', votes:46},
+    {id:'spanish', col:'next', aud:'customer', t:'Spanish translation', d:'25%+ of Las Vegas speaks Spanish at home. Wallet, sign-up, browse, support — all bilingual.', when:'Q3 2026', votes:118},
+    {id:'auto-tour', col:'next', aud:'customer', t:'Auto-suggest "next Business" after redemption', d:'After you redeem, wallet suggests a related LYMX Business nearby. Drives the network flywheel.', when:'Q3 2026', votes:86},
+
+    // Later (Q4+)
+    {id:'multi-city', col:'later', aud:'platform', t:'Multi-city rollout (5 cities)', d:'San Diego, Phoenix, Denver, Austin, Salt Lake. Phase 3 of the city playbook.', when:'2027', votes:152},
+    {id:'soc2', col:'later', aud:'platform', t:'SOC 2 Type II audit', d:'Required for enterprise customers and partner integrations. Audit partner engaged.', when:'Q4 2026', votes:38},
+    {id:'gift-physical', col:'later', aud:'customer', t:'Physical gift cards (printed)', d:'Premium physical card stock for corporate gifting at scale. Pairs with bulk-order.', when:'Q4 2026', votes:42},
+    {id:'public-api', col:'later', aud:'api', t:'Public API (out of beta)', d:'Open access. Today is Founding-25 only.', when:'Q4 2026', votes:64},
+    {id:'sub-acct', col:'later', aud:'business', t:'Multi-employee Business accounts', d:'Separate logins for owner, manager, cashiers — each with role-based permissions.', when:'Q4 2026', votes:78},
+    {id:'family', col:'later', aud:'customer', t:'Family wallets (shared LYMX)', d:'Pool LYMX with family members. Useful for households making coordinated decisions.', when:'2027', votes:97},
+    {id:'biz-mobile', col:'later', aud:'business', t:'Native iOS / Android Business app', d:'Web POS works today. Native app would add receipt printing, offline mode, hardware integrations.', when:'2027', votes:55},
+    {id:'crypto', col:'later', aud:'platform', t:'Stablecoin settlement (rails)', d:'Optional same-day settlement via stablecoins for Businesses who want faster cash flow. Not customer-facing.', when:'2027', votes:23}
+  ];
+
+  const STORAGE_KEY = 'lymx-roadmap-votes-v1';
+  let votes = {};
+  try { votes = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ votes = {}; }
+  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(votes)); } catch(e){} }
+
+  let activeAud = 'all';
+  let searchQ = '';
+
+  const COL_NAMES = {shipped:'Shipped', now:'Now', next:'Next', later:'Later'};
+
+  function render(){
+    const filtered = ITEMS.filter(i=>{
+      if(activeAud !== 'all' && i.aud !== activeAud) return false;
+      if(searchQ){
+        const q = searchQ.toLowerCase();
+        if(!i.t.toLowerCase().includes(q) && !i.d.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+
+    ['shipped','now','next','later'].forEach(col=>{
+      const items = filtered.filter(i=>i.col===col).slice().sort((a,b)=>{
+        const av = a.votes + (votes[a.id]?1:0);
+        const bv = b.votes + (votes[b.id]?1:0);
+        return bv - av;
+      });
+      document.getElementById('ct-'+col).textContent = items.length;
+      const lane = document.getElementById('lane-'+col);
+      if(items.length === 0){
+        lane.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:18px 8px">No matches in this column.</div>';
+        return;
+      }
+      lane.innerHTML = items.map(i=>{
+        const userVoted = !!votes[i.id];
+        const totalVotes = i.votes + (userVoted ? 1 : 0);
+        const audClass = i.aud === 'business' ? 'business' : i.aud === 'customer' ? 'customer' : i.aud === 'partner' ? 'partner' : i.aud === 'api' ? 'api' : 'platform';
+        const audLabel = i.aud === 'business' ? 'Business' : i.aud === 'customer' ? 'Customer' : i.aud === 'partner' ? 'Partner' : i.aud === 'api' ? 'API' : 'Platform';
+        const dateClass = col === 'shipped' ? 'ship-date ok' : 'ship-date';
+        return `<div class="card">
+          <div class="top">
+            <h3>${escapeHTML(i.t)}</h3>
+            <span class="pill ${audClass}">${audLabel}</span>
+          </div>
+          <p>${escapeHTML(i.d)}</p>
+          <div class="meta">
+            <span class="${dateClass}">${col === 'shipped' ? '✓ ' : ''}${i.when}</span>
+            <button class="vote ${userVoted?'voted':''}" onclick="toggleVote('${i.id}')" title="${col==='shipped'?'Already shipped':'Vote for this'}">
+              <span class="arrow">▲</span> ${totalVotes}
+            </button>
+          </div>
+        </div>`;
+      }).join('');
+    });
+  }
+
+  function toggleVote(id){
+    votes[id] = !votes[id];
+    save();
+    render();
+  }
+
+  function escapeHTML(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+  document.querySelectorAll('#aud-chips .chip').forEach(c=>{
+    c.onclick = ()=>{
+      document.querySelectorAll('#aud-chips .chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      activeAud = c.dataset.a;
+      render();
+    };
+  });
+  document.getElementById('search').oninput = e=>{ searchQ = e.target.value; render(); };
+
+  render();
+</script>
+</body>
+</html>

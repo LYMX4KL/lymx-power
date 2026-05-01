@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Xero Integration — LYMX Power</title>
+<meta name="description" content="Connect LYMX with Xero. Auto-sync settlement to your accounting. Multi-currency, GST/VAT-aware. The Xero alternative to QuickBooks.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--xero:#13B5EA}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+
+  .hero{padding:72px 24px 48px;border-bottom:1px solid var(--line);background:#fff}
+  .hero-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.3fr 1fr;gap:56px;align-items:center}
+  @media (max-width:880px){.hero-inner{grid-template-columns:1fr;gap:32px}}
+  .hero .pre{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .hero .lymx-tile{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+  .hero .lymx-tile span{color:var(--gold)}
+  .hero .plus{font-size:24px;color:var(--mute);font-weight:300}
+  .hero .x-tile{width:48px;height:48px;border-radius:12px;background:var(--xero);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800;line-height:1.1}
+  .hero p{color:var(--mute);font-size:18px;max-width:520px;margin-bottom:24px}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn-primary{padding:12px 22px;background:var(--ink);color:#fff;border-radius:10px;font-weight:700;font-size:15px}
+  .btn-ghost{padding:12px 22px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:10px;font-weight:700;font-size:15px}
+
+  .hero-illust{aspect-ratio:1.1/1;background:linear-gradient(135deg,#e6f7fc 0%,#fafafa 100%);border-radius:18px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;padding:32px}
+  .arrow-flow{display:flex;align-items:center;gap:18px}
+  .blk{padding:14px 20px;background:#fff;border:2px solid var(--line);border-radius:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:120px}
+  .blk.lymx{border-color:var(--gold)}
+  .blk.x{border-color:var(--xero)}
+  .blk .ic{font-size:28px}
+  .arrow-flow .arr{font-size:24px;color:var(--xero);font-weight:700;animation:slide 1.6s infinite}
+  @keyframes slide{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  .vs-quickbooks{background:linear-gradient(135deg,#e6f7fc,#c2e9f5);border:1px solid #b3dcec;border-radius:14px;padding:24px;margin-bottom:32px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+  @media (max-width:680px){.vs-quickbooks{grid-template-columns:1fr}}
+  .vs-quickbooks .ic{font-size:36px}
+  .vs-quickbooks h3{margin:0 0 4px;font-size:16px;color:#0a5570}
+  .vs-quickbooks p{margin:0;font-size:13.5px;color:#0a5570}
+  .vs-quickbooks a{color:#0a4cb3;font-weight:700}
+
+  .syncs{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .syncs h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .syncs .sub{color:var(--mute);font-size:14px;margin-bottom:24px}
+  .sync-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media (max-width:680px){.sync-grid{grid-template-columns:1fr}}
+  .sync-row{padding:18px;border:1px solid var(--line);border-radius:10px;background:#fafafa}
+  .sync-h{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .sync-h .ic{width:36px;height:36px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .sync-h h4{margin:0;font-size:14px;flex:1}
+  .freq{font-size:10px;background:#e8f6ee;color:#0a7a4d;padding:3px 7px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .sync-row p{margin:0;font-size:13px;color:var(--mute)}
+
+  .multi-currency{background:#fef9e7;border-left:4px solid var(--gold);padding:18px 24px;border-radius:0 12px 12px 0;margin-bottom:32px}
+  .multi-currency h3{margin:0 0 6px;font-size:16px;color:#3a2f0a}
+  .multi-currency p{margin:0;font-size:13.5px;color:#5d4d18}
+
+  .steps{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .steps h2{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+  .steps .sub{color:var(--mute);font-size:14px;margin-bottom:24px;display:flex;align-items:center;gap:14px}
+  .steps .sub .timer{background:#e6f7fc;color:#0a5570;padding:5px 12px;border-radius:999px;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:18px;padding:18px 0;border-top:1px solid var(--line)}
+  .step:first-of-type{border-top:0;padding-top:0}
+  .step-n{width:40px;height:40px;border-radius:50%;background:var(--xero);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0}
+  .step h3{margin:0 0 4px;font-size:16px}
+  .step .desc{font-size:14px;color:var(--mute);margin:0 0 10px}
+  .step .est{font-size:11px;color:#0a5570;background:#e6f7fc;padding:3px 9px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;display:inline-block}
+  .step kbd{background:#fff;border:1px solid var(--line);box-shadow:inset 0 -1px 0 var(--line);padding:1px 6px;border-radius:5px;font-size:12px}
+
+  .faq{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px}
+  .faq h2{margin:0 0 18px;font-size:24px;letter-spacing:-.02em}
+  details{padding:14px 0;border-top:1px solid var(--line)}
+  details:first-of-type{border-top:0;padding-top:0}
+  summary{cursor:pointer;font-weight:600;font-size:15px;list-style:none;display:flex;align-items:center;gap:12px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";width:24px;height:24px;border-radius:6px;background:#f1f3f7;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:var(--mute);flex-shrink:0}
+  details[open] summary::before{content:"−";background:var(--ink);color:#fff}
+  details[open] summary{margin-bottom:10px}
+  .faq-body{font-size:14px;color:#1f2530;line-height:1.65;padding-left:36px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="integrations.html">All integrations</a>
+      <a href="biz-integration-quickbooks.html">QuickBooks</a>
+      <a href="biz-tax-guide.html">Tax guide</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="pre">
+        <div class="lymx-tile">L<span>★</span></div>
+        <div class="plus">×</div>
+        <div class="x-tile">XR</div>
+      </div>
+      <h1>LYMX + Xero — auto-sync your books.</h1>
+      <p>The Xero alternative to QuickBooks. Auto-syncs LYMX settlement to your Xero ledger. Multi-currency aware. GST/VAT support for international Businesses.</p>
+      <div class="cta">
+        <a href="biz-dashboard.html" class="btn-primary">Connect Xero →</a>
+        <a href="#how" class="btn-ghost">See how it works</a>
+      </div>
+    </div>
+    <div class="hero-illust">
+      <div class="arrow-flow">
+        <div class="blk lymx"><div class="ic">★</div>LYMX</div>
+        <div class="arr">→</div>
+        <div class="blk x"><div class="ic">📊</div>Xero</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="vs-quickbooks">
+  <div class="ic">🤔</div>
+  <div>
+    <h3>Xero vs QuickBooks?</h3>
+    <p>If you're already on Xero, this is your setup. If you're on QuickBooks, see the <a href="biz-integration-quickbooks.html">QuickBooks integration</a>. The LYMX outputs are similar — but Xero handles multi-currency natively, which matters if your Business has international ops.</p>
+  </div>
+</div>
+
+<!-- WHAT SYNCS -->
+<div class="syncs">
+  <h2>What syncs to Xero</h2>
+  <p class="sub">One-way sync from LYMX to Xero. Settlement entries flow as bills + invoices.</p>
+
+  <div class="sync-grid">
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">💰</div><h4>Monthly settlement</h4><span class="freq">Monthly</span></div>
+      <p>Net LYMX wholesale settlement posted as a bill on the 1st of each month.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">📅</div><h4>Subscription</h4><span class="freq">Monthly</span></div>
+      <p>$200/mo LYMX subscription auto-posted as a recurring expense.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">🎁</div><h4>Customer redemptions (optional)</h4><span class="freq">Daily</span></div>
+      <p>Each LYMX redemption can post as a sales discount entry. Useful for granular accounting.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">🌍</div><h4>Multi-currency conversion</h4><span class="freq">Real-time</span></div>
+      <p>If your Xero is multi-currency, LYMX entries are auto-converted using Xero's daily exchange rate.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">🧾</div><h4>GST / VAT handling</h4><span class="freq">Per-tx</span></div>
+      <p>For Australian, NZ, UK, EU Businesses: GST/VAT codes attached to entries based on your Xero defaults.</p>
+    </div>
+    <div class="sync-row">
+      <div class="sync-h"><div class="ic">📈</div><h4>Annual summary</h4><span class="freq">Yearly</span></div>
+      <p>End-of-year totals + 1099-K equivalent (or international equivalent) auto-posted.</p>
+    </div>
+  </div>
+</div>
+
+<div class="multi-currency">
+  <h3>🌍 Multi-currency Businesses</h3>
+  <p>If you operate in USD but your Xero books are in CAD, AUD, GBP, etc. — Xero's native currency conversion handles this. LYMX posts entries in USD; Xero converts on the fly. Note: LYMX is US-only currently. If you have non-US locations, those aren't part of the LYMX network yet.</p>
+</div>
+
+<!-- STEPS -->
+<div class="steps" id="how">
+  <h2>How to connect Xero</h2>
+  <p class="sub">One-time setup. <span class="timer">⏱️ Total: ~10 min</span></p>
+
+  <div class="step">
+    <div class="step-n">1</div>
+    <div>
+      <h3>Open Integrations in your LYMX dashboard</h3>
+      <p class="desc">From your <a href="biz-dashboard.html">Business dashboard</a>, click <kbd>Settings</kbd> → <kbd>Integrations</kbd>. Find <strong>Xero</strong> and click <kbd>Connect</kbd>.</p>
+      <span class="est">~30 sec</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">2</div>
+    <div>
+      <h3>Authorize via Xero OAuth</h3>
+      <p class="desc">Sign in to Xero. Choose which Xero organization to connect (if you have multiple). Authorize LYMX to write bills + sales entries.</p>
+      <span class="est">~2 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">3</div>
+    <div>
+      <h3>Map LYMX items to your Xero chart of accounts</h3>
+      <p class="desc">Confirm or adjust mappings. Xero defaults: LYMX wholesale → "Cost of Goods Sold" or "Marketing." Subscription → "Software Subscriptions." Sign-up fee → "Marketing &amp; Promotion" (your choice — same as QuickBooks).</p>
+      <span class="est">~4 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">4</div>
+    <div>
+      <h3>Set up GST/VAT codes (international Businesses only)</h3>
+      <p class="desc">If you're in AU, NZ, UK, or EU, Xero will ask which GST/VAT codes to apply to LYMX entries. Default: same as your Software Subscriptions account.</p>
+      <span class="est">~2 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">5</div>
+    <div>
+      <h3>Run a backfill (optional)</h3>
+      <p class="desc">Backfill the past 90 days of LYMX activity into Xero. Useful for cleaning up your books. 2-3 min in the background.</p>
+      <span class="est">~2 min</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">6</div>
+    <div>
+      <h3>Verify in Xero</h3>
+      <p class="desc">Open Xero → <kbd>Reports</kbd> → <kbd>Account Transactions</kbd>. Filter for "LYMX" — entries should appear with the correct categorization.</p>
+      <span class="est">~1 min</span>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq">
+  <h2>Frequently asked questions</h2>
+
+  <details>
+    <summary>I'm in Australia / NZ / UK — does this work?</summary>
+    <div class="faq-body"><p>Yes for the Xero side — the integration handles GST/VAT correctly for AU, NZ, UK, EU. However, LYMX itself is currently US-only. So this integration is most useful if you operate in the US but use Xero for accounting.</p></div>
+  </details>
+
+  <details>
+    <summary>Does this work with Xero Standard, Premium, Ultimate?</summary>
+    <div class="faq-body"><p>All Xero plans that include the API. Xero Cashbook (the basic plan) doesn't include the API, so you'd need to upgrade to Standard.</p></div>
+  </details>
+
+  <details>
+    <summary>What about multi-organization Xero accounts (advisor accounts)?</summary>
+    <div class="faq-body"><p>Yes. If you're an accountant with multiple client orgs, you can install LYMX integration once and select which client org to sync. We can also enable multi-org sync if you have multi-Business clients on LYMX.</p></div>
+  </details>
+
+  <details>
+    <summary>Is there a fee for the Xero integration?</summary>
+    <div class="faq-body"><p>No. The Xero integration is included in your LYMX Business subscription. Xero charges its own subscription separately (which is independent of us).</p></div>
+  </details>
+
+  <details>
+    <summary>Can my accountant set this up for me?</summary>
+    <div class="faq-body"><p>Yes. Add your accountant as a Xero advisor user, give them access to your LYMX Business account, and they can do the setup. Most do this in 10–15 min.</p></div>
+  </details>
+
+  <details>
+    <summary>What if I want to switch from QuickBooks to Xero?</summary>
+    <div class="faq-body"><p>Disconnect QuickBooks integration first (Settings → Integrations → QuickBooks → Disconnect). Then connect Xero. Your historical LYMX data stays preserved. Future entries go to Xero.</p></div>
+  </details>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Xero integration · <a href="biz-integration-quickbooks.html">QuickBooks alternative</a> · <a href="biz-tax-guide.html">Tax guide</a> · <a href="integrations.html">All integrations</a>
+</div>
+
+</body>
+</html>

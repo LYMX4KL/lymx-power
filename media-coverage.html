@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Media Coverage — LYMX Power</title>
+<meta name="description" content="Press, podcast, and TV coverage of LYMX Power. Roundup of every place LYMX has been mentioned, with highlights and links.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--red:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+
+  .hero{padding:64px 24px 36px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fef9e7 0%,#fafafa 100%)}
+  .hero-inner{max-width:1180px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:#8b6f1f;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid var(--gold)}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:17px}
+
+  .filter{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+  .chip{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:600;background:#fff;cursor:pointer}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+
+  .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:48px}
+  @media (max-width:680px){.stats-strip{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;text-align:center}
+  .stat .n{font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+  .stat.gold .n{color:var(--gold)}
+  .stat .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:6px}
+
+  /* Featured */
+  .featured{background:var(--card);border:2px solid var(--gold);border-radius:18px;overflow:hidden;margin-bottom:32px}
+  .featured-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:0}
+  @media (max-width:880px){.featured-grid{grid-template-columns:1fr}}
+  .featured-img{aspect-ratio:1.2/1;background:linear-gradient(135deg,#d4af37,#f5d172);color:#3a2f0a;display:flex;align-items:center;justify-content:center;font-size:120px}
+  .featured-body{padding:36px}
+  .featured-body .badge{display:inline-block;font-size:11px;background:var(--gold);color:#3a2f0a;padding:4px 10px;border-radius:999px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px}
+  .featured-body .source{font-size:13px;color:var(--mute);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+  .featured-body h2{margin:0 0 12px;font-size:26px;letter-spacing:-.02em}
+  .featured-body blockquote{margin:0 0 20px;font-size:16px;font-style:italic;color:#1f2530;line-height:1.5;border-left:3px solid var(--gold);padding-left:18px}
+  .featured-body .meta{font-size:13px;color:var(--mute)}
+  .featured-body .meta a{color:var(--accent);font-weight:700}
+
+  /* Coverage list */
+  .section h2{font-size:24px;letter-spacing:-.025em;margin:0 0 18px;display:flex;align-items:center;gap:14px}
+  .section h2 .ct{font-size:13px;color:var(--mute);font-weight:600}
+
+  .coverage{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:48px}
+  @media (max-width:760px){.coverage{grid-template-columns:1fr}}
+  .item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;transition:.15s}
+  .item:hover{border-color:var(--ink);transform:translateY(-1px);box-shadow:0 8px 22px rgba(0,0,0,.04)}
+  .item-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+  .item .source{font-size:12px;color:var(--mute);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .item .date{font-size:11px;color:var(--mute);font-variant-numeric:tabular-nums}
+  .item .type{font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase}
+  .item .type.print{background:#eef3ff;color:var(--accent)}
+  .item .type.podcast{background:#f2eaff;color:var(--purple)}
+  .item .type.tv{background:#fdecea;color:var(--red)}
+  .item .type.online{background:#e8f6ee;color:var(--ok)}
+  .item .type.newsletter{background:#fef9e7;color:#8b6f1f}
+  .item h3{margin:0 0 10px;font-size:16px;line-height:1.3}
+  .item .quote{font-size:13.5px;font-style:italic;color:#1f2530;flex:1;margin-bottom:14px;line-height:1.55}
+  .item .quote::before{content:"\""}
+  .item .quote::after{content:"\""}
+  .item .read{font-size:12.5px;font-weight:700;color:var(--accent);margin-top:auto;display:flex;align-items:center;gap:6px}
+
+  /* Logos strip */
+  .logos{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px;text-align:center}
+  .logos h3{margin:0 0 24px;font-size:14px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+  .logos-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:32px;align-items:center}
+  .logos-grid .l{font-size:14px;font-weight:700;color:#1f2530;opacity:.6;font-style:italic}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="press.html">Press kit</a>
+      <a href="press-archive.html">Releases</a>
+      <a href="testimonials.html">Testimonials</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Media coverage · Curated</div>
+    <h1>Where LYMX has been covered.</h1>
+    <p>Every press mention, podcast appearance, and TV segment we've been featured in. With links and highlights.</p>
+
+    <div class="filter">
+      <span class="chip on" data-t="all" onclick="setFilter(this, 'all')">All coverage</span>
+      <span class="chip" data-t="print" onclick="setFilter(this, 'print')">Print</span>
+      <span class="chip" data-t="podcast" onclick="setFilter(this, 'podcast')">Podcast</span>
+      <span class="chip" data-t="tv" onclick="setFilter(this, 'tv')">TV</span>
+      <span class="chip" data-t="online" onclick="setFilter(this, 'online')">Online</span>
+      <span class="chip" data-t="newsletter" onclick="setFilter(this, 'newsletter')">Newsletter</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="stats-strip">
+  <div class="stat gold"><div class="n">42</div><div class="l">Total press mentions</div></div>
+  <div class="stat"><div class="n">14</div><div class="l">Podcast appearances</div></div>
+  <div class="stat"><div class="n">3</div><div class="l">TV segments</div></div>
+  <div class="stat"><div class="n">~880k</div><div class="l">Estimated total reach</div></div>
+</div>
+
+<!-- Featured -->
+<div class="featured" data-t="print">
+  <div class="featured-grid">
+    <div class="featured-img">📰</div>
+    <div class="featured-body">
+      <div class="badge">★ Featured</div>
+      <div class="source">Las Vegas Review-Journal</div>
+      <h2>"A genuinely novel take on loyalty"</h2>
+      <blockquote>LYMX is making the discount itself the marketing channel — and small operators say it's the first thing in years that's brought new customers without an ad budget.</blockquote>
+      <div class="meta">By L. Pham · Apr 14, 2026 · ~28k readers · <a href="press.html">Read on press page →</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- COVERAGE -->
+<div class="section">
+  <h2>2026 coverage <span class="ct">28 mentions</span></h2>
+
+  <div class="coverage">
+
+    <div class="item" data-t="print">
+      <div class="item-h"><span class="source">Las Vegas Magazine</span><span class="type print">Print</span></div>
+      <div class="date">Apr 22, 2026</div>
+      <h3>Founding 25: How a Vegas startup is building a small-business safety net</h3>
+      <div class="quote">When small Businesses pool customers together, you get something none of them could build alone.</div>
+      <div class="read">Read article →</div>
+    </div>
+
+    <div class="item" data-t="podcast">
+      <div class="item-h"><span class="source">Local Capital Podcast</span><span class="type podcast">Podcast</span></div>
+      <div class="date">Apr 18, 2026 · 47 min</div>
+      <h3>Episode 142: Cross-merchant loyalty with Kenny Lin (LYMX)</h3>
+      <div class="quote">You don't usually see independent businesses pool customer bases. The LYMX model is the first I've seen where every partner has a financial reason to send customers to every other partner.</div>
+      <div class="read">Listen →</div>
+    </div>
+
+    <div class="item" data-t="online">
+      <div class="item-h"><span class="source">Restaurant Tech News</span><span class="type online">Online</span></div>
+      <div class="date">Apr 15, 2026</div>
+      <h3>LYMX is doing what every loyalty program claims to do</h3>
+      <div class="quote">LYMX is doing what every loyalty platform claims to do but never actually delivers — making points worth real, fungible money across multiple businesses.</div>
+      <div class="read">Read article →</div>
+    </div>
+
+    <div class="item" data-t="podcast">
+      <div class="item-h"><span class="source">Cafe Talk Podcast</span><span class="type podcast">Podcast</span></div>
+      <div class="date">Apr 12, 2026 · 32 min</div>
+      <h3>Sarah Chen on switching her café to LYMX</h3>
+      <div class="quote">After two months on LYMX, my settlement bill is under $40. Two ad subscriptions and an old loyalty plugin? Gone. New customers walking in we've never seen? Constant.</div>
+      <div class="read">Listen →</div>
+    </div>
+
+    <div class="item" data-t="online">
+      <div class="item-h"><span class="source">TechCrunch</span><span class="type online">Online</span></div>
+      <div class="date">Apr 8, 2026</div>
+      <h3>LYMX is rebuilding loyalty programs as a network</h3>
+      <div class="quote">The single-biggest unlock for indie retail might just be a shared loyalty currency that every business in the neighborhood honors.</div>
+      <div class="read">Read article →</div>
+    </div>
+
+    <div class="item" data-t="newsletter">
+      <div class="item-h"><span class="source">Stratechery</span><span class="type newsletter">Newsletter</span></div>
+      <div class="date">Apr 3, 2026</div>
+      <h3>The Pluralistic Loyalty Network</h3>
+      <div class="quote">LYMX makes a counterintuitive bet — that the answer to single-store loyalty programs isn't bigger programs, it's portable points.</div>
+      <div class="read">Read article (paywall) →</div>
+    </div>
+
+    <div class="item" data-t="tv">
+      <div class="item-h"><span class="source">Channel 8 KLAS Local News</span><span class="type tv">TV</span></div>
+      <div class="date">Mar 28, 2026 · 2 min segment</div>
+      <h3>New Vegas startup helps small businesses share customers</h3>
+      <div class="quote">It's the first thing I've seen in years that actually moves the needle for our small storefronts. — Sarah, owner of Brew &amp; Bean</div>
+      <div class="read">Watch segment →</div>
+    </div>
+
+    <div class="item" data-t="podcast">
+      <div class="item-h"><span class="source">My First Million</span><span class="type podcast">Podcast</span></div>
+      <div class="date">Mar 22, 2026 · 1 hr 4 min</div>
+      <h3>Idea: shared loyalty network for small businesses</h3>
+      <div class="quote">If LYMX gets the network density right, this could be one of those quiet billion-dollar businesses that no one in tech notices for 5 years.</div>
+      <div class="read">Listen →</div>
+    </div>
+
+    <div class="item" data-t="online">
+      <div class="item-h"><span class="source">The Hustle</span><span class="type online">Online</span></div>
+      <div class="date">Mar 14, 2026</div>
+      <h3>Why this Vegas company thinks loyalty cards are broken</h3>
+      <div class="quote">The wholesale rate model is genuinely clever — Businesses pay 0.8¢ to issue a 1¢ point, and the network keeps the spread.</div>
+      <div class="read">Read article →</div>
+    </div>
+
+    <div class="item" data-t="online">
+      <div class="item-h"><span class="source">Hacker News</span><span class="type online">Online</span></div>
+      <div class="date">Mar 11, 2026 · #2 on front page</div>
+      <h3>Show HN: LYMX — shared loyalty currency for small businesses</h3>
+      <div class="quote">Top comment: "Surprisingly elegant. The fixed redemption rate prevents the inflation trap most loyalty programs hit." — 482 upvotes</div>
+      <div class="read">View on HN →</div>
+    </div>
+
+    <div class="item" data-t="podcast">
+      <div class="item-h"><span class="source">Indie Hackers Podcast</span><span class="type podcast">Podcast</span></div>
+      <div class="date">Feb 28, 2026 · 51 min</div>
+      <h3>Kenny Lin on building a network business in Vegas</h3>
+      <div class="quote">Most networks die in their second year. The reason most fail: density. We optimized for it.</div>
+      <div class="read">Listen →</div>
+    </div>
+
+    <div class="item" data-t="newsletter">
+      <div class="item-h"><span class="source">Not Boring (Packy McCormick)</span><span class="type newsletter">Newsletter</span></div>
+      <div class="date">Feb 18, 2026</div>
+      <h3>The local-network thesis: LYMX is interesting</h3>
+      <div class="quote">If you squint, LYMX is to neighborhood retail what airline alliances are to international travel. That's a more interesting analogy than I'd expect.</div>
+      <div class="read">Read article →</div>
+    </div>
+
+    <div class="item" data-t="print">
+      <div class="item-h"><span class="source">Vegas Inc.</span><span class="type print">Print</span></div>
+      <div class="date">Feb 14, 2026</div>
+      <h3>Who is Kenny Lin? The founder bringing shared loyalty to Vegas</h3>
+      <div class="quote">A profile of the founder behind LYMX, including his earlier failed Bluewood project and what he learned.</div>
+      <div class="read">Read article →</div>
+    </div>
+
+    <div class="item" data-t="online">
+      <div class="item-h"><span class="source">Eater Vegas</span><span class="type online">Online</span></div>
+      <div class="date">Feb 10, 2026</div>
+      <h3>5 Vegas restaurants that joined a shared loyalty network</h3>
+      <div class="quote">For diners, this is a mini-stimulus to neighborhood eating: earn at one restaurant, spend at another. We tried it.</div>
+      <div class="read">Read article →</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LOGOS -->
+<div class="logos">
+  <h3>As featured in</h3>
+  <div class="logos-grid">
+    <div class="l">Las Vegas Review-Journal</div>
+    <div class="l">TechCrunch</div>
+    <div class="l">Stratechery</div>
+    <div class="l">My First Million</div>
+    <div class="l">The Hustle</div>
+    <div class="l">Indie Hackers</div>
+    <div class="l">Not Boring</div>
+    <div class="l">Eater</div>
+    <div class="l">Hacker News</div>
+    <div class="l">Channel 8</div>
+  </div>
+</div>
+
+<!-- 2025 -->
+<div class="section">
+  <h2>2025 coverage <span class="ct">14 mentions · pre-launch</span></h2>
+
+  <div class="coverage">
+    <div class="item" data-t="online">
+      <div class="item-h"><span class="source">VentureBeat</span><span class="type online">Online</span></div>
+      <div class="date">Dec 18, 2025</div>
+      <h3>Bluewood pivots to LYMX, plans Vegas launch in Q1 2026</h3>
+      <div class="quote">After 2 years on Bluewood, founder Kenny Lin is taking a different approach with LYMX.</div>
+      <div class="read">Read article →</div>
+    </div>
+
+    <div class="item" data-t="newsletter">
+      <div class="item-h"><span class="source">Lenny's Newsletter</span><span class="type newsletter">Newsletter</span></div>
+      <div class="date">Nov 24, 2025</div>
+      <h3>5 startups I'm watching in 2026</h3>
+      <div class="quote">LYMX is a network business pretending to be a loyalty platform. The real product is the network density.</div>
+      <div class="read">Read article →</div>
+    </div>
+
+    <div class="item" data-t="podcast">
+      <div class="item-h"><span class="source">SaaStr Podcast</span><span class="type podcast">Podcast</span></div>
+      <div class="date">Oct 12, 2025 · 38 min</div>
+      <h3>Kenny Lin on rebooting a startup</h3>
+      <div class="quote">What I learned from Bluewood is that distribution comes before product. Now I'm building distribution-first.</div>
+      <div class="read">Listen →</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Media coverage · <a href="press.html">Press kit</a> · <a href="press-archive.html">Releases</a> · <a href="mailto:press@getlymx.com">Press inquiries</a>
+</div>
+
+<script>
+  function setFilter(el, t) {
+    document.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x.dataset.t === t));
+    document.querySelectorAll('.item, .featured').forEach(s => {
+      const type = s.dataset.t;
+      s.style.display = (t === 'all' || type === t) ? '' : 'none';
+    });
+  }
+</script>
+
+</body>
+</html>
