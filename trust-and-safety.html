@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Trust &amp; Safety — LYMX Power</title>
+<meta name="description" content="How LYMX prevents fraud, keeps customer data safe, and enforces our policies. Read what we do — and what we promise not to do.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .links a{color:var(--ink);font-size:14px;margin-left:18px;font-weight:500}
+
+  .hero{padding:72px 24px 48px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 70% 20%,rgba(212,175,55,.18) 0%,transparent 50%);pointer-events:none}
+  .hero-inner{max-width:1100px;margin:0 auto;text-align:center;position:relative}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--gold);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;border:1px solid var(--gold);padding:5px 12px;border-radius:999px}
+  .hero h1{font-size:50px;letter-spacing:-.025em;margin:0 0 12px;font-weight:800;line-height:1.1}
+  .hero p{color:#b8c2d6;max-width:560px;margin:0 auto;font-size:17px}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+
+  .pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:48px}
+  @media (max-width:760px){.pillars{grid-template-columns:repeat(2,1fr)}}
+  .pillar{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
+  .pillar .ic{width:48px;height:48px;border-radius:12px;background:#eef3ff;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 10px}
+  .pillar .ic.green{background:#e8f6ee;color:var(--ok)}
+  .pillar .ic.gold{background:#fef9e7;color:#8b6f1f}
+  .pillar .ic.purple{background:#f2eaff;color:var(--purple)}
+  .pillar h3{margin:0 0 4px;font-size:14px}
+  .pillar p{margin:0;font-size:12.5px;color:var(--mute);line-height:1.5}
+
+  .section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:32px;scroll-margin-top:80px}
+  .section h2{margin:0 0 14px;font-size:26px;letter-spacing:-.025em}
+  .section p{margin:0 0 14px;font-size:15px}
+
+  .promise-list{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+  @media (max-width:760px){.promise-list{grid-template-columns:1fr}}
+  .promise{padding:16px 18px;border-radius:10px;display:flex;gap:12px;align-items:flex-start}
+  .promise.do{background:#e8f6ee;border:1px solid #c2e8d2}
+  .promise.dont{background:#fdecea;border:1px solid #fbd5d0}
+  .promise .pic{flex-shrink:0;width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:14px}
+  .promise.do .pic{background:var(--ok)}
+  .promise.dont .pic{background:var(--err)}
+  .promise h4{margin:0 0 4px;font-size:13.5px}
+  .promise p{margin:0;font-size:12.5px;color:#1f2530}
+  .promise.do h4{color:#0a4d2f}
+  .promise.dont h4{color:#7d2014}
+
+  .number-big{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;padding:18px 0;border-top:1px dashed var(--line)}
+  .number-big:first-of-type{border-top:0;padding-top:0}
+  .nb-num{font-size:48px;font-weight:800;letter-spacing:-.03em;color:var(--accent);line-height:1;width:120px;text-align:right}
+  .nb-num.green{color:var(--ok)}
+  .nb-num.gold{color:#8b6f1f}
+  .nb-body h3{margin:0 0 4px;font-size:16px}
+  .nb-body p{margin:0;font-size:14px;color:var(--mute)}
+
+  details.policy{padding:18px 0;border-top:1px solid var(--line)}
+  details.policy:first-of-type{border-top:0;padding-top:0}
+  details.policy summary{cursor:pointer;font-weight:600;font-size:16px;list-style:none;display:flex;align-items:center;gap:14px}
+  details.policy summary::-webkit-details-marker{display:none}
+  details.policy summary::before{content:"+";width:28px;height:28px;border-radius:8px;background:#f1f3f7;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:var(--mute);flex-shrink:0;font-weight:600}
+  details.policy[open] summary::before{content:"−";background:var(--ink);color:#fff}
+  details.policy[open] summary{margin-bottom:14px}
+  details.policy > div{padding-left:42px;font-size:14.5px;color:#1f2530;line-height:1.65}
+
+  .report-cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:32px;margin-bottom:32px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+  @media (max-width:680px){.report-cta{grid-template-columns:1fr;text-align:center}}
+  .report-cta h3{margin:0 0 6px;color:#fff;font-size:18px}
+  .report-cta p{margin:0;color:#b8c2d6;font-size:13px;max-width:520px}
+  .report-cta a{background:var(--gold);color:#0e1116;padding:12px 22px;border-radius:8px;font-weight:700;font-size:14px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <div class="links">
+      <a href="security.html">Security</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="incident-history.html">Incidents</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Trust &amp; safety · How we keep LYMX safe for everyone</div>
+    <h1>The promises behind every LYMX transaction.</h1>
+    <p>How we prevent fraud, protect customer data, and enforce our policies fairly. Read it. Hold us to it.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="pillars">
+  <div class="pillar"><div class="ic green">🛡️</div><h3>Fraud prevention</h3><p>ML + rules to catch suspicious patterns</p></div>
+  <div class="pillar"><div class="ic">🔒</div><h3>Data protection</h3><p>Encryption + minimal data collection</p></div>
+  <div class="pillar"><div class="ic gold">⚖️</div><h3>Fair enforcement</h3><p>Transparent policies, human review</p></div>
+  <div class="pillar"><div class="ic purple">🤝</div><h3>User support</h3><p>Real humans answer reports</p></div>
+</div>
+
+<!-- FRAUD -->
+<section class="section">
+  <h2>How we prevent fraud</h2>
+  <p>Every LYMX transaction passes through a real-time fraud detection layer. We use a mix of pattern matching, machine learning, and human review for edge cases. Here's what that looks like in practice:</p>
+
+  <div class="number-big">
+    <div class="nb-num green">99.96%</div>
+    <div class="nb-body">
+      <h3>Of transactions clear automatically</h3>
+      <p>The vast majority of LYMX activity looks normal — customers earning at one Business, redeeming at another. These pass without any friction.</p>
+    </div>
+  </div>
+
+  <div class="number-big">
+    <div class="nb-num">0.04%</div>
+    <div class="nb-body">
+      <h3>Are flagged for human review</h3>
+      <p>Patterns like unusually high redemptions in a short window, sign-up surges from one IP, or device fingerprints we've seen before. A real person reviews each flag within 4 hours during business days.</p>
+    </div>
+  </div>
+
+  <div class="number-big">
+    <div class="nb-num gold">&lt; 0.01%</div>
+    <div class="nb-body">
+      <h3>Result in a frozen wallet or account</h3>
+      <p>If we determine fraud occurred, we may freeze the wallet pending investigation. Owners receive an email with details and a clear appeals path.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DATA -->
+<section class="section">
+  <h2>How we protect customer data</h2>
+  <p>The shorter version: <strong>we collect as little as we can, encrypt everything, and never sell anything</strong>. The longer version below.</p>
+
+  <div class="promise-list">
+    <div class="promise do">
+      <div class="pic">✓</div>
+      <div>
+        <h4>We DO collect your phone number, name (optional), email (optional)</h4>
+        <p>The minimum needed to power your wallet and let you log in across devices.</p>
+      </div>
+    </div>
+    <div class="promise do">
+      <div class="pic">✓</div>
+      <div>
+        <h4>We DO encrypt all stored data at rest + in transit</h4>
+        <p>AES-256 at rest, TLS 1.3 in transit. Industry standard.</p>
+      </div>
+    </div>
+    <div class="promise do">
+      <div class="pic">✓</div>
+      <div>
+        <h4>We DO let you export or delete your data</h4>
+        <p>Anytime, no questions. Use the <a href="data-export.html">data center</a>.</p>
+      </div>
+    </div>
+    <div class="promise do">
+      <div class="pic">✓</div>
+      <div>
+        <h4>We DO publish security incidents</h4>
+        <p>Every incident, with full post-mortem. See <a href="incident-history.html">incident history</a>.</p>
+      </div>
+    </div>
+    <div class="promise dont">
+      <div class="pic">✗</div>
+      <div>
+        <h4>We DON'T sell customer data to third parties</h4>
+        <p>Not to advertisers. Not to Businesses. Not to data brokers. Not to anyone, ever.</p>
+      </div>
+    </div>
+    <div class="promise dont">
+      <div class="pic">✗</div>
+      <div>
+        <h4>We DON'T see credit card numbers</h4>
+        <p>Square / Stripe handle all card data. LYMX never receives PCI-scope information.</p>
+      </div>
+    </div>
+    <div class="promise dont">
+      <div class="pic">✗</div>
+      <div>
+        <h4>We DON'T track customers across other websites</h4>
+        <p>No cross-site tracking pixels. No third-party advertising tags on our pages.</p>
+      </div>
+    </div>
+    <div class="promise dont">
+      <div class="pic">✗</div>
+      <div>
+        <h4>We DON'T share individual customer data with Businesses</h4>
+        <p>Businesses see aggregated stats only. They never see another Business's customers' identities.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ENFORCEMENT -->
+<section class="section">
+  <h2>How we enforce our policies</h2>
+  <p>If a Business, Partner, or customer breaks our terms, here's our process. We try to be fair and consistent.</p>
+
+  <details class="policy">
+    <summary>Suspected fraudulent activity</summary>
+    <div>
+      <p><strong>Step 1 — Auto-flag.</strong> Suspicious activity triggers an alert. The wallet may be frozen pending investigation if the pattern is severe.</p>
+      <p><strong>Step 2 — Human review.</strong> A Trust &amp; Safety team member reviews the flag within 4 hours (business days). If it's a false positive, wallet unfreezes immediately.</p>
+      <p><strong>Step 3 — User notification.</strong> If the freeze stands, the wallet owner receives an email with what we found, what they can do, and how to appeal.</p>
+      <p><strong>Step 4 — Appeal.</strong> Reply to the email or contact <a href="support.html">support</a>. A different team member reviews. Decision within 5 business days.</p>
+    </div>
+  </details>
+
+  <details class="policy">
+    <summary>Terms-of-service violations</summary>
+    <div>
+      <p>Examples: a Business misrepresenting LYMX redemption rules, a Partner making earnings claims that violate FTC rules, a customer attempting to game referral bonuses.</p>
+      <p><strong>First violation:</strong> Warning + education. We point you to the relevant <a href="terms.html">terms section</a> and ask you to fix the issue.</p>
+      <p><strong>Second violation:</strong> 30-day suspension of the relevant feature. Partners cannot recruit during this period; Businesses cannot run promos; customers cannot redeem.</p>
+      <p><strong>Third violation:</strong> Account closure. Account-closure decisions are reviewed by senior staff.</p>
+    </div>
+  </details>
+
+  <details class="policy">
+    <summary>Spam &amp; harassment from Partners</summary>
+    <div>
+      <p>Partners are independent contractors but represent the LYMX network when they prospect. Behaviors we don't tolerate:</p>
+      <ul>
+        <li>Cold-emailing prospect lists you don't own (CAN-SPAM violations)</li>
+        <li>Making earnings claims that exceed FTC guidance</li>
+        <li>Misrepresenting LYMX or LYMX features in pitches</li>
+        <li>High-pressure sales tactics, especially with vulnerable Businesses</li>
+      </ul>
+      <p>Partners caught engaging in these have their referral commission paused pending investigation. Repeat offenders are removed from the program.</p>
+    </div>
+  </details>
+
+  <details class="policy">
+    <summary>Malicious or fake reviews</summary>
+    <div>
+      <p>Customer reviews on Business profiles are moderated. We remove:</p>
+      <ul>
+        <li>Reviews that contain personal attacks, threats, or hate speech</li>
+        <li>Reviews from accounts with no transaction history at the Business</li>
+        <li>Reviews flagged by Businesses as defamatory (subject to our review)</li>
+        <li>Reviews that appear to be coordinated (multiple from one IP, identical text)</li>
+      </ul>
+      <p>We do <strong>not</strong> remove negative reviews just because they're negative. A 1-star review from a real customer with a real complaint stays up.</p>
+    </div>
+  </details>
+
+  <details class="policy">
+    <summary>Stolen or lost wallet</summary>
+    <div>
+      <p>If a customer reports their wallet stolen or accessed by someone else, we freeze the wallet immediately and contact them via verified phone number.</p>
+      <p>Once identity is verified, we transfer the LYMX balance to a new wallet (reset on a new device). The old wallet is permanently disabled.</p>
+      <p>Lost LYMX is recoverable in 100% of cases when reported within 30 days of the loss event. Outside that window, recovery depends on case specifics.</p>
+    </div>
+  </details>
+</section>
+
+<!-- REPORT -->
+<div class="report-cta">
+  <div>
+    <h3>See something off? Tell us.</h3>
+    <p>If you think a Business, Partner, or customer is breaking our terms — or you've been the target of suspicious activity — report it. Real humans review every report. Anonymity respected.</p>
+  </div>
+  <a href="mailto:trust@getlymx.com">Report an issue →</a>
+</div>
+
+<!-- COMMITMENT -->
+<section class="section">
+  <h2>Our commitments to you</h2>
+  <p>If we ever fall short of any of these, we want to hear about it.</p>
+
+  <div class="number-big">
+    <div class="nb-num">4 hr</div>
+    <div class="nb-body">
+      <h3>Maximum response time for fraud reports</h3>
+      <p>Business days. Critical reports (active account compromise) get response within 30 minutes.</p>
+    </div>
+  </div>
+
+  <div class="number-big">
+    <div class="nb-num green">100%</div>
+    <div class="nb-body">
+      <h3>Of frozen wallets get a written reason</h3>
+      <p>You'll always know why. No black-box decisions.</p>
+    </div>
+  </div>
+
+  <div class="number-big">
+    <div class="nb-num gold">5 days</div>
+    <div class="nb-body">
+      <h3>Maximum appeal turnaround</h3>
+      <p>Reviewed by a different team member than the original decision-maker.</p>
+    </div>
+  </div>
+
+  <div class="number-big">
+    <div class="nb-num">$0</div>
+    <div class="nb-body">
+      <h3>Cost to recover stolen LYMX (within 30 days)</h3>
+      <p>If your wallet is compromised and you report it within 30 days, we recover your balance at no charge.</p>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Trust &amp; Safety · <a href="security.html">Security</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="incident-history.html">Incident history</a>
+</div>
+
+</body>
+</html>

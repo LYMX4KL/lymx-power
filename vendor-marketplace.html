@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Vendor Marketplace — LYMX Business</title>
+<meta name="description" content="Vetted local vendors for LYMX Businesses — POS installers, signage printers, accountants, web designers. All offer LYMX Business discounts.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700}
+  .nav-link{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(180deg,#eef3ff 0%,#fafafa 100%);padding:60px 24px 36px;border-bottom:1px solid var(--line)}
+  .hero-inner{max-width:1180px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #c7d6ff}
+  .hero h1{font-size:42px;letter-spacing:-.025em;margin:0 0 12px;font-weight:800}
+  .hero p{color:var(--mute);max-width:600px;margin:0 auto;font-size:16px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;align-items:center}
+  .toolbar input{padding:10px 14px;border:1px solid var(--line);border-radius:8px;font-size:14px;min-width:240px;background:#fff;flex:1}
+  .toolbar select{padding:10px 14px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
+  .chip{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:600;background:#fff;cursor:pointer}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px}
+
+  .vendor-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  @media (max-width:760px){.vendor-grid{grid-template-columns:1fr}}
+
+  .vendor{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;transition:.15s}
+  .vendor:hover{border-color:var(--ink);transform:translateY(-1px);box-shadow:0 8px 22px rgba(0,0,0,.05)}
+  .v-h{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+  .v-logo{width:54px;height:54px;border-radius:12px;background:#f1f3f7;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+  .v-logo.green{background:#e8f6ee}
+  .v-logo.blue{background:#eef3ff}
+  .v-logo.purple{background:#f2eaff}
+  .v-logo.gold{background:#fef9e7}
+  .v-logo.gray{background:#f1f3f7}
+  .v-meta{flex:1;min-width:0}
+  .v-meta h3{margin:0 0 2px;font-size:16px}
+  .v-meta .cat{font-size:12px;color:var(--mute);font-weight:600}
+  .v-meta .loc{font-size:12px;color:var(--mute);margin-top:2px}
+  .v-rating{flex-shrink:0;text-align:right;font-size:11px;color:var(--mute)}
+  .v-rating .stars{color:var(--gold);font-size:13px;font-weight:700}
+  .vendor p{margin:0 0 12px;font-size:13.5px;color:#1f2530;flex:1}
+  .v-foot{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px dashed var(--line);font-size:12px}
+  .v-discount{color:#0a7a4d;font-weight:700;background:#e8f6ee;padding:4px 10px;border-radius:6px;font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+  .v-link{color:var(--accent);font-weight:600;font-size:13px}
+
+  .verified{font-size:10px;font-weight:700;background:#eef3ff;color:var(--accent);padding:3px 8px;border-radius:6px;letter-spacing:.04em;text-transform:uppercase;margin-left:8px}
+
+  .category-h{font-size:22px;letter-spacing:-.02em;margin:36px 0 14px;display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--ink);padding-bottom:8px}
+  .category-h:first-child{margin-top:0}
+  .category-h .ct{color:var(--mute);font-size:13px;margin-left:auto}
+
+  .submit-cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:14px;padding:32px;margin-top:48px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+  @media (max-width:680px){.submit-cta{grid-template-columns:1fr;text-align:center}}
+  .submit-cta h3{margin:0 0 6px;color:#fff;font-size:18px}
+  .submit-cta p{color:#b8c2d6;font-size:13px;margin:0;max-width:520px}
+  .submit-cta a{background:var(--gold);color:#0e1116;padding:10px 18px;border-radius:8px;font-weight:700;font-size:14px;flex-shrink:0}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="biz-dashboard.html">LYMX <span>Power</span> <span class="biz-tag">Business</span></a>
+    <a href="biz-dashboard.html" class="nav-link">← Back to dashboard</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Vendor marketplace · Vetted by LYMX</div>
+    <h1>Local vendors that get you.</h1>
+    <p>Carefully chosen local vendors that work with LYMX Businesses every day. POS installers, signage printers, accountants, web designers — all offer LYMX Business discounts.</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+<div class="toolbar">
+  <input type="text" id="search" placeholder="Search vendors…" oninput="filter()">
+  <select id="city" onchange="filter()">
+    <option value="">All cities</option>
+    <option>Las Vegas</option>
+    <option>Henderson</option>
+    <option>Reno</option>
+    <option>Remote / online</option>
+  </select>
+</div>
+
+<div class="filter-row">
+  <span class="chip on" data-c="" onclick="setCat(this, '')">All categories</span>
+  <span class="chip" data-c="pos" onclick="setCat(this, 'pos')">POS &amp; hardware</span>
+  <span class="chip" data-c="print" onclick="setCat(this, 'print')">Signage &amp; print</span>
+  <span class="chip" data-c="finance" onclick="setCat(this, 'finance')">Accounting &amp; finance</span>
+  <span class="chip" data-c="web" onclick="setCat(this, 'web')">Web design &amp; SEO</span>
+  <span class="chip" data-c="legal" onclick="setCat(this, 'legal')">Legal</span>
+  <span class="chip" data-c="insurance" onclick="setCat(this, 'insurance')">Insurance</span>
+  <span class="chip" data-c="ops" onclick="setCat(this, 'ops')">Operations</span>
+</div>
+
+<!-- POS -->
+<h2 class="category-h" data-cat="pos">POS &amp; hardware <span class="ct">3 vendors</span></h2>
+<div class="vendor-grid">
+
+  <div class="vendor" data-cat="pos" data-city="Las Vegas">
+    <div class="v-h">
+      <div class="v-logo blue">💳</div>
+      <div class="v-meta">
+        <h3>RegisterReady Vegas <span class="verified">Verified</span></h3>
+        <div class="cat">POS hardware install</div>
+        <div class="loc">📍 Las Vegas · Same-week service</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★★</div>4.9 · 47 reviews</div>
+    </div>
+    <p>Onsite POS install for cafés, restaurants, retail. Specifies LYMX-compatible hardware. Same-week appointments. Two-year hardware warranty included.</p>
+    <div class="v-foot"><span class="v-discount">10% off · LYMX Biz</span><a class="v-link" href="#">Visit →</a></div>
+  </div>
+
+  <div class="vendor" data-cat="pos" data-city="Las Vegas">
+    <div class="v-h">
+      <div class="v-logo gray">📲</div>
+      <div class="v-meta">
+        <h3>BYO Tablet POS <span class="verified">Verified</span></h3>
+        <div class="cat">Tablet leasing &amp; setup</div>
+        <div class="loc">📍 Las Vegas · Online order + delivery</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★☆</div>4.6 · 28 reviews</div>
+    </div>
+    <p>Lease an iPad with LYMX POS pre-configured. $39/mo includes hardware + replacement insurance. Setup video walks you through in 10 min.</p>
+    <div class="v-foot"><span class="v-discount">First month free</span><a class="v-link" href="#">Visit →</a></div>
+  </div>
+
+  <div class="vendor" data-cat="pos" data-city="Remote / online">
+    <div class="v-h">
+      <div class="v-logo blue">🛠️</div>
+      <div class="v-meta">
+        <h3>Square Migration Pros <span class="verified">Verified</span></h3>
+        <div class="cat">Square → LYMX migration</div>
+        <div class="loc">🌐 Remote · National</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★☆</div>4.7 · 19 reviews</div>
+    </div>
+    <p>Specialized in moving menu, customer data, and historical sales from Square Loyalty into LYMX. Done in under a day, zero downtime.</p>
+    <div class="v-foot"><span class="v-discount">$50 off setup</span><a class="v-link" href="#">Visit →</a></div>
+  </div>
+</div>
+
+<!-- PRINT -->
+<h2 class="category-h" data-cat="print">Signage &amp; print <span class="ct">3 vendors</span></h2>
+<div class="vendor-grid">
+
+  <div class="vendor" data-cat="print" data-city="Las Vegas">
+    <div class="v-h">
+      <div class="v-logo gold">🖨️</div>
+      <div class="v-meta">
+        <h3>QuickPrint Vegas <span class="verified">Verified</span></h3>
+        <div class="cat">Window clings, posters, table tents</div>
+        <div class="loc">📍 Las Vegas · Same-day pickup</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★★</div>4.8 · 62 reviews</div>
+    </div>
+    <p>Vinyl decals, table tents, register cards. Online ordering or walk-in. Mention LYMX for the discount — they pre-load our print kit PDFs.</p>
+    <div class="v-foot"><span class="v-discount">10% off first order</span><a class="v-link" href="biz-print-kit.html">Print kit →</a></div>
+  </div>
+
+  <div class="vendor" data-cat="print" data-city="Las Vegas">
+    <div class="v-h">
+      <div class="v-logo gold">✨</div>
+      <div class="v-meta">
+        <h3>Strip Signs &amp; Print <span class="verified">Verified</span></h3>
+        <div class="cat">Premium signage, foil stamping</div>
+        <div class="loc">📍 Las Vegas · 2–3 day turnaround</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★★</div>4.9 · 34 reviews</div>
+    </div>
+    <p>Higher-end signage. Foil-stamped Founding 25 plaques, custom-cut window decals, branded apparel. Used by 12 of the Founding 25 Businesses.</p>
+    <div class="v-foot"><span class="v-discount">Free design consultation</span><a class="v-link" href="#">Visit →</a></div>
+  </div>
+
+  <div class="vendor" data-cat="print" data-city="Henderson">
+    <div class="v-h">
+      <div class="v-logo gray">🧶</div>
+      <div class="v-meta">
+        <h3>The Sticker Studio</h3>
+        <div class="cat">Custom stickers &amp; labels</div>
+        <div class="loc">📍 Henderson · Online order</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★☆</div>4.5 · 21 reviews</div>
+    </div>
+    <p>Branded stickers + labels for cups, packaging, takeout bags. Minimum order 100 pieces, 5-day turnaround.</p>
+    <div class="v-foot"><span class="v-discount">15% off bulk</span><a class="v-link" href="#">Visit →</a></div>
+  </div>
+</div>
+
+<!-- FINANCE -->
+<h2 class="category-h" data-cat="finance">Accounting &amp; finance <span class="ct">3 vendors</span></h2>
+<div class="vendor-grid">
+
+  <div class="vendor" data-cat="finance" data-city="Las Vegas">
+    <div class="v-h">
+      <div class="v-logo green">📊</div>
+      <div class="v-meta">
+        <h3>Vegas Small Biz Books <span class="verified">Verified</span></h3>
+        <div class="cat">Bookkeeping for Businesses</div>
+        <div class="loc">📍 Las Vegas · Monthly retainer</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★★</div>4.8 · 41 reviews</div>
+    </div>
+    <p>Monthly bookkeeping with LYMX settlement integration. They auto-pull your settlement reports each month and reconcile.</p>
+    <div class="v-foot"><span class="v-discount">First month free</span><a class="v-link" href="#">Visit →</a></div>
+  </div>
+
+  <div class="vendor" data-cat="finance" data-city="Remote / online">
+    <div class="v-h">
+      <div class="v-logo green">💼</div>
+      <div class="v-meta">
+        <h3>SilverPeak Tax</h3>
+        <div class="cat">Small business tax prep</div>
+        <div class="loc">🌐 Remote · National</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★☆</div>4.6 · 33 reviews</div>
+    </div>
+    <p>Annual tax prep for service Businesses. Knows the LYMX wholesale-rate cost-of-goods accounting nuances.</p>
+    <div class="v-foot"><span class="v-discount">$100 off filing</span><a class="v-link" href="#">Visit →</a></div>
+  </div>
+
+  <div class="vendor" data-cat="finance" data-city="Las Vegas">
+    <div class="v-h">
+      <div class="v-logo green">🏦</div>
+      <div class="v-meta">
+        <h3>Mountain Bank — Small Biz</h3>
+        <div class="cat">Small business banking + lending</div>
+        <div class="loc">📍 Las Vegas · 3 branches</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★☆</div>4.4 · 18 reviews</div>
+    </div>
+    <p>Local bank with no-fee checking for sub-$50k revenue Businesses. Fast lines of credit for established LYMX Businesses.</p>
+    <div class="v-foot"><span class="v-discount">$200 sign-up bonus</span><a class="v-link" href="#">Visit →</a></div>
+  </div>
+</div>
+
+<!-- WEB -->
+<h2 class="category-h" data-cat="web">Web design &amp; SEO <span class="ct">2 vendors</span></h2>
+<div class="vendor-grid">
+
+  <div class="vendor" data-cat="web" data-city="Remote / online">
+    <div class="v-h">
+      <div class="v-logo purple">🌐</div>
+      <div class="v-meta">
+        <h3>StorefrontSites <span class="verified">Verified</span></h3>
+        <div class="cat">Small Business websites</div>
+        <div class="loc">🌐 Remote · 7-day turnaround</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★★</div>4.9 · 28 reviews</div>
+    </div>
+    <p>Pre-built website templates for cafés, restaurants, retail. LYMX wallet integration baked in. From $890.</p>
+    <div class="v-foot"><span class="v-discount">$200 off setup</span><a class="v-link" href="website-service.html">More info →</a></div>
+  </div>
+
+  <div class="vendor" data-cat="web" data-city="Las Vegas">
+    <div class="v-h">
+      <div class="v-logo purple">🔍</div>
+      <div class="v-meta">
+        <h3>Local Rank Vegas</h3>
+        <div class="cat">Local SEO &amp; Google Business</div>
+        <div class="loc">📍 Las Vegas · Monthly retainer</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★☆</div>4.5 · 22 reviews</div>
+    </div>
+    <p>Specialize in Google Business profile optimization + local SEO. Get your café showing in "coffee near me" map results.</p>
+    <div class="v-foot"><span class="v-discount">First-month audit free</span><a class="v-link" href="#">Visit →</a></div>
+  </div>
+</div>
+
+<!-- LEGAL -->
+<h2 class="category-h" data-cat="legal">Legal <span class="ct">1 vendor</span></h2>
+<div class="vendor-grid">
+
+  <div class="vendor" data-cat="legal" data-city="Las Vegas">
+    <div class="v-h">
+      <div class="v-logo gray">⚖️</div>
+      <div class="v-meta">
+        <h3>Solo Strip Legal</h3>
+        <div class="cat">Small business law &amp; contracts</div>
+        <div class="loc">📍 Las Vegas · Hourly + flat-rate</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★☆</div>4.7 · 14 reviews</div>
+    </div>
+    <p>Lease review, vendor contracts, employment basics. They know the LYMX Business Agreement inside-out.</p>
+    <div class="v-foot"><span class="v-discount">First 30 min free</span><a class="v-link" href="#">Visit →</a></div>
+  </div>
+</div>
+
+<!-- INSURANCE -->
+<h2 class="category-h" data-cat="insurance">Insurance <span class="ct">1 vendor</span></h2>
+<div class="vendor-grid">
+
+  <div class="vendor" data-cat="insurance" data-city="Las Vegas">
+    <div class="v-h">
+      <div class="v-logo blue">🛡️</div>
+      <div class="v-meta">
+        <h3>Desert Shield Insurance</h3>
+        <div class="cat">Small Business GL + Workers Comp</div>
+        <div class="loc">📍 Las Vegas · 2 agents</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★☆</div>4.6 · 19 reviews</div>
+    </div>
+    <p>General liability + workers' comp for small Businesses. Built-in package for cafés &amp; restaurants under $200k revenue.</p>
+    <div class="v-foot"><span class="v-discount">Free quote</span><a class="v-link" href="#">Visit →</a></div>
+  </div>
+</div>
+
+<!-- OPS -->
+<h2 class="category-h" data-cat="ops">Operations <span class="ct">2 vendors</span></h2>
+<div class="vendor-grid">
+
+  <div class="vendor" data-cat="ops" data-city="Las Vegas">
+    <div class="v-h">
+      <div class="v-logo gray">🍳</div>
+      <div class="v-meta">
+        <h3>VegasFood Wholesale</h3>
+        <div class="cat">Food distribution + supplies</div>
+        <div class="loc">📍 Las Vegas · 2-day delivery</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★☆</div>4.5 · 38 reviews</div>
+    </div>
+    <p>Local food + supplies distributor. Direct from-warehouse pricing. LYMX Businesses get a wholesale account with no minimums.</p>
+    <div class="v-foot"><span class="v-discount">No minimum order</span><a class="v-link" href="#">Visit →</a></div>
+  </div>
+
+  <div class="vendor" data-cat="ops" data-city="Las Vegas">
+    <div class="v-h">
+      <div class="v-logo gray">🧹</div>
+      <div class="v-meta">
+        <h3>SilverShine Cleaning</h3>
+        <div class="cat">Commercial cleaning</div>
+        <div class="loc">📍 Las Vegas · Nightly schedule</div>
+      </div>
+      <div class="v-rating"><div class="stars">★★★★☆</div>4.4 · 24 reviews</div>
+    </div>
+    <p>Nightly commercial cleaning for cafés, restaurants, retail. Bonded + insured. Two-week trial available.</p>
+    <div class="v-foot"><span class="v-discount">First week free</span><a class="v-link" href="#">Visit →</a></div>
+  </div>
+</div>
+
+<div class="submit-cta">
+  <div>
+    <h3>Are you a vendor that works with small Businesses?</h3>
+    <p>Submit your business to be considered for the marketplace. We vet vendors carefully — not every applicant gets in. Vendors don't pay to be listed.</p>
+  </div>
+  <a href="mailto:vendors@getlymx.com">Apply to be listed →</a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Vendor marketplace · <a href="biz-dashboard.html">Back to dashboard</a> · <a href="biz-marketing-kit.html">Marketing kit</a> · <a href="biz-print-kit.html">Print kit</a>
+</div>
+
+<script>
+  let activeCat = "";
+
+  function setCat(el, cat) {
+    activeCat = cat;
+    document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.c === cat));
+    filter();
+  }
+
+  function filter() {
+    const q = document.getElementById('search').value.toLowerCase();
+    const city = document.getElementById('city').value;
+    const vendors = document.querySelectorAll('.vendor');
+    vendors.forEach(v => {
+      const text = v.textContent.toLowerCase();
+      const cat = v.dataset.cat;
+      const vCity = v.dataset.city;
+      const matchSearch = !q || text.includes(q);
+      const matchCity = !city || vCity === city;
+      const matchCat = !activeCat || cat === activeCat;
+      v.style.display = matchSearch && matchCity && matchCat ? '' : 'none';
+    });
+    // Hide category headers if empty
+    document.querySelectorAll('.category-h').forEach(h => {
+      const cat = h.dataset.cat;
+      if (activeCat && cat !== activeCat) { h.style.display = 'none'; return; }
+      const grid = h.nextElementSibling;
+      const visibleVendors = Array.from(grid.querySelectorAll('.vendor')).filter(v => v.style.display !== 'none');
+      h.style.display = visibleVendors.length > 0 ? '' : 'none';
+    });
+  }
+</script>
+
+</body>
+</html>

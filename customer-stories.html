@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Customer Stories — LYMX Power</title>
+<meta name="description" content="How real customers use LYMX. Profiles of regulars who've discovered new neighborhoods, saved hundreds, and changed how they support local Businesses.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo span{color:var(--accent)}
+  .nav .btn{padding:8px 14px;border:1px solid var(--ink);border-radius:8px;color:var(--ink);font-weight:600;font-size:13px}
+
+  .hero{background:linear-gradient(180deg,#eef3ff 0%,#fafafa 100%);padding:64px 24px 40px;border-bottom:1px solid var(--line)}
+  .hero-inner{max-width:1180px;margin:0 auto;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;background:#fff;padding:5px 12px;border-radius:999px;border:1px solid #c7d6ff}
+  .hero h1{font-size:46px;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+  .hero p{color:var(--mute);max-width:580px;margin:0 auto 22px;font-size:17px}
+
+  .filter{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+  .chip{padding:7px 16px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:600;background:#fff;cursor:pointer}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px}
+
+  .featured{background:var(--card);border:2px solid var(--accent);border-radius:18px;overflow:hidden;margin-bottom:48px;box-shadow:0 12px 30px rgba(10,132,255,.12)}
+  .featured-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:0}
+  @media (max-width:880px){.featured-grid{grid-template-columns:1fr}}
+  .featured-img{aspect-ratio:1.2/1;background:linear-gradient(135deg,#5b9ef5,#a3c5ff);display:flex;align-items:center;justify-content:center;font-size:120px;color:#fff;position:relative}
+  .featured-img .fb{position:absolute;top:18px;left:18px;font-size:11px;font-weight:800;background:rgba(255,255,255,.85);color:var(--accent);padding:5px 12px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase}
+  .featured-body{padding:36px}
+  .featured-tier{font-size:11px;color:var(--accent);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+  .featured h2{margin:0 0 8px;font-size:32px;letter-spacing:-.02em}
+  .featured .role{color:var(--mute);font-size:14px;margin-bottom:20px}
+  .featured blockquote{margin:0 0 24px;font-size:18px;font-style:italic;color:#1f2530;line-height:1.5;border-left:3px solid var(--accent);padding-left:18px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px}
+  .stat .n{font-size:24px;font-weight:800;color:var(--accent);letter-spacing:-.02em}
+  .stat .l{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-top:2px}
+
+  .stories{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media (max-width:760px){.stories{grid-template-columns:1fr}}
+  .story{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;transition:.15s}
+  .story:hover{border-color:var(--ink);transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.06)}
+  .story-h{display:flex;gap:14px;margin-bottom:14px;align-items:center}
+  .av{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;flex-shrink:0}
+  .av.a{background:linear-gradient(135deg,#13a26b,#9adfb6)}
+  .av.b{background:linear-gradient(135deg,#5b3697,#a374e6)}
+  .av.c{background:linear-gradient(135deg,#e07b5e,#f5a18a)}
+  .av.d{background:linear-gradient(135deg,#5b9ef5,#a3c5ff)}
+  .av.e{background:linear-gradient(135deg,#d4af37,#f5d172);color:#3a2f0a}
+  .av.f{background:linear-gradient(135deg,#ff8aa6,#ffd9e0);color:#7a2c47}
+  .who h3{margin:0;font-size:16px}
+  .who .role{font-size:12px;color:var(--mute)}
+  .tier{font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;margin-left:auto;flex-shrink:0;height:fit-content}
+  .tier.regular{background:#eef3ff;color:var(--accent)}
+  .tier.power{background:#fef9e7;color:#8b6f1f}
+  .tier.casual{background:#f1f3f7;color:var(--mute)}
+  .story blockquote{margin:0 0 14px;font-size:14px;font-style:italic;color:#1f2530;line-height:1.55}
+  .story .ministats{display:flex;gap:18px;margin-top:auto;padding-top:14px;border-top:1px dashed var(--line);font-size:12px;color:var(--mute)}
+  .story .ministats .ms strong{display:block;font-size:15px;color:var(--ink);font-weight:800;letter-spacing:-.01em}
+
+  .insight{background:linear-gradient(135deg,#fef9e7,#fff5c2);border:1px solid var(--gold);border-radius:14px;padding:28px;margin:48px 0}
+  .insight h2{margin:0 0 14px;font-size:22px}
+  .insight-list{display:grid;gap:14px}
+  .insight-item{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:14px;background:rgba(255,255,255,.7);border-radius:10px}
+  .insight-item .ic{width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .insight-item h4{margin:0 0 4px;font-size:14px;color:#3a2f0a}
+  .insight-item p{margin:0;font-size:13px;color:#5d4d18}
+
+  .cta{background:linear-gradient(135deg,#0e1116,#1a2a4a);color:#fff;border-radius:16px;padding:40px;text-align:center;margin-top:48px}
+  .cta h2{margin:0 0 8px;font-size:26px;color:#fff}
+  .cta p{color:#b8c2d6;max-width:520px;margin:0 auto 20px}
+  .cta a{display:inline-block;background:var(--gold);color:#0e1116;padding:12px 24px;border-radius:8px;font-weight:700}
+  .cta a.alt{background:transparent;color:var(--gold);border:1px solid var(--gold);margin-left:10px}
+
+  .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">LYMX <span>Power</span></a>
+    <a href="customer-signup.html" class="btn">Get a wallet →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Customer stories · Real LYMX members</div>
+    <h1>How regular people use LYMX.</h1>
+    <p>Profiles of customers who've discovered new neighborhoods, saved real money, or just made small-business support a little more rewarding.</p>
+
+    <div class="filter">
+      <span class="chip on" data-f="all" onclick="setFilter(this, 'all')">All stories</span>
+      <span class="chip" data-f="casual" onclick="setFilter(this, 'casual')">Casual</span>
+      <span class="chip" data-f="regular" onclick="setFilter(this, 'regular')">Regular</span>
+      <span class="chip" data-f="power" onclick="setFilter(this, 'power')">Power user</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- Featured -->
+<div class="featured" data-tier="regular">
+  <div class="featured-grid">
+    <div class="featured-img">
+      <span class="fb">★ Featured</span>
+      <span>👩🏽</span>
+    </div>
+    <div class="featured-body">
+      <div class="featured-tier">Regular customer · Las Vegas</div>
+      <h2>Maya Hopkins</h2>
+      <div class="role">Marketing manager · LYMX since Feb 2026 · Visits 3 LYMX Businesses regularly</div>
+
+      <blockquote>"I came in for coffee at Brew &amp; Bean and left realizing I could pay for my evening dinner with the LYMX I'd just earned. That was the moment it clicked. I'm not paying more — I'm just getting back something I never used to."</blockquote>
+
+      <div class="stats">
+        <div class="stat"><div class="n">$184</div><div class="l">Saved this year</div></div>
+        <div class="stat"><div class="n">12</div><div class="l">Businesses tried</div></div>
+        <div class="stat"><div class="n">3</div><div class="l">New neighborhoods</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="stories">
+
+  <div class="story" data-tier="power">
+    <div class="story-h">
+      <div class="av a">JC</div>
+      <div class="who"><h3>Jordan Chen</h3><div class="role">Software engineer · Power user · Joined Mar 2026</div></div>
+      <span class="tier power">Power user</span>
+    </div>
+    <blockquote>"I've optimized this. I check the LYMX app for which Businesses have boosts before I plan my errands. Last weekend I hit 4 LYMX Businesses on a single Saturday afternoon — earned 1,400 LYMX, redeemed 800 of them at the gym I was going to anyway. It's basically a discount stacking game."</blockquote>
+    <div class="ministats">
+      <div class="ms"><strong>$340</strong>saved YTD</div>
+      <div class="ms"><strong>28</strong>Businesses</div>
+      <div class="ms"><strong>52</strong>visits</div>
+    </div>
+  </div>
+
+  <div class="story" data-tier="casual">
+    <div class="story-h">
+      <div class="av b">PR</div>
+      <div class="who"><h3>Priya Ramesh</h3><div class="role">College student · Casual user · Joined Apr 2026</div></div>
+      <span class="tier casual">Casual</span>
+    </div>
+    <blockquote>"I signed up at Brew &amp; Bean because the barista mentioned it. I don't track it — but every couple weeks I notice I have like 600 LYMX sitting there, and I use them on coffee. Free refills, basically."</blockquote>
+    <div class="ministats">
+      <div class="ms"><strong>$22</strong>saved so far</div>
+      <div class="ms"><strong>2</strong>Businesses</div>
+      <div class="ms"><strong>7</strong>visits</div>
+    </div>
+  </div>
+
+  <div class="story" data-tier="regular">
+    <div class="story-h">
+      <div class="av c">TM</div>
+      <div class="who"><h3>Tomás Morales</h3><div class="role">Construction foreman · Regular · Joined Jan 2026</div></div>
+      <span class="tier regular">Regular</span>
+    </div>
+    <blockquote>"My truck charges at EverGrid every week. I'm there 40 minutes — I get coffee, sometimes lunch, sometimes I'll use the time to grab something at the hardware store. Half the places around there are LYMX. So my charging stop earns me coffee money for the week. That's wild."</blockquote>
+    <div class="ministats">
+      <div class="ms"><strong>$96</strong>saved YTD</div>
+      <div class="ms"><strong>8</strong>Businesses</div>
+      <div class="ms"><strong>34</strong>visits</div>
+    </div>
+  </div>
+
+  <div class="story" data-tier="regular">
+    <div class="story-h">
+      <div class="av d">RK</div>
+      <div class="who"><h3>Rachel Kim</h3><div class="role">Yoga instructor · Regular · Joined Feb 2026</div></div>
+      <span class="tier regular">Regular</span>
+    </div>
+    <blockquote>"My LYMX is mostly used for self-care — coffee in the morning, the bookstore on Saturdays, the spa once a month. It feels like a tax-free reward fund for being myself. I never used to use loyalty programs because tracking 12 different stamp cards was insane."</blockquote>
+    <div class="ministats">
+      <div class="ms"><strong>$132</strong>saved YTD</div>
+      <div class="ms"><strong>11</strong>Businesses</div>
+      <div class="ms"><strong>40</strong>visits</div>
+    </div>
+  </div>
+
+  <div class="story" data-tier="casual">
+    <div class="story-h">
+      <div class="av e">DL</div>
+      <div class="who"><h3>David Liu</h3><div class="role">Retiree · Casual · Joined Mar 2026</div></div>
+      <span class="tier casual">Casual</span>
+    </div>
+    <blockquote>"My granddaughter set me up. She showed me the app once and said 'just show this QR before you pay.' I do. Sometimes the cashier scans it, sometimes they don't. When I check, there's always a balance. I don't really understand it but it works."</blockquote>
+    <div class="ministats">
+      <div class="ms"><strong>$48</strong>saved YTD</div>
+      <div class="ms"><strong>4</strong>Businesses</div>
+      <div class="ms"><strong>18</strong>visits</div>
+    </div>
+  </div>
+
+  <div class="story" data-tier="power">
+    <div class="story-h">
+      <div class="av f">SN</div>
+      <div class="who"><h3>Sasha Novak</h3><div class="role">Food blogger · Power user · Joined Dec 2025</div></div>
+      <span class="tier power">Power user</span>
+    </div>
+    <blockquote>"As a food blogger I'm in 8–10 different cafés &amp; restaurants every week. LYMX changed my workflow — I plan my Tuesday content runs around boosted-multiplier days at LYMX Businesses. I've hit Master Wallet status (1,000+ unique Business visits) and I get the gold-tier perks now."</blockquote>
+    <div class="ministats">
+      <div class="ms"><strong>$612</strong>saved YTD</div>
+      <div class="ms"><strong>87</strong>Businesses</div>
+      <div class="ms"><strong>312</strong>visits</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="insight">
+  <h2>What we learned from talking to customers</h2>
+  <div class="insight-list">
+    <div class="insight-item">
+      <div class="ic">🌎</div>
+      <div>
+        <h4>The discovery effect is bigger than the savings</h4>
+        <p>Most customers say their favorite thing about LYMX isn't the money saved — it's that they ended up trying Businesses they wouldn't have otherwise. Three new restaurants in 6 months is common.</p>
+      </div>
+    </div>
+    <div class="insight-item">
+      <div class="ic">🎁</div>
+      <div>
+        <h4>People treat LYMX as "found money"</h4>
+        <p>Customers tend to redeem LYMX on small treats they wouldn't normally buy — an extra croissant, a movie at the indie theater, a candle from the gift shop. It's mental-accounting magic.</p>
+      </div>
+    </div>
+    <div class="insight-item">
+      <div class="ic">📱</div>
+      <div>
+        <h4>The "no app" thing actually matters</h4>
+        <p>Roughly a third of customers cited "I didn't have to download anything" as a reason they signed up. Most loyalty programs lose people at the install step. Web-based wallet skips it.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cta">
+  <h2>Get your own LYMX wallet</h2>
+  <p>Free to join. No app to download. Earn LYMX everywhere on the network, redeem anywhere on the network.</p>
+  <a href="customer-signup.html">Sign up →</a>
+  <a href="browse.html" class="alt">Find a Business near you</a>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>LYMX Power</strong> · Customer stories · <a href="customer-signup.html">Sign up</a> · <a href="testimonials.html">Testimonials wall</a> · <a href="browse.html">Browse Businesses</a>
+</div>
+
+<script>
+  function setFilter(el, f) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.f === f));
+    document.querySelectorAll('.story, .featured').forEach(s => {
+      const tier = s.dataset.tier;
+      s.style.display = (f === 'all' || tier === f) ? '' : 'none';
+    });
+  }
+</script>
+
+</body>
+</html>
