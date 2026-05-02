@@ -118,7 +118,7 @@ serve(async (req) => {
         .createUser({
             email: body.owner_email,
             password: body.owner_password,
-            email_confirm: false, // they'll confirm via email link
+            email_confirm: true, // auto-confirm so the owner can sign in immediately
             user_metadata: { role: "business_owner" },
         });
 
