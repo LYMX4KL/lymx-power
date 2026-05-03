@@ -60,6 +60,28 @@ interface IssuanceBody {
     note?: string;
 }
 
+/**
+ * Decode the JWT and check the `role` claim.
+ *
+ * Why this and not `token === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")`:
+ * Supabase's Edge Function gateway can re-stamp the Authorization header,
+ * so the literal token we see may differ from the env var. Comparing the
+ * decoded `role` claim is reliable for both legacy service_role keys and
+ * gateway-stamped service_role JWTs (both have payload.role === 'service_role').
+ */
+function getJwtRole(jwt: string): string | null {
+    try {
+        const parts = jwt.split(".");
+        if (parts.length !== 3) return null;
+        const payload = JSON.parse(
+            atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))
+        );
+        return payload.role ?? null;
+    } catch {
+        return null;
+    }
+}
+
 serve(async (req) => {
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
@@ -81,8 +103,10 @@ serve(async (req) => {
         { auth: { persistSession: false } }
     );
 
-    // Identify caller: either a user (must be biz owner) or service role
-    const isServiceRole = token === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    // Identify caller: either a user (must be biz owner) or service role.
+    // Use JWT role-claim decode (not literal token compare) — the Supabase
+    // Edge Function gateway can re-stamp the Authorization header.
+    const isServiceRole = getJwtRole(token) === "service_role";
     let callerUserId: string | null = null;
     if (!isServiceRole) {
         const { data: { user }, error: uErr } = await supabase.auth.getUser(token);
