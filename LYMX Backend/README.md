@@ -31,7 +31,8 @@ LYMX Backend/
     ├── transfer/                  ← customer; LYMX A→B at SAME business (paired tx)
     ├── settlement/                ← service-role; bundles partner commissions weekly
     ├── partner-provision-email/   ← service-role; auto-provisions @getlymx.com email
-    └── partner-revoke-email/      ← service-role; offboarding companion
+    ├── partner-revoke-email/      ← service-role; offboarding companion
+    └── partner-acknowledge-email/ ← user JWT; flips partner_acknowledged_at
 ```
 
 External docs in the repo: `PARTNER-PLAYBOOK.md` (commission structure, partner-facing). Outside the repo (in Drive at `Gemini/shared accross projects/`): `COMPANY-EMAIL-ARCHITECTURE.md` (multi-tenant email design — LYMX is one tenant of this pattern).
@@ -50,6 +51,7 @@ All endpoints live under `https://apffootxzfwmtyjlnteo.supabase.co/functions/v1/
 | `settlement` | POST | Service-role only | Bundles unpaid `partner_commissions` for a date range into payable `settlements` — one row per partner. Supports `dry_run`. Idempotent: re-running the same period only picks up still-unsettled commissions. |
 | `partner-provision-email` | POST | Service-role only | Auto-provisions `firstname.lastname@getlymx.com` for a new partner. Calls Cloudflare API + Resend. See `PARTNER-EMAIL-SETUP.md` for the infra side. |
 | `partner-revoke-email` | POST | Service-role only | Offboarding companion. Deletes the Cloudflare route, flips `partner_emails.status` to `suspended`. Idempotent. |
+| `partner-acknowledge-email` | POST | User JWT (partner) | Called when a partner clicks "I've set up my Gmail" in their dashboard. Flips `partner_acknowledged_at`. Idempotent — re-calls return the existing timestamp. |
 
 Detailed request/response shapes are documented in the file-level comment block at the top of each `functions/*/index.ts`.
 
@@ -142,4 +144,4 @@ Phase 3 (Square POS): `square-oauth-init`, `square-oauth-callback`, `square-webh
 
 Phase 4 (partner email): infra setup per `PARTNER-EMAIL-SETUP.md` (Cloudflare zone, SES domain verify, Resend), then deploy + end-to-end test.
 
-Phase 5+: chain-permissions UI, more POS integrations (Toast, Clover), partner dashboard, partner dashboard, scheduled reconciliation jobs.
+Phase 5+: chain-permissions UI, more POS integrations (Toast, Clover), partner dashboard, scheduled reconciliation jobs.
