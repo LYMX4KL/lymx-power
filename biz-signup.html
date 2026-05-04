@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Sign up your business for LYMX. Storefronts and self-employed pros earn loyalty rewards on every transaction. 3-month free trial." />
+<title>Sign up your business · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://getlymx.com/biz-signup" />
+<meta property="og:title" content="Sign up your business · LYMX" />
+<meta property="og:description" content="Free for 3 months. Add your business to the LYMX network." />
+<meta property="og:site_name" content="LYMX" />
+<style>
+  :root{
+    --ink:#0e1116; --ink-2:#1a1f27; --muted:#5b6472; --line:#e6e8ec;
+    --bg:#ffffff; --bg-soft:#f6f7f9; --accent:#0a84ff; --accent-2:#0050c7;
+    --ok:#13a26b; --warn:#f0a020; --err:#e0413e; --gold:#d4af37;
+    --radius:14px; --shadow:0 10px 30px rgba(14,17,22,.08); --maxw:760px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* Top nav */
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{max-width:var(--maxw);margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.02em}
+  .brand .logo{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:var(--ink);color:#fff;font-weight:800;font-size:12px}
+  .nav-back{font-size:14px;color:var(--muted)}
+
+  /* Page container */
+  .page{max-width:var(--maxw);margin:32px auto 80px;padding:0 20px}
+  @media(max-width:520px){.page{margin:16px auto 60px}}
+
+  /* Hero */
+  .hero{background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px 28px 22px;margin-bottom:18px;box-shadow:var(--shadow)}
+  .hero h1{margin:0 0 8px;font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.18}
+  .hero p{margin:0;color:var(--muted);font-size:15px}
+  .hero .perks{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+  .hero .perks .pill{background:var(--bg-soft);border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--ink-2)}
+
+  /* Card sections */
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px;margin-bottom:16px;box-shadow:var(--shadow)}
+  .card h2{margin:0 0 4px;font-size:18px;font-weight:800;letter-spacing:-.005em}
+  .card .sub{margin:0 0 18px;color:var(--muted);font-size:13.5px}
+
+  /* Mode cards */
+  .modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+  @media(max-width:520px){.modes{grid-template-columns:1fr}}
+  .mode-card{position:relative;border:2px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;background:#fff;transition:.15s;text-align:left}
+  .mode-card:hover{border-color:#bcc4d0}
+  .mode-card.on{border-color:var(--accent);background:#f4f9ff}
+  .mode-card .ic{font-size:24px;margin-bottom:10px;display:block}
+  .mode-card .h{font-size:15px;font-weight:800;margin-bottom:4px}
+  .mode-card .d{font-size:12.5px;color:var(--muted);line-height:1.5}
+  .mode-card input[type=radio]{position:absolute;top:14px;right:14px;accent-color:var(--accent)}
+
+  /* Form fields */
+  .field{margin-bottom:14px}
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){.row-2{grid-template-columns:1fr}}
+  label{display:block;font-size:12px;font-weight:700;color:var(--ink-2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px}
+  label .req{color:var(--err);margin-left:2px}
+  .input,select{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:#fff;color:var(--ink);font-family:inherit;transition:.12s}
+  .input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  textarea.input{resize:vertical;min-height:60px}
+  .helper{font-size:12px;color:var(--muted);margin-top:4px}
+  .helper.error{color:var(--err);font-weight:600}
+
+  /* Services repeater (Mode 3) */
+  .services{display:flex;flex-direction:column;gap:10px}
+  .service-row{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg-soft);position:relative}
+  .service-row .row-3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+  @media(max-width:520px){.service-row .row-3{grid-template-columns:1fr}}
+  .service-row .rm{position:absolute;top:8px;right:10px;background:transparent;border:0;color:var(--muted);font-size:18px;cursor:pointer;line-height:1}
+  .service-row .rm:hover{color:var(--err)}
+  .add-svc{margin-top:8px;background:transparent;border:1.5px dashed var(--line);border-radius:10px;padding:10px;width:100%;color:var(--accent-2);font-weight:700;cursor:pointer;font-family:inherit;font-size:14px}
+  .add-svc:hover{border-color:var(--accent);background:#f4f9ff}
+
+  /* Hide branches */
+  .if-storefront,.if-self-employed{display:none}
+  body.mode-storefront .if-storefront{display:block}
+  body.mode-self_employed .if-self-employed{display:block}
+
+  /* Checkbox */
+  .check{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--ink-2);cursor:pointer;padding:10px 0;line-height:1.5}
+  .check input{margin-top:3px;flex-shrink:0;width:16px;height:16px;accent-color:var(--accent)}
+
+  /* CTA */
+  .cta-row{margin-top:8px}
+  .cta{width:100%;padding:14px;border-radius:12px;background:var(--ink);color:#fff;font-weight:800;font-size:15px;border:0;cursor:pointer;font-family:inherit;letter-spacing:.01em;transition:.12s}
+  .cta:hover:not(:disabled){background:#000}
+  .cta:disabled{background:#c6ccd4;cursor:not-allowed}
+
+  /* Status */
+  .status{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;display:none}
+  .status.show{display:block}
+  .status.error{background:#fdeded;border:1px solid #f5c2c0;color:#a3262e}
+  .status.ok{background:#e8f5ee;border:1px solid #b2dcc4;color:#0d7d51}
+
+  /* Success screen */
+  .success{display:none;background:#fff;border:1px solid var(--line);border-radius:18px;padding:36px 28px;text-align:center;box-shadow:var(--shadow)}
+  .success.show{display:block}
+  .success .check-ic{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;background:var(--ok);color:#fff;font-size:32px;font-weight:800;margin-bottom:16px}
+  .success h2{margin:0 0 8px;font-size:24px;font-weight:800}
+  .success p{margin:0 0 18px;color:var(--muted);font-size:15px}
+  .success .ids{background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:var(--ink-2);text-align:left;word-break:break-all}
+
+  .footer{text-align:center;margin-top:24px;color:var(--muted);font-size:12.5px}
+  .footer a{color:var(--muted)}
+</style>
+</head>
+<body class="mode-storefront">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">
+      <span class="logo">L</span>
+      <span>LYMX</span>
+    </a>
+    <a class="nav-back" href="index.html">← Back to home</a>
+  </div>
+</header>
+
+<main class="page">
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>Sign up your business</h1>
+    <p>Add your business to the LYMX network in about 3 minutes. We'll review and approve within 1 business day.</p>
+    <div class="perks">
+      <span class="pill">3 months free</span>
+      <span class="pill">$850 sign-up · paid post-approval</span>
+      <span class="pill">No payment info today</span>
+    </div>
+  </section>
+
+  <form id="biz-form" novalidate>
+
+    <!-- 1. Mode selector -->
+    <section class="card">
+      <h2>What kind of business are you?</h2>
+      <p class="sub">Pick the one that matches you. We'll show the right fields.</p>
+      <div class="modes">
+        <label class="mode-card on" data-mode="storefront">
+          <input type="radio" name="kind" value="storefront" checked>
+          <span class="ic">🏪</span>
+          <div class="h">Storefront / retail</div>
+          <div class="d">Cafe, restaurant, salon, gym, retail store, etc. One physical location with a flat LYMX-per-dollar rate.</div>
+        </label>
+        <label class="mode-card" data-mode="self_employed">
+          <input type="radio" name="kind" value="self_employed">
+          <span class="ic">💼</span>
+          <div class="h">Self-employed pro</div>
+          <div class="d">Freelance designer, consultant, solo CPA, tutor, etc. List the services you offer with LYMX per booking.</div>
+        </label>
+      </div>
+    </section>
+
+    <!-- 2. Account -->
+    <section class="card">
+      <h2>Owner account</h2>
+      <p class="sub">You'll use this email + password to sign in to your business dashboard.</p>
+      <div class="row-2">
+        <div class="field">
+          <label>Owner full name <span class="req">*</span></label>
+          <input class="input" name="owner_name" required>
+        </div>
+        <div class="field">
+          <label>Phone <span class="req">*</span></label>
+          <input class="input" name="contact_phone" type="tel" required placeholder="+1 702 555 1234">
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Email <span class="req">*</span></label>
+          <input class="input" name="owner_email" type="email" required>
+        </div>
+        <div class="field">
+          <label>Create password <span class="req">*</span></label>
+          <input class="input" name="owner_password" type="password" required minlength="10" autocomplete="new-password">
+          <div class="helper">10 characters minimum.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Business identity -->
+    <section class="card">
+      <h2>Business identity</h2>
+      <p class="sub">As registered with the state. DBA / trade name is optional.</p>
+      <div class="row-2">
+        <div class="field">
+          <label>Legal business name <span class="req">*</span></label>
+          <input class="input" name="legal_name" required>
+        </div>
+        <div class="field">
+          <label>Display / trade name <span class="req">*</span></label>
+          <input class="input" name="display_name" required placeholder="What customers see">
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Business contact email <span class="req">*</span></label>
+          <input class="input" name="contact_email" type="email" required>
+        </div>
+        <div class="field">
+          <label>Category</label>
+          <select class="input" name="category">
+            <option value="">Select…</option>
+            <option>Cafe / coffee</option>
+            <option>Restaurant</option>
+            <option>Bar / nightlife</option>
+            <option>Retail</option>
+            <option>Gym / fitness</option>
+            <option>Salon / beauty</option>
+            <option>Auto services</option>
+            <option>Professional services</option>
+            <option>Consulting</option>
+            <option>Health / wellness</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4a. Storefront fields -->
+    <section class="card if-storefront">
+      <h2>Storefront location</h2>
+      <p class="sub">We'll list this on the LYMX directory. You can add more locations later.</p>
+      <div class="field">
+        <label>Location name <span class="req">*</span></label>
+        <input class="input" name="loc_name" placeholder="e.g. Main Street">
+      </div>
+      <div class="field">
+        <label>Street address</label>
+        <input class="input" name="loc_street">
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>City</label>
+          <input class="input" name="loc_city">
+        </div>
+        <div class="field">
+          <label>State</label>
+          <input class="input" name="loc_state" maxlength="2" placeholder="NV">
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>ZIP</label>
+          <input class="input" name="loc_zip">
+        </div>
+        <div class="field">
+          <label>LYMX per $1 spent <span class="req">*</span></label>
+          <input class="input" name="issuance_rate" type="number" step="0.5" min="0" value="5">
+          <div class="helper">Default is 5 LYMX per $1. You can change this later.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4b. Self-employed fields -->
+    <section class="card if-self-employed">
+      <h2>Your services</h2>
+      <p class="sub">List each service you offer + how many LYMX you'll issue per booking. You can edit these later.</p>
+      <div class="field">
+        <label>Service area</label>
+        <input class="input" name="service_area" placeholder="e.g. Clark County, NV">
+        <div class="helper">Where you take clients. Optional.</div>
+      </div>
+      <div class="services" id="services">
+        <!-- one service row inserted by JS on load -->
+      </div>
+      <button type="button" class="add-svc" id="add-service">+ Add another service</button>
+    </section>
+
+    <!-- 5. Referral -->
+    <section class="card">
+      <h2>Referral (optional)</h2>
+      <p class="sub">If a LYMX Partner referred you, paste their referral code so they get credit for the sign-up bonus.</p>
+      <div class="field">
+        <label>Partner referral code</label>
+        <input class="input" name="partner_referral_code" placeholder="Leave blank if none">
+      </div>
+    </section>
+
+    <!-- 6. Terms + submit -->
+    <section class="card">
+      <label class="check">
+        <input type="checkbox" id="tos" required>
+        <span>I'm authorized to sign on behalf of the business and I accept the <a href="biz-tos.html" target="_blank">Business Terms</a> and <a href="privacy.html" target="_blank">Privacy Policy</a>.</span>
+      </label>
+      <div class="cta-row">
+        <button type="submit" class="cta" id="submit">Submit application</button>
+      </div>
+      <div id="status" class="status"></div>
+      <div class="helper" style="margin-top:10px;text-align:center">
+        We don't ask for SSN, EIN, or bank info today. After approval we'll set up payouts via our payments partner.
+      </div>
+    </section>
+  </form>
+
+  <!-- Success screen -->
+  <section class="success" id="success">
+    <div class="check-ic">✓</div>
+    <h2>Application submitted</h2>
+    <p>You'll get an approval email within 1 business day. After approval, we'll send a link to set up payouts (via Stripe) and your dashboard will go live.</p>
+    <div class="ids" id="success-ids"></div>
+  </section>
+
+  <p class="footer">© LYMX · <a href="biz-faq.html">Business FAQ</a> · <a href="contact.html">Contact</a></p>
+</main>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────
+// LYMX biz-signup — wires the form to the business-signup Edge Function.
+// ─────────────────────────────────────────────────────────────────────────
+const LYMX_CONFIG = {
+  // Supabase project endpoint (West US, project apffootxzfwmtyjlnteo)
+  SUPABASE_URL: 'https://apffootxzfwmtyjlnteo.supabase.co',
+  // Anon key — public, safe to ship in client. Fill in once and commit.
+  // Find it at: Supabase dashboard → Project Settings → API → "anon public"
+  SUPABASE_ANON_KEY: 'REPLACE_WITH_ANON_KEY'
+};
+
+// Mode toggle ───────────────────────────────────────────────────────────
+const body = document.body;
+const modeRadios = document.querySelectorAll('input[name="kind"]');
+const modeCards = document.querySelectorAll('.mode-card');
+
+function setMode(mode){
+  body.classList.remove('mode-storefront','mode-self_employed');
+  body.classList.add('mode-' + mode);
+  modeCards.forEach(c => c.classList.toggle('on', c.dataset.mode === mode));
+}
+modeRadios.forEach(r => r.addEventListener('change', e => setMode(e.target.value)));
+
+// Services repeater (Mode 3) ─────────────────────────────────────────────
+const servicesEl = document.getElementById('services');
+function svcRowTemplate(idx){
+  const row = document.createElement('div');
+  row.className = 'service-row';
+  row.innerHTML = `
+    <button type="button" class="rm" title="Remove">×</button>
+    <div class="row-3">
+      <div class="field" style="margin:0">
+        <label>Service name</label>
+        <input class="input" data-svc="service_name" placeholder="e.g. 60-min consult">
+      </div>
+      <div class="field" style="margin:0">
+        <label>Price (USD)</label>
+        <input class="input" data-svc="price_usd" type="number" min="0" step="1" placeholder="150">
+      </div>
+      <div class="field" style="margin:0">
+        <label>LYMX per booking</label>
+        <input class="input" data-svc="lymx_per_booking" type="number" min="0" step="1" placeholder="1500">
+      </div>
+    </div>
+  `;
+  row.querySelector('.rm').addEventListener('click', () => {
+    if (servicesEl.children.length > 1) row.remove();
+  });
+  return row;
+}
+servicesEl.appendChild(svcRowTemplate(0));
+document.getElementById('add-service').addEventListener('click', () => {
+  servicesEl.appendChild(svcRowTemplate(servicesEl.children.length));
+});
+
+// Status helper ───────────────────────────────────────────────────────────
+const statusEl = document.getElementById('status');
+function showStatus(msg, type){
+  statusEl.className = 'status show ' + (type || 'error');
+  statusEl.textContent = msg;
+}
+function clearStatus(){ statusEl.className = 'status'; statusEl.textContent = ''; }
+
+// Build payload ──────────────────────────────────────────────────────────
+function buildPayload(form){
+  const fd = new FormData(form);
+  const kind = fd.get('kind');
+  const common = {
+    kind,
+    owner_email:    (fd.get('owner_email')    || '').trim(),
+    owner_password: (fd.get('owner_password') || ''),
+    legal_name:     (fd.get('legal_name')     || '').trim(),
+    display_name:   (fd.get('display_name')   || '').trim(),
+    category:       (fd.get('category')       || '').trim() || null,
+    contact_email:  (fd.get('contact_email')  || '').trim(),
+    contact_phone:  (fd.get('contact_phone')  || '').trim() || null,
+    partner_referral_code: (fd.get('partner_referral_code') || '').trim() || undefined
+  };
+  if (kind === 'storefront'){
+    return {
+      ...common,
+      issuance_rate: Number(fd.get('issuance_rate')) || 5,
+      location: {
+        name:   (fd.get('loc_name')   || '').trim(),
+        street: (fd.get('loc_street') || '').trim() || null,
+        city:   (fd.get('loc_city')   || '').trim() || null,
+        state:  (fd.get('loc_state')  || '').trim().toUpperCase() || null,
+        zip:    (fd.get('loc_zip')    || '').trim() || null
+      }
+    };
+  }
+  // self_employed
+  const services = Array.from(servicesEl.querySelectorAll('.service-row')).map(row => {
+    const name  = row.querySelector('[data-svc=service_name]').value.trim();
+    const price = row.querySelector('[data-svc=price_usd]').value;
+    const lymx  = row.querySelector('[data-svc=lymx_per_booking]').value;
+    return {
+      service_name: name,
+      price_usd: price === '' ? null : Number(price),
+      lymx_per_booking: Number(lymx)
+    };
+  }).filter(s => s.service_name && !Number.isNaN(s.lymx_per_booking));
+  return { ...common, service_area: (fd.get('service_area') || '').trim() || undefined, services };
+}
+
+// Client-side validation ────────────────────────────────────────────────
+function validatePayload(p){
+  if (!p.owner_email || !/.+@.+\..+/.test(p.owner_email)) return 'Please enter a valid email.';
+  if (!p.owner_password || p.owner_password.length < 10) return 'Password must be at least 10 characters.';
+  if (!p.legal_name)    return 'Legal business name is required.';
+  if (!p.display_name)  return 'Display name is required.';
+  if (!p.contact_email) return 'Business contact email is required.';
+  if (p.kind === 'storefront'){
+    if (!p.location.name) return 'Location name is required.';
+  } else if (p.kind === 'self_employed'){
+    if (!p.services || p.services.length === 0) return 'Please list at least one service.';
+    for (const s of p.services){
+      if (typeof s.lymx_per_booking !== 'number' || Number.isNaN(s.lymx_per_booking)) {
+        return 'Each service needs a "LYMX per booking" value.';
+      }
+    }
+  }
+  return null;
+}
+
+// Submit ───────────────────────────────────────────────────────────────
+const form = document.getElementById('biz-form');
+const submitBtn = document.getElementById('submit');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearStatus();
+  if (!document.getElementById('tos').checked){
+    showStatus('Please accept the Business Terms to continue.');
+    return;
+  }
+  const payload = buildPayload(form);
+  const err = validatePayload(payload);
+  if (err){ showStatus(err); return; }
+
+  if (LYMX_CONFIG.SUPABASE_ANON_KEY === 'REPLACE_WITH_ANON_KEY'){
+    showStatus('Site not yet configured: SUPABASE_ANON_KEY missing. (Dev: paste the anon key into LYMX_CONFIG.)');
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Submitting…';
+
+  try {
+    const res = await fetch(`${LYMX_CONFIG.SUPABASE_URL}/functions/v1/business-signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${LYMX_CONFIG.SUPABASE_ANON_KEY}`,
+        'apikey': LYMX_CONFIG.SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok){          
+      showStatus(data.error || `Sign-up failed (${res.status}). Please check your details and try again.`);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit application';
+      return;
+    }
+    // Success ──
+    document.getElementById('biz-form').style.display = 'none';
+    const succ = document.getElementById('success');
+    succ.classList.add('show');
+    document.getElementById('success-ids').textContent =
+      `business_id: ${data.business_id}\n` +
+      `user_id:     ${data.user_id}\n` +
+      (data.location_id ? `location_id: ${data.location_id}\n` : '') +
+      (data.subscription_id ? `subscription_id: ${data.subscription_id}\n` : '') +
+      (data.service_ids && data.service_ids.length ? `service_ids: ${data.service_ids.join(', ')}\n` : '') +
+      `kind:        ${data.kind || payload.kind}`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (e){
+    showStatus('Network error: ' + (e.message || e));
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit application';
+  }
+});
+</script>
+</body>
+</html>
