@@ -150,11 +150,14 @@
   footer{padding:36px 0 32px;color:var(--muted);font-size:13px;text-align:center}
   footer .disc{max-width:780px;margin:8px auto 0;font-size:11.5px;line-height:1.55}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
 </head>
 <body>
 
-<div id="demo-banner" style="background:#fff7e0;border-bottom:1px solid #f0d68a;color:#7a5a00;font-size:13px;padding:10px 16px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,Helvetica,Arial,sans-serif;line-height:1.5">
-  <strong>DEMO PREVIEW</strong> · This is a sample Business dashboard — you are not signed in. <a href="login.html" style="color:#0050c7;font-weight:700">Sign in</a> or <a href="biz-signup.html" style="color:#0050c7;font-weight:700">sign up your Business</a> to use the real one.
+<div id="auth-banner" style="display:none;background:#eef5ff;border-bottom:1px solid #c8def8;color:#0050c7;font-size:13px;padding:8px 16px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,Helvetica,Arial,sans-serif;line-height:1.5">
+  Loading your Business dashboard…
 </div>
 
 <header class="nav">
@@ -173,7 +176,8 @@
     </nav>
     <div class="nav-cta">
       <a class="btn btn-ghost btn-sm" href="support.html">Help</a>
-      <div class="biz-avatar" title="Brew &amp; Bean Café">☕</div>
+      <button class="btn btn-ghost btn-sm" type="button" onclick="LYMX && LYMX.signOut()" style="border:1px solid var(--line);background:#fff;cursor:pointer;font-family:inherit">Sign out</button>
+      <div class="biz-avatar" id="bizAvatar" title="Loading…">··</div>
     </div>
   </div>
 </header>
@@ -181,7 +185,7 @@
 <div class="wrap page">
   <div class="page-head">
     <div>
-      <h1>Brew &amp; Bean Café</h1>
+      <h1 id="bizName">Loading…</h1>
       <div class="biz-name">
         <span class="live">● Live</span>
         <span>Enterprise plan · Member since Apr 2026 · 1421 Fremont Street, Las Vegas</span>
@@ -197,17 +201,17 @@
   <div class="kpis">
     <div class="kpi">
       <div class="lab">LYMX issued (mo)</div>
-      <div class="num">14,200</div>
+      <div class="num" id="metric-issued">—</div>
       <div class="delta">↑ 18% vs. last mo</div>
     </div>
     <div class="kpi">
       <div class="lab">LYMX redeemed (mo)</div>
-      <div class="num">8,400</div>
+      <div class="num" id="metric-redeemed">—</div>
       <div class="delta">↑ 24% vs. last mo</div>
     </div>
     <div class="kpi">
       <div class="lab">New customers (mo)</div>
-      <div class="num">63</div>
+      <div class="num" id="metric-customers">—</div>
       <div class="delta">↑ 9 from network</div>
     </div>
     <div class="kpi">
@@ -445,5 +449,64 @@
   </div>
 </footer>
 <script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+
+<script>
+  // ---------- Business dashboard wiring ----------
+  // Gates the page on a logged-in Business owner, then pulls real metrics + tx data.
+
+  (async function init() {
+    if (!window.LYMX) {
+      document.getElementById('auth-banner').style.display = 'block';
+      document.getElementById('auth-banner').innerHTML =
+        '<strong>Auth client failed to load.</strong> Make sure lymx-config.js + lymx-auth.js are deployed alongside this page.';
+      return;
+    }
+
+    // 1) Gate on auth
+    const user = await LYMX.requireAuth();
+    if (!user) return;
+
+    // 2) Look up the Business row for this user
+    const { data: biz, error: bErr } = await LYMX.fetchMyBusiness();
+    if (bErr || !biz) {
+      // Either not a Business owner OR row doesn't exist yet
+      document.getElementById('auth-banner').style.display = 'block';
+      document.getElementById('auth-banner').innerHTML =
+        'You are signed in but no Business is linked to this account. <a href="biz-signup.html" style="color:#0050c7;font-weight:700">Sign up your Business</a> first.';
+      return;
+    }
+
+    // 3) Set Business name in header + avatar
+    document.getElementById('bizName').textContent = biz.display_name || biz.legal_name || 'Your Business';
+    const av = document.getElementById('bizAvatar');
+    if (av) {
+      const initials = (biz.display_name || biz.legal_name || 'B').split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'B';
+      av.textContent = initials;
+      av.title = biz.display_name || biz.legal_name;
+    }
+
+    // 4) Fetch this month's transactions and roll up metrics
+    const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+    const { data: txs, error: tErr } = await LYMX.fetchMyBusinessTransactions(biz.id, monthStart.toISOString(), 500);
+
+    if (tErr) {
+      console.error('[LYMX] fetchMyBusinessTransactions', tErr);
+      return;
+    }
+
+    let issued = 0, redeemed = 0;
+    const customerIds = new Set();
+    (txs || []).forEach(function (t) {
+      const amt = Number(t.lymx_amount || 0);
+      if (t.type === 'issuance') issued += amt;
+      if (t.type === 'redemption') redeemed += Math.abs(amt);
+      if (t.customer_id) customerIds.add(t.customer_id);
+    });
+    document.getElementById('metric-issued').textContent = Math.round(issued).toLocaleString('en-US');
+    document.getElementById('metric-redeemed').textContent = Math.round(redeemed).toLocaleString('en-US');
+    document.getElementById('metric-customers').textContent = customerIds.size.toLocaleString('en-US');
+  })();
+</script>
+
 </body>
 </html>
