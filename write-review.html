@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Write a verified review for a LYMX Business and earn 100 LYMX." />
+<title>Write a review · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://getlymx.com/write-review" />
+<meta property="og:title" content="Write a review · LYMX" />
+<meta property="og:description" content="Share your experience and earn 100 LYMX." />
+<meta property="og:image" content="https://getlymx.com/og-image.png" />
+<meta property="og:site_name" content="LYMX" />
+<link rel="canonical" href="https://getlymx.com/write-review" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:780px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg-soft);line-height:1.55;-webkit-font-smoothing:antialiased}
+  img{max-width:100%;display:block}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px;max-width:1100px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+  .brand img{height:32px;width:auto}
+  .nav-links{display:flex;gap:24px;font-size:14px;color:var(--ink-2)}
+  .nav-cta{display:flex;gap:10px;align-items:center}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:9px 16px;border-radius:9px;font-weight:600;font-size:13.5px;border:1px solid transparent;cursor:pointer;transition:.15s;font-family:inherit}
+  .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
+  .btn-ghost:hover{border-color:var(--ink-2)}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-biz{background:var(--accent);color:#fff;font-size:13px;padding:7px 12px}
+  @media(max-width:880px){.nav-links{display:none}} @media(min-width:881px) and (max-width:1080px){.nav-links{gap:14px;font-size:13px}}
+
+  /* Demo banner */
+  .banner{background:#fff7e0;border-bottom:1px solid #f0d68a;color:#7a5a00;font-size:13px;padding:10px 0;text-align:center}
+  .banner a{color:#0050c7;font-weight:700}
+
+  .hero{padding:36px 0 18px;text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-2);font-weight:700;background:rgba(10,132,255,.1);padding:5px 12px;border-radius:999px;margin-bottom:12px}
+  .hero h1{font-size:32px;font-weight:800;letter-spacing:-.02em;margin:0 0 8px}
+  .hero p{color:var(--muted);font-size:15px;margin:0 auto;max-width:520px}
+  .hero .reward{display:inline-flex;align-items:center;gap:6px;color:var(--ok);font-size:13px;font-weight:700;margin-top:14px}
+  .hero .reward .pill{background:rgba(19,162,107,.1);padding:4px 10px;border-radius:999px}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);margin:24px 0 56px}
+
+  label{display:block;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:18px 0 6px}
+  input[type=text],select,textarea{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:15px;font-family:inherit;color:var(--ink);background:#fff;outline:none;transition:.15s}
+  input[type=text]:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  textarea{min-height:140px;resize:vertical;line-height:1.55}
+
+  .stars{display:flex;gap:6px;font-size:30px;cursor:pointer;user-select:none;margin:8px 0 4px}
+  .stars span{color:var(--line);transition:.15s;line-height:1}
+  .stars span.on, .stars span:hover, .stars span:hover ~ span:not(.on){color:var(--gold)}
+  .stars[data-rating="0"] span{color:var(--line)}
+  .star-help{font-size:12.5px;color:var(--muted);margin-top:2px}
+
+  .photo-row{display:flex;align-items:center;gap:12px;padding:14px;border:1px dashed var(--line);border-radius:10px;background:var(--bg-soft);margin-top:6px;cursor:pointer}
+  .photo-row .ic{font-size:22px}
+  .photo-row .body strong{display:block;font-size:14px;color:var(--ink)}
+  .photo-row .body span{font-size:13px;color:var(--muted)}
+
+  .submit{width:100%;background:var(--ink);color:#fff;border:0;padding:14px;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;margin-top:24px;font-family:inherit}
+  .submit:hover{background:#000}
+  .submit:disabled{opacity:.5;cursor:not-allowed}
+
+  .notice{background:#eef5ff;border:1px solid #c8def8;color:#0050c7;padding:14px 16px;border-radius:10px;font-size:13.5px;margin-top:16px;display:none}
+  .notice.show{display:block}
+  .notice.ok{background:#e6f5ee;border-color:#a8d8c0;color:#0a6e44}
+
+  .meta-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin-top:8px}
+
+  footer{padding:32px 0 28px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;text-align:center;background:#fff}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html"><img src="logo.png" alt="LYMX logo" /></a>
+    <nav class="nav-links">
+      <a href="browse.html">Browse</a>
+      <a href="index.html#categories">Categories</a>
+      <a href="index.html#how">How LYMX works</a>
+      <a href="app.html">Get the app</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="login.html">Sign in</a>
+      <a class="btn btn-biz" href="business.html">For Business →</a>
+    </div>
+  </div>
+</header>
+
+<div class="banner">
+  <div class="wrap">
+    <strong>Preview build:</strong> Reviews aren't being saved yet. <a href="login.html">Sign in</a> to write a real review once auth is live.
+  </div>
+</div>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Write a review</span>
+    <h1>Share your experience</h1>
+    <p>Help fellow members find great spots — your honest review keeps the network honest.</p>
+    <div class="reward"><span class="pill">+100 LYMX</span> when your review is verified</div>
+  </div>
+</section>
+
+<div class="wrap">
+  <form class="card" id="reviewForm" onsubmit="return submitReview(event)">
+
+    <label for="business">Business you visited</label>
+    <select id="business" name="business" required>
+      <option value="">Pick a Business…</option>
+      <option value="Brew &amp; Bean Café">Brew &amp; Bean Café</option>
+      <option value="Oakline Kitchen">Oakline Kitchen</option>
+      <option value="BoxYard Market">BoxYard Market</option>
+      <option value="EverGrid Hub">EverGrid Hub</option>
+      <option value="Avery Hair Studio">Avery Hair Studio</option>
+      <option value="InvestPro Realty">InvestPro Realty</option>
+      <option value="Summit Fitness Club">Summit Fitness Club</option>
+      <option value="Paws &amp; Tails Grooming">Paws &amp; Tails Grooming</option>
+      <option value="Delta HVAC &amp; Air">Delta HVAC &amp; Air</option>
+      <option value="Lumière Bakery">Lumière Bakery</option>
+      <option value="CFS Advantage">CFS Advantage</option>
+      <option value="other">Other (not listed)</option>
+    </select>
+
+    <label>Your rating</label>
+    <div class="stars" id="stars" data-rating="0" role="radiogroup" aria-label="Rating">
+      <span data-val="1" tabindex="0" role="radio" aria-checked="false">★</span>
+      <span data-val="2" tabindex="0" role="radio" aria-checked="false">★</span>
+      <span data-val="3" tabindex="0" role="radio" aria-checked="false">★</span>
+      <span data-val="4" tabindex="0" role="radio" aria-checked="false">★</span>
+      <span data-val="5" tabindex="0" role="radio" aria-checked="false">★</span>
+    </div>
+    <div class="star-help" id="ratingLabel">Tap a star to rate</div>
+
+    <label for="title">Headline</label>
+    <input type="text" id="title" name="title" placeholder="Sum up your visit in one line" maxlength="80" />
+
+    <label for="body">Your review</label>
+    <textarea id="body" name="body" placeholder="What did you like? What could be better? Be specific so others know what to expect." minlength="40" required></textarea>
+    <div class="meta-row"><span>Minimum 40 characters · be honest, be useful</span><span id="charCount">0</span></div>
+
+    <label>Add a photo (optional)</label>
+    <div class="photo-row" onclick="document.getElementById('photo').click()">
+      <div class="ic">📷</div>
+      <div class="body">
+        <strong>Add a photo</strong>
+        <span>Helps verify your visit. JPG or PNG, up to 10MB.</span>
+      </div>
+    </div>
+    <input type="file" id="photo" accept="image/jpeg,image/png" style="display:none" onchange="onPhoto()" />
+    <div id="photoStatus" style="font-size:13px;color:var(--ok);margin-top:6px;display:none"></div>
+
+    <label for="receipt">Receipt or order ID (for the +100 LYMX bonus)</label>
+    <input type="text" id="receipt" name="receipt" placeholder="Optional — paste your receipt # or last 4 digits" />
+
+    <button class="submit" type="submit" id="submitBtn">Post review</button>
+
+    <div class="notice" id="notice">
+      <strong>Thanks!</strong> Your review is queued for posting once authentication is live. We'll credit your <strong>100 LYMX</strong> as soon as your visit is verified.
+    </div>
+  </form>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div>© LYMX Power · <a href="customer-privacy.html" style="color:var(--accent-2)">Privacy</a> · <a href="customer-terms.html" style="color:var(--accent-2)">Terms</a> · <a href="support.html" style="color:var(--accent-2)">Support</a></div>
+  </div>
+</footer>
+
+<script>
+  // Pre-fill business from URL ?biz=
+  var bizParam = new URLSearchParams(window.location.search).get('biz');
+  if (bizParam){
+    var sel = document.getElementById('business');
+    for (var i=0; i<sel.options.length; i++){
+      if (sel.options[i].value.toLowerCase() === bizParam.toLowerCase()){ sel.selectedIndex = i; break; }
+    }
+  }
+
+  // Star rating
+  var stars = document.querySelectorAll('#stars span');
+  var labels = ['Tap a star to rate','Poor','Fair','Good','Great','Excellent'];
+  function setRating(v){
+    document.getElementById('stars').dataset.rating = v;
+    stars.forEach(function(s,i){
+      var on = (i < v);
+      s.classList.toggle('on', on);
+      s.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    document.getElementById('ratingLabel').textContent = labels[v] + (v ? ' (' + v + '/5)' : '');
+  }
+  stars.forEach(function(s){
+    s.addEventListener('click', function(){ setRating(parseInt(s.dataset.val,10)); });
+    s.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); setRating(parseInt(s.dataset.val,10)); }
+    });
+  });
+
+  // Char count
+  var body = document.getElementById('body');
+  var cc = document.getElementById('charCount');
+  body.addEventListener('input', function(){ cc.textContent = body.value.length + ' chars'; });
+
+  // Photo
+  function onPhoto(){
+    var f = document.getElementById('photo').files[0];
+    var s = document.getElementById('photoStatus');
+    if (f){ s.textContent = '✓ Photo attached: ' + f.name; s.style.display = 'block'; }
+  }
+
+  // Submit (placeholder — no backend yet)
+  function submitReview(e){
+    e.preventDefault();
+    var rating = parseInt(document.getElementById('stars').dataset.rating, 10);
+    if (!rating){ alert('Please pick a star rating before submitting.'); return false; }
+    var n = document.getElementById('notice');
+    n.classList.add('show', 'ok');
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitBtn').textContent = 'Submitted ✓';
+    n.scrollIntoView({behavior:'smooth', block:'center'});
+    return false;
+  }
+</script>
+
+</body>
+</html>

@@ -54,7 +54,7 @@
   }
   .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:800}
-  .brand img{height:26px;width:auto}
+  .brand img{height:32px;width:auto}
   .nav-links{display:flex;gap:26px;font-size:14.5px;color:var(--ink-2)}
   .nav-links a:hover{color:var(--accent)}
   .nav-cta{display:flex;gap:10px;align-items:center}
@@ -66,7 +66,7 @@
   .btn-lg{padding:14px 22px;font-size:15.5px;border-radius:12px}
   .btn-biz{background:#0a84ff;color:#fff;font-size:13.5px;padding:8px 14px}
   .btn-biz:hover{background:var(--accent-2)}
-  @media(max-width:880px){.nav-links{display:none}}
+  @media(max-width:880px){.nav-links{display:none}} @media(min-width:881px) and (max-width:1080px){.nav-links{gap:14px;font-size:13px}}
 
   /* Hero with search */
   .hero{
@@ -282,31 +282,43 @@
       Earn from a purchase, a service, even your rent — then redeem at a café, a store, or an EV charger.
     </p>
 
-    <form class="search" onsubmit="event.preventDefault(); window.location='browse.html';">
+    <form class="search" id="heroSearchForm" onsubmit="return submitHeroSearch(event)">
       <div class="field">
         <span class="ic">🔍</span>
         <div class="col">
           <label>Find</label>
-          <input type="text" placeholder="Coffee, real estate, EV charger…" />
+          <input type="text" id="heroFind" placeholder="Coffee, real estate, EV charger…" />
         </div>
       </div>
       <div class="field">
         <span class="ic">📍</span>
         <div class="col">
           <label>Near</label>
-          <input type="text" placeholder="City or ZIP" value="Las Vegas, NV" />
+          <input type="text" id="heroNear" placeholder="City or ZIP" value="Las Vegas, NV" />
         </div>
       </div>
       <button class="btn-search" type="submit">Search LYMX</button>
     </form>
+    <script>
+      function submitHeroSearch(e){
+        e.preventDefault();
+        var q = (document.getElementById('heroFind')||{}).value || '';
+        var near = (document.getElementById('heroNear')||{}).value || '';
+        var qs = [];
+        if (q) qs.push('q=' + encodeURIComponent(q));
+        if (near) qs.push('near=' + encodeURIComponent(near));
+        window.location = 'browse.html' + (qs.length ? '?' + qs.join('&') : '');
+        return false;
+      }
+    </script>
 
     <div class="quick">
       <span style="padding:6px 0">Popular:</span>
-      <a href="browse.html">Dining</a>
-      <a href="browse.html">EV Charging</a>
-      <a href="browse.html">Real Estate</a>
-      <a href="browse.html">Home Services</a>
-      <a href="browse.html">Retail</a>
+      <a href="browse.html?category=Dining">Dining</a>
+      <a href="browse.html?category=EV%20Charging">EV Charging</a>
+      <a href="browse.html?category=Real%20Estate">Real Estate</a>
+      <a href="browse.html?category=Home%20Services">Home Services</a>
+      <a href="browse.html?category=Retail">Retail</a>
     </div>
   </div>
 </section>
@@ -322,17 +334,17 @@
       <a class="more" href="#browse">See all →</a>
     </div>
     <div class="cats">
-      <a class="cat" href="browse.html"><span class="emoji">🍽️</span><div class="n">Dining</div><div class="s">Cafés · Restaurants</div></a>
-      <a class="cat" href="browse.html"><span class="emoji">🛍️</span><div class="n">Retail</div><div class="s">Shops · Markets</div></a>
-      <a class="cat" href="browse.html"><span class="emoji">🏠</span><div class="n">Real Estate</div><div class="s">Rent · Buy · Sell</div></a>
-      <a class="cat" href="browse.html"><span class="emoji">💳</span><div class="n">Finance</div><div class="s">Services · Advice</div></a>
-      <a class="cat" href="browse.html"><span class="emoji">⚡</span><div class="n">EV Charging</div><div class="s">Stations · Network</div></a>
-      <a class="cat" href="browse.html"><span class="emoji">🧰</span><div class="n">Home Services</div><div class="s">Repair · Maintenance</div></a>
-      <a class="cat" href="browse.html"><span class="emoji">💇</span><div class="n">Beauty &amp; Spa</div><div class="s">Salons · Wellness</div></a>
-      <a class="cat" href="browse.html"><span class="emoji">🏋️</span><div class="n">Fitness</div><div class="s">Gyms · Studios</div></a>
-      <a class="cat" href="browse.html"><span class="emoji">🚗</span><div class="n">Automotive</div><div class="s">Service · Detail</div></a>
-      <a class="cat" href="browse.html"><span class="emoji">📚</span><div class="n">Education</div><div class="s">Tutoring · Courses</div></a>
-      <a class="cat" href="browse.html"><span class="emoji">🐾</span><div class="n">Pets</div><div class="s">Groom · Supply</div></a>
+      <a class="cat" href="browse.html?category=Dining"><span class="emoji">🍽️</span><div class="n">Dining</div><div class="s">Cafés · Restaurants</div></a>
+      <a class="cat" href="browse.html?category=Retail"><span class="emoji">🛍️</span><div class="n">Retail</div><div class="s">Shops · Markets</div></a>
+      <a class="cat" href="browse.html?category=Real%20Estate"><span class="emoji">🏠</span><div class="n">Real Estate</div><div class="s">Rent · Buy · Sell</div></a>
+      <a class="cat" href="browse.html?category=Finance"><span class="emoji">💳</span><div class="n">Finance</div><div class="s">Services · Advice</div></a>
+      <a class="cat" href="browse.html?category=EV%20Charging"><span class="emoji">⚡</span><div class="n">EV Charging</div><div class="s">Stations · Network</div></a>
+      <a class="cat" href="browse.html?category=Home%20Services"><span class="emoji">🧰</span><div class="n">Home Services</div><div class="s">Repair · Maintenance</div></a>
+      <a class="cat" href="browse.html?category=Beauty%20%26%20Spa"><span class="emoji">💇</span><div class="n">Beauty &amp; Spa</div><div class="s">Salons · Wellness</div></a>
+      <a class="cat" href="browse.html?category=Fitness"><span class="emoji">🏋️</span><div class="n">Fitness</div><div class="s">Gyms · Studios</div></a>
+      <a class="cat" href="browse.html?category=Automotive"><span class="emoji">🚗</span><div class="n">Automotive</div><div class="s">Service · Detail</div></a>
+      <a class="cat" href="browse.html?category=Education"><span class="emoji">📚</span><div class="n">Education</div><div class="s">Tutoring · Courses</div></a>
+      <a class="cat" href="browse.html?category=Pets"><span class="emoji">🐾</span><div class="n">Pets</div><div class="s">Groom · Supply</div></a>
       <a class="cat" href="browse.html"><span class="emoji">🎁</span><div class="n">More</div><div class="s">Everything else</div></a>
     </div>
   </div>
@@ -349,7 +361,7 @@
       <a class="more" href="business.html">Bring your business →</a>
     </div>
     <div class="biz-grid">
-      <div class="biz">
+      <a class="biz" href="browse.html" style="text-decoration:none;color:inherit">
         <div class="ph">🛒<span class="tag live">Live</span></div>
         <div class="body">
           <h3>123Partners.net</h3>
@@ -357,8 +369,8 @@
           <p class="desc">Shop curated partner brands and earn LYMX on every purchase. Redeem your LYMX anywhere on the network.</p>
           <div class="foot"><span class="stars">★★★★★ <span style="color:var(--muted);font-weight:500">(new)</span></span><span class="lymx-chip">Earn · Redeem</span></div>
         </div>
-      </div>
-      <div class="biz">
+      </a>
+      <a class="biz" href="browse.html?category=Real%20Estate" style="text-decoration:none;color:inherit">
         <div class="ph">🏠<span class="tag live">Live</span></div>
         <div class="body">
           <h3>InvestPro Realty</h3>
@@ -366,8 +378,8 @@
           <p class="desc">Earn LYMX on rent paid through InvestPro PM — up to 5 LYMX per $100 of qualifying rent. Redeem at any partner.</p>
           <div class="foot"><span class="stars">★★★★★ <span style="color:var(--muted);font-weight:500">(new)</span></span><span class="lymx-chip">Earn · Redeem</span></div>
         </div>
-      </div>
-      <div class="biz">
+      </a>
+      <a class="biz" href="browse.html?category=Finance" style="text-decoration:none;color:inherit">
         <div class="ph">💰<span class="tag live">Live</span></div>
         <div class="body">
           <h3>CFS Advantage</h3>
@@ -375,8 +387,8 @@
           <p class="desc">Earn LYMX on qualifying financial products and services. Turn everyday financial activity into flexible LYMX.</p>
           <div class="foot"><span class="stars">★★★★★ <span style="color:var(--muted);font-weight:500">(new)</span></span><span class="lymx-chip">Earn · Redeem</span></div>
         </div>
-      </div>
-      <div class="biz">
+      </a>
+      <a class="biz" href="browse.html?category=Retail" style="text-decoration:none;color:inherit">
         <div class="ph">🛍️<span class="tag live">Live</span></div>
         <div class="body">
           <h3>BoxYard Market</h3>
@@ -384,8 +396,8 @@
           <p class="desc">Shop, eat, discover — BoxYard merchants accept LYMX across dining, retail, and specialty goods.</p>
           <div class="foot"><span class="stars">★★★★★ <span style="color:var(--muted);font-weight:500">(new)</span></span><span class="lymx-chip">Earn · Redeem</span></div>
         </div>
-      </div>
-      <div class="biz">
+      </a>
+      <a class="biz" href="browse.html?category=EV%20Charging" style="text-decoration:none;color:inherit">
         <div class="ph">🔌<span class="tag live">Live</span></div>
         <div class="body">
           <h3>EverGrid Hub</h3>
@@ -393,7 +405,7 @@
           <p class="desc">Charge your EV and earn LYMX at every station. Redeem your LYMX on your next charge — or anywhere on the network.</p>
           <div class="foot"><span class="stars">★★★★★ <span style="color:var(--muted);font-weight:500">(new)</span></span><span class="lymx-chip">Earn · Redeem</span></div>
         </div>
-      </div>
+      </a>
       <div class="biz">
         <div class="ph" style="background:linear-gradient(135deg,#fff,#f6f7f9)">
           <span style="font-size:15px;font-weight:700;color:var(--accent-2);letter-spacing:.04em;text-align:center;padding:20px">YOUR BUSINESS<br/><span style="font-size:12px;font-weight:500;color:var(--muted)">HERE</span></span>
@@ -635,7 +647,7 @@
         <div class="label">Visited a LYMX partner recently?</div>
         <div class="sub">Post a verified review with a photo and earn 100 LYMX. Help fellow members discover great spots.</div>
       </div>
-      <a class="btn btn-primary" href="customer-dashboard.html">Write a review →</a>
+      <a class="btn btn-primary" href="write-review.html">Write a review →</a>
     </div>
   </div>
 </section>
@@ -649,7 +661,7 @@
         <h2>Your LYMX, in any browser.</h2>
         <p>Check your balance, find Businesses near you, read reviews, show your QR at checkout, and book appointments — from your phone or laptop. Add to home screen for one-tap access.</p>
         <div class="stores">
-          <a class="store" href="customer-wallet.html"><span class="ic">🌐</span>Open Wallet</a>
+          <a class="store" href="login.html"><span class="ic">🌐</span>Open Wallet</a>
           <a class="store" href="app.html"><span class="ic">＋</span>How to install</a>
         </div>
       </div>
@@ -682,11 +694,11 @@
       </div>
     </div>
     <div class="partners">
-      <div class="chip">123Partners.net<span>E-commerce</span></div>
-      <div class="chip">InvestPro Realty<span>Real estate</span></div>
-      <div class="chip">CFS Advantage<span>Financial</span></div>
-      <div class="chip">BoxYard Market<span>Retail &amp; dining</span></div>
-      <div class="chip">EverGrid Hub<span>EV &amp; lifestyle</span></div>
+      <a class="chip" href="browse.html" style="text-decoration:none;color:inherit;cursor:pointer">123Partners.net<span>E-commerce</span></a>
+      <a class="chip" href="browse.html?category=Real%20Estate" style="text-decoration:none;color:inherit;cursor:pointer">InvestPro Realty<span>Real estate</span></a>
+      <a class="chip" href="browse.html?category=Finance" style="text-decoration:none;color:inherit;cursor:pointer">CFS Advantage<span>Financial</span></a>
+      <a class="chip" href="browse.html?category=Retail" style="text-decoration:none;color:inherit;cursor:pointer">BoxYard Market<span>Retail &amp; dining</span></a>
+      <a class="chip" href="browse.html?category=EV%20Charging" style="text-decoration:none;color:inherit;cursor:pointer">EverGrid Hub<span>EV &amp; lifestyle</span></a>
     </div>
   </div>
 </section>

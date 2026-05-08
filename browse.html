@@ -4,20 +4,20 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="Browse LYMX LYMX Businesses on the map. Filter by category, price, rating, and distance. Earn and redeem LYMX across the network." />
-<title>Browse Partners — LYMX</title>
+<title>Browse Businesses — LYMX</title>
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
 <link rel="apple-touch-icon" href="favicon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://getlymx.com/browse" />
-<meta property="og:title" content="Browse Partners — LYMX" />
+<meta property="og:title" content="Browse Businesses — LYMX" />
 <meta property="og:description" content="Browse LYMX LYMX Businesses on the map. Filter by category, price, rating, and distance. Earn and redeem LYMX across the network." />
 <meta property="og:image" content="https://getlymx.com/og-image.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:site_name" content="LYMX" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Browse Partners — LYMX" />
+<meta name="twitter:title" content="Browse Businesses — LYMX" />
 <meta name="twitter:description" content="Browse LYMX LYMX Businesses on the map. Filter by category, price, rating, and distance. Earn and redeem LYMX across the network." />
 <meta name="twitter:image" content="https://getlymx.com/og-image.png" />
 <link rel="canonical" href="https://getlymx.com/browse" />
@@ -34,7 +34,7 @@
   header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
   .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:800}
-  .brand img{height:24px;width:auto}
+  .brand img{height:32px;width:auto}
   .nav-links{display:flex;gap:24px;font-size:14px;color:var(--ink-2)}
   .nav-links a:hover{color:var(--accent)}
   .nav-links a.on{color:var(--accent);font-weight:700}
@@ -45,7 +45,7 @@
   .btn-primary{background:var(--ink);color:#fff}
   .btn-primary:hover{background:#000}
   .btn-biz{background:var(--accent);color:#fff;font-size:13px;padding:7px 12px}
-  @media(max-width:880px){.nav-links{display:none}}
+  @media(max-width:880px){.nav-links{display:none}} @media(min-width:881px) and (max-width:1080px){.nav-links{gap:14px;font-size:13px}}
 
   /* Search bar at top */
   .top-search{padding:14px 0;background:var(--bg-soft);border-bottom:1px solid var(--line)}
@@ -129,7 +129,7 @@
       <a href="app.html">Get the app</a>
     </nav>
     <div class="nav-cta">
-      <a class="btn btn-ghost" href="customer-dashboard.html">Sign in</a>
+      <a class="btn btn-ghost" href="login.html">Sign in</a>
       <a class="btn btn-biz" href="business.html">For Business →</a>
     </div>
   </div>
@@ -154,31 +154,36 @@
 
 <!-- Filters -->
 <div class="wrap">
-  <div class="filters">
+  <div class="filters" id="filters">
     <span class="lbl">Category</span>
-    <span class="chip cat-on">All</span>
-    <span class="chip">Dining</span>
-    <span class="chip">Retail</span>
-    <span class="chip">Real Estate</span>
-    <span class="chip">EV Charging</span>
-    <span class="chip">Home Services</span>
-    <span class="chip">Beauty &amp; Spa</span>
+    <span class="chip cat-on" data-cat="All">All</span>
+    <span class="chip" data-cat="Dining">Dining</span>
+    <span class="chip" data-cat="Retail">Retail</span>
+    <span class="chip" data-cat="Real Estate">Real Estate</span>
+    <span class="chip" data-cat="EV Charging">EV Charging</span>
+    <span class="chip" data-cat="Home Services">Home Services</span>
+    <span class="chip" data-cat="Beauty &amp; Spa">Beauty &amp; Spa</span>
+    <span class="chip" data-cat="Fitness">Fitness</span>
+    <span class="chip" data-cat="Pets">Pets</span>
+    <span class="chip" data-cat="Finance">Finance</span>
+    <span class="chip" data-cat="Automotive">Automotive</span>
+    <span class="chip" data-cat="Education">Education</span>
     <span class="sep"></span>
     <span class="lbl">Price</span>
-    <span class="chip">$</span>
-    <span class="chip">$$</span>
-    <span class="chip">$$$</span>
+    <span class="chip" data-price="$">$</span>
+    <span class="chip" data-price="$$">$$</span>
+    <span class="chip" data-price="$$$">$$$</span>
     <span class="sep"></span>
-    <span class="chip">★ 4.0+</span>
-    <span class="chip">Open now</span>
+    <span class="chip" data-flag="rating">★ 4.0+</span>
+    <span class="chip" data-flag="open">Open now</span>
     <div class="sort">
       <span class="lbl">Sort by</span>
-      <select>
-        <option>Recommended</option>
-        <option>Distance</option>
-        <option>Highest rated</option>
-        <option>Most LYMX</option>
-        <option>New on network</option>
+      <select id="sortBy">
+        <option value="recommended">Recommended</option>
+        <option value="distance">Distance</option>
+        <option value="rating">Highest rated</option>
+        <option value="lymx">Most LYMX</option>
+        <option value="new">New on network</option>
       </select>
     </div>
   </div>
@@ -188,10 +193,10 @@
 <div class="page">
   <!-- Results list -->
   <div class="results">
-    <div class="meta-line"><strong>11 partners</strong> found near Las Vegas, NV</div>
+    <div class="meta-line"><strong id="resultCount">11 Businesses</strong> found near <span id="locLabel">Las Vegas, NV</span></div>
     <div class="biz-list" id="bizList">
 
-      <a class="biz-card active" href="biz-brew-and-bean.html" data-pin="1" data-lat="38.5746" data-lng="-121.4914">
+      <a class="biz-card active" href="biz-brew-and-bean.html" data-pin="1" data-lat="38.5746" data-lng="-121.4914" data-category="Dining" data-price="$$" data-rating="4.6" data-lymx="5" data-distance="0.8">
         <div class="ph" style="background:linear-gradient(135deg,#fef3e0,#ffd9a8)">☕<span class="tag">Live</span><span class="pin-num">1</span></div>
         <div class="body">
           <h3>Brew &amp; Bean Café</h3>
@@ -201,7 +206,7 @@
         </div>
       </a>
 
-      <a class="biz-card" href="biz-oakline-kitchen.html" data-pin="2" data-lat="38.5811" data-lng="-121.4942">
+      <a class="biz-card" href="biz-oakline-kitchen.html" data-pin="2" data-lat="38.5811" data-lng="-121.4942" data-category="Dining" data-price="$$" data-rating="4.8" data-lymx="5" data-distance="1.1">
         <div class="ph" style="background:linear-gradient(135deg,#ffe0d6,#ffaa7d)">🍜<span class="tag">Live</span><span class="pin-num">2</span></div>
         <div class="body">
           <h3>Oakline Kitchen</h3>
@@ -211,7 +216,7 @@
         </div>
       </a>
 
-      <a class="biz-card" href="#" data-pin="3" data-lat="38.5667" data-lng="-121.4880">
+      <a class="biz-card" href="#" data-pin="3" data-lat="38.5667" data-lng="-121.4880" data-category="Retail" data-price="$$" data-rating="4.7" data-lymx="3" data-distance="1.3">
         <div class="ph" style="background:linear-gradient(135deg,#f0d8b5,#c89165)">🛍️<span class="tag">Live</span><span class="pin-num">3</span></div>
         <div class="body">
           <h3>BoxYard Market</h3>
@@ -221,7 +226,7 @@
         </div>
       </a>
 
-      <a class="biz-card" href="#" data-pin="4" data-lat="38.5631" data-lng="-121.5021">
+      <a class="biz-card" href="#" data-pin="4" data-lat="38.5631" data-lng="-121.5021" data-category="EV Charging" data-price="$$" data-rating="4.9" data-lymx="8" data-distance="2.3">
         <div class="ph" style="background:linear-gradient(135deg,#e1f0ff,#dfe8ff)">🔌<span class="tag">Live</span><span class="pin-num">4</span></div>
         <div class="body">
           <h3>EverGrid Hub</h3>
@@ -231,7 +236,7 @@
         </div>
       </a>
 
-      <a class="biz-card" href="#" data-pin="5" data-lat="38.5708" data-lng="-121.4836">
+      <a class="biz-card" href="#" data-pin="5" data-lat="38.5708" data-lng="-121.4836" data-category="Beauty &amp; Spa" data-price="$$$" data-rating="4.9" data-lymx="3" data-distance="1.4">
         <div class="ph" style="background:linear-gradient(135deg,#f0e6ff,#ffe1f0)">💇<span class="tag">Live</span><span class="pin-num">5</span></div>
         <div class="body">
           <h3>Avery Hair Studio</h3>
@@ -241,7 +246,7 @@
         </div>
       </a>
 
-      <a class="biz-card" href="#" data-pin="6" data-lat="38.5944" data-lng="-121.4956">
+      <a class="biz-card" href="#" data-pin="6" data-lat="38.5944" data-lng="-121.4956" data-category="Real Estate" data-price="$$" data-rating="4.8" data-lymx="5" data-distance="2.0">
         <div class="ph" style="background:linear-gradient(135deg,#fff5d0,#f5d970)">🏠<span class="tag">Live</span><span class="pin-num">6</span></div>
         <div class="body">
           <h3>InvestPro Realty</h3>
@@ -251,7 +256,7 @@
         </div>
       </a>
 
-      <a class="biz-card" href="#" data-pin="7" data-lat="38.6488" data-lng="-121.4127">
+      <a class="biz-card" href="#" data-pin="7" data-lat="38.6488" data-lng="-121.4127" data-category="Fitness" data-price="$$$" data-rating="4.5" data-lymx="2" data-distance="8.4">
         <div class="ph" style="background:linear-gradient(135deg,#d8e6ff,#a5b8e0)">🏋️<span class="tag">Live</span><span class="pin-num">7</span></div>
         <div class="body">
           <h3>Summit Fitness Club</h3>
@@ -261,7 +266,7 @@
         </div>
       </a>
 
-      <a class="biz-card" href="#" data-pin="8" data-lat="38.6013" data-lng="-121.4978">
+      <a class="biz-card" href="#" data-pin="8" data-lat="38.6013" data-lng="-121.4978" data-category="Pets" data-price="$$" data-rating="4.7" data-lymx="4" data-distance="4.6">
         <div class="ph" style="background:linear-gradient(135deg,#ffe4d6,#ffb289)">🐕<span class="tag">Live</span><span class="pin-num">8</span></div>
         <div class="body">
           <h3>Paws &amp; Tails Grooming</h3>
@@ -271,7 +276,7 @@
         </div>
       </a>
 
-      <a class="biz-card" href="#" data-pin="9" data-lat="38.5556" data-lng="-121.4663">
+      <a class="biz-card" href="#" data-pin="9" data-lat="38.5556" data-lng="-121.4663" data-category="Home Services" data-price="$$" data-rating="4.9" data-lymx="100" data-distance="3.0">
         <div class="ph" style="background:linear-gradient(135deg,#dde6c8,#a5b878)">🔧<span class="tag">Live</span><span class="pin-num">9</span></div>
         <div class="body">
           <h3>Delta HVAC &amp; Air</h3>
@@ -281,7 +286,7 @@
         </div>
       </a>
 
-      <a class="biz-card" href="#" data-pin="10" data-lat="38.5582" data-lng="-121.4881">
+      <a class="biz-card" href="#" data-pin="10" data-lat="38.5582" data-lng="-121.4881" data-category="Dining" data-price="$$" data-rating="4.7" data-lymx="5" data-distance="1.7">
         <div class="ph" style="background:linear-gradient(135deg,#fce4d6,#f4a486)">🍞<span class="tag">Live</span><span class="pin-num">10</span></div>
         <div class="body">
           <h3>Lumière Bakery</h3>
@@ -291,7 +296,7 @@
         </div>
       </a>
 
-      <a class="biz-card" href="#" data-pin="11" data-lat="38.5762" data-lng="-121.4763">
+      <a class="biz-card" href="#" data-pin="11" data-lat="38.5762" data-lng="-121.4763" data-category="Finance" data-price="$$" data-rating="4.8" data-lymx="0" data-distance="1.0">
         <div class="ph" style="background:linear-gradient(135deg,#d4e6ff,#7fa8d8)">💰<span class="tag">Live</span><span class="pin-num">11</span></div>
         <div class="body">
           <h3>CFS Advantage</h3>
@@ -302,12 +307,12 @@
       </a>
 
     </div>
-    <div style="text-align:center;padding:18px;color:var(--muted);font-size:13px">Showing 11 of 11 partners in Las Vegas metro · zoom out for more</div>
+    <div id="footerCount" style="text-align:center;padding:18px;color:var(--muted);font-size:13px">Showing 11 of 11 Businesses · zoom out for more</div>
   </div>
 
   <!-- Map -->
   <div class="map-wrap">
-    <div class="map-overlay"><span class="dot"></span> Showing live partners</div>
+    <div class="map-overlay"><span class="dot"></span> Showing live Businesses</div>
     <div id="map"></div>
   </div>
 </div>
@@ -323,14 +328,42 @@
 <script>
   document.getElementById('yr').textContent=new Date().getFullYear();
 
-  // Map setup
+  // ---------- 1. Read URL query params ----------
+  // Supports: ?category=Pets&q=coffee&near=Reno
+  var params = new URLSearchParams(window.location.search);
+  var initialCategory = params.get('category') || params.get('cat') || 'All';
+  var initialQ = params.get('q') || params.get('find') || '';
+  var initialNear = params.get('near') || params.get('location') || '';
+
+  // Apply to inputs
+  var findInput = document.querySelector('.search-row .field:nth-child(1) input');
+  var nearInput = document.querySelector('.search-row .field:nth-child(2) input');
+  if (findInput && initialQ) findInput.value = initialQ;
+  if (nearInput && initialNear) nearInput.value = initialNear;
+
+  // Apply category to chips: highlight the matching one (case-insensitive)
+  var chips = document.querySelectorAll('.chip[data-cat]');
+  chips.forEach(function(chip){
+    chip.classList.remove('cat-on');
+    if (chip.dataset.cat.toLowerCase() === initialCategory.toLowerCase()) {
+      chip.classList.add('cat-on');
+    }
+  });
+  // Fallback: if requested category isn't a chip, default to All
+  if (!document.querySelector('.chip[data-cat].cat-on')) {
+    var allChip = document.querySelector('.chip[data-cat="All"]');
+    if (allChip) allChip.classList.add('cat-on');
+    initialCategory = 'All';
+  }
+
+  // ---------- 2. Map setup ----------
   var map = L.map('map').setView([38.5816, -121.4944], 12);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap',
     maxZoom: 19
   }).addTo(map);
 
-  // Build markers from list
+  // ---------- 3. Build markers from list ----------
   var markers = {};
   document.querySelectorAll('.biz-card').forEach(function(card){
     var lat = parseFloat(card.dataset.lat);
@@ -359,6 +392,119 @@
       }
     });
   });
+
+  // ---------- 4. Filtering ----------
+  function getActiveCategory(){
+    var on = document.querySelector('.chip[data-cat].cat-on');
+    return on ? on.dataset.cat : 'All';
+  }
+  function getActivePrice(){
+    var on = document.querySelector('.chip[data-price].on');
+    return on ? on.dataset.price : null;
+  }
+  function getActiveFlags(){
+    var flags = {};
+    document.querySelectorAll('.chip[data-flag].on').forEach(function(c){ flags[c.dataset.flag] = true; });
+    return flags;
+  }
+  function decodeHTML(s){
+    var t = document.createElement('textarea');
+    t.innerHTML = s;
+    return t.value;
+  }
+
+  function applyFilters(){
+    var cat = getActiveCategory();
+    var price = getActivePrice();
+    var flags = getActiveFlags();
+    var q = (findInput && findInput.value || '').trim().toLowerCase();
+    var near = (nearInput && nearInput.value || '').trim().toLowerCase();
+
+    var visible = 0;
+    document.querySelectorAll('.biz-card').forEach(function(card){
+      var cardCat = decodeHTML(card.dataset.category || '');
+      var cardPrice = card.dataset.price || '';
+      var cardRating = parseFloat(card.dataset.rating || '0');
+      var name = (card.querySelector('h3').textContent || '').toLowerCase();
+      var meta = (card.querySelector('.meta').textContent || '').toLowerCase();
+      var desc = (card.querySelector('.desc').textContent || '').toLowerCase();
+      var hay = name + ' ' + meta + ' ' + desc;
+
+      var matchCat   = (cat === 'All') || (cardCat.toLowerCase() === cat.toLowerCase());
+      var matchPrice = !price || (cardPrice === price);
+      var matchRate  = !flags.rating || (cardRating >= 4.0);
+      var matchOpen  = !flags.open;
+      var matchQ     = !q    || hay.indexOf(q) !== -1;
+      var matchNear  = !near || hay.indexOf(near) !== -1 || true;
+
+      var show = matchCat && matchPrice && matchRate && matchOpen && matchQ && matchNear;
+      card.style.display = show ? '' : 'none';
+
+      var num = card.dataset.pin;
+      var marker = markers[num];
+      if (marker){
+        if (show) marker.addTo(map); else map.removeLayer(marker);
+      }
+      if (show) visible++;
+    });
+
+    var rc = document.getElementById('resultCount');
+    var fc = document.getElementById('footerCount');
+    var ll = document.getElementById('locLabel');
+    var label = (cat && cat !== 'All' ? cat + ' Businesses' : (visible === 1 ? 'Business' : 'Businesses'));
+    if (rc) rc.textContent = visible + ' ' + label;
+    if (fc) fc.textContent = 'Showing ' + visible + ' of 11 Businesses · zoom out for more';
+    if (ll && near) ll.textContent = (nearInput.value || 'Las Vegas, NV');
+  }
+
+  // ---------- 5. Wire chip clicks ----------
+  document.querySelectorAll('.chip[data-cat]').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      document.querySelectorAll('.chip[data-cat]').forEach(c => c.classList.remove('cat-on'));
+      chip.classList.add('cat-on');
+      applyFilters();
+    });
+  });
+  document.querySelectorAll('.chip[data-price]').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      var was = chip.classList.contains('on');
+      document.querySelectorAll('.chip[data-price]').forEach(c => c.classList.remove('on'));
+      if (!was) chip.classList.add('on');
+      applyFilters();
+    });
+  });
+  document.querySelectorAll('.chip[data-flag]').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      chip.classList.toggle('on');
+      applyFilters();
+    });
+  });
+
+  // ---------- 6. Wire search inputs ----------
+  if (findInput) findInput.addEventListener('input', applyFilters);
+  if (nearInput) nearInput.addEventListener('input', applyFilters);
+  var searchForm = document.querySelector('.search-row');
+  if (searchForm) searchForm.addEventListener('submit', function(e){ e.preventDefault(); applyFilters(); });
+
+  // ---------- 7. Sort ----------
+  var sortBy = document.getElementById('sortBy');
+  if (sortBy){
+    sortBy.addEventListener('change', function(){
+      var mode = sortBy.value;
+      var list = document.getElementById('bizList');
+      var cards = Array.from(list.querySelectorAll('.biz-card'));
+      cards.sort(function(a, b){
+        if (mode === 'distance') return parseFloat(a.dataset.distance) - parseFloat(b.dataset.distance);
+        if (mode === 'rating')   return parseFloat(b.dataset.rating)   - parseFloat(a.dataset.rating);
+        if (mode === 'lymx')     return parseFloat(b.dataset.lymx)     - parseFloat(a.dataset.lymx);
+        return 0;
+      });
+      cards.forEach(function(c){ list.appendChild(c); });
+    });
+  }
+
+  // ---------- 8. Run filters once on load to honor URL params ----------
+  applyFilters();
 </script>
 <script src="cookie-consent.js" defer></script>
 </body>

@@ -33,7 +33,7 @@
   header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
   .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:800}
-  .brand img{height:26px;width:auto}
+  .brand img{height:32px;width:auto}
   .nav-links{display:flex;gap:26px;font-size:14.5px;color:var(--ink-2)}
   .nav-links a:hover{color:var(--accent)}
   .nav-cta{display:flex;gap:10px;align-items:center}
@@ -44,7 +44,7 @@
   .btn-primary:hover{background:#000}
   .btn-biz{background:var(--accent);color:#fff;font-size:13.5px;padding:8px 14px}
   .btn-biz:hover{background:var(--accent-2)}
-  @media(max-width:880px){.nav-links{display:none}}
+  @media(max-width:880px){.nav-links{display:none}} @media(min-width:881px) and (max-width:1080px){.nav-links{gap:14px;font-size:13px}}
 
   .crumb{padding:18px 0 8px;color:var(--muted);font-size:13.5px}
   .crumb a{color:var(--muted)}
@@ -198,7 +198,7 @@
       <a href="app.html">Get the app</a>
     </nav>
     <div class="nav-cta">
-      <a class="btn btn-ghost" href="customer-dashboard.html">Sign in</a>
+      <a class="btn btn-ghost" href="login.html">Sign in</a>
       <a class="btn btn-biz" href="business.html">For Business →</a>
     </div>
   </div>
@@ -210,11 +210,11 @@
   </div>
 
   <div class="photos">
-    <div class="ph main">🍜</div>
-    <div class="ph p2">🥢</div>
-    <div class="ph p3">🍣</div>
-    <div class="ph p4">🍶</div>
-    <div class="ph p5">🌃</div>
+    <div class="ph main" data-emoji="🍜" style="cursor:zoom-in" tabindex="0" role="button" aria-label="View photo">🍜</div>
+    <div class="ph p2" data-emoji="🥢" style="cursor:zoom-in" tabindex="0" role="button" aria-label="View photo">🥢</div>
+    <div class="ph p3" data-emoji="🍣" style="cursor:zoom-in" tabindex="0" role="button" aria-label="View photo">🍣</div>
+    <div class="ph p4" data-emoji="🍶" style="cursor:zoom-in" tabindex="0" role="button" aria-label="View photo">🍶</div>
+    <div class="ph p5" data-emoji="🌃" style="cursor:zoom-in" tabindex="0" role="button" aria-label="View photo">🌃</div>
   </div>
 
   <div class="title-row">
@@ -233,8 +233,8 @@
       </div>
     </div>
     <div class="save">
-      <a class="btn btn-ghost" href="#">♡ Save</a>
-      <a class="btn btn-ghost" href="#">↗ Share</a>
+      <button class="btn btn-ghost" type="button" id="saveBtn" onclick="toggleSave(this)">♡ Save</button>
+      <button class="btn btn-ghost" type="button" id="shareBtn" onclick="shareBiz(this)">↗ Share</button>
     </div>
   </div>
 
@@ -540,6 +540,72 @@
       ip.classList.add('sel');
     });
   });
+
+  // ---------- Save / Share buttons (Bug #11) ----------
+  function showToast(msg, ok){
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:'+(ok?'#13a26b':'#0e1116')+';color:#fff;padding:12px 20px;border-radius:12px;font-weight:600;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:10000';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.transition='.4s'; t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(10px)'; }, 1800);
+    setTimeout(function(){ t.remove(); }, 2300);
+  }
+  window.toggleSave = function(btn){
+    var saved = btn.dataset.saved === '1';
+    if (saved){ btn.dataset.saved = '0'; btn.textContent = '♡ Save'; btn.style.color = ''; showToast('Removed from saved'); }
+    else { btn.dataset.saved = '1'; btn.textContent = '♥ Saved'; btn.style.color = '#e0245e'; showToast('Saved to your favorites', true); }
+  };
+  window.shareBiz = function(){
+    var url = window.location.href;
+    var title = document.querySelector('h1') ? document.querySelector('h1').textContent : document.title;
+    if (navigator.share){ navigator.share({title: title, url: url}).catch(function(){}); return; }
+    if (navigator.clipboard){ navigator.clipboard.writeText(url).then(function(){ showToast('Link copied to clipboard', true); }).catch(function(){ showToast('Could not copy link'); }); return; }
+    showToast('Share: ' + url);
+  };
+
+  // ---------- Photo lightbox (Bug #12) ----------
+  (function(){
+    var photos = Array.from(document.querySelectorAll('.photos .ph'));
+    if (!photos.length) return;
+    // Inject lightbox markup
+    var lb = document.createElement('div');
+    lb.id = 'lightbox';
+    lb.setAttribute('role','dialog');
+    lb.setAttribute('aria-modal','true');
+    lb.setAttribute('aria-label','Photo viewer');
+    lb.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:9999;align-items:center;justify-content:center;flex-direction:column;padding:24px;cursor:zoom-out';
+    lb.innerHTML = '<button id="lbClose" aria-label="Close" style="position:absolute;top:16px;right:20px;background:rgba(255,255,255,.1);border:0;color:#fff;font-size:24px;width:42px;height:42px;border-radius:50%;cursor:pointer">×</button>'
+      + '<div id="lbContent" style="background:linear-gradient(135deg,#ffe0d6,#ffaa7d);width:min(560px,90vw);aspect-ratio:1;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:200px;box-shadow:0 30px 60px rgba(0,0,0,.5)"></div>'
+      + '<div style="display:flex;gap:8px;margin-top:18px"><button id="lbPrev" style="background:rgba(255,255,255,.12);border:0;color:#fff;padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:700">← Prev</button><button id="lbNext" style="background:rgba(255,255,255,.12);border:0;color:#fff;padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:700">Next →</button></div>'
+      + '<div id="lbCount" style="color:rgba(255,255,255,.7);font-size:13px;margin-top:10px"></div>';
+    document.body.appendChild(lb);
+    var lbContent = document.getElementById('lbContent');
+    var lbCount = document.getElementById('lbCount');
+    var idx = 0;
+    function openAt(i){
+      idx = ((i % photos.length) + photos.length) % photos.length;
+      var p = photos[idx];
+      lbContent.textContent = p.dataset.emoji || p.textContent.trim();
+      lbCount.textContent = (idx+1) + ' / ' + photos.length;
+      lb.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    function close(){ lb.style.display = 'none'; document.body.style.overflow = ''; }
+    photos.forEach(function(p, i){
+      p.addEventListener('click', function(){ openAt(i); });
+      p.addEventListener('keydown', function(e){ if (e.key==='Enter'||e.key===' '){ e.preventDefault(); openAt(i); } });
+    });
+    document.getElementById('lbClose').addEventListener('click', close);
+    document.getElementById('lbPrev').addEventListener('click', function(e){ e.stopPropagation(); openAt(idx-1); });
+    document.getElementById('lbNext').addEventListener('click', function(e){ e.stopPropagation(); openAt(idx+1); });
+    lb.addEventListener('click', function(e){ if (e.target === lb) close(); });
+    document.addEventListener('keydown', function(e){
+      if (lb.style.display !== 'flex') return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') openAt(idx-1);
+      if (e.key === 'ArrowRight') openAt(idx+1);
+    });
+  })();
 </script>
 </body>
 </html>
