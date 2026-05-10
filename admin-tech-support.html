@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — feedback inbox split by type (Bug / Help / Idea) and reporter role (Partner / Business / Customer). Assign, triage, resolve." />
+<title>Tech Support · LYMX Admin</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:1100px){.nav-links{display:none}}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+  .stat .lab{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .stat .v{font-size:28px;font-weight:800;line-height:1.05;margin-top:4px}
+  .stat.danger .v{color:var(--danger)}
+  .stat.warn   .v{color:var(--warn)}
+  .stat.ok     .v{color:var(--ok)}
+
+  .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .filters select,.filters input{padding:8px 11px;border:1px solid var(--line);border-radius:8px;font-size:13.5px;font-family:inherit;background:#fff}
+  .filters input[type=search]{flex:1;min-width:160px}
+  .filters .clear{background:transparent;border:0;color:var(--accent-2);font-weight:700;cursor:pointer;font-size:13px;padding:8px 6px}
+  .filters .clear:hover{text-decoration:underline}
+
+  .tbl-wrap{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+  .tbl th{text-align:left;background:#f9fafb;padding:11px 14px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line)}
+  .tbl td{padding:13px 14px;border-bottom:1px solid #f0f1f4;vertical-align:top}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl tr:hover{background:#f9fafb;cursor:pointer}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.02em}
+  .pill.bug{background:#fdecec;color:#9b1c1c}
+  .pill.help{background:#dceffd;color:#1d4ed8}
+  .pill.idea{background:#fff3d4;color:#92400e}
+  .pill.other{background:#eef0f4;color:#374151}
+  .pill.role-partner{background:rgba(208,32,84,.12);color:#a01644}
+  .pill.role-business{background:#e6f5ee;color:#0a6e44}
+  .pill.role-customer{background:#e6eefc;color:#0050c7}
+  .pill.role-anonymous{background:#eef0f4;color:#374151}
+  .pill.priority-urgent{background:#fdecec;color:#9b1c1c}
+  .pill.priority-high{background:#fff3d4;color:#92400e}
+  .pill.priority-normal{background:#dceffd;color:#1d4ed8}
+  .pill.priority-low{background:#eef0f4;color:#6b7280}
+  .pill.status-new{background:#fdecec;color:#9b1c1c}
+  .pill.status-in_progress{background:#fff3d4;color:#92400e}
+  .pill.status-resolved{background:#e6f5ee;color:#0a6e44}
+  .pill.status-wontfix{background:#e5e7eb;color:#4b5563}
+
+  .subj{font-weight:700;color:var(--ink)}
+  .body-snip{color:var(--muted);font-size:12.5px;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:480px}
+  .when{font-size:12px;color:var(--muted);white-space:nowrap}
+  .page-cell{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .empty{padding:64px 24px;text-align:center;color:var(--muted)}
+  .empty .big{font-size:48px;margin-bottom:8px}
+
+  /* ==== Detail modal ==== */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(14,17,22,.55);z-index:99;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto}
+  .modal-bg.on{display:flex}
+  .modal{background:#fff;border-radius:14px;max-width:760px;width:100%;padding:26px 28px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .modal h2{margin:0 0 4px;font-size:20px;font-weight:800;color:var(--ink)}
+  .modal .meta{color:var(--muted);font-size:13px;margin-bottom:14px}
+  .modal-grid{display:grid;grid-template-columns:140px 1fr;gap:6px 16px;font-size:13.5px;margin-bottom:14px}
+  .modal-grid .lbl{font-weight:700;color:var(--ink-2)}
+  .modal-section{background:var(--bg-soft);padding:12px 16px;border-radius:8px;margin-bottom:12px;font-size:14px;line-height:1.55;white-space:pre-wrap}
+  .modal-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .modal-row label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .modal-row select{padding:8px 11px;border:1px solid var(--line);border-radius:8px;font-size:13.5px;font-family:inherit}
+  .modal textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px;min-height:80px;resize:vertical;box-sizing:border-box}
+  .modal .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+  .btn{padding:9px 16px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;font-family:inherit}
+  .btn-cancel{background:#fff;border:1px solid var(--line);color:var(--muted)}
+  .btn-cancel:hover{border-color:var(--ink);color:var(--ink)}
+  .btn-save{background:var(--ink);color:#fff}
+  .btn-save:hover{background:#000}
+  .btn-save:disabled{opacity:.5;cursor:wait}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="admin-dashboard.html" class="brand">LYMX <span class="role-tag">Admin</span></a>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Home</a>
+      <a href="admin-tech-support.html" class="on">Tech Support</a>
+      <a href="admin-chat.html">Chat</a>
+      <a href="admin-broadcast.html">Broadcast</a>
+      <a href="admin-businesses.html">Businesses</a>
+      <a href="admin-customers.html">Customers</a>
+    </nav>
+    <div class="admin-avatar" id="userInitial">K</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>📨 Tech Support</h1>
+        <p>Every ticket users submit lands here. Filter by type or role · click a row to triage.</p>
+      </div>
+      <div style="font-size:13px;color:var(--muted)" id="lastSync">—</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat danger"><div class="lab">New</div><div class="v" id="cNew">—</div></div>
+      <div class="stat warn"><div class="lab">In progress</div><div class="v" id="cIp">—</div></div>
+      <div class="stat ok"><div class="lab">Resolved (30d)</div><div class="v" id="cRs">—</div></div>
+      <div class="stat"><div class="lab">Total</div><div class="v" id="cTot">—</div></div>
+    </div>
+
+    <div class="filters">
+      <select id="fType">
+        <option value="">All types</option>
+        <option value="bug">🐛 Bug</option>
+        <option value="question">🆘 Help</option>
+        <option value="suggestion">💡 Idea</option>
+        <option value="general">📋 Other</option>
+      </select>
+      <select id="fRole">
+        <option value="">All roles</option>
+        <option value="partner">🤝 Partner</option>
+        <option value="business">🏪 Business</option>
+        <option value="customer">👤 Customer</option>
+        <option value="anonymous">🕶 Anonymous</option>
+      </select>
+      <select id="fStatus">
+        <option value="open">Open (new + in progress)</option>
+        <option value="new">New only</option>
+        <option value="in_progress">In progress only</option>
+        <option value="resolved">Resolved</option>
+        <option value="wontfix">Won't fix</option>
+        <option value="">All</option>
+      </select>
+      <select id="fPriority">
+        <option value="">All priorities</option>
+        <option value="urgent">🔴 Urgent</option>
+        <option value="high">🟡 High</option>
+        <option value="normal">🔵 Normal</option>
+        <option value="low">⚪ Low</option>
+      </select>
+      <input type="search" id="fSearch" placeholder="Search subject, message, page…" />
+      <button class="clear" id="fClear">Reset</button>
+    </div>
+
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:80px">Type</th>
+            <th style="width:90px">Role</th>
+            <th>Subject &amp; message</th>
+            <th style="width:160px">Page</th>
+            <th style="width:90px">Priority</th>
+            <th style="width:110px">Status</th>
+            <th style="width:120px">When</th>
+          </tr>
+        </thead>
+        <tbody id="rows">
+          <tr><td colspan="7" class="empty"><div>Loading inbox…</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- Detail modal -->
+<div class="modal-bg" id="mBg">
+  <div class="modal" id="mBox">
+    <h2 id="mSubj">—</h2>
+    <div class="meta" id="mMeta">—</div>
+
+    <div class="modal-grid">
+      <div class="lbl">Reporter</div><div id="mWho">—</div>
+      <div class="lbl">Email</div><div id="mEmail">—</div>
+      <div class="lbl">Page</div><div id="mPage">—</div>
+      <div class="lbl">Viewport</div><div id="mViewport">—</div>
+      <div class="lbl">User agent</div><div id="mUA" style="font-size:12px;color:var(--muted)">—</div>
+    </div>
+
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Their message</div>
+    <div class="modal-section" id="mMessage">—</div>
+
+    <div class="modal-row">
+      <label>Status</label>
+      <select id="mStatus">
+        <option value="new">🔴 New</option>
+        <option value="in_progress">🟡 In progress</option>
+        <option value="resolved">🟢 Resolved</option>
+        <option value="wontfix">⚪ Won't fix</option>
+      </select>
+      <label style="margin-left:14px">Priority</label>
+      <select id="mPriority">
+        <option value="urgent">🔴 Urgent</option>
+        <option value="high">🟡 High</option>
+        <option value="normal">🔵 Normal</option>
+        <option value="low">⚪ Low</option>
+      </select>
+    </div>
+
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:6px 0 4px">Admin notes (private)</div>
+    <textarea id="mNotes" placeholder="Internal notes — what you tried, who's working on it, when expected to ship."></textarea>
+
+    <div class="actions">
+      <button class="btn btn-cancel" id="mCancel">Close</button>
+      <button class="btn btn-save" id="mSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+
+// ----- type/role label helpers -----
+const TYPE_LABEL = { bug: 'Bug', question: 'Help', suggestion: 'Idea', general: 'Other' };
+const TYPE_CLASS = { bug: 'bug', question: 'help', suggestion: 'idea', general: 'other' };
+const TYPE_EMOJI = { bug: '🐛', question: '🆘', suggestion: '💡', general: '📋' };
+const ROLE_EMOJI = { partner: '🤝', business: '🏪', customer: '👤', anonymous: '🕶' };
+
+let allRows = [];
+let currentRow = null;
+
+async function authedFetch(path, opts = {}) {
+  const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = (session && session.access_token) || ANON;
+  return fetch(SUPABASE_URL + path, {
+    ...opts,
+    headers: {
+      'apikey': ANON,
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json',
+      ...(opts.headers || {})
+    }
+  });
+}
+
+async function loadInbox() {
+  const r = await authedFetch('/rest/v1/feedback?select=*&order=created_at.desc&limit=500');
+  if (!r.ok) {
+    document.getElementById('rows').innerHTML = '<tr><td colspan="7" class="empty"><div class="big">⚠️</div><div>Could not load inbox (HTTP ' + r.status + '). You may need to sign in as admin.</div></td></tr>';
+    return;
+  }
+  allRows = await r.json();
+  computeStats();
+  render();
+  document.getElementById('lastSync').textContent = 'Synced ' + new Date().toLocaleTimeString();
+}
+
+function computeStats() {
+  const now = Date.now();
+  const day30 = 30 * 24 * 3600 * 1000;
+  let n = 0, ip = 0, rs = 0;
+  for (const r of allRows) {
+    if (r.status === 'new') n++;
+    else if (r.status === 'in_progress') ip++;
+    else if (r.status === 'resolved' && (now - new Date(r.created_at).getTime()) < day30) rs++;
+  }
+  document.getElementById('cNew').textContent = n;
+  document.getElementById('cIp').textContent = ip;
+  document.getElementById('cRs').textContent = rs;
+  document.getElementById('cTot').textContent = allRows.length;
+}
+
+function fmtWhen(iso) {
+  const d = new Date(iso);
+  const ago = (Date.now() - d.getTime()) / 1000;
+  if (ago < 60) return Math.floor(ago) + 's ago';
+  if (ago < 3600) return Math.floor(ago / 60) + 'm ago';
+  if (ago < 86400) return Math.floor(ago / 3600) + 'h ago';
+  if (ago < 86400 * 30) return Math.floor(ago / 86400) + 'd ago';
+  return d.toLocaleDateString();
+}
+
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+function render() {
+  const fT = document.getElementById('fType').value;
+  const fR = document.getElementById('fRole').value;
+  const fS = document.getElementById('fStatus').value;
+  const fP = document.getElementById('fPriority').value;
+  const fQ = document.getElementById('fSearch').value.trim().toLowerCase();
+
+  const rows = allRows.filter(r => {
+    if (fT && r.type !== fT) return false;
+    if (fR && r.user_role !== fR) return false;
+    if (fS === 'open' && !(r.status === 'new' || r.status === 'in_progress')) return false;
+    else if (fS && fS !== 'open' && r.status !== fS) return false;
+    if (fP && r.priority !== fP) return false;
+    if (fQ) {
+      const hay = ((r.subject || '') + ' ' + (r.message || '') + ' ' + (r.page_url || '') + ' ' + (r.user_email || '')).toLowerCase();
+      if (!hay.includes(fQ)) return false;
+    }
+    return true;
+  });
+
+  if (!rows.length) {
+    document.getElementById('rows').innerHTML = '<tr><td colspan="7" class="empty"><div class="big">📭</div><div>No tickets match these filters.</div></td></tr>';
+    return;
+  }
+
+  document.getElementById('rows').innerHTML = rows.map(r => {
+    const t = TYPE_LABEL[r.type] || r.type;
+    const tc = TYPE_CLASS[r.type] || 'other';
+    const role = r.user_role || 'anonymous';
+    const subj = r.subject || (r.message || '').slice(0, 60) + (r.message && r.message.length > 60 ? '…' : '');
+    const path = (r.page_url || '').replace(/^https?:\/\/[^/]+/, '');
+    return `<tr data-id="${r.id}">
+      <td><span class="pill ${tc}">${TYPE_EMOJI[r.type] || ''} ${t}</span></td>
+      <td><span class="pill role-${role}">${ROLE_EMOJI[role] || ''} ${role}</span></td>
+      <td><div class="subj">${escapeHtml(subj)}</div><div class="body-snip">${escapeHtml((r.message || '').slice(0, 160))}</div></td>
+      <td><div class="page-cell" title="${escapeHtml(r.page_url || '')}">${escapeHtml(path || '/')}</div></td>
+      <td><span class="pill priority-${r.priority || 'normal'}">${r.priority || 'normal'}</span></td>
+      <td><span class="pill status-${r.status}">${r.status.replace('_', ' ')}</span></td>
+      <td><span class="when">${fmtWhen(r.created_at)}</span></td>
+    </tr>`;
+  }).join('');
+
+  document.querySelectorAll('#rows tr').forEach(tr => {
+    tr.addEventListener('click', () => openRow(tr.dataset.id));
+  });
+}
+
+function openRow(id) {
+  const r = allRows.find(x => x.id === id);
+  if (!r) return;
+  currentRow = r;
+  document.getElementById('mSubj').textContent = r.subject || (r.message || '').slice(0, 80);
+  const t = TYPE_LABEL[r.type] || r.type;
+  document.getElementById('mMeta').innerHTML = `<span class="pill ${TYPE_CLASS[r.type]}">${TYPE_EMOJI[r.type]||''} ${t}</span> &nbsp; <span class="pill role-${r.user_role||'anonymous'}">${ROLE_EMOJI[r.user_role||'anonymous']||''} ${r.user_role||'anonymous'}</span> &nbsp; <span style="color:var(--muted);font-size:12.5px">${new Date(r.created_at).toLocaleString()}</span>`;
+  document.getElementById('mWho').textContent = r.user_id ? r.user_id.slice(0, 8) + '…' : '(not signed in)';
+  document.getElementById('mEmail').textContent = r.user_email || '—';
+  document.getElementById('mPage').innerHTML = r.page_url ? `<a href="${escapeHtml(r.page_url)}" target="_blank" style="color:var(--accent-2);text-decoration:underline">${escapeHtml(r.page_url)}</a>` : '—';
+  document.getElementById('mViewport').textContent = r.viewport || '—';
+  document.getElementById('mUA').textContent = r.user_agent || '—';
+  document.getElementById('mMessage').textContent = r.message || '';
+  document.getElementById('mStatus').value = r.status;
+  document.getElementById('mPriority').value = r.priority || 'normal';
+  document.getElementById('mNotes').value = r.admin_notes || '';
+  document.getElementById('mBg').classList.add('on');
+}
+
+document.getElementById('mCancel').onclick = () => document.getElementById('mBg').classList.remove('on');
+document.getElementById('mBg').addEventListener('click', e => { if (e.target.id === 'mBg') document.getElementById('mBg').classList.remove('on'); });
+
+document.getElementById('mSave').addEventListener('click', async () => {
+  if (!currentRow) return;
+  const btn = document.getElementById('mSave');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const patch = {
+    status: document.getElementById('mStatus').value,
+    priority: document.getElementById('mPriority').value,
+    admin_notes: document.getElementById('mNotes').value,
+  };
+  if (patch.status === 'resolved' && currentRow.status !== 'resolved') {
+    patch.resolved_at = new Date().toISOString();
+  }
+
+  const r = await authedFetch('/rest/v1/feedback?id=eq.' + currentRow.id, {
+    method: 'PATCH',
+    headers: { 'Prefer': 'return=representation' },
+    body: JSON.stringify(patch),
+  });
+  if (!r.ok) {
+    btn.disabled = false; btn.textContent = 'Save';
+    alert('Save failed: ' + r.status + '\nMake sure you are signed in as admin.');
+    return;
+  }
+  // refresh local row
+  Object.assign(currentRow, patch);
+  btn.textContent = 'Saved ✓';
+  setTimeout(() => {
+    btn.disabled = false; btn.textContent = 'Save';
+    document.getElementById('mBg').classList.remove('on');
+    render();
+    computeStats();
+  }, 700);
+});
+
+// Filter listeners
+['fType', 'fRole', 'fStatus', 'fPriority'].forEach(id => document.getElementById(id).addEventListener('change', render));
+document.getElementById('fSearch').addEventListener('input', render);
+document.getElementById('fClear').addEventListener('click', () => {
+  document.getElementById('fType').value = '';
+  document.getElementById('fRole').value = '';
+  document.getElementById('fStatus').value = 'open';
+  document.getElementById('fPriority').value = '';
+  document.getElementById('fSearch').value = '';
+  render();
+});
+
+// boot
+loadInbox();
+setInterval(loadInbox, 60000);
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>

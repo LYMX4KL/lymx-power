@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Team Chat — group chats for Partners, Businesses, Staff, Admins. Create your own groups." />
+<title>Team Chat · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:1100px){.nav-links{display:none}}
+
+  .chat-shell{flex:1;display:flex;background:#fff;border-top:1px solid var(--line)}
+  .chat-side{width:280px;flex-shrink:0;border-right:1px solid var(--line);background:var(--bg-soft);overflow-y:auto;padding:14px 8px}
+  .side-h{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:14px 12px 6px}
+  .ch-item{display:flex;align-items:center;gap:8px;padding:8px 12px;margin:0 4px;border-radius:8px;color:var(--ink);cursor:pointer;font-size:14px;font-weight:500}
+  .ch-item:hover{background:#fff}
+  .ch-item.active{background:var(--ink);color:#fff;font-weight:700}
+  .ch-item .lock{font-size:11px;color:var(--muted)}
+  .ch-item.active .lock{color:#cbd1d8}
+  .ch-item .badge{margin-left:auto;background:var(--danger);color:#fff;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:700}
+  .ch-item.active .badge{background:#fff;color:var(--ink)}
+  .new-btn{display:block;margin:8px 12px 14px;padding:8px 12px;background:transparent;border:1px dashed #c7d2e0;color:var(--accent-2);border-radius:8px;font-size:13px;cursor:pointer;width:calc(100% - 24px);text-align:left;font-family:inherit;font-weight:600}
+  .new-btn:hover{background:#eef5ff;border-color:var(--accent)}
+
+  .chat-main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .chat-head{padding:14px 24px;border-bottom:1px solid var(--line)}
+  .chat-head h2{margin:0;font-size:18px;font-weight:800}
+  .chat-head .desc{font-size:13px;color:var(--muted);margin-top:2px}
+  .chat-stream{flex:1;overflow-y:auto;padding:18px 24px;display:flex;flex-direction:column;gap:14px;background:#fff}
+  .msg{display:flex;gap:10px}
+  .msg .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+  .msg.mine .avatar{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  .msg .body{flex:1;min-width:0}
+  .msg .head-line{font-size:13px}
+  .msg .head-line .name{font-weight:700}
+  .msg .head-line .when{color:var(--muted);font-size:11.5px;margin-left:6px}
+  .msg .text{white-space:pre-wrap;line-height:1.5;font-size:14.5px;margin-top:2px;word-wrap:break-word;overflow-wrap:anywhere}
+
+  .chat-compose{border-top:1px solid var(--line);padding:12px 24px;background:#fff}
+  .chat-compose textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:14.5px;resize:vertical;min-height:48px;max-height:200px;outline:none;font-family:inherit;box-sizing:border-box}
+  .chat-compose textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  .chat-compose .row{display:flex;align-items:center;gap:10px;margin-top:8px}
+  .chat-compose .hint{flex:1;font-size:11.5px;color:var(--muted)}
+  .chat-compose button.send{background:var(--ink);color:#fff;border:0;padding:9px 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:13.5px;font-family:inherit}
+  .chat-compose button.send:hover{background:#000}
+  .chat-compose button.send:disabled{opacity:.5;cursor:wait}
+
+  .empty-pane{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:15px;text-align:center;padding:40px}
+  .empty-pane .big{font-size:48px;margin-bottom:8px}
+
+  /* Modal */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(14,17,22,.55);z-index:99;align-items:flex-start;justify-content:center;padding:48px 16px;overflow-y:auto}
+  .modal-bg.on{display:flex}
+  .modal{background:#fff;border-radius:14px;max-width:480px;width:100%;padding:24px 26px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .modal h3{margin:0 0 14px;font-size:18px;font-weight:800}
+  .modal label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px}
+  .modal input,.modal textarea,.modal select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-family:inherit;box-sizing:border-box}
+  .modal textarea{min-height:60px;resize:vertical}
+  .modal .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+  .btn{padding:9px 18px;border-radius:8px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;font-family:inherit}
+  .btn-cancel{background:#fff;border:1px solid var(--line);color:var(--muted)}
+  .btn-cancel:hover{border-color:var(--ink);color:var(--ink)}
+  .btn-save{background:var(--ink);color:#fff}
+  .btn-save:hover{background:#000}
+  .btn-save:disabled{opacity:.5;cursor:wait}
+
+  @media(max-width:780px){
+    .chat-shell{flex-direction:column}
+    .chat-side{width:100%;max-height:200px;border-right:0;border-bottom:1px solid var(--line)}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="admin-dashboard.html" class="brand">LYMX <span class="role-tag">Team</span></a>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Home</a>
+      <a href="admin-tech-support.html">Tech Support</a>
+      <a href="admin-chat.html" class="on">Chat</a>
+      <a href="admin-broadcast.html">Broadcast</a>
+      <a href="admin-businesses.html">Businesses</a>
+      <a href="admin-customers.html">Customers</a>
+    </nav>
+    <div class="admin-avatar" id="userInitial">·</div>
+  </div>
+</header>
+
+<div class="chat-shell">
+  <aside class="chat-side">
+    <div class="side-h">Default channels</div>
+    <div id="defaultGroups"></div>
+
+    <div class="side-h">My groups</div>
+    <div id="userGroups"></div>
+
+    <button class="new-btn" id="newGroupBtn">+ New group</button>
+
+    <div class="side-h">Direct messages</div>
+    <div id="dms"></div>
+  </aside>
+
+  <main class="chat-main">
+    <div class="chat-head" id="chatHead">
+      <h2>Pick a channel</h2>
+      <div class="desc">Default channels are at the top — click one to start chatting.</div>
+    </div>
+    <div class="chat-stream" id="stream">
+      <div class="empty-pane"><div><div class="big">💬</div>Choose a channel on the left to see messages</div></div>
+    </div>
+    <div class="chat-compose" id="compose" style="display:none">
+      <textarea id="msgInput" placeholder="Type a message…"></textarea>
+      <div class="row">
+        <div class="hint">Enter to send · Shift+Enter for new line</div>
+        <button class="send" id="sendBtn">Send</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- New group modal -->
+<div class="modal-bg" id="newGroupModal">
+  <div class="modal">
+    <h3>New group</h3>
+    <label for="ngName">Group name</label>
+    <input id="ngName" type="text" placeholder="My downline · Coffee shops · Region NW…" maxlength="60" />
+    <label for="ngDesc">Description (optional)</label>
+    <textarea id="ngDesc" placeholder="What is this group for?" maxlength="200"></textarea>
+    <label for="ngPrivate">Visibility</label>
+    <select id="ngPrivate">
+      <option value="false">Public — anyone can find &amp; join</option>
+      <option value="true" selected>Private — invite only</option>
+    </select>
+    <div class="actions">
+      <button class="btn btn-cancel" id="ngCancel">Cancel</button>
+      <button class="btn btn-save" id="ngCreate">Create group</button>
+    </div>
+  </div>
+</div>
+
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+
+let myUserId = null;
+let myEmail  = null;
+let activeGroup = null;
+let allGroups = [];
+let pollHandle = null;
+
+async function authedFetch(path, opts = {}) {
+  const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = (session && session.access_token) || ANON;
+  return fetch(SUPABASE_URL + path, {
+    ...opts,
+    headers: {
+      'apikey': ANON,
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json',
+      ...(opts.headers || {})
+    }
+  });
+}
+
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+function fmtTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
+async function getMe() {
+  if (!window.LYMX || !window.LYMX.getSession) return null;
+  const s = await window.LYMX.getSession();
+  if (!s) {
+    document.getElementById('chatHead').innerHTML = '<h2>Sign in required</h2><div class="desc">Chat needs you to be signed in. <a href="login.html" style="color:var(--accent-2);text-decoration:underline">Sign in</a> first.</div>';
+    document.getElementById('stream').innerHTML = '';
+    return null;
+  }
+  myUserId = s.user.id;
+  myEmail  = s.user.email;
+  document.getElementById('userInitial').textContent = (myEmail || 'L')[0].toUpperCase();
+  return s;
+}
+
+// Auto-join default groups based on role hint stored in user metadata
+async function ensureDefaultMembership() {
+  // Pull groups
+  const r = await authedFetch('/rest/v1/chat_groups?kind=eq.default&select=id,slug,audience');
+  if (!r.ok) return;
+  const defaults = await r.json();
+
+  // For now, every authenticated user gets All Partners + All Businesses (public default channels).
+  // Admins get All Staff + Admins. The migration's RLS will reject inserts that don't match,
+  // so we just try and ignore failures.
+  for (const g of defaults) {
+    await authedFetch('/rest/v1/chat_group_members', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=ignore-duplicates,return=minimal' },
+      body: JSON.stringify({ group_id: g.id, user_id: myUserId, role: 'member' }),
+    });
+  }
+}
+
+async function loadGroups() {
+  const r = await authedFetch('/rest/v1/v_my_chats?select=*&order=last_msg_at.desc.nullslast');
+  if (!r.ok) return;
+  allGroups = await r.json();
+  renderSidebar();
+}
+
+function renderSidebar() {
+  const def = allGroups.filter(g => g.kind === 'default');
+  const usr = allGroups.filter(g => g.kind === 'group');
+  const dms = allGroups.filter(g => g.kind === 'dm');
+
+  function row(g) {
+    const cls = (activeGroup && activeGroup.group_id === g.group_id) ? 'ch-item active' : 'ch-item';
+    const lock = g.is_private ? '<span class="lock">🔒</span>' : '<span class="lock">#</span>';
+    const badge = g.unread_count ? `<span class="badge">${g.unread_count}</span>` : '';
+    return `<div class="${cls}" data-id="${g.group_id}">${lock} ${escapeHtml(g.name)}${badge}</div>`;
+  }
+  document.getElementById('defaultGroups').innerHTML = def.map(row).join('') || '<div style="padding:8px 12px;font-size:12px;color:var(--muted)">No default channels yet.</div>';
+  document.getElementById('userGroups').innerHTML = usr.map(row).join('') || '<div style="padding:8px 12px;font-size:12px;color:var(--muted)">No groups yet — create one below.</div>';
+  document.getElementById('dms').innerHTML = dms.map(row).join('') || '<div style="padding:8px 12px;font-size:12px;color:var(--muted)">No direct messages.</div>';
+
+  document.querySelectorAll('.ch-item').forEach(el => {
+    el.addEventListener('click', () => openGroup(el.dataset.id));
+  });
+}
+
+async function openGroup(groupId) {
+  const g = allGroups.find(x => x.group_id === groupId);
+  if (!g) return;
+  activeGroup = g;
+  document.getElementById('chatHead').innerHTML = `<h2>${escapeHtml(g.name)} ${g.is_private ? '🔒' : ''}</h2><div class="desc">${escapeHtml(g.description || '—')}</div>`;
+  document.getElementById('compose').style.display = 'block';
+  renderSidebar(); // re-paint active highlight
+  await loadMessages();
+  // Mark read
+  await authedFetch('/rest/v1/chat_group_members?group_id=eq.' + groupId + '&user_id=eq.' + myUserId, {
+    method: 'PATCH',
+    body: JSON.stringify({ last_read_at: new Date().toISOString() }),
+  });
+  // Restart poll
+  if (pollHandle) clearInterval(pollHandle);
+  pollHandle = setInterval(loadMessages, 5000);
+}
+
+async function loadMessages() {
+  if (!activeGroup) return;
+  const r = await authedFetch('/rest/v1/chat_messages?group_id=eq.' + activeGroup.group_id + '&deleted_at=is.null&select=*&order=created_at.asc&limit=200');
+  if (!r.ok) return;
+  const msgs = await r.json();
+  if (!msgs.length) {
+    document.getElementById('stream').innerHTML = '<div class="empty-pane"><div><div class="big">👋</div>Be the first to say hi.</div></div>';
+    return;
+  }
+  document.getElementById('stream').innerHTML = msgs.map(m => {
+    const mine = m.sender_id === myUserId;
+    const initial = (m.sender_id || '·')[0].toUpperCase();
+    const name = mine ? 'You' : (m.sender_id ? m.sender_id.slice(0, 6) : 'Unknown');
+    return `<div class="msg ${mine ? 'mine' : ''}">
+      <div class="avatar">${initial}</div>
+      <div class="body">
+        <div class="head-line"><span class="name">${escapeHtml(name)}</span><span class="when">${fmtTime(m.created_at)}</span></div>
+        <div class="text">${escapeHtml(m.body)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  const stream = document.getElementById('stream');
+  stream.scrollTop = stream.scrollHeight;
+}
+
+// Send
+document.getElementById('sendBtn').addEventListener('click', sendMsg);
+document.getElementById('msgInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+});
+async function sendMsg() {
+  if (!activeGroup) return;
+  const ta = document.getElementById('msgInput');
+  const body = ta.value.trim();
+  if (!body) return;
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  const r = await authedFetch('/rest/v1/chat_messages', {
+    method: 'POST',
+    headers: { 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ group_id: activeGroup.group_id, sender_id: myUserId, body }),
+  });
+  btn.disabled = false;
+  if (!r.ok) {
+    alert('Send failed (HTTP ' + r.status + '). You may not be a member of this channel yet.');
+    return;
+  }
+  ta.value = '';
+  loadMessages();
+}
+
+// New group modal
+document.getElementById('newGroupBtn').addEventListener('click', () => document.getElementById('newGroupModal').classList.add('on'));
+document.getElementById('ngCancel').addEventListener('click', () => document.getElementById('newGroupModal').classList.remove('on'));
+document.getElementById('newGroupModal').addEventListener('click', e => { if (e.target.id === 'newGroupModal') e.target.classList.remove('on'); });
+
+document.getElementById('ngCreate').addEventListener('click', async () => {
+  const name = document.getElementById('ngName').value.trim();
+  const desc = document.getElementById('ngDesc').value.trim();
+  const isPrivate = document.getElementById('ngPrivate').value === 'true';
+  if (name.length < 2) { alert('Pick a name (at least 2 characters).'); return; }
+
+  const btn = document.getElementById('ngCreate');
+  btn.disabled = true; btn.textContent = 'Creating…';
+
+  const r = await authedFetch('/rest/v1/chat_groups', {
+    method: 'POST',
+    headers: { 'Prefer': 'return=representation' },
+    body: JSON.stringify({ name, description: desc, kind: 'group', is_private: isPrivate, created_by: myUserId }),
+  });
+  if (!r.ok) {
+    btn.disabled = false; btn.textContent = 'Create group';
+    alert('Could not create (HTTP ' + r.status + ').');
+    return;
+  }
+  const created = (await r.json())[0];
+  // Join self as owner
+  await authedFetch('/rest/v1/chat_group_members', {
+    method: 'POST',
+    headers: { 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ group_id: created.id, user_id: myUserId, role: 'owner' }),
+  });
+  document.getElementById('newGroupModal').classList.remove('on');
+  document.getElementById('ngName').value = '';
+  document.getElementById('ngDesc').value = '';
+  btn.disabled = false; btn.textContent = 'Create group';
+  await loadGroups();
+});
+
+// Boot
+(async function init() {
+  const me = await getMe();
+  if (!me) return;
+  await ensureDefaultMembership();
+  await loadGroups();
+})();
+
+setInterval(loadGroups, 30000);
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>

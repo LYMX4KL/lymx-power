@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin Broadcast — fire one-off announcements to all Partners, all Businesses, all Customers, or a custom email list." />
+<title>Broadcast · LYMX Admin</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:1100px){.nav-links{display:none}}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:18px}
+  .card h2{margin:0 0 4px;font-size:18px;font-weight:800}
+  .card .meta{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .card label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px}
+  .card input,.card textarea,.card select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-family:inherit;box-sizing:border-box}
+  .card textarea{min-height:160px;resize:vertical;line-height:1.55}
+  .card .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:600px){.card .row{grid-template-columns:1fr}}
+  .card .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;align-items:center}
+  .card .audience-count{flex:1;font-size:13px;color:var(--muted)}
+  .btn{padding:10px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;font-family:inherit}
+  .btn-cancel{background:#fff;border:1px solid var(--line);color:var(--muted)}
+  .btn-cancel:hover{border-color:var(--ink);color:var(--ink)}
+  .btn-preview{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-preview:hover{background:var(--bg-soft)}
+  .btn-send{background:var(--ink);color:#fff}
+  .btn-send:hover{background:#000}
+  .btn-send:disabled{opacity:.5;cursor:wait}
+
+  .preview{background:var(--bg-soft);border:1px solid var(--line);border-radius:8px;padding:14px 18px;font-size:14px;line-height:1.55;margin-top:10px;display:none}
+  .preview.show{display:block}
+  .preview .subj{font-weight:700;margin-bottom:8px}
+
+  .status-msg{padding:10px 13px;border-radius:8px;font-size:13.5px;margin-top:10px;display:none}
+  .status-msg.show{display:block}
+  .status-msg.ok{background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44}
+  .status-msg.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
+  .status-msg.info{background:#e6eefc;border:1px solid #b3c7ed;color:#1d4ed8}
+
+  /* History */
+  .hist-row{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .hist-row:last-child{border-bottom:0}
+  .hist-row .when{min-width:110px;font-size:12px;color:var(--muted)}
+  .hist-row .body{flex:1;font-size:13.5px}
+  .hist-row .body .subj{font-weight:700;color:var(--ink)}
+  .hist-row .body .meta-line{color:var(--muted);font-size:12px;margin-top:2px}
+  .hist-row .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.02em}
+  .pill.sent{background:#e6f5ee;color:#0a6e44}
+  .pill.draft{background:#eef0f4;color:#374151}
+  .pill.failed{background:#fdecec;color:#9b1c1c}
+  .pill.sending{background:#fff3d4;color:#92400e}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="admin-dashboard.html" class="brand">LYMX <span class="role-tag">Admin</span></a>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Home</a>
+      <a href="admin-tech-support.html">Tech Support</a>
+      <a href="admin-chat.html">Chat</a>
+      <a href="admin-broadcast.html" class="on">Broadcast</a>
+      <a href="admin-businesses.html">Businesses</a>
+      <a href="admin-customers.html">Customers</a>
+    </nav>
+    <div class="admin-avatar" id="userInitial">·</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>📣 Broadcast</h1>
+        <p>Send a one-off announcement to all Partners, all Businesses, all Customers, or a custom list.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>New broadcast</h2>
+      <div class="meta">Goes out by email. Each recipient gets a personalized copy. Once sent, it cannot be recalled.</div>
+
+      <div class="row">
+        <div>
+          <label for="bcAudience">Audience</label>
+          <select id="bcAudience">
+            <option value="all_partners">🤝 All Partners</option>
+            <option value="all_businesses">🏪 All Businesses</option>
+            <option value="all_customers">👤 All Customers</option>
+            <option value="all_users">📣 Everyone (Partners + Businesses + Customers)</option>
+            <option value="custom">✏️ Custom email list…</option>
+          </select>
+        </div>
+        <div>
+          <label for="bcChannel">Channel</label>
+          <select id="bcChannel">
+            <option value="email" selected>Email only</option>
+            <option value="in_app">In-app inbox only</option>
+            <option value="both">Both email + in-app</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="customWrap" style="display:none">
+        <label for="bcCustom">Custom recipients (comma or newline separated)</label>
+        <textarea id="bcCustom" placeholder="alice@example.com, bob@example.com&#10;carol@example.com" style="min-height:80px"></textarea>
+      </div>
+
+      <label for="bcSubject">Subject</label>
+      <input id="bcSubject" type="text" placeholder="The 1 thing every Founding Partner should know this week" maxlength="120" />
+
+      <label for="bcBody">Message</label>
+      <textarea id="bcBody" placeholder="Write your message. Plain text is fine — we'll convert to email-safe HTML."></textarea>
+
+      <div id="bcStatus" class="status-msg"></div>
+
+      <div class="actions">
+        <div class="audience-count" id="audienceCount">—</div>
+        <button class="btn btn-cancel" id="bcReset">Reset</button>
+        <button class="btn btn-preview" id="bcPreview">Preview</button>
+        <button class="btn btn-send" id="bcSend">Send broadcast</button>
+      </div>
+
+      <div class="preview" id="previewPane">
+        <div class="subj" id="prevSubj">—</div>
+        <div id="prevBody">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Recent broadcasts</h2>
+      <div class="meta">Last 25, newest first.</div>
+      <div id="histList">
+        <div style="padding:18px 0;color:var(--muted);font-size:13.5px">Loading…</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+
+let myUserId = null;
+
+async function authedFetch(path, opts = {}) {
+  const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = (session && session.access_token) || ANON;
+  return fetch(SUPABASE_URL + path, {
+    ...opts,
+    headers: {
+      'apikey': ANON,
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json',
+      ...(opts.headers || {})
+    }
+  });
+}
+
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+function setStatus(text, kind) {
+  const el = document.getElementById('bcStatus');
+  if (!text) { el.className = 'status-msg'; el.textContent = ''; return; }
+  el.className = 'status-msg show ' + (kind || 'info');
+  el.textContent = text;
+}
+
+function bodyToHtml(text) {
+  // very small text→html: paragraphs from blank-line separated blocks, links auto-linked
+  return text.split(/\n\n+/).map(p =>
+    '<p style="margin:0 0 14px;line-height:1.55">' +
+    escapeHtml(p).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" style="color:#0050c7">$1</a>').replace(/\n/g, '<br>') +
+    '</p>'
+  ).join('');
+}
+
+async function refreshAudienceCount() {
+  const aud = document.getElementById('bcAudience').value;
+  const el = document.getElementById('audienceCount');
+  if (aud === 'custom') {
+    const list = document.getElementById('bcCustom').value.split(/[,\n;]/).map(s => s.trim()).filter(Boolean);
+    el.textContent = list.length + ' custom recipient' + (list.length === 1 ? '' : 's');
+    return;
+  }
+  el.textContent = 'Counting…';
+  // Try to count from likely tables. These views/tables may not all exist yet — fall back gracefully.
+  let url = '';
+  if (aud === 'all_partners')   url = '/rest/v1/partners?select=id&active=eq.true';
+  else if (aud === 'all_businesses') url = '/rest/v1/businesses?select=id';
+  else if (aud === 'all_customers')  url = '/rest/v1/customers?select=id';
+  else                                url = '/rest/v1/users?select=id';
+  try {
+    const r = await authedFetch(url, { headers: { 'Prefer': 'count=exact', 'Range': '0-0' } });
+    if (!r.ok) { el.textContent = '—'; return; }
+    const range = r.headers.get('content-range') || '';
+    const m = range.match(/\/(\d+)/);
+    el.textContent = m ? (m[1] + ' recipients') : '—';
+  } catch { el.textContent = '—'; }
+}
+
+// Audience listener
+document.getElementById('bcAudience').addEventListener('change', () => {
+  document.getElementById('customWrap').style.display = document.getElementById('bcAudience').value === 'custom' ? 'block' : 'none';
+  refreshAudienceCount();
+});
+document.getElementById('bcCustom').addEventListener('input', refreshAudienceCount);
+
+// Preview
+document.getElementById('bcPreview').addEventListener('click', () => {
+  const subj = document.getElementById('bcSubject').value.trim();
+  const body = document.getElementById('bcBody').value.trim();
+  if (!subj && !body) { setStatus('Type a subject and message first.', 'err'); return; }
+  document.getElementById('prevSubj').textContent = subj || '(no subject)';
+  document.getElementById('prevBody').innerHTML = bodyToHtml(body) || '<em style="color:var(--muted)">(no body)</em>';
+  document.getElementById('previewPane').classList.add('show');
+});
+
+// Reset
+document.getElementById('bcReset').addEventListener('click', () => {
+  document.getElementById('bcSubject').value = '';
+  document.getElementById('bcBody').value = '';
+  document.getElementById('bcCustom').value = '';
+  document.getElementById('bcAudience').value = 'all_partners';
+  document.getElementById('bcChannel').value = 'email';
+  document.getElementById('customWrap').style.display = 'none';
+  document.getElementById('previewPane').classList.remove('show');
+  setStatus(null);
+  refreshAudienceCount();
+});
+
+// Send
+document.getElementById('bcSend').addEventListener('click', async () => {
+  const subj = document.getElementById('bcSubject').value.trim();
+  const body = document.getElementById('bcBody').value.trim();
+  const audience = document.getElementById('bcAudience').value;
+  const channel  = document.getElementById('bcChannel').value;
+  if (!subj || subj.length < 4) return setStatus('Subject is too short.', 'err');
+  if (!body || body.length < 20) return setStatus('Message is too short (at least 20 chars).', 'err');
+
+  const customEmails = audience === 'custom'
+    ? document.getElementById('bcCustom').value.split(/[,\n;]/).map(s => s.trim()).filter(Boolean)
+    : null;
+  if (audience === 'custom' && !(customEmails && customEmails.length)) return setStatus('Add at least one email.', 'err');
+
+  if (!confirm(`Send "${subj}" to ${audience.replace('_', ' ')}? This cannot be undone.`)) return;
+
+  const btn = document.getElementById('bcSend');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  setStatus('Queuing…', 'info');
+
+  // 1) Insert into broadcasts (status=draft)
+  const insertRes = await authedFetch('/rest/v1/broadcasts', {
+    method: 'POST',
+    headers: { 'Prefer': 'return=representation' },
+    body: JSON.stringify({
+      audience, custom_emails: customEmails, channel,
+      subject: subj, body_html: bodyToHtml(body), body_text: body,
+      created_by: myUserId, status: 'draft',
+    }),
+  });
+  if (!insertRes.ok) {
+    btn.disabled = false; btn.textContent = 'Send broadcast';
+    return setStatus('Could not create broadcast (HTTP ' + insertRes.status + ').', 'err');
+  }
+  const created = (await insertRes.json())[0];
+
+  // 2) Trigger Edge Function broadcast-send (it does the per-recipient send and updates status)
+  const fnRes = await authedFetch('/functions/v1/broadcast-send', {
+    method: 'POST',
+    body: JSON.stringify({ broadcast_id: created.id }),
+  });
+  if (!fnRes.ok) {
+    btn.disabled = false; btn.textContent = 'Send broadcast';
+    return setStatus('Send queued — but Edge Function returned HTTP ' + fnRes.status + '. Check status under Recent broadcasts.', 'err');
+  }
+  const result = await fnRes.json().catch(() => ({}));
+  setStatus(`Sent to ${result.sent_count || '?'} recipient${result.sent_count === 1 ? '' : 's'}.`, 'ok');
+  btn.disabled = false; btn.textContent = 'Send broadcast';
+  loadHistory();
+});
+
+// History
+async function loadHistory() {
+  const r = await authedFetch('/rest/v1/broadcasts?select=*&order=created_at.desc&limit=25');
+  if (!r.ok) {
+    document.getElementById('histList').innerHTML = '<div style="padding:14px 0;color:var(--muted);font-size:13.5px">Could not load history.</div>';
+    return;
+  }
+  const rows = await r.json();
+  if (!rows.length) {
+    document.getElementById('histList').innerHTML = '<div style="padding:14px 0;color:var(--muted);font-size:13.5px">No broadcasts sent yet.</div>';
+    return;
+  }
+  document.getElementById('histList').innerHTML = rows.map(b => {
+    const when = new Date(b.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    return `<div class="hist-row">
+      <div class="when">${when}</div>
+      <div class="body">
+        <div class="subj">${escapeHtml(b.subject)}</div>
+        <div class="meta-line">
+          <span class="pill ${b.status}">${b.status}</span>
+          · ${b.audience.replace('_', ' ')} · ${b.channel}
+          · ${b.sent_count || 0} sent
+          ${b.error ? '· <span style="color:#9b1c1c">' + escapeHtml(b.error) + '</span>' : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+(async function init() {
+  if (!window.LYMX || !window.LYMX.getSession) return;
+  const s = await window.LYMX.getSession();
+  if (!s) {
+    setStatus('Sign in as admin first to send broadcasts.', 'err');
+    document.getElementById('bcSend').disabled = true;
+    return;
+  }
+  myUserId = s.user.id;
+  document.getElementById('userInitial').textContent = (s.user.email || 'L')[0].toUpperCase();
+  refreshAudienceCount();
+  loadHistory();
+})();
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>
