@@ -121,6 +121,7 @@
   footer{background:var(--ink);color:#9aa3b0;padding:30px 0;font-size:13px;text-align:center;margin-top:40px}
   footer a{color:#c6ccd4;margin:0 10px}
 </style>
+<script src="lymx-config.js"></script>
 </head>
 <body>
 <header class="nav">
@@ -174,6 +175,13 @@
             <div class="field">
               <label>Email</label>
               <input class="input" type="email" id="email" placeholder="you@example.com" oninput="check()" />
+            </div>
+            <div class="field">
+              <label>Password (10+ chars, you'll use it to sign in)</label>
+              <div style="position:relative">
+                <input class="input" type="password" id="password" placeholder="Choose a strong password" oninput="check()" minlength="10" style="padding-right:64px" />
+                <button type="button" onclick="togglePartnerPw()" id="pwToggle" aria-label="Show password" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:0;color:var(--muted);cursor:pointer;padding:6px 12px;font-size:13px;font-weight:600;font-family:inherit">Show</button>
+              </div>
             </div>
             <div class="row2">
               <div class="field">
@@ -386,11 +394,104 @@
     check();
   }
 
-  function next(){ if (step <= total) go(step + 1); }
+  function next(){
+    if (step === total) {
+      // On final step, submit the application instead of just advancing
+      submitApplication();
+      return;
+    }
+    if (step <= total) go(step + 1);
+  }
   function back(){ if (step > 1) go(step - 1); }
 
+  // ---------- Read ?ref= URL param to pre-fill sponsor ----------
+  (function prefillSponsor(){
+    try {
+      const ref = new URLSearchParams(window.location.search).get('ref');
+      if (ref) {
+        const sp = document.getElementById('sponsor');
+        if (sp) {
+          sp.value = ref;
+          sp.readOnly = true;  // lock it so user doesn't change a verified referral
+          sp.style.background = '#f0f5ff';
+          sp.style.color = '#0050c7';
+          const help = document.getElementById('sponsor-help');
+          if (help) help.textContent = '✓ Referral link verified — you were invited by an existing Partner.';
+          if (window.onSponsor) onSponsor();
+        }
+      }
+    } catch (e) { console.warn('prefill sponsor failed', e); }
+  })();
+
+  // ---------- Submit application to partner-signup Edge Function ----------
+  async function submitApplication() {
+    if (!window.LYMX_CONFIG || !window.LYMX_CONFIG.SUPABASE_URL) {
+      alert('Site config not loaded. Refresh the page and try again.');
+      return;
+    }
+    const btn = document.getElementById('next');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+
+    const body = {
+      owner_email: document.getElementById('email').value.trim(),
+      owner_password: document.getElementById('password').value,
+      first_name: document.getElementById('firstName').value.trim(),
+      last_name: document.getElementById('lastName').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      city: document.getElementById('city').value.trim(),
+      state: document.getElementById('state').value,
+      zip: document.getElementById('zip').value.trim(),
+      sponsor_partner_id: document.getElementById('sponsor').value.trim() || undefined,
+      why: document.getElementById('why').value.trim(),
+      background: document.getElementById('bg').value,
+      extra: document.getElementById('extra').value.trim(),
+      agreed_to_compensation: document.getElementById('agree-comp').checked,
+      agreed_to_pyramid_disclosure: document.getElementById('agree-pyramid').checked,
+      agreed_to_1099_status: document.getElementById('agree-1099').checked,
+      agreed_to_tos: document.getElementById('agree-tos').checked,
+    };
+
+    try {
+      const res = await fetch(
+        `${LYMX_CONFIG.SUPABASE_URL}/functions/v1/partner-signup`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${LYMX_CONFIG.SUPABASE_ANON_KEY}`,
+            'apikey': LYMX_CONFIG.SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`Sign-up failed: ${data.error || res.statusText}`);
+        btn.disabled = false;
+        btn.textContent = 'Submit application';
+        return;
+      }
+      // Success — show the done state
+      console.log('Partner signup success:', data);
+      go(total + 1);
+    } catch (err) {
+      console.error('Partner signup error:', err);
+      alert('Network error: ' + (err.message || err));
+      btn.disabled = false;
+      btn.textContent = 'Submit application';
+    }
+  }
+
   function valid1(){
-    return ['firstName','lastName','email','phone','city','zip'].every(id => document.getElementById(id).value.trim().length > 0);
+    const allFilled = ['firstName','lastName','email','phone','city','zip','password'].every(id => document.getElementById(id).value.trim().length > 0);
+    return allFilled && document.getElementById('password').value.length >= 10;
+  }
+  function togglePartnerPw(){
+    const el = document.getElementById('password');
+    const btn = document.getElementById('pwToggle');
+    if (el.type === 'password') { el.type = 'text'; btn.textContent = 'Hide'; }
+    else { el.type = 'password'; btn.textContent = 'Show'; }
   }
   function valid2(){ return true; /* sponsor optional */ }
   function valid3(){
