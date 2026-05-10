@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX — Invite friends and family to join. Paste emails or upload a CSV from Gmail/Outlook/Apple Contacts. Pre-built templates with your Partner ref link." />
+<title>Invite Friends · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1080px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:1100px){.nav-links{display:none}}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:18px}
+  .card h2{margin:0 0 4px;font-size:18px;font-weight:800}
+  .card .meta{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .card label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px}
+  .card input,.card textarea,.card select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-family:inherit;box-sizing:border-box}
+  .card textarea{min-height:140px;resize:vertical;line-height:1.5;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+
+  .step{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+  .step .num{background:var(--ink);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+
+  .upload-zone{border:2px dashed var(--line);border-radius:10px;padding:24px 18px;text-align:center;cursor:pointer;background:var(--bg-soft);transition:.15s}
+  .upload-zone:hover{border-color:var(--accent);background:#eef5ff;color:var(--accent-2)}
+  .upload-zone.drag{border-color:var(--accent);background:#dbeefb}
+  .upload-zone .big{font-size:32px;margin-bottom:6px}
+  .upload-zone .h{font-weight:700;font-size:15px}
+  .upload-zone .sub{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .upload-zone input[type=file]{display:none}
+
+  .or-divider{display:flex;align-items:center;gap:12px;margin:14px 0 8px;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--line)}
+
+  .summary{background:#eef5ff;border:1px solid #c5dffb;border-radius:10px;padding:14px 18px;margin-top:14px;font-size:14px}
+  .summary.empty{background:var(--bg-soft);border-color:var(--line);color:var(--muted)}
+  .summary .big{font-size:24px;font-weight:800;color:var(--accent-2);margin-right:8px;vertical-align:-3px}
+  .summary.empty .big{color:var(--muted)}
+  .summary-list{margin-top:10px;max-height:160px;overflow-y:auto;font-size:12.5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);line-height:1.7}
+  .chip{display:inline-block;background:#fff;border:1px solid var(--line);padding:2px 9px;border-radius:999px;margin:2px 3px 2px 0;font-size:12px;color:var(--ink)}
+  .chip.dup{background:#fff3d4;border-color:#f0c870;color:#92400e}
+  .chip.bad{background:#fdecec;border-color:#f5b7b7;color:#9b1c1c}
+
+  .tmpl-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:700px){.tmpl-grid{grid-template-columns:1fr}}
+  .tmpl{background:#fff;border:2px solid var(--line);border-radius:10px;padding:14px 16px;cursor:pointer;transition:.15s}
+  .tmpl:hover{border-color:var(--accent);background:#eef5ff}
+  .tmpl.on{border-color:var(--ink);background:var(--ink);color:#fff}
+  .tmpl .h{font-weight:800;font-size:14.5px;margin-bottom:3px}
+  .tmpl .d{font-size:12px;color:var(--muted);line-height:1.45}
+  .tmpl.on .d{color:#cbd1d8}
+
+  .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;align-items:center;flex-wrap:wrap}
+  .actions .audience-count{flex:1;font-size:13px;color:var(--muted);min-width:120px}
+  .btn{padding:10px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;font-family:inherit}
+  .btn-cancel{background:#fff;border:1px solid var(--line);color:var(--muted)}
+  .btn-cancel:hover{border-color:var(--ink);color:var(--ink)}
+  .btn-preview{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-preview:hover{background:var(--bg-soft)}
+  .btn-send{background:var(--ink);color:#fff}
+  .btn-send:hover{background:#000}
+  .btn-send:disabled{opacity:.5;cursor:wait}
+
+  .preview-pane{background:var(--bg-soft);border:1px solid var(--line);border-radius:8px;padding:18px 22px;font-size:14.5px;line-height:1.55;margin-top:10px;display:none}
+  .preview-pane.show{display:block}
+  .preview-pane .subj{font-weight:800;font-size:16px;margin-bottom:10px;color:var(--ink)}
+  .preview-pane .from{font-size:12px;color:var(--muted);margin-bottom:14px}
+
+  .status-msg{padding:11px 14px;border-radius:8px;font-size:14px;margin-top:14px;display:none}
+  .status-msg.show{display:block}
+  .status-msg.ok{background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44}
+  .status-msg.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
+  .status-msg.info{background:#e6eefc;border:1px solid #b3c7ed;color:#1d4ed8}
+
+  /* History */
+  .hist-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);align-items:center;font-size:13.5px}
+  .hist-row:last-child{border-bottom:0}
+  .hist-row .when{font-size:12px;color:var(--muted);min-width:90px}
+  .hist-row .email{font-weight:600}
+  .hist-row .meta-line{font-size:12px;color:var(--muted)}
+  .hist-row .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.02em}
+  .pill.sent{background:#e6f5ee;color:#0a6e44}
+  .pill.signed_up{background:#dbeafd;color:#1d4ed8}
+  .pill.queued{background:#fff3d4;color:#92400e}
+  .pill.failed{background:#fdecec;color:#9b1c1c}
+  .pill.partner{background:rgba(208,32,84,.12);color:#a01644}
+  .pill.customer{background:#e6eefc;color:#0050c7}
+  .pill.business{background:#e6f5ee;color:#0a6e44}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="admin-dashboard.html" class="brand">LYMX <span class="role-tag">Invite</span></a>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Home</a>
+      <a href="admin-tech-support.html">Tech Support</a>
+      <a href="admin-chat.html">Chat</a>
+      <a href="admin-broadcast.html">Broadcast</a>
+      <a href="admin-invite-friends.html" class="on">Invite Friends</a>
+      <a href="admin-businesses.html">Businesses</a>
+    </nav>
+    <div class="admin-avatar" id="userInitial">·</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>📬 Invite Friends &amp; Family</h1>
+        <p>Bulk-invite from Gmail, Outlook, or Apple Contacts. Your Partner ref link is automatically baked in.</p>
+      </div>
+    </div>
+
+    <!-- Step 1: Pick template -->
+    <div class="card">
+      <div class="step"><span class="num">1</span> Pick what you're inviting them to</div>
+      <div class="tmpl-grid" id="tmplGrid">
+        <div class="tmpl on" data-tmpl="partner">
+          <div class="h">🤝 Become a Partner</div>
+          <div class="d">For people who can connect you to local Businesses. Earn $750 per activation, 11% recurring.</div>
+        </div>
+        <div class="tmpl" data-tmpl="customer">
+          <div class="h">👤 Sign up as a Customer</div>
+          <div class="d">For friends and family who want to earn LYMX rewards at any LYMX Business.</div>
+        </div>
+        <div class="tmpl" data-tmpl="business">
+          <div class="h">🏪 Become a Business</div>
+          <div class="d">For Business owners. Founding 25 spot — 3 months free, $199/mo, homepage feature.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Add contacts -->
+    <div class="card">
+      <div class="step"><span class="num">2</span> Add contacts</div>
+      <div class="meta">Upload a CSV exported from Google Contacts, Outlook, or Apple Contacts — or just paste emails below. We'll handle either.</div>
+
+      <label class="upload-zone" id="uploadZone">
+        <div class="big">📂</div>
+        <div class="h">Drop a CSV here or click to choose</div>
+        <div class="sub">Works with Google Contacts, Outlook, Apple Contacts CSV exports — we auto-detect the email column.</div>
+        <input type="file" id="csvFile" accept=".csv,text/csv" />
+      </label>
+
+      <div class="or-divider"><span>or paste emails</span></div>
+
+      <textarea id="emailPaste" placeholder="alice@example.com, bob@example.com&#10;carol@example.com&#10;dad@example.com"></textarea>
+
+      <div id="summary" class="summary empty"><span class="big">0</span> valid emails — add some above to get started.</div>
+      <div class="summary-list" id="summaryList"></div>
+    </div>
+
+    <!-- Step 3: Review + send -->
+    <div class="card">
+      <div class="step"><span class="num">3</span> Review your message and send</div>
+
+      <label for="iSubject">Subject</label>
+      <input id="iSubject" type="text" maxlength="120" />
+
+      <label for="iBody">Message</label>
+      <textarea id="iBody" style="min-height:280px;font-family:inherit;font-size:14px"></textarea>
+
+      <div id="iStatus" class="status-msg"></div>
+
+      <div class="actions">
+        <div class="audience-count" id="audienceCount">0 ready to send</div>
+        <button class="btn btn-cancel" id="iReset">Reset</button>
+        <button class="btn btn-preview" id="iPreview">Preview</button>
+        <button class="btn btn-send" id="iSend">Send invitations</button>
+      </div>
+
+      <div class="preview-pane" id="previewPane">
+        <div class="from">From: kenny.lin@getlymx.com — To: friend@example.com</div>
+        <div class="subj" id="prevSubj">—</div>
+        <div id="prevBody">—</div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="card">
+      <h2>Sent invitations</h2>
+      <div class="meta">Latest 50, newest first. Click a row to copy the email.</div>
+      <div id="histList">
+        <div style="padding:18px 0;color:var(--muted);font-size:13.5px">Loading…</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+
+let myUserId = null;
+let myEmail  = null;
+let myRefId  = null;       // Kenny's partner ID — auto-pulled
+let pickedTmpl = 'partner';
+let parsedEmails = [];     // [{ email, name, dup, valid }]
+
+// -------- Templates --------
+const TEMPLATES = {
+  partner: {
+    subject: 'LYMX is opening — want a Founding Partner spot?',
+    body: `Hey {NAME} —
+
+I'm helping launch LYMX, a loyalty rewards network where customers earn at one Business and spend at any other. Coffee shops, real estate, EV charging — all linked.
+
+I'm onboarding the first 25 Founding Partners right now. Founding 25 gets:
+  • $750 per Business activation (vs $500 for partners after 25)
+  • 11% recurring on every Business they sign on, forever
+  • Lifetime fee waiver after 5 activations
+  • A permanent "Founding Partner" status on the network
+
+If you can pitch local Businesses (or just have a wide network), this is a high-leverage spot while it's open.
+
+Here's your direct invite link — clicking pre-fills me as your sponsor:
+
+  https://getlymx.com/partner-signup.html?ref={REF}
+
+Takes 4 minutes. Once you're in, I'll do a 15-min walkthrough of the dashboard + your first-5 prospect list.
+
+Want me to grab one of the 25 spots for you?
+
+— Kenny
+kenny.lin@getlymx.com`
+  },
+  customer: {
+    subject: 'Free LYMX rewards card — earn at any local Business',
+    body: `Hey {NAME} —
+
+Just launching LYMX — a loyalty rewards network where you earn rewards at one local Business and can spend them at any other LYMX Business in town. Coffee, real estate, EV charging, retail — all linked, one balance.
+
+It's free to sign up, and once you do, every LYMX Business you visit credits your wallet automatically.
+
+Here's the link to sign up (free, takes 60 seconds):
+
+  https://getlymx.com/customer-signup.html?ref={REF}
+
+Once you sign up, your wallet is yours — we never expire your rewards, never sell your data, and you can cash out anytime.
+
+— Kenny
+kenny.lin@getlymx.com`
+  },
+  business: {
+    subject: 'LYMX Founding Business spot for {NAME}? (closes at 25)',
+    body: `Hey {NAME} —
+
+Quick one: I'm helping launch LYMX, a loyalty rewards network for local Businesses. Way to think about it: customers earn rewards at YOUR Business, and they can spend them at ANY OTHER LYMX Business — coffee, retail, real estate, gym, services, every category.
+
+So instead of building your own punch-card program, you plug into a network of customers who already have a reason to walk in.
+
+We're locking the first 25 Founding Businesses right now. Founding 25 gets:
+  • 3 months free, $199/mo after
+  • Permanent feature spot on the LYMX homepage
+  • First-mover positioning when locals search your category
+  • Email blast to all local LYMX customers when you go live
+
+After 25, the program closes — that's by design.
+
+Direct invite link (pre-fills me as your sponsoring Partner):
+
+  https://getlymx.com/biz-signup.html?ref={REF}
+
+Worth a 15-min call to see if it's a fit?
+
+— Kenny
+kenny.lin@getlymx.com`
+  }
+};
+
+async function authedFetch(path, opts = {}) {
+  const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = (session && session.access_token) || ANON;
+  return fetch(SUPABASE_URL + path, {
+    ...opts,
+    headers: {
+      'apikey': ANON,
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json',
+      ...(opts.headers || {})
+    }
+  });
+}
+
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+function bodyToHtml(text) {
+  return text.split(/\n\n+/).map(p =>
+    '<p style="margin:0 0 14px;line-height:1.55">' +
+    escapeHtml(p).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" style="color:#0050c7">$1</a>').replace(/\n/g, '<br>') +
+    '</p>'
+  ).join('');
+}
+
+function setStatus(text, kind) {
+  const el = document.getElementById('iStatus');
+  if (!text) { el.className = 'status-msg'; el.textContent = ''; return; }
+  el.className = 'status-msg show ' + (kind || 'info');
+  el.textContent = text;
+}
+
+// -------- Parse pasted text --------
+function parseEmailsFromText(text) {
+  const out = [];
+  // try CSV-like parse
+  const lines = text.split(/[\r\n]+/);
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    // split on common delims
+    const parts = line.split(/[,;|]/).map(s => s.trim()).filter(Boolean);
+    for (const part of parts) {
+      // "Name <email@x.com>" or "Name email@x.com" or just email
+      const angleMatch = part.match(/^(.*)<([^>]+)>$/);
+      if (angleMatch) {
+        out.push({ email: angleMatch[2].trim().toLowerCase(), name: angleMatch[1].trim().replace(/['"]/g, '') });
+        continue;
+      }
+      const emailMatch = part.match(/[^\s,<>]+@[^\s,<>]+\.[a-z]{2,}/i);
+      if (emailMatch) {
+        // try to grab a name from preceding text
+        const before = part.slice(0, part.indexOf(emailMatch[0])).trim();
+        out.push({ email: emailMatch[0].toLowerCase(), name: before || null });
+      }
+    }
+  }
+  return out;
+}
+
+// -------- Parse CSV file --------
+function parseCSV(text) {
+  // Naive CSV parse — handles quoted fields with commas
+  const rows = [];
+  let row = []; let field = ''; let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], n = text[i+1];
+    if (inQuotes) {
+      if (c === '"' && n === '"') { field += '"'; i++; }
+      else if (c === '"') { inQuotes = false; }
+      else { field += c; }
+    } else {
+      if (c === '"') { inQuotes = true; }
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c === '\r') { /* skip */ }
+      else { field += c; }
+    }
+  }
+  if (field || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(c => c && c.trim()));
+}
+
+function emailsFromCSV(text) {
+  const rows = parseCSV(text);
+  if (rows.length < 1) return [];
+  const header = rows[0].map(c => c.toLowerCase().trim());
+  // find email column — Google "E-mail 1 - Value", Outlook "E-mail Address", Apple "Email"
+  let emailIdx = header.findIndex(c => /^email/i.test(c) || /e-mail.*value/i.test(c) || /e-mail address/i.test(c));
+  // if no header match, try every cell looking for emails
+  if (emailIdx < 0) {
+    const fromText = parseEmailsFromText(rows.map(r => r.join(' ')).join('\n'));
+    return fromText;
+  }
+  const firstNameIdx = header.findIndex(c => /^first.?name/i.test(c) || /^given/i.test(c));
+  const lastNameIdx  = header.findIndex(c => /^last.?name/i.test(c) || /^family/i.test(c) || /^surname/i.test(c));
+  const fullNameIdx  = header.findIndex(c => /^name$/i.test(c) || /^display.?name/i.test(c) || /^contact name/i.test(c));
+
+  const out = [];
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const e = (r[emailIdx] || '').trim().toLowerCase();
+    if (!e || !/[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(e)) continue;
+    let name = '';
+    if (firstNameIdx >= 0 || lastNameIdx >= 0) {
+      name = [r[firstNameIdx], r[lastNameIdx]].filter(Boolean).join(' ').trim();
+    }
+    if (!name && fullNameIdx >= 0) name = (r[fullNameIdx] || '').trim();
+    out.push({ email: e, name: name || null });
+  }
+  return out;
+}
+
+// -------- Re-compute parsedEmails from current inputs --------
+function recompute() {
+  const text = document.getElementById('emailPaste').value;
+  const fromPaste = parseEmailsFromText(text);
+
+  // de-dup with existing CSV-parsed list (if any)
+  const csvEmails = window.__CSV_EMAILS__ || [];
+  const merged = [...csvEmails, ...fromPaste];
+
+  // de-dup by email
+  const seen = new Set();
+  parsedEmails = [];
+  for (const e of merged) {
+    if (seen.has(e.email)) continue;
+    seen.add(e.email);
+    const valid = /[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(e.email);
+    parsedEmails.push({ ...e, valid });
+  }
+
+  renderSummary();
+  loadHistory();  // re-paint to mark already-invited
+}
+
+function renderSummary() {
+  const valid = parsedEmails.filter(p => p.valid);
+  const sum = document.getElementById('summary');
+  const list = document.getElementById('summaryList');
+  if (!valid.length) {
+    sum.className = 'summary empty';
+    sum.innerHTML = '<span class="big">0</span> valid emails — add some above to get started.';
+    list.innerHTML = '';
+    document.getElementById('audienceCount').textContent = '0 ready to send';
+    return;
+  }
+  sum.className = 'summary';
+  sum.innerHTML = `<span class="big">${valid.length}</span> valid email${valid.length === 1 ? '' : 's'} ready` + (parsedEmails.length > valid.length ? ` · <span style="color:var(--warn)">${parsedEmails.length - valid.length} skipped (not valid)</span>` : '');
+  list.innerHTML = parsedEmails.map(p =>
+    `<span class="chip ${!p.valid ? 'bad' : (p.alreadyInvited ? 'dup' : '')}" title="${escapeHtml(p.email)}">${p.name ? escapeHtml(p.name) + ' · ' : ''}${escapeHtml(p.email)}${p.alreadyInvited ? ' (sent)' : ''}</span>`
+  ).join('');
+  document.getElementById('audienceCount').textContent = valid.length + ' ready to send';
+}
+
+// -------- Template selection --------
+document.querySelectorAll('.tmpl').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tmpl').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+    pickedTmpl = t.dataset.tmpl;
+    applyTemplate();
+  });
+});
+
+function applyTemplate() {
+  const tmpl = TEMPLATES[pickedTmpl];
+  document.getElementById('iSubject').value = tmpl.subject.replace(/\{NAME\}/g, 'there').replace(/\{REF\}/g, myRefId || 'YOUR_REF_ID');
+  document.getElementById('iBody').value    = tmpl.body.replace(/\{NAME\}/g, '{NAME}').replace(/\{REF\}/g, myRefId || 'YOUR_REF_ID');
+}
+
+// -------- File upload + drag --------
+const uploadZone = document.getElementById('uploadZone');
+const csvInput   = document.getElementById('csvFile');
+csvInput.addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f) handleCSV(f);
+});
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) handleCSV(f);
+});
+
+function handleCSV(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const text = ev.target.result;
+    const list = emailsFromCSV(text);
+    window.__CSV_EMAILS__ = list;
+    setStatus(`Loaded ${list.length} contacts from "${file.name}".`, 'ok');
+    recompute();
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('emailPaste').addEventListener('input', recompute);
+
+// -------- Preview --------
+document.getElementById('iPreview').addEventListener('click', () => {
+  const subj = document.getElementById('iSubject').value;
+  const body = document.getElementById('iBody').value;
+  const sample = parsedEmails.find(p => p.valid && p.name) || parsedEmails.find(p => p.valid) || { email: 'friend@example.com', name: null };
+  const sampleName = (sample.name || sample.email.split('@')[0]).split(' ')[0];
+  document.getElementById('prevSubj').textContent = subj.replace(/\{NAME\}/g, sampleName);
+  document.getElementById('prevBody').innerHTML = bodyToHtml(body.replace(/\{NAME\}/g, sampleName));
+  document.querySelector('.preview-pane .from').textContent = `From: ${myEmail || 'kenny.lin@getlymx.com'} — Sample preview for: ${sample.email}`;
+  document.getElementById('previewPane').classList.add('show');
+});
+
+// -------- Send --------
+document.getElementById('iReset').addEventListener('click', () => {
+  document.getElementById('emailPaste').value = '';
+  window.__CSV_EMAILS__ = [];
+  document.getElementById('csvFile').value = '';
+  applyTemplate();
+  setStatus(null);
+  document.getElementById('previewPane').classList.remove('show');
+  recompute();
+});
+
+document.getElementById('iSend').addEventListener('click', async () => {
+  const valid = parsedEmails.filter(p => p.valid && !p.alreadyInvited);
+  if (!valid.length) { setStatus('Add at least one valid new email above.', 'err'); return; }
+
+  const subjT = document.getElementById('iSubject').value.trim();
+  const bodyT = document.getElementById('iBody').value.trim();
+  if (subjT.length < 4 || bodyT.length < 20) { setStatus('Subject or message is too short.', 'err'); return; }
+
+  if (!confirm(`Send invitations to ${valid.length} ${valid.length === 1 ? 'person' : 'people'}? This cannot be undone.`)) return;
+
+  const btn = document.getElementById('iSend');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  setStatus(`Logging ${valid.length} invites…`, 'info');
+
+  // 1. Insert per-invitee rows into partner_invites with status=queued
+  const insertRows = valid.map(p => ({
+    sender_id: myUserId,
+    invitee_email: p.email,
+    invitee_name: p.name,
+    template: pickedTmpl,
+    message_subject: subjT,
+    status: 'queued',
+  }));
+  const insRes = await authedFetch('/rest/v1/partner_invites', {
+    method: 'POST',
+    headers: { 'Prefer': 'resolution=ignore-duplicates,return=minimal' },
+    body: JSON.stringify(insertRows),
+  });
+  if (!insRes.ok) {
+    btn.disabled = false; btn.textContent = 'Send invitations';
+    return setStatus('Could not log invites (HTTP ' + insRes.status + '). Migration 010 may not be applied yet.', 'err');
+  }
+
+  // 2. Personalize each email + send via broadcast-send (one broadcast per recipient = personalized)
+  // For v1 simplicity, we send a single broadcast with the personalized body for each recipient.
+  // The broadcast-send endpoint sends the same body to all recipients in custom_emails — so we
+  // need to loop per recipient to keep the {NAME} substitution. (~1 sec per recipient.)
+  setStatus(`Sending ${valid.length} personalized email${valid.length === 1 ? '' : 's'}…`, 'info');
+  let sent = 0, failed = 0;
+  const errors = [];
+
+  for (const p of valid) {
+    const firstName = (p.name || p.email.split('@')[0]).split(' ')[0];
+    const personalSubject = subjT.replace(/\{NAME\}/g, firstName);
+    const personalBody    = bodyT.replace(/\{NAME\}/g, firstName);
+
+    // Create a small broadcast for this single recipient
+    const bcRes = await authedFetch('/rest/v1/broadcasts', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        audience: 'custom',
+        custom_emails: [p.email],
+        channel: 'email',
+        subject: personalSubject,
+        body_html: bodyToHtml(personalBody),
+        body_text: personalBody,
+        created_by: myUserId,
+        status: 'draft',
+      }),
+    });
+    if (!bcRes.ok) { failed++; errors.push(`${p.email}: insert ${bcRes.status}`); continue; }
+    const bcId = (await bcRes.json())[0].id;
+    const fnRes = await authedFetch('/functions/v1/broadcast-send', {
+      method: 'POST',
+      body: JSON.stringify({ broadcast_id: bcId }),
+    });
+    if (fnRes.ok) {
+      sent++;
+      // Mark the partner_invite row as sent
+      await authedFetch(`/rest/v1/partner_invites?sender_id=eq.${myUserId}&invitee_email=eq.${encodeURIComponent(p.email)}&template=eq.${pickedTmpl}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'sent' }),
+      });
+    } else {
+      failed++;
+      errors.push(`${p.email}: send ${fnRes.status}`);
+      await authedFetch(`/rest/v1/partner_invites?sender_id=eq.${myUserId}&invitee_email=eq.${encodeURIComponent(p.email)}&template=eq.${pickedTmpl}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'failed', error: `send ${fnRes.status}` }),
+      });
+    }
+    setStatus(`Sent ${sent}/${valid.length}…`, 'info');
+  }
+
+  btn.disabled = false; btn.textContent = 'Send invitations';
+  setStatus(
+    `Done — ${sent} sent${failed ? `, ${failed} failed (${errors.slice(0,3).join(' · ')})` : ''}.`,
+    failed === 0 ? 'ok' : 'err'
+  );
+  document.getElementById('emailPaste').value = '';
+  window.__CSV_EMAILS__ = [];
+  recompute();
+  loadHistory();
+});
+
+// -------- History --------
+async function loadHistory() {
+  if (!myUserId) return;
+  const r = await authedFetch(`/rest/v1/partner_invites?sender_id=eq.${myUserId}&select=*&order=sent_at.desc&limit=50`);
+  if (!r.ok) {
+    document.getElementById('histList').innerHTML = '<div style="padding:14px 0;color:var(--muted);font-size:13.5px">Could not load history.</div>';
+    return;
+  }
+  const rows = await r.json();
+
+  // Mark parsed emails that are already invited under this template
+  const invitedSet = new Set(rows.filter(x => x.template === pickedTmpl).map(x => x.invitee_email));
+  for (const p of parsedEmails) {
+    p.alreadyInvited = invitedSet.has(p.email);
+  }
+
+  if (!rows.length) {
+    document.getElementById('histList').innerHTML = '<div style="padding:14px 0;color:var(--muted);font-size:13.5px">No invitations sent yet.</div>';
+    return;
+  }
+  document.getElementById('histList').innerHTML = rows.map(r => {
+    const when = new Date(r.sent_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    return `<div class="hist-row" data-email="${escapeHtml(r.invitee_email)}">
+      <div class="when">${when}</div>
+      <div>
+        <div class="email">${escapeHtml(r.invitee_name || r.invitee_email)}</div>
+        ${r.invitee_name ? `<div class="meta-line">${escapeHtml(r.invitee_email)}</div>` : ''}
+      </div>
+      <div><span class="pill ${r.template}">${r.template}</span></div>
+      <div><span class="pill ${r.status}">${r.status.replace('_', ' ')}</span></div>
+    </div>`;
+  }).join('');
+  // Re-paint the chips (some may now be marked already-invited)
+  renderSummary();
+}
+
+// -------- Boot --------
+(async function init() {
+  if (!window.LYMX || !window.LYMX.getSession) {
+    setStatus('Sign in first to invite friends.', 'err');
+    return;
+  }
+  const s = await window.LYMX.getSession();
+  if (!s) {
+    setStatus('Sign in first to invite friends.', 'err');
+    return;
+  }
+  myUserId = s.user.id;
+  myEmail  = s.user.email;
+  document.getElementById('userInitial').textContent = (myEmail || 'L')[0].toUpperCase();
+
+  // Load Kenny's partner_id (so we use the actual ref link, not user_id)
+  const pr = await authedFetch(`/rest/v1/partners?select=id&user_id=eq.${myUserId}&limit=1`);
+  if (pr.ok) {
+    const ps = await pr.json();
+    myRefId = (ps[0] && ps[0].id) || myUserId;
+  } else {
+    myRefId = myUserId;
+  }
+  applyTemplate();
+  loadHistory();
+})();
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>
