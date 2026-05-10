@@ -286,6 +286,34 @@
     <a class="btn-apply" href="projection.html">Project my 5 →</a>
   </div>
 
+  <!-- Company email + SMTP setup card -->
+  <div id="emailSetupCard" style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;margin:20px 0 0;display:none">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:16px">
+      <div>
+        <h2 style="margin:0 0 4px;font-size:18px;font-weight:800">📧 Your company email</h2>
+        <p style="margin:0;color:var(--muted);font-size:13.5px">Send and receive from a branded LYMX address.</p>
+      </div>
+      <div id="repEmailAddress" style="font-family:'SF Mono','Menlo',monospace;font-size:15px;font-weight:700;background:#f0f5ff;color:#0050c7;padding:8px 14px;border-radius:8px">loading…</div>
+    </div>
+
+    <details style="margin-top:8px">
+      <summary style="cursor:pointer;font-weight:700;font-size:14px;color:var(--accent-2);user-select:none;list-style:none">How to send from this address in Gmail (5 min, one-time setup) ▾</summary>
+      <div style="margin-top:14px;padding:18px;background:var(--bg-soft);border-radius:10px;font-size:13.5px;line-height:1.65">
+        <ol style="margin:0;padding-left:20px">
+          <li>Open Gmail → ⚙️ gear → <strong>See all settings</strong> → <strong>Accounts and Import</strong>.</li>
+          <li>In the <strong>"Send mail as"</strong> section, click <strong>Add another email address</strong>.</li>
+          <li>Name: <code style="background:#fff;padding:2px 6px;border-radius:4px">your full name</code> · Email: <code id="repEmailCopy" style="background:#fff;padding:2px 6px;border-radius:4px">your @getlymx.com</code> · Uncheck "Treat as alias". Click <strong>Next Step</strong>.</li>
+          <li>SMTP Server: <code style="background:#fff;padding:2px 6px;border-radius:4px">email-smtp.us-east-1.amazonaws.com</code> · Port: <code style="background:#fff;padding:2px 6px;border-radius:4px">587</code></li>
+          <li>Username + Password: <strong>find them in your welcome email</strong> from <code>LYMX &lt;hello@getlymx.com&gt;</code> — search Gmail for "Send mail as" or your @getlymx.com address. They'll be in a table near the bottom.</li>
+          <li>Connection: <strong>Secured connection using TLS</strong> (default). Click <strong>Add Account</strong>.</li>
+          <li>Gmail sends a verification email to your @getlymx.com address. Because of LYMX's email forwarding, it lands in your regular Gmail inbox in seconds. Click the verification link.</li>
+          <li>Done. When composing, the <strong>From:</strong> dropdown lets you pick your @getlymx.com address.</li>
+        </ol>
+        <p style="margin:14px 0 0;color:var(--muted);font-size:12.5px"><strong>Lost the welcome email?</strong> Search Gmail for: <code style="background:#fff;padding:2px 6px;border-radius:4px">from:hello@getlymx.com Welcome</code> · Or contact <a href="support.html">support</a> to re-send.</p>
+      </div>
+    </details>
+  </div>
+
   <!-- Tier ladder -->
   <div class="tier-card">
     <div class="tier-badge gold">Gold</div>
@@ -646,6 +674,19 @@
     const tree = (downline || 0) + (activations || 0);
     const treeEl = document.getElementById('repTreeCount');
     if (treeEl) treeEl.textContent = tree + ' ' + (tree === 1 ? 'business' : 'businesses');
+
+    // Show company email card if a @getlymx.com address has been provisioned
+    try {
+      const { data: pe } = await LYMX.sb.from('partner_emails').select('full_email, status').eq('partner_id', partner.id).eq('status', 'active').maybeSingle();
+      if (pe && pe.full_email) {
+        const card = document.getElementById('emailSetupCard');
+        if (card) card.style.display = '';
+        const addr = document.getElementById('repEmailAddress');
+        if (addr) addr.textContent = pe.full_email;
+        const copy = document.getElementById('repEmailCopy');
+        if (copy) copy.textContent = pe.full_email;
+      }
+    } catch (e) { console.warn('partner_emails fetch', e); }
 
     // Founding 25 status
     const fr = document.getElementById('repFoundingRank');

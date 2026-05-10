@@ -132,7 +132,10 @@
         <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email" />
 
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="Your password" required autocomplete="current-password" minlength="6" />
+        <div style="position:relative">
+          <input type="password" id="password" name="password" placeholder="Your password" required autocomplete="current-password" minlength="6" style="padding-right:48px" />
+          <button type="button" onclick="togglePw('password', this)" aria-label="Show password" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:0;color:var(--muted);cursor:pointer;padding:6px 10px;font-size:13px;font-weight:600;font-family:inherit">Show</button>
+        </div>
 
         <div class="row-between">
           <span>Don't have an account? <a href="#" onclick="switchTab('signup'); return false;">Create one</a></span>
@@ -155,7 +158,10 @@
         <input type="email" id="su-email" placeholder="you@example.com" required autocomplete="email" />
 
         <label for="su-password">Password (8+ characters)</label>
-        <input type="password" id="su-password" placeholder="Pick a strong password" required autocomplete="new-password" minlength="8" />
+        <div style="position:relative">
+          <input type="password" id="su-password" placeholder="Pick a strong password" required autocomplete="new-password" minlength="8" style="padding-right:48px" />
+          <button type="button" onclick="togglePw('su-password', this)" aria-label="Show password" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:0;color:var(--muted);cursor:pointer;padding:6px 10px;font-size:13px;font-weight:600;font-family:inherit">Show</button>
+        </div>
 
         <div class="row-between">
           <span>Already have an account? <a href="#" onclick="switchTab('signin'); return false;">Sign in</a></span>
@@ -218,6 +224,21 @@
     if (role === 'business') return 'biz-dashboard.html';
     if (role === 'partner') return 'rep-dashboard.html';
     return 'customer-dashboard.html';
+  }
+
+  // ---------- Show / hide password ----------
+  function togglePw(id, btn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.type === 'password') {
+      el.type = 'text';
+      btn.textContent = 'Hide';
+      btn.setAttribute('aria-label', 'Hide password');
+    } else {
+      el.type = 'password';
+      btn.textContent = 'Show';
+      btn.setAttribute('aria-label', 'Show password');
+    }
   }
 
   // ---------- Tabs ----------
