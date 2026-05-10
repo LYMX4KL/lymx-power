@@ -203,11 +203,14 @@
   footer{padding:36px 0 32px;color:var(--muted);font-size:13px;text-align:center}
   footer .disc{max-width:780px;margin:8px auto 0;font-size:11.5px;line-height:1.55}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
 </head>
 <body>
 
-<div id="demo-banner" style="background:#fff7e0;border-bottom:1px solid #f0d68a;color:#7a5a00;font-size:13px;padding:10px 16px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,Helvetica,Arial,sans-serif;line-height:1.5">
-  <strong>DEMO PREVIEW</strong> · This is a sample Partner dashboard — you are not signed in. <a href="login.html" style="color:#0050c7;font-weight:700">Sign in</a> or <a href="partner-signup.html" style="color:#0050c7;font-weight:700">apply as a Partner</a> to use the real one.
+<div id="auth-banner" style="display:none;background:#eef5ff;border-bottom:1px solid #c8def8;color:#0050c7;font-size:13px;padding:8px 16px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,Helvetica,Arial,sans-serif;line-height:1.5">
+  Loading your Partner dashboard…
 </div>
 
 <header class="nav">
@@ -227,7 +230,8 @@
     </nav>
     <div class="nav-cta">
       <a class="btn btn-ghost btn-sm" href="support.html">Help</a>
-      <div class="rep-avatar" title="Kenny Lin">KL</div>
+      <button class="btn btn-ghost btn-sm" type="button" onclick="LYMX && LYMX.signOut()" style="border:1px solid var(--line);background:#fff;cursor:pointer;font-family:inherit">Sign out</button>
+      <div class="rep-avatar" id="repAvatar" title="Loading…">··</div>
     </div>
   </div>
 </header>
@@ -235,7 +239,7 @@
 <div class="wrap page">
   <div class="page-head">
     <div>
-      <h1>Welcome back, Kenny 👋</h1>
+      <h1 id="repWelcome">Welcome back 👋</h1>
       <p>Your MGC tree, commissions, and the next payout — all in one place.</p>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -250,17 +254,17 @@
     <div class="row1">
       <div>
         <div class="lab">This month earnings (Apr 2026)</div>
-        <div class="big">$2,341<small>+ 18,420 LYMX</small></div>
+        <div class="big" id="repEarningsMonth">—<small id="repLymxBalance"></small></div>
         <div class="sub">Cash payout on May 5 · LYMX in your balance now</div>
       </div>
       <div class="mini">
         <span class="lab">Active tree</span>
-        <span class="v">12 businesses</span>
+        <span class="v" id="repTreeCount">— businesses</span>
         <span class="sub" style="margin-top:0;color:#9aa3b0;font-size:12px">across 3 generations</span>
       </div>
       <div class="mini">
         <span class="lab">Lifetime earned</span>
-        <span class="v gold">$14,820</span>
+        <span class="v gold" id="repLifetime">—</span>
         <span class="sub" style="margin-top:0;color:#9aa3b0;font-size:12px">+ 124,500 LYMX since join</span>
       </div>
     </div>
@@ -278,7 +282,7 @@
       <div class="head">Earn your way in. First 25 Partners to hit <span style="color:#f5d172">5 Direct activations</span> get lifetime perks.</div>
       <div class="body-text">1.5× sign-up bonuses (<strong>$750</strong>) on activations beyond your 5th · <strong>+2% override forever</strong> on Direct (11% total) · Lifetime quarterly summit invite · Direct WhatsApp line to founder. Status locks when claimed — earned, not bought.</div>
     </div>
-    <div class="counter"><strong>4 / 25</strong>Partners qualified</div>
+    <div class="counter"><strong id="repFoundingRank">— / 25</strong><span id="repFoundingLabel">Partners qualified</span></div>
     <a class="btn-apply" href="projection.html">Project my 5 →</a>
   </div>
 
@@ -595,5 +599,67 @@
   </div>
 </footer>
 <script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+
+<script>
+  // ---------- Partner dashboard wiring ----------
+  (async function init() {
+    if (!window.LYMX) {
+      const b = document.getElementById('auth-banner');
+      b.style.display = 'block';
+      b.innerHTML = '<strong>Auth client failed to load.</strong>';
+      return;
+    }
+
+    const user = await LYMX.requireAuth();
+    if (!user) return;
+
+    const { data: partner, error: pErr } = await LYMX.fetchMyPartner();
+    if (pErr || !partner) {
+      const b = document.getElementById('auth-banner');
+      b.style.display = 'block';
+      b.innerHTML = 'You are signed in but no Partner profile is linked to this account. <a href="partner-signup.html" style="color:#0050c7;font-weight:700">Apply as a Partner</a>.';
+      return;
+    }
+
+    // Welcome heading + avatar
+    const fullName = partner.display_name || partner.legal_name || 'Partner';
+    const firstName = fullName.split(' ')[0];
+    document.getElementById('repWelcome').textContent = 'Welcome back, ' + firstName + ' 👋';
+    const av = document.getElementById('repAvatar');
+    if (av) {
+      const initials = fullName.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'P';
+      av.textContent = initials;
+      av.title = fullName;
+    }
+
+    // Earnings + balance — placeholders for now (commission tables not wired yet)
+    document.getElementById('repEarningsMonth').firstChild.textContent = '$0';
+    const lymxEl = document.getElementById('repLymxBalance');
+    if (lymxEl) lymxEl.textContent = '+ 0 LYMX';
+    document.getElementById('repLifetime').textContent = '$0';
+
+    // Tree count = downline + activations
+    const [{ count: downline }, { count: activations }] = await Promise.all([
+      LYMX.fetchMyDownlineCount(partner.id),
+      LYMX.fetchMyActivationsCount(partner.id),
+    ]);
+    const tree = (downline || 0) + (activations || 0);
+    const treeEl = document.getElementById('repTreeCount');
+    if (treeEl) treeEl.textContent = tree + ' ' + (tree === 1 ? 'business' : 'businesses');
+
+    // Founding 25 status
+    const fr = document.getElementById('repFoundingRank');
+    const fl = document.getElementById('repFoundingLabel');
+    if (partner.is_founding_25 && partner.founding_25_rank) {
+      if (fr) fr.textContent = '#' + partner.founding_25_rank + ' / 25';
+      if (fl) fl.textContent = 'Founding rank';
+    } else {
+      // Show progress toward Founding 25 (need 5 activations to qualify)
+      if (fr) fr.textContent = (activations || 0) + ' / 5';
+      if (fl) fl.textContent = 'Activations toward Founding 25';
+    }
+  })();
+</script>
+
 </body>
 </html>

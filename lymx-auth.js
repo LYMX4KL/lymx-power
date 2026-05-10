@@ -141,6 +141,42 @@
         .maybeSingle();
     },
 
+    // ---------- Partner data ----------
+    /**
+     * Get the Partner row for the signed-in user (if they ARE a Partner).
+     */
+    async fetchMyPartner() {
+      const user = await this.getUser();
+      if (!user) return { data: null, error: new Error('Not signed in') };
+      return await sb
+        .from('partners')
+        .select('id, legal_name, display_name, contact_email, contact_phone, is_founding_25, founding_25_rank, qualifying_credits, signup_fee_paid, signup_fee_waived, monthly_fee_status, sponsor_partner_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+    },
+
+    /**
+     * Count direct downline (partners where sponsor_partner_id = this partner's id).
+     */
+    async fetchMyDownlineCount(partnerId) {
+      const { count, error } = await sb
+        .from('partners')
+        .select('id', { count: 'exact', head: true })
+        .eq('sponsor_partner_id', partnerId);
+      return { count: count || 0, error };
+    },
+
+    /**
+     * Count Businesses signed up under this partner.
+     */
+    async fetchMyActivationsCount(partnerId) {
+      const { count, error } = await sb
+        .from('businesses')
+        .select('id', { count: 'exact', head: true })
+        .eq('signed_up_by_partner_id', partnerId);
+      return { count: count || 0, error };
+    },
+
     async fetchMyBusinessTransactions(businessId, fromDate, limit) {
       let q = sb
         .from('transactions')
