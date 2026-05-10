@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Contacts — your private address book. Import from CSV / Google / Outlook / Apple. Tag, list, group. Send invites." />
+<title>Contacts · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(10,132,255,.12);color:var(--accent-2);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:1100px){.nav-links{display:none}}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
+
+  .layout{display:grid;grid-template-columns:280px 1fr;gap:18px}
+  @media(max-width:880px){.layout{grid-template-columns:1fr}}
+
+  /* Sidebar */
+  .side{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+  .side h3{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:14px 6px 6px}
+  .side h3:first-child{margin-top:0}
+  .side-item{display:flex;align-items:center;gap:8px;padding:7px 10px;margin:0 -6px;border-radius:7px;color:var(--ink);cursor:pointer;font-size:13.5px}
+  .side-item:hover{background:var(--bg-soft)}
+  .side-item.active{background:var(--ink);color:#fff;font-weight:700}
+  .side-item .ct{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:700}
+  .side-item.active .ct{color:#cbd1d8}
+  .side-item .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+  .add-btn{display:block;margin:8px -6px;padding:6px 10px;background:transparent;border:1px dashed #c7d2e0;color:var(--accent-2);border-radius:7px;font-size:12.5px;cursor:pointer;width:calc(100% + 12px);text-align:left;font-family:inherit;font-weight:600}
+  .add-btn:hover{background:#eef5ff;border-color:var(--accent)}
+
+  /* Main panel */
+  .main{background:#fff;border:1px solid var(--line);border-radius:14px;padding:0;overflow:hidden}
+  .toolbar{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .toolbar input[type=search]{flex:1;min-width:180px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px}
+  .toolbar button{padding:8px 14px;border-radius:8px;font-weight:600;font-size:13.5px;border:0;cursor:pointer;font-family:inherit}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-secondary:hover{background:var(--bg-soft)}
+  .btn-danger{background:#fff;border:1px solid #f5b7b7;color:var(--danger)}
+  .btn-danger:hover{background:#fdecec}
+
+  .summary-bar{padding:10px 20px;background:var(--bg-soft);border-bottom:1px solid var(--line);font-size:13px;color:var(--muted);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .summary-bar .pill{background:#fff;border:1px solid var(--line);padding:2px 10px;border-radius:999px;font-size:12px;color:var(--ink);font-weight:600}
+
+  /* Table */
+  .tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+  .tbl th{text-align:left;background:#f9fafb;padding:11px 14px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:1}
+  .tbl td{padding:13px 14px;border-bottom:1px solid #f0f1f4;vertical-align:middle}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl tr:hover td{background:#f9fafb}
+  .tbl input[type=checkbox]{width:16px;height:16px;cursor:pointer}
+  .name-cell .name{font-weight:600;color:var(--ink)}
+  .name-cell .sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .tag-chip{display:inline-block;background:#eef5ff;border:1px solid #c5dffb;color:var(--accent-2);padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;margin:1px 2px 1px 0}
+  .list-chip{display:inline-block;background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;margin:1px 2px 1px 0}
+  .src-pill{display:inline-block;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;color:var(--muted);background:#eef0f4;text-transform:uppercase;letter-spacing:.04em}
+
+  .empty-state{padding:64px 20px;text-align:center;color:var(--muted)}
+  .empty-state .big{font-size:48px;margin-bottom:8px}
+  .empty-state .h{font-weight:700;color:var(--ink);font-size:18px;margin-bottom:6px}
+
+  /* Modal */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(14,17,22,.55);z-index:99;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto}
+  .modal-bg.on{display:flex}
+  .modal{background:#fff;border-radius:14px;max-width:640px;width:100%;padding:24px 28px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .modal h3{margin:0 0 4px;font-size:19px;font-weight:800}
+  .modal .meta{color:var(--muted);font-size:13px;margin-bottom:14px}
+  .modal label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px}
+  .modal input,.modal textarea,.modal select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-family:inherit;box-sizing:border-box}
+  .modal textarea{min-height:80px;resize:vertical}
+  .modal .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .modal .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+
+  /* Import zone */
+  .upload-zone{border:2px dashed var(--line);border-radius:10px;padding:24px;text-align:center;cursor:pointer;background:var(--bg-soft);transition:.15s}
+  .upload-zone:hover{border-color:var(--accent);background:#eef5ff}
+  .upload-zone.drag{border-color:var(--accent);background:#dbeefb}
+  .upload-zone .big{font-size:32px;margin-bottom:6px}
+  .upload-zone .h{font-weight:700;font-size:15px}
+  .upload-zone .sub{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .upload-zone input[type=file]{display:none}
+
+  .source-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  @media(max-width:520px){.source-grid{grid-template-columns:1fr}}
+  .src-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s}
+  .src-card:hover{border-color:var(--accent);background:#eef5ff}
+  .src-card.coming{opacity:.5;cursor:not-allowed}
+  .src-card.coming:hover{border-color:var(--line);background:#fff}
+  .src-card .ic{font-size:24px;flex-shrink:0}
+  .src-card .h{font-weight:700;font-size:14px}
+  .src-card .d{font-size:12px;color:var(--muted)}
+
+  .or-divider{display:flex;align-items:center;gap:12px;margin:18px 0 12px;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--line)}
+
+  .status-msg{padding:11px 14px;border-radius:8px;font-size:14px;margin-top:14px;display:none}
+  .status-msg.show{display:block}
+  .status-msg.ok{background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44}
+  .status-msg.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
+  .status-msg.info{background:#e6eefc;border:1px solid #b3c7ed;color:#1d4ed8}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="/" class="brand">LYMX <span class="role-tag" id="roleTag">Contacts</span></a>
+    <nav class="nav-links" id="navLinks">
+      <a href="/">Home</a>
+    </nav>
+    <div class="user-avatar" id="userInitial">·</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>📇 Contacts</h1>
+        <p>Your private address book. Import once, organize with tags and lists, send invites in bulk.</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn-secondary" id="importBtn" style="padding:10px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid var(--line);cursor:pointer;background:#fff">📥 Import</button>
+        <button class="btn-primary" id="newContactBtn" style="padding:10px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;background:var(--ink);color:#fff">+ New contact</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- Sidebar -->
+      <aside class="side">
+        <h3>Filter</h3>
+        <div class="side-item active" data-filter="all">
+          <span>👥</span> All contacts <span class="ct" id="ctAll">0</span>
+        </div>
+        <div class="side-item" data-filter="invited">
+          <span>📤</span> Already invited <span class="ct" id="ctInvited">0</span>
+        </div>
+        <div class="side-item" data-filter="signed_up">
+          <span>✅</span> Signed up <span class="ct" id="ctSignedUp">0</span>
+        </div>
+
+        <h3>Tags</h3>
+        <div id="tagList"><div style="font-size:12px;color:var(--muted);padding:6px 10px">No tags yet</div></div>
+        <button class="add-btn" id="addTagBtn">+ New tag</button>
+
+        <h3>Lists</h3>
+        <div id="listList"><div style="font-size:12px;color:var(--muted);padding:6px 10px">No lists yet</div></div>
+        <button class="add-btn" id="addListBtn">+ New list</button>
+      </aside>
+
+      <!-- Main -->
+      <section class="main">
+        <div class="toolbar">
+          <input type="search" id="search" placeholder="Search name, email, company…" />
+          <button class="btn-secondary" id="bulkActionsBtn" disabled>0 selected</button>
+          <button class="btn-primary" id="inviteSelectedBtn" disabled>Invite selected</button>
+        </div>
+        <div class="summary-bar" id="summaryBar">Showing all contacts</div>
+        <div style="overflow-x:auto;max-height:60vh;overflow-y:auto">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th style="width:36px"><input type="checkbox" id="selAll" /></th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Company</th>
+                <th>Tags</th>
+                <th>Lists</th>
+                <th style="width:80px">Source</th>
+                <th style="width:80px"></th>
+              </tr>
+            </thead>
+            <tbody id="rows">
+              <tr><td colspan="8" class="empty-state"><div>Loading…</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<!-- Import modal -->
+<div class="modal-bg" id="importModal">
+  <div class="modal" style="max-width:640px">
+    <h3>📥 Import contacts</h3>
+    <div class="meta">Choose where your contacts live. We'll import + de-dupe automatically.</div>
+
+    <div class="source-grid">
+      <div class="src-card" data-source="csv"><div class="ic">📄</div><div><div class="h">Upload CSV</div><div class="d">Google / Outlook / Apple export</div></div></div>
+      <div class="src-card" data-source="paste"><div class="ic">📋</div><div><div class="h">Paste emails</div><div class="d">Comma- or line-separated</div></div></div>
+      <div class="src-card coming" data-source="google" title="Coming soon"><div class="ic">🇬</div><div><div class="h">Google Contacts</div><div class="d">Live sync — coming soon</div></div></div>
+      <div class="src-card coming" data-source="outlook" title="Coming soon"><div class="ic">📧</div><div><div class="h">Outlook</div><div class="d">Live sync — coming soon</div></div></div>
+    </div>
+
+    <div id="importBody" style="display:none;margin-top:18px">
+      <label class="upload-zone" id="uploadZone" style="display:none">
+        <div class="big">📂</div>
+        <div class="h">Drop CSV here or click to choose</div>
+        <div class="sub">Auto-detects Google / Outlook / Apple format</div>
+        <input type="file" id="csvFile" accept=".csv,text/csv" />
+      </label>
+      <div id="pasteWrap" style="display:none">
+        <label for="pasteEmails">Paste emails</label>
+        <textarea id="pasteEmails" placeholder="alice@example.com, bob@example.com&#10;Carol Smith <carol@example.com>" style="min-height:140px"></textarea>
+      </div>
+      <div id="importStatus" class="status-msg"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-secondary" id="importCancel" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid var(--line);cursor:pointer;background:#fff">Cancel</button>
+      <button class="btn-primary" id="importDo" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;background:var(--ink);color:#fff;display:none">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- New / Edit contact modal -->
+<div class="modal-bg" id="contactModal">
+  <div class="modal">
+    <h3 id="cModalTitle">New contact</h3>
+    <div class="row">
+      <div><label for="cFirst">First name</label><input id="cFirst" type="text" /></div>
+      <div><label for="cLast">Last name</label><input id="cLast" type="text" /></div>
+    </div>
+    <label for="cEmail">Email</label>
+    <input id="cEmail" type="email" required />
+    <div class="row">
+      <div><label for="cPhone">Phone</label><input id="cPhone" type="text" /></div>
+      <div><label for="cCompany">Company</label><input id="cCompany" type="text" /></div>
+    </div>
+    <label for="cJob">Job title</label>
+    <input id="cJob" type="text" />
+    <label for="cNotes">Notes (private)</label>
+    <textarea id="cNotes"></textarea>
+    <div class="actions">
+      <button class="btn-danger" id="cDelete" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid #f5b7b7;cursor:pointer;background:#fff;color:var(--danger);display:none;margin-right:auto">Delete</button>
+      <button class="btn-secondary" id="cCancel" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid var(--line);cursor:pointer;background:#fff">Cancel</button>
+      <button class="btn-primary" id="cSave" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;background:var(--ink);color:#fff">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- New tag modal -->
+<div class="modal-bg" id="tagModal">
+  <div class="modal" style="max-width:380px">
+    <h3>New tag</h3>
+    <label for="tName">Name</label>
+    <input id="tName" type="text" placeholder="VIP, family, hot lead…" maxlength="40" />
+    <label for="tColor">Color</label>
+    <input id="tColor" type="color" value="#0a84ff" />
+    <div class="actions">
+      <button class="btn-secondary" id="tCancel" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid var(--line);cursor:pointer;background:#fff">Cancel</button>
+      <button class="btn-primary" id="tSave" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;background:var(--ink);color:#fff">Create tag</button>
+    </div>
+  </div>
+</div>
+
+<!-- New list modal -->
+<div class="modal-bg" id="listModal">
+  <div class="modal" style="max-width:380px">
+    <h3>New list</h3>
+    <label for="lName">Name</label>
+    <input id="lName" type="text" placeholder="Family, Coffee shops, Realtors…" maxlength="60" />
+    <label for="lDesc">Description</label>
+    <input id="lDesc" type="text" />
+    <div class="actions">
+      <button class="btn-secondary" id="lCancel" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid var(--line);cursor:pointer;background:#fff">Cancel</button>
+      <button class="btn-primary" id="lSave" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;background:var(--ink);color:#fff">Create list</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk action modal: assign tag/list to selected -->
+<div class="modal-bg" id="bulkModal">
+  <div class="modal" style="max-width:420px">
+    <h3>Apply to <span id="bulkCount">0</span> contacts</h3>
+    <label>Add tag</label>
+    <select id="bulkTagSel"><option value="">—</option></select>
+    <label>Add to list</label>
+    <select id="bulkListSel"><option value="">—</option></select>
+    <div class="actions">
+      <button class="btn-secondary" id="bkCancel" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid var(--line);cursor:pointer;background:#fff">Cancel</button>
+      <button class="btn-primary" id="bkApply" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;background:var(--ink);color:#fff">Apply</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+
+let myUserId = null;
+let myEmail  = null;
+let allContacts = [];
+let allTags = [];
+let allLists = [];
+let activeFilter = 'all';      // 'all' | 'invited' | 'signed_up' | 'tag:<id>' | 'list:<id>'
+let editingId = null;
+let selectedIds = new Set();
+
+async function authedFetch(path, opts = {}) {
+  const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = (session && session.access_token) || ANON;
+  return fetch(SUPABASE_URL + path, {
+    ...opts,
+    headers: {
+      'apikey': ANON,
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json',
+      ...(opts.headers || {})
+    }
+  });
+}
+
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+function setStatus(elId, text, kind) {
+  const el = document.getElementById(elId);
+  if (!text) { el.className = 'status-msg'; el.textContent = ''; return; }
+  el.className = 'status-msg show ' + (kind || 'info');
+  el.textContent = text;
+}
+
+// ---- CSV parser (handles Google/Outlook/Apple exports + simple paste) ----
+function parseCSV(text) {
+  const rows = []; let row = []; let field = ''; let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], n = text[i+1];
+    if (inQuotes) {
+      if (c === '"' && n === '"') { field += '"'; i++; }
+      else if (c === '"') { inQuotes = false; }
+      else { field += c; }
+    } else {
+      if (c === '"') { inQuotes = true; }
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c === '\r') { /* skip */ }
+      else { field += c; }
+    }
+  }
+  if (field || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(c => c && c.trim()));
+}
+
+function contactsFromCSV(text) {
+  const rows = parseCSV(text);
+  if (!rows.length) return [];
+  const header = rows[0].map(c => c.toLowerCase().trim());
+  const colIdx = (re) => header.findIndex(c => re.test(c));
+  const eIdx = colIdx(/^email/i);
+  const e1Idx = colIdx(/e-mail.*1.*value|e-mail.*address|^email.*1$/i);
+  const emailCol = eIdx >= 0 ? eIdx : e1Idx;
+  if (emailCol < 0) {
+    // No header found — fall back to plain email extraction
+    return contactsFromPaste(text);
+  }
+  const fnIdx = colIdx(/^first.?name|^given/i);
+  const lnIdx = colIdx(/^last.?name|^family|^surname/i);
+  const fnameIdx = colIdx(/^name$|^display.?name|^contact name/i);
+  const phIdx = colIdx(/^phone|mobile.*phone|home phone|work phone/i);
+  const coIdx = colIdx(/^company|^organi[sz]ation/i);
+  const jtIdx = colIdx(/^job.?title|^title$/i);
+
+  const out = [];
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const email = (r[emailCol] || '').trim().toLowerCase();
+    if (!/[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(email)) continue;
+    let first = fnIdx >= 0 ? (r[fnIdx] || '').trim() : '';
+    let last  = lnIdx >= 0 ? (r[lnIdx] || '').trim() : '';
+    if (!first && !last && fnameIdx >= 0) {
+      const full = (r[fnameIdx] || '').trim();
+      const parts = full.split(/\s+/);
+      first = parts[0] || '';
+      last  = parts.slice(1).join(' ');
+    }
+    out.push({
+      email,
+      first_name: first || null,
+      last_name: last || null,
+      phone: phIdx >= 0 ? (r[phIdx] || '').trim() || null : null,
+      company: coIdx >= 0 ? (r[coIdx] || '').trim() || null : null,
+      job_title: jtIdx >= 0 ? (r[jtIdx] || '').trim() || null : null,
+      source: 'csv',
+    });
+  }
+  return out;
+}
+
+function contactsFromPaste(text) {
+  const out = [];
+  for (const line of text.split(/[\r\n]+/)) {
+    if (!line.trim()) continue;
+    for (const part of line.split(/[,;|]/).map(s => s.trim()).filter(Boolean)) {
+      const angle = part.match(/^(.*)<([^>]+)>$/);
+      if (angle) {
+        const email = angle[2].trim().toLowerCase();
+        const nameRaw = angle[1].trim().replace(/['"]/g, '');
+        const parts = nameRaw.split(/\s+/);
+        out.push({ email, first_name: parts[0] || null, last_name: parts.slice(1).join(' ') || null, source: 'paste' });
+        continue;
+      }
+      const m = part.match(/[^\s,<>]+@[^\s,<>]+\.[a-z]{2,}/i);
+      if (m) out.push({ email: m[0].toLowerCase(), source: 'paste' });
+    }
+  }
+  return out;
+}
+
+// ---- Load data ----
+async function loadAll() {
+  const [c, t, l] = await Promise.all([
+    authedFetch('/rest/v1/v_my_contacts?select=*&order=created_at.desc&limit=2000'),
+    authedFetch('/rest/v1/contact_tags?select=*&order=name.asc'),
+    authedFetch('/rest/v1/contact_lists?select=*&order=name.asc'),
+  ]);
+  allContacts = c.ok ? await c.json() : [];
+  allTags     = t.ok ? await t.json() : [];
+  allLists    = l.ok ? await l.json() : [];
+  renderSidebar();
+  renderTable();
+  renderCounts();
+}
+
+function renderCounts() {
+  document.getElementById('ctAll').textContent = allContacts.length;
+  document.getElementById('ctInvited').textContent = allContacts.filter(c => c.invite_count > 0).length;
+  document.getElementById('ctSignedUp').textContent = allContacts.filter(c => c.signed_up).length;
+}
+
+function renderSidebar() {
+  // Tags
+  document.getElementById('tagList').innerHTML = allTags.length
+    ? allTags.map(t => {
+        const ct = allContacts.filter(c => (c.tags || []).includes(t.name)).length;
+        const cls = activeFilter === 'tag:' + t.id ? 'side-item active' : 'side-item';
+        return `<div class="${cls}" data-filter="tag:${t.id}"><span class="dot" style="background:${escapeHtml(t.color)}"></span> ${escapeHtml(t.name)} <span class="ct">${ct}</span></div>`;
+      }).join('')
+    : '<div style="font-size:12px;color:var(--muted);padding:6px 10px">No tags yet</div>';
+
+  // Lists
+  document.getElementById('listList').innerHTML = allLists.length
+    ? allLists.map(l => {
+        const ct = allContacts.filter(c => (c.lists || []).includes(l.name)).length;
+        const cls = activeFilter === 'list:' + l.id ? 'side-item active' : 'side-item';
+        return `<div class="${cls}" data-filter="list:${l.id}"><span class="dot" style="background:${escapeHtml(l.color)}"></span> ${escapeHtml(l.name)} <span class="ct">${ct}</span></div>`;
+      }).join('')
+    : '<div style="font-size:12px;color:var(--muted);padding:6px 10px">No lists yet</div>';
+
+  // Wire click handlers
+  document.querySelectorAll('.side-item[data-filter]').forEach(el => {
+    el.addEventListener('click', () => {
+      activeFilter = el.dataset.filter;
+      renderSidebar();
+      renderTable();
+    });
+  });
+}
+
+function renderTable() {
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  let filtered = allContacts;
+  if (activeFilter === 'invited')   filtered = filtered.filter(c => c.invite_count > 0);
+  if (activeFilter === 'signed_up') filtered = filtered.filter(c => c.signed_up);
+  if (activeFilter.startsWith('tag:')) {
+    const tag = allTags.find(t => t.id === activeFilter.slice(4));
+    if (tag) filtered = filtered.filter(c => (c.tags || []).includes(tag.name));
+  }
+  if (activeFilter.startsWith('list:')) {
+    const list = allLists.find(l => l.id === activeFilter.slice(5));
+    if (list) filtered = filtered.filter(c => (c.lists || []).includes(list.name));
+  }
+  if (q) {
+    filtered = filtered.filter(c =>
+      (c.email || '').toLowerCase().includes(q) ||
+      (c.full_name || '').toLowerCase().includes(q) ||
+      (c.company || '').toLowerCase().includes(q)
+    );
+  }
+
+  document.getElementById('summaryBar').innerHTML = `
+    <span class="pill">${filtered.length} of ${allContacts.length} contact${allContacts.length === 1 ? '' : 's'}</span>
+    ${q ? `<span class="pill">search: "${escapeHtml(q)}"</span>` : ''}
+    ${activeFilter !== 'all' ? `<span class="pill" style="cursor:pointer" onclick="window.__resetFilter()">× ${activeFilter}</span>` : ''}
+  `;
+
+  if (!filtered.length) {
+    document.getElementById('rows').innerHTML = `<tr><td colspan="8" class="empty-state">
+      <div class="big">📭</div>
+      <div class="h">${allContacts.length === 0 ? 'No contacts yet' : 'No matches'}</div>
+      <div>${allContacts.length === 0 ? 'Click <strong>📥 Import</strong> to bring your contacts in.' : 'Try a different filter or search.'}</div>
+    </td></tr>`;
+    return;
+  }
+
+  document.getElementById('rows').innerHTML = filtered.map(c => `
+    <tr data-id="${c.id}">
+      <td><input type="checkbox" class="row-check" data-id="${c.id}" ${selectedIds.has(c.id) ? 'checked' : ''} /></td>
+      <td class="name-cell">
+        <div class="name">${escapeHtml(c.full_name || '—')}</div>
+        ${c.job_title ? `<div class="sub">${escapeHtml(c.job_title)}</div>` : ''}
+      </td>
+      <td>${escapeHtml(c.email)}</td>
+      <td>${escapeHtml(c.company || '—')}</td>
+      <td>${(c.tags || []).map(t => `<span class="tag-chip">${escapeHtml(t)}</span>`).join('') || '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${(c.lists || []).map(l => `<span class="list-chip">${escapeHtml(l)}</span>`).join('') || '<span style="color:var(--muted)">—</span>'}</td>
+      <td><span class="src-pill">${c.source || 'manual'}</span></td>
+      <td><button class="btn-secondary" data-edit="${c.id}" style="padding:5px 11px;border-radius:6px;border:1px solid var(--line);cursor:pointer;background:#fff;font-size:12px">Edit</button></td>
+    </tr>
+  `).join('');
+
+  // Wire row events
+  document.querySelectorAll('.row-check').forEach(cb => {
+    cb.addEventListener('change', e => {
+      if (e.target.checked) selectedIds.add(e.target.dataset.id);
+      else selectedIds.delete(e.target.dataset.id);
+      updateSelectionUI();
+    });
+  });
+  document.querySelectorAll('[data-edit]').forEach(b => {
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      openContactModal(b.dataset.edit);
+    });
+  });
+}
+
+window.__resetFilter = () => { activeFilter = 'all'; renderSidebar(); renderTable(); };
+
+function updateSelectionUI() {
+  const n = selectedIds.size;
+  document.getElementById('bulkActionsBtn').textContent = `${n} selected · Tag/List`;
+  document.getElementById('bulkActionsBtn').disabled = n === 0;
+  document.getElementById('inviteSelectedBtn').disabled = n === 0;
+  document.getElementById('inviteSelectedBtn').textContent = n ? `Invite ${n} selected →` : 'Invite selected';
+}
+
+document.getElementById('selAll').addEventListener('change', e => {
+  document.querySelectorAll('.row-check').forEach(cb => {
+    cb.checked = e.target.checked;
+    if (e.target.checked) selectedIds.add(cb.dataset.id);
+    else selectedIds.delete(cb.dataset.id);
+  });
+  updateSelectionUI();
+});
+
+document.getElementById('search').addEventListener('input', renderTable);
+
+// ---- Import flow ----
+const importModal = document.getElementById('importModal');
+document.getElementById('importBtn').addEventListener('click', () => {
+  document.getElementById('importBody').style.display = 'none';
+  document.getElementById('uploadZone').style.display = 'none';
+  document.getElementById('pasteWrap').style.display = 'none';
+  document.getElementById('importDo').style.display = 'none';
+  setStatus('importStatus', null);
+  importModal.classList.add('on');
+});
+document.getElementById('importCancel').addEventListener('click', () => importModal.classList.remove('on'));
+importModal.addEventListener('click', e => { if (e.target.id === 'importModal') e.target.classList.remove('on'); });
+
+let pendingImport = [];
+document.querySelectorAll('.src-card').forEach(card => {
+  card.addEventListener('click', () => {
+    if (card.classList.contains('coming')) {
+      setStatus('importStatus', 'Live sync from this source is coming soon. Use CSV export for now.', 'info');
+      return;
+    }
+    const src = card.dataset.source;
+    document.getElementById('importBody').style.display = 'block';
+    document.getElementById('uploadZone').style.display = src === 'csv' ? 'block' : 'none';
+    document.getElementById('pasteWrap').style.display  = src === 'paste' ? 'block' : 'none';
+    document.getElementById('importDo').style.display   = 'inline-block';
+    pendingImport = [];
+    setStatus('importStatus', null);
+  });
+});
+
+const uploadZone = document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) handleCSVFile(f);
+});
+document.getElementById('csvFile').addEventListener('change', e => {
+  if (e.target.files[0]) handleCSVFile(e.target.files[0]);
+});
+function handleCSVFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    pendingImport = contactsFromCSV(ev.target.result);
+    setStatus('importStatus', `Found ${pendingImport.length} contacts in "${file.name}". Click Import to save.`, 'ok');
+  };
+  reader.readAsText(file);
+}
+document.getElementById('pasteEmails').addEventListener('input', e => {
+  pendingImport = contactsFromPaste(e.target.value);
+  setStatus('importStatus', `${pendingImport.length} contact${pendingImport.length === 1 ? '' : 's'} ready to import.`, 'info');
+});
+
+document.getElementById('importDo').addEventListener('click', async () => {
+  if (!pendingImport.length) { setStatus('importStatus', 'Add some contacts first.', 'err'); return; }
+  const btn = document.getElementById('importDo');
+  btn.disabled = true; btn.textContent = 'Importing…';
+
+  // Insert in chunks of 50
+  const rows = pendingImport.map(c => ({ ...c, owner_id: myUserId }));
+  let imported = 0, skipped = 0;
+  for (let i = 0; i < rows.length; i += 50) {
+    const chunk = rows.slice(i, i + 50);
+    const r = await authedFetch('/rest/v1/contacts', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(chunk),
+    });
+    if (r.ok) imported += chunk.length;
+    else { skipped += chunk.length; }
+  }
+  btn.disabled = false; btn.textContent = 'Import';
+  setStatus('importStatus', `Imported ${imported} contact${imported === 1 ? '' : 's'}.${skipped ? ` ${skipped} skipped.` : ''}`, 'ok');
+  await loadAll();
+  setTimeout(() => importModal.classList.remove('on'), 1200);
+});
+
+// ---- New / Edit contact ----
+document.getElementById('newContactBtn').addEventListener('click', () => openContactModal(null));
+function openContactModal(id) {
+  editingId = id;
+  const c = id ? allContacts.find(x => x.id === id) : null;
+  document.getElementById('cModalTitle').textContent = id ? 'Edit contact' : 'New contact';
+  document.getElementById('cFirst').value = c?.first_name || '';
+  document.getElementById('cLast').value  = c?.last_name  || '';
+  document.getElementById('cEmail').value = c?.email      || '';
+  document.getElementById('cPhone').value = c?.phone      || '';
+  document.getElementById('cCompany').value = c?.company  || '';
+  document.getElementById('cJob').value   = c?.job_title  || '';
+  document.getElementById('cNotes').value = c?.notes      || '';
+  document.getElementById('cDelete').style.display = id ? 'inline-block' : 'none';
+  document.getElementById('contactModal').classList.add('on');
+}
+document.getElementById('cCancel').addEventListener('click', () => document.getElementById('contactModal').classList.remove('on'));
+document.getElementById('contactModal').addEventListener('click', e => { if (e.target.id === 'contactModal') e.target.classList.remove('on'); });
+
+document.getElementById('cSave').addEventListener('click', async () => {
+  const payload = {
+    first_name: document.getElementById('cFirst').value.trim() || null,
+    last_name:  document.getElementById('cLast').value.trim() || null,
+    email:      document.getElementById('cEmail').value.trim().toLowerCase(),
+    phone:      document.getElementById('cPhone').value.trim() || null,
+    company:    document.getElementById('cCompany').value.trim() || null,
+    job_title:  document.getElementById('cJob').value.trim() || null,
+    notes:      document.getElementById('cNotes').value.trim() || null,
+  };
+  if (!/[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(payload.email)) { alert('Email is required.'); return; }
+  let r;
+  if (editingId) {
+    r = await authedFetch(`/rest/v1/contacts?id=eq.${editingId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  } else {
+    r = await authedFetch('/rest/v1/contacts', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ ...payload, owner_id: myUserId, source: 'manual' }),
+    });
+  }
+  if (!r.ok) { alert('Save failed (HTTP ' + r.status + ').'); return; }
+  document.getElementById('contactModal').classList.remove('on');
+  await loadAll();
+});
+document.getElementById('cDelete').addEventListener('click', async () => {
+  if (!editingId || !confirm('Delete this contact? Cannot be undone.')) return;
+  await authedFetch(`/rest/v1/contacts?id=eq.${editingId}`, { method: 'DELETE' });
+  document.getElementById('contactModal').classList.remove('on');
+  await loadAll();
+});
+
+// ---- Tags / Lists ----
+document.getElementById('addTagBtn').addEventListener('click', () => document.getElementById('tagModal').classList.add('on'));
+document.getElementById('tCancel').addEventListener('click', () => document.getElementById('tagModal').classList.remove('on'));
+document.getElementById('tSave').addEventListener('click', async () => {
+  const name = document.getElementById('tName').value.trim();
+  const color = document.getElementById('tColor').value;
+  if (name.length < 1) return alert('Name required.');
+  const r = await authedFetch('/rest/v1/contact_tags', {
+    method: 'POST',
+    headers: { 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ owner_id: myUserId, name, color }),
+  });
+  if (!r.ok) return alert('Failed (HTTP ' + r.status + ').');
+  document.getElementById('tagModal').classList.remove('on');
+  document.getElementById('tName').value = '';
+  await loadAll();
+});
+
+document.getElementById('addListBtn').addEventListener('click', () => document.getElementById('listModal').classList.add('on'));
+document.getElementById('lCancel').addEventListener('click', () => document.getElementById('listModal').classList.remove('on'));
+document.getElementById('lSave').addEventListener('click', async () => {
+  const name = document.getElementById('lName').value.trim();
+  const description = document.getElementById('lDesc').value.trim() || null;
+  if (name.length < 1) return alert('Name required.');
+  const r = await authedFetch('/rest/v1/contact_lists', {
+    method: 'POST',
+    headers: { 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ owner_id: myUserId, name, description }),
+  });
+  if (!r.ok) return alert('Failed (HTTP ' + r.status + ').');
+  document.getElementById('listModal').classList.remove('on');
+  document.getElementById('lName').value = '';
+  document.getElementById('lDesc').value = '';
+  await loadAll();
+});
+
+// ---- Bulk actions ----
+document.getElementById('bulkActionsBtn').addEventListener('click', () => {
+  document.getElementById('bulkCount').textContent = selectedIds.size;
+  const tagSel = document.getElementById('bulkTagSel');
+  tagSel.innerHTML = '<option value="">—</option>' + allTags.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+  const listSel = document.getElementById('bulkListSel');
+  listSel.innerHTML = '<option value="">—</option>' + allLists.map(l => `<option value="${l.id}">${escapeHtml(l.name)}</option>`).join('');
+  document.getElementById('bulkModal').classList.add('on');
+});
+document.getElementById('bkCancel').addEventListener('click', () => document.getElementById('bulkModal').classList.remove('on'));
+document.getElementById('bkApply').addEventListener('click', async () => {
+  const tagId  = document.getElementById('bulkTagSel').value;
+  const listId = document.getElementById('bulkListSel').value;
+  if (!tagId && !listId) { alert('Pick a tag or list.'); return; }
+  if (tagId) {
+    const links = Array.from(selectedIds).map(cid => ({ contact_id: cid, tag_id: tagId }));
+    await authedFetch('/rest/v1/contact_tag_links', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=ignore-duplicates,return=minimal' },
+      body: JSON.stringify(links),
+    });
+  }
+  if (listId) {
+    const members = Array.from(selectedIds).map(cid => ({ list_id: listId, contact_id: cid }));
+    await authedFetch('/rest/v1/contact_list_members', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=ignore-duplicates,return=minimal' },
+      body: JSON.stringify(members),
+    });
+  }
+  document.getElementById('bulkModal').classList.remove('on');
+  selectedIds.clear();
+  updateSelectionUI();
+  await loadAll();
+});
+
+// ---- Invite selected -> jump to invite page with email list passed via sessionStorage ----
+document.getElementById('inviteSelectedBtn').addEventListener('click', () => {
+  const emails = allContacts.filter(c => selectedIds.has(c.id)).map(c => c.email);
+  if (!emails.length) return;
+  sessionStorage.setItem('lymx_invite_preselected', JSON.stringify(emails));
+  window.location.href = 'admin-invite-friends.html?from=contacts';
+});
+
+// ---- Boot ----
+(async function init() {
+  if (!window.LYMX || !window.LYMX.getSession) {
+    document.getElementById('rows').innerHTML = '<tr><td colspan="8" class="empty-state"><div>Sign in first to use Contacts.</div></td></tr>';
+    return;
+  }
+  const s = await window.LYMX.getSession();
+  if (!s) {
+    document.getElementById('rows').innerHTML = '<tr><td colspan="8" class="empty-state"><div>Sign in first. <a href="login.html" style="color:var(--accent-2);text-decoration:underline">Sign in</a></div></td></tr>';
+    return;
+  }
+  myUserId = s.user.id;
+  myEmail  = s.user.email;
+  document.getElementById('userInitial').textContent = (myEmail || 'L')[0].toUpperCase();
+  await loadAll();
+})();
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>

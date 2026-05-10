@@ -115,6 +115,7 @@
     <a href="admin-dashboard.html" class="brand">LYMX <span class="role-tag">Invite</span></a>
     <nav class="nav-links">
       <a href="admin-dashboard.html">Home</a>
+      <a href="contacts.html">Contacts</a>
       <a href="admin-tech-support.html">Tech Support</a>
       <a href="admin-chat.html">Chat</a>
       <a href="admin-broadcast.html">Broadcast</a>
@@ -664,6 +665,19 @@ async function loadHistory() {
   myUserId = s.user.id;
   myEmail  = s.user.email;
   document.getElementById('userInitial').textContent = (myEmail || 'L')[0].toUpperCase();
+
+  // If user came from contacts.html with selected emails, pre-fill them
+  try {
+    const preselected = sessionStorage.getItem('lymx_invite_preselected');
+    if (preselected) {
+      const list = JSON.parse(preselected);
+      if (Array.isArray(list) && list.length) {
+        document.getElementById('emailPaste').value = list.join('\n');
+        sessionStorage.removeItem('lymx_invite_preselected');
+        setStatus(`Loaded ${list.length} contact${list.length === 1 ? '' : 's'} from your address book.`, 'ok');
+      }
+    }
+  } catch {}
 
   // Load Kenny's partner_id (so we use the actual ref link, not user_id)
   const pr = await authedFetch(`/rest/v1/partners?select=id&user_id=eq.${myUserId}&limit=1`);
