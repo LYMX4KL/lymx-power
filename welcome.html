@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Welcome — claim your LYMX rewards. Earn at one Business, spend at any other." />
+<title>Welcome · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--biz:#0a84ff;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1080px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  /* Hero — co-branded */
+  .hero{padding:44px 0 24px;background:linear-gradient(180deg,#fff 0%,var(--bg-soft) 100%);border-bottom:1px solid var(--line)}
+  .cobrand{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:24px}
+  .cobrand img{height:36px;width:auto;max-width:180px;object-fit:contain}
+  .cobrand .x{color:var(--muted);font-size:22px;font-weight:300}
+  .cobrand .lymx{font-weight:800;font-size:24px;color:var(--ink)}
+
+  .badge{display:inline-block;background:linear-gradient(135deg,var(--gold),#b89625);color:#fff;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 11px;border-radius:999px;margin-bottom:14px}
+  h1{margin:0 0 8px;font-size:36px;font-weight:800;letter-spacing:-.02em;text-align:center;max-width:720px;margin-left:auto;margin-right:auto}
+  .sub{color:var(--muted);font-size:17px;text-align:center;max-width:560px;margin:0 auto 32px}
+  .bonus-banner{background:var(--ink);color:#fff;border-radius:12px;padding:18px 24px;text-align:center;max-width:520px;margin:0 auto 32px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+  .bonus-banner .big{font-size:32px;font-weight:800;color:var(--gold)}
+  .bonus-banner .lbl{font-size:14px;color:#cbd1d8}
+
+  /* How it works */
+  .how{padding:36px 0 24px}
+  .how h2{text-align:center;margin:0 0 28px;font-size:22px;font-weight:800}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:880px;margin:0 auto}
+  @media(max-width:640px){.steps{grid-template-columns:1fr}}
+  .step{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 22px;text-align:center}
+  .step .n{width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+  .step .h{font-weight:700;font-size:16px;margin-bottom:6px}
+  .step .d{font-size:13.5px;color:var(--muted);line-height:1.5}
+
+  /* Signup form */
+  .signup{padding:32px 0 64px}
+  .form-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:30px 36px;max-width:480px;margin:0 auto;box-shadow:0 10px 30px rgba(14,17,22,.06)}
+  .form-card h3{margin:0 0 4px;font-size:21px;font-weight:800;text-align:center}
+  .form-card .form-sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:22px}
+  .form-card label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px}
+  .form-card input{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:15px;font-family:inherit;box-sizing:border-box;outline:none;transition:.15s}
+  .form-card input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  .form-card .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:520px){.form-card .row{grid-template-columns:1fr}}
+  .form-card .btn-submit{width:100%;padding:13px 18px;border-radius:10px;background:var(--ink);color:#fff;font-weight:700;font-size:15px;border:0;cursor:pointer;margin-top:18px;font-family:inherit;transition:.15s}
+  .form-card .btn-submit:hover{background:#000}
+  .form-card .btn-submit:disabled{opacity:.5;cursor:wait}
+  .form-card .terms{font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.5;text-align:center}
+  .form-card .terms a{color:var(--accent-2);text-decoration:underline}
+  .form-card .signin{text-align:center;font-size:13.5px;color:var(--muted);margin-top:16px}
+  .form-card .signin a{color:var(--accent-2);font-weight:600}
+
+  .status{padding:11px 14px;border-radius:8px;font-size:14px;margin-top:14px;display:none}
+  .status.show{display:block}
+  .status.ok{background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44}
+  .status.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
+  .status.info{background:#e6eefc;border:1px solid #b3c7ed;color:#1d4ed8}
+
+  /* Success state */
+  .success-card{display:none;text-align:center;padding:40px 36px}
+  .success-card.show{display:block}
+  .success-card .check{font-size:64px;color:var(--ok);margin-bottom:12px}
+  .success-card h3{font-size:24px;font-weight:800;margin:0 0 8px}
+  .success-card .sub-msg{color:var(--muted);font-size:15px;margin-bottom:20px}
+  .success-card .reward-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+  .success-card .reward-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .success-card .reward-card .v{font-size:24px;font-weight:800;color:var(--gold)}
+  .success-card .reward-card .lbl{font-size:12px;color:var(--muted);margin-top:2px}
+  .success-card .next-btn{display:inline-block;padding:11px 22px;background:var(--ink);color:#fff;border-radius:9px;font-weight:700;font-size:14px}
+  .success-card .next-btn:hover{background:#000}
+
+  /* Footer */
+  footer{padding:24px;text-align:center;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);margin-top:48px}
+  footer a{color:var(--muted);margin:0 8px}
+  footer a:hover{color:var(--ink)}
+
+  .biz-unknown{padding:60px 24px;text-align:center;color:var(--muted)}
+  .biz-unknown .big{font-size:48px;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="cobrand" id="cobrand">
+      <span style="color:var(--muted);font-size:14px">Loading…</span>
+    </div>
+    <div style="text-align:center"><span class="badge" id="badge">Welcome</span></div>
+    <h1 id="heroH">You've been invited to LYMX</h1>
+    <p class="sub" id="heroSub">Earn rewards at the Businesses you already use, spend them at any other Business in the LYMX network.</p>
+    <div class="bonus-banner" id="bonusBanner">
+      <div><div class="big" id="bonusAmt">—</div><div class="lbl">LYMX welcome bonus</div></div>
+      <div style="font-size:13px;color:#cbd1d8;text-align:left;max-width:200px" id="bonusBreakdown">—</div>
+    </div>
+  </div>
+</section>
+
+<section class="how">
+  <div class="wrap">
+    <h2>How LYMX works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="n">1</div>
+        <div class="h">Sign up free</div>
+        <div class="d">Create your LYMX account in 60 seconds. Your welcome bonus lands in your wallet instantly.</div>
+      </div>
+      <div class="step">
+        <div class="n">2</div>
+        <div class="h">Earn anywhere</div>
+        <div class="d">Get LYMX rewards from any LYMX Business — coffee, real estate, EV charging, retail, services.</div>
+      </div>
+      <div class="step">
+        <div class="n">3</div>
+        <div class="h">Spend anywhere</div>
+        <div class="d">Use your LYMX at any other LYMX Business. Your balance never expires.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="signup">
+  <div class="wrap">
+    <div class="form-card" id="signupCard">
+      <h3>Claim your bonus</h3>
+      <p class="form-sub">Create your free LYMX account. Takes 60 seconds.</p>
+
+      <div class="row">
+        <div><label for="firstName">First name</label><input id="firstName" type="text" required /></div>
+        <div><label for="lastName">Last name</label><input id="lastName" type="text" /></div>
+      </div>
+
+      <label for="email">Email</label>
+      <input id="email" type="email" required autocomplete="email" />
+
+      <label for="password">Choose a password</label>
+      <input id="password" type="password" required minlength="8" autocomplete="new-password" />
+
+      <button class="btn-submit" id="submitBtn">Create account &amp; claim my LYMX</button>
+
+      <div class="status" id="status"></div>
+
+      <div class="terms">
+        By creating an account you agree to LYMX's
+        <a href="/terms.html" target="_blank">Terms</a> and
+        <a href="/privacy.html" target="_blank">Privacy Policy</a>.
+      </div>
+      <div class="signin">
+        Already have a LYMX account? <a href="/login.html">Sign in</a>
+      </div>
+    </div>
+
+    <div class="form-card success-card" id="successCard">
+      <div class="check">✓</div>
+      <h3>You're in!</h3>
+      <p class="sub-msg" id="successSub">Your LYMX wallet is loaded with your welcome bonus.</p>
+      <div class="reward-grid">
+        <div class="reward-card"><div class="v" id="rewLymx">—</div><div class="lbl">From LYMX</div></div>
+        <div class="reward-card"><div class="v" id="rewBiz">—</div><div class="lbl" id="rewBizLbl">From Business</div></div>
+      </div>
+      <a class="next-btn" href="/customer-dashboard.html">Go to my wallet →</a>
+    </div>
+
+    <div class="biz-unknown" id="bizUnknown" style="display:none">
+      <div class="big">🔍</div>
+      <h3 style="margin:0 0 6px;color:var(--ink);font-size:20px">Business not found</h3>
+      <p>That invite link looks invalid. <a href="/customer-signup.html" style="color:var(--accent-2);text-decoration:underline">Sign up normally for LYMX</a>.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Sent from <strong>LYMX</strong> · <a href="/">getlymx.com</a> · <a href="/customer-faq.html">FAQ</a> · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+
+// Read business slug + signup token from URL
+const params = new URLSearchParams(location.search);
+const bizSlug = (params.get('biz') || params.get('ref') || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
+const signupToken = params.get('token') || null;
+let bizConfig = null;
+
+function setStatus(text, kind) {
+  const el = document.getElementById('status');
+  if (!text) { el.className = 'status'; el.textContent = ''; return; }
+  el.className = 'status show ' + (kind || 'err');
+  el.textContent = text;
+}
+
+async function loadBusiness() {
+  if (!bizSlug) {
+    document.getElementById('signupCard').style.display = 'none';
+    document.getElementById('bizUnknown').style.display = 'block';
+    document.getElementById('cobrand').innerHTML = '<div class="lymx">LYMX</div>';
+    document.getElementById('bonusBanner').style.display = 'none';
+    return;
+  }
+
+  const r = await fetch(SUPABASE_URL + '/rest/v1/business_partners?slug=eq.' + bizSlug + '&active=eq.true&select=*&limit=1', {
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON }
+  });
+  if (!r.ok) {
+    document.getElementById('signupCard').style.display = 'none';
+    document.getElementById('bizUnknown').style.display = 'block';
+    return;
+  }
+  const rows = await r.json();
+  if (!rows.length) {
+    document.getElementById('signupCard').style.display = 'none';
+    document.getElementById('bizUnknown').style.display = 'block';
+    return;
+  }
+  bizConfig = rows[0];
+
+  // Paint co-brand
+  const cob = document.getElementById('cobrand');
+  cob.innerHTML = `
+    ${bizConfig.logo_url ? `<img src="${bizConfig.logo_url}" alt="${bizConfig.display_name}" />` : `<div style="font-weight:800;font-size:20px;color:${bizConfig.primary_color || '#0a84ff'}">${bizConfig.display_name}</div>`}
+    <span class="x">×</span>
+    <div class="lymx">LYMX</div>
+  `;
+
+  // Paint hero text
+  document.getElementById('badge').textContent = `${bizConfig.display_name} × LYMX`;
+  document.getElementById('heroH').textContent = `${bizConfig.display_name} invited you to LYMX`;
+  document.getElementById('heroSub').textContent = `Claim your welcome bonus and start earning rewards at LYMX Businesses in your area.`;
+  const total = bizConfig.signup_bonus_from_lymx + bizConfig.signup_bonus_from_biz;
+  document.getElementById('bonusAmt').textContent = total + ' LYMX';
+  document.getElementById('bonusBreakdown').innerHTML = `
+    <div>${bizConfig.signup_bonus_from_lymx} from <strong style="color:#fff">LYMX</strong></div>
+    <div>${bizConfig.signup_bonus_from_biz} from <strong style="color:#fff">${bizConfig.display_name}</strong></div>
+  `;
+  document.getElementById('rewBizLbl').textContent = `From ${bizConfig.display_name}`;
+  document.title = `Welcome to LYMX · ${bizConfig.display_name}`;
+
+  // Set primary color if customized
+  if (bizConfig.primary_color) document.documentElement.style.setProperty('--biz', bizConfig.primary_color);
+}
+
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const first = document.getElementById('firstName').value.trim();
+  const last  = document.getElementById('lastName').value.trim();
+  const email = document.getElementById('email').value.trim().toLowerCase();
+  const password = document.getElementById('password').value;
+
+  if (!first || !email || !password) { setStatus('Please fill in name, email, and password.', 'err'); return; }
+  if (password.length < 8) { setStatus('Password must be at least 8 characters.', 'err'); return; }
+  if (!bizConfig) { setStatus('Business config not loaded yet — try again in a moment.', 'err'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Creating account…';
+  setStatus(null);
+
+  // 1. Sign up via Supabase Auth
+  let signupRes;
+  try {
+    signupRes = await window.LYMX.sb.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          role: 'customer',
+          first_name: first,
+          last_name: last,
+          signup_source: bizConfig.slug,
+        }
+      }
+    });
+  } catch (e) {
+    setStatus('Signup failed: ' + (e.message || e), 'err');
+    btn.disabled = false; btn.textContent = 'Create account & claim my LYMX';
+    return;
+  }
+  if (signupRes.error) {
+    setStatus(signupRes.error.message || 'Signup failed.', 'err');
+    btn.disabled = false; btn.textContent = 'Create account & claim my LYMX';
+    return;
+  }
+  const userId = signupRes.data.user?.id;
+  if (!userId) {
+    setStatus('Could not retrieve your user id. Please refresh and try again.', 'err');
+    btn.disabled = false; btn.textContent = 'Create account & claim my LYMX';
+    return;
+  }
+
+  // 2. Call business-signup-bonus to issue the welcome bonus
+  btn.textContent = 'Loading your wallet…';
+  const idempKey = `signup-${bizConfig.slug}-${email}-${Date.now()}`;
+  let bonusJson = null;
+  try {
+    const bonusRes = await fetch(SUPABASE_URL + '/functions/v1/business-signup-bonus', {
+      method: 'POST',
+      headers: {
+        'apikey': ANON,
+        'Authorization': 'Bearer ' + (signupRes.data.session?.access_token || ANON),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        business_slug: bizConfig.slug,
+        idempotency_key: idempKey,
+        landing_url: location.href,
+        user_agent: navigator.userAgent,
+        signup_token: signupToken,
+      })
+    });
+    bonusJson = await bonusRes.json();
+    if (!bonusRes.ok) {
+      // bonus failed but account exists — show partial success
+      setStatus('Account created, but bonus pending. Our team will credit it shortly.', 'info');
+    }
+  } catch (e) {
+    setStatus('Account created, but bonus could not be issued automatically. Our team will credit it shortly.', 'info');
+  }
+
+  // 3. Show success
+  document.getElementById('signupCard').style.display = 'none';
+  const succ = document.getElementById('successCard');
+  succ.classList.add('show');
+  document.getElementById('rewLymx').textContent = bizConfig.signup_bonus_from_lymx + ' LYMX';
+  document.getElementById('rewBiz').textContent  = bizConfig.signup_bonus_from_biz + ' LYMX';
+
+  if (bonusJson?.admin_status === 'pending_review') {
+    document.getElementById('successSub').textContent = `Welcome aboard! Your bonus is pending a quick review — it'll land in your wallet shortly.`;
+  }
+});
+
+loadBusiness();
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>
