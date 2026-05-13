@@ -187,9 +187,13 @@
 const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
 const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
 
-// Read business slug + signup token from URL
+// Read business slug + inviter ref + signup token from URL
+//   ?biz=<slug>     — business co-brand (InvestPro, etc.)
+//   ?ref=<uuid>     — inviter's partner_id or user_id (for 100+100 referral bonus)
+//   ?token=<xxx>    — optional per-recipient tracking token
 const params = new URLSearchParams(location.search);
-const bizSlug = (params.get('biz') || params.get('ref') || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
+const bizSlug = (params.get('biz') || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
+const inviterRef = (params.get('ref') || '').replace(/[^a-z0-9-]/gi, '');
 const signupToken = params.get('token') || null;
 let bizConfig = null;
 
@@ -315,6 +319,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
         landing_url: location.href,
         user_agent: navigator.userAgent,
         signup_token: signupToken,
+        inviter_ref: inviterRef || null,
       })
     });
     bonusJson = await bonusRes.json();
