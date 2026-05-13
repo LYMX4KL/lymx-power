@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Confirm or deny a LYMX fix — no login needed." />
+<title>Verify Fix · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--ok:#13a26b;--danger:#e0413e;--warn:#f0a020;--accent-2:#0050c7}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#f6f7f9;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);min-height:100vh}
+  .center{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+  .card{background:#fff;border-radius:16px;max-width:540px;width:100%;padding:36px 40px;box-shadow:0 10px 40px rgba(14,17,22,.1);text-align:center}
+  .logo{font-size:24px;font-weight:800;margin-bottom:24px;color:var(--ink)}
+  .big{font-size:56px;margin-bottom:12px}
+  h1{margin:0 0 10px;font-size:24px;font-weight:800;letter-spacing:-.01em}
+  p{color:var(--muted);font-size:15px;line-height:1.55;margin:0 0 8px}
+  .actions{display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+  .btn{padding:11px 22px;border-radius:10px;font-weight:700;font-size:14px;border:0;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .ok{color:var(--ok)}
+  .err{color:var(--danger)}
+  .warn{color:var(--warn)}
+</style>
+</head>
+<body>
+<div class="center">
+  <div class="card" id="card">
+    <div class="logo">LYMX</div>
+    <div class="big" id="bigIcon">⌛</div>
+    <h1 id="hdr">Verifying…</h1>
+    <p id="msg">Recording your response.</p>
+    <div class="actions" id="actions" style="display:none">
+      <a class="btn btn-primary" href="/my-feedback.html">View my feedback</a>
+      <a class="btn btn-secondary" href="/">Back to LYMX</a>
+    </div>
+  </div>
+</div>
+
+<script src="lymx-config.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+
+const params = new URLSearchParams(location.search);
+const fid    = params.get('fid');
+const token  = params.get('token');
+const action = params.get('action');
+
+function show(icon, headerText, message, klass) {
+  document.getElementById('bigIcon').textContent = icon;
+  document.getElementById('hdr').textContent = headerText;
+  document.getElementById('hdr').className = klass || '';
+  document.getElementById('msg').innerHTML = message;
+  document.getElementById('actions').style.display = 'flex';
+}
+
+(async () => {
+  if (!fid || !token || !action) {
+    show('⚠️', 'Bad link', 'This verification link is missing parameters. Please use the link from your email.', 'warn');
+    return;
+  }
+  if (action !== 'confirm' && action !== 'still') {
+    show('⚠️', 'Unknown action', 'The verification action wasn\'t recognized.', 'warn');
+    return;
+  }
+
+  try {
+    const r = await fetch(SUPABASE_URL + '/functions/v1/feedback-verify', {
+      method: 'POST',
+      headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedback_id: fid, token, action })
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      if (r.status === 410) {
+        show('🔁', 'Already responded', 'You\'ve already responded to this verification request. You can see all your feedback in <a href="/my-feedback.html" style="color:var(--accent-2);text-decoration:underline">My Feedback</a>.', 'warn');
+      } else if (r.status === 403) {
+        show('🔒', 'Invalid link', 'This verification link is invalid or has expired. Check your email for the original link.', 'err');
+      } else {
+        show('⚠️', 'Could not record', err.error || ('HTTP ' + r.status), 'err');
+      }
+      return;
+    }
+    if (action === 'confirm') {
+      show('🎉', 'Thanks for confirming!', 'We\'ve marked this issue as <strong>resolved</strong>. You\'re a star.', 'ok');
+    } else {
+      show('🛠️', 'Got it — we\'ll keep digging.', 'We\'ve marked this as <strong>still broken</strong> and reopened it for the team. Sorry for the trouble.', 'warn');
+    }
+  } catch (e) {
+    show('⚠️', 'Network error', e.message, 'err');
+  }
+})();
+</script>
+</body>
+</html>

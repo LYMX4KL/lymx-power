@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Your LYMX feedback history — see your submissions, replies from the team, and verify fixes." />
+<title>My Feedback · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--maxw:880px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .avatar-nav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+
+  .page{padding:28px 0 64px}
+  .page-head h1{margin:0 0 4px;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:0;color:var(--muted);font-size:15px}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:18px 0}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .stat .lab{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .stat .v{font-size:22px;font-weight:800;line-height:1.05;margin-top:4px}
+  .stat.danger .v{color:var(--danger)}
+  .stat.warn .v{color:var(--warn)}
+  .stat.ok .v{color:var(--ok)}
+
+  .fb-item{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin-bottom:12px;cursor:pointer;transition:.15s}
+  .fb-item:hover{border-color:#c5d4ed;background:#fdfdff}
+  .fb-item.awaiting{border-color:var(--warn);background:#fffbe6;box-shadow:0 0 0 2px rgba(240,160,32,.08)}
+  .fb-item .hdr{display:flex;justify-content:space-between;align-items:start;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .fb-item .subj{font-weight:700;font-size:15px;color:var(--ink)}
+  .fb-item .meta{font-size:12px;color:var(--muted)}
+  .fb-item .msg{font-size:14px;color:var(--ink-2);line-height:1.5;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .fb-item .footer{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.02em}
+  .pill.bug{background:#fdecec;color:#9b1c1c}
+  .pill.question{background:#dceffd;color:#1d4ed8}
+  .pill.suggestion{background:#fff3d4;color:#92400e}
+  .pill.general{background:#eef0f4;color:#374151}
+  .pill.status-new{background:#fdecec;color:#9b1c1c}
+  .pill.status-in_progress{background:#fff3d4;color:#92400e}
+  .pill.status-resolved{background:#e6f5ee;color:#0a6e44}
+  .pill.status-wontfix{background:#eef0f4;color:#6b7280}
+
+  .reply-banner{background:#eef5ff;border-left:3px solid var(--accent);padding:10px 14px;border-radius:6px;font-size:13.5px;color:var(--ink-2);margin-top:8px}
+  .reply-banner .lab{font-size:11px;color:var(--accent-2);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:3px}
+
+  .verify-banner{background:linear-gradient(135deg,#fef9e6,#fffbe6);border:1px solid var(--warn);padding:14px 18px;border-radius:10px;font-size:14px;color:var(--ink-2);margin-top:10px}
+  .verify-banner .h{font-weight:800;color:#92400e;margin-bottom:6px}
+  .verify-banner .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .btn{padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;border:0;cursor:pointer;font-family:inherit}
+  .btn-confirm{background:var(--ok);color:#fff}
+  .btn-confirm:hover{background:#0a6e44}
+  .btn-still{background:#fff;border:1px solid #f5b7b7;color:var(--danger)}
+  .btn-still:hover{background:#fdecec}
+
+  .empty{padding:60px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:14px}
+  .empty .big{font-size:48px;margin-bottom:8px}
+
+  /* Detail modal */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(14,17,22,.55);z-index:99;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto}
+  .modal-bg.on{display:flex}
+  .modal{background:#fff;border-radius:14px;max-width:700px;width:100%;padding:24px 28px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .modal h2{margin:0 0 4px;font-size:20px;font-weight:800}
+  .modal .meta{color:var(--muted);font-size:13px;margin-bottom:14px}
+  .modal .section{background:var(--bg-soft);padding:12px 16px;border-radius:8px;margin-bottom:12px;font-size:14px;line-height:1.55;white-space:pre-wrap}
+  .reply{padding:14px 16px;border-radius:8px;margin-bottom:10px;font-size:14px;line-height:1.55;white-space:pre-wrap}
+  .reply.admin{background:#e6f5ee;border-left:3px solid var(--ok)}
+  .reply.submitter{background:#eef5ff;border-left:3px solid var(--accent)}
+  .reply.system{background:#eef0f4;border-left:3px solid var(--muted);color:var(--muted);font-style:italic}
+  .reply .who{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;color:var(--muted)}
+  .reply .when{font-size:11px;color:var(--muted);margin-top:6px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="/" class="brand">LYMX</a>
+    <nav class="nav-links">
+      <a href="customer-dashboard.html">My Wallet</a>
+      <a href="my-feedback.html" class="on">My Feedback</a>
+      <a href="contacts.html">Contacts</a>
+      <a href="browse.html">Browse</a>
+    </nav>
+    <div class="avatar-nav" id="userInitial">·</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>💬 My Feedback</h1>
+      <p>Every bug, suggestion, or question you've sent us — plus the team's replies.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="lab">Total submitted</div><div class="v" id="cTotal">—</div></div>
+      <div class="stat danger"><div class="lab">Open</div><div class="v" id="cOpen">—</div></div>
+      <div class="stat warn"><div class="lab">Waiting on you</div><div class="v" id="cAwaiting">—</div></div>
+      <div class="stat ok"><div class="lab">Resolved</div><div class="v" id="cResolved">—</div></div>
+    </div>
+
+    <div id="list">
+      <div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div>
+    </div>
+  </div>
+</main>
+
+<!-- Detail modal -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h2 id="mSubj">—</h2>
+    <div class="meta" id="mMeta">—</div>
+    <div class="section" id="mOrig">—</div>
+    <div id="mThread"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:14px">
+      <button class="btn" id="mClose" style="background:#fff;border:1px solid var(--line);color:var(--ink)">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+
+const TYPE_LABEL = { bug:'Bug', question:'Help', suggestion:'Idea', general:'Other' };
+const TYPE_EMOJI = { bug:'🐛', question:'🆘', suggestion:'💡', general:'📋' };
+
+async function authedFetch(path, opts = {}) {
+  const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = (session && session.access_token) || ANON;
+  return fetch(SUPABASE_URL + path, {
+    ...opts,
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+  });
+}
+function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+function fmtTime(iso) { return new Date(iso).toLocaleString([], { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }); }
+function fmtAgo(iso) {
+  const ago = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (ago < 60) return Math.floor(ago) + 's ago';
+  if (ago < 3600) return Math.floor(ago/60) + 'm ago';
+  if (ago < 86400) return Math.floor(ago/3600) + 'h ago';
+  if (ago < 86400*30) return Math.floor(ago/86400) + 'd ago';
+  return new Date(iso).toLocaleDateString();
+}
+
+async function loadList() {
+  const r = await authedFetch('/rest/v1/v_my_feedback?select=*&order=created_at.desc&limit=200');
+  if (!r.ok) {
+    document.getElementById('list').innerHTML = '<div class="empty">Could not load your feedback. Try signing in again.</div>';
+    return;
+  }
+  const items = await r.json();
+
+  // Stats
+  document.getElementById('cTotal').textContent    = items.length;
+  document.getElementById('cOpen').textContent     = items.filter(i => i.status === 'new' || i.status === 'in_progress').length;
+  document.getElementById('cAwaiting').textContent = items.filter(i => i.awaiting_verification).length;
+  document.getElementById('cResolved').textContent = items.filter(i => i.status === 'resolved').length;
+
+  if (!items.length) {
+    document.getElementById('list').innerHTML = '<div class="empty"><div class="big">💬</div><strong>Nothing here yet.</strong><br>Click the floating "Send Feedback" button on any page to submit your first bug, idea, or question.</div>';
+    return;
+  }
+
+  document.getElementById('list').innerHTML = items.map(i => {
+    const t = TYPE_LABEL[i.type] || i.type;
+    const subject = i.subject || (i.message || '').slice(0, 80) + ((i.message || '').length > 80 ? '…' : '');
+    const adminReply = i.last_admin_reply_text;
+    const awaiting = i.awaiting_verification && i.verification_token;
+
+    return '<div class="fb-item ' + (awaiting ? 'awaiting' : '') + '" data-id="' + i.id + '">' +
+      '<div class="hdr">' +
+        '<div>' +
+          '<div class="subj">' + escapeHtml(subject) + '</div>' +
+          '<div class="meta">' +
+            '<span class="pill ' + i.type + '">' + (TYPE_EMOJI[i.type] || '') + ' ' + t + '</span> ' +
+            '<span class="pill status-' + i.status + '">' + i.status.replace('_', ' ') + '</span>' +
+            ' · ' + fmtAgo(i.created_at) +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="msg">' + escapeHtml(i.message || '') + '</div>' +
+      (adminReply
+        ? '<div class="reply-banner">' +
+            '<div class="lab">LYMX team replied · ' + fmtAgo(i.last_admin_reply_at) + '</div>' +
+            escapeHtml(adminReply.slice(0, 250)) + (adminReply.length > 250 ? '…' : '') +
+          '</div>'
+        : '') +
+      (awaiting
+        ? '<div class="verify-banner">' +
+            '<div class="h">⚠️ Did the fix work? Let us know:</div>' +
+            'The LYMX team thinks they fixed your issue. Tap a button below to confirm or tell us it\'s still broken.' +
+            '<div class="actions">' +
+              '<button class="btn btn-confirm" data-verify="' + i.id + '" data-token="' + i.verification_token + '" data-action="confirm">✓ Yes, it works</button>' +
+              '<button class="btn btn-still" data-verify="' + i.id + '" data-token="' + i.verification_token + '" data-action="still">✗ Still broken</button>' +
+            '</div>' +
+          '</div>'
+        : '') +
+    '</div>';
+  }).join('');
+
+  document.querySelectorAll('.fb-item').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.tagName === 'BUTTON') return;
+      openDetail(el.dataset.id);
+    });
+  });
+  document.querySelectorAll('[data-verify]').forEach(b => {
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      verifyFix(b.dataset.verify, b.dataset.token, b.dataset.action);
+    });
+  });
+}
+
+async function openDetail(id) {
+  const r = await authedFetch('/rest/v1/v_my_feedback?id=eq.' + id);
+  const repliesR = await authedFetch('/rest/v1/feedback_replies?feedback_id=eq.' + id + '&select=*&order=created_at.asc');
+  if (!r.ok) return;
+  const items = await r.json();
+  const replies = repliesR.ok ? await repliesR.json() : [];
+  const i = items[0];
+  if (!i) return;
+
+  document.getElementById('mSubj').textContent = i.subject || (i.message || '').slice(0, 80);
+  document.getElementById('mMeta').innerHTML =
+    '<span class="pill ' + i.type + '">' + (TYPE_EMOJI[i.type] || '') + ' ' + (TYPE_LABEL[i.type] || i.type) + '</span> ' +
+    '<span class="pill status-' + i.status + '">' + i.status.replace('_', ' ') + '</span>' +
+    ' · Submitted ' + fmtTime(i.created_at);
+  document.getElementById('mOrig').textContent = i.message || '';
+
+  document.getElementById('mThread').innerHTML = replies.length
+    ? replies.map(r => '<div class="reply ' + r.kind.replace('_response', '') + '">' +
+        '<div class="who">' + (r.kind === 'admin_response' ? 'LYMX Team — ' + escapeHtml(r.author_name || 'staff') : (r.kind === 'submitter_response' ? 'You' : 'System')) + '</div>' +
+        escapeHtml(r.body_text || '') +
+        '<div class="when">' + fmtTime(r.created_at) + '</div>' +
+      '</div>').join('')
+    : '<div style="color:var(--muted);font-size:13px;font-style:italic;padding:14px">No replies yet — we\'ll get to it soon.</div>';
+
+  document.getElementById('modal').classList.add('on');
+}
+
+document.getElementById('mClose').addEventListener('click', () => document.getElementById('modal').classList.remove('on'));
+document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') e.target.classList.remove('on'); });
+
+async function verifyFix(feedbackId, token, action) {
+  if (!confirm(action === 'confirm' ? 'Confirm the fix works?' : 'Tell the team it\'s still broken?')) return;
+  const r = await fetch(SUPABASE_URL + '/functions/v1/feedback-verify', {
+    method: 'POST',
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ feedback_id: feedbackId, token, action })
+  });
+  if (!r.ok) { alert('Could not record your response: ' + r.status); return; }
+  alert(action === 'confirm' ? 'Thanks — marked as resolved.' : 'Got it — we\'ll keep looking.');
+  loadList();
+}
+
+// Boot
+(async () => {
+  if (!window.LYMX || !window.LYMX.getSession) {
+    document.getElementById('list').innerHTML = '<div class="empty">Sign in first to see your feedback. <a href="login.html" style="color:var(--accent-2);text-decoration:underline">Sign in</a></div>';
+    return;
+  }
+  const s = await window.LYMX.getSession();
+  if (!s) {
+    document.getElementById('list').innerHTML = '<div class="empty">Sign in first. <a href="login.html" style="color:var(--accent-2);text-decoration:underline">Sign in</a></div>';
+    return;
+  }
+  document.getElementById('userInitial').textContent = (s.user.email || 'L')[0].toUpperCase();
+  loadList();
+
+  // Auto-open detail if ?id= is in URL (deep link from emails)
+  const urlId = new URLSearchParams(location.search).get('id');
+  if (urlId) setTimeout(() => openDetail(urlId), 800);
+})();
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>

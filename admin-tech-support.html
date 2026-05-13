@@ -225,9 +225,23 @@
     <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:6px 0 4px">Admin notes (private)</div>
     <textarea id="mNotes" placeholder="Internal notes — what you tried, who's working on it, when expected to ship."></textarea>
 
+    <!-- Conversation thread -->
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 4px">Conversation</div>
+    <div id="mThread" style="max-height:240px;overflow-y:auto;margin-bottom:10px"></div>
+
+    <!-- Reply box -->
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:6px 0 4px">Reply to submitter</div>
+    <textarea id="mReply" placeholder="Hey [name] — fixed in the latest release. Check it out and let us know."></textarea>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+        <input type="checkbox" id="mAskVerify" /> Ask submitter to verify the fix (email gets Confirm/Still-broken buttons)
+      </label>
+    </div>
+
     <div class="actions">
       <button class="btn btn-cancel" id="mCancel">Close</button>
-      <button class="btn btn-save" id="mSave">Save</button>
+      <button class="btn btn-save" id="mReplySend" style="background:#0a84ff">Send reply</button>
+      <button class="btn btn-save" id="mSave">Save status</button>
     </div>
   </div>
 </div>
@@ -366,8 +380,70 @@ function openRow(id) {
   document.getElementById('mStatus').value = r.status;
   document.getElementById('mPriority').value = r.priority || 'normal';
   document.getElementById('mNotes').value = r.admin_notes || '';
+  document.getElementById('mReply').value = '';
+  document.getElementById('mAskVerify').checked = false;
   document.getElementById('mBg').classList.add('on');
+  loadThread(r.id);
 }
+
+async function loadThread(feedbackId) {
+  const t = document.getElementById('mThread');
+  t.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px">Loading replies…</div>';
+  const r = await authedFetch('/rest/v1/feedback_replies?feedback_id=eq.' + feedbackId + '&select=*&order=created_at.asc');
+  if (!r.ok) { t.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px">(no replies)</div>'; return; }
+  const rows = await r.json();
+  if (!rows.length) {
+    t.innerHTML = '<div style="color:var(--muted);font-size:13px;font-style:italic;padding:8px">No replies yet — be the first.</div>';
+    return;
+  }
+  t.innerHTML = rows.map(rep => {
+    const bg = rep.kind === 'admin_response' ? '#e6f5ee' : (rep.kind === 'submitter_response' ? '#eef5ff' : '#eef0f4');
+    const border = rep.kind === 'admin_response' ? '#13a26b' : (rep.kind === 'submitter_response' ? '#0a84ff' : '#9ca3af');
+    const label = rep.kind === 'admin_response' ? 'Team — ' + (rep.author_name || 'staff') : (rep.kind === 'submitter_response' ? 'Submitter' : 'System');
+    return '<div style="background:' + bg + ';border-left:3px solid ' + border + ';padding:10px 14px;border-radius:6px;margin-bottom:8px;font-size:13.5px;white-space:pre-wrap">' +
+      '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px">' + escapeHtml(label) + '</div>' +
+      escapeHtml(rep.body_text || '') +
+      (rep.asks_verification ? '<div style="font-size:11px;color:var(--warn);margin-top:6px;font-weight:600">⚠️ Asked for verification</div>' : '') +
+      (rep.verification_status ? '<div style="font-size:11px;color:' + (rep.verification_status === 'confirmed' ? 'var(--ok)' : 'var(--danger)') + ';margin-top:6px;font-weight:600">' + (rep.verification_status === 'confirmed' ? '✓ Submitter confirmed fix' : '✗ Submitter says still broken') + '</div>' : '') +
+      '<div style="font-size:11px;color:var(--muted);margin-top:6px">' + new Date(rep.created_at).toLocaleString() + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+document.getElementById('mReplySend').addEventListener('click', async () => {
+  if (!currentRow) return;
+  const body = document.getElementById('mReply').value.trim();
+  if (body.length < 5) { alert('Reply too short.'); return; }
+  const asksVerify = document.getElementById('mAskVerify').checked;
+  const btn = document.getElementById('mReplySend');
+  btn.disabled = true; btn.textContent = 'Sending…';
+
+  const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = session ? session.access_token : ANON;
+
+  const r = await fetch(SUPABASE_URL + '/functions/v1/feedback-reply', {
+    method: 'POST',
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      feedback_id: currentRow.id,
+      body_text: body,
+      asks_verification: asksVerify,
+      set_status: asksVerify ? 'in_progress' : currentRow.status,
+    })
+  });
+  btn.disabled = false; btn.textContent = 'Send reply';
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    alert('Send failed: ' + (err.error || r.status));
+    return;
+  }
+  const result = await r.json();
+  document.getElementById('mReply').value = '';
+  document.getElementById('mAskVerify').checked = false;
+  alert(result.email_sent ? 'Reply sent — submitter notified by email.' : 'Reply saved (but email send failed or no email on file).');
+  loadThread(currentRow.id);
+  loadInbox();
+});
 
 document.getElementById('mCancel').onclick = () => document.getElementById('mBg').classList.remove('on');
 document.getElementById('mBg').addEventListener('click', e => { if (e.target.id === 'mBg') document.getElementById('mBg').classList.remove('on'); });
