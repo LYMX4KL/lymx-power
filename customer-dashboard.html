@@ -468,22 +468,38 @@
     const av = document.getElementById('avatarNav');
     if (av) { av.textContent = initials; av.title = name; }
 
-    // 3) Fetch wallets + compute total
+    // 3) Fetch balance — primary source is v_my_lymx_balance (issuances ledger).
+    //    Falls back to per-business wallets for legacy transactional balance.
     const balLymx = document.getElementById('balanceLymx');
     const balUsd = document.getElementById('balanceUsd');
+    let totalLymx = 0;
+    let businessCount = 0;
+    let pendingLymx = 0;
+
+    // Primary: read from issuance ledger (covers signup bonuses)
+    const { data: ledger } = await LYMX.sb.from('v_my_lymx_balance').select('*').maybeSingle();
+    if (ledger) {
+      totalLymx += Number(ledger.available_lymx || 0);
+      pendingLymx = Number(ledger.pending_lymx || 0);
+    }
+
+    // Secondary: add any per-business wallet balances (in-store transactions)
     const { data: wallets, error: wErr } = await LYMX.fetchMyWallets();
-    if (wErr) {
-      console.error('[LYMX] fetchMyWallets', wErr);
-      balLymx.textContent = '— LYMX';
-      balUsd.textContent = 'Unable to load balance.';
-    } else if (!wallets || wallets.length === 0) {
+    if (!wErr && wallets && wallets.length) {
+      for (const w of wallets) totalLymx += Number(w.lymx_balance || 0);
+      businessCount = wallets.length;
+    }
+
+    if (totalLymx === 0 && !ledger) {
       balLymx.textContent = '0 LYMX';
-      balUsd.textContent = 'No wallets yet — make a purchase at any LYMX Business to start earning.';
+      balUsd.textContent = 'Sign up via a LYMX Business invite for a welcome bonus, or earn on your first purchase.';
     } else {
-      const total = wallets.reduce((s, w) => s + Number(w.lymx_balance || 0), 0);
-      balLymx.textContent = LYMX.fmtLYMX(total);
-      const usd = (total / 100).toFixed(2);
-      balUsd.textContent = '= $' + usd + ' redeemable across ' + wallets.length + ' Business' + (wallets.length === 1 ? '' : 'es');
+      balLymx.textContent = LYMX.fmtLYMX(totalLymx);
+      const usd = (totalLymx / 100).toFixed(2);
+      let msg = '= $' + usd + ' redeemable';
+      if (businessCount > 0) msg += ' across ' + businessCount + ' Business' + (businessCount === 1 ? '' : 'es');
+      if (pendingLymx > 0) msg += ' · ' + pendingLymx + ' LYMX pending review';
+      balUsd.textContent = msg;
     }
 
     // 4) Fetch recent transactions and render

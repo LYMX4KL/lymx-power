@@ -3,402 +3,336 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="LYMX platform promotional tool — issue platform-funded LYMX as welcome bonuses, activation kits, and Partner sign-up incentives." />
-<title>Promo campaigns · LYMX Admin</title>
+<meta name="description" content="LYMX Admin — change promotional bonus amounts." />
+<title>Promos · LYMX Admin</title>
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
 <link rel="apple-touch-icon" href="favicon.png" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://getlymx.com/admin-promos" />
-<meta property="og:title" content="LYMX Admin · Promo campaigns" />
-<meta property="og:description" content="Internal tool for platform-funded LYMX promotional issuance." />
-<meta property="og:image" content="https://getlymx.com/og-image.png" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta property="og:site_name" content="LYMX" />
-<meta name="twitter:card" content="summary_large_image" />
 <style>
-  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1280px}
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--maxw:1080px}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:var(--bg-soft)}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
   a{color:inherit;text-decoration:none}
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
 
   header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
-  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
   .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
-  .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
   .nav-links a:hover{color:var(--accent)}
   .nav-links a.on{color:var(--accent);font-weight:700}
   .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
-  @media(max-width:880px){.nav-links{display:none}}
+  @media(max-width:1100px){.nav-links{display:none}}
 
-  .page{padding:32px 0 64px}
-  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page{padding:28px 0 64px}
+  .page-head{margin-bottom:18px}
   .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
-  .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:15px}
 
-  .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:10px;font-weight:600;font-size:14.5px;border:1px solid transparent;cursor:pointer;transition:.15s;font-family:inherit}
-  .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
+  .promo-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:720px){.promo-grid{grid-template-columns:1fr}}
+  .promo-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 24px;position:relative}
+  .promo-card.inactive{opacity:.55}
+  .promo-card .key{font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);background:var(--bg-soft);padding:2px 8px;border-radius:6px;display:inline-block;margin-bottom:6px}
+  .promo-card h2{margin:0 0 4px;font-size:17px;font-weight:800}
+  .promo-card .desc{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .promo-card input[type=number]{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:18px;font-weight:700;font-family:inherit;box-sizing:border-box;color:var(--ink)}
+  .promo-card input[type=number]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12);outline:none}
+  .promo-card .row{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px}
+
+  .toggle{position:relative;display:inline-block;width:42px;height:24px}
+  .toggle input{opacity:0;width:0;height:0}
+  .slider{position:absolute;cursor:pointer;inset:0;background:#d1d5db;border-radius:24px;transition:.2s}
+  .slider:before{content:"";position:absolute;height:18px;width:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+  input:checked + .slider{background:var(--ok)}
+  input:checked + .slider:before{transform:translateX(18px)}
+
+  .btn{padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;font-family:inherit}
   .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-primary:disabled{opacity:.5;cursor:wait}
 
-  /* Budget hero */
-  .budget-hero{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:var(--radius);padding:28px 32px;position:relative;overflow:hidden;margin-bottom:18px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:24px;align-items:center}
-  .budget-hero::after{content:"";position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);right:-150px;top:-150px;pointer-events:none}
-  @media(max-width:1000px){.budget-hero{grid-template-columns:1fr 1fr;gap:18px}}
-  .budget-hero .cell{position:relative}
-  .budget-hero .lab{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#9aa3b0;font-weight:700;margin-bottom:6px}
-  .budget-hero .big{font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1}
-  .budget-hero .big.gold{color:#f5d172}
-  .budget-hero .big.green{color:#5fd198}
-  .budget-hero .sub{font-size:12.5px;color:#9aa3b0;margin-top:6px}
-  .progress{height:8px;background:rgba(255,255,255,.12);border-radius:4px;margin-top:12px;overflow:hidden}
-  .progress .bar{height:100%;background:linear-gradient(90deg,#f5d172,#d4af37);border-radius:4px}
+  .footer-info{margin-top:24px;padding:16px 20px;background:#fff;border:1px solid var(--line);border-radius:12px;font-size:13.5px;color:var(--muted)}
+  .footer-info strong{color:var(--ink)}
+  .footer-info code{background:var(--bg-soft);padding:1px 6px;border-radius:4px;font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 
-  .tabs{display:flex;gap:0;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:5px;margin-bottom:18px;width:fit-content}
-  .tab{padding:10px 22px;border-radius:9px;font-weight:700;font-size:13.5px;cursor:pointer;color:var(--muted);background:transparent;border:0;font-family:inherit;display:flex;align-items:center;gap:7px}
-  .tab.on{background:var(--ink);color:#fff}
-
-  .head-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:14px;flex-wrap:wrap}
-
-  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:0;overflow:hidden}
-  .card-h{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:18px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-  .card-h h2{margin:0;font-size:17px;font-weight:800}
-  .card-h .meta{font-size:13px;color:var(--muted)}
-
-  table.cmp{width:100%;border-collapse:collapse;font-size:13.5px}
-  table.cmp th{text-align:left;padding:12px 16px;border-bottom:2px solid var(--line);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg-soft)}
-  table.cmp td{padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
-  table.cmp td.right{text-align:right}
-  table.cmp td .name{font-weight:800;font-size:14px}
-  table.cmp td .sub{color:var(--muted);font-size:12px;margin-top:2px}
-  table.cmp tbody tr:hover{background:var(--bg-soft)}
-  table.cmp td.lymx{font-weight:800;color:var(--gold)}
-  table.cmp td.cash{font-weight:800;color:var(--ok)}
-
-  .status{display:inline-block;padding:3px 9px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
-  .status.live{background:rgba(19,162,107,.14);color:var(--ok)}
-  .status.draft{background:rgba(91,100,114,.12);color:var(--muted)}
-  .status.paused{background:rgba(240,160,32,.14);color:#a06a0c}
-
-  /* Audience badge */
-  .aud{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700}
-  .aud.customer{background:rgba(10,132,255,.12);color:var(--accent-2)}
-  .aud.business{background:rgba(212,175,55,.16);color:#86670c}
-  .aud.partner{background:rgba(128,90,213,.14);color:#5d3aa8}
-
-  /* Modal */
-  .modal{position:fixed;inset:0;background:rgba(14,17,22,.6);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
-  .modal.on{display:flex;animation:fade .2s ease-out}
-  @keyframes fade{from{opacity:0}to{opacity:1}}
-  .modal-card{background:#fff;border-radius:var(--radius);max-width:600px;width:100%;max-height:90vh;overflow-y:auto}
-  .modal-h{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid var(--line)}
-  .modal-h h3{margin:0;font-size:18px;font-weight:800}
-  .modal-h .close{font-size:20px;color:var(--muted);cursor:pointer;border:0;background:transparent;padding:4px;line-height:1}
-  .modal-body{padding:20px 24px}
-  .modal-foot{padding:14px 24px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;background:var(--bg-soft);border-radius:0 0 var(--radius) var(--radius)}
-
-  label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
-  .field{margin-bottom:16px}
-  .input,select{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;font-size:14.5px;font-weight:500;background:#fff;color:var(--ink);font-family:inherit}
-  .input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-
-  .aud-pick{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px}
-  @media(max-width:560px){.aud-pick{grid-template-columns:1fr}}
-  .aud-card{padding:14px;border:1.5px solid var(--line);border-radius:11px;cursor:pointer;text-align:left;font-family:inherit;background:#fff;transition:.15s}
-  .aud-card:hover{border-color:var(--ink)}
-  .aud-card.on{border-color:var(--accent);background:rgba(10,132,255,.05)}
-  .aud-card .ic{font-size:22px;margin-bottom:6px}
-  .aud-card .nm{font-weight:800;font-size:14px}
-  .aud-card .dt{font-size:12px;color:var(--muted);margin-top:2px}
-
-  .preview-box{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:11px;padding:16px 20px;margin:18px 0;font-size:13.5px}
-  .preview-box .lab{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#9aa3b0;font-weight:700;margin-bottom:8px}
-  .preview-box .row{display:flex;justify-content:space-between;padding:5px 0;color:#c6ccd4}
-  .preview-box .row .v{color:#fff;font-weight:700}
-  .preview-box .row.total{border-top:1px solid rgba(255,255,255,.15);margin-top:6px;padding-top:10px;font-weight:800}
-  .preview-box .row.total .v{color:#f5d172;font-size:15px}
-
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:14px 22px;border-radius:11px;font-weight:700;font-size:14.5px;box-shadow:var(--shadow);z-index:300;display:none}
-  .toast.on{display:block;animation:up .3s ease-out}
-  .toast.success{background:var(--ok)}
-  @keyframes up{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
-
-  footer{background:var(--ink);color:#9aa3b0;padding:30px 0;font-size:13px;text-align:center;margin-top:48px}
-  footer a{color:#c6ccd4;margin:0 10px}
+  .status{padding:10px 14px;border-radius:8px;font-size:14px;margin-top:14px;display:none}
+  .status.show{display:block}
+  .status.ok{background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44}
+  .status.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
 </style>
 </head>
 <body>
+
 <header class="nav">
-  <div class="wrap nav-inner">
-    <div class="brand">
-      <a href="index.html">LYMX</a>
-      <span class="role-tag">Admin</span>
-    </div>
+  <div class="nav-inner">
+    <a href="admin-dashboard.html" class="brand">LYMX <span class="role-tag">Admin</span></a>
     <nav class="nav-links">
-      <a href="commission-backend.html">Commissions</a>
-      <a href="admin-promos.html" class="on">Promos</a>
+      <a href="admin-dashboard.html">Home</a>
+      <a href="contacts.html">Contacts</a>
       <a href="admin-businesses.html">Businesses</a>
-      <a href="admin-customers.html">Customers</a>
-      <a href="admin-reviews.html">Reviews</a>
-      <a href="admin-emails.html">Emails</a>
+      <a href="admin-promos.html" class="on">Promos</a>
+      <a href="admin-tech-support.html">Tech Support</a>
+      <a href="admin-chat.html">Chat</a>
+      <a href="admin-broadcast.html">Broadcast</a>
     </nav>
-    <div class="admin-avatar">KL</div>
+    <div class="admin-avatar" id="userInitial">·</div>
   </div>
 </header>
 
 <main class="page">
   <div class="wrap">
-    <div class="page-head">
+    <div class="page-head" style="display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:14px">
       <div>
-        <h1>Promo campaigns</h1>
-        <p>Platform-funded LYMX issuance — welcome bonuses, activation kits, and Partner incentives. Cost absorbed as marketing.</p>
+        <h1>🎁 Promotional Bonuses</h1>
+        <p>Change LYMX bonus amounts. <span id="roleLabel" style="font-weight:700;color:var(--accent-2)"></span></p>
       </div>
+      <a href="admin-approvals.html" class="btn" style="background:#fff;border:1px solid var(--line);color:var(--ink);padding:9px 16px;border-radius:9px;font-weight:700;font-size:13.5px;text-decoration:none">Approval queue → <span id="pendingBadge" style="background:#fdecec;color:#9b1c1c;padding:1px 7px;border-radius:999px;font-size:11px;margin-left:4px;display:none"></span></a>
     </div>
 
-    <!-- Budget hero -->
-    <div class="budget-hero">
-      <div class="cell">
-        <div class="lab">April 2026 promo budget</div>
-        <div class="big gold">$8,440 <small style="font-size:14px;color:#9aa3b0;font-weight:600;margin-left:4px">/ $12,000</small></div>
-        <div class="sub">70% used · 12 days left in cycle</div>
-        <div class="progress"><div class="bar" style="width:70%"></div></div>
-      </div>
-      <div class="cell">
-        <div class="lab">LYMX issued (platform)</div>
-        <div class="big">1.05 <small style="font-size:14px;color:#9aa3b0;font-weight:600;margin-left:4px">M LYMX</small></div>
-        <div class="sub">Across 4 active campaigns</div>
-      </div>
-      <div class="cell">
-        <div class="lab">Already redeemed</div>
-        <div class="big green">62%</div>
-        <div class="sub">650K of 1.05M LYMX</div>
-      </div>
-      <div class="cell">
-        <div class="lab">Activations driven</div>
-        <div class="big">147</div>
-        <div class="sub">$57.41 avg cost / activation</div>
-      </div>
+    <div class="promo-grid" id="grid">
+      <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)">Loading…</div>
     </div>
 
-    <div class="head-row">
-      <div class="tabs">
-        <button class="tab on" id="tab-all" onclick="switchTab('all')">All</button>
-        <button class="tab" id="tab-customer" onclick="switchTab('customer')">Customer</button>
-        <button class="tab" id="tab-business" onclick="switchTab('business')">Business</button>
-        <button class="tab" id="tab-partner" onclick="switchTab('partner')">Partner</button>
-      </div>
-      <button class="btn btn-primary" onclick="openModal()">+ New campaign</button>
-    </div>
+    <div class="status" id="status"></div>
 
-    <div class="card">
-      <div class="card-h">
-        <h2>Active &amp; recent campaigns</h2>
-        <div class="meta">8 campaigns</div>
-      </div>
-      <div style="overflow-x:auto">
-        <table class="cmp">
-          <thead>
-            <tr>
-              <th>Campaign</th>
-              <th>Audience</th>
-              <th>Trigger</th>
-              <th class="right">Each</th>
-              <th class="right">Issued</th>
-              <th class="right">Redeemed</th>
-              <th class="right">Cost</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
+    <div class="footer-info">
+      <strong id="roleExplainer">How this works:</strong> <span id="roleExplainerText">these amounts are read by Edge Functions at the moment a signup happens. Changing a value here takes effect on the very next signup — no redeploy required. To run a temporary promo, just bump the amount today and lower it back when done.</span>
     </div>
   </div>
 </main>
 
-<!-- Modal -->
-<div class="modal" id="create-modal" onclick="if(event.target===this)closeModal()">
-  <div class="modal-card">
-    <div class="modal-h">
-      <h3>New promo campaign</h3>
-      <button class="close" onclick="closeModal()">×</button>
-    </div>
-    <div class="modal-body">
-      <label>Audience</label>
-      <div class="aud-pick">
-        <button class="aud-card on" data-aud="customer" onclick="pickAud('customer', this)">
-          <div class="ic">👤</div>
-          <div class="nm">Customer</div>
-          <div class="dt">App welcome bonus, referral bonus, win-back</div>
-        </button>
-        <button class="aud-card" data-aud="business" onclick="pickAud('business', this)">
-          <div class="ic">🏪</div>
-          <div class="nm">Business</div>
-          <div class="dt">Activation kit, milestone reward</div>
-        </button>
-        <button class="aud-card" data-aud="partner" onclick="pickAud('partner', this)">
-          <div class="ic">🤝</div>
-          <div class="nm">Partner</div>
-          <div class="dt">Sign-up incentive (on top of $500 cash)</div>
-        </button>
-      </div>
-
-      <div class="field">
-        <label>Campaign name</label>
-        <input class="input" id="c-name" value="App welcome bonus" oninput="updatePreview()" />
-      </div>
-      <div class="row2">
-        <div class="field">
-          <label>LYMX per recipient</label>
-          <input class="input" type="number" id="c-each" value="100" min="1" oninput="updatePreview()" />
-        </div>
-        <div class="field">
-          <label>Expected recipients</label>
-          <input class="input" type="number" id="c-count" value="500" min="1" oninput="updatePreview()" />
-        </div>
-      </div>
-      <div class="field">
-        <label>Trigger event</label>
-        <select id="c-trigger">
-          <option>Customer completes account sign-up</option>
-          <option>Customer makes first network purchase</option>
-          <option>Customer refers a friend who signs up</option>
-          <option>Business completes activation</option>
-          <option>Business hits 100 issuance milestone</option>
-          <option>Partner signs up via Founding 25 link</option>
-          <option>Partner activates first Direct Business</option>
-        </select>
-      </div>
-      <div class="row2">
-        <div class="field">
-          <label>Start date</label>
-          <input class="input" type="date" id="c-start" />
-        </div>
-        <div class="field">
-          <label>End date (optional)</label>
-          <input class="input" type="date" id="c-end" />
-        </div>
-      </div>
-
-      <div class="preview-box">
-        <div class="lab">Forecast cost (full campaign)</div>
-        <div class="row"><div class="l">LYMX issued</div><div class="v" id="prev-issue">50,000 LYMX</div></div>
-        <div class="row"><div class="l">If 80% redeemed (typical)</div><div class="v" id="prev-redeem-cost">$320.00</div></div>
-        <div class="row"><div class="l">If 100% redeemed (max exposure)</div><div class="v" id="prev-max-cost">$400.00</div></div>
-        <div class="row total"><div class="l">Budget impact (max)</div><div class="v" id="prev-budget">$400.00</div></div>
-      </div>
-      <div style="font-size:11.5px;color:var(--muted);text-align:center">Cost = LYMX issued × 80% (we buy back from the redeeming Business at $0.008). Unredeemed LYMX cost nothing — they expire as breakage.</div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveCampaign()">Launch campaign</button>
+<!-- Propose change modal (for marketing role) -->
+<div class="modal-bg" id="proposeModal" style="display:none;position:fixed;inset:0;background:rgba(14,17,22,.55);z-index:99;align-items:flex-start;justify-content:center;padding:48px 16px;overflow-y:auto">
+  <div style="background:#fff;border-radius:14px;max-width:520px;width:100%;padding:24px 28px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <h3 style="margin:0 0 4px;font-size:19px;font-weight:800">Submit change request</h3>
+    <p style="color:var(--muted);font-size:13px;margin:0 0 14px">Admin will review &amp; approve before the change goes live.</p>
+    <div id="proposeSummary" style="background:var(--bg-soft);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-size:13.5px;margin-bottom:14px"></div>
+    <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px">Rationale (why this change?)</label>
+    <textarea id="proposeRationale" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;min-height:80px;box-sizing:border-box" placeholder="Why we're changing this — context for admin review."></textarea>
+    <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px">Expected impact</label>
+    <input id="proposeImpact" type="text" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;box-sizing:border-box" placeholder="e.g. ~50% more signups, $0.50 extra cost per signup" />
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
+      <button class="btn btn-primary" id="proposeCancel" style="background:#fff;border:1px solid var(--line);color:var(--ink)">Cancel</button>
+      <button class="btn btn-primary" id="proposeSubmit">Submit for review</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
-<footer>
-  <div class="wrap">
-    <div>LYMX Admin · Promo campaigns · Internal use only</div>
-    <div style="margin-top:8px;font-size:12px;color:#5b6472">© <span id="yr"></span> LYMX. Prototype with mock data.</div>
-  </div>
-</footer>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
 <script>
-  document.getElementById('yr').textContent = new Date().getFullYear();
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
 
-  // Mock campaigns
-  const campaigns = [
-    {name:'App welcome bonus',     aud:'customer', trigger:'Customer signs up',                  each:100,  issued:430000, redeemed:0.71, status:'live'},
-    {name:'First-purchase nudge',  aud:'customer', trigger:'First scan within 14 days',          each:50,   issued:62000,  redeemed:0.83, status:'live'},
-    {name:'Friend referral',       aud:'customer', trigger:'Referred friend signs up + transacts',each:200,  issued:18000,  redeemed:0.55, status:'live'},
-    {name:'Lapsed-30 win-back',    aud:'customer', trigger:'No activity 30+ days',                each:150,  issued:9300,   redeemed:0.32, status:'paused'},
-    {name:'Activation kit',        aud:'business', trigger:'Business completes onboarding',      each:5000, issued:60000,  redeemed:0.85, status:'live'},
-    {name:'100-issuance milestone',aud:'business', trigger:'Business issues 100th LYMX',         each:500,  issued:7500,   redeemed:0.62, status:'live'},
-    {name:'Founding 25 Partner',   aud:'partner',  trigger:'Partner activates 5+ Direct',         each:10000,issued:40000,  redeemed:0.45, status:'live'},
-    {name:'Quick-start Partner',   aud:'partner',  trigger:'Partner activates first Direct',      each:1000, issued:14000,  redeemed:0.79, status:'live'},
-  ];
+const PROMO_META = {
+  new_business_signup_bonus: { title: 'New Business signup bonus', desc: 'Awarded when a new Business owner registers on LYMX (via biz-signup.html). LYMX absorbs this.' },
+  new_partner_signup_bonus:  { title: 'New Partner signup bonus',  desc: 'Awarded when a new Partner signs up via partner-signup.html. LYMX absorbs this.' },
+  referral_bonus:            { title: 'Customer referral bonus',   desc: 'Awarded when a customer refers a friend who signs up.' },
+};
 
-  let currentTab = 'all';
+async function authedFetch(path, opts = {}) {
+  const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = (session && session.access_token) || ANON;
+  return fetch(SUPABASE_URL + path, {
+    ...opts,
+    headers: {
+      'apikey': ANON,
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json',
+      ...(opts.headers || {})
+    }
+  });
+}
 
-  function switchTab(t){
-    currentTab = t;
-    ['all','customer','business','partner'].forEach(k=>{
-      document.getElementById('tab-'+k).classList.toggle('on', k===t);
+function setStatus(text, kind) {
+  const el = document.getElementById('status');
+  if (!text) { el.className = 'status'; el.textContent = ''; return; }
+  el.className = 'status show ' + (kind || 'ok');
+  el.textContent = text;
+}
+
+let myRole = null;
+let pendingProposal = null;   // { promo, newAmount, newActive }
+
+async function loadPromos() {
+  const r = await authedFetch('/rest/v1/platform_promos?select=*&order=promo_key.asc');
+  if (!r.ok) {
+    document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--danger)">Could not load promos. You need a staff role to view this page.</div>';
+    return;
+  }
+  const promos = await r.json();
+  if (!promos.length) {
+    document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">No promos configured.</div>';
+    return;
+  }
+
+  // Load pending change requests for promos (so we can show "pending" badges)
+  const pr = await authedFetch('/rest/v1/v_pending_changes?target_table=eq.platform_promos&select=*');
+  const pending = pr.ok ? await pr.json() : [];
+  const pendingByKey = {};
+  for (const p of pending) pendingByKey[p.target_id] = p;
+
+  const isAdmin = myRole === 'admin';
+  const saveLabel = isAdmin ? 'Apply now' : 'Submit for review';
+
+  document.getElementById('grid').innerHTML = promos.map(p => {
+    const meta = PROMO_META[p.promo_key] || { title: p.promo_key, desc: p.description || '' };
+    const pendingChange = pendingByKey[p.promo_key];
+    const pendingBadge = pendingChange
+      ? '<div style="background:#fff3d4;border:1px solid #f0c870;border-radius:8px;padding:8px 12px;font-size:12px;color:#92400e;margin-bottom:10px"><strong>Pending review:</strong> change to ' + (pendingChange.proposed_value && pendingChange.proposed_value.amount_lymx) + ' LYMX by ' + (pendingChange.proposed_by_email || 'staff') + '. Admin review needed.</div>'
+      : '';
+    return '<div class="promo-card ' + (p.active ? '' : 'inactive') + '" data-id="' + p.id + '" data-key="' + p.promo_key + '" data-cur-amt="' + p.amount_lymx + '" data-cur-act="' + p.active + '">' +
+      '<div class="key">' + p.promo_key + '</div>' +
+      '<h2>' + meta.title + '</h2>' +
+      '<div class="desc">' + meta.desc + '</div>' +
+      pendingBadge +
+      '<input type="number" min="0" step="1" value="' + p.amount_lymx + '" data-amount />' +
+      '<div class="row">' +
+        '<label class="toggle"><input type="checkbox" ' + (p.active ? 'checked' : '') + ' data-toggle /><span class="slider"></span></label>' +
+        '<button class="btn btn-primary" data-save>' + saveLabel + '</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  document.querySelectorAll('.promo-card').forEach(card => {
+    card.querySelector('[data-save]').addEventListener('click', async () => {
+      const key = card.dataset.key;
+      const curAmt = parseInt(card.dataset.curAmt);
+      const curAct = card.dataset.curAct === 'true';
+      const newAmt = parseInt(card.querySelector('[data-amount]').value) || 0;
+      const newAct = card.querySelector('[data-toggle]').checked;
+
+      if (newAmt === curAmt && newAct === curAct) {
+        setStatus('No change to save.', 'err');
+        return;
+      }
+
+      if (isAdmin) {
+        await applyDirectly(card, key, newAmt, newAct);
+      } else {
+        // Marketing/other staff — submit for approval
+        pendingProposal = { promoKey: key, newAmount: newAmt, newActive: newAct, currentAmount: curAmt, currentActive: curAct };
+        document.getElementById('proposeSummary').innerHTML =
+          '<strong>' + key + '</strong><br>' +
+          'Amount: ' + curAmt.toLocaleString() + ' → <span style="color:var(--accent-2);font-weight:700">' + newAmt.toLocaleString() + ' LYMX</span><br>' +
+          (newAct !== curAct ? 'Active: ' + curAct + ' → ' + newAct : '');
+        document.getElementById('proposeModal').style.display = 'flex';
+      }
     });
-    render();
+  });
+}
+
+async function applyDirectly(card, key, amount, active) {
+  const btn = card.querySelector('[data-save]');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const r = await authedFetch('/rest/v1/platform_promos?promo_key=eq.' + key, {
+    method: 'PATCH',
+    body: JSON.stringify({ amount_lymx: amount, active })
+  });
+  btn.disabled = false; btn.textContent = 'Apply now';
+  if (!r.ok) {
+    setStatus('Save failed (HTTP ' + r.status + ')', 'err');
+    return;
+  }
+  setStatus('Applied · ' + key + ' is now ' + amount.toLocaleString() + ' LYMX ' + (active ? '(active)' : '(inactive)'), 'ok');
+  loadPromos();
+}
+
+document.getElementById('proposeCancel').addEventListener('click', () => {
+  document.getElementById('proposeModal').style.display = 'none';
+  pendingProposal = null;
+});
+
+document.getElementById('proposeSubmit').addEventListener('click', async () => {
+  if (!pendingProposal) return;
+  const btn = document.getElementById('proposeSubmit');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  const rationale = document.getElementById('proposeRationale').value.trim();
+  const impact = document.getElementById('proposeImpact').value.trim();
+
+  const r = await authedFetch('/rest/v1/rpc/submit_change_request', {
+    method: 'POST',
+    body: JSON.stringify({
+      p_request_type: 'promo_amount_change',
+      p_target_table: 'platform_promos',
+      p_target_id: pendingProposal.promoKey,
+      p_field_path: 'amount_lymx',
+      p_current_value: { amount_lymx: pendingProposal.currentAmount, active: pendingProposal.currentActive },
+      p_proposed_value: { amount_lymx: pendingProposal.newAmount, active: pendingProposal.newActive },
+      p_rationale: rationale || null,
+      p_business_impact: impact || null,
+    })
+  });
+  btn.disabled = false; btn.textContent = 'Submit for review';
+  if (!r.ok) {
+    setStatus('Submit failed (HTTP ' + r.status + ')', 'err');
+    return;
+  }
+  setStatus('Submitted for admin review.', 'ok');
+  document.getElementById('proposeModal').style.display = 'none';
+  document.getElementById('proposeRationale').value = '';
+  document.getElementById('proposeImpact').value = '';
+  pendingProposal = null;
+  loadPromos();
+  loadPendingCount();
+});
+
+async function loadPendingCount() {
+  const r = await authedFetch('/rest/v1/v_pending_changes?select=id', { headers: { 'Prefer': 'count=exact', 'Range': '0-0' } });
+  if (!r.ok) return;
+  const m = (r.headers.get('content-range') || '').match(/\/(\d+)/);
+  const count = m ? parseInt(m[1]) : 0;
+  const badge = document.getElementById('pendingBadge');
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+(async () => {
+  if (!window.LYMX || !window.LYMX.getSession) return;
+  const s = await window.LYMX.getSession();
+  if (!s) {
+    document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Sign in first. <a href="login.html" style="color:var(--accent-2);text-decoration:underline">Sign in</a></div>';
+    return;
+  }
+  document.getElementById('userInitial').textContent = (s.user.email || 'K')[0].toUpperCase();
+
+  // Determine role
+  const roleRes = await authedFetch('/rest/v1/rpc/my_staff_role', { method: 'POST', body: '{}' });
+  if (roleRes.ok) {
+    myRole = await roleRes.text();
+    myRole = myRole.replace(/"/g, '').trim();
+    if (myRole === 'null' || !myRole) myRole = null;
   }
 
-  function fmtN(n){ return Math.round(n).toLocaleString(); }
-  function fmt$(n){ return '$'+ n.toFixed(2); }
-
-  function render(){
-    const rows = currentTab === 'all' ? campaigns : campaigns.filter(c => c.aud === currentTab);
-    document.getElementById('tbody').innerHTML = rows.map(c => {
-      const cost = c.issued * 0.008 * c.redeemed;
-      return `
-        <tr>
-          <td><div class="name">${c.name}</div></td>
-          <td><span class="aud ${c.aud}">${c.aud[0].toUpperCase()+c.aud.slice(1)}</span></td>
-          <td style="font-size:13px;color:var(--ink-2)">${c.trigger}</td>
-          <td class="right lymx">${fmtN(c.each)}</td>
-          <td class="right">${fmtN(c.issued)} LYMX</td>
-          <td class="right">${(c.redeemed*100).toFixed(0)}%</td>
-          <td class="right cash">${fmt$(cost)}</td>
-          <td><span class="status ${c.status}">${c.status[0].toUpperCase()+c.status.slice(1)}</span></td>
-        </tr>
-      `;
-    }).join('');
+  if (!myRole) {
+    document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)"><strong>Staff access required.</strong><br>You need a marketing or admin staff role to manage promos. Contact Kenny.</div>';
+    document.getElementById('roleLabel').textContent = '';
+    document.getElementById('roleExplainer').textContent = '';
+    document.getElementById('roleExplainerText').textContent = '';
+    return;
   }
 
-  // Modal
-  let pickedAud = 'customer';
-  function openModal(){ document.getElementById('create-modal').classList.add('on'); updatePreview(); }
-  function closeModal(){ document.getElementById('create-modal').classList.remove('on'); }
-  function pickAud(a, el){
-    pickedAud = a;
-    document.querySelectorAll('.aud-card').forEach(b => b.classList.remove('on'));
-    el.classList.add('on');
+  // Show role and explainer
+  document.getElementById('roleLabel').textContent = 'Logged in as: ' + myRole;
+  if (myRole === 'admin') {
+    document.getElementById('roleExplainerText').textContent = "You're an admin — changes apply instantly with the Apply now button. You also see the approval queue for changes proposed by marketing.";
+  } else {
+    document.getElementById('roleExplainerText').textContent = "Your changes are submitted as proposals for admin review. The Submit for review button creates a change request — admin gets a notification, reviews, and approves before it goes live.";
   }
 
-  function updatePreview(){
-    const each = parseInt(document.getElementById('c-each').value, 10) || 0;
-    const count = parseInt(document.getElementById('c-count').value, 10) || 0;
-    const total = each * count;
-    const cost80 = total * 0.008 * 0.8;
-    const cost100 = total * 0.008;
-    document.getElementById('prev-issue').textContent = fmtN(total) + ' LYMX';
-    document.getElementById('prev-redeem-cost').textContent = fmt$(cost80);
-    document.getElementById('prev-max-cost').textContent = fmt$(cost100);
-    document.getElementById('prev-budget').textContent = fmt$(cost100);
-  }
-
-  function saveCampaign(){
-    const name = document.getElementById('c-name').value.trim() || 'New campaign';
-    closeModal();
-    showToast('Campaign launched: ' + name, true);
-  }
-
-  function showToast(msg, success){
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('on');
-    t.classList.toggle('success', !!success);
-    setTimeout(()=> t.classList.remove('on'), 2400);
-  }
-
-  // Init
-  const today = new Date();
-  document.getElementById('c-start').value = today.toISOString().slice(0,10);
-  const future = new Date(today);
-  future.setDate(future.getDate() + 30);
-  document.getElementById('c-end').value = future.toISOString().slice(0,10);
-  render();
+  loadPromos();
+  loadPendingCount();
+})();
 </script>
+
+<script src="lymx-feedback.js" defer></script>
 </body>
 </html>

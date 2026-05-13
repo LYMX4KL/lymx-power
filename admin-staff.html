@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — manage internal staff roles." />
+<title>Staff · LYMX Admin</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--maxw:1080px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:1100px){.nav-links{display:none}}
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:14px;margin-bottom:18px}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:15px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+  .role-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .role-card .name{font-weight:800;font-size:14px;text-transform:capitalize}
+  .role-card .desc{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .role-card .count{font-size:24px;font-weight:800;margin-top:6px;color:var(--accent-2)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:0;overflow:hidden}
+  .card-h{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .card-h h2{margin:0;font-size:16px;font-weight:800}
+  .tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+  .tbl th{text-align:left;background:#f9fafb;padding:11px 14px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line)}
+  .tbl td{padding:13px 14px;border-bottom:1px solid #f0f1f4;vertical-align:middle}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:capitalize}
+  .pill.admin{background:rgba(208,32,84,.12);color:#a01644}
+  .pill.marketing{background:#eef5ff;color:var(--accent-2)}
+  .pill.support{background:#e6f5ee;color:#0a6e44}
+  .pill.tech{background:#fff3d4;color:#92400e}
+  .pill.finance{background:#fdecec;color:#9b1c1c}
+  .pill.observer{background:#eef0f4;color:#6b7280}
+  .btn{padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;border:0;cursor:pointer;font-family:inherit}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-danger{background:#fff;border:1px solid #f5b7b7;color:var(--danger)}
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(14,17,22,.55);z-index:99;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto}
+  .modal-bg.on{display:flex}
+  .modal{background:#fff;border-radius:14px;max-width:500px;width:100%;padding:24px 28px}
+  .modal h3{margin:0 0 14px;font-size:19px;font-weight:800}
+  .modal label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px}
+  .modal input,.modal select,.modal textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-family:inherit;box-sizing:border-box}
+  .modal .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+  .status-msg{padding:11px 14px;border-radius:8px;font-size:14px;margin-top:14px;display:none}
+  .status-msg.show{display:block}
+  .status-msg.ok{background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44}
+  .status-msg.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="admin-dashboard.html" class="brand">LYMX <span class="role-tag">Admin</span></a>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Home</a>
+      <a href="admin-approvals.html">Approvals</a>
+      <a href="admin-businesses.html">Businesses</a>
+      <a href="admin-promos.html">Promos</a>
+      <a href="admin-staff.html" class="on">Staff</a>
+      <a href="admin-tech-support.html">Tech Support</a>
+    </nav>
+    <div class="admin-avatar" id="userInitial">·</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>👥 Staff &amp; Roles</h1>
+        <p>Internal staff who help run LYMX. Each role has different permissions for the admin tools.</p>
+      </div>
+      <button class="btn btn-primary" id="addStaffBtn">+ Add staff member</button>
+    </div>
+
+    <div class="role-grid" id="roleStats"></div>
+
+    <div class="card">
+      <div class="card-h"><h2>Staff members</h2></div>
+      <table class="tbl">
+        <thead><tr><th>Email</th><th>Role</th><th>Granted</th><th style="text-align:right">Action</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="4" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="status-msg" id="status"></div>
+  </div>
+</main>
+
+<div class="modal-bg" id="addModal">
+  <div class="modal">
+    <h3>Add staff member</h3>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 6px">The person must already have a LYMX account (signed up at <code>getlymx.com/login</code>). Enter their email below.</p>
+    <label>Email</label>
+    <input id="aEmail" type="email" placeholder="staff@example.com" />
+    <label>Role</label>
+    <select id="aRole">
+      <option value="marketing">Marketing — proposes promo + content changes</option>
+      <option value="support">Support — handles feedback tickets</option>
+      <option value="tech">Tech — bug verification + fixes</option>
+      <option value="finance">Finance — sees billing, marks invoices paid</option>
+      <option value="observer">Observer — read-only access to admin pages</option>
+      <option value="admin">Admin — full access (use sparingly)</option>
+    </select>
+    <label>Notes</label>
+    <textarea id="aNotes" rows="2" placeholder="e.g. Marketing hire 2026-06"></textarea>
+    <div class="actions">
+      <button class="btn btn-secondary" id="aCancel">Cancel</button>
+      <button class="btn btn-primary" id="aSave">Add staff</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+
+const ROLES = [
+  { key: 'admin',     desc: 'Full power; approves changes' },
+  { key: 'marketing', desc: 'Promo + broadcast proposals' },
+  { key: 'support',   desc: 'Feedback ticket triage' },
+  { key: 'tech',      desc: 'Bug verification' },
+  { key: 'finance',   desc: 'Billing & invoices' },
+  { key: 'observer',  desc: 'Read-only' },
+];
+
+async function authedFetch(path, opts = {}) {
+  const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = (session && session.access_token) || ANON;
+  return fetch(SUPABASE_URL + path, {
+    ...opts,
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+  });
+}
+function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+function setStatus(text, kind) {
+  const el = document.getElementById('status');
+  if (!text) { el.className = 'status-msg'; el.textContent = ''; return; }
+  el.className = 'status-msg show ' + (kind || 'ok');
+  el.textContent = text;
+}
+
+async function loadStaff() {
+  const r = await authedFetch('/rest/v1/staff_roles?select=*&order=granted_at.desc');
+  if (!r.ok) {
+    document.getElementById('rows').innerHTML = '<tr><td colspan="4" style="padding:32px;text-align:center;color:var(--danger)">Admin role required.</td></tr>';
+    return;
+  }
+  const staff = await r.json();
+
+  // Look up emails via admin API… but that's service-role only. Fall back to user_id display.
+  // (Future: add an RPC that joins to auth.users for admin)
+
+  // Stats
+  const counts = {};
+  for (const s of staff) counts[s.role] = (counts[s.role] || 0) + 1;
+  document.getElementById('roleStats').innerHTML = ROLES.map(r => '<div class="role-card">' +
+    '<div class="name"><span class="pill ' + r.key + '">' + r.key + '</span></div>' +
+    '<div class="desc">' + r.desc + '</div>' +
+    '<div class="count">' + (counts[r.key] || 0) + '</div>' +
+  '</div>').join('');
+
+  if (!staff.length) {
+    document.getElementById('rows').innerHTML = '<tr><td colspan="4" style="padding:32px;text-align:center;color:var(--muted)">No staff added yet.</td></tr>';
+    return;
+  }
+
+  document.getElementById('rows').innerHTML = staff.map(s => '<tr>' +
+    '<td style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px">' + s.user_id.slice(0,8) + '… ' + (s.notes ? '<div style="font-family:inherit;font-size:12px;color:var(--muted);margin-top:2px">' + escapeHtml(s.notes) + '</div>' : '') + '</td>' +
+    '<td><span class="pill ' + s.role + '">' + s.role + '</span></td>' +
+    '<td style="font-size:12px;color:var(--muted)">' + new Date(s.granted_at).toLocaleDateString() + '</td>' +
+    '<td style="text-align:right">' +
+      '<button class="btn btn-secondary" data-edit="' + s.user_id + '" data-role="' + s.role + '">Change role</button> ' +
+      (s.role === 'admin' && s.user_id === '1405bb50-2c97-48dd-bfa5-31f32320de9b' ? '' :
+       '<button class="btn btn-danger" data-remove="' + s.user_id + '">Remove</button>') +
+    '</td>' +
+  '</tr>').join('');
+
+  document.querySelectorAll('[data-remove]').forEach(b => b.addEventListener('click', () => removeStaff(b.dataset.remove)));
+  document.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => editStaff(b.dataset.edit, b.dataset.role)));
+}
+
+async function removeStaff(userId) {
+  if (!confirm('Remove this staff member? Their account stays, just loses staff privileges.')) return;
+  const r = await authedFetch('/rest/v1/staff_roles?user_id=eq.' + userId, { method: 'DELETE' });
+  if (!r.ok) { setStatus('Failed: ' + r.status, 'err'); return; }
+  setStatus('Removed.', 'ok');
+  loadStaff();
+}
+
+async function editStaff(userId, currentRole) {
+  const opts = ROLES.map(r => r.key).filter(k => k !== currentRole).join(', ');
+  const newRole = prompt('New role (' + opts + ')?');
+  if (!newRole || !ROLES.find(r => r.key === newRole)) return;
+  const r = await authedFetch('/rest/v1/staff_roles?user_id=eq.' + userId, {
+    method: 'PATCH', body: JSON.stringify({ role: newRole })
+  });
+  if (!r.ok) { setStatus('Failed: ' + r.status, 'err'); return; }
+  setStatus('Role updated.', 'ok');
+  loadStaff();
+}
+
+document.getElementById('addStaffBtn').addEventListener('click', () => document.getElementById('addModal').classList.add('on'));
+document.getElementById('aCancel').addEventListener('click', () => document.getElementById('addModal').classList.remove('on'));
+
+document.getElementById('aSave').addEventListener('click', async () => {
+  const email = document.getElementById('aEmail').value.trim().toLowerCase();
+  const role  = document.getElementById('aRole').value;
+  const notes = document.getElementById('aNotes').value.trim() || null;
+  if (!email) return alert('Email required');
+
+  // Look up user_id by email — needs an admin RPC, simulate by asking Kenny to find it
+  // Quick path: use Supabase's GoTrue admin via the admin REST helper, but that's service-role only.
+  // Workaround: tell user to enter user_id directly for now.
+  // For v1, accept either email OR uuid; if email, try to find via auth.admin (won't work from client)
+
+  // We'll use a temporary path: tell user to copy the user_id from Supabase auth dashboard
+  const isUuid = /^[0-9a-f-]{36}$/.test(email);
+  if (!isUuid) {
+    if (!confirm('Adding staff by email requires looking up their user_id in Supabase. Paste the user_id from the Supabase Auth dashboard for ' + email + '. (Click OK to enter user_id.)')) return;
+    const uid = prompt('Paste the user_id (UUID) for ' + email + ':');
+    if (!uid || !/^[0-9a-f-]{36}$/.test(uid)) { setStatus('Invalid user_id', 'err'); return; }
+    return saveStaff(uid, role, notes, email);
+  }
+  saveStaff(email, role, notes);
+});
+
+async function saveStaff(userId, role, notes, emailHint) {
+  const noteWithEmail = emailHint ? (emailHint + (notes ? ' · ' + notes : '')) : notes;
+  const r = await authedFetch('/rest/v1/staff_roles', {
+    method: 'POST',
+    headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({ user_id: userId, role, notes: noteWithEmail })
+  });
+  if (!r.ok) { setStatus('Failed: ' + r.status, 'err'); return; }
+  document.getElementById('addModal').classList.remove('on');
+  document.getElementById('aEmail').value = '';
+  document.getElementById('aNotes').value = '';
+  setStatus('Added.', 'ok');
+  loadStaff();
+}
+
+(async () => {
+  if (!window.LYMX || !window.LYMX.getSession) return;
+  const s = await window.LYMX.getSession();
+  if (!s) return;
+  document.getElementById('userInitial').textContent = (s.user.email || 'K')[0].toUpperCase();
+  loadStaff();
+})();
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>
