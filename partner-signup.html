@@ -61,6 +61,8 @@
   .field{margin-bottom:16px}
   .input,select,textarea{width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;font-weight:500;background:#fff;color:var(--ink);font-family:inherit;transition:.15s}
   .input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  .input::placeholder, textarea::placeholder { color: #b4bcc7; font-weight: 400; font-style: italic; }
+  .input:focus::placeholder, textarea:focus::placeholder { color: #d8dde4; }
   textarea{resize:vertical;min-height:80px}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
@@ -190,7 +192,7 @@
               </div>
               <div class="field">
                 <label>City</label>
-                <input class="input" id="city" value="Las Vegas" oninput="check()" />
+                <input class="input" id="city" placeholder="Las Vegas" oninput="check()" />
               </div>
             </div>
             <div class="field">
@@ -283,7 +285,7 @@
             <div class="done-card">
               <div class="icon">🎉</div>
               <h2>Application submitted!</h2>
-              <p class="lede">Thanks, <span id="done-name">Partner</span>. We'll review your application and get back within 1–2 business days.</p>
+              <p class="lede">Thanks, <span id="done-name">Partner</span>. We'll review your application and get back within 1–2 business days. A confirmation email is on its way — <strong>check your inbox (and the spam folder, just in case)</strong> within the next 5 minutes.</p>
 
               <div class="next-grid">
                 <div class="next-card">
@@ -493,7 +495,13 @@
     if (el.type === 'password') { el.type = 'text'; btn.textContent = 'Hide'; }
     else { el.type = 'password'; btn.textContent = 'Show'; }
   }
-  function valid2(){ return true; /* sponsor optional */ }
+  function valid2(){
+    // Sponsor is OPTIONAL — empty value is allowed (routes to launch sponsor).
+    // But if entered, it MUST match the P-NNNNNN format. (Tester bug 2026-05-14: invalid IDs let users progress.)
+    const v = (document.getElementById('sponsor').value || '').trim();
+    if (!v) return true;
+    return /^P-\d{6}$/i.test(v);
+  }
   function valid3(){
     return document.getElementById('why').value.trim().length >= 8 && document.getElementById('bg').value.length > 0;
   }
@@ -512,13 +520,29 @@
   function onSponsor(){
     const v = document.getElementById('sponsor').value.trim();
     const card = document.getElementById('sponsor-card');
+    const help = document.getElementById('sponsor-help');
+    const sponsorEl = document.getElementById('sponsor');
+    if (!v) {
+      // Blank is fine — route to launch sponsor
+      card.style.display = 'none';
+      help.textContent = 'Format: P-123456. Leave blank to be assigned to launch sponsor.';
+      help.style.color = '';
+      sponsorEl.style.borderColor = '';
+      check();
+      return;
+    }
     if (/^P-\d{6}$/i.test(v)) {
       card.style.display = '';
-      document.getElementById('sponsor-help').textContent = 'Sponsor verified.';
+      help.textContent = 'Sponsor verified.';
+      help.style.color = 'var(--ok, #13a26b)';
+      sponsorEl.style.borderColor = 'var(--ok, #13a26b)';
     } else {
       card.style.display = 'none';
-      document.getElementById('sponsor-help').textContent = 'Format: P-123456. Leave blank to be assigned to launch sponsor.';
+      help.textContent = '⚠️ Invalid Partner ID. Must be format P-123456 (six digits). Leave blank to use the launch sponsor.';
+      help.style.color = '#dc2626';
+      sponsorEl.style.borderColor = '#dc2626';
     }
+    check();
   }
 
   // Phone formatting
