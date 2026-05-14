@@ -41,13 +41,19 @@
   .step{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
   .step .num{background:var(--ink);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
 
-  .upload-zone{border:2px dashed var(--line);border-radius:10px;padding:24px 18px;text-align:center;cursor:pointer;background:var(--bg-soft);transition:.15s}
+  .upload-zone{border:2px dashed var(--line);border-radius:10px;padding:20px 16px;text-align:center;cursor:pointer;background:var(--bg-soft);transition:.15s;margin-top:8px}
   .upload-zone:hover{border-color:var(--accent);background:#eef5ff;color:var(--accent-2)}
   .upload-zone.drag{border-color:var(--accent);background:#dbeefb}
-  .upload-zone .big{font-size:32px;margin-bottom:6px}
-  .upload-zone .h{font-weight:700;font-size:15px}
-  .upload-zone .sub{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .upload-zone .big{font-size:24px;margin-bottom:4px}
+  .upload-zone .h{font-weight:700;font-size:14px}
+  .upload-zone .sub{font-size:11.5px;color:var(--muted);margin-top:3px}
   .upload-zone input[type=file]{display:none}
+  /* Collapsible CSV import section (Kenny: not used daily, hide by default) */
+  details.csv-toggle{margin:6px 0 0}
+  details.csv-toggle summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);font-weight:600;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;transition:.12s;user-select:none}
+  details.csv-toggle summary::-webkit-details-marker{display:none}
+  details.csv-toggle summary:hover{border-color:var(--ink-2);color:var(--ink)}
+  details.csv-toggle[open] summary{color:var(--accent);border-color:var(--accent);background:#eef6ff}
 
   .or-divider{display:flex;align-items:center;gap:12px;margin:14px 0 8px;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
   .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--line)}
@@ -157,18 +163,19 @@
     <!-- Step 2: Add contacts -->
     <div class="card">
       <div class="step"><span class="num">2</span> Add contacts</div>
-      <div class="meta">Upload a CSV exported from Google Contacts, Outlook, or Apple Contacts — or just paste emails below. We'll handle either.</div>
-
-      <label class="upload-zone" id="uploadZone">
-        <div class="big">📂</div>
-        <div class="h">Drop a CSV here or click to choose</div>
-        <div class="sub">Works with Google Contacts, Outlook, Apple Contacts CSV exports — we auto-detect the email column.</div>
-        <input type="file" id="csvFile" accept=".csv,text/csv" />
-      </label>
-
-      <div class="or-divider"><span>or paste emails</span></div>
+      <div class="meta">Paste emails below, pick from your saved Contacts, or expand the CSV import if you have a contact export.</div>
 
       <textarea id="emailPaste" placeholder="alice@example.com, bob@example.com&#10;carol@example.com&#10;dad@example.com"></textarea>
+
+      <details class="csv-toggle">
+        <summary>📂 Import from CSV (Gmail · Outlook · Apple Contacts)</summary>
+        <label class="upload-zone" id="uploadZone">
+          <div class="big">📂</div>
+          <div class="h">Drop a CSV here or click to choose</div>
+          <div class="sub">Works with Google Contacts, Outlook, Apple Contacts CSV exports — we auto-detect the email column.</div>
+          <input type="file" id="csvFile" accept=".csv,text/csv" />
+        </label>
+      </details>
 
       <div id="summary" class="summary empty"><span class="big">0</span> valid emails — add some above to get started.</div>
       <div class="summary-list" id="summaryList"></div>
@@ -586,7 +593,19 @@ document.getElementById('iSend').addEventListener('click', async () => {
       method: 'POST',
       body: JSON.stringify({ broadcast_id: bcId }),
     });
-    if (fnRes.ok) {
+    let fnData = null;
+    try { fnData = await fnRes.json(); } catch {}
+    // Bug fix #91 (Kenny 2026-05-14): broadcast-send returns HTTP 200 even when
+    // Resend silently fails (e.g. unverified sender domain). Helen's invite
+    // logged as "sent" but never arrived. Now we check the actual sent_count /
+    // failed_count from the response body, not just the HTTP status.
+    const trulySent = fnRes.ok && fnData && (fnData.sent_count > 0 || fnData.mode === 'in_app');
+    const errMsg = !fnRes.ok
+        ? `HTTP ${fnRes.status}`
+        : (fnData && fnData.errors && fnData.errors.length)
+          ? String(fnData.errors[0]).slice(0, 180)
+          : (fnData && fnData.error) || (fnData && fnData.sent_count === 0 ? 'Resend reported 0 sent (check sender domain)' : 'unknown error');
+    if (trulySent) {
       sent++;
       // Mark the partner_invite row as sent
       await authedFetch(`/rest/v1/partner_invites?sender_id=eq.${myUserId}&invitee_email=eq.${encodeURIComponent(p.email)}&template=eq.${pickedTmpl}`, {
@@ -595,10 +614,10 @@ document.getElementById('iSend').addEventListener('click', async () => {
       });
     } else {
       failed++;
-      errors.push(`${p.email}: send ${fnRes.status}`);
+      errors.push(`${p.email}: ${errMsg}`);
       await authedFetch(`/rest/v1/partner_invites?sender_id=eq.${myUserId}&invitee_email=eq.${encodeURIComponent(p.email)}&template=eq.${pickedTmpl}`, {
         method: 'PATCH',
-        body: JSON.stringify({ status: 'failed', error: `send ${fnRes.status}` }),
+        body: JSON.stringify({ status: 'failed', error: errMsg.slice(0, 200) }),
       });
     }
     setStatus(`Sent ${sent}/${valid.length}…`, 'info');
@@ -672,7 +691,14 @@ async function loadHistory() {
     if (preselected) {
       const list = JSON.parse(preselected);
       if (Array.isArray(list) && list.length) {
-        document.getElementById('emailPaste').value = list.join('\n');
+        const ta = document.getElementById('emailPaste');
+        ta.value = list.join('\n');
+        // Bug fix (Kenny 2026-05-14): programmatic .value = ... does not
+        // fire 'input' events, so recompute() never ran and the counter
+        // stayed at 0 until the user clicked into the box and typed/pasted.
+        // Dispatch the event AND call recompute() defensively.
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+        if (typeof recompute === 'function') recompute();
         sessionStorage.removeItem('lymx_invite_preselected');
         setStatus(`Loaded ${list.length} contact${list.length === 1 ? '' : 's'} from your address book.`, 'ok');
       }

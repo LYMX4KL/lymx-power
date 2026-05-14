@@ -417,18 +417,23 @@
         </div>
       </div>
 
-      <!-- Referral card -->
+      <!-- Refer-a-Friend widget — wired to real referral data (Kenny 2026-05-14) -->
       <div class="referral">
-        <h2>Refer a friend, earn 500 LYMX</h2>
-        <p>Each friend who joins LYMX with your code earns you 500 LYMX once they make their first purchase.</p>
+        <h2>Refer a friend, earn 100 LYMX each</h2>
+        <p>When a friend joins LYMX with your link, <strong>you both</strong> earn 100 LYMX on their first signup.</p>
         <div class="code">
-          <span>kenny-lin-500</span>
-          <button class="copy-btn" onclick="navigator.clipboard?.writeText('kenny-lin-500'); this.textContent='Copied!'; setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
+          <span id="refShareUrl" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;word-break:break-all">Loading your link…</span>
+          <button id="refCopyBtn" class="copy-btn">Copy link</button>
         </div>
         <div class="stats">
-          <div class="s"><div class="n">3</div><div class="k">Friends joined</div></div>
-          <div class="s"><div class="n">1,500</div><div class="k">LYMX earned</div></div>
-          <div class="s"><div class="n">2</div><div class="k">Pending</div></div>
+          <div class="s"><div class="n" id="refStatsJoined">—</div><div class="k">Friends joined</div></div>
+          <div class="s"><div class="n" id="refStatsEarned">—</div><div class="k">LYMX earned</div></div>
+          <div class="s"><div class="n" id="refStatsPending">—</div><div class="k">Pending</div></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <a id="refShareEmail" class="copy-btn" style="text-decoration:none;text-align:center;flex:1;min-width:90px" href="#">📧 Email</a>
+          <a id="refShareSms" class="copy-btn" style="text-decoration:none;text-align:center;flex:1;min-width:90px" href="#">💬 SMS</a>
+          <a id="refShareTw" class="copy-btn" style="text-decoration:none;text-align:center;flex:1;min-width:90px" href="#" target="_blank" rel="noopener">𝕏 Share</a>
         </div>
       </div>
 
@@ -502,6 +507,43 @@
       balUsd.textContent = msg;
     }
 
+    // 4a) Wire the Refer-a-Friend card to the real user (Kenny 2026-05-14)
+    try {
+      const shareUrl = 'https://getlymx.com/welcome.html?ref=' + user.id;
+      const shareUrlEl = document.getElementById('refShareUrl');
+      if (shareUrlEl) shareUrlEl.textContent = shareUrl;
+      const copyBtn = document.getElementById('refCopyBtn');
+      if (copyBtn) copyBtn.addEventListener('click', function () {
+        if (navigator.clipboard) navigator.clipboard.writeText(shareUrl);
+        copyBtn.textContent = 'Copied!';
+        setTimeout(function () { copyBtn.textContent = 'Copy link'; }, 1500);
+      });
+      const subject = encodeURIComponent('Join me on LYMX — we both earn 100 LYMX');
+      const body    = encodeURIComponent('Hey — I\'ve been using LYMX (one rewards balance you can earn + spend across local businesses). If you sign up through my link we BOTH earn 100 LYMX:\n\n' + shareUrl + '\n\n— ' + firstName);
+      const emailEl = document.getElementById('refShareEmail');
+      const smsEl   = document.getElementById('refShareSms');
+      if (emailEl) emailEl.href = 'mailto:?subject=' + subject + '&body=' + body;
+      if (smsEl)   smsEl.href   = 'sms:?&body=' + body;
+      if (twEl)    twEl.href    = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Join me on LYMX — we both earn 100 LYMX 🎁 ' + shareUrl);
+
+      // Pull referral stats from the referrals table
+      const { data: refs } = await LYMX.sb
+        .from('referrals')
+        .select('status, inviter_bonus_amount')
+        .eq('inviter_user_id', user.id);
+      const joined  = (refs || []).filter(r => r.status === 'credited').length;
+      const earned  = (refs || []).filter(r => r.status === 'credited').reduce((sum, r) => sum + Number(r.inviter_bonus_amount || 0), 0);
+      const pending = (refs || []).filter(r => r.status === 'pending').length;
+      const j = document.getElementById('refStatsJoined');  if (j) j.textContent = joined.toLocaleString('en-US');
+      const e = document.getElementById('refStatsEarned');  if (e) e.textContent = earned.toLocaleString('en-US');
+      const p = document.getElementById('refStatsPending'); if (p) p.textContent = pending.toLocaleString('en-US');
+    } catch (refErr) {
+      console.warn('[LYMX] refer widget wiring failed', refErr);
+      const j = document.getElementById('refStatsJoined');  if (j) j.textContent = '0';
+      const e = document.getElementById('refStatsEarned');  if (e) e.textContent = '0';
+      const p = document.getElementById('refStatsPending'); if (p) p.textContent = '0';
+    }
+
     // 4) Fetch recent transactions and render
     const list = document.getElementById('activityList');
     const { data: txs, error: tErr } = await LYMX.fetchMyTransactions(8);
@@ -540,5 +582,6 @@
 </script>
 
 <script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
 </body>
 </html>

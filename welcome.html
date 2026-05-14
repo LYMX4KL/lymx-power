@@ -188,11 +188,13 @@ const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
 const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
 
 // Read business slug + inviter ref + signup token from URL
-//   ?biz=<slug>     — business co-brand (InvestPro, etc.)
+//   ?biz=<slug>     — business co-brand (InvestPro, etc.). Defaults to 'lymx'
+//                     for naked signups (just ?ref=<X> from a Partner share).
 //   ?ref=<uuid>     — inviter's partner_id or user_id (for 100+100 referral bonus)
 //   ?token=<xxx>    — optional per-recipient tracking token
 const params = new URLSearchParams(location.search);
-const bizSlug = (params.get('biz') || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
+const rawBiz   = (params.get('biz') || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
+const bizSlug  = rawBiz || 'lymx';   // default to LYMX itself so naked ?ref= links work
 const inviterRef = (params.get('ref') || '').replace(/[^a-z0-9-]/gi, '');
 const signupToken = params.get('token') || null;
 let bizConfig = null;
@@ -339,7 +341,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   document.getElementById('rewBiz').textContent  = bizConfig.signup_bonus_from_biz + ' LYMX';
 
   if (bonusJson?.admin_status === 'pending_review') {
-    document.getElementById('successSub').textContent = `Welcome aboard! Your bonus is pending a quick review — it'll land in your wallet shortly.`;
+    document.getElementById('successSub').textContent = `Welcome aboard! Your bonus is pending a quick review — it\'ll land in your wallet shortly.`;
   }
 });
 
