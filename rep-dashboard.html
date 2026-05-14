@@ -254,19 +254,19 @@
   <div class="earn-hero">
     <div class="row1">
       <div>
-        <div class="lab">This month earnings (Apr 2026)</div>
-        <div class="big" id="repEarningsMonth">—<small id="repLymxBalance"></small></div>
-        <div class="sub">Cash payout on May 5 · LYMX in your balance now</div>
+        <div class="lab">This month earnings</div>
+        <div class="big" id="repEarningsMonth">$0.00<small id="repLymxBalance"></small></div>
+        <div class="sub">Activate your first Business to start earning</div>
       </div>
       <div class="mini">
         <span class="lab">Active tree</span>
-        <span class="v" id="repTreeCount">— businesses</span>
+        <span class="v" id="repTreeCount">0 businesses</span>
         <span class="sub" style="margin-top:0;color:#9aa3b0;font-size:12px">across 3 generations</span>
       </div>
       <div class="mini">
         <span class="lab">Lifetime earned</span>
-        <span class="v gold" id="repLifetime">—</span>
-        <span class="sub" style="margin-top:0;color:#9aa3b0;font-size:12px">+ 124,500 LYMX since join</span>
+        <span class="v gold" id="repLifetime">$0.00</span>
+        <span class="sub" style="margin-top:0;color:#9aa3b0;font-size:12px" id="repLifetimeLymx">0 LYMX since join</span>
       </div>
     </div>
     <div class="actions">
@@ -317,21 +317,21 @@
 
   <!-- Tier ladder -->
   <div class="tier-card">
-    <div class="tier-badge gold">Gold</div>
+    <div class="tier-badge" id="repTierBadge" style="background:#eef0f4;color:#6b7280">Starter</div>
     <div class="tier-info">
       <div class="lbl">Current Partner tier</div>
-      <div class="name">Gold Partner</div>
-      <div class="progress-line">8 Direct Businesses active · <strong>32 more direct activations to Platinum</strong></div>
-      <div class="bar"><div class="fill" style="width:53%"></div></div>
-      <div class="pct"><span>15 / Gold threshold</span><span>40 / Platinum</span></div>
+      <div class="name" id="repTierName">Starter</div>
+      <div class="progress-line"><span id="repDirectCount">0</span> Direct Businesses active · <strong><span id="repToNextTier">5 activations to Bronze</span></strong></div>
+      <div class="bar"><div class="fill" id="repTierFill" style="width:0%"></div></div>
+      <div class="pct"><span>0 / Bronze threshold</span><span>40 / Platinum</span></div>
     </div>
     <div class="tier-perks">
-      <div class="perks-h">Your Gold unlocks</div>
+      <div class="perks-h">Tier benefits unlock as you grow</div>
       <ul>
-        <li>Featured on getlymx.com Partners</li>
-        <li>+1% override boost on Direct (10% total)</li>
-        <li>Custom email: kenny@getlymx.com</li>
-        <li>Monthly Partner Council seat</li>
+        <li>Bronze (5 activations) — Featured on getlymx.com Partners</li>
+        <li>Silver (15) — +1% override boost on Direct (10% total)</li>
+        <li>Gold (25) — Custom email + Partner Council seat</li>
+        <li>Platinum (40) — Founder summit invite + revenue share</li>
       </ul>
     </div>
   </div>
@@ -343,57 +343,15 @@
       <!-- Commission breakdown -->
       <div class="card">
         <div class="card-h">
-          <h2>April commission breakdown</h2>
+          <h2>This month's commission breakdown</h2>
           <span class="count">cash + LYMX</span>
         </div>
-        <div>
-          <div class="com-row">
-            <div class="lbl">
-              <div class="ico bonus">💵</div>
-              <div><div class="nm">Sign-up bonuses</div><div class="ds">3 new businesses activated this month</div></div>
-            </div>
-            <div class="amt">$300.00</div>
-          </div>
-          <div class="com-row">
-            <div class="lbl">
-              <div class="ico g1">🔁</div>
-              <div><div class="nm">G1 ongoing — 9% of monthly fees</div><div class="ds">8 direct referrals on Enterprise plan</div></div>
-            </div>
-            <div class="amt">$143.28</div>
-          </div>
-          <div class="com-row">
-            <div class="lbl">
-              <div class="ico g2">⏬</div>
-              <div><div class="nm">G2 override — 2% of fees</div><div class="ds">3 generation-2 businesses</div></div>
-            </div>
-            <div class="amt">$11.94</div>
-          </div>
-          <div class="com-row">
-            <div class="lbl">
-              <div class="ico g3">⏬</div>
-              <div><div class="nm">G3 override — 1% of fees</div><div class="ds">1 generation-3 business</div></div>
-            </div>
-            <div class="amt">$1.99</div>
-          </div>
-          <div class="com-row">
-            <div class="lbl">
-              <div class="ico g1">📈</div>
-              <div><div class="nm">G1 transaction commission — 9% of activity</div><div class="ds">$21,000 of LYMX activity at G1</div></div>
-            </div>
-            <div class="amt">$1,890.00</div>
-          </div>
-          <div class="com-row">
-            <div class="lbl">
-              <div class="ico lymx">💎</div>
-              <div><div class="nm">Mirror LYMX commissions (G1 + G2 + G3)</div><div class="ds">9% / 3% / 2% / 1% on transaction LYMX</div></div>
-            </div>
-            <div class="amt lymx">+18,420 LYMX</div>
-          </div>
-          <div class="com-row" style="border-top:2px solid var(--line);margin-top:6px;padding-top:14px">
-            <div class="lbl">
-              <div class="nm" style="font-size:15.5px">Total — April</div>
-            </div>
-            <div class="amt" style="font-size:18px">$2,347.21 <span style="font-weight:600;color:var(--muted);font-size:13px">+ 18,420 LYMX</span></div>
+        <div id="commissionBreakdown">
+          <div style="padding:40px 24px;text-align:center;color:var(--muted)">
+            <div style="font-size:36px;margin-bottom:8px">💵</div>
+            <div style="font-weight:700;color:var(--ink);font-size:15px;margin-bottom:4px">No commissions yet</div>
+            <div style="font-size:13.5px;line-height:1.55">Activate your first Business and you'll start earning $100 sign-up bonus + 9% recurring monthly. Your commission breakdown lands here automatically.</div>
+            <a href="biz-signup.html?ref=" id="commissionSignupLink" style="display:inline-block;margin-top:14px;padding:9px 18px;background:var(--ink);color:#fff;border-radius:9px;font-weight:700;font-size:13.5px;text-decoration:none">Activate a Business →</a>
           </div>
         </div>
       </div>
@@ -402,93 +360,21 @@
       <div class="card">
         <div class="card-h">
           <h2>Your 3-generation tree</h2>
-          <a href="#" class="more">Full tree →</a>
+          <a href="partner-tree.html" class="more">Full tree →</a>
         </div>
-        <div class="tree">
+        <div class="tree" id="repTree">
           <div class="tree-row you">
-            <div class="av">KL</div>
+            <div class="av" id="repTreeYouAv">·</div>
             <div class="body">
-              <div class="nm">Kenny Lin <span class="gen-pill" style="background:linear-gradient(135deg,#d4af37,#b88a2e)">YOU</span></div>
-              <div class="ds">Partner since Feb 2026 · 12 active in tree</div>
+              <div class="nm" id="repTreeYouName">You <span class="gen-pill" style="background:linear-gradient(135deg,#d4af37,#b88a2e)">YOU</span></div>
+              <div class="ds" id="repTreeYouSub">No tree yet — your downline will appear here as you recruit</div>
             </div>
-            <div class="pay">$2,341 <span class="sub">this month total</span></div>
+            <div class="pay" id="repTreeYouPay">$0 <span class="sub">this month</span></div>
           </div>
-
-          <div class="tree-row g1">
-            <div class="av">☕</div>
-            <div class="body">
-              <div class="nm">Brew &amp; Bean Café <span class="gen-pill">G1</span></div>
-              <div class="ds">Activated Apr 2 · $199/mo · brought 2 G2s</div>
-            </div>
-            <div class="pay">$117 <span class="sub">your share / mo</span></div>
-          </div>
-          <div class="tree-row g2">
-            <div class="av">🍜</div>
-            <div class="body">
-              <div class="nm">Oakline Kitchen <span class="gen-pill">G2</span></div>
-              <div class="ds">Activated Apr 9 · referred by Brew &amp; Bean</div>
-            </div>
-            <div class="pay">$28 <span class="sub">your share / mo</span></div>
-          </div>
-          <div class="tree-row g3">
-            <div class="av">💇</div>
-            <div class="body">
-              <div class="nm">Avery Hair Studio <span class="gen-pill">G3</span></div>
-              <div class="ds">Activated Apr 17 · referred by Oakline</div>
-            </div>
-            <div class="pay">$17 <span class="sub">your share / mo</span></div>
-          </div>
-          <div class="tree-row g2">
-            <div class="av">🐕</div>
-            <div class="body">
-              <div class="nm">Paws &amp; Tails <span class="gen-pill">G2</span></div>
-              <div class="ds">Activated Apr 14 · referred by Brew &amp; Bean</div>
-            </div>
-            <div class="pay">$28 <span class="sub">your share / mo</span></div>
-          </div>
-
-          <div class="tree-row g1">
-            <div class="av">🔌</div>
-            <div class="body">
-              <div class="nm">EverGrid Hub <span class="gen-pill">G1</span></div>
-              <div class="ds">Activated Mar 21 · $199/mo · brought 1 G2</div>
-            </div>
-            <div class="pay">$94 <span class="sub">your share / mo</span></div>
-          </div>
-          <div class="tree-row g2">
-            <div class="av">🏋️</div>
-            <div class="body">
-              <div class="nm">Summit Fitness <span class="gen-pill">G2</span></div>
-              <div class="ds">Activated Apr 6 · referred by EverGrid</div>
-            </div>
-            <div class="pay">$36 <span class="sub">your share / mo</span></div>
-          </div>
-
-          <div class="tree-row g1">
-            <div class="av">🛍️</div>
-            <div class="body">
-              <div class="nm">BoxYard Market <span class="gen-pill">G1</span></div>
-              <div class="ds">Activated Mar 18 · $199/mo · network anchor</div>
-            </div>
-            <div class="pay">$203 <span class="sub">your share / mo</span></div>
-          </div>
-
-          <div class="tree-row g1">
-            <div class="av">🏠</div>
-            <div class="body">
-              <div class="nm">InvestPro Realty <span class="gen-pill">G1</span></div>
-              <div class="ds">Activated Mar 12 · $199/mo · network anchor</div>
-            </div>
-            <div class="pay">$248 <span class="sub">your share / mo</span></div>
-          </div>
-
-          <div class="tree-row g1">
-            <div class="av">+</div>
-            <div class="body">
-              <div class="nm" style="color:var(--muted)">+ 4 more direct referrals</div>
-              <div class="ds">123Partners.net · CFS Advantage · Delta HVAC · Riverstone Grill</div>
-            </div>
-            <div class="pay" style="color:var(--muted)">$486 <span class="sub">combined / mo</span></div>
+          <div style="padding:32px 24px;text-align:center;color:var(--muted)">
+            <div style="font-size:36px;margin-bottom:8px">🌳</div>
+            <div style="font-weight:700;color:var(--ink);font-size:15px;margin-bottom:4px">Your tree is empty</div>
+            <div style="font-size:13.5px;line-height:1.55">Activate Businesses or recruit Partners using your referral link below. Each one becomes a node in your 3-generation tree — and pays you ongoing.</div>
           </div>
         </div>
       </div>
@@ -499,48 +385,11 @@
           <h2>Recent activity</h2>
           <a href="#" class="more">See all →</a>
         </div>
-        <div>
-          <div class="act-row">
-            <div class="ic act">🎉</div>
-            <div class="body">
-              <div class="top"><span class="nm">Avery Hair Studio activated (G3 in your tree)</span><span class="delta">+$100 bonus</span></div>
-              <div class="sub">Today · referred by Oakline Kitchen who you brought in 2 weeks ago</div>
-            </div>
-          </div>
-          <div class="act-row">
-            <div class="ic tx">💵</div>
-            <div class="body">
-              <div class="top"><span class="nm">Mid-month commission posted</span><span class="delta">+$1,134.18</span></div>
-              <div class="sub">Yesterday · 9% of G1 transaction volume + overrides</div>
-            </div>
-          </div>
-          <div class="act-row">
-            <div class="ic act">🎉</div>
-            <div class="body">
-              <div class="top"><span class="nm">Paws &amp; Tails activated (G2)</span><span class="delta">+$100 bonus</span></div>
-              <div class="sub">2 weeks ago · referred by Brew &amp; Bean Café</div>
-            </div>
-          </div>
-          <div class="act-row">
-            <div class="ic tx">💎</div>
-            <div class="body">
-              <div class="top"><span class="nm">LYMX commission credit</span><span class="delta">+9,200 LYMX</span></div>
-              <div class="sub">Last week · 9% of G1 LYMX transaction activity</div>
-            </div>
-          </div>
-          <div class="act-row">
-            <div class="ic pay">💸</div>
-            <div class="body">
-              <div class="top"><span class="nm">March payout cleared</span><span class="delta">$2,108.43</span></div>
-              <div class="sub">Apr 5 · ACH to Chase **** 4321</div>
-            </div>
-          </div>
-          <div class="act-row">
-            <div class="ic act">🎉</div>
-            <div class="body">
-              <div class="top"><span class="nm">Oakline Kitchen activated (G2)</span><span class="delta">+$100 bonus</span></div>
-              <div class="sub">Apr 9 · referred by Brew &amp; Bean Café</div>
-            </div>
+        <div id="repActivity">
+          <div style="padding:40px 24px;text-align:center;color:var(--muted)">
+            <div style="font-size:36px;margin-bottom:8px">📜</div>
+            <div style="font-weight:700;color:var(--ink);font-size:15px;margin-bottom:4px">No activity yet</div>
+            <div style="font-size:13.5px;line-height:1.55">Activations, commission posts, LYMX credits, and payouts will appear here automatically.</div>
           </div>
         </div>
       </div>
@@ -553,16 +402,16 @@
       <!-- Share card -->
       <div class="card share-card" id="share">
         <h2>Share your recruiter link</h2>
-        <p class="sub">Earn $100 + 9% ongoing for every Enterprise business that signs up through your link.</p>
+        <p class="sub">Earn $100 + 9% ongoing for every Enterprise business that signs up through your link. Plus 100 LYMX when anyone signs up using your link.</p>
         <div class="url">
-          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">getlymx.com/r/kenny-lin</span>
-          <button class="copy" onclick="navigator.clipboard?.writeText('getlymx.com/r/kenny-lin'); this.textContent='Copied!'; setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
+          <span id="repShareLinkText" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">https://getlymx.com/welcome.html?ref=loading…</span>
+          <button class="copy" id="repShareLinkCopy">Copy</button>
         </div>
         <div class="channels">
-          <div class="ch">📧 Email</div>
-          <div class="ch">📱 Text</div>
-          <div class="ch">🐦 Post</div>
-          <div class="ch">📲 QR</div>
+          <a class="ch" id="repShareEmail" href="#">📧 Email</a>
+          <a class="ch" id="repShareSms" href="#">📱 Text</a>
+          <a class="ch" id="repShareTwitter" href="#" target="_blank">🐦 Post</a>
+          <a class="ch" href="admin-invite-friends.html">📲 Invite tool</a>
         </div>
       </div>
 
@@ -570,13 +419,13 @@
       <div class="card">
         <div class="card-h"><h2>Next payout</h2></div>
         <div style="text-align:center;padding:6px 0 14px;border-bottom:1px solid var(--line);margin-bottom:6px">
-          <div style="font-size:32px;font-weight:800;letter-spacing:-.01em">$2,341.21</div>
-          <div style="font-size:13px;color:var(--muted)">May 5, 2026 · ACH</div>
+          <div style="font-size:32px;font-weight:800;letter-spacing:-.01em" id="repNextPayoutAmt">$0.00</div>
+          <div style="font-size:13px;color:var(--muted)" id="repNextPayoutDate">No payout scheduled</div>
         </div>
-        <div class="payout-row"><span class="k">Method</span><span class="v">Chase ACH **** 4321</span></div>
+        <div class="payout-row"><span class="k">Method</span><span class="v" id="repPayoutMethod">Not set up</span></div>
         <div class="payout-row"><span class="k">Tax form</span><span class="v">1099-NEC (Jan 2027)</span></div>
-        <div class="payout-row"><span class="k">YTD earnings</span><span class="v">$8,412.10</span></div>
-        <a class="btn btn-ghost" href="#" style="width:100%;margin-top:14px;justify-content:center">Update payout method</a>
+        <div class="payout-row"><span class="k">YTD earnings</span><span class="v" id="repYtdEarnings">$0.00</span></div>
+        <a class="btn btn-ghost" href="partner-payouts.html" style="width:100%;margin-top:14px;justify-content:center">Set up payout method</a>
       </div>
 
       <!-- Leaderboard -->
@@ -585,35 +434,12 @@
           <h2>Top recruiters this month</h2>
           <span class="count">network-wide</span>
         </div>
-        <div>
-          <div class="lb-row top1">
-            <div class="rk">1</div>
-            <div class="nm">Maria T. <small>Las Vegas · 8 G1 active</small></div>
-            <div class="vol">$4,210 <span class="sub">12 activated</span></div>
+        <div id="repLeaderboard">
+          <div style="padding:32px 18px;text-align:center;color:var(--muted)">
+            <div style="font-size:36px;margin-bottom:8px">🏆</div>
+            <div style="font-weight:700;color:var(--ink);font-size:15px;margin-bottom:4px">Leaderboard launching soon</div>
+            <div style="font-size:13px;line-height:1.5">Once 5+ Partners are active, we'll start the monthly ranking. Top 3 each month earn 250 LYMX bonus + recognition.</div>
           </div>
-          <div class="lb-row top2">
-            <div class="rk">2</div>
-            <div class="nm">Daniel K. <small>Portland · 6 G1 active</small></div>
-            <div class="vol">$3,180 <span class="sub">9 activated</span></div>
-          </div>
-          <div class="lb-row top3">
-            <div class="rk">3</div>
-            <div class="nm">Aliyah J. <small>Austin · 7 G1 active</small></div>
-            <div class="vol">$2,820 <span class="sub">10 activated</span></div>
-          </div>
-          <div class="lb-row you">
-            <div class="rk">4</div>
-            <div class="nm">Kenny Lin <small>Las Vegas · you</small></div>
-            <div class="vol">$2,341 <span class="sub">12 in tree</span></div>
-          </div>
-          <div class="lb-row">
-            <div class="rk">5</div>
-            <div class="nm">Priya S. <small>Bay Area · 4 G1 active</small></div>
-            <div class="vol">$1,920 <span class="sub">7 activated</span></div>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
-          Top 3 each month receive a 250 LYMX bonus + recognition in the partner newsletter.
         </div>
       </div>
 
@@ -662,10 +488,37 @@
     }
 
     // Earnings + balance — placeholders for now (commission tables not wired yet)
-    document.getElementById('repEarningsMonth').firstChild.textContent = '$0';
+    document.getElementById('repEarningsMonth').firstChild.textContent = '$0.00';
     const lymxEl = document.getElementById('repLymxBalance');
-    if (lymxEl) lymxEl.textContent = '+ 0 LYMX';
-    document.getElementById('repLifetime').textContent = '$0';
+    if (lymxEl) lymxEl.textContent = ' + 0 LYMX';
+    document.getElementById('repLifetime').textContent = '$0.00';
+
+    // Wire the share link to the partner's actual ref ID
+    const shareUrl = 'https://getlymx.com/welcome.html?ref=' + partner.id;
+    const shareEl = document.getElementById('repShareLinkText');
+    if (shareEl) shareEl.textContent = shareUrl;
+    const copyBtn = document.getElementById('repShareLinkCopy');
+    if (copyBtn) copyBtn.addEventListener('click', () => {
+      navigator.clipboard?.writeText(shareUrl);
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+    });
+    const emailLink = document.getElementById('repShareEmail');
+    if (emailLink) emailLink.href = 'mailto:?subject=' + encodeURIComponent('Try LYMX with me') + '&body=' + encodeURIComponent('Sign up here and we both get 100 LYMX: ' + shareUrl);
+    const smsLink = document.getElementById('repShareSms');
+    if (smsLink) smsLink.href = 'sms:?body=' + encodeURIComponent('Join me on LYMX — we both get 100 LYMX when you sign up: ' + shareUrl);
+    const twLink = document.getElementById('repShareTwitter');
+    if (twLink) twLink.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Earn rewards anywhere on the LYMX network. Sign up free → ' + shareUrl);
+
+    // Also wire the "Activate a Business" button on the empty commission card
+    const csl = document.getElementById('commissionSignupLink');
+    if (csl) csl.href = 'biz-signup.html?ref=' + partner.id;
+
+    // Update the "you" row in tree with real name + initials
+    const treeNameEl = document.getElementById('repTreeYouName');
+    if (treeNameEl) treeNameEl.innerHTML = (fullName || 'You') + ' <span class="gen-pill" style="background:linear-gradient(135deg,#d4af37,#b88a2e)">YOU</span>';
+    const treeAvEl = document.getElementById('repTreeYouAv');
+    if (treeAvEl) treeAvEl.textContent = initials;
 
     // Tree count = downline + activations
     const [{ count: downline }, { count: activations }] = await Promise.all([

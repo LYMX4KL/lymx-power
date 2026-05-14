@@ -234,29 +234,13 @@
   // Each Partner has their own production (count of Businesses they signed up).
   // Generations track downline Partners, NOT Businesses.
 
+  // Real tree is loaded from Supabase mgc_tree table once the user signs in.
+  // For unauthenticated viewers, show an empty starter tree.
   const TREE = {
-    name: 'Sienna Vega', tier:'Master', generation:'me',
-    production: 42,                  // your own Businesses (production)
-    productionIncome: 9420,          // 9% override on your production + sign-up bonuses earned
-    children: [
-      {name:'Marcus Chen', tier:'Platinum', generation:'g1', production:14, productionIncome:1840, children:[
-        {name:'Devon Tate', tier:'Gold', generation:'g2', production:8, productionIncome:560, children:[
-          {name:'Alex Vu', tier:'Silver', generation:'g3', production:4, productionIncome:120}
-        ]},
-        {name:'Sam Hao', tier:'Bronze', generation:'g2', production:1, productionIncome:50}
-      ]},
-      {name:'Tomás Reyes', tier:'Platinum', generation:'g1', production:11, productionIncome:1620, children:[
-        {name:'Kayla Smith', tier:'Gold', generation:'g2', production:6, productionIncome:380, children:[
-          {name:'Beth N.', tier:'Bronze', generation:'g3', production:1, productionIncome:35}
-        ]},
-        {name:'Renée D.', tier:'Bronze', generation:'g2', production:2, productionIncome:75}
-      ]},
-      {name:'Bri Okonkwo', tier:'Gold', generation:'g1', production:8, productionIncome:980, children:[
-        {name:'Imani Davis', tier:'Gold', generation:'g2', production:5, productionIncome:280}
-      ]},
-      {name:'Hannah Park', tier:'Silver', generation:'g1', production:5, productionIncome:540},
-      {name:'Carlos B.', tier:'Silver', generation:'g1', production:4, productionIncome:430}
-    ]
+    name: 'You', tier:'Starter', generation:'me',
+    production: 0,
+    productionIncome: 0,
+    children: []
   };
 
   const COLOR = {me:'#d4af37', g1:'#13a26b', g2:'#a545ff', g3:'#f0a020'};
@@ -451,5 +435,7 @@
 
   renderTree();
 </script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
 </body>
 </html>

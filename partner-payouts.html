@@ -165,23 +165,23 @@
     <div class="hero">
       <div class="cell">
         <div class="lab">Paid year-to-date</div>
-        <div class="big gold">$5,847.41</div>
-        <div class="sub">12 Direct activations · 4 monthly cycles</div>
+        <div class="big gold">$0.00</div>
+        <div class="sub">No payouts yet</div>
       </div>
       <div class="cell">
         <div class="lab">Next payout</div>
-        <div class="v">$1,162.91</div>
-        <div class="sub">Scheduled May 5, 2026</div>
+        <div class="v">$0.00</div>
+        <div class="sub">No payout scheduled</div>
       </div>
       <div class="cell">
         <div class="lab">LYMX earned (network)</div>
-        <div class="v" style="color:#f5d172">87,200</div>
+        <div class="v" style="color:#f5d172">0</div>
         <div class="sub">Spendable at any LYMX Business</div>
       </div>
       <div class="cell">
         <div class="lab">ACH on file</div>
-        <div class="v" style="font-family:'SF Mono',Menlo,monospace;font-size:18px">****6411</div>
-        <div class="sub">Chase · verified</div>
+        <div class="v" style="font-family:'SF Mono',Menlo,monospace;font-size:18px">Not set up</div>
+        <div class="sub">Add bank to enable payouts</div>
       </div>
     </div>
 
@@ -238,7 +238,8 @@
         <div class="tax-box">
           <strong>📄 Tax forms</strong><br>
           1099-NEC for 2025 is available. <a href="#" onclick="event.preventDefault();showToast('1099-NEC downloading...', true)">Download (PDF)</a><br>
-          1099-NEC for 2026 will be available by January 31, 2027.
+          1099-NEC for 2026 will be available by January 31, 2027.<br>
+          <a href="partner-tax-guide.html" style="display:inline-block;margin-top:6px">📚 Read the Partner tax guide →</a>
         </div>
 
         <div style="font-size:11.5px;color:var(--muted);line-height:1.55">
@@ -261,16 +262,9 @@
 <script>
   document.getElementById('yr').textContent = new Date().getFullYear();
 
-  // Mock payout history
-  const payouts = [
-    {period:'May 2026', year:2026, scheduled:'2026-05-05', sent:null,         cash:1162.91, lymx:18400, status:'scheduled', breakdown:{signup:1000.00, direct:90.91, gens:72.00, lymx:18400}},
-    {period:'April 2026',year:2026, scheduled:'2026-04-05', sent:'2026-04-05',cash:1340.16, lymx:22800, status:'paid',      breakdown:{signup:1000.00, direct:248.40, gens:91.76, lymx:22800}},
-    {period:'March 2026',year:2026, scheduled:'2026-03-05', sent:'2026-03-05',cash:1487.55, lymx:24600, status:'paid',      breakdown:{signup:1000.00, direct:339.40, gens:148.15, lymx:24600}},
-    {period:'February 2026',year:2026, scheduled:'2026-02-05', sent:'2026-02-05', cash:1019.70, lymx:21400, status:'paid',  breakdown:{signup:500.00, direct:357.10, gens:162.60, lymx:21400}},
-    {period:'January 2026',year:2026, scheduled:'2026-01-05', sent:'2026-01-05', cash:837.10,  lymx:0,     status:'paid',  breakdown:{signup:500.00, direct:194.91, gens:142.19, lymx:0}},
-    {period:'December 2025',year:2025, scheduled:'2025-12-05', sent:'2025-12-05', cash:240.00, lymx:0,     status:'paid',  breakdown:{signup:0, direct:178.20, gens:61.80, lymx:0}},
-    {period:'November 2025',year:2025, scheduled:'2025-11-05', sent:'2025-11-05', cash:178.20, lymx:0,     status:'paid',  breakdown:{signup:0, direct:142.56, gens:35.64, lymx:0}},
-  ];
+  // Payouts load from DB once the user signs in (commission_payouts table).
+  // Empty by default — fills as the user earns.
+  const payouts = [];
 
   let currentFilter = 'all';
 
@@ -354,5 +348,7 @@
 
   render();
 </script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
 </body>
 </html>
