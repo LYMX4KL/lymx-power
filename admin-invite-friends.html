@@ -160,25 +160,38 @@
       </div>
     </div>
 
-    <!-- Step 2: Add contacts -->
+    <!-- Step 2: Add contacts (Kenny 2026-05-14 — picker-first, CSV moved out) -->
     <div class="card">
       <div class="step"><span class="num">2</span> Add contacts</div>
-      <div class="meta">Paste emails below, pick from your saved Contacts, or expand the CSV import if you have a contact export.</div>
+      <div class="meta">Start typing a name or email — pick from your saved Contacts, or type a new email and press <kbd>Enter</kbd>.</div>
 
-      <textarea id="emailPaste" placeholder="alice@example.com, bob@example.com&#10;carol@example.com&#10;dad@example.com"></textarea>
+      <div class="picker-wrap" style="position:relative;margin-top:10px">
+        <input id="contactPicker" type="text" autocomplete="off" placeholder="Search contacts or type new email…" style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:9px;font-size:14.5px;font-family:inherit;outline:none;transition:.15s" />
+        <div id="pickerDropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:var(--shadow);max-height:260px;overflow-y:auto;z-index:20"></div>
+      </div>
 
-      <details class="csv-toggle">
-        <summary>📂 Import from CSV (Gmail · Outlook · Apple Contacts)</summary>
+      <div id="invitedPills" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;min-height:6px"></div>
+
+      <!-- Backing textarea: hidden, kept for existing parsing/send logic -->
+      <textarea id="emailPaste" style="display:none"></textarea>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px;flex-wrap:wrap">
+        <div id="summary" class="summary empty" style="margin:0;flex:1;min-width:200px"><span class="big">0</span> emails ready</div>
+        <a href="contacts.html" style="font-size:12.5px;color:var(--accent-2);font-weight:600;text-decoration:none;white-space:nowrap">📥 Bulk import / manage contacts →</a>
+      </div>
+      <div class="summary-list" id="summaryList" style="display:none"></div>
+
+      <!-- CSV upload kept here for the rare bulk-import path, but hidden under
+           a small link so it doesn't dominate the daily flow. -->
+      <details class="csv-toggle" style="margin-top:8px">
+        <summary style="font-size:12px;padding:4px 8px;color:var(--muted)">⚙️ One-time CSV import (Gmail · Outlook · Apple)</summary>
         <label class="upload-zone" id="uploadZone">
           <div class="big">📂</div>
-          <div class="h">Drop a CSV here or click to choose</div>
-          <div class="sub">Works with Google Contacts, Outlook, Apple Contacts CSV exports — we auto-detect the email column.</div>
+          <div class="h">Drop a CSV or click to choose</div>
+          <div class="sub">Imports into your Contacts AND queues for this invite.</div>
           <input type="file" id="csvFile" accept=".csv,text/csv" />
         </label>
       </details>
-
-      <div id="summary" class="summary empty"><span class="big">0</span> valid emails — add some above to get started.</div>
-      <div class="summary-list" id="summaryList"></div>
     </div>
 
     <!-- Step 3: Review + send -->
@@ -664,10 +677,166 @@ async function loadHistory() {
       </div>
       <div><span class="pill ${r.template}">${r.template}</span></div>
       <div><span class="pill ${r.status}">${r.status.replace('_', ' ')}</span></div>
+      <div><button type="button" class="resend-btn" data-resend="${escapeHtml(r.invitee_email)}" data-name="${escapeHtml(r.invitee_name || '')}" data-template="${r.template}" style="background:#fff;border:1px solid var(--accent);color:var(--accent);border-radius:7px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer">↻ Resend</button></div>
     </div>`;
   }).join('');
+  // Wire resend buttons (#101 — Kenny 2026-05-14)
+  document.getElementById('histList').querySelectorAll('[data-resend]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const email = btn.getAttribute('data-resend');
+      const email = btn.getAttribute('data-resend');
+      const name  = btn.getAttribute('data-name');
+      const tmpl  = btn.getAttribute('data-template');
+      const orig  = btn.textContent;
+      btn.disabled = true; btn.textContent = '⏳ Sending…';
+      try {
+        const ok = await resendInvite({ email, name, template: tmpl });
+        btn.textContent = ok ? '✓ Sent' : '✗ Failed';
+        setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2500);
+      } catch (e) {
+        btn.textContent = '✗ ' + (e.message || 'failed');
+        setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 3000);
+      }
+    });
+  });
   // Re-paint the chips (some may now be marked already-invited)
   renderSummary();
+}
+
+// ============================================================
+//  CONTACT PICKER (Kenny 2026-05-14 — replaces big CSV box)
+// ============================================================
+let allContacts = [];
+let pickedEmails = new Map();
+
+async function loadMyContacts() {
+  if (!myUserId) return;
+  const r = await authedFetch(`/rest/v1/contacts?owner_id=eq.${myUserId}&select=email,full_name,first_name,last_name&order=full_name.asc&limit=2000`);
+  if (!r.ok) return;
+  allContacts = await r.json();
+}
+
+function renderInvitedPills() {
+  const wrap = document.getElementById('invitedPills');
+  if (!wrap) return;
+  const items = [...pickedEmails.entries()];
+  wrap.innerHTML = items.map(([email, name]) => {
+    const label = name ? (escapeHtml(name) + ' · ' + escapeHtml(email)) : escapeHtml(email);
+    return `<span class="pill" style="display:inline-flex;align-items:center;gap:6px;background:#eef5ff;color:var(--ink);border:1px solid #c5dffb;padding:5px 10px;border-radius:999px;font-size:12.5px">${label}<button type="button" data-rem="${escapeHtml(email)}" style="background:none;border:0;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0">×</button></span>`;
+  }).join('');
+  wrap.querySelectorAll('[data-rem]').forEach(b => b.addEventListener('click', () => {
+    pickedEmails.delete(b.getAttribute('data-rem'));
+    syncPickedToTextarea();
+    renderInvitedPills();
+  }));
+}
+
+function syncPickedToTextarea() {
+  const ta = document.getElementById('emailPaste');
+  ta.value = [...pickedEmails.entries()].map(([email, name]) => name ? `${name} <${email}>` : email).join('\n');
+  ta.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+function pickAddEmail(email, name) {
+  email = (email || '').trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return false;
+  pickedEmails.set(email, (name || '').trim());
+  syncPickedToTextarea();
+  renderInvitedPills();
+  return true;
+}
+
+function filterContacts(q) {
+  q = (q || '').trim().toLowerCase();
+  if (!q) return [];
+  return allContacts
+    .filter(c => (c.email || '').toLowerCase().includes(q)
+              || (c.full_name || '').toLowerCase().includes(q)
+              || (c.first_name || '').toLowerCase().includes(q))
+    .filter(c => !pickedEmails.has((c.email || '').toLowerCase()))
+    .slice(0, 8);
+}
+
+function wirePicker() {
+  const input = document.getElementById('contactPicker');
+  const dd = document.getElementById('pickerDropdown');
+  if (!input || !dd) return;
+
+  function renderDropdown(matches, q) {
+    if (!matches.length && !q) { dd.style.display = 'none'; return; }
+    const looksLikeEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(q);
+    let html = matches.map(c => `<div class="pick-item" data-email="${escapeHtml(c.email)}" data-name="${escapeHtml(c.full_name || '')}" style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--bg-soft);font-size:13.5px"><strong>${escapeHtml(c.full_name || c.email)}</strong>${c.full_name ? `<div style="color:var(--muted);font-size:12px">${escapeHtml(c.email)}</div>` : ''}</div>`).join('');
+    if (looksLikeEmail && !matches.some(c => (c.email || '').toLowerCase() === q.toLowerCase())) {
+      html += `<div class="pick-item pick-new" data-email="${escapeHtml(q)}" data-name="" style="padding:9px 14px;cursor:pointer;background:#f6f7f9;font-size:13.5px;color:var(--accent-2)">+ Add new: <strong>${escapeHtml(q)}</strong></div>`;
+    }
+    if (!html) { dd.style.display = 'none'; return; }
+    dd.innerHTML = html;
+    dd.style.display = 'block';
+    dd.querySelectorAll('.pick-item').forEach(el => el.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      pickAddEmail(el.getAttribute('data-email'), el.getAttribute('data-name'));
+      input.value = '';
+      dd.style.display = 'none';
+    }));
+  }
+
+  input.addEventListener('input', () => { renderDropdown(filterContacts(input.value), input.value); });
+  input.addEventListener('focus', () => { if (input.value) renderDropdown(filterContacts(input.value), input.value); });
+  input.addEventListener('blur', () => { setTimeout(() => dd.style.display = 'none', 120); });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const q = input.value.trim();
+      if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(q)) {
+        pickAddEmail(q, null);
+        input.value = '';
+        dd.style.display = 'none';
+      }
+    }
+  });
+}
+
+// ============================================================
+//  RESEND a single past invite (#101 — Kenny 2026-05-14)
+// ============================================================
+async function resendInvite({ email, name, template }) {
+  if (!myUserId) throw new Error('not signed in');
+  const personalSubject = (template === 'partner')
+    ? 'LYMX is opening — want a Founding Partner spot?'
+    : (template === 'business')
+      ? 'LYMX × your business — want a Founding spot?'
+      : 'You got a LYMX invite';
+  const refLink = `https://getlymx.com/welcome.html?ref=${myRefId}&utm_source=resend`;
+  const greet = name ? `Hey ${name.split(' ')[0]} —` : 'Hey —';
+  const body = `${greet}\n\nResending my LYMX invite — your direct link below auto-fills me as your sponsor.\n\n${refLink}\n\n— ${myEmail || 'Kenny'}`;
+  const bcRes = await authedFetch('/rest/v1/broadcasts', {
+    method: 'POST',
+    headers: { 'Prefer': 'return=representation' },
+    body: JSON.stringify({
+      audience: 'custom',
+      custom_emails: [email],
+      channel: 'email',
+      subject: personalSubject,
+      body_html: body.replace(/\n/g, '<br>'),
+      body_text: body,
+      created_by: myUserId,
+      status: 'draft',
+    }),
+  });
+  if (!bcRes.ok) throw new Error('insert ' + bcRes.status);
+  const bcId = (await bcRes.json())[0].id;
+  const fnRes = await authedFetch('/functions/v1/broadcast-send', {
+    method: 'POST',
+    body: JSON.stringify({ broadcast_id: bcId }),
+  });
+  let fnData = null;
+  try { fnData = await fnRes.json(); } catch {}
+  const trulySent = fnRes.ok && fnData && (fnData.sent_count > 0 || fnData.mode === 'in_app');
+  if (!trulySent) {
+    const reason = (fnData && fnData.errors && fnData.errors[0]) || (fnData && fnData.error) || 'unknown';
+    throw new Error(String(reason).slice(0, 120));
+  }
+  return true;
 }
 
 // -------- Boot --------
@@ -693,10 +862,6 @@ async function loadHistory() {
       if (Array.isArray(list) && list.length) {
         const ta = document.getElementById('emailPaste');
         ta.value = list.join('\n');
-        // Bug fix (Kenny 2026-05-14): programmatic .value = ... does not
-        // fire 'input' events, so recompute() never ran and the counter
-        // stayed at 0 until the user clicked into the box and typed/pasted.
-        // Dispatch the event AND call recompute() defensively.
         ta.dispatchEvent(new Event('input', { bubbles: true }));
         if (typeof recompute === 'function') recompute();
         sessionStorage.removeItem('lymx_invite_preselected');
@@ -705,7 +870,7 @@ async function loadHistory() {
     }
   } catch {}
 
-  // Load Kenny's partner_id (so we use the actual ref link, not user_id)
+  // Load Kenny's partner_id
   const pr = await authedFetch(`/rest/v1/partners?select=id&user_id=eq.${myUserId}&limit=1`);
   if (pr.ok) {
     const ps = await pr.json();
@@ -715,9 +880,11 @@ async function loadHistory() {
   }
   applyTemplate();
   loadHistory();
+
+  // Wire the new contact picker (Kenny 2026-05-14 #100)
+  await loadMyContacts();
+  wirePicker();
 })();
 </script>
-
-<script src="lymx-feedback.js" defer></script>
 </body>
 </html>

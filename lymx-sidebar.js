@@ -108,21 +108,22 @@
     var style = document.createElement('style');
     style.id = 'lymx-sidebar-styles';
     style.textContent = ''
-      + '.lymx-sb-layout{display:flex;gap:20px;align-items:flex-start;padding:0;max-width:1320px;margin:0 auto;width:100%}'
-      + '.lymx-sb{width:236px;flex-shrink:0;background:#fff;border:1px solid #e6e8ec;border-radius:12px;padding:14px 10px;position:sticky;top:88px;max-height:calc(100vh - 110px);overflow-y:auto;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;box-shadow:0 4px 14px rgba(14,17,22,.04)}'
+      // Fixed-position left rail so the page content keeps its own natural
+      // width (the dashboards already use .wrap{max-width:1200px;margin:0 auto},
+      // .grid{1fr 360px}, etc. — we don't want to fight those layouts).
+      + '.lymx-sb{position:fixed;left:14px;top:84px;width:232px;max-height:calc(100vh - 100px);overflow-y:auto;background:#fff;border:1px solid #e6e8ec;border-radius:12px;padding:12px 10px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;box-shadow:0 4px 14px rgba(14,17,22,.06);z-index:30}'
       + '.lymx-sb h3{font-size:11px;font-weight:800;color:#0a84ff;margin:6px 8px 4px;padding:0;text-transform:uppercase;letter-spacing:.08em}'
       + '.lymx-sb h3:first-child{margin-top:0}'
-      + '.lymx-sb a{display:flex;align-items:center;gap:9px;padding:9px 11px;margin-bottom:2px;background:transparent;border:0;border-radius:7px;color:#1a1f27;text-decoration:none;cursor:pointer;font:600 13.5px/1.2 inherit;text-align:left;transition:background .12s,color .12s}'
+      + '.lymx-sb a{display:flex;align-items:center;gap:9px;padding:8px 11px;margin-bottom:2px;background:transparent;border:0;border-radius:7px;color:#1a1f27;text-decoration:none;cursor:pointer;font:600 13px/1.2 inherit;text-align:left;transition:background .12s,color .12s}'
       + '.lymx-sb a:hover{background:#eef4ff;color:#0a84ff}'
       + '.lymx-sb a.active{background:#0e1116;color:#fff}'
       + '.lymx-sb a.active:hover{background:#1a1f27;color:#fff}'
       + '.lymx-sb .lymx-sb-icon{font-size:14px;flex-shrink:0;width:18px;text-align:center}'
-      + '.lymx-sb-content{flex:1;min-width:0}'
-      + '@media(max-width:980px){'
-      + '  .lymx-sb-layout{flex-direction:column;gap:8px;padding:0 4px}'
-      + '  .lymx-sb{width:100%;position:static;max-height:none;display:flex;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;gap:2px;padding:6px 8px;margin-bottom:2px}'
-      + '  .lymx-sb h3{display:none}'
-      + '  .lymx-sb a{flex-shrink:0;white-space:nowrap;margin-bottom:0;padding:7px 10px}'
+      // Shift the entire page right to make room for the sidebar.
+      + '.lymx-sb-pushed{padding-left:260px}'
+      + '@media(max-width:1100px){'
+      + '  .lymx-sb{display:none}'   // hide rail on narrow viewports
+      + '  .lymx-sb-pushed{padding-left:0}'
       + '}';
     document.head.appendChild(style);
   }
@@ -151,54 +152,20 @@
     return aside;
   }
 
-  // ---------- Mount: wrap <main> in a flex layout with sidebar on left ----------
+  // ---------- Mount: append a fixed-position sidebar; push body content right
+  // ----  Approach (Kenny 2026-05-14 fix): don't wrap the page in a flex
+  //       layout — that broke the existing centered .wrap and 1fr/360px grid
+  //       and left empty space on the right. Instead, render the sidebar as
+  //       a fixed-position rail and add padding-left to <body> so nothing
+  //       overlaps. Pages keep their own natural width.
   function mount() {
     if (!document.body) return setTimeout(mount, 50);
     if (document.querySelector('.lymx-sb')) return;  // already mounted
 
     injectStyles();
     var role = detectRole();
-
-    // Find the main container to wrap. Prefer <main>, fall back to first
-    // <section> after the header, else just body.
-    var target = document.querySelector('main')
-              || document.querySelector('section.dash')
-              || document.querySelector('.wrap')
-              || document.body;
-
-    // Avoid double-wrapping if the page already uses a custom layout
-    if (target === document.body) {
-      // Inject a wrapper around all top-level <section>s
-      var wrapper = document.createElement('div');
-      wrapper.className = 'lymx-sb-layout';
-      var content = document.createElement('div');
-      content.className = 'lymx-sb-content';
-      wrapper.appendChild(buildSidebar(role));
-      wrapper.appendChild(content);
-      // Move every child after the <header> into the content div
-      var header = document.querySelector('header');
-      var nextNode = header ? header.nextSibling : document.body.firstChild;
-      while (nextNode) {
-        var toMove = nextNode;
-        nextNode = nextNode.nextSibling;
-        if (toMove.nodeType === 1 && toMove.tagName.toLowerCase() === 'footer') break;
-        content.appendChild(toMove);
-      }
-      // Insert the wrapper before whatever's left (footer/scripts)
-      if (header && header.parentNode) header.parentNode.insertBefore(wrapper, header.nextSibling);
-      else document.body.insertBefore(wrapper, document.body.firstChild);
-    } else {
-      // Wrap the target with a flex layout
-      var parent = target.parentNode;
-      var wrap2 = document.createElement('div');
-      wrap2.className = 'lymx-sb-layout';
-      parent.insertBefore(wrap2, target);
-      wrap2.appendChild(buildSidebar(role));
-      var content2 = document.createElement('div');
-      content2.className = 'lymx-sb-content';
-      wrap2.appendChild(content2);
-      content2.appendChild(target);
-    }
+    document.body.appendChild(buildSidebar(role));
+    document.body.classList.add('lymx-sb-pushed');
   }
 
   if (document.readyState === 'loading') {
