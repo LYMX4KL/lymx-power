@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="LYMX Team Chat — group chats for Partners, Businesses, Staff, Admins. Create your own groups." />
+<meta name="description" content="LYMX Team Chat — channels, DMs, @mentions, file attachments, edit + delete." />
 <title>Team Chat · LYMX</title>
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
@@ -26,7 +26,7 @@
   .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
   @media(max-width:1100px){.nav-links{display:none}}
 
-  .chat-shell{flex:1;display:flex;background:#fff;border-top:1px solid var(--line)}
+  .chat-shell{flex:1;display:flex;background:#fff;border-top:1px solid var(--line);min-height:calc(100vh - 68px)}
   .chat-side{width:280px;flex-shrink:0;border-right:1px solid var(--line);background:var(--bg-soft);overflow-y:auto;padding:14px 8px}
   .side-h{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:14px 12px 6px}
   .ch-item{display:flex;align-items:center;gap:8px;padding:8px 12px;margin:0 4px;border-radius:8px;color:var(--ink);cursor:pointer;font-size:14px;font-weight:500}
@@ -40,27 +40,59 @@
   .new-btn:hover{background:#eef5ff;border-color:var(--accent)}
 
   .chat-main{flex:1;display:flex;flex-direction:column;min-width:0}
-  .chat-head{padding:14px 24px;border-bottom:1px solid var(--line)}
+  .chat-head{padding:14px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
   .chat-head h2{margin:0;font-size:18px;font-weight:800}
   .chat-head .desc{font-size:13px;color:var(--muted);margin-top:2px}
+  .chat-head .meta{flex:1;min-width:0}
+  .chat-head .live-pill{font-size:11px;font-weight:700;color:var(--ok);background:rgba(19,162,107,.1);padding:3px 8px;border-radius:999px}
+  .chat-head .live-pill.off{color:var(--muted);background:#eef0f3}
+
   .chat-stream{flex:1;overflow-y:auto;padding:18px 24px;display:flex;flex-direction:column;gap:14px;background:#fff}
-  .msg{display:flex;gap:10px}
+  .msg{display:flex;gap:10px;position:relative}
   .msg .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
   .msg.mine .avatar{background:linear-gradient(135deg,#a01644,#6e0e2f)}
   .msg .body{flex:1;min-width:0}
   .msg .head-line{font-size:13px}
   .msg .head-line .name{font-weight:700}
   .msg .head-line .when{color:var(--muted);font-size:11.5px;margin-left:6px}
+  .msg .head-line .edited{color:var(--muted);font-size:11.5px;margin-left:6px;font-style:italic}
   .msg .text{white-space:pre-wrap;line-height:1.5;font-size:14.5px;margin-top:2px;word-wrap:break-word;overflow-wrap:anywhere}
+  .msg .text .mention{background:#FEF3C7;color:#92400E;padding:0 4px;border-radius:3px;font-weight:600}
+  .msg .text .deleted{color:var(--muted);font-style:italic}
+  .msg .reply-quote{background:#f3f4f6;border-left:3px solid var(--accent-2);padding:4px 8px;margin-bottom:4px;border-radius:4px;font-size:12px;color:var(--muted);cursor:pointer}
+  .msg .reply-quote .q-author{font-weight:700;color:var(--accent-2);margin-right:4px}
+  .msg .attachments{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px}
+  .msg .attachments .att{background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:13px;display:flex;align-items:center;gap:6px;max-width:300px}
+  .msg .attachments .att.image{padding:0;border:0;max-width:200px}
+  .msg .attachments .att.image img{max-width:100%;max-height:220px;border-radius:6px;cursor:pointer;display:block}
+  .msg .actions{display:none;position:absolute;top:0;right:0;background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px;gap:4px;font-size:12px}
+  .msg:hover .actions{display:flex}
+  .msg .actions button{background:transparent;border:0;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:4px}
+  .msg .actions button:hover{color:var(--accent-2);background:var(--bg-soft)}
 
-  .chat-compose{border-top:1px solid var(--line);padding:12px 24px;background:#fff}
+  .chat-compose{border-top:1px solid var(--line);padding:12px 24px;background:#fff;position:relative}
+  .reply-banner{background:#eff6ff;border:1px solid #bfdbfe;padding:6px 10px;border-radius:6px;margin-bottom:8px;font-size:13px;display:flex;align-items:center;gap:8px}
+  .reply-banner .cancel{background:transparent;border:0;cursor:pointer;color:var(--muted);font-weight:700}
+  .mention-dropdown{position:absolute;bottom:calc(100% - 12px);left:24px;width:300px;max-height:240px;overflow-y:auto;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);z-index:60;display:none}
+  .mention-dropdown.on{display:block}
+  .mention-item{display:flex;gap:8px;align-items:center;padding:8px 10px;cursor:pointer}
+  .mention-item.active,.mention-item:hover{background:var(--bg-soft)}
+  .mention-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+  .mention-meta{flex:1;min-width:0}
+  .mention-name{font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mention-role{font-size:11px;color:var(--muted)}
   .chat-compose textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-size:14.5px;resize:vertical;min-height:48px;max-height:200px;outline:none;font-family:inherit;box-sizing:border-box}
   .chat-compose textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
   .chat-compose .row{display:flex;align-items:center;gap:10px;margin-top:8px}
   .chat-compose .hint{flex:1;font-size:11.5px;color:var(--muted)}
+  .chat-compose .attach-btn{background:#fff;border:1px solid var(--line);padding:7px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit}
+  .chat-compose .attach-btn:hover{border-color:var(--accent);color:var(--accent)}
   .chat-compose button.send{background:var(--ink);color:#fff;border:0;padding:9px 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:13.5px;font-family:inherit}
   .chat-compose button.send:hover{background:#000}
   .chat-compose button.send:disabled{opacity:.5;cursor:wait}
+  .compose-staged{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .compose-staged .stage{background:#fff;border:1px solid var(--line);padding:4px 8px;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:4px}
+  .compose-staged .stage button{background:transparent;border:0;cursor:pointer;color:var(--danger);font-weight:700;padding:0 4px}
 
   .empty-pane{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:15px;text-align:center;padding:40px}
   .empty-pane .big{font-size:48px;margin-bottom:8px}
@@ -97,6 +129,8 @@
       <a href="admin-tech-support.html">Tech Support</a>
       <a href="admin-chat.html" class="on">Chat</a>
       <a href="admin-broadcast.html">Broadcast</a>
+      <a href="admin-emails.html">Email Events</a>
+      <a href="admin-sms.html">SMS</a>
       <a href="admin-businesses.html">Businesses</a>
       <a href="admin-customers.html">Customers</a>
     </nav>
@@ -120,16 +154,27 @@
 
   <main class="chat-main">
     <div class="chat-head" id="chatHead">
-      <h2>Pick a channel</h2>
-      <div class="desc">Default channels are at the top — click one to start chatting.</div>
+      <div class="meta">
+        <h2>Pick a channel</h2>
+        <div class="desc">Default channels are at the top — click one to start chatting.</div>
+      </div>
+      <span class="live-pill off" id="livePill">offline</span>
     </div>
     <div class="chat-stream" id="stream">
       <div class="empty-pane"><div><div class="big">💬</div>Choose a channel on the left to see messages</div></div>
     </div>
     <div class="chat-compose" id="compose" style="display:none">
-      <textarea id="msgInput" placeholder="Type a message…"></textarea>
+      <div class="reply-banner" id="replyBanner" style="display:none">
+        <span>Replying to <strong id="replyName">…</strong>: <span id="replyPreview" style="color:var(--ink)"></span></span>
+        <button class="cancel" id="replyCancel">✕</button>
+      </div>
+      <div class="mention-dropdown" id="mentionDropdown"></div>
+      <textarea id="msgInput" placeholder="Type a message — use @name to mention someone…"></textarea>
+      <div class="compose-staged" id="stagedFiles"></div>
       <div class="row">
-        <div class="hint">Enter to send · Shift+Enter for new line</div>
+        <button class="attach-btn" id="attachBtn">📎 Attach</button>
+        <input type="file" id="fileInput" multiple style="display:none" accept="image/*,application/pdf,.txt,.doc,.docx" />
+        <div class="hint">Enter to send · Shift+Enter for new line · Use <code>@name</code> to mention</div>
         <button class="send" id="sendBtn">Send</button>
       </div>
     </div>
@@ -161,13 +206,19 @@
 <script src="lymx-auth.js"></script>
 <script>
 const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
-const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+const ANON         = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+const FN_BASE      = SUPABASE_URL + '/functions/v1';
 
-let myUserId = null;
-let myEmail  = null;
+let sb = null;
+let myUserId   = null;
+let myEmail    = null;
+let myName     = null;
 let activeGroup = null;
-let allGroups = [];
-let pollHandle = null;
+let allGroups  = [];
+let directory  = []; // mention picker source
+let replyToMsg = null;
+let stagedAttachments = []; // [{ storage_path, file_name, mime_type, size_bytes }]
+let realtimeChannel = null;
 
 async function authedFetch(path, opts = {}) {
   const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
@@ -183,39 +234,61 @@ async function authedFetch(path, opts = {}) {
   });
 }
 
+async function authedFn(name, payload) {
+  const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = session?.access_token || ANON;
+  const r = await fetch(FN_BASE + '/' + name, {
+    method: 'POST',
+    headers: {
+      'apikey': ANON,
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload || {}),
+  });
+  return r;
+}
+
 function escapeHtml(s) {
   return (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
 
 function fmtTime(iso) {
   const d = new Date(iso);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   return d.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
+function initial(name) {
+  return ((name || '·').trim()[0] || '·').toUpperCase();
+}
+
+function highlightMentions(text) {
+  // Wrap @handle tokens in <span class=mention> for visual treatment
+  return escapeHtml(text).replace(/@([A-Za-z0-9._-]+)/g, '<span class="mention">@$1</span>');
 }
 
 async function getMe() {
   if (!window.LYMX || !window.LYMX.getSession) return null;
   const s = await window.LYMX.getSession();
   if (!s) {
-    document.getElementById('chatHead').innerHTML = '<h2>Sign in required</h2><div class="desc">Chat needs you to be signed in. <a href="login.html" style="color:var(--accent-2);text-decoration:underline">Sign in</a> first.</div>';
+    document.getElementById('chatHead').innerHTML = '<div class="meta"><h2>Sign in required</h2><div class="desc">Chat needs you to be signed in. <a href="login.html" style="color:var(--accent-2);text-decoration:underline">Sign in</a> first.</div></div>';
     document.getElementById('stream').innerHTML = '';
     return null;
   }
   myUserId = s.user.id;
   myEmail  = s.user.email;
-  document.getElementById('userInitial').textContent = (myEmail || 'L')[0].toUpperCase();
+  myName   = (s.user.user_metadata && (s.user.user_metadata.full_name || s.user.user_metadata.name)) || (myEmail || '').split('@')[0];
+  document.getElementById('userInitial').textContent = initial(myName || myEmail);
   return s;
 }
 
-// Auto-join default groups based on role hint stored in user metadata
 async function ensureDefaultMembership() {
-  // Pull groups
   const r = await authedFetch('/rest/v1/chat_groups?kind=eq.default&select=id,slug,audience');
   if (!r.ok) return;
   const defaults = await r.json();
-
-  // For now, every authenticated user gets All Partners + All Businesses (public default channels).
-  // Admins get All Staff + Admins. The migration's RLS will reject inserts that don't match,
-  // so we just try and ignore failures.
   for (const g of defaults) {
     await authedFetch('/rest/v1/chat_group_members', {
       method: 'POST',
@@ -230,6 +303,11 @@ async function loadGroups() {
   if (!r.ok) return;
   allGroups = await r.json();
   renderSidebar();
+}
+
+async function loadDirectory() {
+  const r = await authedFetch('/rest/v1/v_chat_members_directory?select=user_id,display_name,handle_short,email,role_hint&limit=500');
+  if (r.ok) directory = await r.json();
 }
 
 function renderSidebar() {
@@ -256,68 +334,319 @@ async function openGroup(groupId) {
   const g = allGroups.find(x => x.group_id === groupId);
   if (!g) return;
   activeGroup = g;
-  document.getElementById('chatHead').innerHTML = `<h2>${escapeHtml(g.name)} ${g.is_private ? '🔒' : ''}</h2><div class="desc">${escapeHtml(g.description || '—')}</div>`;
+  document.getElementById('chatHead').innerHTML = `
+    <div class="meta">
+      <h2>${escapeHtml(g.name)} ${g.is_private ? '🔒' : ''}</h2>
+      <div class="desc">${escapeHtml(g.description || '—')}</div>
+    </div>
+    <span class="live-pill" id="livePill">• live</span>
+  `;
   document.getElementById('compose').style.display = 'block';
-  renderSidebar(); // re-paint active highlight
+  renderSidebar();
   await loadMessages();
+
   // Mark read
   await authedFetch('/rest/v1/chat_group_members?group_id=eq.' + groupId + '&user_id=eq.' + myUserId, {
     method: 'PATCH',
     body: JSON.stringify({ last_read_at: new Date().toISOString() }),
   });
-  // Restart poll
-  if (pollHandle) clearInterval(pollHandle);
-  pollHandle = setInterval(loadMessages, 5000);
+
+  // Subscribe to realtime
+  subscribeRealtime(groupId);
 }
 
 async function loadMessages() {
   if (!activeGroup) return;
-  const r = await authedFetch('/rest/v1/chat_messages?group_id=eq.' + activeGroup.group_id + '&deleted_at=is.null&select=*&order=created_at.asc&limit=200');
+  const r = await authedFetch('/rest/v1/chat_messages?group_id=eq.' + activeGroup.group_id + '&select=*&order=created_at.asc&limit=200');
   if (!r.ok) return;
   const msgs = await r.json();
+  renderMessages(msgs);
+}
+
+function renderMessages(msgs) {
   if (!msgs.length) {
     document.getElementById('stream').innerHTML = '<div class="empty-pane"><div><div class="big">👋</div>Be the first to say hi.</div></div>';
     return;
   }
+  // Build a quick lookup for reply quotes
+  const byId = {};
+  for (const m of msgs) byId[m.id] = m;
+
   document.getElementById('stream').innerHTML = msgs.map(m => {
     const mine = m.sender_id === myUserId;
-    const initial = (m.sender_id || '·')[0].toUpperCase();
-    const name = mine ? 'You' : (m.sender_id ? m.sender_id.slice(0, 6) : 'Unknown');
-    return `<div class="msg ${mine ? 'mine' : ''}">
-      <div class="avatar">${initial}</div>
+    const name = mine ? 'You' : (m.author_name_snapshot || '—');
+    const ini = initial(name);
+    const editedTag = m.edited_at ? '<span class="edited">(edited)</span>' : '';
+    let quoteHtml = '';
+    if (m.reply_to && byId[m.reply_to]) {
+      const q = byId[m.reply_to];
+      const qPrev = (q.body || '').slice(0, 80) + ((q.body || '').length > 80 ? '…' : '');
+      quoteHtml = `<div class="reply-quote" data-jump="${q.id}"><span class="q-author">${escapeHtml(q.author_name_snapshot || '—')}</span>${escapeHtml(qPrev)}</div>`;
+    }
+    let attHtml = '';
+    const atts = Array.isArray(m.attachments) ? m.attachments : [];
+    if (atts.length) {
+      attHtml = '<div class="attachments">' + atts.map(a => {
+        const isImg = (a.mime_type || '').startsWith('image/');
+        const publicUrl = SUPABASE_URL + '/storage/v1/object/public/chat/' + encodeURIComponent(a.storage_path || '');
+        if (isImg) {
+          return `<div class="att image"><img src="${publicUrl}" alt="${escapeHtml(a.file_name || '')}" /></div>`;
+        }
+        return `<div class="att">📎 <a href="${publicUrl}" target="_blank">${escapeHtml(a.file_name || 'file')}</a></div>`;
+      }).join('') + '</div>';
+    }
+    const isDeleted = !!m.deleted_at;
+    const text = isDeleted ? '<span class="deleted">(message deleted)</span>' : highlightMentions(m.body || '');
+    const actions = (mine && !isDeleted) ? `
+      <div class="actions">
+        <button data-act="reply"  data-id="${m.id}" title="Reply">↩</button>
+        <button data-act="edit"   data-id="${m.id}" title="Edit">✎</button>
+        <button data-act="delete" data-id="${m.id}" title="Delete">🗑</button>
+      </div>` : (!isDeleted ? `
+      <div class="actions">
+        <button data-act="reply" data-id="${m.id}" title="Reply">↩</button>
+      </div>` : '');
+
+    return `<div class="msg ${mine ? 'mine' : ''}" data-id="${m.id}">
+      <div class="avatar">${ini}</div>
       <div class="body">
-        <div class="head-line"><span class="name">${escapeHtml(name)}</span><span class="when">${fmtTime(m.created_at)}</span></div>
-        <div class="text">${escapeHtml(m.body)}</div>
+        ${quoteHtml}
+        <div class="head-line"><span class="name">${escapeHtml(name)}</span><span class="when">${fmtTime(m.created_at)}</span>${editedTag}</div>
+        <div class="text">${text}</div>
+        ${attHtml}
       </div>
+      ${actions}
     </div>`;
   }).join('');
+
   const stream = document.getElementById('stream');
   stream.scrollTop = stream.scrollHeight;
+
+  // Wire action buttons
+  document.querySelectorAll('.msg .actions button').forEach(b => {
+    b.addEventListener('click', e => handleMsgAction(b.dataset.act, b.dataset.id));
+  });
+  document.querySelectorAll('.reply-quote').forEach(q => {
+    q.addEventListener('click', () => {
+      const target = document.querySelector('.msg[data-id="' + q.dataset.jump + '"]');
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+}
+
+async function handleMsgAction(action, msgId) {
+  if (action === 'reply') {
+    const msg = await fetchMsg(msgId);
+    if (msg) {
+      replyToMsg = msg;
+      const banner = document.getElementById('replyBanner');
+      document.getElementById('replyName').textContent = msg.author_name_snapshot || '—';
+      document.getElementById('replyPreview').textContent = (msg.body || '').slice(0, 60);
+      banner.style.display = 'flex';
+      document.getElementById('msgInput').focus();
+    }
+  } else if (action === 'edit') {
+    const msg = await fetchMsg(msgId);
+    if (!msg) return;
+    const next = prompt('Edit message:', msg.body);
+    if (next === null) return;
+    const trimmed = next.trim();
+    if (!trimmed || trimmed === msg.body) return;
+    await authedFetch('/rest/v1/chat_messages?id=eq.' + msgId, {
+      method: 'PATCH',
+      body: JSON.stringify({ body: trimmed, edited_at: new Date().toISOString() }),
+    });
+    await loadMessages();
+  } else if (action === 'delete') {
+    if (!confirm('Delete this message? It will show as "(deleted)" to everyone.')) return;
+    await authedFetch('/rest/v1/chat_messages?id=eq.' + msgId, {
+      method: 'PATCH',
+      body: JSON.stringify({ deleted_at: new Date().toISOString() }),
+    });
+    await loadMessages();
+  }
+}
+
+async function fetchMsg(id) {
+  const r = await authedFetch('/rest/v1/chat_messages?id=eq.' + id + '&select=*');
+  if (!r.ok) return null;
+  const a = await r.json();
+  return a[0] || null;
+}
+
+document.getElementById('replyCancel').addEventListener('click', () => {
+  replyToMsg = null;
+  document.getElementById('replyBanner').style.display = 'none';
+});
+
+// Realtime
+function subscribeRealtime(groupId) {
+  if (!sb) {
+    sb = supabase.createClient(SUPABASE_URL, ANON);
+  }
+  if (realtimeChannel) {
+    sb.removeChannel(realtimeChannel);
+    realtimeChannel = null;
+  }
+  realtimeChannel = sb
+    .channel('chat_' + groupId)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages', filter: 'group_id=eq.' + groupId }, () => {
+      loadMessages();
+    })
+    .subscribe();
+}
+
+// File attach + upload to Supabase Storage 'chat' bucket
+document.getElementById('attachBtn').addEventListener('click', () => {
+  document.getElementById('fileInput').click();
+});
+document.getElementById('fileInput').addEventListener('change', async (e) => {
+  if (!activeGroup) return;
+  const files = Array.from(e.target.files || []);
+  for (const f of files) {
+    const path = 'chat/' + activeGroup.group_id + '/' + Date.now() + '-' + f.name.replace(/[^A-Za-z0-9._-]/g, '_');
+    const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+    const token = session?.access_token || ANON;
+    const fd = new FormData();
+    fd.append('file', f);
+    const r = await fetch(SUPABASE_URL + '/storage/v1/object/chat/' + encodeURIComponent(path), {
+      method: 'POST',
+      headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + token, 'x-upsert': 'true' },
+      body: f,
+    });
+    if (r.ok || r.status === 200) {
+      stagedAttachments.push({ storage_path: path, file_name: f.name, mime_type: f.type, size_bytes: f.size });
+    } else {
+      const t = await r.text();
+      console.warn('Upload failed:', t);
+      alert('Upload failed for ' + f.name + ': ' + t.slice(0, 120));
+    }
+  }
+  renderStaged();
+  e.target.value = '';
+});
+
+function renderStaged() {
+  document.getElementById('stagedFiles').innerHTML = stagedAttachments.map((a, i) =>
+    `<div class="stage">📎 ${escapeHtml(a.file_name)} <button data-i="${i}">✕</button></div>`
+  ).join('');
+  document.querySelectorAll('.stage button').forEach(b => {
+    b.addEventListener('click', () => {
+      stagedAttachments.splice(Number(b.dataset.i), 1);
+      renderStaged();
+    });
+  });
+}
+
+// Mention picker
+const mentionDD = document.getElementById('mentionDropdown');
+const msgInput  = document.getElementById('msgInput');
+let mentionActive = false;
+let mentionRangeStart = -1;
+let mentionFiltered = [];
+let mentionIndex = 0;
+
+msgInput.addEventListener('input', () => {
+  const v = msgInput.value;
+  const pos = msgInput.selectionStart;
+  // Find the last @ before cursor that hasn't been ended by whitespace
+  let start = -1;
+  for (let i = pos - 1; i >= 0; i--) {
+    const c = v[i];
+    if (c === '@') { start = i; break; }
+    if (/\s/.test(c)) break;
+  }
+  if (start === -1) { hideMention(); return; }
+  const fragment = v.slice(start + 1, pos);
+  if (!/^[A-Za-z0-9._-]*$/.test(fragment)) { hideMention(); return; }
+  mentionRangeStart = start;
+  mentionFiltered = directory.filter(d => {
+    const slug = (d.display_name || '').toLowerCase().replace(/\s+/g, '.');
+    return (d.handle_short || '').toLowerCase().startsWith(fragment.toLowerCase())
+        || slug.startsWith(fragment.toLowerCase())
+        || (d.display_name || '').toLowerCase().includes(fragment.toLowerCase());
+  }).slice(0, 8);
+  if (!mentionFiltered.length) { hideMention(); return; }
+  mentionIndex = 0;
+  renderMentionDropdown();
+  mentionDD.classList.add('on');
+  mentionActive = true;
+});
+
+msgInput.addEventListener('keydown', (e) => {
+  if (mentionActive) {
+    if (e.key === 'ArrowDown') { e.preventDefault(); mentionIndex = Math.min(mentionIndex + 1, mentionFiltered.length - 1); renderMentionDropdown(); return; }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); mentionIndex = Math.max(mentionIndex - 1, 0); renderMentionDropdown(); return; }
+    if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); applyMention(mentionFiltered[mentionIndex]); return; }
+    if (e.key === 'Escape')    { hideMention(); return; }
+  }
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+});
+
+function renderMentionDropdown() {
+  mentionDD.innerHTML = mentionFiltered.map((d, i) => `
+    <div class="mention-item ${i === mentionIndex ? 'active' : ''}" data-i="${i}">
+      <div class="mention-avatar">${initial(d.display_name)}</div>
+      <div class="mention-meta">
+        <div class="mention-name">${escapeHtml(d.display_name || d.handle_short)}</div>
+        <div class="mention-role">${escapeHtml(d.role_hint || '')} · @${escapeHtml(d.handle_short || '')}</div>
+      </div>
+    </div>
+  `).join('');
+  mentionDD.querySelectorAll('.mention-item').forEach(el => {
+    el.addEventListener('mousedown', e => { e.preventDefault(); applyMention(mentionFiltered[Number(el.dataset.i)]); });
+  });
+}
+
+function applyMention(d) {
+  if (!d) return;
+  const handle = d.handle_short || (d.display_name || '').toLowerCase().replace(/\s+/g, '.');
+  const v = msgInput.value;
+  const pos = msgInput.selectionStart;
+  const before = v.slice(0, mentionRangeStart);
+  const after  = v.slice(pos);
+  const insert = '@' + handle + ' ';
+  msgInput.value = before + insert + after;
+  msgInput.selectionStart = msgInput.selectionEnd = (before + insert).length;
+  hideMention();
+  msgInput.focus();
+}
+
+function hideMention() {
+  mentionDD.classList.remove('on');
+  mentionActive = false;
+  mentionRangeStart = -1;
+  mentionFiltered = [];
 }
 
 // Send
 document.getElementById('sendBtn').addEventListener('click', sendMsg);
-document.getElementById('msgInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
-});
+
 async function sendMsg() {
   if (!activeGroup) return;
-  const ta = document.getElementById('msgInput');
-  const body = ta.value.trim();
-  if (!body) return;
+  const body = msgInput.value.trim();
+  if (!body && !stagedAttachments.length) return;
   const btn = document.getElementById('sendBtn');
   btn.disabled = true;
-  const r = await authedFetch('/rest/v1/chat_messages', {
-    method: 'POST',
-    headers: { 'Prefer': 'return=minimal' },
-    body: JSON.stringify({ group_id: activeGroup.group_id, sender_id: myUserId, body }),
+
+  const r = await authedFn('chat-send', {
+    group_id:    activeGroup.group_id,
+    body:        body,
+    reply_to:    replyToMsg?.id || null,
+    attachments: stagedAttachments,
   });
   btn.disabled = false;
   if (!r.ok) {
-    alert('Send failed (HTTP ' + r.status + '). You may not be a member of this channel yet.');
+    const t = await r.text();
+    alert('Send failed: ' + t.slice(0, 200));
     return;
   }
-  ta.value = '';
+  msgInput.value = '';
+  stagedAttachments = [];
+  replyToMsg = null;
+  document.getElementById('replyBanner').style.display = 'none';
+  renderStaged();
+  // realtime will refresh shortly; also load explicitly
   loadMessages();
 }
 
@@ -331,10 +660,8 @@ document.getElementById('ngCreate').addEventListener('click', async () => {
   const desc = document.getElementById('ngDesc').value.trim();
   const isPrivate = document.getElementById('ngPrivate').value === 'true';
   if (name.length < 2) { alert('Pick a name (at least 2 characters).'); return; }
-
   const btn = document.getElementById('ngCreate');
   btn.disabled = true; btn.textContent = 'Creating…';
-
   const r = await authedFetch('/rest/v1/chat_groups', {
     method: 'POST',
     headers: { 'Prefer': 'return=representation' },
@@ -346,7 +673,6 @@ document.getElementById('ngCreate').addEventListener('click', async () => {
     return;
   }
   const created = (await r.json())[0];
-  // Join self as owner
   await authedFetch('/rest/v1/chat_group_members', {
     method: 'POST',
     headers: { 'Prefer': 'return=minimal' },
@@ -364,7 +690,7 @@ document.getElementById('ngCreate').addEventListener('click', async () => {
   const me = await getMe();
   if (!me) return;
   await ensureDefaultMembership();
-  await loadGroups();
+  await Promise.all([loadGroups(), loadDirectory()]);
 })();
 
 setInterval(loadGroups, 30000);

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SMS · LYMX Admin</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+
+  main{padding:28px 0 60px}
+  h1{font-size:28px;font-weight:800;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:15px;margin-bottom:24px}
+
+  .config-banner{background:#fffbeb;border:1px solid #fde68a;color:#78350f;padding:14px 18px;border-radius:10px;margin-bottom:20px;font-size:14px}
+  .config-banner strong{font-weight:800}
+  .config-banner.ok{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:20px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+  .compose{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
+  .compose h2{margin:0 0 12px;font-size:16px;font-weight:800}
+  .compose label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 4px}
+  .compose input,.compose textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-family:inherit;box-sizing:border-box}
+  .compose textarea{min-height:100px;resize:vertical}
+  .compose .send{background:var(--ink);color:#fff;border:0;padding:9px 18px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px;margin-top:12px;width:100%}
+  .compose .send:hover{background:#000}
+  .compose .send:disabled{opacity:.5;cursor:wait}
+  .compose .count{font-size:11.5px;color:var(--muted);margin-top:4px;text-align:right}
+
+  .tbl-wrap{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;padding:12px 14px;background:var(--bg-soft);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line)}
+  td{padding:12px 14px;border-bottom:1px solid #f1f3f6;vertical-align:top}
+  tr:hover td{background:#fafbfd}
+
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .pill.outbound{background:#dbeafe;color:#1e40af}
+  .pill.inbound{background:#e9d5ff;color:#5b21b6}
+  .pill.sent{background:#dbeafe;color:#1e40af}
+  .pill.delivered{background:#d1fae5;color:#065f46}
+  .pill.received{background:#e9d5ff;color:#5b21b6}
+  .pill.failed{background:#fee2e2;color:#7f1d1d}
+  .pill.queued{background:#e5e7eb;color:#374151}
+
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--muted)}
+  .body-cell{max-width:380px;white-space:pre-wrap;word-break:break-word;font-size:13.5px}
+  .empty{padding:48px 24px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="admin-dashboard.html" class="brand">LYMX <span class="role-tag">Team</span></a>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Home</a>
+      <a href="admin-tech-support.html">Tech Support</a>
+      <a href="admin-chat.html">Chat</a>
+      <a href="admin-broadcast.html">Broadcast</a>
+      <a href="admin-emails.html">Email Events</a>
+      <a href="admin-sms.html" class="on">SMS</a>
+      <a href="admin-businesses.html">Businesses</a>
+      <a href="admin-customers.html">Customers</a>
+    </nav>
+    <div class="admin-avatar" id="userInitial">·</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>SMS</h1>
+  <div class="sub">Send and receive SMS via Twilio.  Inbound replies post to <code>/functions/v1/sms-inbound</code>.</div>
+
+  <div class="config-banner" id="cfgBanner">
+    <strong>Twilio not yet configured.</strong> Set <code>TWILIO_ACCOUNT_SID</code>, <code>TWILIO_AUTH_TOKEN</code>, and <code>TWILIO_FROM_NUMBER</code>
+    as Edge Function secrets, then point your Twilio number's inbound webhook at <code>https://apffootxzfwmtyjlnteo.supabase.co/functions/v1/sms-inbound</code>.
+    Until then sending will fail and the row will be logged with a <code>failed</code> status so you can see the attempt.
+  </div>
+
+  <div class="grid">
+    <section class="compose">
+      <h2>Send a quick SMS</h2>
+      <label for="smsTo">To (E.164)</label>
+      <input id="smsTo" type="tel" placeholder="+14155551234" />
+      <label for="smsBody">Message</label>
+      <textarea id="smsBody" maxlength="1600" placeholder="Hey Helen — here's your invite: https://getlymx.com/welcome.html?ref=…"></textarea>
+      <div class="count" id="smsCount">0 / 160</div>
+      <button class="send" id="sendBtn">Send</button>
+      <div id="sendResult" style="margin-top:10px;font-size:13px"></div>
+    </section>
+
+    <section class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:130px">When</th>
+            <th style="width:80px">Direction</th>
+            <th style="width:130px">From</th>
+            <th style="width:130px">To</th>
+            <th>Body</th>
+            <th style="width:90px">Status</th>
+          </tr>
+        </thead>
+        <tbody id="rows">
+          <tr><td colspan="6" class="empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON         = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+const FN_BASE      = SUPABASE_URL + '/functions/v1';
+
+async function authedFetch(path, opts = {}) {
+  const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = (session && session.access_token) || ANON;
+  return fetch(SUPABASE_URL + path, {
+    ...opts,
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+  });
+}
+async function authedFn(name, payload) {
+  const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = session?.access_token || ANON;
+  return fetch(FN_BASE + '/' + name, {
+    method: 'POST',
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload || {}),
+  });
+}
+
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function fmtTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
+async function loadRows() {
+  const r = await authedFetch('/rest/v1/sms_messages?select=*&order=created_at.desc&limit=200');
+  if (!r.ok) {
+    document.getElementById('rows').innerHTML = `<tr><td colspan="6" class="empty">Could not load (HTTP ${r.status}). Make sure migration 022 has been applied.</td></tr>`;
+    return;
+  }
+  const rows = await r.json();
+  if (!rows.length) {
+    document.getElementById('rows').innerHTML = `<tr><td colspan="6" class="empty">No SMS sent or received yet.</td></tr>`;
+    return;
+  }
+  document.getElementById('rows').innerHTML = rows.map(x => `
+    <tr>
+      <td>${fmtTime(x.created_at)}</td>
+      <td><span class="pill ${x.direction}">${escapeHtml(x.direction)}</span></td>
+      <td><span class="mono">${escapeHtml(x.from_number || '—')}</span></td>
+      <td><span class="mono">${escapeHtml(x.to_number || '—')}</span></td>
+      <td><div class="body-cell">${escapeHtml(x.body || '')}</div>
+          ${x.error_message ? `<div class="mono" style="color:var(--danger);margin-top:2px">${escapeHtml(x.error_message)}</div>` : ''}</td>
+      <td><span class="pill ${x.send_status}">${escapeHtml(x.send_status)}</span></td>
+    </tr>
+  `).join('');
+}
+
+document.getElementById('smsBody').addEventListener('input', () => {
+  const v = document.getElementById('smsBody').value;
+  document.getElementById('smsCount').textContent = v.length + ' / 1600  (1 SMS ≤ 160 GSM-7 chars)';
+});
+
+document.getElementById('sendBtn').addEventListener('click', async () => {
+  const to   = document.getElementById('smsTo').value.trim();
+  const body = document.getElementById('smsBody').value.trim();
+  const res  = document.getElementById('sendResult');
+  if (!to || !body) { res.innerHTML = '<span style="color:var(--danger)">Enter a number and a message.</span>'; return; }
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  const r = await authedFn('sms-send', { to, body });
+  btn.disabled = false; btn.textContent = 'Send';
+  if (r.ok) {
+    const j = await r.json();
+    res.innerHTML = `<span style="color:var(--ok)">Sent — Twilio SID ${escapeHtml((j.sid || '').slice(0, 12))}…</span>`;
+    document.getElementById('smsBody').value = '';
+    loadRows();
+  } else {
+    const t = await r.text();
+    res.innerHTML = `<span style="color:var(--danger)">${escapeHtml(t.slice(0, 200))}</span>`;
+    loadRows();
+  }
+});
+
+// Probe Twilio config by trying a dry-run send to a never-valid number; if env vars are missing we get a 503
+async function probeConfig() {
+  // Cheaper: just check if any sent rows have non-empty from_number; otherwise show the warning banner
+  const r = await authedFetch('/rest/v1/sms_messages?direction=eq.outbound&from_number=neq.&select=id&limit=1');
+  if (r.ok) {
+    const a = await r.json();
+    if (a.length) {
+      const b = document.getElementById('cfgBanner');
+      b.classList.add('ok');
+      b.innerHTML = '<strong>Twilio is configured.</strong> Outbound SMS is live.';
+    }
+  }
+}
+
+// Boot
+(async function init() {
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  if (!s) { document.body.innerHTML = '<div style="padding:60px;text-align:center;font-size:18px"><a href="login.html">Sign in</a> to view SMS.</div>'; return; }
+  document.getElementById('userInitial').textContent = ((s.user.email || 'L')[0] || 'L').toUpperCase();
+  probeConfig();
+  loadRows();
+  setInterval(loadRows, 30000);
+})();
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>
