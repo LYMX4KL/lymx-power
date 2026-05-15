@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Clock In · LYMX Staff</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:780px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px;width:100%}
+
+  header.nav{background:#fff;border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:var(--maxw);margin:0 auto;padding:0 20px}
+  .brand{font-weight:800;font-size:18px}
+  .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+
+  main{padding:28px 0 60px}
+  h1{font-size:24px;font-weight:800;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:24px}
+
+  .now-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:18px}
+  .now-card .clock{font-size:48px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .now-card .date{color:var(--muted);font-size:14px;margin-top:2px}
+  .status-pill{display:inline-block;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;margin-top:14px}
+  .status-pill.in{background:#d1fae5;color:#065f46}
+  .status-pill.out{background:#e5e7eb;color:#374151}
+  .status-pill.break{background:#fef3c7;color:#78350f}
+
+  .btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
+  @media(min-width:560px){.btn-grid{grid-template-columns:repeat(4,1fr)}}
+  .btn{padding:18px 12px;border-radius:12px;font-weight:700;font-size:15px;border:0;cursor:pointer;font-family:inherit;text-align:center}
+  .btn-in{background:var(--ok);color:#fff;font-size:17px}
+  .btn-in:hover{background:#0f8b5a}
+  .btn-out{background:var(--danger);color:#fff;font-size:17px}
+  .btn-out:hover{background:#b8332f}
+  .btn-break{background:#fff;border:1.5px solid var(--line);color:var(--muted)}
+  .btn-break:hover{border-color:var(--ink);color:var(--ink)}
+  .btn:disabled{opacity:.5;cursor:wait}
+
+  .gps-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:13px;color:var(--muted)}
+  .gps-card .ok{color:var(--ok);font-weight:700}
+  .gps-card .warn{color:var(--warn);font-weight:700}
+  .gps-card .err{color:var(--danger);font-weight:700}
+
+  .notes-input{width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:14px;margin-top:14px;box-sizing:border-box}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+  .card h2{margin:0 0 12px;font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+
+  .punch-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f3f6;font-size:14px}
+  .punch-row:last-child{border-bottom:0}
+  .punch-row .left{display:flex;align-items:center;gap:10px}
+  .punch-row .icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+  .punch-row .icon.in{background:#d1fae5;color:#065f46}
+  .punch-row .icon.out{background:#fee2e2;color:#7f1d1d}
+  .punch-row .icon.break{background:#fef3c7;color:#78350f}
+  .punch-row .meta{font-size:12px;color:var(--muted)}
+  .punch-row .time{font-weight:700;font-variant-numeric:tabular-nums}
+  .punch-row .geofence{font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;margin-left:8px}
+  .punch-row .geofence.pass{background:#d1fae5;color:#065f46}
+  .punch-row .geofence.fail{background:#fef3c7;color:#78350f}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:99;opacity:0;transition:opacity .2s}
+  .toast.on{opacity:1}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--danger)}
+
+  .empty{padding:24px;text-align:center;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand">LYMX Staff</a>
+    <div class="avatar" id="userInitial">·</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>Clock In</h1>
+  <div class="sub">Welcome <span id="userName">…</span> — punch in to start your shift.</div>
+
+  <div class="now-card">
+    <div class="clock" id="liveClock">--:--:--</div>
+    <div class="date" id="liveDate">—</div>
+    <span class="status-pill out" id="statusPill">Out</span>
+  </div>
+
+  <div class="btn-grid">
+    <button class="btn btn-in" id="btnIn">Clock In</button>
+    <button class="btn btn-out" id="btnOut">Clock Out</button>
+    <button class="btn btn-break" id="btnBreakStart">Break Start</button>
+    <button class="btn btn-break" id="btnBreakEnd">Break End</button>
+  </div>
+
+  <input class="notes-input" id="noteInput" placeholder="Optional note (e.g. starting reviews, working from home)" maxlength="200" />
+
+  <div class="gps-card" id="gpsCard">📍 Getting your location…</div>
+
+  <div class="card" style="margin-top:18px">
+    <h2>Today's punches</h2>
+    <div id="todayPunches"><div class="empty">No punches yet today.</div></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON         = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+
+let myUser = null;
+let currentStatus = 'out'; // out | in | break
+let lastGps = null;        // { lat, lng, accuracy }
+let gpsError = null;
+
+async function authedFetch(path, opts = {}) {
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = (s && s.access_token) || ANON;
+  return fetch(SUPABASE_URL + path, {
+    ...opts,
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+  });
+}
+
+function esc(s) { return (s || '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function showToast(msg, kind) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast on ' + (kind || ''); setTimeout(() => t.className = 'toast', 3000); }
+function fmtTime(d) { return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' }); }
+function fmtDate(d) { return d.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }); }
+function fmtTimeShort(iso) { return new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+
+// Live clock
+function tick() {
+  const now = new Date();
+  document.getElementById('liveClock').textContent = fmtTime(now);
+  document.getElementById('liveDate').textContent  = fmtDate(now);
+}
+setInterval(tick, 1000); tick();
+
+// GPS
+function getLocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve({ error: 'Geolocation not supported by browser' }); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy }),
+      err => resolve({ error: err.message || 'Could not get GPS — clock-in will still log but flagged as remote.' }),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+    );
+  });
+}
+
+async function refreshGps() {
+  document.getElementById('gpsCard').innerHTML = '📍 Getting your location…';
+  const g = await getLocation();
+  if (g.error) {
+    lastGps = null; gpsError = g.error;
+    document.getElementById('gpsCard').innerHTML = '⚠️ <span class="warn">' + esc(g.error) + '</span><br><span style="font-size:11px">Your punch will be flagged as remote. Add a note if needed.</span>';
+  } else {
+    lastGps = g; gpsError = null;
+    document.getElementById('gpsCard').innerHTML = '📍 <span class="ok">GPS locked</span> — accuracy ±' + Math.round(g.accuracy) + 'm';
+  }
+}
+
+async function loadStatus() {
+  // Pull the most recent clock_event for me
+  const r = await authedFetch('/rest/v1/clock_events?user_id=eq.' + myUser.id + '&order=event_at.desc&limit=1');
+  if (!r.ok) return;
+  const arr = await r.json();
+  if (arr.length === 0) { setStatus('out'); return; }
+  const last = arr[0];
+  switch (last.event_type) {
+    case 'in':          setStatus('in');    break;
+    case 'out':         setStatus('out');   break;
+    case 'break_start': setStatus('break'); break;
+    case 'break_end':   setStatus('in');    break;
+  }
+}
+
+function setStatus(s) {
+  currentStatus = s;
+  const pill = document.getElementById('statusPill');
+  pill.className = 'status-pill ' + s;
+  pill.textContent = s === 'in' ? '✓ Clocked In' : s === 'break' ? '⏸ On Break' : 'Clocked Out';
+
+  document.getElementById('btnIn').disabled    = s === 'in' || s === 'break';
+  document.getElementById('btnOut').disabled   = s === 'out';
+  document.getElementById('btnBreakStart').disabled = s !== 'in';
+  document.getElementById('btnBreakEnd').disabled   = s !== 'break';
+}
+
+async function loadToday() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const r = await authedFetch('/rest/v1/clock_events?user_id=eq.' + myUser.id + '&event_at=gte.' + today.toISOString() + '&order=event_at.asc');
+  if (!r.ok) return;
+  const arr = await r.json();
+  if (arr.length === 0) {
+    document.getElementById('todayPunches').innerHTML = '<div class="empty">No punches yet today.</div>';
+    return;
+  }
+  document.getElementById('todayPunches').innerHTML = arr.map(p => {
+    const label = ({ in:'IN', out:'OUT', break_start:'BREAK', break_end:'BACK' }[p.event_type]) || p.event_type;
+    const cls = (p.event_type === 'in' || p.event_type === 'break_end') ? 'in'
+              : (p.event_type === 'out')                                ? 'out' : 'break';
+    const gpsBadge = p.gps_lat ? (p.geofence_pass
+        ? '<span class="geofence pass">@ office</span>'
+        : (p.remote_allowed_at_event ? '<span class="geofence">remote</span>' : '<span class="geofence fail">off-anchor</span>'))
+      : '<span class="geofence">no GPS</span>';
+    return `<div class="punch-row">
+      <div class="left">
+        <div class="icon ${cls}">${label}</div>
+        <div>
+          <div><strong>${fmtTimeShort(p.event_at)}</strong> ${gpsBadge}</div>
+          ${p.notes ? '<div class="meta">' + esc(p.notes) + '</div>' : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function punch(eventType) {
+  const btns = document.querySelectorAll('.btn');
+  btns.forEach(b => b.disabled = true);
+
+  const payload = {
+    user_id: myUser.id,
+    event_type: eventType,
+    event_at: new Date().toISOString(),
+    gps_lat: lastGps ? lastGps.lat : null,
+    gps_lng: lastGps ? lastGps.lng : null,
+    gps_accuracy_m: lastGps ? lastGps.accuracy : null,
+    notes: document.getElementById('noteInput').value.trim() || null,
+    user_agent: navigator.userAgent.slice(0, 200),
+  };
+
+  const r = await authedFetch('/rest/v1/clock_events', {
+    method: 'POST',
+    headers: { 'Prefer': 'return=minimal' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!r.ok) {
+    const t = await r.text();
+    showToast('Punch failed: ' + t.slice(0, 80), 'err');
+    setStatus(currentStatus); // restore button states
+    return;
+  }
+
+  // Local status update
+  const next = eventType === 'in' ? 'in'
+             : eventType === 'out' ? 'out'
+             : eventType === 'break_start' ? 'break'
+             : 'in';
+  setStatus(next);
+  document.getElementById('noteInput').value = '';
+  showToast('Punched ' + eventType.replace('_', ' ') + ' ✓', 'ok');
+  loadToday();
+}
+
+document.getElementById('btnIn').addEventListener('click', () => punch('in'));
+document.getElementById('btnOut').addEventListener('click', () => punch('out'));
+document.getElementById('btnBreakStart').addEventListener('click', () => punch('break_start'));
+document.getElementById('btnBreakEnd').addEventListener('click', () => punch('break_end'));
+
+(async function init() {
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  if (!s) { location.href = '/login.html?next=/staff-clock-in.html'; return; }
+  myUser = s.user;
+  document.getElementById('userInitial').textContent = ((s.user.email || 'L')[0] || 'L').toUpperCase();
+  document.getElementById('userName').textContent = (s.user.email || '').split('@')[0];
+  await refreshGps();
+  await loadStatus();
+  await loadToday();
+  // Refresh GPS every minute (in case user moves)
+  setInterval(refreshGps, 60000);
+  setInterval(loadToday, 30000);
+})();
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>

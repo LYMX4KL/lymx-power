@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Timesheets · LYMX Admin</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  main{padding:28px 0 60px}
+  h1{font-size:28px;font-weight:800;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:15px;margin-bottom:24px}
+  .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+  .filters select,.filters input{padding:8px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;background:#fff}
+  .filters .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .filters .reload{background:var(--ink);color:#fff;border:0;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px}
+  .tbl-wrap{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;padding:12px 14px;background:var(--bg-soft);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line)}
+  td{padding:12px 14px;border-bottom:1px solid #f1f3f6;vertical-align:top}
+  tr:hover td{background:#fafbfd}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .pill.in{background:#d1fae5;color:#065f46}
+  .pill.out{background:#fee2e2;color:#7f1d1d}
+  .pill.break_start, .pill.break_end{background:#fef3c7;color:#78350f}
+  .pill.geofence-pass{background:#d1fae5;color:#065f46}
+  .pill.geofence-fail{background:#fef3c7;color:#78350f}
+  .pill.remote{background:#cffafe;color:#155e75}
+  .empty{padding:48px 24px;text-align:center;color:var(--muted)}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="admin-dashboard.html" class="brand">LYMX <span class="role-tag">Team</span></a>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Home</a>
+      <a href="admin-team-roster.html">Roster</a>
+      <a href="admin-timesheets.html" class="on">Timesheets</a>
+      <a href="admin-time-off.html">Time-off</a>
+      <a href="admin-verifications.html">Verifications</a>
+      <a href="admin-tech-support.html">Tech</a>
+      <a href="admin-chat.html">Chat</a>
+    </nav>
+    <div class="admin-avatar" id="userInitial">·</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>Timesheets</h1>
+  <div class="sub">All clock punches with GPS + geofence pass/fail. Filter by date range or staff member.</div>
+
+  <div class="filters">
+    <select id="fDays">
+      <option value="1">Today</option>
+      <option value="7" selected>Last 7 days</option>
+      <option value="14">Last 14 days</option>
+      <option value="30">Last 30 days</option>
+    </select>
+    <input id="fSearch" type="search" placeholder="Filter by email or note…" style="min-width:240px" />
+    <div class="right">
+      <button class="reload" id="reloadBtn">↻ Reload</button>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:160px">When</th>
+          <th>Staff</th>
+          <th style="width:120px">Event</th>
+          <th style="width:140px">Geofence</th>
+          <th>Distance / Note</th>
+        </tr>
+      </thead>
+      <tbody id="rows"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON         = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+async function authedFetch(path) {
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = (s && s.access_token) || ANON;
+  return fetch(SUPABASE_URL + path, { headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } });
+}
+function esc(s) { return (s || '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtTime(iso) { if (!iso) return '—'; const d = new Date(iso); return d.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); }
+
+let users = {};
+
+async function loadUsers() {
+  const r = await authedFetch('/rest/v1/v_team_roster?select=user_id,email');
+  if (r.ok) {
+    const arr = await r.json();
+    arr.forEach(u => { users[u.user_id] = u.email; });
+  }
+}
+
+async function loadRows() {
+  const days = Number(document.getElementById('fDays').value) || 7;
+  const since = new Date(Date.now() - days * 86400000).toISOString();
+  const search = document.getElementById('fSearch').value.trim().toLowerCase();
+  const r = await authedFetch('/rest/v1/clock_events?event_at=gte.' + encodeURIComponent(since) + '&order=event_at.desc&limit=500');
+  if (!r.ok) {
+    document.getElementById('rows').innerHTML = `<tr><td colspan="5" class="empty">Could not load (HTTP ${r.status}). Make sure migration 025 has been applied.</td></tr>`;
+    return;
+  }
+  let rows = await r.json();
+  if (search) {
+    rows = rows.filter(x => {
+      const em = (users[x.user_id] || '').toLowerCase();
+      return em.includes(search) || (x.notes || '').toLowerCase().includes(search);
+    });
+  }
+  if (!rows.length) {
+    document.getElementById('rows').innerHTML = `<tr><td colspan="5" class="empty">No clock events in this range.</td></tr>`;
+    return;
+  }
+  document.getElementById('rows').innerHTML = rows.map(x => {
+    const email = users[x.user_id] || x.user_id?.slice(0, 8) || '—';
+    let geofencePill = '<span class="pill remote">no GPS</span>';
+    if (x.gps_lat != null) {
+      if (x.geofence_pass) geofencePill = '<span class="pill geofence-pass">✓ @ office</span>';
+      else if (x.remote_allowed_at_event) geofencePill = '<span class="pill remote">remote OK</span>';
+      else geofencePill = '<span class="pill geofence-fail">off-anchor</span>';
+    }
+    const dist = x.distance_from_anchor_m != null ? Math.round(Number(x.distance_from_anchor_m)) + 'm from anchor' : '';
+    return `<tr>
+      <td>${fmtTime(x.event_at)}</td>
+      <td>${esc(email)}</td>
+      <td><span class="pill ${esc(x.event_type)}">${esc(x.event_type.replace('_', ' '))}</span></td>
+      <td>${geofencePill}</td>
+      <td><span class="mono">${esc(dist)}</span>${x.notes ? '<br>' + esc(x.notes) : ''}</td>
+    </tr>`;
+  }).join('');
+}
+
+document.getElementById('reloadBtn').addEventListener('click', loadRows);
+document.getElementById('fDays').addEventListener('change', loadRows);
+document.getElementById('fSearch').addEventListener('input', () => { clearTimeout(window._t); window._t = setTimeout(loadRows, 250); });
+
+(async function init() {
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  if (!s) { document.body.innerHTML = '<div style="padding:60px;text-align:center"><a href="login.html">Sign in</a> as admin.</div>'; return; }
+  document.getElementById('userInitial').textContent = ((s.user.email || 'L')[0] || 'L').toUpperCase();
+  await loadUsers();
+  await loadRows();
+  setInterval(loadRows, 30000);
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Time-off · LYMX Admin</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  main{padding:28px 0 60px}
+  h1{font-size:28px;font-weight:800;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:15px;margin-bottom:24px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .card .label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .card .val{font-size:28px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}
+  .tbl-wrap{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;padding:12px 14px;background:var(--bg-soft);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line)}
+  td{padding:14px;border-bottom:1px solid #f1f3f6;vertical-align:middle}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .pill.pending{background:#fef3c7;color:#78350f}
+  .pill.approved{background:#d1fae5;color:#065f46}
+  .pill.denied{background:#fee2e2;color:#7f1d1d}
+  .pill.cancelled{background:#e5e7eb;color:#374151}
+  .pill.vacation{background:#dbeafe;color:#1e40af}
+  .pill.sick{background:#fee2e2;color:#7f1d1d}
+  .pill.personal{background:#e9d5ff;color:#5b21b6}
+  .actions-cell{display:flex;gap:6px;flex-wrap:wrap}
+  .btn{padding:7px 14px;border-radius:8px;font-weight:700;font-size:13px;border:0;cursor:pointer;font-family:inherit}
+  .btn-approve{background:var(--ok);color:#fff}
+  .btn-approve:hover{background:#0f8b5a}
+  .btn-deny{background:#fff;border:1px solid var(--danger);color:var(--danger)}
+  .btn-deny:hover{background:#fee2e2}
+  .empty{padding:48px 24px;text-align:center;color:var(--muted)}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:99;opacity:0;transition:opacity .2s}
+  .toast.on{opacity:1}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--danger)}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="admin-dashboard.html" class="brand">LYMX <span class="role-tag">Team</span></a>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Home</a>
+      <a href="admin-team-roster.html">Roster</a>
+      <a href="admin-timesheets.html">Timesheets</a>
+      <a href="admin-time-off.html" class="on">Time-off</a>
+      <a href="admin-verifications.html">Verifications</a>
+      <a href="admin-tech-support.html">Tech</a>
+      <a href="admin-chat.html">Chat</a>
+    </nav>
+    <div class="admin-avatar" id="userInitial">·</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>Time-off Requests</h1>
+  <div class="sub">Pending PTO / sick / personal time requests. Approve or deny — staff get notified by email.</div>
+
+  <div class="cards">
+    <div class="card"><div class="label">Pending</div>  <div class="val" id="kPending" style="color:#78350f">—</div></div>
+    <div class="card"><div class="label">Approved (30d)</div><div class="val" id="kApproved" style="color:#065f46">—</div></div>
+    <div class="card"><div class="label">Denied (30d)</div>  <div class="val" id="kDenied" style="color:#7f1d1d">—</div></div>
+    <div class="card"><div class="label">Vacation hrs</div>  <div class="val" id="kHours" style="color:#1e40af">—</div></div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Staff</th>
+          <th style="width:110px">Type</th>
+          <th style="width:200px">Dates</th>
+          <th style="width:80px">Hours</th>
+          <th>Reason</th>
+          <th style="width:100px">Status</th>
+          <th style="width:170px">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="rows"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON         = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+async function authedFetch(path, opts = {}) {
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = (s && s.access_token) || ANON;
+  return fetch(SUPABASE_URL + path, { ...opts, headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) } });
+}
+function esc(s) { return (s || '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtDate(d) { if (!d) return '—'; return new Date(d).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }); }
+function showToast(msg, kind) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast on ' + (kind || ''); setTimeout(() => t.className = 'toast', 3000); }
+
+let users = {};
+let myUserId = null;
+
+async function loadUsers() {
+  const r = await authedFetch('/rest/v1/v_team_roster?select=user_id,email');
+  if (r.ok) {
+    const arr = await r.json();
+    arr.forEach(u => { users[u.user_id] = u.email; });
+  }
+}
+
+async function loadRows() {
+  const r = await authedFetch('/rest/v1/time_off?select=*&order=created_at.desc&limit=200');
+  if (!r.ok) {
+    document.getElementById('rows').innerHTML = `<tr><td colspan="7" class="empty">Could not load (HTTP ${r.status}). Make sure migration 025 has been applied.</td></tr>`;
+    return;
+  }
+  const rows = await r.json();
+  const now = Date.now();
+  document.getElementById('kPending').textContent  = rows.filter(x => x.status === 'pending').length;
+  document.getElementById('kApproved').textContent = rows.filter(x => x.status === 'approved' && (now - new Date(x.created_at).getTime()) < 30*86400000).length;
+  document.getElementById('kDenied').textContent   = rows.filter(x => x.status === 'denied'   && (now - new Date(x.created_at).getTime()) < 30*86400000).length;
+  const totalHours = rows.filter(x => x.status === 'approved' && x.kind === 'vacation').reduce((s, x) => s + (Number(x.hours) || 0), 0);
+  document.getElementById('kHours').textContent = totalHours;
+
+  if (!rows.length) {
+    document.getElementById('rows').innerHTML = `<tr><td colspan="7" class="empty">No time-off requests yet.</td></tr>`;
+    return;
+  }
+
+  document.getElementById('rows').innerHTML = rows.map(x => {
+    const email = users[x.user_id] || x.user_id?.slice(0, 8) || '—';
+    const actions = x.status === 'pending' ? `
+      <button class="btn btn-approve" data-act="approved" data-id="${x.id}">✓ Approve</button>
+      <button class="btn btn-deny"    data-act="denied"   data-id="${x.id}">✗ Deny</button>
+    ` : '<span style="font-size:12px;color:var(--muted)">' + (x.decided_at ? fmtDate(x.decided_at) : '—') + '</span>';
+    return `<tr>
+      <td><strong>${esc(email)}</strong></td>
+      <td><span class="pill ${esc(x.kind)}">${esc(x.kind)}</span></td>
+      <td>${fmtDate(x.start_date)} → ${fmtDate(x.end_date)}</td>
+      <td>${x.hours || '—'}</td>
+      <td>${esc(x.reason || '—')}</td>
+      <td><span class="pill ${esc(x.status)}">${esc(x.status)}</span></td>
+      <td class="actions-cell">${actions}</td>
+    </tr>`;
+  }).join('');
+
+  document.querySelectorAll('#rows button[data-act]').forEach(b => {
+    b.addEventListener('click', async () => {
+      const newStatus = b.dataset.act;
+      const id = b.dataset.id;
+      b.disabled = true;
+      const r = await authedFetch('/rest/v1/time_off?id=eq.' + id, {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+          status: newStatus,
+          decided_by: myUserId,
+          decided_at: new Date().toISOString(),
+        }),
+      });
+      if (!r.ok) { showToast('Update failed', 'err'); b.disabled = false; return; }
+      showToast(newStatus === 'approved' ? 'Approved ✓' : 'Denied', 'ok');
+      loadRows();
+    });
+  });
+}
+
+(async function init() {
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  if (!s) { document.body.innerHTML = '<div style="padding:60px;text-align:center"><a href="login.html">Sign in</a> as admin.</div>'; return; }
+  myUserId = s.user.id;
+  document.getElementById('userInitial').textContent = ((s.user.email || 'L')[0] || 'L').toUpperCase();
+  await loadUsers();
+  await loadRows();
+  setInterval(loadRows, 30000);
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>
