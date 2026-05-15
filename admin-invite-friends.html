@@ -741,6 +741,9 @@ function pickAddEmail(email, name) {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return false;
   pickedEmails.set(email, (name || '').trim());
   syncPickedToTextarea();
+  // Defensive: call recompute directly so parsedEmails stays in sync even if
+  // the synthetic 'input' event doesn't bubble (Regression fix #aa42f2ae).
+  if (typeof recompute === 'function') recompute();
   renderInvitedPills();
   return true;
 }
