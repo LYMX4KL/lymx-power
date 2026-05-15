@@ -191,7 +191,7 @@
     + '<div class="shot-box"><div class="shot-row"><label>📸 Screenshot / attachments</label>'
     +   '<div class="shot-btns">'
     +   '<button type="button" class="shot-btn" id="lymx-fb-shot-auto">↻ Recapture</button>'
-    +   '<button type="button" class="shot-btn" id="lymx-fb-shot-region">🎯 Select region</button>'
+    +   '<button type="button" class="shot-btn" id="lymx-fb-shot-region">✂️ Crop screenshot</button>'
     +   '<button type="button" class="shot-btn" id="lymx-fb-shot-upload">📎 Add file</button></div></div>'
     + '<input type="file" id="lymx-fb-shot-file" accept="image/*,application/pdf,.txt,.log,.csv,.xlsx,.docx" multiple style="display:none" />'
     + '<div class="shot-preview" id="lymx-fb-shot-preview"><span id="lymx-fb-shot-status">Capturing page…</span></div>'
@@ -330,7 +330,7 @@
       overlay.style.visibility = 'visible';
       console.warn('[LYMX feedback] auto-capture failed', e);
       var preview = document.getElementById('lymx-fb-shot-preview');
-      if (preview) preview.innerHTML = '<span style="color:#B91C1C;font-size:12.5px">Auto-capture failed — try 🎯 Select region or 📎 Add file.</span>';
+      if (preview) preview.innerHTML = '<span style="color:#B91C1C;font-size:12.5px">Auto-capture failed — try ✂️ Crop screenshot or 📎 Add file.</span>';
     });
   }
 
@@ -352,7 +352,7 @@
       var picker = document.createElement('div');
       picker.style.cssText = 'position:fixed;inset:0;z-index:100000;cursor:crosshair;background:rgba(14,17,22,.4)';
       var hint = document.createElement('div');
-      hint.textContent = 'Drag to select a region — Esc to cancel';
+      hint.textContent = 'Drag to crop the screenshot — Esc to cancel';
       hint.style.cssText = 'position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#0e1116;color:#fff;padding:8px 16px;border-radius:999px;font:600 13px sans-serif;pointer-events:none';
       var sel = document.createElement('div');
       sel.style.cssText = 'position:absolute;border:2px dashed #FBBF24;background:rgba(251,191,36,.18);display:none';
@@ -375,7 +375,7 @@
         out.getContext('2d').drawImage(baseCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
         out.toBlob(function (b) {
           shotBlob = b; shotKind = 'region';
-          renderShotPreview('Selected region');
+          renderShotPreview('Cropped screenshot');
         }, 'image/png', 0.92);
       }
       function onEsc(e) { if (e.key === 'Escape') done(true); }
