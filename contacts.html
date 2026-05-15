@@ -254,6 +254,10 @@
     <input id="cJob" type="text" />
     <label for="cNotes">Notes (private)</label>
     <textarea id="cNotes"></textarea>
+    <div class="row">
+      <div><label for="cTags">Tags</label><select id="cTags" multiple size="3" style="min-height:72px"></select><div style="font-size:11px;color:var(--muted);margin-top:4px">Hold Ctrl/Cmd to pick more than one</div></div>
+      <div><label for="cLists">Lists</label><select id="cLists" multiple size="3" style="min-height:72px"></select><div style="font-size:11px;color:var(--muted);margin-top:4px">Hold Ctrl/Cmd to pick more than one</div></div>
+    </div>
     <div class="actions">
       <button class="btn-danger" id="cDelete" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid #f5b7b7;cursor:pointer;background:#fff;color:var(--danger);display:none;margin-right:auto">Delete</button>
       <button class="btn-secondary" id="cCancel" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid var(--line);cursor:pointer;background:#fff">Cancel</button>
@@ -688,6 +692,16 @@ function openContactModal(id) {
   document.getElementById('cCompany').value = c?.company  || '';
   document.getElementById('cJob').value   = c?.job_title  || '';
   document.getElementById('cNotes').value = c?.notes      || '';
+
+  // Populate Tags + Lists multi-selects + pre-select existing values
+  // (Bug fix 2026-05-15 #d8c9a9fb)
+  const tagSel  = document.getElementById('cTags');
+  const listSel = document.getElementById('cLists');
+  const currentTags  = c?.tags  || [];
+  const currentLists = c?.lists || [];
+  tagSel.innerHTML  = allTags.map(t  => `<option value="${escapeHtml(t.name)}" ${currentTags.includes(t.name)  ? 'selected' : ''}>${escapeHtml(t.name)}</option>`).join('') || '<option disabled>No tags yet — create one in the sidebar</option>';
+  listSel.innerHTML = allLists.map(l => `<option value="${escapeHtml(l.name)}" ${currentLists.includes(l.name) ? 'selected' : ''}>${escapeHtml(l.name)}</option>`).join('') || '<option disabled>No lists yet — create one in the sidebar</option>';
+
   document.getElementById('cDelete').style.display = id ? 'inline-block' : 'none';
   document.getElementById('contactModal').classList.add('on');
 }
@@ -695,6 +709,9 @@ document.getElementById('cCancel').addEventListener('click', () => document.getE
 document.getElementById('contactModal').addEventListener('click', e => { if (e.target.id === 'contactModal') e.target.classList.remove('on'); });
 
 document.getElementById('cSave').addEventListener('click', async () => {
+  // Read selected tags/lists from the multi-selects (Bug fix #d8c9a9fb)
+  const pickedTags  = Array.from(document.getElementById('cTags').selectedOptions).map(o => o.value).filter(Boolean);
+  const pickedLists = Array.from(document.getElementById('cLists').selectedOptions).map(o => o.value).filter(Boolean);
   const payload = {
     first_name: document.getElementById('cFirst').value.trim() || null,
     last_name:  document.getElementById('cLast').value.trim() || null,
@@ -703,6 +720,8 @@ document.getElementById('cSave').addEventListener('click', async () => {
     company:    document.getElementById('cCompany').value.trim() || null,
     job_title:  document.getElementById('cJob').value.trim() || null,
     notes:      document.getElementById('cNotes').value.trim() || null,
+    tags:       pickedTags,
+    lists:      pickedLists,
   };
   if (!/[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(payload.email)) { alert('Email is required.'); return; }
   let r;

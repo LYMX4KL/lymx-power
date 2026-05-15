@@ -228,9 +228,9 @@
         <div class="num" id="balanceLymx">— LYMX</div>
         <div class="usd" id="balanceUsd">Loading…</div>
         <div class="stat-row">
-          <div class="stat"><div class="v">+1,420</div><div class="k">This month</div></div>
-          <div class="stat"><div class="v">−950</div><div class="k">Spent (mo)</div></div>
-          <div class="stat"><div class="v">42</div><div class="k">Lifetime visits</div></div>
+          <div class="stat"><div class="v" id="statThisMo">—</div><div class="k">This month</div></div>
+          <div class="stat"><div class="v" id="statSpentMo">—</div><div class="k">Spent (mo)</div></div>
+          <div class="stat"><div class="v" id="statLifetime">—</div><div class="k">Lifetime visits</div></div>
         </div>
         <div class="actions">
           <a class="btn-w solid" href="browse.html">Spend my LYMX →</a>
@@ -584,5 +584,50 @@
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
+
+<script>
+  // Customer dashboard stats wiring (Bug fix 2026-05-15 #91c558b0)
+  // Replaces the previously-hardcoded "+1,420 / -950 / 42" placeholders
+  // with real numbers from lymx_issuances + customer_redemptions.
+  (async function loadStats() {
+    try {
+      if (!window.LYMX || !window.LYMX.getSession) return;
+      const s = await window.LYMX.getSession();
+      if (!s) return;
+      const URL  = window.LYMX_CONFIG.SUPABASE_URL;
+      const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+      const tok  = s.access_token;
+      const userId = s.user.id;
+      const startMo = new Date(); startMo.setDate(1); startMo.setHours(0,0,0,0);
+      const startIso = startMo.toISOString();
+      const headers = { apikey: ANON, Authorization: 'Bearer ' + tok };
+      // Earned this month
+      let earnedMo = 0, spentMo = 0, lifetime = 0;
+      try {
+        const r = await fetch(URL + '/rest/v1/lymx_issuances?recipient_user_id=eq.' + userId + '&created_at=gte.' + encodeURIComponent(startIso) + '&select=amount', { headers });
+        if (r.ok) { const rows = await r.json(); earnedMo = rows.reduce((s, x) => s + (Number(x.amount) || 0), 0); }
+      } catch (e) {}
+      try {
+        const r = await fetch(URL + '/rest/v1/customer_redemptions?customer_user_id=eq.' + userId + '&created_at=gte.' + encodeURIComponent(startIso) + '&select=amount', { headers });
+        if (r.ok) { const rows = await r.json(); spentMo = rows.reduce((s, x) => s + (Number(x.amount) || 0), 0); }
+      } catch (e) {}
+      try {
+        const r = await fetch(URL + '/rest/v1/customer_redemptions?customer_user_id=eq.' + userId + '&select=id', { headers, method: 'GET' });
+        if (r.ok) { const rows = await r.json(); lifetime = rows.length; }
+      } catch (e) {}
+      function fmt(n, prefix) {
+        if (!n) return '0';
+        const s = Math.abs(Math.round(n)).toLocaleString();
+        return (prefix || '') + s;
+      }
+      const a = document.getElementById('statThisMo');
+      const b = document.getElementById('statSpentMo');
+      const c = document.getElementById('statLifetime');
+      if (a) a.textContent = fmt(earnedMo, earnedMo > 0 ? '+' : '');
+      if (b) b.textContent = fmt(spentMo,  spentMo  > 0 ? '\u2212' : '');
+      if (c) c.textContent = String(lifetime);
+    } catch (e) { console.warn('[stats] failed', e); }
+  })();
+</script>
 </body>
 </html>
