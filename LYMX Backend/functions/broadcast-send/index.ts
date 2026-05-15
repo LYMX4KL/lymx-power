@@ -187,15 +187,20 @@ serve(async (req) => {
                 .eq("user_id", bc.created_by)
                 .maybeSingle();
             if (prt?.id) {
+                // partner_emails actual schema: id, partner_id, local_part,
+                // full_email, forward_to, display_name, status, ...
+                // (FIXED 2026-05-15: was looking up wrong columns secondary_*)
                 const { data: pe } = await supabase
                     .from("partner_emails")
-                    .select("secondary_full_email, secondary_status")
+                    .select("full_email, forward_to, status")
                     .eq("partner_id", prt.id)
                     .maybeSingle();
-                if (pe?.secondary_full_email && pe.secondary_status !== "failed") {
+                if (pe?.full_email && pe.status !== "failed") {
                     const name = (prt.display_name || prt.legal_name || "").trim();
-                    FROM = name ? `${name} <${pe.secondary_full_email}>` : pe.secondary_full_email;
-                    REPLY_TO = pe.secondary_full_email;
+                    FROM = name ? `${name} <${pe.full_email}>` : pe.full_email;
+                    // Reply-To goes to the partner's real inbox (forward_to) so
+                    // recipients can reply and the partner sees it.
+                    REPLY_TO = pe.forward_to || pe.full_email;
                 }
             }
         }
@@ -246,4 +251,33 @@ serve(async (req) => {
                 reply_to:          REPLY_TO,
                 to_address:        to,
                 subject:           bc.subject,
-                templa
+                template_key:      "broadcast",
+                resend_message_id: resendId,
+                send_status:       sendStatus,
+                error_message:     errMsg,
+                sent_at:           sendStatus === "sent" ? new Date().toISOString() : null,
+            });
+        } catch { /* best-effort logging — never fails the broadcast */ }
+        // light rate limit — Resend free tier is 100/day; pause 100ms between sends
+        await new Promise(r => setTimeout(r, 100));
+    }
+
+    const finalStatus = failed === 0 ? "sent" : (sent === 0 ? "failed" : "sent");
+    await supabase.from("broadcasts").update({
+        status: finalStatus,
+        sent_count: sent,
+        sent_at: new Date().toISOString(),
+        error: errors.length ? errors.join(" · ").slice(0, 500) : null,
+    }).eq("id", broadcastId);
+
+    return json({
+        success: true,
+        sent_count: sent,
+        failed_count: failed,
+        audience_size: uniq.length,
+        audience_reason: reason,
+        errors: errors.slice(0, 5),
+        from_address: FROM,
+        resend_ids: resendIds.slice(0, 5),
+    });
+});
