@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX internal operations runbook. SOPs for support, settlement disputes, fraud, refunds, legal, incident response. Admin-only." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Operations runbook · LYMX Admin</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:var(--accent-2);text-decoration:none;font-weight:700}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--ink)}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a{color:var(--ink-2);font-weight:600}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  @media(max-width:1100px){.nav-links{display:none}}
+
+  .page{padding:28px 0 64px}
+  .page-head{margin-bottom:18px}
+  .page-head h1{margin:0 0 6px;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:0;color:var(--muted);font-size:14px;max-width:600px}
+
+  /* On-call card */
+  .oncall{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:var(--radius);padding:20px 26px;margin-bottom:18px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:18px;position:relative;overflow:hidden}
+  @media(max-width:780px){.oncall{grid-template-columns:1fr 1fr}}
+  .oncall::after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.15),transparent 70%);right:-100px;top:-100px;pointer-events:none}
+  .oncall .lab{font-size:11px;color:#9aa3b0;font-weight:800;letter-spacing:.06em;text-transform:uppercase;position:relative}
+  .oncall .v{font-size:18px;font-weight:800;color:#fff;margin-top:3px;position:relative;letter-spacing:-.005em}
+  .oncall .v.gold{color:#f5d172}
+  .oncall .sub{font-size:11.5px;color:#9aa3b0;margin-top:2px;position:relative}
+
+  /* Search */
+  .search-box{margin-bottom:14px;position:relative}
+  .search-box input{width:100%;background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 16px 12px 42px;font-size:14.5px;font-family:inherit}
+  .search-box input:focus{outline:0;border-color:var(--accent)}
+  .search-box::before{content:"🔍";position:absolute;left:14px;top:50%;transform:translateY(-50%)}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:240px 1fr;gap:24px;align-items:start}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}.toc-side{display:none}}
+
+  /* TOC */
+  .toc{position:sticky;top:88px}
+  .toc h4{margin:0 0 8px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .toc ul{list-style:none;margin:0 0 14px;padding:0;border-left:2px solid var(--line)}
+  .toc li{padding:0}
+  .toc a{display:block;padding:6px 14px;font-size:13px;color:var(--ink-2);border-left:2px solid transparent;margin-left:-2px;font-weight:600}
+  .toc a:hover{color:var(--accent);text-decoration:none}
+  .toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:700;background:rgba(10,132,255,.04)}
+
+  /* Runbook items */
+  article{max-width:840px}
+  .section{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;margin-bottom:14px;scroll-margin-top:90px}
+  .section .section-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .section .ic{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0}
+  .section .ic.support{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .section .ic.settlement{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .section .ic.fraud{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  .section .ic.refund{background:linear-gradient(135deg,#f0a020,#a06808)}
+  .section .ic.legal{background:linear-gradient(135deg,#7426c4,#4d1888)}
+  .section .ic.incident{background:linear-gradient(135deg,#5b6472,#1a1f27)}
+  .section h2{margin:0;font-size:18px;font-weight:800;letter-spacing:-.01em}
+  .section .lede{margin:0 0 14px;color:var(--muted);font-size:13.5px}
+
+  /* SOP block */
+  .sop{padding:14px 18px;background:var(--bg-soft);border-radius:11px;margin:12px 0}
+  .sop h3{margin:0 0 6px;font-size:14px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .sop .meta{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sop ol{margin:8px 0 8px 22px;padding:0;font-size:13.5px;line-height:1.6}
+  .sop ol li{margin:4px 0;color:var(--ink-2)}
+  .sop ol li code{background:#fff;border:1px solid var(--line);padding:1px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:#a01644}
+  .sop .escalate{margin-top:8px;padding:8px 12px;background:rgba(224,65,62,.06);border-radius:7px;font-size:12px;color:#a01644}
+  .sop .escalate strong{font-weight:800}
+
+  /* SLA pill */
+  .sla{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:rgba(10,132,255,.1);color:var(--accent-2);padding:2px 8px;border-radius:5px}
+  .sla.urgent{background:rgba(224,65,62,.13);color:#a01644}
+  .sla.normal{background:rgba(19,162,107,.14);color:#0d7d51}
+
+  /* Severity table */
+  .sev-table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:11px;overflow:hidden;margin:10px 0;background:#fff}
+  .sev-table th, .sev-table td{padding:10px 14px;text-align:left;font-size:13px;border-bottom:1px solid var(--line)}
+  .sev-table th{background:var(--bg-soft);font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .sev-table tr:last-child td{border-bottom:0}
+  .sev-table .sev{padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .sev.s1{background:rgba(224,65,62,.13);color:#a01644}
+  .sev.s2{background:rgba(240,160,32,.16);color:#a06808}
+  .sev.s3{background:rgba(10,132,255,.1);color:var(--accent-2)}
+
+  /* Reference card */
+  .ref-card{padding:14px 18px;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:11px;margin:14px 0;font-size:13px;line-height:1.55}
+  .ref-card strong{color:#f5d172;font-weight:800}
+  .ref-card a{color:#f5d172}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
+  footer a{color:#9aa3b0}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px;color:var(--ink)">LYMX</a>
+      <span class="role-tag">Admin</span>
+    </div>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Home</a>
+      <a href="admin-tickets.html">Tickets</a>
+      <a href="admin-compliance.html">Compliance</a>
+      <a href="admin-runbook.html" class="on">Runbook</a>
+    </nav>
+    <div style="background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">KL</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>Operations runbook</h1>
+      <p>Internal SOPs for support, settlement disputes, fraud, refunds, legal inquiries, and incident response. Use this when something happens — don't guess.</p>
+    </div>
+
+    <!-- On-call card -->
+    <div class="oncall">
+      <div><div class="lab">Primary on-call</div><div class="v gold">Kenny Lin</div><div class="sub">702-555-LYMX · 24/7</div></div>
+      <div><div class="lab">Backup on-call</div><div class="v">Sam Reyes</div><div class="sub">M-F 9-5 PT</div></div>
+      <div><div class="lab">Counsel</div><div class="v">Bertram &amp; Carr LLP</div><div class="sub">Brad Keller — direct</div></div>
+      <div><div class="lab">PR / press</div><div class="v">Linh Nguyen</div><div class="sub">External · ad-hoc retainer</div></div>
+    </div>
+
+    <div class="search-box">
+      <input type="search" id="search" placeholder="Search runbook procedures…" />
+    </div>
+
+    <div class="layout">
+      <aside class="toc-side">
+        <nav class="toc" id="toc">
+          <h4>Procedures</h4>
+          <ul>
+            <li><a href="#support" class="on">Customer support</a></li>
+            <li><a href="#settlement">Settlement disputes</a></li>
+            <li><a href="#fraud">Fraud &amp; abuse</a></li>
+            <li><a href="#refund">Refunds &amp; clawback</a></li>
+            <li><a href="#legal">Legal requests</a></li>
+            <li><a href="#incident">Incident response</a></li>
+          </ul>
+        </nav>
+      </aside>
+
+      <article id="article">
+        <!-- Customer support -->
+        <div class="section" id="support">
+          <div class="section-h"><div class="ic support">💬</div><h2>Customer support</h2></div>
+          <p class="lede">Inbound support tickets via <a href="admin-tickets.html">admin-tickets</a>. Auto-categorized by AI; humans always reply.</p>
+
+          <div class="sop">
+            <h3><span>SOP-01: New ticket triage</span><span class="meta">Daily · within 1hr</span></h3>
+            <ol>
+              <li>Open <a href="admin-tickets.html">admin-tickets</a>. Sort by Open + by oldest first.</li>
+              <li>For each ticket: read it. Check the customer's wallet history if relevant.</li>
+              <li>Categorize: customer / Business / Partner / press / investor / fraud-suspected.</li>
+              <li>Pick a canned reply from <a href="admin-emails.html">admin-emails</a> if applicable. Always personalize the first line.</li>
+              <li>Set expected resolution time. <code>SLA: 1 business day for standard tickets.</code></li>
+              <li>If fraud-suspected, escalate to SOP-08 immediately.</li>
+            </ol>
+            <div class="escalate"><strong>Escalate to Kenny if:</strong> press inquiry · investor · suspected lawsuit · &gt; $200 in dispute · customer threatens public complaint</div>
+          </div>
+
+          <div class="sop">
+            <h3><span>SOP-02: First-time-customer confused about LYMX value</span><span class="meta">Common · 5 min reply</span></h3>
+            <ol>
+              <li>Use the canned <code>customer_first_redemption</code> template from admin-emails.</li>
+              <li>Confirm: 1 LYMX = $0.01, never expires, spendable at any LYMX Business.</li>
+              <li>Link them to <a href="help-article.html">how to redeem at a Business</a>.</li>
+              <li>If they still don't get it after 2 emails, schedule a 5-min call with Sam.</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- Settlement -->
+        <div class="section" id="settlement">
+          <div class="section-h"><div class="ic settlement">💵</div><h2>Settlement disputes</h2></div>
+          <p class="lede">Business filed a dispute via <a href="settlement-dispute.html">settlement-dispute</a>. SLA: 1-2 business days.</p>
+
+          <div class="sop">
+            <h3><span>SOP-03: Process incoming settlement dispute</span><span class="sla">1-2 BD</span></h3>
+            <ol>
+              <li>Pull the dispute from the admin-tickets queue. Read the Business's description.</li>
+              <li>Pull the underlying transaction from the database: <code>SELECT * FROM transactions WHERE id = ...</code></li>
+              <li>Compare: what the Business reports vs. what the POS logged vs. what the customer's wallet shows.</li>
+              <li>If our error → credit the Business immediately, send template <code>dispute_resolved_our_error</code>, close ticket.</li>
+              <li>If Business error (rare) → reply with the audit trail, ask for clarification before closing.</li>
+              <li>If customer-side dispute (rarer) → loop in the customer per SOP-09.</li>
+              <li>If unable to determine within 24h, escalate to Kenny.</li>
+            </ol>
+            <div class="escalate"><strong>Escalate to Kenny:</strong> any dispute &gt; 5,000 LYMX · any pattern of disputes from same Business in &lt; 7 days · any dispute that touches the buy/sell mechanic itself.</div>
+          </div>
+
+          <div class="sop">
+            <h3><span>SOP-04: Settlement statement discrepancy from Business</span><span class="meta">Monthly</span></h3>
+            <ol>
+              <li>Business contacts saying "my statement doesn't match my POS log."</li>
+              <li>Pull both sides — our settlement service log + their POS export.</li>
+              <li>Common causes: tip-aware accrual mismatch, manual void within 60s, promo multiplier timing.</li>
+              <li>Walk Business through reconciliation. Always do this on a video call if &gt; 50 LYMX off.</li>
+              <li>If the issue is on our side, credit + post a public note in <a href="incident-history.html">incident-history</a> if affecting &gt; 1 Business.</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- Fraud -->
+        <div class="section" id="fraud">
+          <div class="section-h"><div class="ic fraud">🚨</div><h2>Fraud &amp; abuse</h2></div>
+          <p class="lede">Suspicious account activity, suspected fake accounts, abuse of the referral program.</p>
+
+          <div class="sop">
+            <h3><span>SOP-05: Suspicious wallet activity flag</span><span class="sla urgent">Within 1hr</span></h3>
+            <ol>
+              <li>Triggered automatically by anomaly detection or by customer-reported "didn't make this transaction".</li>
+              <li>If customer-initiated lock (via <a href="customer-dispute.html">customer-dispute</a>), wallet is already frozen — verify lock active.</li>
+              <li>If anomaly-flagged but customer hasn't reported, soft-freeze (limit to existing-counterparty redemptions) and email customer.</li>
+              <li>Pull last 30d of transactions. Look for: rapid back-to-back redemptions across cities, unusual time-of-day, never-before-seen device.</li>
+              <li>If clearly fraud → permanently freeze, return any LYMX to original earnings, file a SAR-style internal note.</li>
+              <li>If false positive → unlock, email customer apology + 50 LYMX inconvenience credit.</li>
+            </ol>
+            <div class="escalate"><strong>Escalate to Kenny + Counsel:</strong> any fraud event &gt; $100 in value · any pattern across multiple accounts · any law-enforcement inquiry.</div>
+          </div>
+
+          <div class="sop">
+            <h3><span>SOP-06: Referral program abuse</span><span class="meta">Audit weekly</span></h3>
+            <ol>
+              <li>Run <code>SELECT * FROM referrals WHERE referee.signup_ip = referrer.signup_ip</code> weekly.</li>
+              <li>Flag clusters: 5+ referrals from same IP in 24h, or referees who never earn first LYMX.</li>
+              <li>Manual review per cluster. Some are legit (family, work computer); some are abuse.</li>
+              <li>For confirmed abuse: clawback the 200 LYMX bonus, email warning, second offense = ban from referral program.</li>
+            </ol>
+          </div>
+
+          <div class="sop">
+            <h3><span>SOP-07: Partner-side gaming (fake activations)</span><span class="meta">Audit monthly</span></h3>
+            <ol>
+              <li>Per Partner Agreement §6, fake activations are grounds for clawback + termination.</li>
+              <li>Run monthly: any Partner whose recruited Businesses have &lt; 10 transactions in their first 60 days flag for review.</li>
+              <li>If genuine (Business is just slow), nothing happens.</li>
+              <li>If fake (no real Business, only the activation), clawback the $500 + send termination notice. Loop in counsel.</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- Refund -->
+        <div class="section" id="refund">
+          <div class="section-h"><div class="ic refund">↩️</div><h2>Refunds &amp; clawback</h2></div>
+          <p class="lede">When LYMX needs to be reversed — Business return, customer error, fraud event.</p>
+
+          <div class="sop">
+            <h3><span>SOP-08: Customer requests cash refund of their LYMX</span><span class="meta">Common confusion</span></h3>
+            <ol>
+              <li><strong>Always:</strong> politely decline. LYMX is a promotional credit, not money. Reference <a href="disclaimer.html">disclaimer</a> + <a href="refund-policy.html">refund policy</a>.</li>
+              <li>Offer alternatives: spend at any LYMX Business, gift to a friend, or convert to a bulk-gift order.</li>
+              <li>If customer is angry/threatens chargeback: stay polite, document the conversation, escalate to Kenny.</li>
+              <li><strong>Never</strong> offer to refund LYMX as cash, even at our cost. That's the slippery slope to becoming a money transmitter.</li>
+            </ol>
+          </div>
+
+          <div class="sop">
+            <h3><span>SOP-09: Partner sign-up bonus clawback (Business cancels &lt;30d)</span><span class="meta">Auto-triggered</span></h3>
+            <ol>
+              <li>Triggered when a Business signs up + cancels within 30 days. Per <a href="partner-agreement.html">Partner Agreement</a>.</li>
+              <li>Auto-reverse the $500 sign-up bonus from the Direct Partner's pending payouts.</li>
+              <li>Send Partner the email template <code>signup_clawback_30day</code> explaining what happened.</li>
+              <li>If Partner had also paid out a downline override, reverse those too.</li>
+              <li>Log the clawback in <a href="commission-backend.html">commission-backend</a>.</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- Legal -->
+        <div class="section" id="legal">
+          <div class="section-h"><div class="ic legal">⚖️</div><h2>Legal requests</h2></div>
+          <p class="lede">Subpoenas, search warrants, civil discovery, regulator inquiries.</p>
+
+          <div class="sop">
+            <h3><span>SOP-10: Subpoena or court order received</span><span class="sla urgent">Within 24hr</span></h3>
+            <ol>
+              <li><strong>Do NOT respond directly.</strong> Forward to counsel within 24h: <code>brad@bertramcarr.law</code>.</li>
+              <li>Lock the underlying records (do not delete or modify).</li>
+              <li>Counsel reviews scope — too-broad orders get a meet-and-confer, not blanket compliance.</li>
+              <li>If gag order: log internally only. If no gag order: notify the affected user before producing data per our <a href="privacy.html">privacy policy</a>.</li>
+              <li>Disclosure logged in <a href="transparency.html">transparency report</a> at next annual update.</li>
+            </ol>
+            <div class="escalate"><strong>Always loop in:</strong> Kenny + Counsel within 24h, even for "routine" subpoenas.</div>
+          </div>
+
+          <div class="sop">
+            <h3><span>SOP-11: NV state regulator inquiry</span><span class="sla urgent">Within 1 BD</span></h3>
+            <ol>
+              <li>Possible regulators: NV Financial Institutions Division (NRS 671), NV AG, NV Dept of Taxation, FTC.</li>
+              <li>Forward to counsel and Kenny within 1 business day.</li>
+              <li>Reference our <a href="LYMX-Legal-Inquiry.docx">legal inquiry doc</a> — most questions are anticipated there.</li>
+              <li>Counsel drafts the response. Kenny reviews. We always respond within the deadline given.</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- Incident -->
+        <div class="section" id="incident">
+          <div class="section-h"><div class="ic incident">🚨</div><h2>Incident response</h2></div>
+          <p class="lede">Service outage, data exposure, security event. Pre-defined severity levels.</p>
+
+          <div class="sop">
+            <h3><span>SOP-12: Severity classification</span><span class="meta">Reference</span></h3>
+            <table class="sev-table">
+              <thead><tr><th>Sev</th><th>Definition</th><th>Response time</th><th>Page who</th></tr></thead>
+              <tbody>
+                <tr><td><span class="sev s1">SEV-1</span></td><td>Customer data exposed; full service down</td><td>Immediate</td><td>Kenny + Counsel</td></tr>
+                <tr><td><span class="sev s2">SEV-2</span></td><td>Wallet QR / POS down for &gt;5 min; partial degradation</td><td>15 min</td><td>Kenny</td></tr>
+                <tr><td><span class="sev s3">SEV-3</span></td><td>Single Business affected; minor functionality issue</td><td>1 hour</td><td>Sam</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sop">
+            <h3><span>SOP-13: SEV-1 incident playbook</span><span class="sla urgent">Immediate</span></h3>
+            <ol>
+              <li><strong>0-15 min:</strong> War-room Slack channel opened. Kenny is incident commander. Triage scope.</li>
+              <li><strong>15-60 min:</strong> Mitigate (rollback, hotfix, or maintenance mode). Update <a href="status.html">status page</a>.</li>
+              <li><strong>1-4 hr:</strong> Determine root cause. Email impacted customers if data is involved.</li>
+              <li><strong>4-24 hr:</strong> Counsel engaged if data involved. Begin breach notification process if applicable.</li>
+              <li><strong>24-72 hr:</strong> Direct customer + Business notification per our <a href="security.html">security commitments</a>.</li>
+              <li><strong>14 days:</strong> Public post-mortem in <a href="incident-history.html">incident history</a>.</li>
+            </ol>
+          </div>
+
+          <div class="ref-card">
+            <strong>Quick reference:</strong> Status page edit: <a href="status.html">status.html</a> · Maintenance mode: <a href="maintenance.html">maintenance.html</a> · Public history: <a href="incident-history.html">incident-history.html</a> · Security commitments: <a href="security.html">security.html</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Internal runbook · noindex · Last updated April 30, 2026 · <a href="admin-dashboard.html">Admin home</a></div>
+</footer>
+
+<script>
+  const tocLinks = document.querySelectorAll('#toc a');
+  const sections = Array.from(tocLinks).map(a=>document.querySelector(a.getAttribute('href')));
+  window.addEventListener('scroll',()=>{
+    let active = sections[0];
+    for(const s of sections){
+      if(!s) continue;
+      if(s.getBoundingClientRect().top < 120) active = s;
+    }
+    tocLinks.forEach(a=>a.classList.toggle('on', a.getAttribute('href') === '#'+active.id));
+  },{passive:true});
+  tocLinks.forEach(a=>{
+    a.onclick=e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'})};
+  });
+
+  // Search filter
+  document.getElementById('search').oninput = e=>{
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('.section').forEach(s=>{
+      const text = s.textContent.toLowerCase();
+      s.style.display = !q || text.includes(q) ? '' : 'none';
+    });
+  };
+</script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dispute handling · LYMX Business</title>
+<meta name="description" content="When a customer disputes a LYMX transaction with your Business — the playbook for fast resolution and minimal friction.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:38px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .timeline-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:32px;background:#fff;padding:16px;border-radius:14px;border:1px solid var(--line)}
+  @media(max-width:760px){.timeline-bar{grid-template-columns:repeat(2,1fr)}}
+  .tl-step{padding:12px;border-radius:8px;background:#f8fafc}
+  .tl-step .when{font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;color:var(--accent)}
+  .tl-step .what{font-size:13px;font-weight:700;margin-top:3px}
+  .tl-step .desc{font-size:12px;color:var(--mute);margin-top:3px;line-height:1.3}
+
+  .types{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px}
+  @media(max-width:760px){.types{grid-template-columns:1fr}}
+  .type{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 22px}
+  .type h3{margin:0 0 6px;font-size:15px}
+  .type .pct{font-size:24px;font-weight:800;color:var(--accent);letter-spacing:-.02em;margin-bottom:6px}
+  .type p{margin:0;font-size:13px;color:var(--mute)}
+
+  .playbook{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:18px}
+  .playbook h2{margin:0 0 14px;font-size:20px}
+  .playbook ol{margin:0;padding-left:0;list-style:none;counter-reset:step}
+  .playbook ol li{position:relative;padding-left:42px;margin-bottom:12px;font-size:14.5px;counter-increment:step}
+  .playbook ol li::before{content:counter(step);position:absolute;left:0;top:0;width:28px;height:28px;background:var(--accent);color:#fff;border-radius:50%;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .playbook ol li b{display:block;font-size:15px;margin-bottom:3px;color:var(--ink)}
+  .playbook ol li span{color:var(--mute);font-size:14px}
+
+  .alert{background:#fff8e6;border:1px solid #f0c961;border-radius:10px;padding:14px 18px;font-size:14px;color:#7a5a00;margin:14px 0}
+  .alert b{color:#5a4200}
+  .alert.ok{background:#e8f6ee;border-color:#b3e0c7;color:#0a5a3a}
+  .alert.ok b{color:#0a7a4d}
+
+  .resp-tmpl{background:#f8fafc;border-left:3px solid var(--accent);padding:14px 18px;font-size:13.5px;border-radius:6px;margin:12px 0;font-family:ui-monospace,Menlo,monospace;color:var(--ink);white-space:pre-wrap}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details[open] summary{margin-bottom:8px}
+  details p{margin:0;color:var(--mute);font-size:14px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power <span class="biz-tag">FOR BUSINESSES</span></div>
+    <div class="nav-links">
+      <a href="biz-faq.html">Biz FAQ</a>
+      <a href="biz-troubleshoot.html">Troubleshoot</a>
+      <a href="biz-success-coaches.html">Success coach</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Business · Operations · Dispute handling</div>
+  <h1>When a customer disputes a LYMX transaction</h1>
+  <p class="lead">Disputes are rare (LYMX network rate is under 0.4%) but they happen. The good news: most are resolved without you owing anything. This is the playbook for handling them quickly and keeping the relationship.</p>
+
+  <div class="timeline-bar">
+    <div class="tl-step"><div class="when">Day 0</div><div class="what">Filed</div><div class="desc">Customer files via wallet</div></div>
+    <div class="tl-step"><div class="when">Day 1</div><div class="what">Notified</div><div class="desc">You see it in dashboard</div></div>
+    <div class="tl-step"><div class="when">Day 1-3</div><div class="what">You respond</div><div class="desc">Upload evidence + response</div></div>
+    <div class="tl-step"><div class="when">Day 3-5</div><div class="what">LYMX reviews</div><div class="desc">Mediator decides</div></div>
+    <div class="tl-step"><div class="when">Day 5-7</div><div class="what">Resolved</div><div class="desc">Refund or denial</div></div>
+  </div>
+
+  <h2 style="font-size:22px;margin:0 0 14px">The 3 dispute types — by frequency</h2>
+  <div class="types">
+    <div class="type">
+      <h3>Missing LYMX</h3>
+      <div class="pct">68%</div>
+      <p>"I paid, didn't earn LYMX." Most common. Usually a sync glitch or cashier forgot to scan QR.</p>
+    </div>
+    <div class="type">
+      <h3>Wrong amount</h3>
+      <div class="pct">22%</div>
+      <p>"I earned 50 LYMX, should have been 100." Usually a tipping/subtotal calculation mismatch.</p>
+    </div>
+    <div class="type">
+      <h3>Unauthorized</h3>
+      <div class="pct">10%</div>
+      <p>"I never visited that Business." Suspected fraud or wrong-Business attribution. Rarest, most serious.</p>
+    </div>
+  </div>
+
+  <!-- Playbook 1: Missing LYMX -->
+  <div class="playbook">
+    <h2>Playbook 1 · Missing LYMX dispute</h2>
+    <p style="color:var(--mute);font-size:14px;margin:0 0 14px">Customer says they paid but didn't earn. Default stance: assume good faith. Evidence is usually clear from POS receipt.</p>
+    <ol>
+      <li>
+        <b>Pull the POS receipt by date + amount</b>
+        <span>If your POS has search, use customer-stated date + amount. Most POS keep receipts for 90+ days.</span>
+      </li>
+      <li>
+        <b>Check whether QR was scanned</b>
+        <span>If receipt has "LYMX issued: 0" line item, QR wasn't scanned. Cashier likely missed it. Issue retroactive credit.</span>
+      </li>
+      <li>
+        <b>If QR was scanned (LYMX issued > 0)</b>
+        <span>Then it's a sync issue between POS and LYMX. Forward to LYMX support — they fix from their end.</span>
+      </li>
+      <li>
+        <b>Use the dispute response template</b>
+        <span>Don't fight it — refund retroactively. The cost to you is pennies, the cost of losing the customer is real money.</span>
+      </li>
+    </ol>
+
+    <div class="resp-tmpl">Hi [first name],
+
+Thanks for flagging this. I checked our POS — your transaction on [date] for $[amount] is there, but the LYMX scan didn't go through that day (likely staff missed it during a rush).
+
+I've issued a retroactive credit of [N] LYMX to your wallet. It should appear within 60 minutes.
+
+Sorry for the trouble — appreciate your patience.
+
+— [Your name], [Business name]</div>
+
+    <div class="alert ok"><b>You don't lose money.</b> Retroactive credits come out of your standard LYMX issuance budget, same as if the cashier had scanned correctly. Net cost to you: ~$0.05 per dollar of LYMX issued.</div>
+  </div>
+
+  <!-- Playbook 2: Wrong amount -->
+  <div class="playbook">
+    <h2>Playbook 2 · Wrong-amount dispute</h2>
+    <p style="color:var(--mute);font-size:14px;margin:0 0 14px">Customer claims they earned the wrong number of LYMX. Usually a subtotal vs. total confusion.</p>
+    <ol>
+      <li>
+        <b>Check your LYMX rate setup</b>
+        <span>Dashboard → Settings → LYMX rate. Standard: LYMX issued on subtotal (pre-tax, pre-tip). Confirm yours is set this way.</span>
+      </li>
+      <li>
+        <b>Compare receipt math</b>
+        <span>Receipt subtotal × your LYMX rate = expected LYMX. If actual LYMX matches that, customer is wrong about expected amount. If actual is less, your POS calculated on something else.</span>
+      </li>
+      <li>
+        <b>If your math is right, explain it kindly</b>
+        <span>Use the explanation template below. Show your work — most customers accept once they see it.</span>
+      </li>
+      <li>
+        <b>If your math was wrong, issue the difference</b>
+        <span>Retroactive credit for the gap. No need to refund the original LYMX, just credit the missing portion.</span>
+      </li>
+    </ol>
+
+    <div class="resp-tmpl">Hi [first name],
+
+Looked into this — our LYMX rate at [Business] is [N] LYMX per dollar on the pre-tax subtotal. Your visit on [date]:
+
+Subtotal: $[X] · Rate: [N]/$1 · LYMX issued: [Y]
+
+This was correct. If you'd expected LYMX on the post-tax total or on tip, that's not how our system is configured (LYMX standard is subtotal).
+
+Happy to walk through if you have questions — just reply.
+
+— [Your name], [Business name]</div>
+  </div>
+
+  <!-- Playbook 3: Unauthorized -->
+  <div class="playbook">
+    <h2>Playbook 3 · Unauthorized transaction dispute</h2>
+    <p style="color:var(--mute);font-size:14px;margin:0 0 14px">Customer says they never visited your Business. Take this seriously — it's either fraud or an attribution error.</p>
+    <ol>
+      <li>
+        <b>Check POS by date + customer wallet ID</b>
+        <span>Find the disputed transaction. What was bought? What time? Who was the cashier?</span>
+      </li>
+      <li>
+        <b>Pull video if you have it</b>
+        <span>Most POS+camera setups can match a transaction to a video clip. Confirm a customer was there.</span>
+      </li>
+      <li>
+        <b>If transaction is real and customer just doesn't remember</b>
+        <span>Often they forgot — gift card purchase, kid using their wallet, friend they bought lunch for. Show them the timestamp.</span>
+      </li>
+      <li>
+        <b>If transaction is suspicious</b>
+        <span>Could be: stolen wallet ID, internal employee fraud, or wrong customer attribution. Flag to LYMX support immediately.</span>
+      </li>
+      <li>
+        <b>If verified fraud</b>
+        <span>LYMX absorbs the cost — Business doesn't pay if fraud is confirmed. We pursue the fraudster.</span>
+      </li>
+    </ol>
+
+    <div class="alert"><b>Don't accuse the customer.</b> Even if it looks like they're forgetting, lead with curiosity: "I see this transaction on March 12 at 4:14pm — does that ring any bells?" Often they remember. If they don't, refund and move on.</div>
+
+    <div class="resp-tmpl">Hi [first name],
+
+Thanks for flagging — I checked our records carefully. We do show a transaction at [Business] on [date] at [time] for $[amount]. Our cashier was [name].
+
+Does that timestamp look familiar? If so, we'll let it stand. If not, I'll refund the LYMX immediately and forward to LYMX support to investigate.
+
+— [Your name], [Business name]</div>
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">Dispute do's and don'ts</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px">
+    <div style="background:#e8f6ee;border:1px solid #b3e0c7;border-radius:10px;padding:18px 22px">
+      <h3 style="margin:0 0 10px;color:#0a7a4d;font-size:16px">✅ Do</h3>
+      <ul style="margin:0;padding-left:18px;font-size:14px;color:#0a5a3a">
+        <li style="margin-bottom:6px">Respond within 24 hours</li>
+        <li style="margin-bottom:6px">Lead with curiosity, not defense</li>
+        <li style="margin-bottom:6px">Show the math / receipt clearly</li>
+        <li style="margin-bottom:6px">Resolve in customer's favor when borderline</li>
+        <li style="margin-bottom:6px">Issue retroactive credit instead of arguing</li>
+        <li style="margin-bottom:6px">Forward to LYMX support if you suspect fraud</li>
+      </ul>
+    </div>
+    <div style="background:#fde8e6;border:1px solid #f0b6b3;border-radius:10px;padding:18px 22px">
+      <h3 style="margin:0 0 10px;color:#8a2820;font-size:16px">❌ Don't</h3>
+      <ul style="margin:0;padding-left:18px;font-size:14px;color:#6a1810">
+        <li style="margin-bottom:6px">Accuse the customer of lying</li>
+        <li style="margin-bottom:6px">Ignore disputes (auto-decided in customer's favor after 7 days)</li>
+        <li style="margin-bottom:6px">Threaten to ban them from your Business</li>
+        <li style="margin-bottom:6px">Reveal customer phone/email externally</li>
+        <li style="margin-bottom:6px">Argue over $1-2 in LYMX (refund and move on)</li>
+        <li style="margin-bottom:6px">Resolve on POS without LYMX dashboard log (creates audit gap)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 style="font-size:22px;margin:24px 0 14px">FAQ</h2>
+  <details><summary>Who pays for resolved disputes?</summary><p>If the dispute is resolved in customer's favor and was due to your error: the LYMX credit comes out of your standard issuance budget (~$0.05 per dollar). If it was due to LYMX system error: LYMX absorbs it. If it was fraud: LYMX absorbs and pursues fraudster.</p></details>
+  <details><summary>What if I don't respond to a dispute in time?</summary><p>After 7 days with no response, dispute auto-resolves in customer's favor. The LYMX credit comes out of your account. Don't ignore disputes.</p></details>
+  <details><summary>Can I challenge a LYMX dispute decision?</summary><p>Yes — Settings → Disputes → tap closed dispute → Appeal. Goes to senior LYMX support. Decision is final after appeal review (typically 5 business days).</p></details>
+  <details><summary>How does this affect my Business standing?</summary><p>Dispute rate is monitored. If your dispute rate exceeds 1% of transactions for 3 consecutive months, LYMX support may schedule a review call. Below 1% (which 99% of Businesses are): no flag.</p></details>
+  <details><summary>Can I see other Businesses' dispute rates?</summary><p>No — that's competitive data. You can see network-wide average (currently 0.4%) so you know where you stand.</p></details>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="settlement-dispute.html" style="color:#5a6373">Settlement disputes</a> · <a href="biz-success-coaches.html" style="color:#5a6373">Success coaches</a>
+</footer>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

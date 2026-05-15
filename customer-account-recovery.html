@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Account recovery · LYMX</title>
+<meta name="description" content="Lost phone, new number, or forgotten PIN — here's how to get back into your LYMX wallet without losing your balance.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:36px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .scenario-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:32px}
+  @media(max-width:680px){.scenario-grid{grid-template-columns:1fr}}
+  .scenario{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;cursor:pointer;transition:all .15s}
+  .scenario:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .scenario .ico{width:42px;height:42px;border-radius:50%;background:#fef9e7;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:12px}
+  .scenario h3{margin:0 0 6px;font-size:16px}
+  .scenario p{margin:0;font-size:13.5px;color:var(--mute)}
+
+  .recovery-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;margin-bottom:24px}
+  .recovery-box h2{margin:0 0 16px;font-size:22px}
+  .step-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--accent);color:#fff;border-radius:50%;font-size:14px;font-weight:800;margin-right:10px}
+  .recovery-box ol{padding-left:0;list-style:none;counter-reset:step}
+  .recovery-box ol li{position:relative;padding-left:42px;margin-bottom:14px;font-size:14.5px;counter-increment:step}
+  .recovery-box ol li::before{content:counter(step);position:absolute;left:0;top:0;width:28px;height:28px;background:var(--accent);color:#fff;border-radius:50%;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .recovery-box ol li b{display:block;font-size:15px;margin-bottom:3px;color:var(--ink)}
+  .recovery-box ol li span{color:var(--mute);font-size:14px}
+
+  .alert{background:#fff8e6;border:1px solid #f0c961;border-radius:10px;padding:14px 18px;font-size:14px;color:#7a5a00;margin:14px 0}
+  .alert b{color:#5a4200}
+  .alert.ok{background:#e8f6ee;border-color:#b3e0c7;color:#0a5a3a}
+  .alert.ok b{color:#0a7a4d}
+  .alert.err{background:#fde8e6;border-color:#f0b6b3;color:#8a2820}
+  .alert.err b{color:#6a1810}
+
+  .timeline{margin:24px 0;border-left:2px solid var(--line);padding-left:24px;position:relative}
+  .timeline-item{margin-bottom:14px;position:relative}
+  .timeline-item::before{content:"";position:absolute;left:-30px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+  .timeline-item h4{margin:0 0 4px;font-size:14.5px}
+  .timeline-item p{margin:0;font-size:13.5px;color:var(--mute)}
+
+  .contact-card{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;padding:24px 28px;border-radius:14px;margin-top:32px;display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+  .contact-card h3{margin:0 0 4px;font-size:18px}
+  .contact-card p{margin:0;font-size:14px;opacity:.9}
+  .contact-card .btn{background:#fff;color:#0050c7;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details[open] summary{margin-bottom:8px}
+  details p{margin:0;color:var(--mute);font-size:14px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power</div>
+    <div class="nav-links">
+      <a href="customer-faq.html">FAQ</a>
+      <a href="emergency-protocol.html">Emergency</a>
+      <a href="support.html">Support</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Customer · <a href="customer-faq.html">FAQ</a> · Account recovery</div>
+  <h1>Get back into your wallet</h1>
+  <p class="lead">Your LYMX is tied to your phone number, not your device. So if you lose your phone, change your number, or forget your PIN — your balance is still safe. Pick the scenario that matches you.</p>
+
+  <div class="alert ok"><b>Your LYMX is safe.</b> Even if you can't get into your wallet right now, your balance is held server-side. Recovery just means getting your access back.</div>
+
+  <div class="scenario-grid">
+    <a href="#lost" class="scenario">
+      <div class="ico">📱</div>
+      <h3>Lost or stolen phone</h3>
+      <p>Phone gone — need to lock the wallet and recover on a new device</p>
+    </a>
+    <a href="#new-number" class="scenario">
+      <div class="ico">📞</div>
+      <h3>I changed my phone number</h3>
+      <p>Same person, new number — need to migrate the wallet</p>
+    </a>
+    <a href="#forgot-pin" class="scenario">
+      <div class="ico">🔢</div>
+      <h3>Forgot my PIN</h3>
+      <p>Phone is fine, just locked out of my own wallet</p>
+    </a>
+    <a href="#new-device" class="scenario">
+      <div class="ico">📲</div>
+      <h3>New phone, same number</h3>
+      <p>Upgraded my phone — wallet should follow</p>
+    </a>
+    <a href="#suspicious" class="scenario">
+      <div class="ico">🚨</div>
+      <h3>I think someone got in</h3>
+      <p>Suspicious activity, charges I didn't make, suspect compromise</p>
+    </a>
+    <a href="#archived" class="scenario">
+      <div class="ico">⏳</div>
+      <h3>Wallet shows "archived"</h3>
+      <p>Inactive wallet (24+ months) — recoverable</p>
+    </a>
+  </div>
+
+  <!-- Lost phone -->
+  <div class="recovery-box" id="lost">
+    <h2>📱 Lost or stolen phone</h2>
+    <p style="color:var(--mute);font-size:14.5px">First priority is locking your wallet so no one can spend it. Then you recover on a new device.</p>
+
+    <ol>
+      <li>
+        <b>Lock your wallet immediately</b>
+        <span>From any browser, go to <code>wallet.lymx.com/lock</code>, enter your phone number, and click "Lock wallet." We'll send a verification text to that number — if you can't get to that text yet, skip to step 2.</span>
+      </li>
+      <li>
+        <b>Call our 24/7 emergency line: 1-833-LYMX-911</b>
+        <span>If your phone is gone and you can't get verification texts, call us. We verify identity through 3 security questions and can manually lock the wallet within 5 minutes.</span>
+      </li>
+      <li>
+        <b>Get a new phone (or borrow one)</b>
+        <span>Once you have any device with internet access, go to <code>wallet.lymx.com</code> and click "Recover wallet." If your number is the same, we send a verification text and you're back in within 60 seconds.</span>
+      </li>
+      <li>
+        <b>If your number is also gone, we do manual ID verification</b>
+        <span>Photo of government ID + a transaction history question (e.g., "Where did you spend LYMX last Tuesday?"). Usually resolved within 24 hours by our support team.</span>
+      </li>
+    </ol>
+
+    <div class="alert"><b>Did someone use your wallet between when you lost it and when you locked it?</b> File a dispute via <a href="customer-dispute.html">customer-dispute.html</a> within 30 days. We refund unauthorized spending after investigation.</div>
+  </div>
+
+  <!-- New number -->
+  <div class="recovery-box" id="new-number">
+    <h2>📞 I changed my phone number</h2>
+    <p style="color:var(--mute);font-size:14.5px">Two paths depending on whether you still have access to the old number.</p>
+
+    <h4 style="margin:20px 0 8px;font-size:15px">Path A — You still have the old number active</h4>
+    <ol>
+      <li>
+        <b>Go to wallet → Settings → Phone number</b>
+        <span>From your wallet on any device.</span>
+      </li>
+      <li>
+        <b>Verify old number</b>
+        <span>We text the old number — enter the code.</span>
+      </li>
+      <li>
+        <b>Enter new number, verify it</b>
+        <span>We text the new number — enter that code too.</span>
+      </li>
+      <li>
+        <b>Done</b>
+        <span>Wallet migrates instantly. All history, balance, referrals follow.</span>
+      </li>
+    </ol>
+
+    <h4 style="margin:20px 0 8px;font-size:15px">Path B — Old number is gone (deactivated, ported, etc.)</h4>
+    <ol>
+      <li>
+        <b>Open a manual recovery ticket</b>
+        <span>Email <code>recover@lymx.com</code> with your name + old number + new number + the date you switched.</span>
+      </li>
+      <li>
+        <b>We verify identity</b>
+        <span>Photo of government ID + a transaction question.</span>
+      </li>
+      <li>
+        <b>Migration completes within 24-48 hours</b>
+        <span>You'll get a text on the new number when it's done.</span>
+      </li>
+    </ol>
+  </div>
+
+  <!-- Forgot PIN -->
+  <div class="recovery-box" id="forgot-pin">
+    <h2>🔢 Forgot my PIN</h2>
+    <p style="color:var(--mute);font-size:14.5px">Easiest scenario — your phone has the wallet, you just can't unlock it.</p>
+
+    <ol>
+      <li>
+        <b>Tap "Forgot PIN" on the lock screen</b>
+        <span>Bottom of the PIN entry screen.</span>
+      </li>
+      <li>
+        <b>Receive verification text</b>
+        <span>We text the same number associated with the wallet.</span>
+      </li>
+      <li>
+        <b>Enter the 6-digit code</b>
+        <span>You're now in PIN reset mode.</span>
+      </li>
+      <li>
+        <b>Set a new PIN</b>
+        <span>Don't reuse your old one. Don't use 0000, 1234, or your birthday.</span>
+      </li>
+    </ol>
+
+    <div class="alert"><b>Failed PIN 5 times?</b> The wallet auto-locks for 30 minutes. After 10 failed attempts, it locks until you call 1-833-LYMX-911. This is to prevent stranger-walks-by-with-your-phone scenarios.</div>
+  </div>
+
+  <!-- New device same number -->
+  <div class="recovery-box" id="new-device">
+    <h2>📲 New phone, same number</h2>
+    <p style="color:var(--mute);font-size:14.5px">Easiest of all. Your wallet isn't installed on the device — it's a web app at <code>wallet.lymx.com</code>.</p>
+
+    <ol>
+      <li>
+        <b>Open Safari/Chrome → wallet.lymx.com</b>
+        <span>On the new phone.</span>
+      </li>
+      <li>
+        <b>Enter phone number, get verification text</b>
+        <span>Same number as before.</span>
+      </li>
+      <li>
+        <b>Enter PIN</b>
+        <span>If you remember it. If not — see "Forgot my PIN" above.</span>
+      </li>
+      <li>
+        <b>Tap "Add to Home Screen" if you want one-tap access</b>
+        <span>iOS: Share → Add to Home Screen. Android: ⋮ menu → Install app.</span>
+      </li>
+    </ol>
+  </div>
+
+  <!-- Suspicious -->
+  <div class="recovery-box" id="suspicious">
+    <h2>🚨 I think someone got into my wallet</h2>
+    <div class="alert err"><b>Treat this as urgent.</b> Lock the wallet first, investigate later.</div>
+
+    <ol>
+      <li>
+        <b>Lock the wallet</b>
+        <span>wallet.lymx.com/lock or call 1-833-LYMX-911.</span>
+      </li>
+      <li>
+        <b>Review recent activity</b>
+        <span>Once locked, log in via <a href="customer-history.html">customer-history.html</a> — flag any transaction you didn't make.</span>
+      </li>
+      <li>
+        <b>File a dispute for each unauthorized transaction</b>
+        <span>Within 30 days. We refund verified unauthorized activity within 7 days of dispute approval.</span>
+      </li>
+      <li>
+        <b>Reset PIN before unlocking</b>
+        <span>Whoever got in may know your old PIN. Don't reuse it.</span>
+      </li>
+      <li>
+        <b>Enable two-factor</b>
+        <span>Settings → Security → Require text code on every login. Slightly more friction, much more secure.</span>
+      </li>
+    </ol>
+  </div>
+
+  <!-- Archived -->
+  <div class="recovery-box" id="archived">
+    <h2>⏳ Wallet shows "archived"</h2>
+    <p style="color:var(--mute);font-size:14.5px">If your wallet has been inactive for 24+ months (no earn, no spend, no login), we archive it to keep our active-wallet list clean. Recovery is simple.</p>
+
+    <ol>
+      <li>
+        <b>Log in normally</b>
+        <span>Same phone number, same PIN.</span>
+      </li>
+      <li>
+        <b>Tap "Reactivate wallet"</b>
+        <span>You'll see this banner instead of your normal balance.</span>
+      </li>
+      <li>
+        <b>Verify your phone</b>
+        <span>Standard text verification.</span>
+      </li>
+      <li>
+        <b>Wallet restored</b>
+        <span>All your old LYMX is intact — we never delete balances. Just paused.</span>
+      </li>
+    </ol>
+
+    <div class="alert ok"><b>Your LYMX never expires</b> as long as the wallet exists. Even archived wallets keep their balance forever — we just hide them from active queries.</div>
+  </div>
+
+  <h2 style="margin-top:40px;font-size:24px">Recovery timeline expectations</h2>
+  <div class="timeline">
+    <div class="timeline-item">
+      <h4>0-5 minutes — Self-service recovery</h4>
+      <p>Forgot PIN, new device same number, new number with old number active. All instant.</p>
+    </div>
+    <div class="timeline-item">
+      <h4>5-15 minutes — Phone-based identity verification</h4>
+      <p>Lost device, urgent lock requests. Call 1-833-LYMX-911.</p>
+    </div>
+    <div class="timeline-item">
+      <h4>24-48 hours — Manual ID verification</h4>
+      <p>Lost number, no access to old phone. Email <code>recover@lymx.com</code>.</p>
+    </div>
+    <div class="timeline-item">
+      <h4>3-7 days — Dispute resolution</h4>
+      <p>Unauthorized spending refunds after investigation.</p>
+    </div>
+  </div>
+
+  <div class="contact-card">
+    <div>
+      <h3>Need a human?</h3>
+      <p>24/7 emergency line · or chat with our support team during business hours</p>
+    </div>
+    <a href="support.html" class="btn">Contact support</a>
+  </div>
+
+  <h2 style="margin-top:40px;font-size:22px">More questions</h2>
+  <details>
+    <summary>What if I lost my phone AND my number is gone?</summary>
+    <p>Email <code>recover@lymx.com</code> with what you remember about the wallet — last Business you visited, approximate balance, when you joined. Combined with photo ID, our support team will recover your wallet within 24-48 hours.</p>
+  </details>
+  <details>
+    <summary>Will I lose my LYMX if I don't recover quickly?</summary>
+    <p>No. Your balance is held server-side and never expires (as long as the wallet exists). Take your time.</p>
+  </details>
+  <details>
+    <summary>Do you charge for recovery?</summary>
+    <p>No. All recovery — including manual ID verification — is free. Always.</p>
+  </details>
+  <details>
+    <summary>Can I have a backup PIN or recovery question?</summary>
+    <p>Settings → Security lets you add a backup recovery email and an optional security question. We recommend doing this when you set up the wallet — takes 30 seconds.</p>
+  </details>
+  <details>
+    <summary>What if I'm in the middle of a purchase and locked out?</summary>
+    <p>The Business has two options: (1) wait while you call recovery, or (2) charge you normally and apply LYMX retroactively after you recover. Most Businesses are happy to do option 2.</p>
+  </details>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · 24/7 emergency line: 1-833-LYMX-911 · <a href="support.html" style="color:#5a6373">Support</a>
+</footer>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

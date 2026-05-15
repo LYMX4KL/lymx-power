@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Business troubleshooting · LYMX</title>
+<meta name="description" content="Common LYMX issues Businesses face — POS sync failures, dashboard problems, settlement delays — and how to fix them fast.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:36px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;border-bottom:1px solid var(--line);padding-bottom:16px}
+  .filter-pill{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:600;background:#fff;cursor:pointer;color:var(--ink)}
+  .filter-pill.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .issue{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 26px;margin-bottom:14px}
+  .issue-head{display:flex;justify-content:space-between;align-items:start;gap:14px;flex-wrap:wrap}
+  .issue h3{margin:0 0 4px;font-size:17px}
+  .issue .cat{font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:3px 8px;border-radius:6px}
+  .issue .cat.pos{background:#e6f0ff;color:#0050c7}
+  .issue .cat.dash{background:#fef9e7;color:#7a5a00}
+  .issue .cat.settle{background:#e8f6ee;color:#0a7a4d}
+  .issue .cat.cust{background:#f3e8fd;color:#5b3697}
+  .issue .symptom{margin:10px 0;font-size:14.5px;color:var(--mute)}
+  .issue .symptom b{color:var(--ink)}
+  .issue .fix{background:#f8fafc;border-left:3px solid var(--ok);padding:14px 16px;border-radius:6px;margin-top:10px;font-size:14px}
+  .issue .fix b{color:var(--ok);display:block;margin-bottom:4px;font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+  .issue .fix ol{margin:6px 0 0;padding-left:18px}
+  .issue .fix ol li{margin-bottom:4px}
+  .issue .escalate{background:#fff8e6;border:1px solid #f0c961;border-radius:6px;padding:10px 14px;font-size:13px;color:#7a5a00;margin-top:10px}
+  .issue .escalate b{color:#5a4200}
+
+  .urgent{background:#fde8e6;border:2px solid #f0b6b3;border-radius:14px;padding:20px 24px;margin-bottom:24px}
+  .urgent h3{margin:0 0 8px;color:#8a2820;font-size:17px}
+  .urgent p{margin:0;color:#6a1810;font-size:14px}
+  .urgent a{color:#8a2820;font-weight:700;text-decoration:underline}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power <span class="biz-tag">FOR BUSINESSES</span></div>
+    <div class="nav-links">
+      <a href="biz-faq.html">Biz FAQ</a>
+      <a href="biz-dashboard.html">Dashboard</a>
+      <a href="support.html">Support</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Business · <a href="biz-faq.html">FAQ</a> · Troubleshooting</div>
+  <h1>Something not working in your LYMX setup?</h1>
+  <p class="lead">19 common Business-side issues and the fastest fixes. If your issue isn't here, your dedicated success coach is one tap away.</p>
+
+  <div class="urgent">
+    <h3>🚨 Customer can't pay right now and your POS is offline?</h3>
+    <p>Use the <a href="emergency-protocol.html">manual fallback</a>: write down phone number + amount + LYMX rate on receipt, apply LYMX retroactively when system is back. Customers don't lose their earn, you don't lose the sale.</p>
+  </div>
+
+  <div class="filter-row">
+    <span class="filter-pill on">All issues</span>
+    <span class="filter-pill">POS / sync</span>
+    <span class="filter-pill">Dashboard</span>
+    <span class="filter-pill">Settlement</span>
+    <span class="filter-pill">Customer-facing</span>
+  </div>
+
+  <!-- POS / sync -->
+  <div class="issue">
+    <div class="issue-head"><h3>POS isn't syncing transactions to LYMX dashboard</h3><span class="cat pos">POS</span></div>
+    <div class="symptom"><b>Symptom:</b> You ran 8 LYMX transactions on Saturday, dashboard shows 0.</div>
+    <div class="fix">
+      <b>Fix in 5 minutes</b>
+      <ol>
+        <li>Check POS internet connection — most syncs need live network</li>
+        <li>Dashboard → Integrations → check status badge for your POS (Square/Toast/Clover/Lightspeed). If "disconnected," click reconnect.</li>
+        <li>Manually trigger sync: Dashboard → Settings → Force re-sync. Pulls last 7 days from POS.</li>
+        <li>If still missing: contact your success coach. We can pull transactions from POS API directly.</li>
+      </ol>
+    </div>
+    <div class="escalate"><b>Customers complaining about missing LYMX?</b> Issue retroactive credits via Dashboard → Customer claims. They show up in customer wallets immediately.</div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>"This QR code is expired" error at register</h3><span class="cat pos">POS</span></div>
+    <div class="symptom"><b>Symptom:</b> Cashier scans customer QR, gets "expired" error.</div>
+    <div class="fix">
+      <b>Likely causes</b>
+      <ol>
+        <li>Customer's QR refreshes every 60 seconds. Have them tap their phone or refresh wallet.</li>
+        <li>Your POS system clock is off — POS Settings → Time → set to network time</li>
+        <li>Internet was offline when QR was generated — retry once back online</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>POS asking for activation code that expired</h3><span class="cat pos">POS</span></div>
+    <div class="symptom"><b>Symptom:</b> During first-time setup, your activation code says "expired."</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Activation codes expire after 14 days for security</li>
+        <li>Dashboard → Integrations → tap your POS → "Generate new activation code"</li>
+        <li>Enter new code in POS within 14 days</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Receipts are missing the LYMX line item</h3><span class="cat pos">POS</span></div>
+    <div class="symptom"><b>Symptom:</b> Customer paid, earned LYMX, but receipt doesn't show "+25 LYMX earned."</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>POS Settings → Receipts → enable "LYMX line item"</li>
+        <li>If using thermal printer that ran out of paper, change paper — LYMX line is on the bottom</li>
+        <li>If receipt template was customized: re-apply LYMX template (Integrations → POS → Receipt template → Reset)</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="issue">
+    <div class="issue-head"><h3>Dashboard shows wrong rate (e.g., 5/$1 when you set 3/$1)</h3><span class="cat dash">Dashboard</span></div>
+    <div class="symptom"><b>Symptom:</b> Settings show one rate, customers earning at a different rate.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Your rate is locked at activation by the platform. To change: Dashboard → Settings → Rate change request</li>
+        <li>Rate changes take effect 7 days after request (cooling period)</li>
+        <li>If activation rate was wrong from day one: contact success coach to rectify within 30 days at no penalty</li>
+      </ol>
+    </div>
+    <div class="escalate"><b>Important:</b> Rate changes only apply to NEW transactions, not retroactively. Already-issued LYMX stays at the original rate.</div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Can't log in to dashboard — 2FA broken</h3><span class="cat dash">Dashboard</span></div>
+    <div class="symptom"><b>Symptom:</b> 2FA code works but immediately says "invalid."</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Check your phone time — 2FA is time-sensitive, off-by-30s clocks fail</li>
+        <li>Try voice call instead: tap "Call instead" on 2FA screen, we read code aloud</li>
+        <li>If 2FA app (Google Authenticator) is broken: contact biz-support@lymx.com with photo ID. We disable 2FA temporarily so you can log in and re-enroll.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Numbers in dashboard don't match my POS reports</h3><span class="cat dash">Dashboard</span></div>
+    <div class="symptom"><b>Symptom:</b> POS says $4,200 in LYMX-tagged sales, dashboard shows $4,150.</div>
+    <div class="fix">
+      <b>Likely causes</b>
+      <ol>
+        <li>Refunds — LYMX automatically deducts refunded transactions; POS may show pre-refund total</li>
+        <li>Tipping — LYMX issues on subtotal (not tip); POS may show including tip</li>
+        <li>Time zone mismatch — POS local time vs UTC settlement time</li>
+        <li>Run reconciliation report: Dashboard → Reports → Reconcile vs POS. Shows the exact differences row-by-row.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Staff member can see things they shouldn't</h3><span class="cat dash">Dashboard</span></div>
+    <div class="symptom"><b>Symptom:</b> Cashier role can view financial reports.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Dashboard → Staff → tap user → Role</li>
+        <li>Set to "Cashier" (limited) or "Manager" (operational, no financials) or "Owner" (full)</li>
+        <li>See <a href="biz-staff-roles.html">role definitions</a> for what each can do</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Can't add a new location</h3><span class="cat dash">Dashboard</span></div>
+    <div class="symptom"><b>Symptom:</b> "Add location" button is grayed out.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Multi-location requires verified owner role (not manager)</li>
+        <li>Each new location is $50/mo on top of base $199</li>
+        <li>If owner role is verified and still grayed: ensure your billing card on file is current. Stale card blocks add-location.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Settlement -->
+  <div class="issue">
+    <div class="issue-head"><h3>Settlement payout late this week</h3><span class="cat settle">Settlement</span></div>
+    <div class="symptom"><b>Symptom:</b> Wednesday payout normally hits Thursday morning, today is Friday and nothing.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Check status.lymx.com — banking partner outage will be flagged there</li>
+        <li>Check your bank info: Dashboard → Settings → Banking → confirm routing/account</li>
+        <li>Hit holiday? Federal banking holidays push settlement back 1 business day</li>
+        <li>Still missing 24h+ past expected: contact your success coach. We can manually expedite.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Settlement amount looks wrong</h3><span class="cat settle">Settlement</span></div>
+    <div class="symptom"><b>Symptom:</b> You expected $X, you got $Y.</div>
+    <div class="fix">
+      <b>Why settlements vary</b>
+      <ol>
+        <li>3% LYMX network fee on issuance</li>
+        <li>80% redemption cost when LYMX issued elsewhere is redeemed at your Business</li>
+        <li>Refunds and disputes</li>
+        <li>Run Settlement Reconciliation: Dashboard → Reports → Settlement detail. Shows breakdown line-by-line.</li>
+        <li>If still confused: <a href="settlement-dispute.html">file settlement dispute</a> — we walk through the math with you.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Bank rejected the deposit</h3><span class="cat settle">Settlement</span></div>
+    <div class="symptom"><b>Symptom:</b> Settlement bounced back to LYMX.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Almost always a wrong account/routing number</li>
+        <li>Dashboard → Settings → Banking → re-enter and verify with micro-deposits</li>
+        <li>Once verified, we resend the bounced settlement within 1 business day</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Customer-facing -->
+  <div class="issue">
+    <div class="issue-head"><h3>Customer says they didn't earn LYMX from their visit</h3><span class="cat cust">Customer</span></div>
+    <div class="symptom"><b>Symptom:</b> Customer in your store complaining no LYMX appeared.</div>
+    <div class="fix">
+      <b>Fix in 60 seconds</b>
+      <ol>
+        <li>Check POS — if transaction was tagged with their phone/QR, LYMX was issued</li>
+        <li>Have them pull-to-refresh their wallet</li>
+        <li>If POS didn't capture their wallet: issue manual credit. Dashboard → Customer claims → enter phone + amount + LYMX. Hits their wallet in 60 seconds.</li>
+        <li>This protects both sides — customer earns, you keep the relationship.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Customer wants to redeem LYMX but POS rejects</h3><span class="cat cust">Customer</span></div>
+    <div class="symptom"><b>Symptom:</b> "Insufficient balance" — but customer's wallet shows enough.</div>
+    <div class="fix">
+      <b>Likely causes</b>
+      <ol>
+        <li>Customer has "pending" LYMX (issued <24 hours ago, not yet settled). Show them wallet → Available vs Pending breakdown.</li>
+        <li>Daily redemption cap — your Business can set per-day per-customer caps. Check Dashboard → Settings → Redemption rules.</li>
+        <li>If neither: it's a sync issue. Try re-scanning QR. If it persists, accept payment normally — issue retroactive LYMX.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Customer disputes a charge — what do I do?</h3><span class="cat cust">Customer</span></div>
+    <div class="symptom"><b>Symptom:</b> A LYMX dispute appears in your dashboard.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Dashboard → Disputes → tap to view</li>
+        <li>Pull POS receipt for the disputed transaction (search by date + amount)</li>
+        <li>Upload receipt photo + your written response</li>
+        <li>LYMX support reviews and resolves within 7 days</li>
+        <li>See <a href="biz-dispute-handling.html">full dispute handling guide</a></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>POS keeps prompting for "reconnect to LYMX"</h3><span class="cat pos">POS</span></div>
+    <div class="symptom"><b>Symptom:</b> Every 5 minutes, POS shows reconnect prompt.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Network is unstable — check POS internet</li>
+        <li>POS firmware out of date — update to latest version (check POS vendor)</li>
+        <li>LYMX integration token may be old: Dashboard → Integrations → Refresh token</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Promo I scheduled never went live</h3><span class="cat dash">Dashboard</span></div>
+    <div class="symptom"><b>Symptom:</b> "2x LYMX weekend" was scheduled, customers say it didn't apply.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Dashboard → Promos → check status. "Scheduled" hasn't started, "Live" has.</li>
+        <li>Confirm promo time zone — set to America/Los_Angeles by default. Off-hours runs in early Pacific time.</li>
+        <li>Confirm promo wasn't capped: if you set "first 100 customers," it stops after 100.</li>
+        <li>If promo was active but POS didn't apply: check POS-LYMX sync was working that hour.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>I want to leave the network — how does cancellation work?</h3><span class="cat dash">Dashboard</span></div>
+    <div class="symptom"><b>Symptom:</b> Looking to discontinue LYMX.</div>
+    <div class="fix">
+      <b>How cancellation works</b>
+      <ol>
+        <li>Dashboard → Settings → Cancel subscription. Initiates 90-day wind-down.</li>
+        <li>Day 1: stop issuing new LYMX. Day 90: stop accepting LYMX redemption.</li>
+        <li>During wind-down, your listing shows "Leaving the LYMX network — still accepting LYMX."</li>
+        <li>Outstanding LYMX you issued is auto-capped to your settlement reserve. You'll receive itemized exit statement.</li>
+        <li>See <a href="refund-policy.html">refund policy</a> section 5b for full details.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Selling my Business — does LYMX transfer to new owner?</h3><span class="cat dash">Dashboard</span></div>
+    <div class="symptom"><b>Symptom:</b> You're selling and want to know what happens to LYMX.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Yes — LYMX is a transferable asset if the new owner stays on the network</li>
+        <li>Dashboard → Settings → Ownership transfer. Submit new owner's info. We send them activation link.</li>
+        <li>Buyer continues at the same rate, same customer base, same LYMX outstanding</li>
+        <li>If new owner exits the network instead: 90-day wind-down activates from sale date</li>
+        <li>See <a href="business-agreement.html">business agreement</a> section 10b for full details.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">Need a human?</h2>
+  <p style="color:var(--mute);font-size:14.5px;margin-bottom:14px">Your dedicated <a href="biz-success-coaches.html">success coach</a> is your first call. For urgent issues affecting active customers, use the emergency line.</p>
+  <p>📧 <a href="mailto:biz-support@lymx.com">biz-support@lymx.com</a> · ☎️ 1-833-LYMX-911 (24/7) · 💬 Live chat in dashboard (9am-9pm PT)</p>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="biz-faq.html" style="color:#5a6373">Business FAQ</a> · <a href="biz-success-coaches.html" style="color:#5a6373">Success coaches</a>
+</footer>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

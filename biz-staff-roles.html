@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Staff roles & permissions · LYMX Business</title>
+<meta name="description" content="The 5 staff roles in your LYMX dashboard, what each can see and do, and how to assign them safely.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:1100px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:38px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .role-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:32px}
+  @media(max-width:980px){.role-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.role-grid{grid-template-columns:1fr}}
+  .role{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:18px;text-align:center;transition:all .15s}
+  .role:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .role.owner{border-color:var(--gold)}
+  .role.manager{border-color:var(--accent)}
+  .role.cashier{border-color:#b3e0c7}
+  .role.viewer{border-color:#5d6470}
+  .role.api{border-color:#5b3697}
+  .role .ico{width:42px;height:42px;border-radius:50%;background:#fef9e7;display:inline-flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px}
+  .role h3{margin:0 0 4px;font-size:15px}
+  .role .level{font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;color:var(--mute)}
+  .role p{margin:8px 0 0;font-size:12.5px;color:var(--mute);line-height:1.4}
+
+  .matrix-table{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:32px}
+  .matrix-table table{width:100%;border-collapse:collapse;font-size:13px}
+  .matrix-table th{background:#fafafa;padding:14px 12px;text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);font-weight:600;border-bottom:1px solid var(--line)}
+  .matrix-table th:first-child{padding-left:18px}
+  .matrix-table td{padding:12px;border-bottom:1px solid var(--line);text-align:center;font-size:13px}
+  .matrix-table td:first-child{text-align:left;padding-left:18px;font-weight:600;font-size:13.5px}
+  .matrix-table tr:last-child td{border-bottom:0}
+  .check{color:var(--ok);font-weight:800}
+  .partial{color:var(--warn);font-weight:800}
+  .x{color:var(--mute)}
+
+  .scenario{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin-bottom:14px}
+  .scenario h4{margin:0 0 6px;font-size:15px}
+  .scenario p{margin:0 0 6px;font-size:14px;color:var(--mute)}
+  .scenario .pick{background:#e6f0ff;border:1px solid #a8c4ff;padding:8px 12px;border-radius:6px;font-size:13.5px;color:#0050c7;margin-top:8px}
+  .scenario .pick b{color:#003a99;display:block;font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+
+  .danger-zone{background:#fde8e6;border:2px solid #f0b6b3;border-radius:12px;padding:18px 22px;margin:24px 0}
+  .danger-zone h3{margin:0 0 8px;color:#8a2820;font-size:16px}
+  .danger-zone p{margin:0;color:#6a1810;font-size:14px}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power <span class="biz-tag">FOR BUSINESSES</span></div>
+    <div class="nav-links">
+      <a href="biz-faq.html">Biz FAQ</a>
+      <a href="biz-staff.html">Staff</a>
+      <a href="biz-customer-data.html">Customer data</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Business · Setup · Staff roles</div>
+  <h1>5 staff roles, choose right</h1>
+  <p class="lead">Your LYMX dashboard has 5 distinct roles, each with different visibility and powers. Get this right at setup — you don't want a part-time cashier accidentally able to issue refunds or change your subscription.</p>
+
+  <div class="role-grid">
+    <div class="role owner">
+      <div class="ico">👑</div>
+      <h3>Owner</h3>
+      <div class="level">Level 5 · Full</div>
+      <p>You. Full control. Billing, settings, all reports.</p>
+    </div>
+    <div class="role manager">
+      <div class="ico">👨‍💼</div>
+      <h3>Manager</h3>
+      <div class="level">Level 4 · Operational</div>
+      <p>Your store manager. Can run promos, handle disputes, hire staff.</p>
+    </div>
+    <div class="role cashier">
+      <div class="ico">🧾</div>
+      <h3>Cashier</h3>
+      <div class="level">Level 3 · POS</div>
+      <p>Front-of-house. Scan QR, accept LYMX, see today's tip jar.</p>
+    </div>
+    <div class="role viewer">
+      <div class="ico">👀</div>
+      <h3>Viewer</h3>
+      <div class="level">Level 2 · Read-only</div>
+      <p>Accountant or partner. See reports, can't change anything.</p>
+    </div>
+    <div class="role api">
+      <div class="ico">🤖</div>
+      <h3>API</h3>
+      <div class="level">Level 1 · Programmatic</div>
+      <p>Automated integrations. Token-only, scoped permissions.</p>
+    </div>
+  </div>
+
+  <h2 style="font-size:22px;margin:0 0 14px">Permission matrix</h2>
+  <div class="matrix-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Action</th>
+          <th>Owner</th>
+          <th>Manager</th>
+          <th>Cashier</th>
+          <th>Viewer</th>
+          <th>API</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Process LYMX transactions at register</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="x">—</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>Issue retroactive LYMX to customer</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="partial">limit</span></td><td><span class="x">—</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>Issue LYMX refund</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td></tr>
+        <tr><td>View today's transactions</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="partial">own</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>View weekly/monthly reports</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="x">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>View revenue / settlement amounts</td><td><span class="check">✓</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="check">✓</span></td><td><span class="x">—</span></td></tr>
+        <tr><td>Run / schedule promotions</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td></tr>
+        <tr><td>Add/remove staff</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td></tr>
+        <tr><td>Change LYMX rate</td><td><span class="check">✓</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td></tr>
+        <tr><td>Change billing / payment</td><td><span class="check">✓</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td></tr>
+        <tr><td>Cancel subscription</td><td><span class="check">✓</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td></tr>
+        <tr><td>Add new location</td><td><span class="check">✓</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td></tr>
+        <tr><td>Handle disputes</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td></tr>
+        <tr><td>Export customer data</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="x">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>View other staff's actions (audit log)</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="x">—</span></td><td><span class="check">✓</span></td><td><span class="x">—</span></td></tr>
+        <tr><td>Initiate ownership transfer</td><td><span class="check">✓</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td><td><span class="x">—</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="font-size:13px;color:var(--mute);margin-bottom:24px">Legend: <span class="check">✓</span> = full access · <span class="partial">limit</span> = limited (e.g., own shift only) · <span class="x">—</span> = no access</p>
+
+  <h2 style="font-size:22px;margin:24px 0 14px">Real-world scenarios</h2>
+
+  <div class="scenario">
+    <h4>I'm a single-location restaurant with a manager and 4 cashiers</h4>
+    <p>Owner role: you. Manager role: your manager. Cashier role: each cashier (own login).</p>
+    <div class="pick"><b>Why this matters</b>If a cashier shares their login with another, you lose audit trail. Each cashier with their own login = you can see who scanned what.</div>
+  </div>
+
+  <div class="scenario">
+    <h4>I have an external accountant who needs reports</h4>
+    <p>Add them as Viewer role.</p>
+    <div class="pick"><b>Why Viewer not Manager</b>Accountant doesn't need to run promos or hire staff. Viewer is read-only — safest level for non-employees.</div>
+  </div>
+
+  <div class="scenario">
+    <h4>My business partner co-owns the Business</h4>
+    <p>Two options: dual Owner roles, or one Owner + one Manager.</p>
+    <div class="pick"><b>Recommendation</b>Two Owner roles if both partners pay/share equally. Owner role can change billing — you both should be able to. Mutual trust required.</div>
+  </div>
+
+  <div class="scenario">
+    <h4>I'm temporarily delegating to a manager while I'm out of country</h4>
+    <p>Don't promote to Owner. Use Manager role + temporary expanded permissions.</p>
+    <div class="pick"><b>Best practice</b>Settings → Staff → Manager → "Expand permissions: 14 days." Auto-revokes back to standard Manager when you return. Audit trail of every elevated action.</div>
+  </div>
+
+  <div class="scenario">
+    <h4>I want to integrate with my own loyalty system via API</h4>
+    <p>Generate API role with scoped permissions.</p>
+    <div class="pick"><b>How</b>Settings → API → Create token. Pick scopes (read transactions only / read+write / etc.). Tokens are revocable anytime.</div>
+  </div>
+
+  <div class="scenario">
+    <h4>A cashier left and I forgot to remove them</h4>
+    <p>You can — and should — revoke immediately.</p>
+    <div class="pick"><b>How</b>Settings → Staff → tap user → Remove access. Or use shortcut: Settings → "Removed (last 30 days)" to audit your offboarding hygiene.</div>
+  </div>
+
+  <div class="danger-zone">
+    <h3>⚠️ Danger zone — only Owner can do these</h3>
+    <p>Change LYMX rate · Change billing card · Cancel subscription · Add new location · Initiate ownership transfer · Disable 2FA. If your manager pressures you to give them Owner access for any of these — say no. They can ask, but only you should approve.</p>
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">Setup walkthrough</h2>
+  <ol style="font-size:14.5px;color:var(--mute);padding-left:18px">
+    <li>Dashboard → Settings → Staff → Add new</li>
+    <li>Enter their email or phone — invite goes via SMS</li>
+    <li>Pick role (Owner / Manager / Cashier / Viewer / API)</li>
+    <li>Optional: limit by location (multi-location only) or by hours</li>
+    <li>They click invite link, set their own PIN, they're in</li>
+    <li>You receive confirmation when they activate</li>
+  </ol>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="biz-faq.html" style="color:#5a6373">Business FAQ</a> · <a href="biz-staff.html" style="color:#5a6373">Staff dashboard</a>
+</footer>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

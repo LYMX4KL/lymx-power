@@ -1,20 +1,19 @@
-// LYMX feedback widget — v2 (2026-05-14)
+// LYMX feedback widget — v3 (2026-05-15)
 // Floating "Send Feedback" button + modal with:
-//   • Page-context badge (auto-shows what page you're reporting from)
 //   • Auto-screenshot of the page on open (html2canvas, lazy-loaded)
 //   • Region selector (drag to crop a piece of the page)
-//   • Upload-image button
-//   • AI Improve button (rewrites rough notes into a clean report)
-//   • AI Live Tips (debounced suggestions as you type)
-//   • Draft autosave to localStorage so reload doesn't lose typing
-//
-// Depends on:
-//   - window.LYMX_CONFIG (from lymx-config.js) for SUPABASE_URL + ANON_KEY
-//   - window.LYMX (from lymx-auth.js) optional — used to attribute submissions
+//   • Drag-drop / click-upload / paste-image support
+//   • AI Improve + AI live tips
+//   • Draft autosave
+//   • SELF-SUFFICIENT SESSION RETRIEVAL — reads the Supabase session directly
+//     from localStorage so the widget knows who you are even if lymx-auth.js
+//     hasn't loaded yet on this page. (Fix: Dave's ticket showed anonymous
+//     2026-05-15.)
 //
 // Just include this script before </body>:
 //   <script src="lymx-config.js"></script>
 //   <script src="lymx-feedback.js" defer></script>
+// — or use the universal lymx-app.js bootstrap.
 
 (function () {
   if (window.__LYMX_FEEDBACK_LOADED__) return;
@@ -25,7 +24,57 @@
     return;
   }
 
-  var FB_DRAFT_KEY = 'lymx_feedback_draft_v2';
+  var FB_DRAFT_KEY = 'lymx_feedback_draft_v3';
+
+  // ---------- Resolve the user's access token from ANY available source ------
+  // Pre-fix bug: if lymx-auth.js wasn't loaded on a page, window.LYMX was
+  // undefined and the widget sent the request with the ANON key, which
+  // produced an "anonymous" ticket even when the user was clearly signed in.
+  // Fix: also read the supabase-js v2 storage key directly. (Same data,
+  // just no dependency on lymx-auth.js being loaded yet.)
+  function projectRefFromUrl() {
+    try {
+      var m = (window.LYMX_CONFIG.SUPABASE_URL || '').match(/https:\/\/([^.]+)\.supabase\.co/i);
+      return m ? m[1] : null;
+    } catch (e) { return null; }
+  }
+  async function resolveAccessToken() {
+    // 1) Preferred: window.LYMX.getSession from lymx-auth.js (live, validated)
+    try {
+      if (window.LYMX && typeof window.LYMX.getSession === 'function') {
+        var s = await window.LYMX.getSession();
+        if (s && s.access_token) return { token: s.access_token, source: 'lymx-auth' };
+      }
+    } catch (e) {}
+    // 2) Direct read from supabase-js v2 localStorage key
+    try {
+      var ref = projectRefFromUrl();
+      if (ref) {
+        var raw = localStorage.getItem('sb-' + ref + '-auth-token');
+        if (raw) {
+          var obj = JSON.parse(raw);
+          var tok = (obj && obj.access_token)
+            || (obj && obj.currentSession && obj.currentSession.access_token);
+          if (tok) return { token: tok, source: 'localStorage' };
+        }
+      }
+    } catch (e) {}
+    // 3) Anything else our supabase-js client may have stashed (legacy keys)
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i) || '';
+        if (k.indexOf('sb-') === 0 && k.indexOf('-auth-token') > 0) {
+          var v = localStorage.getItem(k);
+          if (!v) continue;
+          var p = JSON.parse(v);
+          var t = p && (p.access_token || (p.currentSession && p.currentSession.access_token));
+          if (t) return { token: t, source: 'localStorage-fallback' };
+        }
+      }
+    } catch (e) {}
+    // 4) Anon — submission will be attributed to nobody
+    return { token: window.LYMX_CONFIG.SUPABASE_ANON_KEY, source: 'anon' };
+  }
 
   // ---------- CSS ----------
   var css = ''
@@ -42,6 +91,8 @@
     + '#lymx-fb-modal .x{background:transparent;border:0;font-size:24px;color:#5b6472;cursor:pointer;padding:0 6px;line-height:1}'
     + '#lymx-fb-modal .x:hover{color:#0e1116}'
     + '#lymx-fb-modal .body{padding:8px 22px 22px}'
+    + '#lymx-fb-modal .who{font-size:11.5px;color:#5b6472;margin:2px 0 0}'
+    + '#lymx-fb-modal .who b{color:#13a26b}'
     + '#lymx-fb-modal label{display:block;font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#5b6472;margin:14px 0 6px}'
     + '#lymx-fb-modal select,#lymx-fb-modal input,#lymx-fb-modal textarea{width:100%;padding:10px 12px;border:1px solid #e6e8ec;border-radius:9px;font-size:14.5px;font-family:inherit;color:#0e1116;background:#fff;outline:none;transition:.15s;box-sizing:border-box}'
     + '#lymx-fb-modal select:focus,#lymx-fb-modal input:focus,#lymx-fb-modal textarea:focus{border-color:#0a84ff;box-shadow:0 0 0 3px rgba(10,132,255,.12)}'
@@ -64,9 +115,14 @@
     + '#lymx-fb-modal .shot-btn{background:#fff;color:#0a84ff;border:1px solid #0a84ff;border-radius:6px;padding:5px 10px;font-size:11.5px;font-weight:600;cursor:pointer}'
     + '#lymx-fb-modal .shot-btn:hover{background:#EEF6FF}'
     + '#lymx-fb-modal .shot-preview{text-align:center;padding:10px;background:#fff;border:1px dashed #C7D2FE;border-radius:6px;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#5b6472;font-size:12.5px;gap:6px}'
+    + '#lymx-fb-modal .shot-preview.drag{background:#EFF6FF;border-color:#0a84ff;color:#0a84ff;font-weight:700}'
     + '#lymx-fb-modal .shot-preview img{max-width:100%;max-height:160px;border-radius:5px;border:1px solid #C7D2FE}'
-    + '#lymx-fb-modal .shot-meta{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#5b6472}'
+    + '#lymx-fb-modal .shot-meta{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#5b6472;flex-wrap:wrap;justify-content:center}'
     + '#lymx-fb-modal .shot-clear{background:none;border:0;color:#B91C1C;cursor:pointer;font-size:11.5px;text-decoration:underline;padding:0}'
+    + '#lymx-fb-modal .file-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}'
+    + '#lymx-fb-modal .file-list-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;background:#fff;border:1px solid #e6e8ec;border-radius:6px;font-size:12.5px}'
+    + '#lymx-fb-modal .file-list-item .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#0e1116}'
+    + '#lymx-fb-modal .file-list-item .rm{background:none;border:0;color:#B91C1C;cursor:pointer;font-size:11.5px;text-decoration:underline;padding:0}'
     + '#lymx-fb-modal .actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px}'
     + '#lymx-fb-modal .actions-right{display:flex;gap:8px}'
     + '#lymx-fb-modal .btn{padding:10px 18px;border-radius:9px;font-weight:600;font-size:13.5px;border:0;cursor:pointer;font-family:inherit}'
@@ -104,7 +160,7 @@
   overlay.setAttribute('aria-modal', 'true');
   overlay.innerHTML =
       '<div id="lymx-fb-modal">'
-    + '<div class="hd"><div><h2>Send Feedback</h2><p class="sub">We read every one.</p></div>'
+    + '<div class="hd"><div><h2>Send Feedback</h2><p class="sub">We read every one.</p><p class="who" id="lymx-fb-who">Checking who you\'re signed in as…</p></div>'
     + '<button class="x" type="button" aria-label="Close" data-fb-close>×</button></div>'
     + '<div class="body">'
     + '<div class="page-badge"><span>📍</span><div style="flex:1"><div style="font-weight:700;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase">Reporting from</div><div class="pb-path">' + shortPath() + '</div></div></div>'
@@ -118,15 +174,16 @@
     + '<input id="lymx-fb-subject" type="text" placeholder="Short headline" maxlength="80" />'
     + '<div class="msg-row"><label for="lymx-fb-message" style="margin:0">Your message</label>'
     + '<button type="button" class="ai-btn" id="lymx-fb-ai-polish" title="Let AI rewrite your notes into a clear report">✨ Improve with AI</button></div>'
-    + '<textarea id="lymx-fb-message" placeholder="What did you see? What would you change?" minlength="10"></textarea>'
+    + '<textarea id="lymx-fb-message" placeholder="What did you see? What would you change? (Tip: drag a file or paste an image to attach.)" minlength="10"></textarea>'
     + '<div class="ai-tips" id="lymx-fb-ai-tips"></div>'
-    + '<div class="shot-box"><div class="shot-row"><label>📸 Screenshot</label>'
+    + '<div class="shot-box"><div class="shot-row"><label>📸 Screenshot / attachments</label>'
     +   '<div class="shot-btns">'
     +   '<button type="button" class="shot-btn" id="lymx-fb-shot-auto">↻ Recapture</button>'
     +   '<button type="button" class="shot-btn" id="lymx-fb-shot-region">🎯 Select region</button>'
-    +   '<button type="button" class="shot-btn" id="lymx-fb-shot-upload">📎 Upload</button></div></div>'
-    + '<input type="file" id="lymx-fb-shot-file" accept="image/*" style="display:none" />'
-    + '<div class="shot-preview" id="lymx-fb-shot-preview"><span id="lymx-fb-shot-status">Capturing page…</span></div></div>'
+    +   '<button type="button" class="shot-btn" id="lymx-fb-shot-upload">📎 Add file</button></div></div>'
+    + '<input type="file" id="lymx-fb-shot-file" accept="image/*,application/pdf,.txt,.log,.csv,.xlsx,.docx" multiple style="display:none" />'
+    + '<div class="shot-preview" id="lymx-fb-shot-preview"><span id="lymx-fb-shot-status">Capturing page…</span></div>'
+    + '<div class="file-list" id="lymx-fb-file-list"></div></div>'
     + '<div class="actions"><a href="/my-feedback.html" class="my-link">📋 View my submissions</a>'
     + '<div class="actions-right">'
     + '<button type="button" class="btn btn-cancel" data-fb-close>Cancel</button>'
@@ -137,13 +194,23 @@
   // ---------- State ----------
   var shotBlob = null;
   var shotKind = 'none';
+  var attachedFiles = [];    // NEW: additional drag-drop / upload / paste files
   var aiTipsTimer = null;
   var lastTipsFor = '';
+  var resolvedAuth = null;
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c];
     });
+  }
+
+  function decodeJwt(jwt) {
+    try {
+      var parts = (jwt || '').split('.');
+      if (parts.length !== 3) return null;
+      return JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    } catch (e) { return null; }
   }
 
   function loadH2C() {
@@ -172,7 +239,7 @@
     var preview = document.getElementById('lymx-fb-shot-preview');
     if (!preview) return;
     if (!shotBlob) {
-      preview.innerHTML = '<span style="color:#5b6472;font-size:12.5px">No screenshot attached.</span>';
+      preview.innerHTML = '<span style="color:#5b6472;font-size:12.5px">No screenshot — drag / paste / upload here.</span>';
       return;
     }
     var url = URL.createObjectURL(shotBlob);
@@ -186,6 +253,46 @@
       shotBlob = null; shotKind = 'none';
       renderShotPreview('removed');
     });
+  }
+
+  function renderFileList() {
+    var list = document.getElementById('lymx-fb-file-list');
+    if (!list) return;
+    if (!attachedFiles.length) { list.innerHTML = ''; return; }
+    list.innerHTML = attachedFiles.map(function (f, i) {
+      return '<div class="file-list-item">'
+        + '<span class="nm">📎 ' + esc(f.name) + '</span>'
+        + '<span style="color:#5b6472">' + Math.round(f.size / 1024) + ' KB</span>'
+        + '<button type="button" class="rm" data-i="' + i + '">remove</button>'
+        + '</div>';
+    }).join('');
+    Array.prototype.forEach.call(list.querySelectorAll('.rm'), function (b) {
+      b.addEventListener('click', function () {
+        attachedFiles.splice(Number(b.dataset.i), 1);
+        renderFileList();
+      });
+    });
+  }
+
+  function addFiles(files) {
+    var notice = document.getElementById('lymx-fb-notice');
+    if (!files || !files.length) return;
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      if (!f) continue;
+      if (f.size > 5 * 1024 * 1024) {
+        if (notice) { notice.className = 'notice show err'; notice.textContent = f.name + ' is too large (max 5 MB).'; }
+        continue;
+      }
+      // First image with no current screenshot → treat it as the screenshot.
+      if (f.type && f.type.indexOf('image/') === 0 && !shotBlob) {
+        shotBlob = f; shotKind = 'upload';
+        renderShotPreview('Uploaded ' + f.name);
+        continue;
+      }
+      attachedFiles.push(f);
+    }
+    renderFileList();
   }
 
   function captureAuto() {
@@ -211,7 +318,7 @@
       overlay.style.visibility = 'visible';
       console.warn('[LYMX feedback] auto-capture failed', e);
       var preview = document.getElementById('lymx-fb-shot-preview');
-      if (preview) preview.innerHTML = '<span style="color:#B91C1C;font-size:12.5px">Auto-capture failed — try 🎯 Select region or 📎 Upload.</span>';
+      if (preview) preview.innerHTML = '<span style="color:#B91C1C;font-size:12.5px">Auto-capture failed — try 🎯 Select region or 📎 Add file.</span>';
     });
   }
 
@@ -289,19 +396,13 @@
   // ---------- AI (optional, degrades silently) ----------
   async function aiCall(mode, payload) {
     try {
-      var token = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
-      if (window.LYMX && window.LYMX.getSession) {
-        try {
-          var s = await window.LYMX.getSession();
-          if (s && s.access_token) token = s.access_token;
-        } catch (e) {}
-      }
+      var auth = await resolveAccessToken();
       var res = await fetch(
         window.LYMX_CONFIG.SUPABASE_URL + '/functions/v1/feedback-ai-assist',
         {
           method: 'POST',
           headers: {
-            'Authorization': 'Bearer ' + token,
+            'Authorization': 'Bearer ' + auth.token,
             'apikey': window.LYMX_CONFIG.SUPABASE_ANON_KEY,
             'Content-Type': 'application/json'
           },
@@ -409,6 +510,25 @@
   }
   function clearDraft() { try { localStorage.removeItem(FB_DRAFT_KEY); } catch (e) {} }
 
+  function updateWhoLabel() {
+    var who = document.getElementById('lymx-fb-who');
+    if (!who) return;
+    resolveAccessToken().then(function (auth) {
+      resolvedAuth = auth;
+      if (auth.source === 'anon') {
+        who.innerHTML = 'Not signed in — your ticket will be anonymous. <a href="/login.html">Sign in</a> first if you want us to reply.';
+        who.style.color = '#B91C1C';
+      } else {
+        var payload = decodeJwt(auth.token);
+        var email = (payload && payload.email) || 'authenticated';
+        var role  = (payload && payload.role)  || '';
+        auth.email = email;
+        who.innerHTML = 'Signed in as <b>' + esc(email) + '</b>' + (role && role !== 'authenticated' ? ' (' + esc(role) + ')' : '') + ' — we\'ll be able to reply.';
+        who.style.color = '#5b6472';
+      }
+    });
+  }
+
   function attach() {
     if (!document.body) return setTimeout(attach, 50);
     document.body.appendChild(btn);
@@ -417,162 +537,4 @@
     btn.addEventListener('click', open);
     overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
     overlay.querySelectorAll('[data-fb-close]').forEach(function (el) { el.addEventListener('click', close); });
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && overlay.classList.contains('on')) close();
-    });
-
-    document.getElementById('lymx-fb-shot-auto').addEventListener('click', captureAuto);
-    document.getElementById('lymx-fb-shot-region').addEventListener('click', captureRegion);
-    document.getElementById('lymx-fb-shot-upload').addEventListener('click', function () {
-      document.getElementById('lymx-fb-shot-file').click();
-    });
-    document.getElementById('lymx-fb-shot-file').addEventListener('change', function (e) {
-      var f = e.target.files && e.target.files[0];
-      if (!f) return;
-      if (f.type.indexOf('image/') !== 0) {
-        var p = document.getElementById('lymx-fb-shot-preview');
-        if (p) p.innerHTML = '<span style="color:#B91C1C;font-size:12.5px">Please pick an image file.</span>';
-        return;
-      }
-      if (f.size > 5 * 1024 * 1024) {
-        var p2 = document.getElementById('lymx-fb-shot-preview');
-        if (p2) p2.innerHTML = '<span style="color:#B91C1C;font-size:12.5px">Image too large (max 5 MB).</span>';
-        return;
-      }
-      shotBlob = f; shotKind = 'upload';
-      renderShotPreview('Uploaded ' + f.name);
-    });
-
-    document.getElementById('lymx-fb-ai-polish').addEventListener('click', doPolish);
-    var msgEl = document.getElementById('lymx-fb-message');
-    msgEl.addEventListener('input', function () { scheduleTips(); saveDraft(); });
-
-    ['lymx-fb-type','lymx-fb-priority','lymx-fb-subject'].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) {
-        el.addEventListener('change', saveDraft);
-        el.addEventListener('input', saveDraft);
-      }
-    });
-
-    document.getElementById('lymx-fb-send').addEventListener('click', submit);
-  }
-
-  function open() {
-    overlay.classList.add('on');
-    document.body.style.overflow = 'hidden';
-    try {
-      var pb = overlay.querySelector('.pb-path');
-      if (pb) pb.textContent = shortPath();
-    } catch (e) {}
-    notice(null);
-    loadDraft();
-    setTimeout(captureAuto, 250);
-    setTimeout(function () {
-      var msg = document.getElementById('lymx-fb-message');
-      if (msg && !msg.value) msg.focus();
-    }, 60);
-  }
-  function close() {
-    overlay.classList.remove('on');
-    document.body.style.overflow = '';
-  }
-  function notice(text, kind) {
-    var n = document.getElementById('lymx-fb-notice');
-    if (!n) return;
-    if (!text) { n.className = 'notice'; n.textContent = ''; return; }
-    n.className = 'notice show ' + (kind || 'err');
-    n.textContent = text;
-  }
-
-  async function submit() {
-    var type = document.getElementById('lymx-fb-type').value;
-    var priority = document.getElementById('lymx-fb-priority').value;
-    var subject = document.getElementById('lymx-fb-subject').value.trim();
-    var msgEl = document.getElementById('lymx-fb-message');
-    var message = msgEl.value.trim();
-    var originalMessage = msgEl.dataset.originalMessage || null;
-    var aiSummary = msgEl.dataset.aiSummary || null;
-    var sendBtn = document.getElementById('lymx-fb-send');
-
-    if (message.length < 10) {
-      notice('Please write at least 10 characters describing what you want to share.', 'err');
-      return;
-    }
-    sendBtn.disabled = true;
-    sendBtn.textContent = 'Sending…';
-    notice(null);
-
-    var screenshot_b64 = null;
-    if (shotBlob) {
-      try { screenshot_b64 = await blobToDataURL(shotBlob); }
-      catch (e) { console.warn('[LYMX feedback] couldn\'t convert screenshot', e); }
-    }
-
-    var payload = {
-      type: type, priority: priority,
-      subject: subject || undefined,
-      message: message,
-      original_message: originalMessage,
-      ai_summary: aiSummary,
-      page_url: window.location.href,
-      page_title: document.title,
-      viewport: window.innerWidth + 'x' + window.innerHeight,
-      user_agent: navigator.userAgent,
-      screenshot_b64: screenshot_b64,
-      screenshot_kind: shotBlob ? shotKind : null
-    };
-
-    var token = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
-    try {
-      if (window.LYMX && window.LYMX.getSession) {
-        var session = await window.LYMX.getSession();
-        if (session && session.access_token) token = session.access_token;
-      }
-    } catch (e) {}
-
-    try {
-      var res = await fetch(
-        window.LYMX_CONFIG.SUPABASE_URL + '/functions/v1/feedback-submit',
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + token,
-            'apikey': window.LYMX_CONFIG.SUPABASE_ANON_KEY,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        }
-      );
-      var data = null;
-      try { data = await res.json(); } catch (e) {}
-      if (!res.ok) {
-        notice((data && data.error) || ('Submit failed: ' + res.status), 'err');
-        sendBtn.disabled = false;
-        sendBtn.textContent = 'Send Feedback';
-        return;
-      }
-      notice('Thanks! Sent. We\'ll dig in shortly.', 'ok');
-      sendBtn.textContent = 'Sent ✓';
-      clearDraft();
-      msgEl.value = ''; msgEl.dataset.originalMessage = ''; msgEl.dataset.aiSummary = '';
-      document.getElementById('lymx-fb-subject').value = '';
-      shotBlob = null; shotKind = 'none';
-      setTimeout(function () {
-        close();
-        sendBtn.disabled = false;
-        sendBtn.textContent = 'Send Feedback';
-      }, 1400);
-    } catch (err) {
-      notice('Network error: ' + (err.message || err), 'err');
-      sendBtn.disabled = false;
-      sendBtn.textContent = 'Send Feedback';
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', attach);
-  } else {
-    attach();
-  }
-})();
+ 

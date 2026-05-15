@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Peak day prep · LYMX Business playbook</title>
+<meta name="description" content="How to prepare your Business for high-traffic days — Friday nights, holidays, events, conventions. LYMX-specific operational checklist.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--warn:#d97706;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .biz-tag{font-size:11px;background:#e8f6ee;color:#0a7a4d;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:38px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:36px;background:#fff;padding:16px;border-radius:14px;border:1px solid var(--line)}
+  @media(max-width:760px){.timeline{grid-template-columns:repeat(2,1fr)}}
+  .tl-step{padding:14px;border-radius:10px;background:#f8fafc}
+  .tl-step .when{font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;color:var(--accent)}
+  .tl-step .what{font-size:14px;font-weight:700;margin-top:4px}
+  .tl-step .desc{font-size:12.5px;color:var(--mute);margin-top:4px}
+
+  .checklist{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:18px}
+  .checklist-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+  .checklist h2{margin:0;font-size:20px}
+  .checklist .when-tag{background:#fef9e7;color:#7a5a00;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700}
+  .checklist ul{margin:0;padding-left:0;list-style:none}
+  .checklist li{padding:10px 0 10px 28px;border-bottom:1px solid var(--line);font-size:14.5px;position:relative}
+  .checklist li::before{content:"☐";position:absolute;left:0;top:9px;font-size:18px;color:var(--mute)}
+  .checklist li:last-child{border-bottom:0}
+  .checklist li b{display:block;margin-bottom:3px;font-size:14.5px}
+  .checklist li span{color:var(--mute);font-size:13.5px}
+
+  .scenario{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border-radius:14px;padding:24px 28px;margin:24px 0}
+  .scenario h3{margin:0 0 8px;font-size:18px;color:#fff}
+  .scenario p{margin:0 0 12px;font-size:14.5px;opacity:.92}
+  .scenario .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+  @media(max-width:760px){.scenario .grid{grid-template-columns:1fr}}
+  .scenario .grid .col{background:rgba(255,255,255,.12);padding:14px;border-radius:10px}
+  .scenario .grid .col h4{margin:0 0 4px;font-size:14px;color:#fff}
+  .scenario .grid .col p{margin:0;font-size:13px;opacity:.9}
+
+  .calendar{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin:24px 0}
+  .calendar h2{margin:0 0 14px;font-size:20px}
+  .cal-row{display:grid;grid-template-columns:120px 1fr 100px;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);align-items:center;font-size:14px}
+  .cal-row:last-child{border-bottom:0}
+  .cal-row .month{font-weight:700}
+  .cal-row .lift{padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;text-align:center}
+  .cal-row .lift.high{background:#fde8e6;color:#8a2820}
+  .cal-row .lift.med{background:#fff8e6;color:#7a5a00}
+  .cal-row .lift.low{background:#e8f6ee;color:#0a7a4d}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power <span class="biz-tag">FOR BUSINESSES</span></div>
+    <div class="nav-links">
+      <a href="biz-faq.html">Biz FAQ</a>
+      <a href="biz-promo-planner.html">Promo planner</a>
+      <a href="biz-success-coaches.html">Success coach</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Business · Operations · Peak day prep</div>
+  <h1>Don't get caught off-guard on peak days</h1>
+  <p class="lead">Friday nights. Mother's Day. Conventions in town. Holiday weekends. The days when you're already busy are also the days LYMX-related issues are most likely to happen — slow QR scans, sync delays, customers grumbling about missing LYMX. This page is your prep playbook.</p>
+
+  <div class="timeline">
+    <div class="tl-step"><div class="when">2 weeks before</div><div class="what">Strategy</div><div class="desc">Decide promo, staffing, supply.</div></div>
+    <div class="tl-step"><div class="when">1 week before</div><div class="what">Setup</div><div class="desc">Schedule promos, train staff, test sync.</div></div>
+    <div class="tl-step"><div class="when">Day before</div><div class="what">Final checks</div><div class="desc">POS health, internet, signage.</div></div>
+    <div class="tl-step"><div class="when">During peak</div><div class="what">Operate</div><div class="desc">Fast-path scripts, fallback ready.</div></div>
+  </div>
+
+  <!-- 2 weeks out -->
+  <div class="checklist">
+    <div class="checklist-head"><h2>2 weeks before peak day</h2><span class="when-tag">Strategy phase</span></div>
+    <ul>
+      <li><b>Decide if you'll run a peak-day promo</b><span>2x LYMX, first-50-customers bonus, or no promo. Promo can drive volume — but also adds operational complexity. If short-staffed, skip.</span></li>
+      <li><b>Forecast LYMX redemption</b><span>Based on prior peaks, expect 18-25% of customers to redeem LYMX. Make sure your settlement reserve covers it.</span></li>
+      <li><b>Check staffing</b><span>One extra cashier on peak days reduces LYMX scan time bottleneck by 60%. Worth it.</span></li>
+      <li><b>Confirm POS hardware</b><span>Test scanner, charge tablets, verify printer paper. Order replacements now if needed.</span></li>
+      <li><b>Brief your success coach</b><span>Send a quick "peak day expected on [date]" — they'll have eyes on your dashboard that day.</span></li>
+    </ul>
+  </div>
+
+  <!-- 1 week out -->
+  <div class="checklist">
+    <div class="checklist-head"><h2>1 week before</h2><span class="when-tag">Setup phase</span></div>
+    <ul>
+      <li><b>Schedule the promo in dashboard</b><span>Dashboard → Promos → New. Set start time, end time, multiplier, daily cap. Live test on 2-3 staff phones to confirm it triggers correctly.</span></li>
+      <li><b>Print LYMX signage</b><span>Free print kit at <a href="biz-print-kit.html">biz-print-kit</a>. Display "We accept LYMX" + "Earning 2x today" prominently.</span></li>
+      <li><b>Train all staff on LYMX flow</b><span>Even if they know it — refresh. 30-second drill: customer pays, scan QR or take phone number, that's it.</span></li>
+      <li><b>Test POS sync end-to-end</b><span>Run a $1 LYMX test transaction. Confirm in dashboard within 2 minutes. If sync delay > 5 min, escalate to success coach.</span></li>
+      <li><b>Stock LYMX merch / freebies</b><span>If your promo includes a freebie (sticker, coupon), order extras now. 30% buffer minimum.</span></li>
+      <li><b>Push the promo on socials</b><span>Use templates from <a href="biz-marketing-kit.html">marketing kit</a>. Post 5 days, 3 days, 1 day before.</span></li>
+    </ul>
+  </div>
+
+  <!-- Day before -->
+  <div class="checklist">
+    <div class="checklist-head"><h2>Day before peak</h2><span class="when-tag">Final checks</span></div>
+    <ul>
+      <li><b>POS health check</b><span>Restart POS. Update firmware. Run 2 test transactions. Confirm receipt printer + LYMX line item.</span></li>
+      <li><b>Internet backup ready</b><span>Mobile hotspot on standby. If your store wifi goes down mid-rush, you can fail over in under 60 seconds.</span></li>
+      <li><b>Print manual fallback receipts</b><span>Pre-printed slips with phone-number + amount fields. Cashier can hand-write LYMX details if POS goes offline. Apply retroactively from dashboard.</span></li>
+      <li><b>Check LYMX dashboard alerts</b><span>Dashboard → Settings → Alerts. Make sure SMS alerts are on so you'll know within 1 minute if sync breaks.</span></li>
+      <li><b>Brief opening + closing staff</b><span>Print this page, walk them through. Make sure each shift knows the promo and the fallback procedure.</span></li>
+      <li><b>Test redemption flow</b><span>Have a staff member redeem 100 LYMX from their wallet. Confirm UX from customer side.</span></li>
+    </ul>
+  </div>
+
+  <!-- During peak -->
+  <div class="checklist">
+    <div class="checklist-head"><h2>During peak hours</h2><span class="when-tag">Live operation</span></div>
+    <ul>
+      <li><b>Watch dashboard every 30 minutes</b><span>One person assigned to glance at LYMX dashboard. Look for sync delays, error spikes, redemption pacing.</span></li>
+      <li><b>Use the fast script</b><span>"Are you on LYMX?" → if yes, scan QR (5 seconds). If no, "Want to start a wallet?" → text them link (2 seconds). Don't pitch — just ask.</span></li>
+      <li><b>Phone number fallback</b><span>If QR scan fails twice, ask for phone number. Faster than re-scanning. Customer earns the same.</span></li>
+      <li><b>If sync goes down</b><span>Take the phone number + amount manually. Tell customer "your LYMX will land in 60 minutes." Apply retroactively from dashboard once back online.</span></li>
+      <li><b>Don't argue about missing LYMX</b><span>If customer says they earned more — issue the credit. Trust them. Costs you pennies, saves the relationship.</span></li>
+      <li><b>Log issues for post-mortem</b><span>Note any LYMX-related incidents on a clipboard. Tomorrow you'll review what to fix.</span></li>
+    </ul>
+  </div>
+
+  <div class="scenario">
+    <h3>Real-world peak scenarios + what to do</h3>
+    <p>Three peak situations Vegas LYMX Businesses commonly hit, and the playbook for each.</p>
+    <div class="grid">
+      <div class="col">
+        <h4>🌃 Friday-night dinner rush</h4>
+        <p>Solution: 2x LYMX between 5-7pm to push early diners. Cap at 100 customers. Frees later seating.</p>
+      </div>
+      <div class="col">
+        <h4>🎉 Convention week</h4>
+        <p>Solution: enable "first-visit bonus 250 LYMX" for the week. Tourists open wallets, drive new customer growth.</p>
+      </div>
+      <div class="col">
+        <h4>💝 Mother's Day brunch</h4>
+        <p>Solution: pre-paid LYMX gift card promo 2 weeks before. Capture spend, smooth the volume.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="calendar">
+    <h2>Vegas peak calendar — when to expect surges</h2>
+    <div class="cal-row"><div class="month">January</div><div>New Year recovery week, dry month for most</div><div class="lift low">Low</div></div>
+    <div class="cal-row"><div class="month">February</div><div>Super Bowl weekend, Valentine's Day, CES (early Jan-Feb)</div><div class="lift high">High</div></div>
+    <div class="cal-row"><div class="month">March</div><div>Spring Break, NCAA March Madness, St. Patrick's</div><div class="lift med">Med</div></div>
+    <div class="cal-row"><div class="month">April</div><div>EDC announcements + early prep, light convention month</div><div class="lift low">Low</div></div>
+    <div class="cal-row"><div class="month">May</div><div>Mother's Day, Memorial Day weekend, EDC mid-month</div><div class="lift high">High</div></div>
+    <div class="cal-row"><div class="month">June</div><div>Father's Day, summer tourism kicks in</div><div class="lift med">Med</div></div>
+    <div class="cal-row"><div class="month">July</div><div>July 4th, peak summer tourism</div><div class="lift med">Med</div></div>
+    <div class="cal-row"><div class="month">August</div><div>Pre-school shopping, late-summer slowdown</div><div class="lift low">Low</div></div>
+    <div class="cal-row"><div class="month">September</div><div>Labor Day, fall conventions ramp</div><div class="lift med">Med</div></div>
+    <div class="cal-row"><div class="month">October</div><div>Halloween weekend, Las Vegas Marathon, fight nights</div><div class="lift high">High</div></div>
+    <div class="cal-row"><div class="month">November</div><div>Thanksgiving, Black Friday, NFR rodeo</div><div class="lift high">High</div></div>
+    <div class="cal-row"><div class="month">December</div><div>NYE prep, holidays, New Year's Eve weekend</div><div class="lift high">High</div></div>
+  </div>
+
+  <h2 style="font-size:24px;margin:32px 0 14px">After peak day — debrief</h2>
+  <p style="color:var(--mute);font-size:14.5px;margin-bottom:14px">Before you forget what went wrong, run a 15-minute debrief the next morning.</p>
+  <ol style="font-size:14.5px;color:var(--mute);padding-left:18px">
+    <li>Pull peak-day report (Dashboard → Reports → Day report)</li>
+    <li>Compare LYMX-tagged sales vs total sales — what was your LYMX adoption rate?</li>
+    <li>Review issues clipboard — what broke, what was fixed?</li>
+    <li>Update next peak's checklist with anything new you learned</li>
+    <li>If sync issues: forward incident timestamp to your success coach</li>
+  </ol>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="biz-faq.html" style="color:#5a6373">Business FAQ</a> · <a href="biz-promo-planner.html" style="color:#5a6373">Promo planner</a>
+</footer>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>
