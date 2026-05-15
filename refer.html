@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Refer a Friend · LYMX</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4a017;--maxw:880px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand img{height:44px;width:auto}
+  main{padding:40px 0 60px}
+  h1{font-size:32px;font-weight:800;margin:0 0 8px}
+  .sub{color:var(--muted);font-size:16px;margin-bottom:28px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:18px}
+  .card h2{margin:0 0 14px;font-size:18px}
+  .link-row{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+  .link-row input{flex:1;min-width:240px;padding:11px 14px;border:1px solid var(--line);border-radius:9px;font-size:14px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#f6f7f9}
+  .btn{padding:11px 18px;border-radius:9px;font-weight:700;font-size:14px;border:0;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:7px;font-family:inherit}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-secondary:hover{border-color:var(--ink)}
+  .share-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:10px}
+  .share-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#f6f7f9;border:1px solid var(--line);border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink)}
+  .share-btn:hover{background:#eef4ff;border-color:var(--accent)}
+  .pcode{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:24px;font-weight:800;letter-spacing:.04em;color:var(--accent-2);background:#EEF6FF;padding:10px 18px;border-radius:9px;display:inline-block;margin-top:6px}
+  .reward{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid var(--gold);border-radius:12px;padding:18px;margin-bottom:18px}
+  .reward .big{font-size:32px;font-weight:800;color:var(--gold)}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="index.html" class="brand"><img src="logo.png" alt="LYMX" /></a>
+    <div id="navCtaGuest" class="nav-cta" style="display:flex;gap:8px">
+      <a href="login.html" class="btn btn-secondary">Sign in</a>
+      <a href="welcome.html" class="btn btn-primary">Sign up</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>Refer a Friend</h1>
+  <p class="sub">Share LYMX with anyone — friends, family, local businesses. When they sign up through your link, you both earn LYMX.</p>
+
+  <div class="reward">
+    <div class="big">+100 LYMX</div>
+    <div style="color:#92400e;font-weight:600">Both you and your friend get 100 LYMX when they sign up through your link.</div>
+  </div>
+
+  <div class="card">
+    <h2>Your referral code</h2>
+    <div id="pcode" class="pcode">Loading…</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:8px">Anyone who signs up with this code is attributed to you.</div>
+  </div>
+
+  <div class="card">
+    <h2>Your referral link</h2>
+    <div class="link-row">
+      <input id="refLink" type="text" readonly value="Loading…" onclick="this.select()" />
+      <button class="btn btn-primary" id="copyBtn" type="button">📋 Copy</button>
+    </div>
+
+    <div class="share-grid" style="margin-top:14px">
+      <a id="emailShare" class="share-btn" href="#">✉️ Email</a>
+      <a id="smsShare" class="share-btn" href="#">💬 SMS</a>
+      <a id="xShare" class="share-btn" target="_blank" rel="noopener" href="#">𝕏 Share</a>
+      <a id="fbShare" class="share-btn" target="_blank" rel="noopener" href="#">f Facebook</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:6px">Track your invites</h2>
+    <p style="margin:0;color:var(--muted);font-size:14px">See who signed up + how much LYMX you have earned in your <a href="customer-dashboard.html" style="color:var(--accent-2);font-weight:600">Dashboard</a> or the <a href="admin-invite-friends.html" style="color:var(--accent-2);font-weight:600">Invite Friends</a> tool.</p>
+  </div>
+</main>
+
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+(async function () {
+  // Wait for session
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(arguments.callee, 100); return; }
+  const s = await window.LYMX.getSession();
+  if (!s) { location.href = 'login.html?return=refer.html'; return; }
+  const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  const URL  = window.LYMX_CONFIG.SUPABASE_URL;
+  const userId = s.user.id;
+  // Look up partner_code (P-NNNNNN). Fall back to user_id if no partner row.
+  let pcode = null;
+  try {
+    const r = await fetch(URL + '/rest/v1/partners?user_id=eq.' + userId + '&select=partner_code',
+      { headers: { apikey: ANON, Authorization: 'Bearer ' + s.access_token } });
+    const rows = await r.json();
+    pcode = (rows && rows[0] && rows[0].partner_code) || null;
+  } catch (e) {}
+  // Use partner_code if available, else fall back to short uid
+  const code = pcode || ('U-' + userId.slice(0, 6).toUpperCase());
+  const link = 'https://getlymx.com/welcome.html?ref=' + encodeURIComponent(code);
+  document.getElementById('pcode').textContent = code;
+  document.getElementById('refLink').value = link;
+  // Wire share buttons
+  const subject = encodeURIComponent('Join me on LYMX');
+  const bodyTxt = encodeURIComponent('Hey — I am using LYMX (cash-back rewards for local businesses). Sign up with my link and we both get 100 LYMX: ' + link);
+  document.getElementById('emailShare').href = 'mailto:?subject=' + subject + '&body=' + bodyTxt;
+  document.getElementById('smsShare').href   = 'sms:?&body=' + bodyTxt;
+  document.getElementById('xShare').href     = 'https://twitter.com/intent/tweet?text=' + bodyTxt;
+  document.getElementById('fbShare').href    = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(link);
+  document.getElementById('copyBtn').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(link); document.getElementById('copyBtn').textContent = '✓ Copied'; }
+    catch (e) { document.getElementById('refLink').select(); document.execCommand('copy'); }
+  });
+})();
+</script>
+<script src="lymx-app.js" defer></script>
+</body></html>

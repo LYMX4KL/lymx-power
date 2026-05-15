@@ -188,11 +188,42 @@
     location.href = '/login.html';
   }
 
+
+  // ---- 4) Admin-page guard — server-side role check on every admin-* page
+  // (P0 fix 2026-05-15 #a679ebc0, #3eb48521, #c081e9bf) ---------------------
+  async function enforceAdminGuard(payload) {
+    var path = (location.pathname || '').toLowerCase();
+    var isAdminPage = /\/admin-[^/]*\.html$/.test(path) || /\/admin-[^/]+$/.test(path);
+    if (!isAdminPage) return;
+    var KENNY_ADMIN = '1405bb50-2c97-48dd-bfa5-31f32320de9b';
+    // Fast path: Kenny (hardcoded admin)
+    if (payload && payload.sub === KENNY_ADMIN) return;
+    // Server check: does this user have an admin row in staff_roles?
+    try {
+      var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+      var URL  = window.LYMX_CONFIG.SUPABASE_URL;
+      var tok  = readToken();
+      var r = await fetch(URL + '/rest/v1/staff_roles?user_id=eq.' + (payload && payload.sub) + '&select=role,is_cfo,is_hr',
+        { headers: { apikey: ANON, Authorization: 'Bearer ' + tok } });
+      if (!r.ok) { location.replace('/login.html?return=' + encodeURIComponent(path)); return; }
+      var rows = await r.json();
+      var ok = rows && rows.length && (rows[0].role === 'admin' || rows[0].is_cfo || rows[0].is_hr);
+      if (!ok) {
+        // Not an admin — kick them to their own dashboard
+        var dest = routeFor(payload);
+        location.replace(dest);
+      }
+    } catch (e) {
+      location.replace('/login.html?return=' + encodeURIComponent(path));
+    }
+  }
+
   function mount() {
     var tok = readToken();
     if (!tok) return;  // no session, no swap
     var payload = decode(tok);
     redirectIfSignedIn(payload);
+    enforceAdminGuard(payload);  // P0 guard 2026-05-15
     swapGuestButtons(payload);
     wireAvatar(payload);
   }

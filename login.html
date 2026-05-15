@@ -135,6 +135,7 @@
         <div style="position:relative">
           <input type="password" id="password" name="password" placeholder="Your password" required autocomplete="current-password" minlength="6" style="padding-right:48px" />
           <button type="button" onclick="togglePw('password', this)" aria-label="Show password" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:0;color:var(--muted);cursor:pointer;padding:6px 10px;font-size:13px;font-weight:600;font-family:inherit">Show</button>
+        <div style="margin-top:6px;text-align:right"><a id="forgotPasswordLink" href="#" onclick="return forgotPassword()" style="color:#0050c7;text-decoration:none;font-size:13px;font-weight:600">Forgot password?</a></div>
         </div>
 
         <div class="row-between">
@@ -329,5 +330,30 @@
 </script>
 
 <script src="lymx-feedback.js" defer></script>
+<script>
+window.forgotPassword = async function () {
+  // (Bug fix 2026-05-15 #f269964b) Trigger Supabase password reset email.
+  const email = (document.getElementById('email')||{}).value || prompt('Email address for password reset:');
+  if (!email) return false;
+  if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(email)) { alert('Please enter a valid email address.'); return false; }
+  try {
+    const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+    const URL  = window.LYMX_CONFIG.SUPABASE_URL;
+    const res = await fetch(URL + '/auth/v1/recover', {
+      method: 'POST',
+      headers: { apikey: ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    if (res.ok) {
+      alert('If that email is registered, a password reset link has been sent. Check your inbox.');
+    } else {
+      alert('Could not send reset link. Try again or contact support.');
+    }
+  } catch (e) {
+    alert('Network error. Try again.');
+  }
+  return false;
+};
+</script>
 </body>
 </html>

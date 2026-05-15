@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Reviews · LYMX</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4a017;--maxw:880px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand img{height:44px;width:auto}
+  main{padding:32px 0 60px}
+  h1{font-size:28px;font-weight:800;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:15px;margin-bottom:22px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin-bottom:12px}
+  .stars{color:var(--gold);font-size:16px;margin-bottom:6px}
+  .biz{font-weight:700;font-size:16px;margin-bottom:4px}
+  .when{font-size:12.5px;color:var(--muted);margin-bottom:8px}
+  .review-text{font-size:14.5px;line-height:1.55;color:#1a1f27}
+  .empty{padding:60px 30px;text-align:center;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:12px}
+  .empty .ic{font-size:48px;margin-bottom:14px;color:var(--gold)}
+  .btn-primary{padding:11px 18px;border-radius:9px;background:var(--ink);color:#fff;font-weight:700;font-size:14px;text-decoration:none;display:inline-block;margin-top:10px}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="index.html" class="brand"><img src="logo.png" alt="LYMX" /></a>
+    <div></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>My Reviews</h1>
+  <p class="sub">Reviews you have written. Click any review to edit or delete it.</p>
+  <div id="reviewList"><div class="empty"><div class="ic">⏳</div>Loading…</div></div>
+</main>
+
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+(async function () {
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(arguments.callee, 100); return; }
+  const s = await window.LYMX.getSession();
+  if (!s) { location.href = 'login.html?return=my-reviews.html'; return; }
+  const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  const URL  = window.LYMX_CONFIG.SUPABASE_URL;
+  const userId = s.user.id;
+  const wrap = document.getElementById('reviewList');
+  try {
+    const r = await fetch(URL + '/rest/v1/reviews?reviewer_user_id=eq.' + userId + '&select=id,business_name,rating,body,created_at&order=created_at.desc&limit=50',
+      { headers: { apikey: ANON, Authorization: 'Bearer ' + s.access_token } });
+    if (!r.ok) throw new Error('http ' + r.status);
+    const rows = await r.json();
+    if (!rows.length) {
+      wrap.innerHTML = `<div class="empty"><div class="ic">⭐</div><div style="font-weight:700;color:#1a1f27;margin-bottom:6px">No reviews yet</div><div>Visit a business and leave one — your reviews earn LYMX.</div><a class="btn-primary" href="browse.html">Browse businesses →</a></div>`;
+      return;
+    }
+    wrap.innerHTML = rows.map(r => {
+      const stars = '★'.repeat(r.rating || 0) + '☆'.repeat(5 - (r.rating || 0));
+      const when  = new Date(r.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+      return `<div class="card"><div class="stars">${stars}</div><div class="biz">${(r.business_name||'').replace(/[<>]/g,'')}</div><div class="when">${when}</div><div class="review-text">${(r.body||'').replace(/[<>]/g,'').replace(/\n/g,'<br>')}</div></div>`;
+    }).join('');
+  } catch (e) {
+    wrap.innerHTML = `<div class="empty"><div class="ic">⭐</div><div style="font-weight:700;color:#1a1f27;margin-bottom:6px">No reviews yet</div><div>Visit a business and leave one — your reviews earn LYMX.</div><a class="btn-primary" href="browse.html">Browse businesses →</a></div>`;
+  }
+})();
+</script>
+<script src="lymx-app.js" defer></script>
+</body></html>

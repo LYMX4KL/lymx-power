@@ -629,5 +629,58 @@
     } catch (e) { console.warn('[stats] failed', e); }
   })();
 </script>
+<script>
+// Wire common buttons + switch referral UUID -> P-code if available
+// (Bug fixes 2026-05-15 #fb03450c, #ba0785cf, #67ad5747, #6ff734a6)
+window.addEventListener('DOMContentLoaded', async function () {
+  window.__lymxButtonsFixed = true;
+  // "See All" / "View all reviews" buttons → /my-reviews.html
+  document.querySelectorAll('a, button').forEach(function (b) {
+    var t = (b.textContent || '').trim().toLowerCase();
+    if (/^see all$/.test(t) || /view all reviews/.test(t) || /^my recent reviews$/.test(t)) {
+      if (b.tagName === 'A') b.href = 'my-reviews.html';
+      else b.addEventListener('click', function () { location.href = 'my-reviews.html'; });
+    }
+  });
+  // Try to get the user's partner_code for referral links
+  try {
+    if (!window.LYMX || !window.LYMX.getSession) return;
+    var s = await window.LYMX.getSession();
+    if (!s) return;
+    var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+    var URL  = window.LYMX_CONFIG.SUPABASE_URL;
+    var pcode = null;
+    try {
+      var r = await fetch(URL + '/rest/v1/partners?user_id=eq.' + s.user.id + '&select=partner_code',
+        { headers: { apikey: ANON, Authorization: 'Bearer ' + s.access_token } });
+      var rows = await r.json();
+      pcode = (rows && rows[0] && rows[0].partner_code) || null;
+    } catch (e) {}
+    var code = pcode || ('U-' + s.user.id.slice(0, 6).toUpperCase());
+    var link = 'https://getlymx.com/welcome.html?ref=' + encodeURIComponent(code);
+    var bodyTxt = 'Hey — I am using LYMX. Sign up with my link and we both get 100 LYMX: ' + link;
+    // Find any anchor that contains the user-id as a ref and swap to P-code
+    document.querySelectorAll('a[href*="ref="]').forEach(function (a) {
+      a.href = a.href.replace(/ref=[^&]*/, 'ref=' + encodeURIComponent(code));
+    });
+    // Wire SMS button (looks like "SMS" or "Text" anchor)
+    document.querySelectorAll('a, button').forEach(function (b) {
+      var t = (b.textContent || '').trim().toLowerCase();
+      if (/^sms$/.test(t) || /^text$/.test(t) || /share via sms/.test(t)) {
+        if (b.tagName === 'A') b.href = 'sms:?&body=' + encodeURIComponent(bodyTxt);
+        else b.addEventListener('click', function () { location.href = 'sms:?&body=' + encodeURIComponent(bodyTxt); });
+      }
+    });
+    // Wire X share button
+    document.querySelectorAll('a, button').forEach(function (b) {
+      var t = (b.textContent || '').trim();
+      if (/^x$/i.test(t) || /^twitter$/i.test(t) || /share on x/i.test(t)) {
+        var u = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(bodyTxt);
+        if (b.tagName === 'A') { b.href = u; b.target = '_blank'; b.rel = 'noopener'; }
+      }
+    });
+  } catch (e) { console.warn('button wiring failed', e); }
+});
+</script>
 </body>
 </html>

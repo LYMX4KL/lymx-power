@@ -380,5 +380,42 @@ document.getElementById('signOut').addEventListener('click', async (e) => {
 
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
+<script>
+// Change Password section (Bug fix 2026-05-15 #05203381)
+window.addEventListener('DOMContentLoaded', function () {
+  // Inject the section after the "About you" card or near the end of main
+  var main = document.querySelector('main') || document.body;
+  var card = document.createElement('section');
+  card.style.cssText = 'background:#fff;border:1px solid var(--line, #e6e8ec);border-radius:14px;padding:24px 28px;margin:18px 0;max-width:720px';
+  card.innerHTML = ''
+    + '<h2 style="margin:0 0 14px;font-size:18px">Change password</h2>'
+    + '<label style="display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#5b6472;margin:8px 0 6px">New password (8+ characters)</label>'
+    + '<input id="newPw1" type="password" autocomplete="new-password" minlength="8" style="width:100%;padding:11px 14px;border:1px solid #e6e8ec;border-radius:10px;font-size:15px;box-sizing:border-box" />'
+    + '<label style="display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#5b6472;margin:14px 0 6px">Confirm new password</label>'
+    + '<input id="newPw2" type="password" autocomplete="new-password" minlength="8" style="width:100%;padding:11px 14px;border:1px solid #e6e8ec;border-radius:10px;font-size:15px;box-sizing:border-box" />'
+    + '<button id="changePwBtn" type="button" style="margin-top:14px;padding:10px 18px;border-radius:9px;background:#0e1116;color:#fff;font-weight:700;font-size:14px;border:0;cursor:pointer">Update password</button>'
+    + '<div id="pwMsg" style="margin-top:10px;font-size:13.5px"></div>';
+  main.appendChild(card);
+  document.getElementById('changePwBtn').addEventListener('click', async function () {
+    var a = document.getElementById('newPw1').value;
+    var b = document.getElementById('newPw2').value;
+    var msg = document.getElementById('pwMsg');
+    if (a.length < 8) { msg.textContent = 'Password must be at least 8 characters.'; msg.style.color = '#B91C1C'; return; }
+    if (a !== b) { msg.textContent = 'Passwords do not match.'; msg.style.color = '#B91C1C'; return; }
+    try {
+      if (!window.LYMX || !window.LYMX.client) { msg.textContent = 'Sign in first.'; msg.style.color = '#B91C1C'; return; }
+      var r = await window.LYMX.client.auth.updateUser({ password: a });
+      if (r.error) { msg.textContent = r.error.message; msg.style.color = '#B91C1C'; return; }
+      msg.textContent = '✓ Password updated. Use the new one next time you sign in.';
+      msg.style.color = '#13a26b';
+      document.getElementById('newPw1').value = '';
+      document.getElementById('newPw2').value = '';
+    } catch (e) {
+      msg.textContent = 'Could not update: ' + (e.message || e);
+      msg.style.color = '#B91C1C';
+    }
+  });
+});
+</script>
 </body>
 </html>
