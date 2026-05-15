@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verifications · LYMX Admin</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+
+  main{padding:28px 0 60px}
+  h1{font-size:28px;font-weight:800;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:15px;margin-bottom:24px}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .card .label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .card .val{font-size:28px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}
+  .card.pending .val{color:var(--warn)}
+  .card.partner .val{color:var(--accent-2)}
+  .card.customer .val{color:#7c3aed}
+
+  .tbl-wrap{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;padding:12px 14px;background:var(--bg-soft);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line)}
+  td{padding:14px;border-bottom:1px solid #f1f3f6;vertical-align:top}
+  tr:hover td{background:#fafbfd}
+
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .pill.partner{background:#dbeafe;color:#1e40af}
+  .pill.customer{background:#e9d5ff;color:#5b21b6}
+  .pill.intl{background:#fef3c7;color:#78350f}
+  .pill.us{background:#d1fae5;color:#065f46}
+
+  .btn{padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;border:0;cursor:pointer;font-family:inherit}
+  .btn-verify{background:var(--ok);color:#fff}
+  .btn-verify:hover{background:#0f8b5a}
+  .btn-verify:disabled{opacity:.5;cursor:wait}
+  .btn-detail{background:#fff;border:1px solid var(--line);color:var(--muted)}
+  .btn-detail:hover{border-color:var(--ink);color:var(--ink)}
+
+  .actions-cell{display:flex;gap:6px;flex-wrap:wrap}
+  .empty{padding:48px 24px;text-align:center;color:var(--muted)}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--muted)}
+  .contact{display:flex;flex-direction:column;gap:2px;font-size:13px}
+  .contact .e{color:var(--ink)}
+  .contact .p{color:var(--muted);font-size:12.5px}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:99;opacity:0;transition:opacity .2s}
+  .toast.on{opacity:1}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--danger)}
+
+  /* Drawer for verification detail */
+  .drawer{position:fixed;top:0;right:-560px;width:540px;height:100vh;background:#fff;box-shadow:-20px 0 60px rgba(0,0,0,.15);border-left:1px solid var(--line);z-index:80;transition:right .2s ease;overflow-y:auto;padding:28px 28px 60px}
+  .drawer.on{right:0}
+  .drawer h2{margin:0 0 8px;font-size:20px}
+  .drawer .close{position:absolute;top:14px;right:14px;background:#fff;border:1px solid var(--line);width:32px;height:32px;border-radius:50%;cursor:pointer;font-weight:700}
+  .drawer label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 4px}
+  .drawer .val{font-size:14px}
+  .drawer textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit;font-size:13px;min-height:80px;resize:vertical;box-sizing:border-box}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="admin-dashboard.html" class="brand">LYMX <span class="role-tag">Team</span></a>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Home</a>
+      <a href="admin-tech-support.html">Tech Support</a>
+      <a href="admin-verifications.html" class="on">Verifications</a>
+      <a href="admin-chat.html">Chat</a>
+      <a href="admin-broadcast.html">Broadcast</a>
+      <a href="admin-businesses.html">Businesses</a>
+      <a href="admin-customers.html">Customers</a>
+    </nav>
+    <div class="admin-avatar" id="userInitial">·</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>Pending Verifications</h1>
+  <div class="sub">New Partner + Customer signups waiting for admin verification. Manual review — confirm identity, then click <strong>Verify</strong>. Commission payouts and LYMX spend are gated on verified status.</div>
+
+  <div class="cards">
+    <div class="card pending">  <div class="label">Pending total</div>  <div class="val" id="kTotal">—</div></div>
+    <div class="card partner">  <div class="label">Partner</div>        <div class="val" id="kPartner">—</div></div>
+    <div class="card customer"> <div class="label">Customer</div>       <div class="val" id="kCustomer">—</div></div>
+    <div class="card">          <div class="label">International</div>  <div class="val" id="kIntl">—</div></div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:90px">Kind</th>
+          <th>Name</th>
+          <th>Contact</th>
+          <th style="width:90px">Country</th>
+          <th style="width:140px">Created</th>
+          <th style="width:180px">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr><td colspan="6" class="empty">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<aside class="drawer" id="drawer">
+  <button class="close" id="drawerClose">×</button>
+  <h2 id="dName">—</h2>
+  <div class="mono" id="dKind"></div>
+  <label>Email</label>          <div class="val" id="dEmail">—</div>
+  <label>Phone</label>          <div class="val" id="dPhone">—</div>
+  <label>Country</label>        <div class="val" id="dCountry">—</div>
+  <label>Created</label>        <div class="val" id="dCreated">—</div>
+  <label>Verification notes (optional)</label>
+  <textarea id="dNotes" placeholder="e.g. ID verified via WhatsApp video call, US W-9 on file"></textarea>
+  <div style="display:flex;gap:8px;margin-top:18px">
+    <button class="btn btn-verify" id="dVerify">✓ Verify this user</button>
+    <button class="btn btn-detail" id="dCancel">Close</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON         = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+
+let currentUserId = null;
+
+async function authedFetch(path, opts = {}) {
+  const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = (session && session.access_token) || ANON;
+  return fetch(SUPABASE_URL + path, {
+    ...opts,
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+  });
+}
+
+function esc(s) { return (s || '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtTime(iso) { if (!iso) return '—'; const d = new Date(iso); return d.toLocaleString([], { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }); }
+function showToast(msg, kind) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast on ' + (kind || ''); setTimeout(() => t.className = 'toast', 3000); }
+
+async function loadQueue() {
+  const r = await authedFetch('/rest/v1/v_pending_verifications?select=*&order=created_at.desc&limit=200');
+  if (!r.ok) {
+    document.getElementById('rows').innerHTML = `<tr><td colspan="6" class="empty">Could not load (HTTP ${r.status}). Make sure migration 023 has been applied.</td></tr>`;
+    return;
+  }
+  const rows = await r.json();
+  // KPIs
+  document.getElementById('kTotal').textContent    = rows.length.toLocaleString();
+  document.getElementById('kPartner').textContent  = rows.filter(x => x.kind === 'partner').length.toLocaleString();
+  document.getElementById('kCustomer').textContent = rows.filter(x => x.kind === 'customer').length.toLocaleString();
+  document.getElementById('kIntl').textContent     = rows.filter(x => (x.country || 'US') !== 'US').length.toLocaleString();
+
+  if (!rows.length) {
+    document.getElementById('rows').innerHTML = `<tr><td colspan="6" class="empty">Inbox is clear — no pending verifications.</td></tr>`;
+    return;
+  }
+
+  document.getElementById('rows').innerHTML = rows.map(x => {
+    const isUS = (x.country || 'US') === 'US';
+    return `<tr data-user="${x.user_id}" data-kind="${x.kind}">
+      <td><span class="pill ${x.kind}">${esc(x.kind)}</span></td>
+      <td><strong>${esc(x.name || '—')}</strong></td>
+      <td><div class="contact">
+        <span class="e">${esc(x.email || '—')}</span>
+        <span class="p">${esc(x.phone || '')}</span>
+      </div></td>
+      <td><span class="pill ${isUS ? 'us' : 'intl'}">${esc(x.country || 'US')}</span></td>
+      <td>${fmtTime(x.created_at)}</td>
+      <td class="actions-cell">
+        <button class="btn btn-detail" data-act="detail" data-user="${x.user_id}">Details</button>
+        <button class="btn btn-verify" data-act="verify" data-user="${x.user_id}">✓ Verify</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  document.querySelectorAll('#rows button').forEach(b => {
+    b.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const userId = b.dataset.user;
+      if (b.dataset.act === 'verify') {
+        verifyUser(userId, null, b);
+      } else if (b.dataset.act === 'detail') {
+        openDrawer(userId);
+      }
+    });
+  });
+}
+
+async function openDrawer(userId) {
+  currentUserId = userId;
+  const r = await authedFetch('/rest/v1/v_pending_verifications?user_id=eq.' + userId);
+  if (!r.ok) return;
+  const arr = await r.json();
+  const row = arr[0];
+  if (!row) return;
+  document.getElementById('dName').textContent    = row.name || '—';
+  document.getElementById('dKind').textContent    = (row.kind || '') + (row.sponsor ? '  ·  sponsor: ' + row.sponsor.slice(0, 8) : '');
+  document.getElementById('dEmail').textContent   = row.email || '—';
+  document.getElementById('dPhone').textContent   = row.phone || '—';
+  document.getElementById('dCountry').textContent = row.country || 'US';
+  document.getElementById('dCreated').textContent = fmtTime(row.created_at);
+  document.getElementById('dNotes').value         = '';
+  document.getElementById('drawer').classList.add('on');
+}
+
+async function verifyUser(userId, notes, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = 'Verifying…'; }
+  const r = await authedFetch('/rest/v1/rpc/mark_user_verified', {
+    method: 'POST',
+    body: JSON.stringify({ p_user_id: userId, p_notes: notes || null }),
+  });
+  if (btn) btn.disabled = false;
+  if (!r.ok) {
+    const t = await r.text();
+    showToast('Verify failed: ' + t.slice(0, 100), 'err');
+    if (btn) btn.textContent = '✓ Verify';
+    return;
+  }
+  showToast('Verified ✓', 'ok');
+  document.getElementById('drawer').classList.remove('on');
+  loadQueue();
+}
+
+document.getElementById('drawerClose').addEventListener('click', () => document.getElementById('drawer').classList.remove('on'));
+document.getElementById('dCancel').addEventListener('click', () => document.getElementById('drawer').classList.remove('on'));
+document.getElementById('dVerify').addEventListener('click', async () => {
+  const notes = document.getElementById('dNotes').value.trim();
+  verifyUser(currentUserId, notes, document.getElementById('dVerify'));
+});
+
+// Boot
+(async function init() {
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  if (!s) { document.body.innerHTML = '<div style="padding:60px;text-align:center;font-size:18px"><a href="login.html">Sign in</a> as admin to view the verification queue.</div>'; return; }
+  document.getElementById('userInitial').textContent = ((s.user.email || 'L')[0] || 'L').toUpperCase();
+  loadQueue();
+  setInterval(loadQueue, 30000);
+})();
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>

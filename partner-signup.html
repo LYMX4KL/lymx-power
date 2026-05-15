@@ -187,8 +187,8 @@
             </div>
             <div class="row2">
               <div class="field">
-                <label>Mobile phone</label>
-                <input class="input" type="tel" id="phone" placeholder="(702) 000-0000" oninput="check()" />
+                <label>Mobile phone <span style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0">(optional if you gave email)</span></label>
+                <input class="input" type="tel" id="phone" placeholder="+1 702 000 0000  or  +44 7700 900000" oninput="check()" />
               </div>
               <div class="field">
                 <label>City</label>
@@ -196,6 +196,28 @@
               </div>
             </div>
             <div class="field">
+              <label>Country</label>
+              <select id="country" onchange="onCountryChange()">
+                <option value="US" selected>United States</option>
+                <option value="CA">Canada</option>
+                <option value="GB">United Kingdom</option>
+                <option value="AU">Australia</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+                <option value="MX">Mexico</option>
+                <option value="BR">Brazil</option>
+                <option value="JP">Japan</option>
+                <option value="KR">South Korea</option>
+                <option value="CN">China</option>
+                <option value="TW">Taiwan</option>
+                <option value="HK">Hong Kong</option>
+                <option value="SG">Singapore</option>
+                <option value="IN">India</option>
+                <option value="PH">Philippines</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div class="field" id="usStateZipWrap">
               <label>State / ZIP</label>
               <div class="row2">
                 <select id="state">
@@ -206,6 +228,10 @@
                 </select>
                 <input class="input" id="zip" placeholder="89101" oninput="check()" />
               </div>
+            </div>
+            <div class="field" id="intlRegionWrap" style="display:none">
+              <label>Region / Postal code <span style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0">(optional)</span></label>
+              <input class="input" id="region" placeholder="Province / state and postal code" oninput="check()" />
             </div>
           </div>
 
@@ -276,7 +302,7 @@
             </label>
             <label class="check bordered">
               <input type="checkbox" id="agree-tos" onchange="check()" />
-              <span><strong>Terms.</strong> I agree to the <a href="partner-agreement.html" style="color:var(--accent-2);font-weight:700">Partner Agreement</a>, the <a href="terms.html" style="color:var(--accent-2);font-weight:700">Terms of Service</a>, the <a href="privacy.html" style="color:var(--accent-2);font-weight:700">Privacy Policy</a>, and the <a href="disclaimer.html" style="color:var(--accent-2);font-weight:700">LYMX Disclaimer</a>. I confirm I'm 18+ and a US resident.</span>
+              <span><strong>Terms.</strong> I agree to the <a href="partner-agreement.html" style="color:var(--accent-2);font-weight:700">Partner Agreement</a>, the <a href="terms.html" style="color:var(--accent-2);font-weight:700">Terms of Service</a>, the <a href="privacy.html" style="color:var(--accent-2);font-weight:700">Privacy Policy</a>, and the <a href="disclaimer.html" style="color:var(--accent-2);font-weight:700">LYMX Disclaimer</a>. I confirm I'm 18 or older. <em style="color:var(--muted);font-style:normal;font-weight:500">International Partners welcome — commission payouts require a verified W-9 (US) or W-8BEN (non-US) on file.</em></span>
             </label>
           </div>
 
@@ -284,21 +310,21 @@
           <div class="step-pane" data-step="5">
             <div class="done-card">
               <div class="icon">🎉</div>
-              <h2>Application submitted!</h2>
-              <p class="lede">Thanks, <span id="done-name">Partner</span>. We'll review your application and get back within 1–2 business days. A confirmation email is on its way — <strong>check your inbox (and the spam folder, just in case)</strong> within the next 5 minutes.</p>
+              <h2>You're in!</h2>
+              <p class="lede">Welcome, <span id="done-name">Partner</span>. Your account is <strong>active right now</strong> — head to your dashboard, share your referral link, and start recruiting. We'll need a quick ID check before your first commission payout, but you can start earning today.</p>
 
               <div class="next-grid">
                 <div class="next-card">
-                  <div class="h"><span class="n">1</span> We review</div>
-                  <div class="d">A LYMX team member confirms your application within 24–48 hours via email.</div>
+                  <div class="h"><span class="n">1</span> Open your dashboard</div>
+                  <div class="d"><a href="/rep-dashboard.html" style="color:var(--accent-2);font-weight:700">Sign in to your Partner Dashboard →</a> Grab your Partner ID + referral link.</div>
                 </div>
                 <div class="next-card">
-                  <div class="h"><span class="n">2</span> Onboarding call</div>
-                  <div class="d">15-min call with the launch sponsor to walk through your dashboard and pitch.</div>
+                  <div class="h"><span class="n">2</span> Share + recruit</div>
+                  <div class="d">Pitch local Businesses + invite friends as customers. Earn $500 per Business activation + 9% recurring.</div>
                 </div>
                 <div class="next-card">
-                  <div class="h"><span class="n">3</span> W-9 + ACH</div>
-                  <div class="d">We email you a W-9 form and ACH setup link. Required before commissions can be released.</div>
+                  <div class="h"><span class="n">3</span> ID check (when ready)</div>
+                  <div class="d">Before your first payout, we'll ask for a quick ID check (W-9 if US, W-8BEN if international). Takes 5 min. No friction now — only when you've earned.</div>
                 </div>
                 <div class="next-card">
                   <div class="h"><span class="n">4</span> Start recruiting</div>
@@ -435,15 +461,19 @@
     btn.disabled = true;
     btn.textContent = 'Submitting…';
 
+    const country = (document.getElementById('country') || {}).value || 'US';
     const body = {
-      owner_email: document.getElementById('email').value.trim(),
+      owner_email: document.getElementById('email').value.trim() || undefined,
       owner_password: document.getElementById('password').value,
       first_name: document.getElementById('firstName').value.trim(),
       last_name: document.getElementById('lastName').value.trim(),
-      phone: document.getElementById('phone').value.trim(),
+      phone: document.getElementById('phone').value.trim() || undefined,
+      country_code: country,
       city: document.getElementById('city').value.trim(),
-      state: document.getElementById('state').value,
-      zip: document.getElementById('zip').value.trim(),
+      // US fields (state/zip) or international region — only one set is meaningful
+      state: country === 'US' ? document.getElementById('state').value : undefined,
+      zip:   country === 'US' ? document.getElementById('zip').value.trim() : undefined,
+      region: country !== 'US' ? (document.getElementById('region') || {}).value?.trim() : undefined,
       sponsor_partner_id: document.getElementById('sponsor').value.trim() || undefined,
       why: document.getElementById('why').value.trim(),
       background: document.getElementById('bg').value,
@@ -486,8 +516,25 @@
   }
 
   function valid1(){
-    const allFilled = ['firstName','lastName','email','phone','city','zip','password'].every(id => document.getElementById(id).value.trim().length > 0);
-    return allFilled && document.getElementById('password').value.length >= 10;
+    // Always required: firstName, lastName, password, city
+    // Contact: email OR phone (at least one)
+    // Region: US needs zip; international needs nothing required
+    const required = ['firstName','lastName','city','password'];
+    const allFilled = required.every(id => document.getElementById(id).value.trim().length > 0);
+    if (!allFilled) return false;
+    if (document.getElementById('password').value.length < 10) return false;
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    if (!email && !phone) return false;
+    // If email provided, basic shape check
+    if (email && !/^\S+@\S+\.\S+$/.test(email)) return false;
+    // US: zip required; international: region optional
+    const country = (document.getElementById('country') || {}).value || 'US';
+    if (country === 'US') {
+      const zip = (document.getElementById('zip') || {}).value || '';
+      if (!zip.trim()) return false;
+    }
+    return true;
   }
   function togglePartnerPw(){
     const el = document.getElementById('password');
@@ -496,8 +543,8 @@
     else { el.type = 'password'; btn.textContent = 'Show'; }
   }
   function valid2(){
-    // Sponsor is OPTIONAL — empty value is allowed (routes to launch sponsor).
-    // But if entered, it MUST match the P-NNNNNN format. (Tester bug 2026-05-14: invalid IDs let users progress.)
+    // Sponsor is OPTIONAL — blank routes to launch sponsor (Kenny).
+    // If entered, MUST be P-NNNNNN format.
     const v = (document.getElementById('sponsor').value || '').trim();
     if (!v) return true;
     return /^P-\d{6}$/i.test(v);
@@ -517,15 +564,30 @@
     }
   }
 
+  // Toggle US state/zip vs international region based on country picker.
+  function onCountryChange(){
+    const country = (document.getElementById('country') || {}).value || 'US';
+    const usWrap = document.getElementById('usStateZipWrap');
+    const intlWrap = document.getElementById('intlRegionWrap');
+    if (!usWrap || !intlWrap) return;
+    if (country === 'US') {
+      usWrap.style.display = '';
+      intlWrap.style.display = 'none';
+    } else {
+      usWrap.style.display = 'none';
+      intlWrap.style.display = '';
+    }
+    check();
+  }
+
   function onSponsor(){
     const v = document.getElementById('sponsor').value.trim();
     const card = document.getElementById('sponsor-card');
     const help = document.getElementById('sponsor-help');
     const sponsorEl = document.getElementById('sponsor');
     if (!v) {
-      // Blank is fine — route to launch sponsor
       card.style.display = 'none';
-      help.textContent = 'Format: P-123456. Leave blank to be assigned to launch sponsor.';
+      help.textContent = 'Format: P-123456. Leave blank — you\'ll be assigned to the launch sponsor.';
       help.style.color = '';
       sponsorEl.style.borderColor = '';
       check();
@@ -533,31 +595,20 @@
     }
     if (/^P-\d{6}$/i.test(v)) {
       card.style.display = '';
-      help.textContent = 'Sponsor verified.';
+      help.textContent = 'Sponsor format OK — we\'ll verify when you submit.';
       help.style.color = 'var(--ok, #13a26b)';
       sponsorEl.style.borderColor = 'var(--ok, #13a26b)';
     } else {
       card.style.display = 'none';
-      help.textContent = '⚠️ Invalid Partner ID. Must be format P-123456 (six digits). Leave blank to use the launch sponsor.';
+      help.textContent = '\u26A0\uFE0F Invalid Partner ID. Must be P-123456 (six digits). Leave blank to use the launch sponsor.';
       help.style.color = '#dc2626';
       sponsorEl.style.borderColor = '#dc2626';
     }
     check();
   }
 
-  // Phone formatting
-  document.getElementById('phone').addEventListener('input', e => {
-    let v = e.target.value.replace(/\D/g,'').slice(0,10);
-    let f = '';
-    if (v.length === 0) f = '';
-    else if (v.length <= 3) f = `(${v}`;
-    else if (v.length <= 6) f = `(${v.slice(0,3)}) ${v.slice(3)}`;
-    else f = `(${v.slice(0,3)}) ${v.slice(3,6)}-${v.slice(6)}`;
-    e.target.value = f;
-    check();
-  });
-
-  go(1);
 </script>
+
+<script src="lymx-feedback.js" defer></script>
 </body>
 </html>
