@@ -106,6 +106,8 @@
   .src-card:hover{border-color:var(--accent);background:#eef5ff}
   .src-card.coming{opacity:.5;cursor:not-allowed}
   .src-card.coming:hover{border-color:var(--line);background:#fff}
+  .src-card.on{border-color:var(--accent);background:#eef5ff;box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  .src-card.on .h{color:var(--accent-2)}
   .src-card .ic{font-size:24px;flex-shrink:0}
   .src-card .h{font-weight:700;font-size:14px}
   .src-card .d{font-size:12px;color:var(--muted)}
@@ -472,13 +474,17 @@ function renderSidebar() {
       }).join('')
     : '<div style="font-size:12px;color:var(--muted);padding:6px 10px">No lists yet</div>';
 
-  // Wire click handlers
+  // Wire click handlers — also sync the visual active state across ALL items
+  // (Bug fix 2026-05-15 #88ffc00e: the All/Invited/Signed-up labels never
+  // updated, only the tag/list items rebuilt from JS got their active class.)
   document.querySelectorAll('.side-item[data-filter]').forEach(el => {
-    el.addEventListener('click', () => {
+    // Reapply class for static items based on current activeFilter
+    el.classList.toggle('active', el.dataset.filter === activeFilter);
+    el.onclick = () => {
       activeFilter = el.dataset.filter;
       renderSidebar();
       renderTable();
-    });
+    };
   });
 }
 
@@ -591,6 +597,9 @@ document.querySelectorAll('.src-card').forEach(card => {
       setStatus('importStatus', 'Live sync from this source is coming soon. Use CSV export for now.', 'info');
       return;
     }
+    // Visual active state across all source cards (Bug fix #d6101950)
+    document.querySelectorAll('.src-card').forEach(c => c.classList.remove('on'));
+    card.classList.add('on');
     const src = card.dataset.source;
     document.getElementById('importBody').style.display = 'block';
     document.getElementById('uploadZone').style.display = src === 'csv' ? 'block' : 'none';
@@ -622,8 +631,24 @@ function handleCSVFile(file) {
   reader.readAsText(file);
 }
 document.getElementById('pasteEmails').addEventListener('input', e => {
-  pendingImport = contactsFromPaste(e.target.value);
-  setStatus('importStatus', `${pendingImport.length} contact${pendingImport.length === 1 ? '' : 's'} ready to import.`, 'info');
+  // Build a set of emails already in the user's contact book so we can
+  // skip duplicates instead of letting the database collide on UPSERT.
+  // (Bug fix 2026-05-15 #5877f599: paste-emails was creating duplicates.)
+  const existingEmails = new Set(allContacts.map(c => (c.email || '').toLowerCase().trim()).filter(Boolean));
+  const parsed = contactsFromPaste(e.target.value);
+  const fresh  = [];
+  let dupCount = 0;
+  for (const c of parsed) {
+    const em = (c.email || '').toLowerCase().trim();
+    if (!em) continue;
+    if (existingEmails.has(em)) { dupCount++; continue; }
+    if (fresh.some(f => f.email.toLowerCase().trim() === em)) { dupCount++; continue; }
+    fresh.push(c);
+  }
+  pendingImport = fresh;
+  let msg = `${fresh.length} new contact${fresh.length === 1 ? '' : 's'} ready to import.`;
+  if (dupCount > 0) msg += ` ${dupCount} duplicate${dupCount === 1 ? '' : 's'} skipped.`;
+  setStatus('importStatus', msg, dupCount > 0 && fresh.length === 0 ? 'err' : 'info');
 });
 
 document.getElementById('importDo').addEventListener('click', async () => {
@@ -786,13 +811,15 @@ document.getElementById('inviteSelectedBtn').addEventListener('click', () => {
 
 // ---- Boot ----
 (async function init() {
+  // Auth gate — Contacts is private; redirect anonymous users to login.
+  // (Bug fix 2026-05-15 #b46ec413: unauthenticated could see the page shell.)
   if (!window.LYMX || !window.LYMX.getSession) {
-    document.getElementById('rows').innerHTML = '<tr><td colspan="8" class="empty-state"><div>Sign in first to use Contacts.</div></td></tr>';
+    location.href = 'login.html?return=contacts.html';
     return;
   }
   const s = await window.LYMX.getSession();
   if (!s) {
-    document.getElementById('rows').innerHTML = '<tr><td colspan="8" class="empty-state"><div>Sign in first. <a href="login.html" style="color:var(--accent-2);text-decoration:underline">Sign in</a></div></td></tr>';
+    location.href = 'login.html?return=contacts.html';
     return;
   }
   myUserId = s.user.id;
