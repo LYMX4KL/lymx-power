@@ -170,6 +170,25 @@ serve(async (req) => {
         return errorResponse("Not the business owner", 403);
     }
 
+    // VERIFICATION GATE (Kenny 2026-05-14): customer must be verified before
+    // they can spend LYMX. Signup is friction-free; spending requires admin
+    // verification via admin-verifications.html.
+    const { data: cust, error: custErr } = await supabase
+        .from("customers")
+        .select("user_id, verified_at, display_name")
+        .eq("id", wallet.customer_id)
+        .maybeSingle();
+    if (custErr) {
+        return errorResponse("Customer lookup failed", 500);
+    }
+    if (cust && !cust.verified_at) {
+        return errorResponse(
+            `Customer ${cust.display_name || cust.user_id} is not yet verified. ` +
+            "LYMX spending is held until admin verification in admin-verifications.html.",
+            403,
+        );
+    }
+
     // Idempotency: same pos_external_id → return prior redemption
     if (body.pos_external_id) {
         const { data: prior } = await supabase
