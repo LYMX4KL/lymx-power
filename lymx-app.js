@@ -23,12 +23,19 @@
 
   function loadScript(src, attrs) {
     return new Promise(function (resolve, reject) {
-      // Already on page?
+      // Already on page? If the script's already loaded (very likely on
+      // pages that include their own <script src="lymx-xxx.js"> tags), its
+      // load event already fired — adding a listener now would hang forever.
+      // Resolve after a short tick so the consumer can read whatever
+      // globals the already-loaded script set.
       var existing = document.querySelector('script[src="' + src + '"]');
       if (existing) {
         if (existing.dataset.loaded === '1') return resolve();
+        // Race: load might still be in-flight OR already fired.
         existing.addEventListener('load', function () { resolve(); });
         existing.addEventListener('error', function () { reject(new Error(src)); });
+        // Fallback resolve in 1.5s so the chain can't deadlock.
+        setTimeout(function () { resolve(); }, 1500);
         return;
       }
       var s = document.createElement('script');
@@ -48,18 +55,4 @@
       }
       // 2) LYMX config (provides window.LYMX_CONFIG)
       if (!window.LYMX_CONFIG) {
-        await loadScript('lymx-config.js');
-      }
-      // 3) LYMX auth helper (provides window.LYMX.getSession)
-      if (!window.LYMX || !window.LYMX.getSession) {
-        await loadScript('lymx-auth.js');
-      }
-      // 4) Sidebar (only mounts when a session exists — controlled inside the file)
-      await loadScript('lymx-sidebar.js');
-      // 5) Feedback widget
-      await loadScript('lymx-feedback.js');
-    } catch (e) {
-      console.warn('[lymx-app] partial load:', e && e.message);
-    }
-  })();
-})();
+        await loa

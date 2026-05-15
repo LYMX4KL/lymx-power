@@ -19,9 +19,21 @@
   if (window.__LYMX_FEEDBACK_LOADED__) return;
   window.__LYMX_FEEDBACK_LOADED__ = true;
 
-  if (!window.LYMX_CONFIG || !window.LYMX_CONFIG.SUPABASE_URL) {
-    console.warn('[LYMX feedback] LYMX_CONFIG not loaded; feedback button disabled');
-    return;
+  // Wait up to 10s for lymx-config.js to load. Some pages place this script
+  // BEFORE the config in their HTML, in which case the previous version
+  // bailed permanently. (Fix 2026-05-15.)
+  function waitForConfig(cb) {
+    if (window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL) return cb();
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      if (window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL) {
+        clearInterval(iv); cb();
+      } else if (tries > 100) {  // 100 * 100ms = 10s
+        clearInterval(iv);
+        console.warn('[LYMX feedback] LYMX_CONFIG never loaded; feedback button disabled');
+      }
+    }, 100);
   }
 
   var FB_DRAFT_KEY = 'lymx_feedback_draft_v3';
@@ -537,4 +549,163 @@
     btn.addEventListener('click', open);
     overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
     overlay.querySelectorAll('[data-fb-close]').forEach(function (el) { el.addEventListener('click', close); });
- 
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('on')) close();
+    });
+
+    document.getElementById('lymx-fb-shot-auto').addEventListener('click', captureAuto);
+    document.getElementById('lymx-fb-shot-region').addEventListener('click', captureRegion);
+    document.getElementById('lymx-fb-shot-upload').addEventListener('click', function () {
+      document.getElementById('lymx-fb-shot-file').click();
+    });
+    document.getElementById('lymx-fb-shot-file').addEventListener('change', function (e) {
+      addFiles(e.target.files);
+      e.target.value = '';
+    });
+
+    // Drag-drop
+    var preview = document.getElementById('lymx-fb-shot-preview');
+    ['dragenter', 'dragover'].forEach(function (ev) {
+      preview.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); preview.classList.add('drag'); });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+      preview.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); preview.classList.remove('drag'); });
+    });
+    preview.addEventListener('drop', function (e) {
+      if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files);
+    });
+
+    // Paste-image anywhere in the modal
+    overlay.addEventListener('paste', function (e) {
+      var items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      var files = [];
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file') {
+          var f = items[i].getAsFile();
+          if (f) files.push(f);
+        }
+      }
+      if (files.length) addFiles(files);
+    });
+
+    document.getElementById('lymx-fb-ai-polish').addEventListener('click', doPolish);
+    var msgEl = document.getElementById('lymx-fb-message');
+    msgEl.addEventListener('input', function () { scheduleTips(); saveDraft(); });
+
+    ['lymx-fb-type','lymx-fb-priority','lymx-fb-subject'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('change', saveDraft);
+        el.addEventListener('input', saveDraft);
+      }
+    });
+
+    document.getElementById('lymx-fb-send').addEventListener('click', submit);
+  }
+
+  function open() {
+    overlay.classList.add('on');
+    document.body.style.overflow = 'hidden';
+    try {
+      var pb = overlay.querySelector('.pb-path');
+      if (pb) pb.textContent = shortPath();
+    } catch (e) {}
+    notice(null);
+    loadDraft();
+    updateWhoLabel();
+    setTimeout(captureAuto, 250);
+    setTimeout(function () {
+      var msg = document.getElementById('lymx-fb-message');
+      if (msg && !msg.value) msg.focus();
+    }, 60);
+  }
+  function close() {
+    overlay.classList.remove('on');
+    document.body.style.overflow = '';
+  }
+  function notice(text, kind) {
+    var n = document.getElementById('lymx-fb-notice');
+    if (!n) return;
+    if (!text) { n.className = 'notice'; n.textContent = ''; return; }
+    n.className = 'notice show ' + (kind || 'err');
+    n.textContent = text;
+  }
+
+  async function submit() {
+    var type = document.getElementById('lymx-fb-type').value;
+    var priority = document.getElementById('lymx-fb-priority').value;
+    var subject = document.getElementById('lymx-fb-subject').value.trim();
+    var msgEl = document.getElementById('lymx-fb-message');
+    var message = msgEl.value.trim();
+    var originalMessage = msgEl.dataset.originalMessage || null;
+    var aiSummary = msgEl.dataset.aiSummary || null;
+    var sendBtn = document.getElementById('lymx-fb-send');
+
+    if (message.length < 10) {
+      notice('Please write at least 10 characters describing what you want to share.', 'err');
+      return;
+    }
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending…';
+    notice(null);
+
+    var screenshot_b64 = null;
+    if (shotBlob) {
+      try { screenshot_b64 = await blobToDataURL(shotBlob); }
+      catch (e) { console.warn('[LYMX feedback] couldn\'t convert screenshot', e); }
+    }
+
+    // Encode additional attachments (max 6, each ≤ 5 MB)
+    var attachments = [];
+    for (var i = 0; i < attachedFiles.length && i < 6; i++) {
+      try {
+        var f = attachedFiles[i];
+        var data = await blobToDataURL(f);
+        attachments.push({ name: f.name, type: f.type || 'application/octet-stream', size: f.size, data_url: data });
+      } catch (e) { /* skip */ }
+    }
+
+    var payload = {
+      type: type, priority: priority,
+      subject: subject || undefined,
+      message: message,
+      original_message: originalMessage,
+      ai_summary: aiSummary,
+      page_url: window.location.href,
+      page_title: document.title,
+      viewport: window.innerWidth + 'x' + window.innerHeight,
+      user_agent: navigator.userAgent,
+      screenshot_b64: screenshot_b64,
+      screenshot_kind: shotBlob ? shotKind : null,
+      attachments: attachments
+    };
+
+    var auth = await resolveAccessToken();
+    try {
+      var res = await fetch(
+        window.LYMX_CONFIG.SUPABASE_URL + '/functions/v1/feedback-submit',
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + auth.token,
+            'apikey': window.LYMX_CONFIG.SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+      var data = null;
+      try { data = await res.json(); } catch (e) {}
+      if (!res.ok) {
+        notice((data && data.error) || ('Submit failed: ' + res.status), 'err');
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Feedback';
+        return;
+      }
+      notice('Thanks! Sent. We\'ll dig in shortly.', 'ok');
+      sendBtn.textContent = 'Sent ✓';
+      clearDraft();
+      msgEl.value = ''; msgEl.dataset.originalMessage = ''; msgEl.dataset.aiSummary = '';
+      document.getElementById('lymx-fb-subject').value = '';
+      shotBlob = null; shotKind = 'none';
