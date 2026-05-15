@@ -6,6 +6,7 @@
 //   - Supabase Auth (lymx-auth.js)
 //   - Persistent left sidebar (only when signed in)
 //   - Floating feedback widget (auto-screenshot, uploads, AI assist)
+//   - Universal nav helper (guest buttons swap, avatar dropdown, signup redirect)
 //
 // Drop this single line right before </body> on EVERY page:
 //
@@ -22,9 +23,6 @@
     return new Promise(function (resolve, reject) {
       var existing = document.querySelector('script[src="' + src + '"]');
       if (existing) {
-        // The existing tag's load event may have already fired (very likely
-        // on pages that include their own script tags). Resolve after at
-        // most 1.5s so the chain cannot deadlock.
         if (existing.dataset.loaded === '1') return resolve();
         existing.addEventListener('load', function () { resolve(); });
         existing.addEventListener('error', function () { reject(new Error(src)); });
@@ -50,6 +48,8 @@
       if (!window.LYMX || !window.LYMX.getSession) {
         await loadScript('lymx-auth.js');
       }
+      // Nav helper runs early so signup redirects happen before the user can interact.
+      await loadScript('lymx-nav.js');
       await loadScript('lymx-sidebar.js');
       await loadScript('lymx-feedback.js');
     } catch (e) {
