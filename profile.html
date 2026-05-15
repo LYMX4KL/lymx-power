@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Profile · LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--maxw:900px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+
+  main{padding:28px 0 60px}
+  h1{font-size:28px;font-weight:800;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:15px;margin-bottom:24px}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin-bottom:18px}
+  .card h2{margin:0 0 14px;font-size:16px;font-weight:800}
+
+  label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px}
+  input,select,textarea{width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;font-weight:500;background:#fff;color:var(--ink);font-family:inherit;transition:.15s;box-sizing:border-box}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  input[readonly]{background:var(--bg-soft);color:var(--muted)}
+  textarea{min-height:80px;resize:vertical}
+
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:560px){.row2{grid-template-columns:1fr}}
+
+  .btn{padding:10px 18px;border-radius:10px;font-weight:700;font-size:14px;border:0;cursor:pointer;font-family:inherit}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-primary:disabled{opacity:.5;cursor:wait}
+  .btn-ghost{background:#fff;border:1px solid var(--line);color:var(--muted)}
+
+  .verification-banner{padding:14px 18px;border-radius:10px;margin-bottom:18px;font-size:14px}
+  .verification-banner.unverified{background:#fffbeb;border:1px solid #fde68a;color:#78350f}
+  .verification-banner.verified{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .verification-banner strong{font-weight:800}
+
+  .role-pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;margin-left:8px}
+  .role-pill.partner{background:#dbeafe;color:#1e40af}
+  .role-pill.customer{background:#e9d5ff;color:#5b21b6}
+  .role-pill.business{background:#fef3c7;color:#78350f}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:99;opacity:0;transition:opacity .2s}
+  .toast.on{opacity:1}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--danger)}
+
+  .empty{padding:48px 24px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand">LYMX <span id="rolePill" class="role-pill"></span></a>
+    <nav class="nav-links">
+      <a id="dashLink" href="/">Dashboard</a>
+      <a href="/profile.html" class="on">Profile</a>
+      <a href="/contacts.html">Contacts</a>
+      <a href="#" id="signOut">Sign out</a>
+    </nav>
+    <div class="admin-avatar" id="userInitial">·</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>My Profile</h1>
+  <div class="sub" id="welcomeSub">Complete your profile so we know how to reach you.</div>
+
+  <div class="verification-banner" id="verifBanner" style="display:none"></div>
+
+  <div class="card">
+    <h2>About you</h2>
+
+    <div class="row2">
+      <div>
+        <label>First name</label>
+        <input id="firstName" type="text" />
+      </div>
+      <div>
+        <label>Last name</label>
+        <input id="lastName" type="text" />
+      </div>
+    </div>
+
+    <label>Display name <span style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0">(how you're shown to others)</span></label>
+    <input id="displayName" type="text" />
+
+    <label>Email</label>
+    <input id="email" type="email" readonly />
+    <div style="font-size:12px;color:var(--muted);margin-top:4px">Email is locked to your login. Contact support to change.</div>
+
+    <div class="row2">
+      <div>
+        <label>Phone <span style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input id="phone" type="tel" placeholder="+1 702 000 0000  or  +44 7700 900000" />
+      </div>
+      <div>
+        <label>Country</label>
+        <select id="country">
+          <option value="US">United States</option>
+          <option value="CA">Canada</option>
+          <option value="GB">United Kingdom</option>
+          <option value="AU">Australia</option>
+          <option value="DE">Germany</option>
+          <option value="FR">France</option>
+          <option value="MX">Mexico</option>
+          <option value="BR">Brazil</option>
+          <option value="JP">Japan</option>
+          <option value="KR">South Korea</option>
+          <option value="CN">China</option>
+          <option value="TW">Taiwan</option>
+          <option value="HK">Hong Kong</option>
+          <option value="SG">Singapore</option>
+          <option value="IN">India</option>
+          <option value="PH">Philippines</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="zipFieldWrap">
+      <label id="zipLabel">ZIP code</label>
+      <input id="zip" type="text" placeholder="89101" />
+    </div>
+
+    <div style="margin-top:22px;display:flex;gap:10px">
+      <button class="btn btn-primary" id="saveBtn">Save changes</button>
+      <a class="btn btn-ghost" id="dashLink2" href="/">Back to dashboard</a>
+    </div>
+  </div>
+
+  <div class="card" id="signupSrcCard" style="display:none">
+    <h2>Signup details</h2>
+    <div style="font-size:14px;color:var(--muted)" id="signupSrcText">—</div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+const ANON         = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+
+let myUser = null;
+let myRole = null;     // 'partner' | 'customer' | 'business'
+let myRow  = null;     // current row in partners/customers/businesses
+
+async function authedFetch(path, opts = {}) {
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const token = (s && s.access_token) || ANON;
+  return fetch(SUPABASE_URL + path, {
+    ...opts,
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+  });
+}
+
+function esc(s) { return (s || '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function showToast(msg, kind) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast on ' + (kind || ''); setTimeout(() => t.className = 'toast', 3000); }
+
+async function detectRole() {
+  // Try partners first, then businesses, else customer
+  const uid = myUser.id;
+  const pr = await authedFetch('/rest/v1/partners?user_id=eq.' + uid + '&select=*&limit=1');
+  if (pr.ok) {
+    const arr = await pr.json();
+    if (arr.length) return { role: 'partner', row: arr[0] };
+  }
+  const br = await authedFetch('/rest/v1/businesses?owner_user_id=eq.' + uid + '&select=*&limit=1');
+  if (br.ok) {
+    const arr = await br.json();
+    if (arr.length) return { role: 'business', row: arr[0] };
+  }
+  // Default: customer (may need to upsert if no row exists)
+  const cr = await authedFetch('/rest/v1/customers?user_id=eq.' + uid + '&select=*&limit=1');
+  if (cr.ok) {
+    const arr = await cr.json();
+    if (arr.length) return { role: 'customer', row: arr[0] };
+  }
+  return { role: 'customer', row: null };
+}
+
+function fillForm() {
+  if (!myRow) return;
+  const r = myRow;
+  if (myRole === 'partner') {
+    const name = r.legal_name || '';
+    const parts = name.split(/\s+/);
+    document.getElementById('firstName').value = parts[0] || '';
+    document.getElementById('lastName').value = parts.slice(1).join(' ');
+    document.getElementById('displayName').value = r.display_name || '';
+    document.getElementById('email').value = r.contact_email || myUser.email || '';
+    document.getElementById('phone').value = r.contact_phone || '';
+    document.getElementById('country').value = r.country_code || 'US';
+    document.getElementById('zip').value = '';
+  } else if (myRole === 'business') {
+    document.getElementById('firstName').value = '';
+    document.getElementById('lastName').value = '';
+    document.getElementById('displayName').value = r.display_name || r.legal_name || '';
+    document.getElementById('email').value = r.contact_email || myUser.email || '';
+    document.getElementById('phone').value = r.phone || '';
+    document.getElementById('country').value = r.country_code || 'US';
+    document.getElementById('zip').value = r.zip || '';
+  } else {
+    // customer
+    document.getElementById('firstName').value = '';
+    document.getElementById('lastName').value = '';
+    document.getElementById('displayName').value = r.display_name || '';
+    document.getElementById('email').value = r.email || myUser.email || '';
+    document.getElementById('phone').value = r.phone || '';
+    document.getElementById('country').value = r.country_code || 'US';
+    document.getElementById('zip').value = r.home_zip || '';
+  }
+  onCountryChange();
+}
+
+function onCountryChange() {
+  const country = document.getElementById('country').value;
+  const wrap = document.getElementById('zipFieldWrap');
+  const label = document.getElementById('zipLabel');
+  if (country === 'US') {
+    wrap.style.display = '';
+    label.textContent = 'ZIP code';
+    document.getElementById('zip').placeholder = '89101';
+  } else if (country === 'OTHER') {
+    wrap.style.display = 'none';
+  } else {
+    wrap.style.display = '';
+    label.textContent = 'Postal code (optional)';
+    document.getElementById('zip').placeholder = '';
+  }
+}
+
+async function save() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  const firstName = document.getElementById('firstName').value.trim();
+  const lastName  = document.getElementById('lastName').value.trim();
+  const display   = document.getElementById('displayName').value.trim();
+  const phone     = document.getElementById('phone').value.trim() || null;
+  const country   = document.getElementById('country').value;
+  const zip       = document.getElementById('zip').value.trim() || null;
+  const fullName  = (firstName + ' ' + lastName).trim();
+
+  let patch = {};
+  let table = '';
+  let key = '';
+  let keyVal = '';
+
+  if (myRole === 'partner') {
+    table = 'partners';
+    key = 'user_id'; keyVal = myUser.id;
+    patch = {
+      legal_name: fullName || display || (myRow && myRow.legal_name) || display,
+      display_name: display || firstName,
+      contact_phone: phone,
+      country_code: country,
+    };
+  } else if (myRole === 'business') {
+    table = 'businesses';
+    key = 'owner_user_id'; keyVal = myUser.id;
+    patch = {
+      display_name: display,
+      phone: phone,
+      country_code: country,
+      zip: country === 'US' ? zip : null,
+    };
+  } else {
+    table = 'customers';
+    key = 'user_id'; keyVal = myUser.id;
+    // For customers we may need to upsert if no row exists.
+    patch = {
+      user_id: myUser.id,
+      display_name: display || firstName,
+      phone: phone,
+      country_code: country,
+      home_zip: country === 'US' ? zip : null,
+      email: myUser.email,
+    };
+  }
+
+  let r;
+  if (myRow) {
+    // Update existing row
+    r = await authedFetch('/rest/v1/' + table + '?' + key + '=eq.' + keyVal, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify(patch),
+    });
+  } else {
+    // Upsert (customer-only case)
+    r = await authedFetch('/rest/v1/' + table, {
+      method: 'POST',
+      headers: { 'Prefer': 'return=minimal,resolution=merge-duplicates' },
+      body: JSON.stringify(patch),
+    });
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Save changes';
+  if (!r.ok) {
+    const t = await r.text();
+    showToast('Save failed: ' + t.slice(0, 100), 'err');
+    return;
+  }
+  showToast('Saved ✓', 'ok');
+  // Refresh row in memory
+  const det = await detectRole();
+  myRow = det.row;
+  renderHeader();
+}
+
+function renderHeader() {
+  const init = ((myUser.email || 'L')[0] || 'L').toUpperCase();
+  document.getElementById('userInitial').textContent = init;
+  const pill = document.getElementById('rolePill');
+  pill.textContent = myRole;
+  pill.className = 'role-pill ' + myRole;
+
+  const dashHref = myRole === 'partner' ? '/rep-dashboard.html'
+                 : myRole === 'business' ? '/biz-dashboard.html'
+                 : '/customer-dashboard.html';
+  document.getElementById('dashLink').href = dashHref;
+  document.getElementById('dashLink2').href = dashHref;
+
+  // Verification banner
+  const verified = myRow && myRow.verified_at;
+  const banner = document.getElementById('verifBanner');
+  if (myRole === 'business') {
+    // Businesses go through their own intake flow; don't show banner
+    banner.style.display = 'none';
+  } else if (verified) {
+    banner.className = 'verification-banner verified';
+    banner.innerHTML = '<strong>✓ Verified.</strong> You can ' + (myRole === 'partner' ? 'receive commission payouts' : 'spend your LYMX at any partner business') + '.';
+    banner.style.display = '';
+  } else {
+    banner.className = 'verification-banner unverified';
+    banner.innerHTML = '<strong>Pending verification.</strong> Your account is active but ' + (myRole === 'partner' ? 'commission payouts' : 'LYMX spending at businesses') + ' is held until LYMX admin reviews. Usually within 24 hrs.';
+    banner.style.display = '';
+  }
+}
+
+document.getElementById('country').addEventListener('change', onCountryChange);
+document.getElementById('saveBtn').addEventListener('click', save);
+document.getElementById('signOut').addEventListener('click', async (e) => {
+  e.preventDefault();
+  if (window.LYMX && window.LYMX.signOut) await window.LYMX.signOut();
+  location.href = '/login.html';
+});
+
+(async function init() {
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  if (!s) { location.href = '/login.html?next=/profile.html'; return; }
+  myUser = s.user;
+  const det = await detectRole();
+  myRole = det.role;
+  myRow  = det.row;
+  renderHeader();
+  fillForm();
+})();
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>
