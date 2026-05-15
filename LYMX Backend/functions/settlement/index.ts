@@ -187,7 +187,30 @@ serve(async (req) => {
         commission_count: number;
     }> = [];
 
+    const blockedUnverified: Array<{ partner_id: string; reason: string }> = [];
     for (const [partnerId, bucket] of byPartner.entries()) {
+        // GATE: per Kenny 2026-05-14, do not pay out commission to unverified
+        // Partners. They sign up freely; verification (ID check / W-9 / W-8BEN)
+        // is required only before money moves.
+        const { data: pRow } = await supabase
+            .from("partners")
+            .select("user_id, verified_at, contact_email, display_name")
+            .eq("id", partnerId)
+            .maybeSingle();
+        if (!pRow) {
+            console.warn(`Settlement: partner ${partnerId} not found`);
+            continue;
+        }
+        if (!pRow.verified_at) {
+            blockedUnverified.push({
+                partner_id: partnerId,
+                reason: `Partner ${pRow.display_name || partnerId} is not yet verified — commission held until admin approves verification in admin-verifications.html`,
+            });
+            // Skip this partner — their commissions stay unsettled (no settlement_id),
+            // so the next settlement run picks them up automatically once verified.
+            continue;
+        }
+
         // Create the settlement row
         const { data: settlement, error: sErr } = await supabase
             .from("settlements")
@@ -232,6 +255,8 @@ serve(async (req) => {
         settlements_created: results.length,
         total_amount: Number(totalAmount.toFixed(2)),
         settlements: results,
+        blocked_unverified: blockedUnverified,
+        blocked_count: blockedUnverified.length,
         dry_run: false,
     });
 });
