@@ -54,7 +54,7 @@
   }
   .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:800}
-  .brand img{height:52px;width:auto}
+  .brand img{height:44px;width:auto}
   .nav-links{display:flex;gap:18px;font-size:13.5px;color:var(--ink-2);align-items:center}
   .nav-links a{padding:6px 2px;color:var(--ink-2)}
   .nav-links a:hover{color:var(--accent)}
@@ -280,10 +280,13 @@
       </details>
       <a href="index-es.html" style="background:rgba(212,175,55,.12);color:#7a5e10;padding:4px 10px;border-radius:6px;font-weight:800">🌐 ES</a>
     </nav>
-    <div class="nav-cta">
+    <div class="nav-cta" id="navCtaGuest">
       <a class="btn btn-ghost" href="login.html">Sign in</a>
       <a class="btn btn-primary" href="welcome.html">Sign up</a>
       <a class="btn btn-biz" href="business.html">For Business →</a>
+    </div>
+    <div class="nav-cta" id="navCtaUser" style="display:none">
+      <a class="btn btn-primary" id="navCtaUserLink" href="#">My account →</a>
     </div>
   </div>
 </header>
@@ -705,5 +708,37 @@
 <script src="cookie-consent.js" defer></script>
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
+<script>
+  // Show "My account" button + hide guest buttons when signed in.
+  // (Bug fix 2026-05-15 #9f165d8e)
+  (function () {
+    try {
+      var url = (window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL) || '';
+      var m = url.match(/https:\/\/([^.]+)\.supabase\.co/i);
+      if (!m) return;
+      var raw = localStorage.getItem('sb-' + m[1] + '-auth-token');
+      if (!raw) return;
+      var obj = JSON.parse(raw);
+      var tok = (obj && obj.access_token) || (obj && obj.currentSession && obj.currentSession.access_token);
+      if (!tok) return;
+      // Decode JWT for role / sub
+      var parts = tok.split('.');
+      if (parts.length !== 3) return;
+      var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      // Route to the right dashboard based on user role hints
+      var dest = 'customer-dashboard.html';
+      if (payload.sub === '1405bb50-2c97-48dd-bfa5-31f32320de9b') dest = 'admin-dashboard.html';
+      else if ((payload.email || '').endsWith('@lymxpower.com') || (payload.email || '').endsWith('@getlymx.com')) dest = 'rep-dashboard.html';
+      var guest = document.getElementById('navCtaGuest');
+      var userEl = document.getElementById('navCtaUser');
+      var userLink = document.getElementById('navCtaUserLink');
+      if (guest && userEl && userLink) {
+        guest.style.display = 'none';
+        userEl.style.display = 'flex';
+        userLink.href = dest;
+      }
+    } catch (e) { /* silent — show guest buttons */ }
+  })();
+</script>
 </body>
 </html>

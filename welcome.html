@@ -160,6 +160,7 @@
     <div class="form-card success-card" id="successCard">
       <div class="check">✓</div>
       <h3>You're in!</h3>
+      <div id="acctTypeBadge" style="display:inline-block;margin:4px 0 14px;background:#EEF6FF;color:#0050c7;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 12px;border-radius:999px;border:1px solid #C7D2FE">Customer account</div>
       <p class="sub-msg" id="successSub">Your LYMX wallet is loaded with your welcome bonus.</p>
       <div class="reward-grid">
         <div class="reward-card"><div class="v" id="rewLymx">—</div><div class="lbl">From LYMX</div></div>
@@ -340,8 +341,16 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   document.getElementById('rewLymx').textContent = bizConfig.signup_bonus_from_lymx + ' LYMX';
   document.getElementById('rewBiz').textContent  = bizConfig.signup_bonus_from_biz + ' LYMX';
 
+  // Show the account type clearly so the user knows what they signed up as.
+  // (Bug fix 2026-05-15 #cd4e9755)
+  const acctType = 'Customer account';   // welcome.html only creates customer accounts
+  const badge = document.getElementById('acctTypeBadge');
+  if (badge) badge.textContent = acctType;
+  document.getElementById('successSub').textContent =
+    `You\'re signed up as a ${acctType.toLowerCase()}. Your LYMX wallet is loaded with your welcome bonus.`;
+
   if (bonusJson?.admin_status === 'pending_review') {
-    document.getElementById('successSub').textContent = `Welcome aboard! Your bonus is pending a quick review — it\'ll land in your wallet shortly.`;
+    document.getElementById('successSub').textContent = `Welcome aboard as a ${acctType.toLowerCase()}. Your bonus is pending a quick review — it\'ll land in your wallet shortly.`;
   }
 });
 
