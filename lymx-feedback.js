@@ -709,3 +709,28 @@
       msgEl.value = ''; msgEl.dataset.originalMessage = ''; msgEl.dataset.aiSummary = '';
       document.getElementById('lymx-fb-subject').value = '';
       shotBlob = null; shotKind = 'none';
+      attachedFiles = [];
+      renderFileList();
+      setTimeout(function () {
+        close();
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Feedback';
+      }, 1400);
+    } catch (err) {
+      notice('Network error: ' + (err.message || err), 'err');
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send Feedback';
+    }
+  }
+
+  function boot() {
+    waitForConfig(function () {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', attach);
+      } else {
+        attach();
+      }
+    });
+  }
+  boot();
+})();
