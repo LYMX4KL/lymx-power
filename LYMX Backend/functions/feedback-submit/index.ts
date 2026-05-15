@@ -1,29 +1,39 @@
 // =============================================================================
-// LYMX Power — Feedback Submit Endpoint
+// LYMX Power — Feedback Submit Endpoint (v2 — 2026-05-15)
 // =============================================================================
 // POST /functions/v1/feedback-submit
 //
-// Accepts the Send Feedback modal payload from any page on getlymx.com.
-// Auto-categorizes by URL pattern. Inserts into public.feedback.
+// Accepts the Send Feedback modal payload from any page on getlymx.com /
+// lymxpower.com. Auto-categorizes by URL pattern. Inserts into public.feedback
+// and writes attachments (if any) into the feedback-attachments bucket +
+// feedback_attachments table.
 //
 // REQUEST BODY:
 // {
-//   "type":      "bug" | "suggestion" | "question" | "general",
-//   "priority":  "urgent" | "high" | "normal" | "low",   // optional, defaults to "normal"
-//   "subject":   "Short headline",                         // optional, derived if blank
-//   "message":   "What did you see / what to change",
-//   "page_url":  "https://getlymx.com/biz-dashboard.html",
-//   "viewport":  "1920x1080",                              // optional
-//   "user_agent":"Mozilla/5.0 ...",                        // optional
-//   "screenshot_b64": "data:image/png;base64,iVBOR..."     // optional, ≤ 5 MB
+//   "type":            "bug" | "suggestion" | "question" | "general",
+//   "priority":        "urgent" | "high" | "normal" | "low",
+//   "subject":         "Short headline",
+//   "message":         "What did you see / what to change",
+//   "page_url":        "...",
+//   "page_title":      "...",
+//   "viewport":        "1920x1080",
+//   "user_agent":      "...",
+//   "screenshot_b64":  "data:image/png;base64,iVBO...",   // optional, primary
+//   "screenshot_kind": "auto" | "region" | "upload",
+//   "attachments": [                                       // NEW v2
+//     { "name": "log.txt", "type": "text/plain", "size": 1234,
+//       "data_url": "data:text/plain;base64,..." }
+//   ]
 // }
 //
 // AUTH:
-//   - anon (apikey header) — submission is anonymous, user_id stays null
-//   - user JWT — submission is attributed to that user
+//   - anon (apikey header)  → submission is anonymous, user_id stays null
+//   - user JWT              → submission is attributed to that user (role
+//     resolved from DB tables, not from possibly-stale user_metadata)
 //
 // RESPONSE (201):
-//   { "id": "uuid", "cluster": "auth", "status": "new" }
+//   { "id": "uuid", "cluster": "auth", "status": "new",
+//     "attachments_uploaded": 2 }
 // =============================================================================
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
@@ -42,7 +52,6 @@ const json = (body: unknown, status = 200) =>
 const errorResponse = (message: string, status = 400) =>
     json({ error: message }, status);
 
-// ----- Cluster rules (server-side, mirrors FEEDBACK-SYSTEM-SPEC.md) ---------
 const CLUSTER_RULES: Array<{ pattern: RegExp; cluster: string }> = [
     { pattern: /\/(login|.*-signup)\.html/i, cluster: "auth" },
     { pattern: /\/browse\.html/i, cluster: "browse" },
@@ -59,25 +68,32 @@ function clusterFor(url: string): string {
     return "marketing";
 }
 
-// ----- Body shape ----------------------------------------------------------
+interface FeedbackAttachment {
+    name: string;
+    type?: string;
+    size?: number;
+    data_url: string;
+}
 interface FeedbackBody {
     type: string;
     priority?: string;
     subject?: string;
     message: string;
-    original_message?: string | null;     // pre-AI-polish version
-    ai_summary?: string | null;           // 1-line summary from polish/categorize
+    original_message?: string | null;
+    ai_summary?: string | null;
     page_url: string;
     page_title?: string;
     viewport?: string;
     user_agent?: string;
     screenshot_b64?: string;
-    screenshot_kind?: string | null;      // 'auto' | 'region' | 'upload'
+    screenshot_kind?: string | null;
+    attachments?: FeedbackAttachment[];
 }
 const VALID_TYPES = new Set(["bug", "suggestion", "question", "general"]);
 const VALID_PRIORITIES = new Set(["urgent", "high", "normal", "low"]);
+const MAX_ATTACHMENTS = 6;
+const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
 
-// JWT role-claim decoder (per project README pattern)
 function getJwtPayload(jwt: string): Record<string, unknown> | null {
     try {
         const parts = jwt.split(".");
@@ -88,6 +104,26 @@ function getJwtPayload(jwt: string): Record<string, unknown> | null {
     } catch {
         return null;
     }
+}
+
+function safeExtFromMime(mime: string, fallback: string): string {
+    const m = mime.toLowerCase();
+    if (m === "image/jpeg" || m === "image/jpg") return "jpg";
+    if (m === "image/png")  return "png";
+    if (m === "image/webp") return "webp";
+    if (m === "image/gif")  return "gif";
+    if (m === "application/pdf") return "pdf";
+    if (m === "text/plain") return "txt";
+    if (m === "text/csv")   return "csv";
+    return fallback || "bin";
+}
+
+function dataUrlToBytes(dataUrl: string): { mime: string; bytes: Uint8Array } | null {
+    const m = dataUrl.match(/^data:([\w\-.+\/]+);base64,(.+)$/);
+    if (!m) return null;
+    const mime = m[1];
+    const bin = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
+    return { mime, bytes: bin };
 }
 
 serve(async (req) => {
@@ -105,16 +141,10 @@ serve(async (req) => {
         return errorResponse("Invalid JSON", 400);
     }
 
-    // ----- Validate ---------------------------------------------------------
     if (!body.type || !VALID_TYPES.has(body.type)) {
-        return errorResponse(
-            "type must be one of: bug, suggestion, question, general",
-            400,
-        );
+        return errorResponse("type must be one of: bug, suggestion, question, general", 400);
     }
-    const priority = body.priority && VALID_PRIORITIES.has(body.priority)
-        ? body.priority
-        : "normal";
+    const priority = body.priority && VALID_PRIORITIES.has(body.priority) ? body.priority : "normal";
     if (!body.message || body.message.trim().length < 10) {
         return errorResponse("message must be at least 10 characters", 400);
     }
@@ -124,74 +154,60 @@ serve(async (req) => {
 
     // ----- Pull user_id from JWT (if any) -----------------------------------
     const authHeader = req.headers.get("Authorization") || "";
-    const jwt = authHeader.startsWith("Bearer ")
-        ? authHeader.slice(7).trim()
-        : "";
+    const jwt = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
     let userId: string | null = null;
     let userEmail: string | null = null;
-    let userRole: string = "anonymous";
+    let userRole = "anonymous";
     if (jwt) {
         const payload = getJwtPayload(jwt);
         if (payload && payload.role !== "anon" && typeof payload.sub === "string") {
             userId = payload.sub;
             userEmail = (payload.email as string) || null;
-            // We'll resolve the actual role from DB below — user_metadata.role is
-            // unreliable (often stale or missing).
             userRole = "authenticated";
         }
     }
 
-    // Service-role client to bypass RLS (we apply our own validation above)
     const supabase = createClient(
         Deno.env.get("SUPABASE_URL")!,
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
         { auth: { persistSession: false } },
     );
 
-    // ----- Resolve actual user role from DB ---------------------------------
-    // Priority: admin > staff > partner > business > customer.
-    // Mirror of InvestPro pattern: role lives in the tables, not the JWT.
+    // Resolve actual role from DB tables (mirror InvestPro pattern)
     if (userId) {
         const ADMIN_UUID = "1405bb50-2c97-48dd-bfa5-31f32320de9b";
         if (userId === ADMIN_UUID) {
             userRole = "admin";
         } else {
-            // staff_roles table (if it exists from migration 015)
             try {
                 const { data: staff } = await supabase
-                    .from("staff_roles").select("user_id").eq("user_id", userId).maybeSingle();
-                if (staff) userRole = "staff";
+                    .from("staff_roles").select("user_id, role").eq("user_id", userId).maybeSingle();
+                if (staff) userRole = (staff.role as string) || "staff";
             } catch { /* table may not exist */ }
-            // partners table
             if (userRole === "authenticated") {
                 const { data: p } = await supabase
                     .from("partners").select("user_id").eq("user_id", userId).maybeSingle();
                 if (p) userRole = "partner";
             }
-            // businesses table (owner_user_id, not user_id)
             if (userRole === "authenticated") {
                 const { data: b } = await supabase
                     .from("businesses").select("owner_user_id").eq("owner_user_id", userId).maybeSingle();
                 if (b) userRole = "business";
             }
-            // Default for any signed-in user not in partners/businesses
             if (userRole === "authenticated") userRole = "customer";
         }
     }
 
-    // ----- Optional: upload screenshot --------------------------------------
+    // ----- Primary screenshot (back-compat) --------------------------------
     let screenshotPath: string | null = null;
     if (body.screenshot_b64 && body.screenshot_b64.length > 0) {
         try {
-            // Strip "data:image/png;base64," prefix if present
             const dataMatch = body.screenshot_b64.match(/^data:(image\/(?:png|jpeg|jpg|webp));base64,(.+)$/);
             if (!dataMatch) throw new Error("Unsupported image format");
             const mime = dataMatch[1];
-            const ext = mime === "image/jpeg" ? "jpg" : mime.split("/")[1];
+            const ext = safeExtFromMime(mime, "png");
             const bin = Uint8Array.from(atob(dataMatch[2]), (c) => c.charCodeAt(0));
-            if (bin.byteLength > 5 * 1024 * 1024) {
-                throw new Error("Screenshot too large (max 5 MB)");
-            }
+            if (bin.byteLength > MAX_ATTACHMENT_BYTES) throw new Error("Screenshot too large");
             const filename = `${Date.now()}-${crypto.randomUUID()}.${ext}`;
             const { error: upErr } = await supabase.storage
                 .from("feedback-screenshots")
@@ -200,17 +216,15 @@ serve(async (req) => {
             screenshotPath = filename;
         } catch (e) {
             console.warn("Screenshot upload failed:", e);
-            // Don't fail the whole submission — just drop the screenshot
         }
     }
 
-    // ----- Auto-derive subject if blank -------------------------------------
     let subject = (body.subject || "").trim();
     if (!subject) {
         subject = body.message.trim().split(/\n|\.|\?/)[0].slice(0, 80);
     }
 
-    // ----- Insert -----------------------------------------------------------
+    // ----- Insert the feedback row -----------------------------------------
     const { data, error } = await supabase
         .from("feedback")
         .insert({
@@ -240,5 +254,38 @@ serve(async (req) => {
         return errorResponse(`Insert failed: ${error.message}`, 500);
     }
 
-    return json(data, 201);
+    // ----- Additional attachments (drag-drop / paste / multi-upload) -------
+    let attachmentsUploaded = 0;
+    const attList = Array.isArray(body.attachments) ? body.attachments.slice(0, MAX_ATTACHMENTS) : [];
+    for (const att of attList) {
+        if (!att || !att.data_url || !att.name) continue;
+        const parsed = dataUrlToBytes(att.data_url);
+        if (!parsed) continue;
+        if (parsed.bytes.byteLength > MAX_ATTACHMENT_BYTES) continue;
+        const ext = safeExtFromMime(parsed.mime, (att.name.split(".").pop() || "bin"));
+        const safeName = att.name.replace(/[^\w.\-]+/g, "_").slice(0, 100);
+        const path = `${data.id}/${Date.now()}-${crypto.randomUUID()}-${safeName}`;
+        try {
+            const { error: upErr } = await supabase.storage
+                .from("feedback-attachments")
+                .upload(path, parsed.bytes, { contentType: parsed.mime, upsert: false });
+            if (upErr) {
+                console.warn("Attachment upload failed:", upErr);
+                continue;
+            }
+            await supabase.from("feedback_attachments").insert({
+                feedback_id: data.id,
+                file_name: safeName,
+                mime_type: parsed.mime,
+                size_bytes: parsed.bytes.byteLength,
+                storage_path: path,
+                uploaded_by: userId,
+            });
+            attachmentsUploaded++;
+        } catch (e) {
+            console.warn("Attachment write failed:", e);
+        }
+    }
+
+    return json({ ...data, attachments_uploaded: attachmentsUploaded }, 201);
 });
