@@ -405,7 +405,7 @@
             <span class="lymx-pill">Earn up to 100 LYMX</span>
           </div>
 
-          <form onsubmit="event.preventDefault(); alert('Thanks for the review! In the live version, this will save your review and credit 100 LYMX to your balance.');">
+          <form id="reviewForm" onsubmit="return false">
             <div class="field-group">
               <label>How was your visit?</label>
               <div style="display:flex;align-items:center">
@@ -691,6 +691,119 @@ window.addEventListener('DOMContentLoaded', function () {
       document.getElementById('lymxImgZoomImg').src = img.currentSrc || img.src;
       modal.style.display = 'flex';
     });
+  });
+});
+</script>
+
+<script>
+// Review form + Save business + review feed wiring
+// (2026-05-16 — uses migration 030: reviews, saved_businesses, lymx_issuances trigger)
+window.addEventListener('DOMContentLoaded', async function () {
+  var BIZ_SLUG = 'biz-brew-and-bean';
+  var BIZ_NAME = 'Brew & Bean Café';
+  var BIZ_EMOJI = '☕';
+
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(arguments.callee, 100); return; }
+  var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  var URL  = window.LYMX_CONFIG.SUPABASE_URL;
+  var session = await window.LYMX.getSession();
+
+  // --- Star picker state ---
+  var stars = document.querySelectorAll('#starPicker .star');
+  var starLabel = document.getElementById('starLabel');
+  var rating = 0;
+  stars.forEach(function (s, idx) {
+    s.style.cursor = 'pointer';
+    s.addEventListener('mouseenter', function () { paintStars(idx + 1); });
+    s.addEventListener('click',      function () { rating = idx + 1; paintStars(rating); if (starLabel) starLabel.textContent = rating + ' / 5 stars'; });
+  });
+  document.getElementById('starPicker') && document.getElementById('starPicker').addEventListener('mouseleave', function () { paintStars(rating); });
+  function paintStars(n) {
+    stars.forEach(function (s, i) { s.style.color = i < n ? '#d4a017' : '#d1d5db'; });
+  }
+
+  // --- Review form submit ---
+  var form = document.getElementById('reviewForm');
+  if (form) {
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      if (!session) { alert('Please sign in to leave a review.'); location.href = 'login.html?return=biz-brew-and-bean.html'; return; }
+      if (rating < 1) { alert('Please pick a star rating first.'); return; }
+      var bodyText = (document.getElementById('reviewText') || {}).value || '';
+      if (bodyText.trim().length < 30) { alert('Reviews need at least 30 characters to earn LYMX.'); return; }
+      // Detect any uploaded photo
+      var hasPhoto = false;
+      document.querySelectorAll('.photo-slot input[type="file"]').forEach(function (inp) { if (inp.files && inp.files.length) hasPhoto = true; });
+      var btn = form.querySelector('button[type="submit"]');
+      if (btn) { btn.disabled = true; btn.textContent = 'Posting…'; }
+      try {
+        var res = await fetch(URL + '/rest/v1/reviews', {
+          method: 'POST',
+          headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+          body: JSON.stringify({ reviewer_user_id: session.user.id, business_slug: BIZ_SLUG, business_name: BIZ_NAME, rating: rating, body: bodyText.trim(), has_photo: hasPhoto })
+        });
+        if (!res.ok) throw new Error('http ' + res.status);
+        var rows = await res.json();
+        form.innerHTML = '<div style="padding:36px;text-align:center;font-size:16px;background:#e6f5ee;border-radius:11px;border:1px solid #a8d8c0"><div style="font-size:48px;color:#13a26b;margin-bottom:12px">✓</div><strong>Review posted!</strong><div style="color:#0a6e44;margin-top:8px;font-size:14.5px">+100 LYMX added to your wallet' + (hasPhoto ? ' (+ photo bonus on review of the month)' : '') + '. See it on <a href="my-reviews.html" style="color:#0050c7;font-weight:700">My Reviews</a>.</div></div>';
+        loadRecentReviews(); // refresh the list
+      } catch (e) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Post review & earn LYMX →'; }
+        alert('Could not save the review: ' + e.message);
+      }
+    });
+  }
+
+  // --- Recent reviews feed (replaces hardcoded testimonials) ---
+  async function loadRecentReviews() {
+    var feed = document.querySelector('.reviews-list, #recentReviews, [data-reviews-feed]');
+    if (!feed) return;
+    try {
+      var r = await fetch(URL + '/rest/v1/reviews?business_slug=eq.' + encodeURIComponent(BIZ_SLUG) + '&select=rating,body,has_photo,created_at&order=created_at.desc&limit=10', { headers: { apikey: ANON } });
+      if (!r.ok) return;
+      var rows = await r.json();
+      if (!rows.length) { feed.innerHTML = '<div style="padding:24px;text-align:center;color:#5b6472;background:#f6f7f9;border-radius:9px">No reviews yet — be the first and earn 100 LYMX!</div>'; return; }
+      feed.innerHTML = rows.map(function (r) {
+        var stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+        var when  = new Date(r.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' });
+        return '<div style="padding:14px 16px;background:#fff;border:1px solid #e6e8ec;border-radius:9px;margin-bottom:10px"><div style="color:#d4a017;font-size:14px;margin-bottom:6px">' + stars + (r.has_photo ? ' <span style="font-size:11px;color:#0a84ff;background:#EEF6FF;padding:2px 7px;border-radius:999px;margin-left:4px">📷 photo</span>' : '') + '</div><div style="font-size:14px;color:#1a1f27">' + (r.body || '').replace(/[<>]/g, '').replace(/\n/g, '<br>') + '</div><div style="font-size:11.5px;color:#5b6472;margin-top:6px">' + when + '</div></div>';
+      }).join('');
+    } catch (e) {}
+  }
+  loadRecentReviews();
+
+  // --- Save Business button ---
+  var saveBtn = document.createElement('button');
+  saveBtn.id = 'lymxSaveBtn';
+  saveBtn.type = 'button';
+  saveBtn.style.cssText = 'position:fixed;right:18px;bottom:74px;z-index:99997;background:#fff;color:#0e1116;border:1px solid #e6e8ec;padding:9px 16px;border-radius:999px;font-weight:700;font-size:13.5px;cursor:pointer;box-shadow:0 4px 12px rgba(14,17,22,.12);font-family:inherit;display:flex;align-items:center;gap:7px';
+  saveBtn.innerHTML = '<span>☆</span><span>Save</span>';
+  document.body.appendChild(saveBtn);
+  // Check if already saved
+  async function refreshSaveBtn() {
+    if (!session) { saveBtn.innerHTML = '<span>☆</span><span>Save</span>'; return; }
+    try {
+      var r = await fetch(URL + '/rest/v1/saved_businesses?user_id=eq.' + session.user.id + '&business_slug=eq.' + encodeURIComponent(BIZ_SLUG) + '&select=id', { headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token } });
+      var rows = r.ok ? await r.json() : [];
+      if (rows.length) { saveBtn.innerHTML = '<span style="color:#d4a017">★</span><span>Saved</span>'; saveBtn.dataset.saved = '1'; }
+      else { saveBtn.innerHTML = '<span>☆</span><span>Save</span>'; saveBtn.dataset.saved = ''; }
+    } catch (e) {}
+  }
+  refreshSaveBtn();
+  saveBtn.addEventListener('click', async function () {
+    if (!session) { location.href = 'login.html?return=biz-brew-and-bean.html'; return; }
+    if (saveBtn.dataset.saved === '1') {
+      // Unsave
+      await fetch(URL + '/rest/v1/saved_businesses?user_id=eq.' + session.user.id + '&business_slug=eq.' + encodeURIComponent(BIZ_SLUG), {
+        method: 'DELETE', headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token }
+      });
+    } else {
+      await fetch(URL + '/rest/v1/saved_businesses', {
+        method: 'POST',
+        headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: session.user.id, business_slug: BIZ_SLUG, business_name: BIZ_NAME, business_emoji: BIZ_EMOJI })
+      });
+    }
+    await refreshSaveBtn();
   });
 });
 </script>

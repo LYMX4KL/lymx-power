@@ -722,5 +722,67 @@ window.addEventListener('DOMContentLoaded', function () {
   });
 });
 </script>
+
+<script>
+// Wire dashboard cards to REAL data: Saved Places, My recent reviews, Friends Joined
+// (2026-05-16 — uses migration 030 tables + existing referrals table)
+window.addEventListener('DOMContentLoaded', async function () {
+  window.__lymxLoadDashData = true;
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(arguments.callee, 100); return; }
+  var session = await window.LYMX.getSession();
+  if (!session) return;
+  var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  var URL  = window.LYMX_CONFIG.SUPABASE_URL;
+  var userId = session.user.id;
+  var headers = { apikey: ANON, Authorization: 'Bearer ' + session.access_token };
+
+  // Saved Places — look for a card section we can repurpose. Pages vary, so
+  // append a new section if there's a Saved Places card slot.
+  try {
+    var r = await fetch(URL + '/rest/v1/saved_businesses?user_id=eq.' + userId + '&select=business_slug,business_name,business_emoji,saved_at&order=saved_at.desc&limit=8', { headers: headers });
+    if (r.ok) {
+      var saved = await r.json();
+      // Replace the offers-grid empty state with a real Saved Places card when any saves exist
+      var offersGrid = document.querySelector('.offers-grid');
+      if (offersGrid && saved.length) {
+        offersGrid.innerHTML = saved.map(function (s) {
+          return '<a class="offer-mini" href="' + encodeURIComponent(s.business_slug) + '.html"><span class="biz">' + (s.business_emoji || '⭐') + ' ' + (s.business_name || '').replace(/[<>]/g, '') + '</span><span class="title">Saved for later</span><span class="desc">' + new Date(s.saved_at).toLocaleDateString([], { month: 'short', day: 'numeric' }) + '</span><span class="tag">Saved</span></a>';
+        }).join('');
+      }
+    }
+  } catch (e) {}
+
+  // My Recent Reviews — replace empty state with real reviews
+  try {
+    var r = await fetch(URL + '/rest/v1/reviews?reviewer_user_id=eq.' + userId + '&select=business_name,rating,body,created_at&order=created_at.desc&limit=3', { headers: headers });
+    if (r.ok) {
+      var revs = await r.json();
+      var myRevs = document.querySelector('.my-reviews');
+      if (myRevs && revs.length) {
+        myRevs.innerHTML = revs.map(function (r) {
+          var stars = '★'.repeat(r.rating || 0) + '☆'.repeat(5 - (r.rating || 0));
+          var when = new Date(r.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' });
+          return '<div class="my-rev"><div class="top"><span class="name">' + (r.business_name || '').replace(/[<>]/g, '') + '</span><span class="earned">+100 LYMX</span></div><div style="color:#d4a017;font-size:13px;margin-top:2px">' + stars + '</div><div style="font-size:13px;color:#1a1f27;margin-top:6px">' + (r.body || '').slice(0, 200).replace(/[<>]/g, '') + (r.body && r.body.length > 200 ? '…' : '') + '</div><div style="font-size:11px;color:#5b6472;margin-top:4px">' + when + '</div></div>';
+        }).join('');
+      }
+    }
+  } catch (e) {}
+
+  // Friends Joined counter — count referrals where I'm the inviter
+  try {
+    var r = await fetch(URL + '/rest/v1/referrals?inviter_user_id=eq.' + userId + '&select=id', { headers: headers });
+    if (r.ok) {
+      var refs = await r.json();
+      // Find any element labeled Friends Joined and set its value
+      document.querySelectorAll('.stat, .kpi, .stat-card').forEach(function (el) {
+        if (/friends?\s*joined/i.test(el.textContent)) {
+          var v = el.querySelector('.v, .val, .number, [class*="num"]');
+          if (v) v.textContent = String(refs.length);
+        }
+      });
+    }
+  } catch (e) {}
+});
+</script>
 </body>
 </html>
