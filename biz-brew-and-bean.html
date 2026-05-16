@@ -697,7 +697,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
 <script>
 // Review form + Save business + review feed wiring
-// (2026-05-16 — uses migration 030: reviews, saved_businesses, lymx_issuances trigger)
+// (2026-05-16 — uses migration 031: transaction-gated reviews + receipt-upload pathway)
 window.addEventListener('DOMContentLoaded', async function () {
   var BIZ_SLUG = 'biz-brew-and-bean';
   var BIZ_NAME = 'Brew & Bean Café';
@@ -708,44 +708,137 @@ window.addEventListener('DOMContentLoaded', async function () {
   var URL  = window.LYMX_CONFIG.SUPABASE_URL;
   var session = await window.LYMX.getSession();
 
-  // --- Star picker state ---
+  // Star picker
   var stars = document.querySelectorAll('#starPicker .star');
   var starLabel = document.getElementById('starLabel');
   var rating = 0;
   stars.forEach(function (s, idx) {
     s.style.cursor = 'pointer';
     s.addEventListener('mouseenter', function () { paintStars(idx + 1); });
-    s.addEventListener('click',      function () { rating = idx + 1; paintStars(rating); if (starLabel) starLabel.textContent = rating + ' / 5 stars'; });
+    s.addEventListener('click', function () { rating = idx + 1; paintStars(rating); if (starLabel) starLabel.textContent = rating + ' / 5 stars'; });
   });
-  document.getElementById('starPicker') && document.getElementById('starPicker').addEventListener('mouseleave', function () { paintStars(rating); });
-  function paintStars(n) {
-    stars.forEach(function (s, i) { s.style.color = i < n ? '#d4a017' : '#d1d5db'; });
-  }
+  var picker = document.getElementById('starPicker');
+  if (picker) picker.addEventListener('mouseleave', function () { paintStars(rating); });
+  function paintStars(n) { stars.forEach(function (s, i) { s.style.color = i < n ? '#d4a017' : '#d1d5db'; }); }
 
-  // --- Review form submit ---
+  // Verification gate
+  var verifiedTxId = null;
+  var receiptImageUrl = null;
   var form = document.getElementById('reviewForm');
   if (form) {
+    var gate = document.createElement('div');
+    gate.id = 'lymxReviewGate';
+    gate.style.cssText = 'background:#fff;border:1px solid #e6e8ec;border-radius:11px;padding:18px;margin-bottom:14px';
+    gate.innerHTML = '<div style="font-weight:700;font-size:15px;margin-bottom:4px;color:#0e1116">Verify your visit first</div>'
+      + '<div style="font-size:13px;color:#5b6472;margin-bottom:14px">Every review on LYMX is receipt-verified. Pick one below — earns you 100 LYMX once verified.</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+      + '<button type="button" id="gateBtnTx" style="background:#0a84ff;color:#fff;border:none;padding:13px 14px;border-radius:9px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit">💳 Use a recent transaction</button>'
+      + '<button type="button" id="gateBtnReceipt" style="background:#fff;color:#0a84ff;border:1.5px solid #0a84ff;padding:13px 14px;border-radius:9px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit">📸 Upload receipt photo</button>'
+      + '</div>'
+      + '<div id="gatePicker" style="margin-top:14px"></div>'
+      + '<div id="gateStatus" style="display:none;margin-top:14px;padding:11px 13px;background:#e6f5ee;border:1px solid #a8d8c0;border-radius:9px;color:#0a6e44;font-size:13.5px;font-weight:600"></div>';
+    form.parentNode.insertBefore(gate, form);
+    form.style.display = 'none';
+    var pickerArea = gate.querySelector('#gatePicker');
+    var statusArea = gate.querySelector('#gateStatus');
+    function showVerifiedStatus(label) {
+      statusArea.textContent = '✓ ' + label + ' — you can write your review below.';
+      statusArea.style.display = 'block';
+      pickerArea.innerHTML = '';
+      form.style.display = '';
+      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Path A: transaction picker
+    gate.querySelector('#gateBtnTx').addEventListener('click', async function () {
+      if (!session) { location.href = 'login.html?return=biz-brew-and-bean.html'; return; }
+      pickerArea.innerHTML = '<div style="color:#5b6472;font-size:13px">Loading your recent transactions…</div>';
+      try {
+        var r = await fetch(URL + '/rest/v1/rpc/my_recent_tx_at_business', {
+          method: 'POST',
+          headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ p_business_slug: BIZ_SLUG, p_business_name: BIZ_NAME })
+        });
+        var rows = r.ok ? await r.json() : [];
+        if (!rows.length) {
+          pickerArea.innerHTML = '<div style="background:#fff8e6;border:1px solid #f0d28a;color:#7a5a08;padding:12px 14px;border-radius:9px;font-size:13.5px">No recent transactions found at ' + BIZ_NAME + '. If you visited, please upload a photo of your receipt instead — admin verifies within 24 hours.</div>';
+          return;
+        }
+        pickerArea.innerHTML = '<div style="font-size:13px;font-weight:700;color:#0e1116;margin-bottom:8px">Pick the visit you are reviewing:</div>'
+          + rows.map(function (t) {
+              var when = new Date(t.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+              var amt = (t.usd_basis ? '$' + Number(t.usd_basis).toFixed(2) : Number(t.lymx_amount).toFixed(0) + ' LYMX');
+              return '<button type="button" data-txid="' + t.transaction_id + '" style="display:block;width:100%;text-align:left;background:#fff;border:1px solid #e6e8ec;padding:11px 13px;border-radius:9px;margin-bottom:7px;cursor:pointer;font-family:inherit"><div style="font-weight:700;color:#0e1116;font-size:14px">' + when + ' · ' + amt + '</div><div style="font-size:12px;color:#5b6472;margin-top:2px">' + t.type + '</div></button>';
+            }).join('');
+        pickerArea.querySelectorAll('button[data-txid]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            verifiedTxId = b.dataset.txid;
+            receiptImageUrl = null;
+            showVerifiedStatus('Visit verified by transaction');
+          });
+        });
+      } catch (e) {
+        pickerArea.innerHTML = '<div style="color:#b81324;font-size:13px">Could not load transactions: ' + e.message + '</div>';
+      }
+    });
+
+    // Path B: receipt upload
+    gate.querySelector('#gateBtnReceipt').addEventListener('click', function () {
+      if (!session) { location.href = 'login.html?return=biz-brew-and-bean.html'; return; }
+      pickerArea.innerHTML = '<label style="display:block;background:#f6f7f9;border:2px dashed #c9cdd4;border-radius:9px;padding:18px;text-align:center;cursor:pointer"><input type="file" id="gateReceiptFile" accept="image/*" capture="environment" style="display:none"><div style="font-size:14px;font-weight:700;color:#0e1116;margin-bottom:4px">📸 Tap to take a photo or upload</div><div style="font-size:12.5px;color:#5b6472">Receipt photo · admin verifies within 24 hours · then 100 LYMX is added to your wallet</div></label><div id="gateUploadStatus" style="margin-top:10px;font-size:13px;color:#5b6472"></div>';
+      var fi = pickerArea.querySelector('#gateReceiptFile');
+      var us = pickerArea.querySelector('#gateUploadStatus');
+      fi.addEventListener('change', async function () {
+        var file = fi.files && fi.files[0];
+        if (!file) return;
+        if (file.size > 6 * 1024 * 1024) { us.textContent = 'File is too large (>6 MB). Please pick a smaller photo.'; return; }
+        us.textContent = 'Uploading…';
+        var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        var path = session.user.id + '/' + (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2))) + '.' + ext;
+        try {
+          var up = await fetch(URL + '/storage/v1/object/review-receipts/' + encodeURIComponent(path), {
+            method: 'POST',
+            headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': file.type, 'x-upsert': 'false' },
+            body: file
+          });
+          if (!up.ok) throw new Error('upload http ' + up.status);
+          receiptImageUrl = path;
+          verifiedTxId = null;
+          showVerifiedStatus('Receipt uploaded — pending admin verification');
+        } catch (e) {
+          us.textContent = 'Upload failed: ' + e.message;
+        }
+      });
+    });
+
+    // Form submit
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
       if (!session) { alert('Please sign in to leave a review.'); location.href = 'login.html?return=biz-brew-and-bean.html'; return; }
+      if (!verifiedTxId && !receiptImageUrl) { alert('Please verify your visit first (transaction or receipt photo).'); return; }
       if (rating < 1) { alert('Please pick a star rating first.'); return; }
       var bodyText = (document.getElementById('reviewText') || {}).value || '';
       if (bodyText.trim().length < 30) { alert('Reviews need at least 30 characters to earn LYMX.'); return; }
-      // Detect any uploaded photo
       var hasPhoto = false;
       document.querySelectorAll('.photo-slot input[type="file"]').forEach(function (inp) { if (inp.files && inp.files.length) hasPhoto = true; });
       var btn = form.querySelector('button[type="submit"]');
       if (btn) { btn.disabled = true; btn.textContent = 'Posting…'; }
       try {
+        var payload = { reviewer_user_id: session.user.id, business_slug: BIZ_SLUG, business_name: BIZ_NAME, rating: rating, body: bodyText.trim(), has_photo: hasPhoto };
+        if (verifiedTxId) payload.transaction_id = verifiedTxId;
+        if (receiptImageUrl) payload.receipt_image_url = receiptImageUrl;
         var res = await fetch(URL + '/rest/v1/reviews', {
           method: 'POST',
           headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-          body: JSON.stringify({ reviewer_user_id: session.user.id, business_slug: BIZ_SLUG, business_name: BIZ_NAME, rating: rating, body: bodyText.trim(), has_photo: hasPhoto })
+          body: JSON.stringify(payload)
         });
-        if (!res.ok) throw new Error('http ' + res.status);
-        var rows = await res.json();
-        form.innerHTML = '<div style="padding:36px;text-align:center;font-size:16px;background:#e6f5ee;border-radius:11px;border:1px solid #a8d8c0"><div style="font-size:48px;color:#13a26b;margin-bottom:12px">✓</div><strong>Review posted!</strong><div style="color:#0a6e44;margin-top:8px;font-size:14.5px">+100 LYMX added to your wallet' + (hasPhoto ? ' (+ photo bonus on review of the month)' : '') + '. See it on <a href="my-reviews.html" style="color:#0050c7;font-weight:700">My Reviews</a>.</div></div>';
-        loadRecentReviews(); // refresh the list
+        if (!res.ok) throw new Error('http ' + res.status + ': ' + (await res.text()));
+        var instant = !!verifiedTxId;
+        var heading = instant ? 'Review posted and verified!' : 'Review submitted!';
+        var subhead = instant ? '+100 LYMX added to your wallet instantly. Thanks for keeping LYMX real.' : 'Receipt is being verified by admin (usually within 24 hours). Once approved, 100 LYMX will land in your wallet and your review will go live on this page.';
+        gate.style.display = 'none';
+        form.innerHTML = '<div style="padding:36px;text-align:center;font-size:16px;background:#e6f5ee;border-radius:11px;border:1px solid #a8d8c0"><div style="font-size:48px;color:#13a26b;margin-bottom:12px">✓</div><strong>' + heading + '</strong><div style="color:#0a6e44;margin-top:8px;font-size:14.5px">' + subhead + ' See it on <a href="my-reviews.html" style="color:#0050c7;font-weight:700">My Reviews</a>.</div></div>';
+        loadRecentReviews();
       } catch (e) {
         if (btn) { btn.disabled = false; btn.textContent = 'Post review & earn LYMX →'; }
         alert('Could not save the review: ' + e.message);
@@ -753,7 +846,7 @@ window.addEventListener('DOMContentLoaded', async function () {
     });
   }
 
-  // --- Recent reviews feed (replaces hardcoded testimonials) ---
+  // Recent reviews feed (only shows verified reviews thanks to RLS in migration 031)
   async function loadRecentReviews() {
     var feed = document.querySelector('.reviews-list, #recentReviews, [data-reviews-feed]');
     if (!feed) return;
@@ -761,24 +854,23 @@ window.addEventListener('DOMContentLoaded', async function () {
       var r = await fetch(URL + '/rest/v1/reviews?business_slug=eq.' + encodeURIComponent(BIZ_SLUG) + '&select=rating,body,has_photo,created_at&order=created_at.desc&limit=10', { headers: { apikey: ANON } });
       if (!r.ok) return;
       var rows = await r.json();
-      if (!rows.length) { feed.innerHTML = '<div style="padding:24px;text-align:center;color:#5b6472;background:#f6f7f9;border-radius:9px">No reviews yet — be the first and earn 100 LYMX!</div>'; return; }
+      if (!rows.length) { feed.innerHTML = '<div style="padding:24px;text-align:center;color:#5b6472;background:#f6f7f9;border-radius:9px">No verified reviews yet — be the first to verify a visit and earn 100 LYMX!</div>'; return; }
       feed.innerHTML = rows.map(function (r) {
         var stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
-        var when  = new Date(r.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' });
-        return '<div style="padding:14px 16px;background:#fff;border:1px solid #e6e8ec;border-radius:9px;margin-bottom:10px"><div style="color:#d4a017;font-size:14px;margin-bottom:6px">' + stars + (r.has_photo ? ' <span style="font-size:11px;color:#0a84ff;background:#EEF6FF;padding:2px 7px;border-radius:999px;margin-left:4px">📷 photo</span>' : '') + '</div><div style="font-size:14px;color:#1a1f27">' + (r.body || '').replace(/[<>]/g, '').replace(/\n/g, '<br>') + '</div><div style="font-size:11.5px;color:#5b6472;margin-top:6px">' + when + '</div></div>';
+        var when = new Date(r.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' });
+        return '<div style="padding:14px 16px;background:#fff;border:1px solid #e6e8ec;border-radius:9px;margin-bottom:10px"><div style="color:#d4a017;font-size:14px;margin-bottom:6px">' + stars + (r.has_photo ? ' <span style="font-size:11px;color:#0a84ff;background:#EEF6FF;padding:2px 7px;border-radius:999px;margin-left:4px">photo</span>' : '') + '</div><div style="font-size:14px;color:#1a1f27">' + (r.body || '').replace(/[<>]/g, '').replace(/\n/g, '<br>') + '</div><div style="font-size:11.5px;color:#5b6472;margin-top:6px">' + when + ' · Verified by receipt</div></div>';
       }).join('');
     } catch (e) {}
   }
   loadRecentReviews();
 
-  // --- Save Business button ---
+  // Save Business button
   var saveBtn = document.createElement('button');
   saveBtn.id = 'lymxSaveBtn';
   saveBtn.type = 'button';
   saveBtn.style.cssText = 'position:fixed;right:18px;bottom:74px;z-index:99997;background:#fff;color:#0e1116;border:1px solid #e6e8ec;padding:9px 16px;border-radius:999px;font-weight:700;font-size:13.5px;cursor:pointer;box-shadow:0 4px 12px rgba(14,17,22,.12);font-family:inherit;display:flex;align-items:center;gap:7px';
   saveBtn.innerHTML = '<span>☆</span><span>Save</span>';
   document.body.appendChild(saveBtn);
-  // Check if already saved
   async function refreshSaveBtn() {
     if (!session) { saveBtn.innerHTML = '<span>☆</span><span>Save</span>'; return; }
     try {
@@ -792,7 +884,6 @@ window.addEventListener('DOMContentLoaded', async function () {
   saveBtn.addEventListener('click', async function () {
     if (!session) { location.href = 'login.html?return=biz-brew-and-bean.html'; return; }
     if (saveBtn.dataset.saved === '1') {
-      // Unsave
       await fetch(URL + '/rest/v1/saved_businesses?user_id=eq.' + session.user.id + '&business_slug=eq.' + encodeURIComponent(BIZ_SLUG), {
         method: 'DELETE', headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token }
       });
@@ -807,5 +898,3 @@ window.addEventListener('DOMContentLoaded', async function () {
   });
 });
 </script>
-</body>
-</html>

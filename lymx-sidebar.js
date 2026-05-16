@@ -141,6 +141,7 @@
       { href: 'admin-customers.html',    icon: '\u{1F465}', label: 'Customers' },
       { href: 'admin-promos.html',       icon: '\u{1F381}', label: 'Promos' },
       { href: 'admin-approvals.html',    icon: '✅',    label: 'Approvals' },
+      { href: 'admin-reviews.html',      icon: '⭐',    label: 'Review Verification' },
       { href: 'admin-verifications.html', icon: '\u{1FAAA}', label: 'Verifications' },
       { section: 'Team' },
       { href: 'admin-team-roster.html',  icon: '\u{1F5C2}', label: 'Roster' },

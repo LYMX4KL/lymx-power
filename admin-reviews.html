@@ -3,374 +3,254 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="LYMX Admin — moderate flagged customer reviews. Approve, hide, remove, or ban with audit log." />
-<title>Reviews · LYMX Admin</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://getlymx.com/admin-reviews" />
-<meta property="og:title" content="LYMX Admin · Reviews" />
-<meta property="og:description" content="Internal review moderation." />
-<meta property="og:image" content="https://getlymx.com/og-image.png" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta property="og:site_name" content="LYMX" />
-<meta name="twitter:card" content="summary_large_image" />
+<title>Review Verification — LYMX Admin</title>
+<link rel="icon" type="image/png" href="favicon.png" />
 <style>
-  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1280px}
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--ok:#13a26b;--warn:#f0a020;--err:#b81324}
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:var(--bg-soft)}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
-  a{color:inherit;text-decoration:none}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
-
-  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
-  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
-  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
-  .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--ink-2)}
-  .nav-links a:hover{color:var(--accent)}
-  .nav-links a.on{color:var(--accent);font-weight:700}
-  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
-  @media(max-width:880px){.nav-links{display:none}}
-
-  .page{padding:32px 0 64px}
-  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
-  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
-  .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
-
-  /* Strip */
-  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
-  @media(max-width:1000px){.strip{grid-template-columns:repeat(2,1fr)}}
-  .stat-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px}
-  .stat-card .lab{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}
-  .stat-card .v{font-size:24px;font-weight:800;letter-spacing:-.01em;line-height:1.1}
-  .stat-card .v.warn{color:var(--warn)}
-  .stat-card .v.green{color:var(--ok)}
-  .stat-card .v.danger{color:var(--danger)}
-  .stat-card .sub{font-size:12px;color:var(--muted);margin-top:4px}
-
-  /* Banner */
-  .banner{background:linear-gradient(135deg,#7a4d0a,#5a3608);color:#fff;border-radius:var(--radius);padding:16px 22px;margin-bottom:18px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-  .banner .icon{font-size:28px}
-  .banner .body{flex:1;min-width:240px}
-  .banner .body .head{font-size:15px;font-weight:800}
-  .banner .body .body-text{font-size:13px;color:#f5d172;margin-top:2px}
-
-  /* Head row */
-  .head-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:14px;flex-wrap:wrap}
-  .filter-row{display:flex;gap:8px;flex-wrap:wrap}
-  .chip{padding:7px 14px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
-  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-  .chip .ct{display:inline-block;background:rgba(255,255,255,.18);color:inherit;font-size:11px;font-weight:800;padding:1px 6px;border-radius:5px;margin-left:5px}
-  .chip:not(.on) .ct{background:var(--bg-soft);color:var(--muted)}
-  .search{padding:9px 14px;border:1px solid var(--line);border-radius:999px;font-size:13.5px;font-family:inherit;min-width:240px}
-  .search:focus{outline:none;border-color:var(--accent)}
-
-  /* Review cards */
-  .reviews{display:flex;flex-direction:column;gap:14px}
-  .rev{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 24px;position:relative}
-  .rev.reported{border-color:var(--warn);background:rgba(240,160,32,.04)}
-  .rev .head{display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-wrap:wrap}
-  .rev .av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
-  .rev .who{flex:1;min-width:200px}
-  .rev .who .nm{font-weight:800;font-size:15px}
-  .rev .who .meta{color:var(--muted);font-size:12.5px;margin-top:1px}
-  .rev .stars{font-size:16px;color:var(--gold);letter-spacing:1px}
-  .rev .biz-link{font-size:13px;color:var(--accent-2);font-weight:700}
-  .rev .text{font-size:14.5px;color:var(--ink-2);line-height:1.65;margin:8px 0 14px;padding-left:54px}
-  .rev .text.short{padding-left:0}
-  .rev .reported-flag{background:rgba(240,160,32,.16);color:#a06a0c;font-size:11.5px;font-weight:800;letter-spacing:.04em;padding:6px 10px;border-radius:8px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-  .rev .reported-flag .ic{font-size:14px}
-  .rev .actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--line)}
-  .rev .actions button, .rev .actions a{padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;color:var(--ink-2);text-decoration:none}
-  .rev .actions button:hover, .rev .actions a:hover{background:var(--bg-soft);border-color:var(--ink-2)}
-  .rev .actions .approve{background:var(--ok);color:#fff;border-color:var(--ok)}
-  .rev .actions .approve:hover{background:#0d7d51}
-  .rev .actions .hide{background:#fff;color:var(--warn);border-color:var(--warn)}
-  .rev .actions .remove{background:var(--danger);color:#fff;border-color:var(--danger)}
-
-  .status{display:inline-block;padding:3px 9px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin-left:auto}
-  .status.pending{background:rgba(91,100,114,.12);color:var(--muted)}
-  .status.reported{background:rgba(240,160,32,.16);color:#a06a0c}
-  .status.approved{background:rgba(19,162,107,.14);color:var(--ok)}
-  .status.hidden{background:rgba(91,100,114,.18);color:var(--ink-2)}
-  .status.removed{background:rgba(208,32,84,.14);color:#a01644}
-
-  /* Modal */
-  .modal{position:fixed;inset:0;background:rgba(14,17,22,.6);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
-  .modal.on{display:flex;animation:fade .2s ease-out}
-  @keyframes fade{from{opacity:0}to{opacity:1}}
-  .modal-card{background:#fff;border-radius:var(--radius);max-width:520px;width:100%}
-  .modal-h{padding:18px 24px;border-bottom:1px solid var(--line)}
-  .modal-h h3{margin:0;font-size:18px;font-weight:800}
-  .modal-h p{margin:6px 0 0;font-size:13.5px;color:var(--muted)}
-  .modal-body{padding:18px 24px}
-  .modal-foot{padding:14px 24px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--line);background:var(--bg-soft);border-radius:0 0 var(--radius) var(--radius)}
-  label{display:block;font-size:12px;font-weight:700;color:var(--ink-2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px}
-  .field{margin-bottom:14px}
-  .input,select,textarea{width:100%;padding:10px 13px;border:1.5px solid var(--line);border-radius:9px;font-size:14.5px;font-weight:500;font-family:inherit}
-  .input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
-  textarea{resize:vertical;min-height:80px}
-  .btn{padding:10px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid transparent;cursor:pointer;font-family:inherit}
-  .btn-ghost{background:#fff;border-color:var(--line);color:var(--ink-2)}
-  .btn-danger{background:var(--danger);color:#fff;border:0}
-
-  .empty{padding:48px 24px;text-align:center;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
-  .empty .ic{font-size:42px;margin-bottom:8px;opacity:.6}
-
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:14px 22px;border-radius:11px;font-weight:700;font-size:14.5px;box-shadow:var(--shadow);z-index:300;display:none}
-  .toast.on{display:block;animation:up .3s ease-out}
-  .toast.success{background:var(--ok)}
-  .toast.warn{background:var(--warn)}
-  @keyframes up{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
-
-  footer{background:var(--ink);color:#9aa3b0;padding:30px 0;font-size:13px;text-align:center;margin-top:48px}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+  .main{margin-left:240px;padding:24px 32px}
+  @media(max-width:880px){.main{margin-left:0;padding:16px}}
+  h1{margin:0 0 6px;font-size:26px;font-weight:800}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+  .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:18px}
+  .tab{padding:10px 16px;cursor:pointer;font-size:14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent}
+  .tab.active{color:var(--ink);border-bottom-color:var(--accent)}
+  .tab .ct{display:inline-block;background:#eef2f7;color:var(--muted);font-size:11.5px;padding:1px 7px;border-radius:999px;margin-left:6px;font-weight:700}
+  .tab.active .ct{background:var(--accent);color:#fff}
+  .list{display:grid;gap:14px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:18px;display:grid;grid-template-columns:120px 1fr 200px;gap:18px;align-items:start}
+  @media(max-width:780px){.card{grid-template-columns:1fr}}
+  .thumb{width:120px;height:120px;background:#eef2f7;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;text-align:center;overflow:hidden;cursor:pointer}
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .meta .biz{font-weight:700;font-size:16px;color:var(--ink)}
+  .meta .reviewer{font-size:13px;color:var(--muted);margin-top:2px}
+  .meta .stars{color:var(--warn);font-size:15px;margin-top:6px;letter-spacing:1px}
+  .meta .body{margin-top:8px;font-size:14px;color:#1a1f27;background:var(--bg);padding:10px 12px;border-radius:7px;border:1px solid var(--line);max-height:140px;overflow:auto}
+  .meta .when{font-size:12px;color:var(--muted);margin-top:8px}
+  .actions{display:flex;flex-direction:column;gap:8px}
+  .btn{padding:10px 14px;border-radius:8px;font-weight:700;font-size:13.5px;cursor:pointer;border:none;font-family:inherit}
+  .btn-approve{background:var(--ok);color:#fff}
+  .btn-reject{background:#fff;color:var(--err);border:1.5px solid var(--err)}
+  .btn-view{background:#fff;color:var(--accent);border:1.5px solid var(--accent);font-size:12.5px;padding:8px 12px}
+  .empty{padding:48px;text-align:center;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:11px}
+  .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+  .lightbox.open{display:flex}
+  .lightbox img{max-width:90vw;max-height:90vh;border-radius:8px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600;z-index:99998;display:none}
+  .toast.show{display:block}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--err)}
+  .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;font-weight:700;margin-left:6px}
+  .badge.tx{background:#e6f0ff;color:#0050c7}
+  .badge.receipt{background:#fff4d6;color:#8a5e00}
 </style>
 </head>
 <body>
-<header class="nav">
-  <div class="wrap nav-inner">
-    <div class="brand">
-      <a href="index.html">LYMX</a>
-      <span class="role-tag">Admin</span>
-    </div>
-    <nav class="nav-links">
-      <a href="commission-backend.html">Commissions</a>
-      <a href="admin-promos.html">Promos</a>
-      <a href="admin-businesses.html">Businesses</a>
-      <a href="admin-customers.html">Customers</a>
-      <a href="admin-reviews.html" class="on">Reviews</a>
-      <a href="admin-emails.html">Emails</a>
-    </nav>
-    <div class="admin-avatar">KL</div>
-  </div>
-</header>
 
-<main class="page">
-  <div class="wrap">
-    <div class="page-head">
-      <div>
-        <h1>Reviews</h1>
-        <p>Moderate flagged or reported customer reviews. Approve, hide, or remove with audit log.</p>
-      </div>
-    </div>
-
-    <div class="strip">
-      <div class="stat-card">
-        <div class="lab">Pending review</div>
-        <div class="v warn" id="s-pending">3</div>
-        <div class="sub">Awaiting your decision</div>
-      </div>
-      <div class="stat-card">
-        <div class="lab">Reported by Business</div>
-        <div class="v warn" id="s-reported">2</div>
-        <div class="sub">Business flagged as unfair</div>
-      </div>
-      <div class="stat-card">
-        <div class="lab">Approved this week</div>
-        <div class="v green">42</div>
-        <div class="sub">Average rating: 4.6 ★</div>
-      </div>
-      <div class="stat-card">
-        <div class="lab">Removed this month</div>
-        <div class="v danger">3</div>
-        <div class="sub">Spam, harassment, or fake reviews</div>
-      </div>
-    </div>
-
-    <div class="banner">
-      <div class="icon">⏳</div>
-      <div class="body">
-        <div class="head">5 reviews need your decision</div>
-        <div class="body-text">3 in standard moderation queue · 2 reported by Business owners as unfair</div>
-      </div>
-    </div>
-
-    <div class="head-row">
-      <div class="filter-row">
-        <button class="chip on" data-f="queue" onclick="setFilter('queue', this)">Queue <span class="ct" id="ct-queue">5</span></button>
-        <button class="chip" data-f="pending" onclick="setFilter('pending', this)">Pending <span class="ct">3</span></button>
-        <button class="chip" data-f="reported" onclick="setFilter('reported', this)">Reported <span class="ct">2</span></button>
-        <button class="chip" data-f="approved" onclick="setFilter('approved', this)">Approved <span class="ct">42</span></button>
-        <button class="chip" data-f="removed" onclick="setFilter('removed', this)">Removed <span class="ct">3</span></button>
-      </div>
-      <input class="search" id="search" placeholder="Search Business or customer…" oninput="render()" />
-    </div>
-
-    <div class="reviews" id="list"></div>
-  </div>
-</main>
-
-<!-- Action modal -->
-<div class="modal" id="action-modal" onclick="if(event.target===this)closeModal()">
-  <div class="modal-card">
-    <div class="modal-h">
-      <h3 id="m-title">Remove review</h3>
-      <p id="m-sub">This is logged to the audit trail with your admin ID.</p>
-    </div>
-    <div class="modal-body">
-      <div class="field">
-        <label>Reason</label>
-        <select id="m-reason">
-          <option>Spam / promotional content</option>
-          <option>Harassment or hate speech</option>
-          <option>Off-topic / not about the Business</option>
-          <option>Suspected fake / paid review</option>
-          <option>Personal info disclosure</option>
-          <option>Business owner reported as factually wrong</option>
-          <option>Other (note required)</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Notes (audit log)</label>
-        <textarea id="m-notes" placeholder="Required if 'Other'."></textarea>
-      </div>
-      <div class="field" id="m-customer-action" style="display:none">
-        <label>Customer follow-up</label>
-        <select id="m-cust">
-          <option value="none">No action — just remove the review</option>
-          <option value="warn">Send warning email to customer</option>
-          <option value="ban">Suspend customer account (severe cases)</option>
-        </select>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-danger" id="m-confirm" onclick="confirmAction()">Remove review</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<footer>
-  <div class="wrap">
-    <div>LYMX Admin · Internal use only · All actions logged to audit trail</div>
-    <div style="margin-top:8px;font-size:12px;color:#5b6472">© <span id="yr"></span> LYMX. Prototype with mock data.</div>
-  </div>
-</footer>
-
-<script>
-  document.getElementById('yr').textContent = new Date().getFullYear();
-
-  const reviews = [
-    { id:'r1', status:'reported', cust:'Jordan Faye', custInit:'JF', biz:'Brew & Bean Coffee', bizSlug:'biz-brew-and-bean.html', stars:1, date:'Today · 2:14 PM', text:"Worst coffee in Vegas. The barista was rude and the croissant was stale. I would never come back to this dump.", reportedBy:'Business owner Sarah (B&B)', reportNote:"Customer never visited — I checked our POS log. Looks like this might be from a competitor.", flag:true },
-    { id:'r2', status:'reported', cust:'Anonymous Customer', custInit:'A', biz:'Oakline Kitchen', bizSlug:'biz-oakline-kitchen.html', stars:1, date:'Yesterday · 11:42 AM', text:"This place is overpriced trash. Don't waste your money. Chef has no idea what he's doing — clearly not trained anywhere reputable.", reportedBy:'Business owner Chef Lin', reportNote:"This appears to be a personal attack. The customer didn't order anything from us — checked our reservation system, no booking under this name.", flag:true },
-    { id:'r3', status:'pending', cust:'Marcus Chen', custInit:'MC', biz:'Brew & Bean Coffee', bizSlug:'biz-brew-and-bean.html', stars:5, date:'Today · 8:32 AM', text:"Best latte I've had in Vegas. Sarah remembers my order. Used 1,200 LYMX I earned at Sun Market and walked out feeling like a winner. This is what loyalty should be.", flag:false },
-    { id:'r4', status:'pending', cust:'Priya Shah', custInit:'PS', biz:'Field & Bloom Florals', bizSlug:'#', stars:4, date:'Yesterday · 5:18 PM', text:"Beautiful arrangements and they remembered my mom's birthday from last year. Took off one star because parking was hard during weekend rush, but otherwise amazing. Used 2,000 LYMX off the bill.", flag:false },
-    { id:'r5', status:'pending', cust:'Tom Reyes', custInit:'TR', biz:'Brew & Bean Coffee', bizSlug:'biz-brew-and-bean.html', stars:5, date:'Apr 26 · 7:42 PM', text:"Cold brew flight is 🔥. Bartender suggested pairing with the espresso brownie and it was perfect. LYMX redemption was painless — just showed my QR.", flag:false },
-    { id:'r6', status:'approved', cust:'Anna Park', custInit:'AP', biz:'Sun Market & Deli', bizSlug:'#', stars:5, date:'Apr 24', text:"Best produce in the area, and earning LYMX for groceries makes them feel even more affordable.", flag:false },
-    { id:'r7', status:'approved', cust:'David Liu', custInit:'DL', biz:'Iron & Oak Salon', bizSlug:'#', stars:5, date:'Apr 23', text:"Got a great cut and used my LYMX from coffee earnings. Wild that the loyalty actually crosses Businesses.", flag:false },
-    { id:'r8', status:'removed', cust:'(removed)', custInit:'X', biz:'Pacific Tile Co.', bizSlug:'#', stars:1, date:'Apr 20', text:"[Review removed by moderator: spam — promotional content]", flag:false },
-  ];
-
-  let currentFilter = 'queue';
-  let actionTarget = null;
-  let actionType = null;
-
-  function setFilter(f, btn){
-    currentFilter = f;
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
-    btn.classList.add('on');
-    render();
-  }
-
-  function render(){
-    let rows = reviews;
-    if (currentFilter === 'queue') rows = rows.filter(r => r.status === 'pending' || r.status === 'reported');
-    else if (currentFilter !== 'queue') rows = rows.filter(r => r.status === currentFilter);
-    const q = document.getElementById('search').value.trim().toLowerCase();
-    if (q) rows = rows.filter(r => (r.cust + ' ' + r.biz + ' ' + r.text).toLowerCase().includes(q));
-
-    const list = document.getElementById('list');
-    if (rows.length === 0){
-      list.innerHTML = '<div class="empty"><div class="ic">📭</div>No reviews in this view.</div>';
-      return;
-    }
-    list.innerHTML = rows.map(r => `
-      <div class="rev ${r.status}">
-        ${r.status === 'reported' ? `<div class="reported-flag"><span class="ic">⚠️</span> <strong>Reported by Business:</strong> ${r.reportedBy} — "${r.reportNote}"</div>` : ''}
-        <div class="head">
-          <div class="av">${r.custInit}</div>
-          <div class="who">
-            <div class="nm">${r.cust} <span style="color:var(--muted);font-weight:600;font-size:13px">→ <a class="biz-link" href="${r.bizSlug}">${r.biz}</a></span></div>
-            <div class="meta">${r.date}</div>
-          </div>
-          <div class="stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
-          <span class="status ${r.status}">${r.status}</span>
-        </div>
-        <div class="text">${r.text}</div>
-        ${(r.status === 'pending' || r.status === 'reported') ? `
-          <div class="actions">
-            <button class="approve" onclick="approve('${r.id}')">✓ Approve &amp; publish</button>
-            <button class="hide" onclick="hide('${r.id}')">Hide for now</button>
-            <button class="remove" onclick="openRemove('${r.id}')">Remove</button>
-            <a href="admin-customers.html">View customer profile</a>
-            <a href="${r.bizSlug}" style="margin-left:auto;color:var(--accent-2);font-weight:700">Open Business listing →</a>
-          </div>
-        ` : `
-          <div class="actions">
-            <a style="color:var(--muted);font-size:12.5px">${r.status === 'approved' ? 'Currently visible on Business listing' : r.status === 'removed' ? 'Removed by moderator' : 'Hidden from Business listing'}</a>
-            <a href="admin-customers.html" style="margin-left:auto">View customer profile</a>
-          </div>
-        `}
-      </div>
-    `).join('');
-
-    // Update queue count
-    document.getElementById('ct-queue').textContent = reviews.filter(r => r.status === 'pending' || r.status === 'reported').length;
-    document.getElementById('s-pending').textContent = reviews.filter(r => r.status === 'pending').length;
-    document.getElementById('s-reported').textContent = reviews.filter(r => r.status === 'reported').length;
-  }
-
-  function approve(id){
-    const r = reviews.find(x => x.id === id);
-    if (!r) return;
-    r.status = 'approved';
-    render();
-    showToast(`Approved · review now live on ${r.biz}`, 'success');
-  }
-  function hide(id){
-    const r = reviews.find(x => x.id === id);
-    if (!r) return;
-    r.status = 'hidden';
-    render();
-    showToast('Review hidden — customer notified', 'warn');
-  }
-  function openRemove(id){
-    actionTarget = id;
-    actionType = 'remove';
-    document.getElementById('m-title').textContent = 'Remove review';
-    document.getElementById('m-customer-action').style.display = '';
-    document.getElementById('m-confirm').textContent = 'Remove review';
-    document.getElementById('action-modal').classList.add('on');
-  }
-  function closeModal(){ document.getElementById('action-modal').classList.remove('on'); }
-  function confirmAction(){
-    const r = reviews.find(x => x.id === actionTarget);
-    if (!r) return;
-    const cust = document.getElementById('m-cust').value;
-    r.status = 'removed';
-    closeModal();
-    render();
-    if (cust === 'warn') showToast(`Removed · warning email sent to ${r.cust}`, 'warn');
-    else if (cust === 'ban') showToast(`Removed · ${r.cust} suspended`, 'warn');
-    else showToast('Review removed', 'success');
-  }
-
-  function showToast(msg, type){
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast on ' + (type || '');
-    setTimeout(()=> t.classList.remove('on'), 2400);
-  }
-
-  render();
-</script>
 <script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
+
+<main class="main">
+  <h1>Review Verification</h1>
+  <div class="sub">Approve or reject receipt-uploaded reviews. Approved reviews go live on the biz page and the reviewer is auto-credited 100 LYMX.</div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="pending">Pending <span class="ct" id="ctPending">—</span></div>
+    <div class="tab" data-tab="verified">Verified <span class="ct" id="ctVerified">—</span></div>
+    <div class="tab" data-tab="rejected">Rejected <span class="ct" id="ctRejected">—</span></div>
+  </div>
+
+  <div id="list" class="list"></div>
+</main>
+
+<div class="lightbox" id="lightbox"><img id="lightboxImg" /></div>
+<div class="toast" id="toast"></div>
+
+<script>
+window.addEventListener('DOMContentLoaded', async function () {
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(arguments.callee, 100); return; }
+  var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  var URL = window.LYMX_CONFIG.SUPABASE_URL;
+  var session = await window.LYMX.getSession();
+  if (!session) { location.href = 'login.html?return=admin-reviews.html'; return; }
+
+  // Admin guard: check staff_roles
+  try {
+    var rg = await fetch(URL + '/rest/v1/staff_roles?user_id=eq.' + session.user.id + '&active=eq.true&role=in.(admin,cfo,cto)&select=role', {
+      headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token }
+    });
+    var roles = rg.ok ? await rg.json() : [];
+    if (!roles.length) { document.body.innerHTML = '<div style="padding:48px;text-align:center;color:#b81324;font-weight:700">Admin only — you do not have access to this page.</div>'; return; }
+  } catch (e) {
+    document.body.innerHTML = '<div style="padding:48px;text-align:center;color:#b81324">Could not verify admin access: ' + e.message + '</div>'; return;
+  }
+
+  var currentTab = 'pending';
+  var listEl = document.getElementById('list');
+  var toastEl = document.getElementById('toast');
+  function toast(msg, cls) {
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show ' + (cls || '');
+    setTimeout(function () { toastEl.className = 'toast'; }, 2800);
+  }
+
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+      t.classList.add('active');
+      currentTab = t.dataset.tab;
+      loadList();
+    });
+  });
+
+  async function refreshCounts() {
+    try {
+      var r = await fetch(URL + '/rest/v1/reviews?select=verification_status', {
+        headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, Prefer: 'count=exact' }
+      });
+      var rows = r.ok ? await r.json() : [];
+      var ct = { pending: 0, verified: 0, rejected: 0 };
+      rows.forEach(function (x) { ct[x.verification_status] = (ct[x.verification_status] || 0) + 1; });
+      document.getElementById('ctPending').textContent = ct.pending || 0;
+      document.getElementById('ctVerified').textContent = ct.verified || 0;
+      document.getElementById('ctRejected').textContent = ct.rejected || 0;
+    } catch (e) {}
+  }
+
+  async function getSignedUrl(path) {
+    try {
+      var r = await fetch(URL + '/storage/v1/object/sign/review-receipts/' + encodeURIComponent(path) + '?expiresIn=600', {
+        method: 'POST',
+        headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+        body: '{}'
+      });
+      if (!r.ok) return null;
+      var j = await r.json();
+      return URL + '/storage/v1' + j.signedURL;
+    } catch (e) { return null; }
+  }
+
+  async function loadList() {
+    listEl.innerHTML = '<div class="empty">Loading…</div>';
+    try {
+      var r = await fetch(URL + '/rest/v1/reviews?verification_status=eq.' + currentTab + '&select=id,reviewer_user_id,business_slug,business_name,rating,body,has_photo,transaction_id,receipt_image_url,verification_status,created_at,verified_at,rejection_reason&order=created_at.desc&limit=100', {
+        headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token }
+      });
+      if (!r.ok) throw new Error('http ' + r.status);
+      var rows = await r.json();
+      if (!rows.length) { listEl.innerHTML = '<div class="empty">No ' + currentTab + ' reviews.</div>'; return; }
+      listEl.innerHTML = '';
+      for (var i = 0; i < rows.length; i++) {
+        var x = rows[i];
+        var stars = '★'.repeat(x.rating) + '☆'.repeat(5 - x.rating);
+        var when = new Date(x.created_at).toLocaleString();
+        var proofBadge = x.transaction_id ? '<span class="badge tx">Transaction</span>' : (x.receipt_image_url ? '<span class="badge receipt">Receipt photo</span>' : '');
+        var thumbHtml = '<div class="thumb">No photo</div>';
+        if (x.receipt_image_url) {
+          thumbHtml = '<div class="thumb" data-path="' + x.receipt_image_url + '">Loading…</div>';
+        } else if (x.transaction_id) {
+          thumbHtml = '<div class="thumb" style="background:#e6f0ff;color:#0050c7;font-weight:700">TX<br>verified</div>';
+        }
+        var actions = '';
+        if (currentTab === 'pending') {
+          actions = '<button class="btn btn-approve" data-act="approve" data-id="' + x.id + '">✓ Approve</button>'
+                  + '<button class="btn btn-reject" data-act="reject" data-id="' + x.id + '">✗ Reject</button>';
+        } else if (currentTab === 'verified') {
+          actions = '<div style="font-size:12.5px;color:#5b6472">Verified ' + (x.verified_at ? new Date(x.verified_at).toLocaleString() : '') + '</div>'
+                  + '<button class="btn btn-reject" data-act="reject" data-id="' + x.id + '">Unverify / reject</button>';
+        } else {
+          actions = '<div style="font-size:12.5px;color:#b81324">' + (x.rejection_reason ? 'Reason: ' + x.rejection_reason.replace(/[<>]/g, '') : 'Rejected') + '</div>'
+                  + '<button class="btn btn-approve" data-act="approve" data-id="' + x.id + '">Re-approve</button>';
+        }
+        var card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = thumbHtml
+          + '<div class="meta">'
+          +   '<div class="biz">' + x.business_name + ' ' + proofBadge + '</div>'
+          +   '<div class="reviewer">Reviewer: ' + x.reviewer_user_id.slice(0, 8) + '… · ' + x.business_slug + '</div>'
+          +   '<div class="stars">' + stars + ' (' + x.rating + '/5)</div>'
+          +   '<div class="body">' + (x.body || '').replace(/[<>]/g, '').replace(/\n/g, '<br>') + '</div>'
+          +   '<div class="when">' + when + '</div>'
+          + '</div>'
+          + '<div class="actions">' + actions + '</div>';
+        listEl.appendChild(card);
+        // Lazy-load receipt thumbnail (signed URL)
+        if (x.receipt_image_url) {
+          (function (path, thumbDiv) {
+            getSignedUrl(path).then(function (url) {
+              if (!url) { thumbDiv.textContent = 'No preview'; return; }
+              thumbDiv.innerHTML = '<img src="' + url + '" alt="Receipt">';
+              thumbDiv.addEventListener('click', function () {
+                document.getElementById('lightboxImg').src = url;
+                document.getElementById('lightbox').classList.add('open');
+              });
+            });
+          })(x.receipt_image_url, card.querySelector('.thumb'));
+        }
+      }
+      // Wire approve/reject buttons
+      listEl.querySelectorAll('button[data-act]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var id = b.dataset.id;
+          var act = b.dataset.act;
+          if (act === 'approve') doApprove(id, b);
+          if (act === 'reject') doReject(id, b);
+        });
+      });
+    } catch (e) {
+      listEl.innerHTML = '<div class="empty" style="color:#b81324">Could not load: ' + e.message + '</div>';
+    }
+  }
+
+  async function doApprove(id, btn) {
+    btn.disabled = true; btn.textContent = 'Approving…';
+    try {
+      var r = await fetch(URL + '/rest/v1/reviews?id=eq.' + id, {
+        method: 'PATCH',
+        headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ verification_status: 'verified', verified_by_user_id: session.user.id, verified_at: new Date().toISOString(), rejection_reason: null })
+      });
+      if (!r.ok) throw new Error('http ' + r.status);
+      toast('Approved — 100 LYMX credited.', 'ok');
+      refreshCounts();
+      loadList();
+    } catch (e) {
+      btn.disabled = false; btn.textContent = '✓ Approve';
+      toast('Approve failed: ' + e.message, 'err');
+    }
+  }
+
+  async function doReject(id, btn) {
+    var reason = prompt('Reason for rejecting this review?\n\n(Sent to reviewer so they can re-submit with clearer evidence.)');
+    if (reason === null) return;
+    reason = (reason || '').trim();
+    if (!reason) { toast('A reason is required.', 'err'); return; }
+    btn.disabled = true; btn.textContent = 'Rejecting…';
+    try {
+      var r = await fetch(URL + '/rest/v1/reviews?id=eq.' + id, {
+        method: 'PATCH',
+        headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ verification_status: 'rejected', rejection_reason: reason, verified_by_user_id: session.user.id, verified_at: new Date().toISOString() })
+      });
+      if (!r.ok) throw new Error('http ' + r.status);
+      toast('Rejected. Reviewer will be notified.', 'ok');
+      refreshCounts();
+      loadList();
+    } catch (e) {
+      btn.disabled = false; btn.textContent = '✗ Reject';
+      toast('Reject failed: ' + e.message, 'err');
+    }
+  }
+
+  document.getElementById('lightbox').addEventListener('click', function () { this.classList.remove('open'); });
+
+  refreshCounts();
+  loadList();
+});
+</script>
+
 </body>
 </html>
