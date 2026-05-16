@@ -691,6 +691,17 @@ window.addEventListener('DOMContentLoaded', async function () {
 //  #4d44f508 Friends Joined, #94ea4a63 placeholder reviews)
 window.addEventListener('DOMContentLoaded', function () {
   window.__lymxClearPlaceholders = true;
+  // Offers Nearby — clear placeholder businesses (Bug fix 2026-05-16 #79c360b6, #0c2264f3)
+  var offersGrid = document.querySelector('.offers-grid');
+  if (offersGrid) offersGrid.innerHTML = '<div style="grid-column:1/-1;padding:24px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">📍</div>No offers near you yet. As LYMX Businesses launch in your area, their offers will appear here. <a href="browse.html" style="color:#0050c7;font-weight:600;text-decoration:none">Browse the network →</a></div>';
+  // My recent reviews — also clear placeholder reviews
+  var myReviews = document.querySelector('.my-reviews');
+  if (myReviews) myReviews.innerHTML = '<div style="padding:24px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">⭐</div>No reviews yet. After a visit, write one and earn 100 LYMX per review.</div>';
+  // Update "See all (12)" counter on My recent reviews
+  document.querySelectorAll('.card-h .more').forEach(function (a) {
+    if (/See all\s*\(/i.test(a.textContent)) a.textContent = 'See all →';
+  });
+
   // Pending reviews list
   var pending = document.querySelector('.pending-list');
   if (pending) pending.innerHTML = '<div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">⏳</div>No visits waiting to review yet. Visit a LYMX Business and your pending reviews will show up here.</div>';

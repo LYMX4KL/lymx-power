@@ -665,5 +665,34 @@ window.addEventListener('DOMContentLoaded', function () {
   });
 });
 </script>
+
+<script>
+// Hide the "+12 more" gallery counter if it's a placeholder + add a click-to-zoom
+// modal for any review/gallery image. (Bug fixes 2026-05-16 #17f58a84, #7df7a61d)
+window.addEventListener('DOMContentLoaded', function () {
+  window.__lymxBizExtraFixes = true;
+  // 1) Hide any element that looks like "+N more" overlay
+  document.querySelectorAll('span, div, a').forEach(function (el) {
+    var t = (el.textContent || '').trim();
+    if (/^\+\d+\s*more$/i.test(t) && el.children.length === 0) el.style.display = 'none';
+  });
+  // 2) Image zoom modal for review / gallery images
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(14,17,22,.88);display:none;align-items:center;justify-content:center;z-index:99996;cursor:zoom-out;padding:30px';
+  modal.id = 'lymxImgZoom';
+  modal.innerHTML = '<img id="lymxImgZoomImg" style="max-width:96vw;max-height:92vh;border-radius:9px;box-shadow:0 12px 40px rgba(0,0,0,.6)" />';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function () { modal.style.display = 'none'; });
+  // Wire any image inside review / gallery areas
+  document.querySelectorAll('.review img, .gallery img, [class*="gallery"] img, [class*="review"] img').forEach(function (img) {
+    img.style.cursor = 'zoom-in';
+    img.addEventListener('click', function (e) {
+      e.preventDefault();
+      document.getElementById('lymxImgZoomImg').src = img.currentSrc || img.src;
+      modal.style.display = 'flex';
+    });
+  });
+});
+</script>
 </body>
 </html>
