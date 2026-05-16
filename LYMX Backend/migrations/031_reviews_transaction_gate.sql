@@ -54,10 +54,11 @@ DECLARE
   tx_type         text;
 BEGIN
   IF NEW.transaction_id IS NOT NULL THEN
-    SELECT w.user_id, t.type::text
+    SELECT c.user_id, t.type::text
       INTO tx_wallet_owner, tx_type
       FROM public.transactions t
-      JOIN public.wallets w ON w.id = t.wallet_id
+      JOIN public.wallets   w ON w.id = t.wallet_id
+      JOIN public.customers c ON c.id = w.customer_id
      WHERE t.id = NEW.transaction_id;
 
     IF tx_wallet_owner IS NULL THEN
@@ -137,29 +138,14 @@ CREATE POLICY reviews_public_read ON public.reviews
 DROP POLICY IF EXISTS reviews_admin_read ON public.reviews;
 CREATE POLICY reviews_admin_read ON public.reviews
   FOR SELECT TO authenticated
-  USING (EXISTS (
-    SELECT 1 FROM public.staff_roles sr
-     WHERE sr.user_id = auth.uid()
-       AND sr.role IN ('admin', 'cfo', 'cto')
-       AND sr.active
-  ));
+  USING (public.am_i_admin());
 
 -- Admin can flip verification_status on pending reviews.
 DROP POLICY IF EXISTS reviews_admin_verify ON public.reviews;
 CREATE POLICY reviews_admin_verify ON public.reviews
   FOR UPDATE TO authenticated
-  USING (EXISTS (
-    SELECT 1 FROM public.staff_roles sr
-     WHERE sr.user_id = auth.uid()
-       AND sr.role IN ('admin', 'cfo', 'cto')
-       AND sr.active
-  ))
-  WITH CHECK (EXISTS (
-    SELECT 1 FROM public.staff_roles sr
-     WHERE sr.user_id = auth.uid()
-       AND sr.role IN ('admin', 'cfo', 'cto')
-       AND sr.active
-  ));
+  USING (public.am_i_admin())
+  WITH CHECK (public.am_i_admin());
 
 -- ===== 7. helper RPC: list my recent transactions at a business ==========
 -- Used by the biz-page review form to populate the "select a recent
@@ -179,8 +165,9 @@ RETURNS TABLE(
   SELECT t.id, t.type::text, t.lymx_amount, t.usd_basis, t.created_at
     FROM public.transactions t
     JOIN public.wallets   w ON w.id = t.wallet_id
+    JOIN public.customers c ON c.id = w.customer_id
     JOIN public.businesses b ON b.id = t.business_id
-   WHERE w.user_id = auth.uid()
+   WHERE c.user_id = auth.uid()
      AND (
           (p_business_name IS NOT NULL AND (b.legal_name = p_business_name OR b.display_name = p_business_name))
        OR b.legal_name   = p_business_slug
@@ -229,12 +216,7 @@ CREATE POLICY receipt_read_admin ON storage.objects
   FOR SELECT TO authenticated
   USING (
     bucket_id = 'review-receipts'
-    AND EXISTS (
-      SELECT 1 FROM public.staff_roles sr
-       WHERE sr.user_id = auth.uid()
-         AND sr.role IN ('admin', 'cfo', 'cto')
-         AND sr.active
-    )
+    AND public.am_i_admin()
   );
 
 -- ===== 9. result ===========================================================
