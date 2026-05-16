@@ -335,5 +335,50 @@
 </script>
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
+
+<script>
+// Wire the support contact form to feedback-submit Edge Function instead
+// of the broken /?contact=sent action. (Bug fix 2026-05-16 #0723cad3)
+window.addEventListener('DOMContentLoaded', function () {
+  window.__lymxSupportForm = true;
+  var form = document.querySelector('form.contact-form, form[name="support"]');
+  if (!form) return;
+  form.setAttribute('onsubmit', 'return false');
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var data = new FormData(form);
+    var subject = (data.get('subject') || data.get('name') || 'Support request from /support page').toString().slice(0, 80);
+    var message = (data.get('message') || data.get('body') || '').toString();
+    if (message.length < 10) {
+      message = 'Support request from /support page:\n\n' + Array.from(form.elements).filter(function (el) { return el.name && el.value; }).map(function (el) { return el.name + ': ' + el.value; }).join('\n');
+    }
+    var btn = form.querySelector('button[type="submit"], input[type="submit"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    try {
+      var URL  = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+      var ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+      var tok = ANON;
+      try {
+        var raw = localStorage.getItem('sb-apffootxzfwmtyjlnteo-auth-token');
+        if (raw) { var s = JSON.parse(raw); tok = s.access_token || s.currentSession?.access_token || ANON; }
+      } catch (e) {}
+      var res = await fetch(URL + '/functions/v1/feedback-submit', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + tok, 'apikey': ANON, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'question', priority: 'normal', subject: subject, message: message, page_url: location.href })
+      });
+      if (res.ok) {
+        form.innerHTML = '<div style="padding:30px;text-align:center;font-size:15px"><div style="font-size:48px;color:#13a26b;margin-bottom:12px">✓</div><strong>Thanks — your message is in.</strong><div style="color:#5b6472;margin-top:8px">We will reply by email within one business day.</div></div>';
+      } else {
+        if (btn) { btn.disabled = false; btn.textContent = 'Send'; }
+        alert('Could not submit. Please email kenny@lymxpower.com directly.');
+      }
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Send'; }
+      alert('Network error. Please email kenny@lymxpower.com directly.');
+    }
+  });
+});
+</script>
 </body>
 </html>

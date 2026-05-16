@@ -431,5 +431,34 @@
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
+
+<script>
+// Wire category chip clicks (Bug fix 2026-05-16 #d9ade45d)
+window.addEventListener('DOMContentLoaded', function () {
+  window.__lymxCatClickWired = true;
+  document.querySelectorAll('.chip[data-cat]').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      document.querySelectorAll('.chip[data-cat]').forEach(function (c) { c.classList.remove('cat-on'); });
+      chip.classList.add('cat-on');
+      var cat = chip.dataset.cat;
+      // Update URL so it can be shared / bookmarked
+      try {
+        var u = new URL(location.href);
+        if (cat === 'All') u.searchParams.delete('category');
+        else u.searchParams.set('category', cat);
+        history.replaceState(null, '', u);
+      } catch (e) {}
+      // Filter the biz-cards by data-cat (if present). Cards without
+      // data-cat (signup CTAs, placeholders) stay visible only when 'All'.
+      document.querySelectorAll('.biz-card').forEach(function (card) {
+        var dc = card.getAttribute('data-cat');
+        if (cat === 'All') { card.style.display = ''; return; }
+        if (!dc) { card.style.display = 'none'; return; }
+        card.style.display = (dc.toLowerCase() === cat.toLowerCase()) ? '' : 'none';
+      });
+    });
+  });
+});
+</script>
 </body>
 </html>

@@ -646,5 +646,24 @@
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
+
+<script>
+// Make the "Write a review" anchor smooth-scroll and focus the textarea
+// so users actually see the form when they click. (Bug fix 2026-05-16 #020b998f)
+window.addEventListener('DOMContentLoaded', function () {
+  window.__lymxBizWriteReviewWired = true;
+  document.querySelectorAll('a[href="#write-review"]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      var target = document.getElementById('write-review');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var ta = target.querySelector('textarea');
+        if (ta) setTimeout(function () { ta.focus(); }, 350);
+      }
+    });
+  });
+});
+</script>
 </body>
 </html>

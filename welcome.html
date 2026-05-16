@@ -358,5 +358,37 @@ loadBusiness();
 </script>
 
 <script src="lymx-feedback.js" defer></script>
+
+<script>
+// Display referrer info on top of welcome page when ?ref= is present
+// (Bug fix 2026-05-16 #cc959cf5)
+window.addEventListener('DOMContentLoaded', async function () {
+  window.__lymxInviterDisplay = true;
+  try {
+    var qs = new URLSearchParams(location.search);
+    var ref = qs.get('ref');
+    if (!ref) return;
+    var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+    var URL  = window.LYMX_CONFIG.SUPABASE_URL;
+    // Look up partner by partner_code (P-NNNNNN) or by user_id (uuid)
+    var lookup = ref.match(/^P-\d+$/i)
+      ? 'partner_code=eq.' + encodeURIComponent(ref)
+      : 'user_id=eq.' + encodeURIComponent(ref);
+    var r = await fetch(URL + '/rest/v1/partners?' + lookup + '&select=legal_name,display_name,partner_code',
+      { headers: { apikey: ANON, Authorization: 'Bearer ' + ANON } });
+    if (!r.ok) return;
+    var rows = await r.json();
+    var p = rows[0];
+    if (!p) return;
+    var name = p.display_name || p.legal_name || ('Partner ' + (p.partner_code || ref));
+    // Find a good place to insert the banner — top of the form card
+    var banner = document.createElement('div');
+    banner.style.cssText = 'background:#EEF6FF;border:1px solid #C7D2FE;border-radius:10px;padding:14px 16px;margin:0 0 18px;font-size:14px;color:#1E40AF;display:flex;align-items:center;gap:10px';
+    banner.innerHTML = '<span style="font-size:24px">🎁</span><div><strong>' + name.replace(/[<>]/g, '') + '</strong> invited you to LYMX.<div style="font-size:12.5px;color:#3730A3;margin-top:2px">You both get 100 LYMX once you complete signup.</div></div>';
+    var anchor = document.querySelector('.form-card') || document.querySelector('main') || document.body;
+    anchor.insertBefore(banner, anchor.firstChild);
+  } catch (e) { console.warn('inviter display failed', e); }
+});
+</script>
 </body>
 </html>

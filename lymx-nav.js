@@ -218,9 +218,36 @@
     }
   }
 
+
+  // ---- 5) Always-visible Sign In chip for logged-out users -----------------
+  // (UX fix 2026-05-16 — Kenny: "user will not come back if they can't find login")
+  // Adds a floating "Sign in" pill in the top-right corner on every page
+  // where the user isn't already in the nav-cta area. Click goes to
+  // /login.html?return=<current> so users land back where they were.
+  function injectSignInChip() {
+    // Skip on login / signup pages themselves
+    var path = (location.pathname || '').toLowerCase();
+    if (/login|signup|welcome|verify-fix|recovery/i.test(path)) return;
+    // Skip if the page already has a visible Sign in link in its nav-cta
+    var existing = document.querySelector('header a[href*="login"], .nav-cta a[href*="login"], #navCtaGuest a[href*="login"]');
+    if (existing && existing.offsetParent !== null) return;
+    // Don't double-inject
+    if (document.getElementById('lymxSignInChip')) return;
+    var chip = document.createElement('a');
+    chip.id = 'lymxSignInChip';
+    var ret = encodeURIComponent(location.pathname + location.search);
+    chip.href = 'login.html?return=' + ret;
+    chip.innerHTML = '<span style="font-size:14px">→</span><span>Sign in</span>';
+    chip.style.cssText = 'position:fixed;top:14px;right:14px;z-index:99990;display:flex;align-items:center;gap:6px;padding:8px 14px;background:#0e1116;color:#fff;border-radius:999px;font-weight:700;font-size:13.5px;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;box-shadow:0 4px 12px rgba(14,17,22,.18);cursor:pointer';
+    document.body.appendChild(chip);
+  }
+
   function mount() {
     var tok = readToken();
-    if (!tok) return;  // no session, no swap
+    if (!tok) {
+      injectSignInChip();  // logged-out — show Sign in pill (UX fix 2026-05-16)
+      return;
+    }
     var payload = decode(tok);
     redirectIfSignedIn(payload);
     enforceAdminGuard(payload);  // P0 guard 2026-05-15

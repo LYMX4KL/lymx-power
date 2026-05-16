@@ -682,5 +682,34 @@ window.addEventListener('DOMContentLoaded', async function () {
   } catch (e) { console.warn('button wiring failed', e); }
 });
 </script>
+
+<script>
+// Replace placeholder hardcoded data in Pending reviews / Recent activity
+// with proper empty states on page load. New accounts will see "no data
+// yet" instead of fake businesses. Real data wiring follows in next batch.
+// (Bug fixes 2026-05-16 #14c10478 Saved Places, #6f8a9cd0 Recent Reviews,
+//  #4d44f508 Friends Joined, #94ea4a63 placeholder reviews)
+window.addEventListener('DOMContentLoaded', function () {
+  window.__lymxClearPlaceholders = true;
+  // Pending reviews list
+  var pending = document.querySelector('.pending-list');
+  if (pending) pending.innerHTML = '<div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">⏳</div>No visits waiting to review yet. Visit a LYMX Business and your pending reviews will show up here.</div>';
+  // Recent activity list
+  var activity = document.getElementById('activityList');
+  if (activity) activity.innerHTML = '<div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">📊</div>No activity yet. Your LYMX earnings, redemptions, and reviews will appear here.</div>';
+  // Update pending review count text
+  var pendCount = document.querySelector('.card-h .count');
+  if (pendCount && /visits waiting/i.test(pendCount.textContent)) {
+    pendCount.textContent = '0 pending';
+  }
+  // Friends Joined counter (find anchor that mentions Friends Joined)
+  document.querySelectorAll('.stat, .stat-card, .kpi, [class*="friend"], [class*="invite"]').forEach(function (el) {
+    if (/friends?\s*joined/i.test(el.textContent) || /invited\s*friends?/i.test(el.textContent)) {
+      var v = el.querySelector('.v, .val, .number, [class*="num"]');
+      if (v && /^\d+$/.test(v.textContent.trim())) v.textContent = '0';
+    }
+  });
+});
+</script>
 </body>
 </html>
