@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Onboarding Calendar — LYMX Admin</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--err:#b81324}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+  .main{margin-left:240px;padding:24px 28px}
+  @media(max-width:880px){.main{margin-left:0;padding:16px}}
+  h1{margin:0 0 6px;font-size:26px;font-weight:800}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+  @media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:11px;padding:14px 16px}
+  .stat .n{font-size:26px;font-weight:800;color:var(--ink)}
+  .stat .l{font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;font-weight:700}
+  .section{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:18px}
+  .section h2{margin:0 0 14px;font-size:18px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .section h2 .pill{font-size:12px;font-weight:700;background:#eef4ff;color:var(--accent-2);padding:3px 9px;border-radius:999px;letter-spacing:.02em}
+  .booking-row{display:grid;grid-template-columns:120px 1fr auto;gap:14px;padding:12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;align-items:center}
+  @media(max-width:680px){.booking-row{grid-template-columns:1fr;gap:4px}}
+  .booking-row .when{font-weight:800;color:var(--ink);font-size:15px}
+  .booking-row .when .day{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+  .booking-row .who{font-size:14px;color:var(--ink-2)}
+  .booking-row .who .name{font-weight:700;color:var(--ink)}
+  .booking-row .who .biz{font-size:13px;color:var(--muted)}
+  .booking-row .who .notes{font-size:13px;color:#0a6e44;background:#e6f5ee;padding:6px 9px;border-radius:6px;margin-top:6px;border-left:3px solid var(--ok)}
+  .booking-row .actions{display:flex;gap:6px;flex-wrap:wrap}
+  .btn{padding:8px 14px;border-radius:8px;font-weight:700;font-size:12.5px;border:0;cursor:pointer;font-family:inherit}
+  .btn.primary{background:var(--ink);color:#fff}
+  .btn.outline{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn.danger{background:#fff;color:var(--err);border:1.5px solid var(--err)}
+  .empty{padding:28px;text-align:center;color:var(--muted);background:#f6f7f9;border-radius:9px}
+  .day-grid{display:grid;grid-template-columns:80px 1fr;gap:8px;align-items:center;margin-bottom:6px}
+  .day-grid .dlabel{font-weight:700;color:var(--ink);font-size:14px}
+  .day-grid .windows{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .window-chip{background:#eef4ff;color:var(--accent-2);padding:5px 10px;border-radius:999px;font-size:13px;font-weight:600;display:inline-flex;gap:8px;align-items:center}
+  .window-chip .x{cursor:pointer;color:var(--err);font-weight:800;padding:0 2px}
+  .add-window-btn{background:transparent;border:1px dashed var(--line);color:var(--accent);padding:5px 11px;border-radius:999px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:9px;font-size:14px;font-weight:600;display:none;z-index:99999}
+  .toast.show{display:block}
+  .toast.ok{background:var(--ok)} .toast.err{background:var(--err)}
+  .modal{display:none;position:fixed;inset:0;background:rgba(14,17,22,.5);z-index:99990;align-items:center;justify-content:center;padding:18px}
+  .modal.open{display:flex}
+  .modal .box{background:#fff;border-radius:14px;padding:22px;max-width:420px;width:100%}
+  .modal h3{margin:0 0 14px;font-size:18px}
+  .modal .fld{margin-bottom:12px}
+  .modal label{display:block;font-size:12.5px;font-weight:700;margin-bottom:5px}
+  .modal input,.modal select{width:100%;padding:11px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-family:inherit}
+</style>
+</head>
+<body>
+
+<script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<main class="main">
+  <h1>Onboarding Calendar</h1>
+  <div class="sub" id="hostStatus">Loading host…</div>
+
+  <div class="stats">
+    <div class="stat"><div class="n" id="ctUpcoming">—</div><div class="l">Upcoming bookings</div></div>
+    <div class="stat"><div class="n" id="ctThisWeek">—</div><div class="l">This week</div></div>
+    <div class="stat"><div class="n" id="ctCompleted">—</div><div class="l">Completed</div></div>
+    <div class="stat"><div class="n" id="ctSlots">—</div><div class="l">Weekly slots open</div></div>
+  </div>
+
+  <div class="section">
+    <h2>Upcoming bookings <span class="pill" id="bookingPill">—</span></h2>
+    <div id="bookingsList"></div>
+  </div>
+
+  <div class="section">
+    <h2>Weekly availability <span style="font-size:12px;color:var(--muted);font-weight:500">(in your timezone)</span></h2>
+    <div id="availabilityBody"></div>
+  </div>
+
+  <div class="section">
+    <h2>Past calls</h2>
+    <div id="pastList"></div>
+  </div>
+
+  <div class="section">
+    <h2>Share your booking link</h2>
+    <p style="margin:0 0 10px;font-size:14px;color:var(--ink-2)">Send this URL to anyone — they can pick a 30-min slot and book themselves in without needing a LYMX account.</p>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="shareLink" readonly value="https://getlymx.com/book-onboarding-call.html" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:8px;font-family:monospace;font-size:13px;background:#f6f7f9" />
+      <button class="btn primary" id="copyBtn">Copy</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="windowModal">
+  <div class="box">
+    <h3>Add availability window</h3>
+    <div class="fld">
+      <label>Day of week</label>
+      <select id="winDow">
+        <option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option>
+      </select>
+    </div>
+    <div class="fld">
+      <label>From</label>
+      <input type="time" id="winStart" value="09:00" />
+    </div>
+    <div class="fld">
+      <label>To</label>
+      <input type="time" id="winEnd" value="12:00" />
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn outline" id="winCancel" style="flex:1">Cancel</button>
+      <button class="btn primary" id="winSave" style="flex:1">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(async function () {
+  while (!window.LYMX_CONFIG || !window.LYMX || !window.LYMX.getSession) { await new Promise(r => setTimeout(r, 100)); }
+  const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  const URL = window.LYMX_CONFIG.SUPABASE_URL;
+  const session = await window.LYMX.getSession();
+  if (!session) { location.href = 'login.html?return=admin-onboarding-calendar.html'; return; }
+  const H = { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' };
+
+  function toast(msg, cls) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast show ' + (cls || '');
+    setTimeout(() => el.className = 'toast', 2600);
+  }
+
+  // Find this user's host row, or all hosts if admin
+  let hostQ = '/rest/v1/onboarding_hosts?or=(user_id.eq.' + session.user.id + ',active.eq.true)&select=*&limit=10';
+  const hostResp = await fetch(URL + hostQ, { headers: H });
+  let hosts = await hostResp.json();
+  hosts = Array.isArray(hosts) ? hosts : [];
+  let host = hosts.find(h => h.user_id === session.user.id) || hosts[0];
+
+  if (!host) {
+    document.getElementById('hostStatus').innerHTML = 'You are not set up as an onboarding host yet. Admin can add you to onboarding_hosts.';
+    return;
+  }
+  document.getElementById('hostStatus').textContent = host.display_name + ' · ' + host.slot_minutes + '-min slots · ' + host.timezone;
+
+  // Bookings
+  async function loadBookings() {
+    const nowIso = new Date().toISOString();
+    const upR = await fetch(URL + '/rest/v1/onboarding_bookings?host_id=eq.' + host.id + '&status=eq.confirmed&starts_at=gte.' + nowIso + '&order=starts_at', { headers: H });
+    const upcoming = await upR.json();
+    const pastR = await fetch(URL + '/rest/v1/onboarding_bookings?host_id=eq.' + host.id + '&starts_at=lt.' + nowIso + '&order=starts_at.desc&limit=25', { headers: H });
+    const past = await pastR.json();
+    return { upcoming: Array.isArray(upcoming) ? upcoming : [], past: Array.isArray(past) ? past : [] };
+  }
+
+  function fmt(iso) {
+    const d = new Date(iso);
+    return d.toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+
+  function buildBookingRow(b, isPast) {
+    const row = document.createElement('div');
+    row.className = 'booking-row';
+    const d = new Date(b.starts_at);
+    const day = d.toLocaleDateString([], { weekday: 'short' });
+    const dateStr = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    const timeStr = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    row.innerHTML = '<div class="when"><div class="day">' + day + ' · ' + dateStr + '</div>' + timeStr + '</div>'
+      + '<div class="who"><div class="name">' + esc(b.booker_name) + (b.business_name ? ' · ' + esc(b.business_name) : '') + '</div>'
+      + '<div class="biz">' + esc(b.booker_email) + (b.booker_phone ? ' · ' + esc(b.booker_phone) : '') + '</div>'
+      + (b.notes ? '<div class="notes">' + esc(b.notes) + '</div>' : '') + '</div>'
+      + '<div class="actions"></div>';
+    const actions = row.querySelector('.actions');
+    if (!isPast) {
+      const meetingBtn = document.createElement('button');
+      meetingBtn.className = 'btn outline';
+      meetingBtn.textContent = b.meeting_url ? 'Edit link' : 'Add link';
+      meetingBtn.addEventListener('click', async () => {
+        const url = prompt('Meeting link (Zoom/Meet/Teams)?', b.meeting_url || '');
+        if (url === null) return;
+        const r = await fetch(URL + '/rest/v1/onboarding_bookings?id=eq.' + b.id, {
+          method: 'PATCH', headers: { ...H, Prefer: 'return=minimal' },
+          body: JSON.stringify({ meeting_url: url })
+        });
+        if (r.ok) { toast('Saved.', 'ok'); refresh(); } else { toast('Save failed', 'err'); }
+      });
+      actions.appendChild(meetingBtn);
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'btn danger';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.addEventListener('click', async () => {
+        if (!confirm('Cancel this booking? The booker will see it as cancelled.')) return;
+        const r = await fetch(URL + '/rest/v1/onboarding_bookings?id=eq.' + b.id, {
+          method: 'PATCH', headers: { ...H, Prefer: 'return=minimal' },
+          body: JSON.stringify({ status: 'cancelled_by_host' })
+        });
+        if (r.ok) { toast('Cancelled.', 'ok'); refresh(); } else { toast('Cancel failed', 'err'); }
+      });
+      actions.appendChild(cancelBtn);
+    } else if (b.status === 'confirmed') {
+      const doneBtn = document.createElement('button');
+      doneBtn.className = 'btn primary';
+      doneBtn.textContent = 'Mark completed';
+      doneBtn.addEventListener('click', async () => {
+        const r = await fetch(URL + '/rest/v1/onboarding_bookings?id=eq.' + b.id, {
+          method: 'PATCH', headers: { ...H, Prefer: 'return=minimal' },
+          body: JSON.stringify({ status: 'completed' })
+        });
+        if (r.ok) { toast('Marked complete.', 'ok'); refresh(); }
+      });
+      actions.appendChild(doneBtn);
+    } else {
+      const status = document.createElement('div');
+      status.style.cssText = 'font-size:12.5px;color:var(--muted);font-weight:700';
+      status.textContent = b.status;
+      actions.appendChild(status);
+    }
+    return row;
+  }
+
+  // Availability
+  async function loadAvailability() {
+    const r = await fetch(URL + '/rest/v1/onboarding_availability?host_id=eq.' + host.id + '&order=day_of_week,start_minute', { headers: H });
+    return Array.isArray(await r.clone().json()) ? await r.json() : [];
+  }
+
+  const dowNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  function fmtMin(m) {
+    const h = Math.floor(m/60), mm = m % 60;
+    const h12 = ((h+11)%12)+1, ampm = h<12?'am':'pm';
+    return h12 + (mm ? ':'+String(mm).padStart(2,'0') : '') + ampm;
+  }
+
+  async function paintAvailability() {
+    const winR = await fetch(URL + '/rest/v1/onboarding_availability?host_id=eq.' + host.id + '&order=day_of_week,start_minute', { headers: H });
+    const wins = await winR.json();
+    const grouped = {};
+    (Array.isArray(wins) ? wins : []).forEach(w => { if (!grouped[w.day_of_week]) grouped[w.day_of_week] = []; grouped[w.day_of_week].push(w); });
+
+    const body = document.getElementById('availabilityBody');
+    body.innerHTML = '';
+    for (let d = 0; d < 7; d++) {
+      const row = document.createElement('div');
+      row.className = 'day-grid';
+      const winsHtml = (grouped[d] || []).map(w => '<span class="window-chip">' + fmtMin(w.start_minute) + ' – ' + fmtMin(w.end_minute) + ' <span class="x" data-id="' + w.id + '" title="Remove">×</span></span>').join('');
+      row.innerHTML = '<div class="dlabel">' + dowNames[d] + '</div>'
+        + '<div class="windows">' + winsHtml + '<button class="add-window-btn" data-dow="' + d + '">+ Add window</button></div>';
+      body.appendChild(row);
+    }
+    body.querySelectorAll('.x[data-id]').forEach(x => x.addEventListener('click', async () => {
+      if (!confirm('Remove this availability window?')) return;
+      const id = x.dataset.id;
+      const r = await fetch(URL + '/rest/v1/onboarding_availability?id=eq.' + id, { method: 'DELETE', headers: H });
+      if (r.ok) { toast('Removed.', 'ok'); paintAvailability(); refresh(); }
+    }));
+    body.querySelectorAll('.add-window-btn').forEach(b => b.addEventListener('click', () => {
+      document.getElementById('winDow').value = b.dataset.dow;
+      document.getElementById('windowModal').classList.add('open');
+    }));
+
+    // Update slot count stat (rough: count slots fitting in each window)
+    let totalSlots = 0;
+    (Array.isArray(wins) ? wins : []).forEach(w => {
+      const minutes = w.end_minute - w.start_minute;
+      totalSlots += Math.floor(minutes / (host.slot_minutes + host.buffer_minutes));
+    });
+    document.getElementById('ctSlots').textContent = totalSlots;
+  }
+
+  document.getElementById('winCancel').addEventListener('click', () => document.getElementById('windowModal').classList.remove('open'));
+  document.getElementById('winSave').addEventListener('click', async () => {
+    const dow = parseInt(document.getElementById('winDow').value);
+    const start = document.getElementById('winStart').value.split(':').map(Number);
+    const end   = document.getElementById('winEnd').value.split(':').map(Number);
+    const sm = start[0]*60 + start[1];
+    const em = end[0]*60 + end[1];
+    if (em <= sm) { toast('End must be after start', 'err'); return; }
+    const r = await fetch(URL + '/rest/v1/onboarding_availability', {
+      method: 'POST', headers: { ...H, Prefer: 'return=minimal' },
+      body: JSON.stringify({ host_id: host.id, day_of_week: dow, start_minute: sm, end_minute: em })
+    });
+    if (r.ok) {
+      document.getElementById('windowModal').classList.remove('open');
+      toast('Added.', 'ok');
+      paintAvailability();
+    } else { toast('Add failed', 'err'); }
+  });
+
+  async function refresh() {
+    const { upcoming, past } = await loadBookings();
+    document.getElementById('ctUpcoming').textContent = upcoming.length;
+    const weekEnd = new Date(); weekEnd.setDate(weekEnd.getDate() + 7);
+    document.getElementById('ctThisWeek').textContent = upcoming.filter(b => new Date(b.starts_at) <= weekEnd).length;
+    document.getElementById('ctCompleted').textContent = past.filter(b => b.status === 'completed').length;
+    document.getElementById('bookingPill').textContent = upcoming.length;
+
+    const upE = document.getElementById('bookingsList');
+    if (!upcoming.length) upE.innerHTML = '<div class="empty">No upcoming bookings. Share your booking link to start filling the calendar.</div>';
+    else { upE.innerHTML = ''; upcoming.forEach(b => upE.appendChild(buildBookingRow(b, false))); }
+
+    const pastE = document.getElementById('pastList');
+    if (!past.length) pastE.innerHTML = '<div class="empty">No past calls yet.</div>';
+    else { pastE.innerHTML = ''; past.forEach(b => pastE.appendChild(buildBookingRow(b, true))); }
+  }
+
+  document.getElementById('copyBtn').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(document.getElementById('shareLink').value); toast('Copied.', 'ok'); }
+    catch (e) { toast('Copy failed', 'err'); }
+  });
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[<>&"]/g, c => ({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;' })[c]); }
+
+  paintAvailability();
+  refresh();
+})();
+</script>
+
+</body>
+</html>

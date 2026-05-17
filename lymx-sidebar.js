@@ -143,6 +143,7 @@
       { href: 'admin-promos.html',       icon: '\u{1F381}', label: 'Promos' },
       { href: 'admin-approvals.html',    icon: '✅',    label: 'Approvals' },
       { href: 'admin-reviews.html',      icon: '⭐',    label: 'Review Verification' },
+      { href: 'admin-onboarding-calendar.html', icon: '\u{1F4C5}', label: 'Onboarding Calendar' },
       { href: 'admin-verifications.html', icon: '\u{1FAAA}', label: 'Verifications' },
       { section: 'Team' },
       { href: 'admin-team-roster.html',  icon: '\u{1F5C2}', label: 'Roster' },
