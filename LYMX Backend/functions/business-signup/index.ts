@@ -216,17 +216,30 @@ serve(async (req) => {
     const userId = userData.user.id;
 
     // ── Step 2: resolve partner_referral_code → partner_id ────────────────
+    // Accept either a friendly P-NNNNNN partner code OR a raw UUID. Partners
+    // share friendly codes; UUID is internal-only.
     let signedUpByPartnerId: string | null = null;
     if (body.partner_referral_code) {
-        const { data: p, error: pErr } = await supabase
-            .from("partners")
-            .select("id")
-            .eq("id", body.partner_referral_code)
-            .maybeSingle();
-        if (pErr) {
-            console.error("Partner lookup error:", pErr);
-        } else if (p) {
-            signedUpByPartnerId = p.id;
+        const ref = String(body.partner_referral_code).trim();
+        // P-NNNNNN format (case-insensitive, with or without dash)
+        if (/^P-?\d{4,8}$/i.test(ref)) {
+            const normalized = ref.toUpperCase().replace(/^P-?/, 'P-');
+            const { data: p } = await supabase
+                .from("partners").select("id")
+                .eq("partner_code", normalized)
+                .maybeSingle();
+            if (p) signedUpByPartnerId = p.id;
+        }
+        // Fallback: raw UUID match
+        if (!signedUpByPartnerId && /^[0-9a-f-]{36}$/i.test(ref)) {
+            const { data: p } = await supabase
+                .from("partners").select("id")
+                .eq("id", ref)
+                .maybeSingle();
+            if (p) signedUpByPartnerId = p.id;
+        }
+        if (!signedUpByPartnerId) {
+            console.warn("Partner referral code not found:", ref);
         }
     }
 
@@ -348,6 +361,42 @@ serve(async (req) => {
         }
     }
 
+    // ─── New-Business welcome bonus (10,000 LYMX, configurable) ─────────────
+    // Fires a separate LYMX issuance for the business owner. Amount comes from
+    // platform_promos.new_business_signup_bonus so Kenny can change it via SQL.
+    let welcomeBonus = null;
+    try {
+        const { data: promoAmt } = await supabase.rpc("get_active_promo_amount", { p_key: "new_business_signup_bonus" });
+        const bonusAmount = Number(promoAmt) || 0;
+        if (bonusAmount > 0) {
+            const idem = "new_business_bonus_" + biz.id;
+            const { data: bonusRow, error: bonusErr } = await supabase
+                .from("lymx_issuances")
+                .insert({
+                    recipient_user_id: userId,
+                    business_id: null,                     // null = platform-issued, fraud guard skips
+                    amount_lymx: bonusAmount,
+                    reason: "promo",
+                    lymx_cost_cents: bonusAmount,          // LYMX absorbs the cost (CAC)
+                    business_cost_cents: 0,
+                    transaction_method: "signup",
+                    verified: true,
+                    idempotency_key: idem,
+                    user_agent: "business-signup-fn",
+                })
+                .select()
+                .single();
+            if (bonusErr) {
+                console.warn("New-business bonus issuance failed (non-fatal):", bonusErr.message);
+            } else {
+                welcomeBonus = { issuance_id: bonusRow.id, amount_lymx: bonusAmount };
+            }
+        }
+    } catch (e) {
+        console.warn("New-business bonus error (non-fatal):", e.message);
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
     return jsonResponse({
         user_id: userId,
         business_id: biz.id,
@@ -355,5 +404,6 @@ serve(async (req) => {
         subscription_id: sub?.id ?? null,
         service_ids: serviceIds,
         kind,
+        welcome_bonus: welcomeBonus,
     }, 201);
 });
