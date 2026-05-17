@@ -109,6 +109,7 @@
       { href: 'biz-staff-roles.html',    icon: '\u{1FAAA}', label: 'Staff' },
       { href: 'biz-promo-planner.html',  icon: '\u{1F381}', label: 'Promo Planner' },
       { href: 'biz-cashflow.html',       icon: '\u{1F4B5}', label: 'Cashflow' },
+      { href: 'biz-payouts.html',        icon: '\u{1F3E6}', label: 'Payouts (Stripe)' },
       { href: 'biz-integration.html',    icon: '\u{1F50C}', label: 'POS / Integrations' },
       { section: 'Account' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },

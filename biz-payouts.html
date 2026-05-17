@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Set up payouts — LYMX Business</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--ok:#13a26b;--warn:#f0a020;--err:#b81324}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  .wrap{max-width:780px;margin:0 auto;padding:30px 22px 80px}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+  .brand img{height:36px}
+  h1{margin:0 0 6px;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .lede{color:var(--muted);font-size:15.5px;margin-bottom:24px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:14px}
+  .stripe-banner{background:linear-gradient(135deg,#635bff,#7a73ff);color:#fff;padding:18px 20px;border-radius:12px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .stripe-banner .ic{font-size:32px;line-height:1}
+  .stripe-banner .name{font-weight:800;font-size:16px}
+  .stripe-banner .sub{font-size:13px;opacity:.92;margin-top:2px}
+  .status{padding:14px 18px;border-radius:11px;font-size:14px;margin-bottom:14px;border:1px solid}
+  .status.pending{background:#fff8e6;border-color:#f0d28a;color:#7a5a08}
+  .status.needs-info{background:#fbe6ea;border-color:#f0a8b4;color:var(--err)}
+  .status.complete{background:#e6f5ee;border-color:#a8d8c0;color:#0a6e44}
+  .check-list{margin:14px 0 24px;padding:0;list-style:none}
+  .check-list li{display:flex;align-items:start;gap:10px;padding:6px 0;font-size:14.5px;color:var(--ink-2)}
+  .check-list li .ic{width:22px;flex-shrink:0;font-weight:800;color:var(--muted)}
+  .check-list li.ok .ic{color:var(--ok)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:14px 24px;border-radius:11px;font-weight:700;font-size:15.5px;border:0;cursor:pointer;font-family:inherit;text-decoration:none;color:#fff;background:#635bff;width:100%;margin-top:4px}
+  .btn:hover{background:#5147ff}
+  .btn:disabled{background:#9aa0b2;cursor:wait}
+  .help{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.55}
+  .links{margin-top:18px;display:flex;gap:14px;flex-wrap:wrap;font-size:14px}
+  .links a{color:var(--accent);font-weight:600}
+  .err-box{background:#fbe6ea;border:1px solid #f0a8b4;color:var(--err);padding:12px 14px;border-radius:9px;margin-top:14px;font-size:14px;display:none}
+  .err-box.show{display:block}
+</style>
+</head>
+<body data-page="biz-payouts">
+
+<script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<div class="wrap">
+  <div class="brand"><img src="logo.png" alt="LYMX" /></div>
+
+  <h1>Set up payouts</h1>
+  <p class="lede">Connect your bank with Stripe so LYMX can send you USD when customers redeem the LYMX they earned. Takes about 5 minutes; you'll come back here when done.</p>
+
+  <div id="statusBlock" class="status pending">Loading your Stripe status…</div>
+
+  <div class="card">
+    <div class="stripe-banner">
+      <div class="ic">💳</div>
+      <div><div class="name">Powered by Stripe Connect</div><div class="sub">Your bank info goes to Stripe — never to LYMX. PCI-compliant; same provider thousands of businesses use.</div></div>
+    </div>
+
+    <p style="font-size:15px;color:var(--ink-2);margin:0 0 8px"><strong>What you'll need:</strong></p>
+    <ul class="check-list">
+      <li><span class="ic">·</span>Business EIN or SSN (Stripe needs it for tax reporting)</li>
+      <li><span class="ic">·</span>Bank routing + account number (for direct deposit)</li>
+      <li><span class="ic">·</span>Owner ID (driver's license or passport)</li>
+      <li><span class="ic">·</span>About 5 minutes</li>
+    </ul>
+
+    <button class="btn" id="connectBtn" type="button">Connect Stripe →</button>
+    <div class="err-box" id="errBox"></div>
+    <p class="help">You'll be redirected to Stripe. After completing onboarding, you'll come back here and see a green "complete" badge.</p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 10px;font-size:16px;font-weight:800">How money flows</h3>
+    <p style="margin:0 0 10px;font-size:14.5px;color:var(--ink-2)"><strong>You → LYMX:</strong> $199/month after your 3-month trial. Charged automatically; you'll get a Stripe invoice each month.</p>
+    <p style="margin:0 0 10px;font-size:14.5px;color:var(--ink-2)"><strong>LYMX → You:</strong> When a customer redeems LYMX they earned elsewhere at your business, LYMX sends you the cash equivalent (1 LYMX = $0.01). Settled weekly via ACH to the bank you connect on this page.</p>
+    <p style="margin:0;font-size:13px;color:var(--muted)">Full terms: <a href="biz-tos.html">Business Terms</a></p>
+  </div>
+
+  <div class="links">
+    <a href="biz-dashboard.html">← Back to dashboard</a>
+    <a href="book-onboarding-call.html">Need help? Book a call with Rachel</a>
+  </div>
+</div>
+
+<script>
+(async function () {
+  while (!window.LYMX_CONFIG || !window.LYMX || !window.LYMX.getSession) { await new Promise(r => setTimeout(r, 100)); }
+  const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  const URL = window.LYMX_CONFIG.SUPABASE_URL;
+  const session = await window.LYMX.getSession();
+  if (!session) { location.href = 'login.html?return=biz-payouts.html'; return; }
+  const H = { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' };
+
+  const statusBlock = document.getElementById('statusBlock');
+  const connectBtn = document.getElementById('connectBtn');
+  const errBox = document.getElementById('errBox');
+
+  function showStatus(msg, kind) {
+    statusBlock.textContent = msg;
+    statusBlock.className = 'status ' + (kind || 'pending');
+  }
+  function showError(msg) {
+    errBox.textContent = msg;
+    errBox.className = 'err-box show';
+  }
+
+  // Load current business + Stripe state
+  async function refresh() {
+    try {
+      const r = await fetch(URL + '/rest/v1/businesses?owner_user_id=eq.' + session.user.id + '&select=id,display_name,approval_status,stripe_connect_account_id,stripe_charges_enabled,stripe_payouts_enabled,stripe_details_submitted&order=created_at.desc&limit=1', { headers: H });
+      const rows = await r.json();
+      if (!Array.isArray(rows) || !rows.length) {
+        showStatus('You don\'t own a business yet. Sign up at biz-signup.html first.', 'needs-info');
+        connectBtn.style.display = 'none';
+        return;
+      }
+      const biz = rows[0];
+      if (biz.approval_status !== 'approved') {
+        showStatus('Your business application is ' + biz.approval_status + '. Stripe connect is available once we approve.', 'pending');
+        connectBtn.disabled = true;
+        connectBtn.textContent = 'Pending approval — try again soon';
+        return;
+      }
+      if (biz.stripe_payouts_enabled) {
+        showStatus('✓ Stripe payouts are LIVE for ' + (biz.display_name || 'your business') + '.', 'complete');
+        connectBtn.textContent = 'Update your Stripe info →';
+      } else if (biz.stripe_connect_account_id) {
+        showStatus('You started Stripe onboarding but haven\'t finished yet. Click below to continue where you left off.', 'pending');
+        connectBtn.textContent = 'Continue Stripe onboarding →';
+      } else {
+        showStatus('Ready to connect Stripe.', 'pending');
+        connectBtn.textContent = 'Connect Stripe →';
+      }
+    } catch (e) {
+      showError('Could not load status: ' + e.message);
+    }
+  }
+
+  connectBtn.addEventListener('click', async () => {
+    connectBtn.disabled = true;
+    connectBtn.textContent = 'Preparing your Stripe link…';
+    errBox.className = 'err-box';
+    try {
+      const r = await fetch(URL + '/functions/v1/stripe-connect-onboarding', {
+        method: 'POST',
+        headers: H,
+        body: JSON.stringify({}),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.url) {
+        showError(j.error || 'Could not start Stripe onboarding. Try again or contact hello@getlymx.com.');
+        connectBtn.disabled = false;
+        return;
+      }
+      // Redirect to Stripe
+      location.href = j.url;
+    } catch (e) {
+      showError(e.message || 'Network error.');
+      connectBtn.disabled = false;
+    }
+  });
+
+  // Surface status hint from URL query (Stripe redirects with ?status=ok or ?status=refresh)
+  const q = new URLSearchParams(location.search);
+  if (q.get('status') === 'ok') showStatus('Welcome back — checking your Stripe status…', 'complete');
+  if (q.get('status') === 'refresh') showStatus('Stripe asked you to come back — click the button below to continue.', 'pending');
+
+  refresh();
+})();
+</script>
+
+</body>
+</html>
