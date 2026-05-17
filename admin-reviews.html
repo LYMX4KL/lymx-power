@@ -79,11 +79,13 @@ window.addEventListener('DOMContentLoaded', async function () {
 
   // Admin guard: check staff_roles
   try {
-    var rg = await fetch(URL + '/rest/v1/staff_roles?user_id=eq.' + session.user.id + '&active=eq.true&role=in.(admin,cfo,cto)&select=role', {
-      headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token }
+    var rg = await fetch(URL + '/rest/v1/rpc/am_i_admin', {
+      method: 'POST',
+      headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+      body: '{}'
     });
-    var roles = rg.ok ? await rg.json() : [];
-    if (!roles.length) { document.body.innerHTML = '<div style="padding:48px;text-align:center;color:#b81324;font-weight:700">Admin only — you do not have access to this page.</div>'; return; }
+    var isAdmin = rg.ok ? await rg.json() : false;
+    if (!isAdmin) { document.body.innerHTML = '<div style="padding:48px;text-align:center;color:#b81324;font-weight:700">Admin only — you do not have access to this page.</div>'; return; }
   } catch (e) {
     document.body.innerHTML = '<div style="padding:48px;text-align:center;color:#b81324">Could not verify admin access: ' + e.message + '</div>'; return;
   }
