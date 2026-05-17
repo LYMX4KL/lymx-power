@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="Welcome — claim your LYMX rewards. Earn at one Business, spend at any other." />
 <title>Welcome · LYMX</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--biz:#0a84ff;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1080px}
   *{box-sizing:border-box}
@@ -85,6 +82,17 @@
   .biz-unknown{padding:60px 24px;text-align:center;color:var(--muted)}
   .biz-unknown .big{font-size:48px;margin-bottom:12px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 
@@ -139,6 +147,9 @@
 
       <label for="email">Email</label>
       <input id="email" type="email" required autocomplete="email" />
+
+      <label for="phone">Phone <span style="color:#5b6472;font-weight:400;font-size:13px">— businesses look you up at checkout</span></label>
+      <input id="phone" type="tel" required autocomplete="tel" placeholder="(702) 555-0100" pattern="^[\d\s+()\-]{7,20}$" />
 
       <label for="password">Choose a password</label>
       <input id="password" type="password" required minlength="8" autocomplete="new-password" />
@@ -261,11 +272,16 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   const first = document.getElementById('firstName').value.trim();
   const last  = document.getElementById('lastName').value.trim();
   const email = document.getElementById('email').value.trim().toLowerCase();
+  const phone = (document.getElementById('phone')?.value || '').trim();
   const password = document.getElementById('password').value;
 
   if (!first || !email || !password) { setStatus('Please fill in name, email, and password.', 'err'); return; }
+  if (!phone || phone.replace(/\D/g, '').length < 7) { setStatus('Please enter a phone number — businesses use it to look you up at checkout.', 'err'); return; }
   if (password.length < 8) { setStatus('Password must be at least 8 characters.', 'err'); return; }
   if (!bizConfig) { setStatus('Business config not loaded yet — try again in a moment.', 'err'); return; }
+
+  // Normalize phone (digits + optional leading +)
+  const phoneClean = phone.startsWith('+') ? '+' + phone.slice(1).replace(/\D/g, '') : phone.replace(/\D/g, '');
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.textContent = 'Creating account…';
@@ -282,6 +298,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
           role: 'customer',
           first_name: first,
           last_name: last,
+          phone: phoneClean,
           signup_source: bizConfig.slug,
         }
       }

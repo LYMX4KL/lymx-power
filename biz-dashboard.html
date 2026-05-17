@@ -206,6 +206,49 @@
     </div>
   </div>
 
+  <!-- Onboarding checklist (auto-hidden once all items done OR user dismissed) -->
+  <div id="bizOnboardingCard" style="display:none;background:linear-gradient(135deg,#eef4ff,#fff);border:1px solid #c7d2fe;border-radius:14px;padding:18px 22px;margin:0 0 18px;box-shadow:0 2px 8px rgba(10,132,255,.06)">
+    <div style="display:flex;align-items:start;gap:14px;flex-wrap:wrap">
+      <div style="flex:1;min-width:240px">
+        <h3 style="margin:0 0 4px;font-size:17px;font-weight:800;color:#0e1116">🚀 Finish setting up your business</h3>
+        <div style="color:#5b6472;font-size:13.5px;margin-bottom:12px">A few quick steps and you're ready to start earning customers via LYMX.</div>
+        <div id="bizOnboardingItems" style="display:flex;flex-direction:column;gap:6px"></div>
+        <div style="margin-top:12px"><a href="biz-onboarding-checklist.html" style="color:#0050c7;font-weight:700;font-size:13.5px;text-decoration:none">See full checklist →</a></div>
+      </div>
+      <button type="button" id="bizOnboardingDismiss" style="background:transparent;border:0;cursor:pointer;color:#5b6472;font-size:18px;padding:0 4px;line-height:1" title="Dismiss">×</button>
+    </div>
+  </div>
+  <script>
+  (function(){
+    // Show only on biz-dashboard, persist dismiss to localStorage.
+    var dismissed = false;
+    try { dismissed = localStorage.getItem('biz_onboarding_dismissed') === '1'; } catch(e){}
+    if (dismissed) return;
+    var card = document.getElementById('bizOnboardingCard');
+    var items = document.getElementById('bizOnboardingItems');
+    if (!card || !items) return;
+    var STEPS = [
+      { id: 'menu',    icon: '🍽',  label: 'Set up your menu / services', href: 'biz-menu.html' },
+      { id: 'hours',   icon: '🕐',  label: 'Confirm hours of operation',   href: 'biz-staff-roles.html' },
+      { id: 'staff',   icon: '🧑',  label: 'Add staff + their roles',       href: 'biz-staff.html' },
+      { id: 'payouts', icon: '🏦',  label: 'Connect Stripe for payouts',    href: 'biz-payouts.html' },
+      { id: 'promo',   icon: '🎁',  label: 'Plan your launch promotion',    href: 'biz-promo-planner.html' },
+      { id: 'invite',  icon: '📨',  label: 'Invite your first customers',   href: 'admin-invite-friends.html' }
+    ];
+    items.innerHTML = STEPS.map(function(s){
+      return '<a href="'+s.href+'" style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;border:1px solid #e6e8ec;border-radius:8px;text-decoration:none;color:#0e1116;font-size:14px;font-weight:600">'
+        + '<span style="font-size:17px">'+s.icon+'</span>'
+        + '<span style="flex:1">'+s.label+'</span>'
+        + '<span style="color:#0050c7;font-size:13px">→</span></a>';
+    }).join('');
+    card.style.display = 'block';
+    document.getElementById('bizOnboardingDismiss').addEventListener('click', function(){
+      try { localStorage.setItem('biz_onboarding_dismissed','1'); } catch(e){}
+      card.style.display = 'none';
+    });
+  })();
+  </script>
+
   <!-- KPI row -->
   <div class="kpis">
     <div class="kpi">

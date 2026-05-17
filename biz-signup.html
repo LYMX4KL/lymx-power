@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="Sign up your business for LYMX. Storefronts and self-employed pros earn loyalty rewards on every transaction. 3-month free trial." />
 <title>Sign up your business · LYMX</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://getlymx.com/biz-signup" />
 <meta property="og:title" content="Sign up your business · LYMX" />
@@ -114,6 +111,17 @@
   .footer{text-align:center;margin-top:24px;color:var(--muted);font-size:12.5px}
   .footer a{color:var(--muted)}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body class="mode-storefront">
 
@@ -309,23 +317,32 @@
     <div class="check-ic">✓</div>
     <h2>Application submitted</h2>
     <p>You'll get an approval email within 1 business day. After approval, we'll send a link to set up payouts (via Stripe) and your dashboard will go live.</p>
-    <div class="ids" id="success-ids"></div>
+    <details style="margin-top:10px"><summary style="cursor:pointer;font-size:12px;color:var(--muted)">Technical details (for support)</summary><div class="ids" id="success-ids" style="margin-top:6px"></div></details>
+
+    <!-- Onboarding call CTA -->
+    <div style="margin-top:28px;padding:22px 18px;background:linear-gradient(135deg,#eef4ff,#f6f7f9);border:1px solid #cfe2ff;border-radius:14px;text-align:left">
+      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <div style="font-size:36px;line-height:1;flex-shrink:0">📅</div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-weight:800;font-size:17px;color:#0e1116;margin-bottom:4px">Want to chat with a real human first?</div>
+          <div style="font-size:14px;color:#1a1f27;margin-bottom:14px;line-height:1.5">Book a free 30-minute 1-on-1 with <strong>Rachel</strong>, our onboarding lead. She'll walk you through everything live and answer any questions before payouts go live — no pressure, no upsell.</div>
+          <a href="book-onboarding-call.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;background:#0e1116;color:#fff;border-radius:10px;font-weight:700;font-size:14.5px;text-decoration:none">Book a 1-on-1 onboarding call →</a>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <p class="footer">© LYMX · <a href="biz-faq.html">Business FAQ</a> · <a href="contact.html">Contact</a></p>
+  <p class="footer">© LYMX · <a href="biz-faq.html">Business FAQ</a> · <a href="mailto:hello@getlymx.com">Contact</a></p>
 </main>
 
+<script src="lymx-config.js"></script>
 <script>
 // ─────────────────────────────────────────────────────────────────────────
 // LYMX biz-signup — wires the form to the business-signup Edge Function.
 // ─────────────────────────────────────────────────────────────────────────
-const LYMX_CONFIG = {
-  // Supabase project endpoint (West US, project apffootxzfwmtyjlnteo)
-  SUPABASE_URL: 'https://apffootxzfwmtyjlnteo.supabase.co',
-  // Anon key — public, safe to ship in client. Fill in once and commit.
-  // Find it at: Supabase dashboard → Project Settings → API → "anon public"
-  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwZmZvb3R4emZ3bXR5amxudGVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NjMxNjksImV4cCI6MjA5MzIzOTE2OX0.05FqSREKhwOz7zAtz70UXPuNXtPNl_YfH8WLYo79DtE'
-};
+// Use the shared window.LYMX_CONFIG loaded by lymx-config.js above — that
+// way rotating the anon key is a single-file change.
+const LYMX_CONFIG = window.LYMX_CONFIG || { SUPABASE_URL: '', SUPABASE_ANON_KEY: '' };
 
 // Mode toggle ───────────────────────────────────────────────────────────
 const body = document.body;
@@ -499,7 +516,6 @@ form.addEventListener('submit', async (e) => {
   }
 });
 </script>
-<script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>

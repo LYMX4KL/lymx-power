@@ -41,19 +41,23 @@
   if (window.__LYMX_I18N_LOADED__) return;
   window.__LYMX_I18N_LOADED__ = true;
 
-  var SUPPORTED = ['en', 'es', 'zh-CN', 'zh-TW'];
+  var SUPPORTED = ['en', 'es', 'zh-CN', 'zh-TW', 'ko', 'ja'];
   var DEFAULT_LOCALE = 'en';
   var LABELS = {
     'en':    'EN',
     'es':    'ES',
     'zh-CN': '简',
-    'zh-TW': '繁'
+    'zh-TW': '繁',
+    'ko':    '한',
+    'ja':    'あ'
   };
   var FULL_NAMES = {
     'en':    'English',
     'es':    'Español',
     'zh-CN': '简体中文',
-    'zh-TW': '繁體中文'
+    'zh-TW': '繁體中文',
+    'ko':    '한국어',
+    'ja':    '日本語'
   };
 
   // ---------- Locale resolution ------------------------------------------
