@@ -3,75 +3,182 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>My Reviews · LYMX</title>
+<title>My Reviews — LYMX</title>
 <link rel="icon" type="image/png" href="favicon.png" />
 <style>
-  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4a017;--maxw:880px}
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--ok:#13a26b;--warn:#f0a020;--err:#b81324}
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100%}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink);line-height:1.55}
-  a{color:inherit;text-decoration:none}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
-  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
-  .brand img{height:44px;width:auto}
-  main{padding:32px 0 60px}
-  h1{font-size:28px;font-weight:800;margin:0 0 6px}
-  .sub{color:var(--muted);font-size:15px;margin-bottom:22px}
-  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin-bottom:12px}
-  .stars{color:var(--gold);font-size:16px;margin-bottom:6px}
-  .biz{font-weight:700;font-size:16px;margin-bottom:4px}
-  .when{font-size:12.5px;color:var(--muted);margin-bottom:8px}
-  .review-text{font-size:14.5px;line-height:1.55;color:#1a1f27}
-  .empty{padding:60px 30px;text-align:center;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:12px}
-  .empty .ic{font-size:48px;margin-bottom:14px;color:var(--gold)}
-  .btn-primary{padding:11px 18px;border-radius:9px;background:var(--ink);color:#fff;font-weight:700;font-size:14px;text-decoration:none;display:inline-block;margin-top:10px}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+  .main{margin-left:240px;padding:24px 32px;max-width:980px}
+  @media(max-width:880px){.main{margin-left:0;padding:16px}}
+  h1{margin:0 0 6px;font-size:26px;font-weight:800}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+  .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+  @media(max-width:680px){.summary{grid-template-columns:1fr;gap:8px}}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:11px;padding:16px 18px}
+  .stat .n{font-size:28px;font-weight:800;color:var(--ink)}
+  .stat .l{font-size:13px;color:var(--muted);margin-top:4px}
+  .stat.verified .n{color:var(--ok)}
+  .stat.pending .n{color:var(--warn)}
+  .stat.rejected .n{color:var(--err)}
+  .section{margin-bottom:32px}
+  .section h2{margin:0 0 12px;font-size:18px;font-weight:700}
+  .card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:16px 18px;margin-bottom:10px}
+  .card .top{display:flex;justify-content:space-between;align-items:start;gap:14px;flex-wrap:wrap}
+  .card .biz{font-weight:700;font-size:15.5px;color:var(--ink)}
+  .card .when{font-size:12px;color:var(--muted);margin-top:2px}
+  .card .stars{color:var(--warn);font-size:15px;letter-spacing:1px;margin:6px 0 8px}
+  .card .body{font-size:14px;color:#1a1f27;background:var(--bg);padding:10px 12px;border-radius:7px;border:1px solid var(--line)}
+  .badge{font-size:11.5px;padding:3px 9px;border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;flex-shrink:0}
+  .badge.verified{background:#e6f5ee;color:var(--ok);border:1px solid #a8d8c0}
+  .badge.pending{background:#fff8e6;color:#8a5e00;border:1px solid #f0d28a}
+  .badge.rejected{background:#fbe6ea;color:var(--err);border:1px solid #f0a8b4}
+  .earned{font-size:12.5px;color:var(--ok);font-weight:700;margin-top:8px}
+  .pending-note{font-size:12.5px;color:#7a5a08;font-weight:600;margin-top:8px}
+  .rejection-note{font-size:13px;color:var(--err);background:#fbe6ea;padding:9px 12px;border-radius:7px;margin-top:8px;border:1px solid #f0a8b4}
+  .empty{padding:36px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:11px}
+  .empty a{color:var(--accent);font-weight:700}
+  .receipt-thumb{width:60px;height:60px;background:#eef2f7;border:1px solid var(--line);border-radius:7px;display:inline-block;vertical-align:middle;margin-right:10px;overflow:hidden;cursor:pointer}
+  .receipt-thumb img{width:100%;height:100%;object-fit:cover}
+  .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+  .lightbox.open{display:flex}
+  .lightbox img{max-width:90vw;max-height:90vh;border-radius:8px}
 </style>
 </head>
-<body>
-<header class="nav">
-  <div class="wrap nav-inner">
-    <a href="index.html" class="brand"><img src="logo.png" alt="LYMX" /></a>
-    <div></div>
-  </div>
-</header>
-
-<main class="wrap">
-  <h1>My Reviews</h1>
-  <p class="sub">Reviews you have written. Click any review to edit or delete it.</p>
-  <div id="reviewList"><div class="empty"><div class="ic">⏳</div>Loading…</div></div>
-</main>
+<body data-page="my-reviews">
 
 <script src="lymx-config.js"></script>
-<script src="lymx-auth.js"></script>
-<script>
-(async function () {
-  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(arguments.callee, 100); return; }
-  const s = await window.LYMX.getSession();
-  if (!s) { location.href = 'login.html?return=my-reviews.html'; return; }
-  const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
-  const URL  = window.LYMX_CONFIG.SUPABASE_URL;
-  const userId = s.user.id;
-  const wrap = document.getElementById('reviewList');
-  try {
-    const r = await fetch(URL + '/rest/v1/reviews?reviewer_user_id=eq.' + userId + '&select=id,business_name,rating,body,created_at&order=created_at.desc&limit=50',
-      { headers: { apikey: ANON, Authorization: 'Bearer ' + s.access_token } });
-    if (!r.ok) throw new Error('http ' + r.status);
-    const rows = await r.json();
-    if (!rows.length) {
-      wrap.innerHTML = `<div class="empty"><div class="ic">⭐</div><div style="font-weight:700;color:#1a1f27;margin-bottom:6px">No reviews yet</div><div>Visit a business and leave one — your reviews earn LYMX.</div><a class="btn-primary" href="browse.html">Browse businesses →</a></div>`;
-      return;
-    }
-    wrap.innerHTML = rows.map(r => {
-      const stars = '★'.repeat(r.rating || 0) + '☆'.repeat(5 - (r.rating || 0));
-      const when  = new Date(r.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
-      return `<div class="card"><div class="stars">${stars}</div><div class="biz">${(r.business_name||'').replace(/[<>]/g,'')}</div><div class="when">${when}</div><div class="review-text">${(r.body||'').replace(/[<>]/g,'').replace(/\n/g,'<br>')}</div></div>`;
-    }).join('');
-  } catch (e) {
-    wrap.innerHTML = `<div class="empty"><div class="ic">⭐</div><div style="font-weight:700;color:#1a1f27;margin-bottom:6px">No reviews yet</div><div>Visit a business and leave one — your reviews earn LYMX.</div><a class="btn-primary" href="browse.html">Browse businesses →</a></div>`;
-  }
-})();
-</script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
-</body></html>
+
+<main class="main">
+  <h1>My Reviews</h1>
+  <div class="sub">Track the status of every review you've submitted. Each verified review earns 100 LYMX.</div>
+
+  <div class="summary">
+    <div class="stat verified"><div class="n" id="ctVerified">—</div><div class="l">Verified · earned LYMX</div></div>
+    <div class="stat pending"><div class="n" id="ctPending">—</div><div class="l">Pending admin review</div></div>
+    <div class="stat rejected"><div class="n" id="ctRejected">—</div><div class="l">Needs re-submission</div></div>
+  </div>
+
+  <div class="section">
+    <h2>Verified <span style="font-size:13px;color:#5b6472;font-weight:500">— live on the biz page</span></h2>
+    <div id="verifiedList"></div>
+  </div>
+
+  <div class="section">
+    <h2>Pending <span style="font-size:13px;color:#5b6472;font-weight:500">— receipt awaiting admin check (usually within 24 hours)</span></h2>
+    <div id="pendingList"></div>
+  </div>
+
+  <div class="section">
+    <h2>Rejected <span style="font-size:13px;color:#5b6472;font-weight:500">— admin couldn't verify; you can re-submit with a clearer receipt</span></h2>
+    <div id="rejectedList"></div>
+  </div>
+</main>
+
+<div class="lightbox" id="lightbox"><img id="lightboxImg" alt="Receipt" /></div>
+
+<script>
+window.addEventListener('DOMContentLoaded', async function () {
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(arguments.callee, 100); return; }
+  var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  var URL = window.LYMX_CONFIG.SUPABASE_URL;
+  var session = await window.LYMX.getSession();
+  if (!session) { location.href = 'login.html?return=my-reviews.html'; return; }
+  var user_id = session.user.id;
+
+  async function getSignedUrl(path) {
+    try {
+      var r = await fetch(URL + '/storage/v1/object/sign/review-receipts/' + encodeURIComponent(path) + '?expiresIn=600', {
+        method: 'POST',
+        headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+        body: '{}'
+      });
+      if (!r.ok) return null;
+      var j = await r.json();
+      return URL + '/storage/v1' + j.signedURL;
+    } catch (e) { return null; }
+  }
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[<>&"]/g, function (c) { return ({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;' })[c]; }); }
+  function fmtWhen(iso) { return new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }); }
+
+  function buildCard(r) {
+    var stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+    var bizUrl = 'biz-' + (r.business_slug || '').replace(/^biz-/, '') + '.html';
+    var thumbHtml = '';
+    if (r.receipt_image_url) {
+      thumbHtml = '<span class="receipt-thumb" data-path="' + esc(r.receipt_image_url) + '">⋯</span>';
+    }
+    var statusBadge = '<span class="badge ' + r.verification_status + '">' + r.verification_status + '</span>';
+    var extra = '';
+    if (r.verification_status === 'verified') {
+      extra = '<div class="earned">+100 LYMX earned</div>';
+    } else if (r.verification_status === 'pending') {
+      extra = '<div class="pending-note">⏳ ' + (r.transaction_id ? 'Transaction-verified (should be live already, contact support)' : 'Admin reviewing your receipt') + '</div>';
+    } else if (r.verification_status === 'rejected') {
+      extra = '<div class="rejection-note"><strong>Reason:</strong> ' + esc(r.rejection_reason || 'Receipt not verifiable') + '</div>';
+    }
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = '<div class="top"><div><div class="biz">' + thumbHtml + '<a href="' + esc(bizUrl) + '" style="color:#0e1116;text-decoration:none">' + esc(r.business_name) + '</a></div><div class="when">' + fmtWhen(r.created_at) + '</div></div>' + statusBadge + '</div>'
+      + '<div class="stars">' + stars + '</div>'
+      + '<div class="body">' + esc(r.body || '').replace(/\n/g, '<br>') + '</div>'
+      + extra;
+    return card;
+  }
+
+  function attachThumbLightbox(card) {
+    var thumb = card.querySelector('.receipt-thumb');
+    if (!thumb || !thumb.dataset.path) return;
+    getSignedUrl(thumb.dataset.path).then(function (url) {
+      if (!url) { thumb.textContent = '—'; return; }
+      thumb.innerHTML = '<img src="' + url + '" alt="Receipt">';
+      thumb.addEventListener('click', function () {
+        document.getElementById('lightboxImg').src = url;
+        document.getElementById('lightbox').classList.add('open');
+      });
+    });
+  }
+
+  function render(containerId, rows, emptyMsg) {
+    var el = document.getElementById(containerId);
+    if (!rows.length) { el.innerHTML = '<div class="empty">' + emptyMsg + '</div>'; return; }
+    el.innerHTML = '';
+    rows.forEach(function (r) {
+      var card = buildCard(r);
+      el.appendChild(card);
+      attachThumbLightbox(card);
+    });
+  }
+
+  try {
+    var r = await fetch(URL + '/rest/v1/reviews?reviewer_user_id=eq.' + user_id + '&select=id,business_slug,business_name,rating,body,verification_status,transaction_id,receipt_image_url,rejection_reason,created_at&order=created_at.desc&limit=200', {
+      headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token }
+    });
+    var rows = r.ok ? await r.json() : [];
+    if (!Array.isArray(rows)) rows = [];
+
+    var verified = rows.filter(function (x) { return x.verification_status === 'verified'; });
+    var pending  = rows.filter(function (x) { return x.verification_status === 'pending'; });
+    var rejected = rows.filter(function (x) { return x.verification_status === 'rejected'; });
+
+    document.getElementById('ctVerified').textContent = verified.length;
+    document.getElementById('ctPending').textContent  = pending.length;
+    document.getElementById('ctRejected').textContent = rejected.length;
+
+    render('verifiedList', verified, 'No verified reviews yet. <a href="browse.html">Find a business to review →</a>');
+    render('pendingList',  pending,  'Nothing pending. Receipt uploads usually verify within 24 hours.');
+    render('rejectedList', rejected, 'No rejections. Nice!');
+  } catch (e) {
+    document.querySelector('main.main').insertAdjacentHTML('beforeend', '<div style="color:#b81324;padding:18px;background:#fbe6ea;border:1px solid #f0a8b4;border-radius:9px">Could not load reviews: ' + e.message + '</div>');
+  }
+
+  document.getElementById('lightbox').addEventListener('click', function () { this.classList.remove('open'); });
+});
+</script>
+
+</body>
+</html>
