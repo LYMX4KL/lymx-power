@@ -194,7 +194,15 @@
         body: JSON.stringify({ approval_status: 'approved', approved_by: session.user.id, approved_at: new Date().toISOString() })
       });
       if (!r.ok) throw new Error(await r.text());
-      toast('Approved. Their welcome URL is now live.', 'ok');
+      // Send approval email via Edge Function
+      try {
+        const eR = await fetch(URL + '/functions/v1/business-approval-email', {
+          method: 'POST', headers: H,
+          body: JSON.stringify({ business_id: id, status: 'approved' })
+        });
+        if (!eR.ok) console.warn('approval email send failed:', await eR.text());
+      } catch (em) { console.warn('approval email error', em); }
+      toast('Approved + email sent. Their welcome URL is now live.', 'ok');
       refreshCounts(); loadList();
     } catch (e) {
       btn.disabled = false; btn.textContent = '✓ Approve';
@@ -214,7 +222,15 @@
         body: JSON.stringify({ approval_status: 'rejected', rejection_reason: reason.trim(), approved_by: session.user.id, approved_at: new Date().toISOString() })
       });
       if (!r.ok) throw new Error(await r.text());
-      toast('Rejected.', 'ok');
+      // Send rejection email via Edge Function
+      try {
+        const eR = await fetch(URL + '/functions/v1/business-approval-email', {
+          method: 'POST', headers: H,
+          body: JSON.stringify({ business_id: id, status: 'rejected', rejection_reason: reason.trim() })
+        });
+        if (!eR.ok) console.warn('rejection email send failed:', await eR.text());
+      } catch (em) { console.warn('rejection email error', em); }
+      toast('Rejected + email sent.', 'ok');
       refreshCounts(); loadList();
     } catch (e) {
       btn.disabled = false; btn.textContent = '✗ Reject';

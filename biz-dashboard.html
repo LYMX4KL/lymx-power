@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX business dashboard — KPIs, settlement preview, customer activity, reviews, and listing." />
 <title>Business Dashboard · Brew & Bean Café · LYMX</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://getlymx.com/biz-dashboard" />
 <meta property="og:title" content="Business Dashboard · Brew & Bean Café · LYMX" />
@@ -153,6 +150,17 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
 <script src="lymx-auth.js"></script>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 
@@ -506,11 +514,153 @@
     document.getElementById('metric-issued').textContent = Math.round(issued).toLocaleString('en-US');
     document.getElementById('metric-redeemed').textContent = Math.round(redeemed).toLocaleString('en-US');
     document.getElementById('metric-customers').textContent = customerIds.size.toLocaleString('en-US');
+
+    // ---- Extended wiring 2026-05-17: replace ALL the remaining Brew & Bean hardcodes
+    function esc(s) { return String(s == null ? '' : s).replace(/[<>&"]/g, function (c) { return ({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;' })[c]; }); }
+    function initialsOf(name) { return (name || 'C').split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join(''); }
+
+    var displayName = biz.display_name || biz.legal_name || 'Your Business';
+    try { document.title = 'Business Dashboard - ' + displayName + ' - LYMX'; } catch (e) {}
+    var memberSince = new Date(biz.created_at || Date.now()).toLocaleDateString([], { month: 'short', year: 'numeric' });
+    var addressLine = biz.address_line1 || biz.address || '';
+    var subtitle = document.querySelector('.page-head .biz-name span:last-child');
+    if (subtitle) subtitle.textContent = 'Standard plan - Member since ' + memberSince + (addressLine ? ' - ' + addressLine : '');
+
+    if (biz.slug) {
+      document.querySelectorAll('a[href="biz-brew-and-bean.html"]').forEach(function (a) {
+        a.href = 'welcome.html?biz=' + encodeURIComponent(biz.slug);
+        a.target = '_blank';
+      });
+      document.querySelectorAll('a[href^="biz-brew-and-bean.html"]').forEach(function (a) {
+        a.href = 'welcome.html?biz=' + encodeURIComponent(biz.slug);
+        a.target = '_blank';
+      });
+    }
+
+    var lpName  = document.querySelector('.lp-name');
+    var lpMeta  = document.querySelector('.lp-meta');
+    var lpDesc  = document.querySelector('.lp-desc');
+    var lpPhoto = document.querySelector('.lp-photo');
+    if (lpName)  lpName.textContent  = displayName;
+    if (lpMeta)  lpMeta.textContent  = [biz.category, addressLine].filter(Boolean).join(' - ') || '-';
+    if (lpDesc)  lpDesc.textContent  = biz.tagline || biz.description || ('Earn ' + (biz.issuance_rate || 5) + ' LYMX per $1 spent, redeem any amount.');
+    if (lpPhoto) lpPhoto.textContent = (biz.emoji || '🏪');
+
+    var viewsKpiCard = Array.from(document.querySelectorAll('.kpi')).find(function (k) { return /Listing views/.test(k.textContent); });
+    if (viewsKpiCard) {
+      var numEl = viewsKpiCard.querySelector('.num'); if (numEl) numEl.textContent = '—';
+      var deltaEl = viewsKpiCard.querySelector('.delta'); if (deltaEl) deltaEl.textContent = 'Counter coming soon';
+    }
+    document.querySelectorAll('div').forEach(function (d) {
+      if (d.textContent.indexOf('1,847 views this month') !== -1 && d.children.length === 0) {
+        d.textContent = 'This is exactly how customers see you when they search on LYMX.';
+      }
+    });
+
+    var txTable = document.querySelector('table.tx tbody');
+    if (txTable) {
+      txTable.innerHTML = '';
+      var recent = (txs || []).slice(0, 8);
+      if (!recent.length) {
+        txTable.innerHTML = '<tr><td colspan="5" style="padding:24px;text-align:center;color:var(--muted)">No transactions yet - once customers start earning LYMX with you, they will show up here.</td></tr>';
+      } else {
+        recent.forEach(function (t) {
+          var when = new Date(t.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+          var amt = Number(t.lymx_amount || 0);
+          var typeLabel, typeBadge, cash;
+          if (t.type === 'issuance')        { typeLabel = 'Earned';   typeBadge = 'x';  cash = t.usd_basis ? '$' + Number(t.usd_basis).toFixed(2) + ' spent' : '-'; }
+          else if (t.type === 'redemption') { typeLabel = 'Redeemed'; typeBadge = 'r';  cash = '$' + (amt / 100).toFixed(2) + ' off'; }
+          else                              { typeLabel = t.type;     typeBadge = '';   cash = '-'; }
+          var cust = t.customer_id ? t.customer_id.slice(0,8) : 'Customer';
+          var initials = initialsOf(cust);
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td class="who"><div class="av">' + esc(initials) + '</div><div><div style="font-weight:700">' + esc(cust) + '...</div><div style="font-size:11.5px;color:var(--muted)">' + esc(when) + '</div></div></td>'
+            + '<td><span class="badge ' + typeBadge + '">' + typeLabel + '</span></td>'
+            + '<td>' + esc(t.note || '-') + '</td>'
+            + '<td class="amt ' + (t.type === 'redemption' ? 'neg' : 'pos') + '">' + (t.type === 'redemption' ? '-' : '+') + Math.round(Math.abs(amt)).toLocaleString() + '</td>'
+            + '<td class="amt">' + esc(cash) + '</td>';
+          txTable.appendChild(tr);
+        });
+      }
+    }
+
+    var chartEl = document.querySelector('.chart');
+    if (chartEl) {
+      var daily = {};
+      (txs || []).forEach(function (t) {
+        var d = new Date(t.created_at);
+        var key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        daily[key] = (daily[key] || 0) + Math.abs(Number(t.lymx_amount || 0));
+      });
+      var days = [];
+      for (var i = 29; i >= 0; i--) {
+        var dd = new Date(Date.now() - i * 24*60*60*1000);
+        var k = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0');
+        days.push({ key: k, val: daily[k] || 0 });
+      }
+      var max = Math.max.apply(null, days.map(function (d) { return d.val; }).concat(1));
+      chartEl.innerHTML = '';
+      days.forEach(function (d, idx) {
+        var h = max > 0 ? Math.max(4, Math.round(d.val / max * 100)) : 4;
+        var muted = idx >= 27;
+        chartEl.innerHTML += '<div class="bar' + (muted ? ' muted' : '') + '" style="height:' + h + '%" title="' + esc(d.key) + ': ' + Math.round(d.val) + ' LYMX"></div>';
+      });
+    }
+
+    if (biz.slug) {
+      try {
+        var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+        var URL  = window.LYMX_CONFIG.SUPABASE_URL;
+        var rResp = await fetch(URL + '/rest/v1/reviews?business_slug=eq.' + encodeURIComponent(biz.slug) + '&select=rating,body,has_photo,created_at&order=created_at.desc&limit=3', { headers: { apikey: ANON } });
+        if (rResp.ok) {
+          var rs = await rResp.json();
+          var revBox = document.querySelector('.biz-rev');
+          if (revBox) {
+            if (!Array.isArray(rs) || !rs.length) {
+              revBox.innerHTML = '<div style="padding:18px;text-align:center;color:var(--muted);font-size:13.5px">No customer reviews yet. After a customer leaves a verified review on your <a href="welcome.html?biz=' + encodeURIComponent(biz.slug) + '" target="_blank" style="color:#0050c7;font-weight:700">listing page</a>, it will appear here.</div>';
+            } else {
+              revBox.innerHTML = '';
+              rs.forEach(function (r) {
+                var stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+                var when = new Date(r.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' });
+                var div = document.createElement('div');
+                div.className = 'item';
+                div.innerHTML = '<div class="top"><span class="name">Verified customer</span><span class="stars">' + stars + '</span></div><p class="qt">' + esc(r.body || '') + '</p><div class="meta">' + when + (r.has_photo ? ' - with photo' : '') + '</div>';
+                revBox.appendChild(div);
+              });
+            }
+          }
+        }
+      } catch (e) { console.warn('[biz-dashboard] reviews load failed', e); }
+    }
+
+    try {
+      var ANON2 = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+      var URL2  = window.LYMX_CONFIG.SUPABASE_URL;
+      var sess = await LYMX.getSession();
+      var sResp = await fetch(URL2 + '/rest/v1/business_subscriptions?business_id=eq.' + biz.id + '&select=plan,status,monthly_amount,trial_ends_at&limit=1', {
+        headers: { apikey: ANON2, Authorization: 'Bearer ' + sess.access_token }
+      });
+      if (sResp.ok) {
+        var ss = await sResp.json();
+        if (Array.isArray(ss) && ss.length) {
+          var sub = ss[0];
+          var planRow = Array.from(document.querySelectorAll('.card')).find(function (c) { return /Your plan/i.test(c.textContent); });
+          if (planRow) {
+            var planText = (sub.plan || 'standard').charAt(0).toUpperCase() + (sub.plan || 'standard').slice(1);
+            var statusText = (sub.status || 'trialing').replace('_', ' ');
+            var planStrong = planRow.querySelector('strong');
+            if (planStrong) planStrong.textContent = planText + ' - $' + (sub.monthly_amount || 199) + ' / mo (' + statusText + ')';
+          }
+        }
+      }
+    } catch (e) { console.warn('[biz-dashboard] plan load failed', e); }
   })();
 </script>
 
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
+
 </body>
 </html>
