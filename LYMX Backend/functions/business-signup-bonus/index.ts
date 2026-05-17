@@ -68,6 +68,28 @@ serve(async (req) => {
     const { data: userData, error: userErr } = await supabase.auth.admin.getUserById(user_id);
     if (userErr || !userData || !userData.user) return errorResponse("User not found", 404);
 
+    // Ensure a customers row exists (so business lookups by phone work immediately).
+    // Phone comes from user_metadata.phone (set by welcome.html signup form).
+    const { data: existingCustomer } = await supabase
+        .from("customers")
+        .select("id")
+        .eq("user_id", user_id)
+        .maybeSingle();
+    if (!existingCustomer) {
+        const meta = (userData.user.user_metadata || {}) as Record<string, unknown>;
+        const phone = (meta.phone as string) || userData.user.phone || null;
+        const firstName = (meta.first_name as string) || "";
+        const lastName  = (meta.last_name as string) || "";
+        const displayName = (firstName || lastName) ? (firstName + " " + lastName).trim() : null;
+        await supabase.from("customers").insert({
+            user_id,
+            phone,
+            email: userData.user.email ?? null,
+            display_name: displayName,
+        });
+        // Best-effort — if insert fails (e.g., unique phone), we still proceed.
+    }
+
     const { data: existing } = await supabase
         .from("lymx_issuances")
         .select("*")
@@ -187,8 +209,8 @@ serve(async (req) => {
 
     return json({
         success: true,
-        amount_lymx: totalBonus,
-        admin_status: issued?.admin_status || null,
+        amount_lymx: totalLymx,
+        admin_status: issuance?.admin_status || null,
         idempotency_key,
         referral: referralResult,
     });
