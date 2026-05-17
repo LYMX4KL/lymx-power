@@ -242,17 +242,104 @@
     document.body.appendChild(chip);
   }
 
+
+  // ----- Mobile hamburger menu (max-width 880px) --------------------------
+  // CSS in most pages hides .nav-links on mobile but offers no replacement.
+  // This adds a hamburger button + slide-in drawer with the same links.
+  // Added 2026-05-16.
+  function injectMobileHamburger() {
+    if (document.getElementById('lymxHamburger')) return;
+    var header = document.querySelector('header.nav, header[class*="nav"]');
+    var navLinks = document.querySelector('.nav-links');
+    if (!header) return;
+    if (!document.getElementById('lymxHamburgerStyle')) {
+      var s = document.createElement('style');
+      s.id = 'lymxHamburgerStyle';
+      s.textContent = ''
+        + '#lymxHamburger{display:none;background:transparent;border:0;cursor:pointer;padding:8px;margin-right:4px;width:40px;height:40px;align-items:center;justify-content:center;font-family:inherit}'
+        + '#lymxHamburger span{display:block;width:22px;height:2px;background:#0e1116;position:relative}'
+        + '#lymxHamburger span::before,#lymxHamburger span::after{content:"";display:block;width:22px;height:2px;background:#0e1116;position:absolute;left:0}'
+        + '#lymxHamburger span::before{top:-7px}#lymxHamburger span::after{top:7px}'
+        + '@media (max-width:880px){#lymxHamburger{display:flex}}'
+        + '#lymxNavOverlay{display:none;position:fixed;inset:0;background:rgba(14,17,22,.4);z-index:99988}'
+        + '#lymxNavOverlay.open{display:block}'
+        + '#lymxNavDrawer{position:fixed;top:0;right:0;height:100%;width:78%;max-width:320px;background:#fff;z-index:99989;transform:translateX(100%);transition:transform .22s ease;display:flex;flex-direction:column;padding:18px 18px 24px;box-shadow:-8px 0 24px rgba(14,17,22,.18)}'
+        + '#lymxNavDrawer.open{transform:translateX(0)}'
+        + '#lymxNavDrawer .drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #e6e8ec}'
+        + '#lymxNavDrawer .drawer-head .ttl{font-weight:800;font-size:18px;color:#0e1116}'
+        + '#lymxNavDrawer .drawer-close{background:transparent;border:0;cursor:pointer;padding:6px;font-size:24px;line-height:1;color:#5b6472;font-family:inherit}'
+        + '#lymxNavDrawer a{display:block;padding:13px 12px;color:#0e1116;text-decoration:none;font-weight:600;font-size:15.5px;border-radius:8px;margin-bottom:4px}'
+        + '#lymxNavDrawer a:hover,#lymxNavDrawer a:focus{background:#f6f7f9}'
+        + '#lymxNavDrawer .drawer-cta{margin-top:auto;padding-top:18px;border-top:1px solid #e6e8ec}'
+        + '#lymxNavDrawer .drawer-cta a{background:#0e1116;color:#fff;text-align:center;font-weight:700;margin-top:4px}';
+      document.head.appendChild(s);
+    }
+    var btn = document.createElement('button');
+    btn.id = 'lymxHamburger';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Open menu');
+    btn.innerHTML = '<span></span>';
+    var navCta = header.querySelector('.nav-cta');
+    if (navCta) navCta.parentNode.insertBefore(btn, navCta);
+    else header.appendChild(btn);
+
+    var overlay = document.createElement('div');
+    overlay.id = 'lymxNavOverlay';
+    var drawer = document.createElement('div');
+    drawer.id = 'lymxNavDrawer';
+    drawer.innerHTML = '<div class="drawer-head"><div class="ttl">LYMX</div><button class="drawer-close" aria-label="Close menu">x</button></div><nav id="lymxNavDrawerLinks"></nav><div class="drawer-cta"></div>';
+    document.body.appendChild(overlay);
+    document.body.appendChild(drawer);
+
+    var drawerLinks = drawer.querySelector('#lymxNavDrawerLinks');
+    if (navLinks) {
+      navLinks.querySelectorAll('a').forEach(function (a) {
+        var clone = document.createElement('a');
+        clone.href = a.href;
+        clone.textContent = a.textContent;
+        drawerLinks.appendChild(clone);
+      });
+    } else {
+      [['index.html', 'Home'], ['browse.html', 'Browse Businesses'], ['partners.html', 'Partners'], ['community.html', 'Community']].forEach(function (item) {
+        var a = document.createElement('a');
+        a.href = item[0];
+        a.textContent = item[1];
+        drawerLinks.appendChild(a);
+      });
+    }
+
+    var drawerCta = drawer.querySelector('.drawer-cta');
+    if (navCta) {
+      navCta.querySelectorAll('a').forEach(function (a) {
+        var clone = document.createElement('a');
+        clone.href = a.href;
+        clone.textContent = a.textContent;
+        drawerCta.appendChild(clone);
+      });
+    }
+
+    function open() { overlay.classList.add('open'); drawer.classList.add('open'); document.body.style.overflow = 'hidden'; }
+    function close() { overlay.classList.remove('open'); drawer.classList.remove('open'); document.body.style.overflow = ''; }
+    btn.addEventListener('click', open);
+    overlay.addEventListener('click', close);
+    drawer.querySelector('.drawer-close').addEventListener('click', close);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    drawer.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', close); });
+  }
+
   function mount() {
     var tok = readToken();
     if (!tok) {
-      injectSignInChip();  // logged-out — show Sign in pill (UX fix 2026-05-16)
+      injectSignInChip();
+      injectMobileHamburger();
       return;
     }
     var payload = decode(tok);
     redirectIfSignedIn(payload);
-    enforceAdminGuard(payload);  // P0 guard 2026-05-15
+    enforceAdminGuard(payload);
     swapGuestButtons(payload);
     wireAvatar(payload);
+    injectMobileHamburger();
   }
 
   function boot() {
