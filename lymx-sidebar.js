@@ -93,6 +93,7 @@
       { section: 'Network' },
       { href: 'refer.html',              icon: '\u{1F4E8}', label: 'Refer Friends' },
       { href: 'my-reviews.html',         icon: '⭐',    label: 'My Reviews' },
+      { href: 'my-saved-places.html',   icon: '\u{1F4CC}', label: 'Saved Places' },
       { href: 'customer-charity.html',   icon: '\u{1F49D}', label: 'Donate LYMX' },
       { section: 'Account' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },

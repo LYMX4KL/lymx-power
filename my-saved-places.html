@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Saved Places — LYMX</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--ok:#13a26b;--warn:#f0a020;--err:#b81324}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+  .main{margin-left:240px;padding:24px 32px;max-width:980px}
+  @media(max-width:880px){.main{margin-left:0;padding:16px}}
+  h1{margin:0 0 6px;font-size:26px;font-weight:800}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+  @media(max-width:520px){.grid{grid-template-columns:1fr;gap:10px}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:16px;display:flex;gap:14px;align-items:start}
+  .emoji{flex-shrink:0;width:56px;height:56px;border-radius:11px;background:linear-gradient(135deg,#eef2ff,#dbeafe);display:flex;align-items:center;justify-content:center;font-size:30px}
+  .info{flex:1;min-width:0}
+  .info .name{font-weight:700;font-size:15px;color:var(--ink);text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .info .when{font-size:12px;color:var(--muted);margin-top:3px}
+  .row-actions{display:flex;gap:8px;margin-top:10px}
+  .btn{padding:6px 12px;border-radius:7px;font-weight:600;font-size:12.5px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  .btn:hover{border-color:var(--ink)}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-primary:hover{background:#0050c7;border-color:#0050c7}
+  .btn-unsave{color:var(--err);border-color:#f0a8b4}
+  .btn-unsave:hover{background:#fbe6ea;border-color:var(--err)}
+  .empty{padding:48px 24px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:11px}
+  .empty .em{font-size:48px;margin-bottom:8px;opacity:.6}
+  .empty a{color:var(--accent);font-weight:700}
+  .count{font-size:13px;color:var(--muted);margin-bottom:12px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:8px;font-size:13.5px;font-weight:600;z-index:99998;display:none}
+  .toast.show{display:block}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--err)}
+</style>
+</head>
+<body data-page="my-saved-places">
+
+<script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<main class="main">
+  <h1>My Saved Places</h1>
+  <div class="sub">Businesses you've tapped Save on. Quickly find your favorites or remove ones you no longer want.</div>
+  <div class="count" id="countLine"></div>
+  <div id="list"></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+window.addEventListener('DOMContentLoaded', async function () {
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(arguments.callee, 100); return; }
+  var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  var URL = window.LYMX_CONFIG.SUPABASE_URL;
+  var session = await window.LYMX.getSession();
+  if (!session) { location.href = 'login.html?return=my-saved-places.html'; return; }
+
+  var toastEl = document.getElementById('toast');
+  function toast(msg, cls) {
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show ' + (cls || '');
+    setTimeout(function () { toastEl.className = 'toast'; }, 2500);
+  }
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[<>&"]/g, function (c) { return ({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;' })[c]; }); }
+  function fmtWhen(iso) { var d = new Date(iso); return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }); }
+
+  async function load() {
+    var list = document.getElementById('list');
+    var countLine = document.getElementById('countLine');
+    list.innerHTML = '<div style="padding:24px;text-align:center;color:#5b6472">Loading…</div>';
+    try {
+      var r = await fetch(URL + '/rest/v1/saved_businesses?user_id=eq.' + session.user.id + '&select=id,business_slug,business_name,business_emoji,saved_at&order=saved_at.desc', {
+        headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token }
+      });
+      var rows = r.ok ? await r.json() : [];
+      if (!Array.isArray(rows)) rows = [];
+
+      countLine.textContent = rows.length + ' saved place' + (rows.length === 1 ? '' : 's');
+
+      if (!rows.length) {
+        list.innerHTML = '<div class="empty"><div class="em">⭐</div><strong>No saved places yet.</strong><div style="margin-top:6px;font-size:13.5px">Tap the Save button on any biz page to bookmark it. <a href="browse.html">Browse businesses →</a></div></div>';
+        return;
+      }
+
+      list.innerHTML = '<div class="grid">' + rows.map(function (r) {
+        var bizUrl = 'biz-' + (r.business_slug || '').replace(/^biz-/, '') + '.html';
+        return '<div class="card" data-id="' + esc(r.id) + '">'
+          + '<div class="emoji">' + esc(r.business_emoji || '🏪') + '</div>'
+          + '<div class="info">'
+          +   '<a class="name" href="' + esc(bizUrl) + '">' + esc(r.business_name) + '</a>'
+          +   '<div class="when">Saved ' + fmtWhen(r.saved_at) + '</div>'
+          +   '<div class="row-actions">'
+          +     '<a class="btn btn-primary" href="' + esc(bizUrl) + '">Visit page →</a>'
+          +     '<button class="btn btn-unsave" data-unsave="' + esc(r.id) + '">♡ Unsave</button>'
+          +   '</div>'
+          + '</div>'
+          + '</div>';
+      }).join('') + '</div>';
+
+      list.querySelectorAll('button[data-unsave]').forEach(function (btn) {
+        btn.addEventListener('click', function () { unsave(btn.dataset.unsave, btn); });
+      });
+    } catch (e) {
+      list.innerHTML = '<div class="empty" style="color:#b81324">Could not load saved places: ' + esc(e.message) + '</div>';
+    }
+  }
+
+  async function unsave(id, btn) {
+    btn.disabled = true; btn.textContent = '…';
+    try {
+      var r = await fetch(URL + '/rest/v1/saved_businesses?id=eq.' + id, {
+        method: 'DELETE',
+        headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, Prefer: 'return=minimal' }
+      });
+      if (!r.ok) throw new Error('http ' + r.status);
+      var card = btn.closest('.card');
+      if (card) { card.style.transition = 'opacity .2s'; card.style.opacity = '0'; setTimeout(function () { card.remove(); load(); }, 200); }
+      toast('Removed from saved places.', 'ok');
+    } catch (e) {
+      btn.disabled = false; btn.innerHTML = '♡ Unsave';
+      toast('Could not remove: ' + e.message, 'err');
+    }
+  }
+
+  load();
+});
+</script>
+
+</body>
+</html>
