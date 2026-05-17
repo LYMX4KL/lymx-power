@@ -4,7 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>My Profile · LYMX</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
 <style>
   :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--maxw:900px}
   *{box-sizing:border-box}
@@ -60,6 +59,17 @@
 
   .empty{padding:48px 24px;text-align:center;color:var(--muted)}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 
@@ -135,6 +145,20 @@
     <div id="zipFieldWrap">
       <label id="zipLabel">ZIP code</label>
       <input id="zip" type="text" placeholder="89101" />
+    </div>
+
+    <div style="margin-top:14px">
+      <label for="preferredLocale">Preferred language</label>
+      <select id="preferredLocale">
+        <option value="">— Auto-detect from browser —</option>
+        <option value="en">English</option>
+        <option value="es">Español (Spanish)</option>
+        <option value="zh-CN">简体中文 (Simplified Chinese)</option>
+        <option value="zh-TW">繁體中文 (Traditional Chinese)</option>
+        <option value="ko">한국어 (Korean)</option>
+        <option value="ja">日本語 (Japanese)</option>
+      </select>
+      <div style="font-size:12.5px;color:var(--muted);margin-top:4px">Used for the site interface and emails / SMS we send you.</div>
     </div>
 
     <div style="margin-top:22px;display:flex;gap:10px">
@@ -227,6 +251,9 @@ function fillForm() {
     document.getElementById('country').value = r.country_code || 'US';
     document.getElementById('zip').value = r.home_zip || '';
   }
+  // Set the language picker from the row's preferred_locale (or empty for auto)
+  const localePicker = document.getElementById('preferredLocale');
+  if (localePicker) localePicker.value = (r && r.preferred_locale) || '';
   onCountryChange();
 }
 
@@ -258,7 +285,13 @@ async function save() {
   const phone     = document.getElementById('phone').value.trim() || null;
   const country   = document.getElementById('country').value;
   const zip       = document.getElementById('zip').value.trim() || null;
+  const preferredLocale = document.getElementById('preferredLocale').value || null;
   const fullName  = (firstName + ' ' + lastName).trim();
+
+  // Apply the locale change immediately to the active page (also persists to localStorage).
+  if (preferredLocale && window.LymxI18n && window.LymxI18n.setLocale) {
+    try { window.LymxI18n.setLocale(preferredLocale); } catch(e){}
+  }
 
   let patch = {};
   let table = '';
@@ -273,6 +306,7 @@ async function save() {
       display_name: display || firstName,
       contact_phone: phone,
       country_code: country,
+      preferred_locale: preferredLocale,
     };
   } else if (myRole === 'business') {
     table = 'businesses';
@@ -282,6 +316,7 @@ async function save() {
       phone: phone,
       country_code: country,
       zip: country === 'US' ? zip : null,
+      preferred_locale: preferredLocale,
     };
   } else {
     table = 'customers';
@@ -293,6 +328,7 @@ async function save() {
       phone: phone,
       country_code: country,
       home_zip: country === 'US' ? zip : null,
+      preferred_locale: preferredLocale,
       email: myUser.email,
     };
   }

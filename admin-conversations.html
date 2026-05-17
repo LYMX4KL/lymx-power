@@ -348,17 +348,60 @@
       const isInternal = m.is_internal_note;
       const cls = isInternal ? "internal" : isSystem ? "system" : isOut ? "outbound" : "inbound";
       const who = m.sender_name_snapshot || (m.sender_type || "Unknown");
-      return `<div class="msg ${cls}">
+      return `<div class="msg ${cls}" data-msg-id="${m.id}" data-msg-source-locale="${m.source_locale||''}">
         <div class="avatar">${initials(who)}</div>
         <div class="bubble">
           <div class="who">${escapeHtml(who)} <span class="channel-tag ${m.channel}">${m.channel.replace("_"," ")}</span>${isInternal?' <span class="channel-tag" style="background:#fde047;color:#854d0e">internal</span>':''}</div>
-          ${m.subject_line ? '<div style="font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:4px">'+escapeHtml(m.subject_line)+'</div>' : ''}
-          <div class="body">${escapeHtml(m.body||"")}</div>
-          <div class="when">${new Date(m.created_at).toLocaleString()}</div>
+          ${m.subject_line ? '<div style="font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:4px" data-orig-subject>'+escapeHtml(m.subject_line)+'</div>' : ''}
+          <div class="body" data-orig-body>${escapeHtml(m.body||"")}</div>
+          <div class="when">${new Date(m.created_at).toLocaleString()} · <button class="translate-btn" type="button" data-msg-id="${m.id}" style="background:transparent;border:0;color:var(--accent);font-size:11.5px;font-weight:600;cursor:pointer;padding:0;font-family:inherit">Translate</button></div>
         </div>
       </div>`;
     }).join("");
     body.scrollTop = body.scrollHeight;
+    body.querySelectorAll('.translate-btn').forEach(btn => btn.addEventListener('click', () => onTranslateClick(btn)));
+  }
+
+  // Per-message translation toggle. Uses LymxI18n.getLocale() as target.
+  async function onTranslateClick(btn){
+    const msgEl = btn.closest('.msg'); if (!msgEl) return;
+    const msgId = btn.dataset.msgId;
+    const target = (window.LymxI18n && window.LymxI18n.getLocale && window.LymxI18n.getLocale()) || 'en';
+    const bodyEl = msgEl.querySelector('[data-orig-body]');
+    const subjEl = msgEl.querySelector('[data-orig-subject]');
+    // Toggle off — restore original
+    if (btn.dataset.state === 'translated') {
+      bodyEl.textContent = btn.dataset.origBody || bodyEl.textContent;
+      if (subjEl && btn.dataset.origSubject) subjEl.textContent = btn.dataset.origSubject;
+      btn.textContent = 'Translate';
+      btn.dataset.state = '';
+      return;
+    }
+    btn.textContent = 'Translating…'; btn.disabled = true;
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { btn.textContent = 'Translate'; btn.disabled = false; return; }
+    try {
+      btn.dataset.origBody = bodyEl.textContent;
+      if (subjEl) btn.dataset.origSubject = subjEl.textContent;
+      const sourceLocale = msgEl.dataset.msgSourceLocale || 'auto';
+      const r = await fetch(SUPABASE_URL+'/functions/v1/translate-text', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+session.access_token, 'apikey':SUPABASE_ANON },
+        body: JSON.stringify({ text: bodyEl.textContent, target_locale: target, source_locale: sourceLocale })
+      });
+      const j = await r.json();
+      if (j.ok) {
+        bodyEl.textContent = j.translated_text;
+        btn.textContent = 'Show original';
+        btn.dataset.state = 'translated';
+      } else {
+        btn.textContent = 'Translate failed';
+        setTimeout(() => { btn.textContent = 'Translate'; }, 3000);
+      }
+    } catch(e) {
+      btn.textContent = 'Translate failed';
+      setTimeout(() => { btn.textContent = 'Translate'; }, 3000);
+    } finally { btn.disabled = false; }
   }
 
   function updateRecipientHint(){
