@@ -96,6 +96,7 @@
       { href: 'my-saved-places.html',   icon: '\u{1F4CC}', label: 'Saved Places' },
       { href: 'customer-charity.html',   icon: '\u{1F49D}', label: 'Donate LYMX' },
       { section: 'Account' },
+      { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
       { href: 'contacts.html',           icon: '\u{1F4C7}', label: 'Contacts' },
       { href: 'my-feedback.html',        icon: '\u{1F4DD}', label: 'My Feedback' }
@@ -112,6 +113,7 @@
       { href: 'biz-payouts.html',        icon: '\u{1F3E6}', label: 'Payouts (Stripe)' },
       { href: 'biz-integration.html',    icon: '\u{1F50C}', label: 'POS / Integrations' },
       { section: 'Account' },
+      { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
       { href: 'contacts.html',           icon: '\u{1F4C7}', label: 'Contacts' },
       { href: 'my-feedback.html',        icon: '\u{1F4DD}', label: 'My Feedback' }
@@ -124,6 +126,7 @@
       { href: 'partner-payouts.html',    icon: '\u{1F4B8}', label: 'Payouts' },
       { href: 'partner-crm.html',        icon: '\u{1F3AF}', label: 'My Prospects' },
       { section: 'Account' },
+      { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
       { href: 'admin-invite-friends.html', icon: '\u{1F4E8}', label: 'Invite Friends' },
       { href: 'contacts.html',           icon: '\u{1F4C7}', label: 'Contacts' },
@@ -132,6 +135,7 @@
     admin: [
       { section: 'Admin' },
       { href: 'admin-dashboard.html',    icon: '\u{1F4CA}', label: 'Dashboard' },
+      { href: 'admin-conversations.html', icon: '\u{1F4EC}', label: 'Conversations' },
       { href: 'admin-tech-support.html', icon: '\u{1F3A7}', label: 'Tech Support' },
       { href: 'admin-tickets.html',      icon: '\u{1F3AB}', label: 'Tickets' },
       { href: 'admin-chat.html',         icon: '\u{1F4AC}', label: 'Team Chat' },

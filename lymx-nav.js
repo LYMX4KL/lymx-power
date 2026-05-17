@@ -157,9 +157,28 @@
     menu.innerHTML =
       '<div style="padding:8px 10px;color:#5b6472;font-size:11.5px;border-bottom:1px solid #f1f3f6;margin-bottom:4px">' + (email.replace(/[<>]/g, '')) + '</div>' +
       '<a href="' + dest + '" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none">Dashboard</a>' +
+      '<a href="my-conversations.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none">📬 Messages <span id="lymxNavMsgBadge" style="display:none;background:#0a84ff;color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;margin-left:4px"></span></a>' +
       '<a href="profile.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none">Profile</a>' +
       '<a href="my-feedback.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none">My feedback</a>' +
       '<button id="lymxAvatarSignout" type="button" style="display:block;width:100%;text-align:left;padding:8px 10px;border-radius:6px;background:none;border:0;cursor:pointer;color:#B91C1C;font:inherit">Sign out</button>';
+    // Fetch unread message count and show badge if > 0
+    try {
+      var ANON2 = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+      var URL2  = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+      var tok2  = readToken();
+      if (URL2 && ANON2 && tok2) {
+        fetch(URL2 + '/rest/v1/conversations?select=unread_count_subject&unread_count_subject=gt.0',
+              { headers: { apikey: ANON2, Authorization: 'Bearer ' + tok2 } })
+          .then(function (r) { return r.ok ? r.json() : []; })
+          .then(function (rows) {
+            var total = (rows || []).reduce(function (s, r) { return s + (r.unread_count_subject || 0); }, 0);
+            if (total > 0) {
+              var b = document.getElementById('lymxNavMsgBadge');
+              if (b) { b.textContent = total; b.style.display = 'inline-block'; }
+            }
+          }).catch(function(){});
+      }
+    } catch (e) {}
     document.body.appendChild(menu);
     menu.querySelectorAll('a').forEach(function (a) {
       a.addEventListener('mouseenter', function () { a.style.background = '#eef4ff'; });
