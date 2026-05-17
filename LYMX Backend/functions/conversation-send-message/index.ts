@@ -337,6 +337,13 @@ serve(async (req) => {
         }
     }
 
+    // Resolve sender's locale so the message is tagged for later translation.
+    let senderLocale: string | null = null;
+    try {
+        const { data: locData } = await supabase.rpc("fn_resolve_recipient_locale", { p_user_id: senderUserId });
+        senderLocale = (locData as string) || null;
+    } catch { /* fn might not exist if migration 038 not applied yet */ }
+
     // ----- Insert the conversation_messages row -----
     const { data: msgRow, error: msgErr } = await supabase
         .from("conversation_messages")
@@ -356,6 +363,7 @@ serve(async (req) => {
             email_send_id: emailSendId,
             sms_message_id: smsMessageId,
             is_internal_note: !!body.is_internal_note,
+            source_locale: senderLocale || body.source_locale || null,
         })
         .select().single();
     if (msgErr || !msgRow) return err("Could not insert message: " + (msgErr?.message || "unknown"), 500);
