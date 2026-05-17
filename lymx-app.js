@@ -7,6 +7,9 @@
 //   - Persistent left sidebar (only when signed in)
 //   - Floating feedback widget (auto-screenshot, uploads, AI assist)
 //   - Universal nav helper (guest buttons swap, avatar dropdown, signup redirect)
+//   - Auto-injects PWA meta tags + manifest + apple-touch-icon if not already
+//     in the page (so "Add to Home Screen" works on iPhone / Android with the
+//     proper LYMX brand icon).
 //
 // Drop this single line right before </body> on EVERY page:
 //
@@ -36,6 +39,94 @@
       document.head.appendChild(s);
     });
   }
+
+  // -----------------------------------------------------------------
+  // Inject PWA / mobile-icon meta tags if the page doesn't already have them.
+  // This ensures every page works for "Add to Home Screen" on iPhone & Android
+  // using the proper LYMX brand mark, even if a page's <head> was authored
+  // before PWA support existed.
+  // -----------------------------------------------------------------
+  function ensureTag(selector, build) {
+    if (document.head.querySelector(selector)) return;
+    var el = build();
+    document.head.appendChild(el);
+  }
+  function injectPwaTags() {
+    // viewport (safety net — every page should already have one)
+    ensureTag('meta[name="viewport"]', function () {
+      var m = document.createElement('meta');
+      m.name = 'viewport';
+      m.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover';
+      return m;
+    });
+    // theme color (Chrome address-bar color on mobile)
+    ensureTag('meta[name="theme-color"]', function () {
+      var m = document.createElement('meta');
+      m.name = 'theme-color';
+      m.content = '#0a84ff';
+      return m;
+    });
+    // iOS web app meta
+    ensureTag('meta[name="apple-mobile-web-app-capable"]', function () {
+      var m = document.createElement('meta');
+      m.name = 'apple-mobile-web-app-capable';
+      m.content = 'yes';
+      return m;
+    });
+    ensureTag('meta[name="apple-mobile-web-app-status-bar-style"]', function () {
+      var m = document.createElement('meta');
+      m.name = 'apple-mobile-web-app-status-bar-style';
+      m.content = 'default';
+      return m;
+    });
+    ensureTag('meta[name="apple-mobile-web-app-title"]', function () {
+      var m = document.createElement('meta');
+      m.name = 'apple-mobile-web-app-title';
+      m.content = 'LYMX';
+      return m;
+    });
+    ensureTag('meta[name="mobile-web-app-capable"]', function () {
+      var m = document.createElement('meta');
+      m.name = 'mobile-web-app-capable';
+      m.content = 'yes';
+      return m;
+    });
+    // apple-touch-icon (180x180) — what iPhone uses for Home Screen icon
+    ensureTag('link[rel="apple-touch-icon"]', function () {
+      var l = document.createElement('link');
+      l.rel = 'apple-touch-icon';
+      l.setAttribute('sizes', '180x180');
+      l.href = 'apple-touch-icon.png';
+      return l;
+    });
+    // PWA manifest — Android / Chrome
+    ensureTag('link[rel="manifest"]', function () {
+      var l = document.createElement('link');
+      l.rel = 'manifest';
+      l.href = 'manifest.webmanifest';
+      return l;
+    });
+    // Larger icon links for browsers that prefer them
+    ensureTag('link[rel="icon"][sizes="192x192"]', function () {
+      var l = document.createElement('link');
+      l.rel = 'icon';
+      l.type = 'image/png';
+      l.setAttribute('sizes', '192x192');
+      l.href = 'icon-192.png';
+      return l;
+    });
+    ensureTag('link[rel="icon"][sizes="512x512"]', function () {
+      var l = document.createElement('link');
+      l.rel = 'icon';
+      l.type = 'image/png';
+      l.setAttribute('sizes', '512x512');
+      l.href = 'icon-512.png';
+      return l;
+    });
+  }
+
+  // Run injection as early as possible (synchronously now, before child scripts load).
+  try { injectPwaTags(); } catch (e) { console.warn('[lymx-app] PWA inject failed:', e); }
 
   (async function bootstrap() {
     try {
