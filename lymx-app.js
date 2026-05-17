@@ -143,6 +143,8 @@
       await loadScript('lymx-nav.js');
       await loadScript('lymx-sidebar.js');
       await loadScript('lymx-feedback.js');
+      // i18n loads last so it can translate whatever nav/sidebar/feedback injected.
+      await loadScript('lymx-i18n.js');
     } catch (e) {
       console.warn('[lymx-app] partial load:', e && e.message);
     }

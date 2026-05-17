@@ -203,19 +203,48 @@
       html += '<div class="who-mini"><b>' + safe + '</b><span class="role-tag">' + role + '</span></div>';
     }
 
+    // i18n key maps: label/section text → translation key (so the i18n engine can swap them)
+    var SECTION_KEY = {
+      'Customer':'sidebar.section.customer','Business':'sidebar.section.business','Partner':'sidebar.section.partner',
+      'Admin':'sidebar.section.admin','Account':'sidebar.section.account','Network':'sidebar.section.network',
+      'Operations':'sidebar.section.operations','Team':'sidebar.section.team','Outreach':'sidebar.section.outreach',
+      'My Business':'sidebar.section.my_business'
+    };
+    var LABEL_KEY = {
+      'Dashboard':'sidebar.dashboard','My LYMX Wallet':'sidebar.wallet','Send LYMX':'sidebar.send_lymx',
+      'Browse Businesses':'sidebar.browse_businesses','Refer Friends':'sidebar.refer_friends',
+      'My Reviews':'sidebar.my_reviews','Saved Places':'sidebar.saved_places','Donate LYMX':'sidebar.donate_lymx',
+      'Messages':'sidebar.messages','Profile':'sidebar.profile','Contacts':'sidebar.contacts',
+      'My Feedback':'sidebar.my_feedback','Analytics':'sidebar.analytics','My Customers':'sidebar.my_customers',
+      'Staff':'sidebar.staff','Promo Planner':'sidebar.promo_planner','Cashflow':'sidebar.cashflow',
+      'Payouts (Stripe)':'sidebar.payouts_stripe','POS / Integrations':'sidebar.integrations',
+      'My Tree':'sidebar.my_tree','Leaderboard':'sidebar.leaderboard','Payouts':'sidebar.partner_payouts',
+      'My Prospects':'sidebar.my_prospects','Invite Friends':'sidebar.invite_friends',
+      'Tech Support':'sidebar.tech_support','Conversations':'sidebar.conversations','Tickets':'sidebar.tickets',
+      'Team Chat':'sidebar.team_chat','Broadcast':'sidebar.broadcast','Compose Email':'sidebar.compose_email',
+      'Email Events':'sidebar.email_events','SMS':'sidebar.sms','Businesses':'sidebar.businesses',
+      'Biz Applications':'sidebar.biz_applications','Customers':'sidebar.customers','Promos':'sidebar.promos',
+      'Approvals':'sidebar.approvals','Review Verification':'sidebar.review_verification',
+      'Onboarding Calendar':'sidebar.onboarding_calendar','Verifications':'sidebar.verifications',
+      'Roster':'sidebar.roster','Timesheets':'sidebar.timesheets','Time-off':'sidebar.time_off',
+      'Staff Roles':'sidebar.staff_roles'
+    };
+
     for (var i = 0; i < items.length; i++) {
       var it = items[i];
       if (it.section) {
-        html += '<h3>' + it.section + '</h3>';
+        var sKey = SECTION_KEY[it.section] || '';
+        html += '<h3' + (sKey ? ' data-i18n="' + sKey + '"' : '') + '>' + it.section + '</h3>';
       } else {
         var active = (it.href || '').toLowerCase() === here ? ' active' : '';
+        var lKey = LABEL_KEY[it.label] || '';
         html += '<a class="' + active.trim() + '" href="' + it.href + '">'
               + '<span class="lymx-sb-icon">' + (it.icon || '') + '</span>'
-              + '<span>' + it.label + '</span></a>';
+              + '<span' + (lKey ? ' data-i18n="' + lKey + '"' : '') + '>' + it.label + '</span></a>';
       }
     }
     html += '<button class="lymx-sb-act signout" id="lymx-sb-signout" type="button">'
-          + '<span class="lymx-sb-icon">\u{1F6AA}</span><span>Sign out</span></button>';
+          + '<span class="lymx-sb-icon">\u{1F6AA}</span><span data-i18n="nav.sign_out">Sign out</span></button>';
 
     aside.innerHTML = html;
     return aside;
