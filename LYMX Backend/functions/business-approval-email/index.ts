@@ -175,7 +175,21 @@ serve(async (req) => {
     let composed: { subject: string; html: string };
     if (body.status === "approved") {
         const slug = biz.slug || "";
-        const dashboardUrl = "https://getlymx.com/biz-dashboard.html";
+        // Try to generate a magic-link so the owner clicks the email and lands
+        // signed in. Falls back to the plain dashboard URL if generation fails
+        // (e.g., owner_user_id is null because the auth user wasn't auto-created).
+        let dashboardUrl = "https://getlymx.com/biz-dashboard.html";
+        if (biz.owner_user_id && toEmail) {
+            try {
+                const { data: link } = await supabase.auth.admin.generateLink({
+                    type: "magiclink",
+                    email: toEmail,
+                    options: { redirectTo: "https://getlymx.com/biz-dashboard.html" },
+                });
+                const actionUrl = (link?.properties as Record<string, string> | undefined)?.action_link;
+                if (actionUrl) dashboardUrl = actionUrl;
+            } catch (_e) { /* fall back to plain dashboardUrl */ }
+        }
         const welcomeUrl = `https://getlymx.com/welcome.html?biz=${encodeURIComponent(slug)}`;
         composed = approvedEmail(displayName, slug, dashboardUrl, welcomeUrl);
     } else {
