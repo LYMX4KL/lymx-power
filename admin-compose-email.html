@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Compose Email — LYMX Admin</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--err:#b81324}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apco,-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+  .main{margin-left:240px;padding:24px 28px;max-width:920px}
+  @media(max-width:880px){.main{margin-left:0;padding:16px}}
+  h1{margin:0 0 6px;font-size:26px;font-weight:800}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+  .channel-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:20px}
+  .channel-card{background:#fff;border:2px solid var(--line);border-radius:11px;padding:14px 16px;cursor:pointer;transition:.12s;text-align:left;font-family:inherit;width:100%}
+  .channel-card.selected{border-color:var(--accent);background:#eef4ff;box-shadow:0 0 0 3px rgba(10,132,255,.15)}
+  .channel-card:hover:not(.selected){border-color:#b5c2df}
+  .channel-card .icon{font-size:22px;margin-bottom:4px}
+  .channel-card .title{font-weight:700;font-size:15.5px;color:var(--ink);margin-bottom:2px}
+  .channel-card .desc{font-size:12.5px;color:var(--muted);line-height:1.45;margin-bottom:8px}
+  .channel-card .from{margin-top:6px;padding:5px 8px;background:#f6f7f9;border-radius:5px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:#475569;word-break:break-all}
+  .form-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+  .form-row{margin-bottom:14px;position:relative}
+  .form-row label{display:block;font-weight:600;font-size:13.5px;color:var(--ink-2);margin-bottom:4px}
+  .form-row input,.form-row textarea,.form-row select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14.5px;background:#fff;color:var(--ink);font-family:inherit}
+  .form-row textarea{min-height:240px;resize:vertical;line-height:1.55}
+  .form-row input:focus,.form-row textarea:focus{outline:none;border-color:var(--accent)}
+  .form-row .help{font-size:12px;color:var(--muted);margin-top:3px}
+  .suggestions{display:none;position:absolute;left:0;right:0;top:100%;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(14,17,22,.12);max-height:280px;overflow-y:auto;z-index:50;margin-top:4px}
+  .ta-row{padding:9px 13px;cursor:pointer;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;gap:8px}
+  .ta-row:last-child{border-bottom:0}
+  .ta-row:hover{background:#eef4ff}
+  .ta-row .nm{font-weight:600;color:var(--ink);font-size:13.5px}
+  .ta-row .em{font-size:12px;color:var(--muted)}
+  .ta-row .sb{font-size:11.5px;color:#9ca3af;align-self:center;white-space:nowrap}
+  .resolved{display:none;color:var(--ok);margin-top:5px;font-size:12.5px;font-weight:600}
+  .actions{display:flex;gap:8px;align-items:center;margin-top:6px}
+  .btn{padding:10px 18px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;border:0;font-family:inherit}
+  .btn.primary{background:var(--ink);color:#fff}
+  .btn.primary:hover{background:#000}
+  .btn.primary:disabled{background:#9aa0b2;cursor:not-allowed}
+  .btn.outline{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .from-hint{margin-left:auto;font-size:12.5px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .alert{padding:11px 14px;border-radius:8px;margin:10px 0;font-size:14px;line-height:1.5}
+  .alert.ok{background:#e6f5ee;color:#065f46;border-left:4px solid #10b981}
+  .alert.err{background:#fee2e2;color:#991b1b;border-left:4px solid #dc2626}
+  .recent{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-top:18px}
+  .recent h3{margin:0 0 10px;font-size:16px;color:var(--accent-2)}
+  .send-item{padding:9px 0;border-bottom:1px dashed #e5e7eb;font-size:13.5px}
+  .send-item:last-child{border-bottom:0}
+  .send-item .who{font-weight:600}
+  .send-item .meta{color:var(--muted);font-size:11.5px;margin-top:2px}
+  .send-item .status{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:700;margin-left:4px}
+  .send-item .status.sent{background:#d1fae5;color:#065f46}
+  .send-item .status.failed{background:#fee2e2;color:#991b1b}
+  .send-item .status.queued{background:#fef3c7;color:#92400e}
+</style>
+</head>
+<body>
+
+<script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<main class="main">
+  <h1>✉️ Compose Email</h1>
+  <div class="sub">Send a single email from your LYMX work address. Pick a channel: marketing/outreach goes from your @lymxpower.com, transactional goes from your @getlymx.com. Sends are tracked below.</div>
+
+  <div id="banner"></div>
+
+  <div class="channel-row" id="channelRow">
+    <button type="button" class="channel-card" data-channel="outreach">
+      <div class="icon">📣</div>
+      <div class="title">Outreach / Marketing</div>
+      <div class="desc">Cold prospects, business invites, partnership offers. SPF/DKIM optimized for marketing deliverability.</div>
+      <div class="from" id="fromOutreach">your.name@lymxpower.com</div>
+    </button>
+    <button type="button" class="channel-card" data-channel="transactional">
+      <div class="icon">📨</div>
+      <div class="title">Transactional / Customer</div>
+      <div class="desc">Replies to existing customers/partners, support, follow-ups on bookings or signups.</div>
+      <div class="from" id="fromTransactional">your.name@getlymx.com</div>
+    </button>
+  </div>
+
+  <div class="form-card" id="formCard" style="display:none">
+    <div class="form-row">
+      <label>To (recipient) <span style="color:var(--err)">*</span></label>
+      <input type="text" id="recipientEmail" placeholder="Type a name, email, or paste an address" autocomplete="off" />
+      <div class="suggestions" id="suggestions"></div>
+      <div class="resolved" id="resolved"></div>
+    </div>
+    <div class="form-row">
+      <label>Recipient name (optional)</label>
+      <input type="text" id="recipientName" placeholder="Jane Doe" autocomplete="off" />
+    </div>
+    <div class="form-row">
+      <label>Subject <span style="color:var(--err)">*</span></label>
+      <input type="text" id="subject" placeholder="What's this about?" />
+    </div>
+    <div class="form-row">
+      <label>Message body <span style="color:var(--err)">*</span></label>
+      <textarea id="bodyText" placeholder="Hi {first name},&#10;&#10;[Write your message here. Plain text is fine — links auto-convert in the sent email.]"></textarea>
+      <div class="help">Tip: keep it conversational. Bullets and line breaks render correctly. URLs to getlymx.com and lymxpower.com are auto-linked.</div>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn primary" id="sendBtn">📨 Send</button>
+      <button type="button" class="btn outline" id="cancelBtn">Cancel</button>
+      <span class="from-hint" id="fromHint"></span>
+    </div>
+  </div>
+
+  <div class="recent">
+    <h3>Your recent sends</h3>
+    <div id="recentList">Loading…</div>
+  </div>
+</main>
+
+<script>
+let me = null;
+let selectedChannel = null;
+let localPart = 'your.name';
+let resolvedRecipientEmail = null;
+
+(async function () {
+  while (!window.LYMX_CONFIG || !window.LYMX || !window.LYMX.getSession) { await new Promise(r => setTimeout(r, 100)); }
+  const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  const URL = window.LYMX_CONFIG.SUPABASE_URL;
+  const session = await window.LYMX.getSession();
+  if (!session) { location.href = 'login.html?return=admin-compose-email.html'; return; }
+  me = session.user;
+  window.__supaUrl = URL;
+  window.__anon = ANON;
+  window.__authH = { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' };
+
+  // Derive local-part from partner_emails row if exists, else email local-part
+  try {
+    const r = await fetch(URL + '/rest/v1/partner_emails?forward_to=eq.' + encodeURIComponent(me.email) + '&select=local_part,full_email,secondary_local_part&limit=1', { headers: window.__authH });
+    const rows = r.ok ? await r.json() : [];
+    if (Array.isArray(rows) && rows.length && rows[0].local_part) {
+      localPart = rows[0].local_part;
+    } else {
+      localPart = (me.email || 'your.name').split('@')[0].toLowerCase();
+    }
+  } catch (e) {
+    localPart = (me.email || 'your.name').split('@')[0].toLowerCase();
+  }
+  document.getElementById('fromOutreach').textContent = localPart + '@lymxpower.com';
+  document.getElementById('fromTransactional').textContent = localPart + '@getlymx.com';
+
+  document.querySelectorAll('.channel-card').forEach(btn => btn.addEventListener('click', () => selectChannel(btn.dataset.channel)));
+  document.getElementById('cancelBtn').addEventListener('click', () => {
+    document.getElementById('formCard').style.display = 'none';
+    document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('selected'));
+    selectedChannel = null;
+  });
+  document.getElementById('sendBtn').addEventListener('click', onSend);
+
+  setupRecipientTypeahead();
+  loadRecentSends();
+})();
+
+function selectChannel(channel) {
+  selectedChannel = channel;
+  document.querySelectorAll('.channel-card').forEach(c => c.classList.toggle('selected', c.dataset.channel === channel));
+  document.getElementById('formCard').style.display = '';
+  const fromAddr = channel === 'outreach' ? localPart + '@lymxpower.com' : localPart + '@getlymx.com';
+  document.getElementById('fromHint').textContent = 'From: ' + fromAddr;
+  const subjEl = document.getElementById('subject');
+  if (!subjEl.value) {
+    subjEl.value = channel === 'outreach'
+      ? 'Quick intro — LYMX rewards for [their business]'
+      : 'Following up — LYMX';
+  }
+}
+
+function setupRecipientTypeahead() {
+  const input = document.getElementById('recipientEmail');
+  const drop = document.getElementById('suggestions');
+  const resolvedHint = document.getElementById('resolved');
+  const nameInput = document.getElementById('recipientName');
+  let t = null, lastQuery = '';
+  const looksLikeEmail = s => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+  function hide() { drop.style.display = 'none'; drop.innerHTML = ''; }
+  function show() { drop.style.display = ''; }
+  function pickContact(c) {
+    input.value = c.email;
+    nameInput.value = c.full_name || nameInput.value;
+    resolvedHint.textContent = '✓ Resolved: ' + (c.full_name || c.email) + ' (' + c.source + ')';
+    resolvedHint.style.display = '';
+    resolvedRecipientEmail = c.email;
+    hide();
+  }
+  async function search(q) {
+    if (q.length < 2) { hide(); return; }
+    const ANON = window.__anon, URL = window.__supaUrl, H = window.__authH;
+    const [contactsR, partnersR] = await Promise.all([
+      fetch(URL + '/rest/v1/contacts?owner_id=eq.' + me.id + '&or=(full_name.ilike.*' + encodeURIComponent(q) + '*,email.ilike.*' + encodeURIComponent(q) + '*)&select=full_name,email,company&limit=8', { headers: H }),
+      fetch(URL + '/rest/v1/partners?or=(display_name.ilike.*' + encodeURIComponent(q) + '*,legal_name.ilike.*' + encodeURIComponent(q) + '*,contact_email.ilike.*' + encodeURIComponent(q) + '*)&select=display_name,contact_email&limit=8', { headers: H })
+    ]);
+    const contacts = contactsR.ok ? await contactsR.json() : [];
+    const partners = partnersR.ok ? await partnersR.json() : [];
+    const results = [];
+    (Array.isArray(partners) ? partners : []).forEach(p => {
+      if (!p.contact_email) return;
+      results.push({ full_name: p.display_name, email: p.contact_email, sub: 'partner', source: 'partner' });
+    });
+    (Array.isArray(contacts) ? contacts : []).forEach(c => {
+      if (!c.email || results.some(r => r.email === c.email)) return;
+      results.push({ full_name: c.full_name, email: c.email, sub: c.company || 'contact', source: 'contact' });
+    });
+    if (!results.length) {
+      drop.innerHTML = '<div style="padding:10px 13px;color:#5b6472;font-size:13px">No matches. ' + (looksLikeEmail(q) ? 'Press Enter or tap Send to email <strong>' + esc(q) + '</strong>.' : 'Type a full email to send to a new address.') + '</div>';
+      show();
+      return;
+    }
+    drop.innerHTML = results.slice(0, 8).map((r, i) => '<div class="ta-row" data-idx="' + i + '"><div><div class="nm">' + esc(r.full_name || '(no name)') + '</div><div class="em">' + esc(r.email) + '</div></div><div class="sb">' + esc(r.sub) + '</div></div>').join('');
+    show();
+    drop.querySelectorAll('.ta-row').forEach(row => row.addEventListener('click', () => pickContact(results[parseInt(row.dataset.idx)])));
+  }
+  input.addEventListener('input', () => {
+    resolvedRecipientEmail = null;
+    resolvedHint.style.display = 'none';
+    const v = input.value.trim();
+    clearTimeout(t);
+    if (v === lastQuery) return;
+    lastQuery = v;
+    t = setTimeout(() => search(v), 180);
+  });
+  input.addEventListener('focus', () => { if (input.value.trim().length >= 2) search(input.value.trim()); });
+  document.addEventListener('click', e => { if (!e.target.closest('#recipientEmail') && !e.target.closest('#suggestions')) hide(); });
+  input.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+}
+
+function showBanner(kind, msg) {
+  const b = document.getElementById('banner');
+  b.innerHTML = '<div class="alert ' + kind + '">' + msg + '</div>';
+  if (kind === 'ok') setTimeout(() => { b.innerHTML = ''; }, 8000);
+}
+
+function esc(s) { return String(s == null ? '' : s).replace(/[<>&"]/g, c => ({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;' })[c]); }
+
+async function onSend() {
+  const btn = document.getElementById('sendBtn');
+  if (!selectedChannel) { showBanner('err', 'Pick a channel first.'); return; }
+  const recipientEmail = document.getElementById('recipientEmail').value.trim();
+  const recipientName = document.getElementById('recipientName').value.trim();
+  const subject = document.getElementById('subject').value.trim();
+  const bodyText = document.getElementById('bodyText').value.trim();
+  if (!recipientEmail || !subject || !bodyText) { showBanner('err', 'Recipient, subject, and message are all required.'); return; }
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const r = await fetch(window.__supaUrl + '/functions/v1/send-email', {
+      method: 'POST',
+      headers: window.__authH,
+      body: JSON.stringify({ channel: selectedChannel, recipient_email: recipientEmail, recipient_name: recipientName || null, subject, body_text: bodyText })
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.ok) {
+      showBanner('err', j.error || ('Send failed: HTTP ' + r.status));
+      return;
+    }
+    showBanner('ok', '✓ Sent from <code>' + esc(j.from) + '</code> to <code>' + esc(j.to) + '</code>.');
+    document.getElementById('recipientEmail').value = '';
+    document.getElementById('recipientName').value = '';
+    document.getElementById('subject').value = '';
+    document.getElementById('bodyText').value = '';
+    loadRecentSends();
+  } catch (e) {
+    showBanner('err', 'Send failed: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '📨 Send';
+  }
+}
+
+async function loadRecentSends() {
+  const listEl = document.getElementById('recentList');
+  try {
+    const r = await fetch(window.__supaUrl + '/rest/v1/email_sends?sender_user_id=eq.' + me.id + '&select=to_address,subject,from_address,send_status,created_at,sent_at&order=created_at.desc&limit=15', { headers: window.__authH });
+    const rows = r.ok ? await r.json() : [];
+    if (!Array.isArray(rows) || !rows.length) { listEl.innerHTML = '<div style="padding:14px;color:#5b6472">No sends yet. Pick a channel above to send your first.</div>'; return; }
+    listEl.innerHTML = rows.map(s => {
+      const when = new Date(s.sent_at || s.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      return '<div class="send-item"><div class="who">' + esc(s.subject || '(no subject)') + ' <span class="status ' + (s.send_status || 'queued') + '">' + (s.send_status || 'queued') + '</span></div><div class="meta">to ' + esc(s.to_address) + ' · from ' + esc(s.from_address) + ' · ' + when + '</div></div>';
+    }).join('');
+  } catch (e) {
+    listEl.innerHTML = '<div style="padding:14px;color:#b81324">Could not load: ' + esc(e.message) + '</div>';
+  }
+}
+</script>
+
+</body>
+</html>

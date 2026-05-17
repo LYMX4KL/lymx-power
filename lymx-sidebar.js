@@ -136,6 +136,7 @@
       { href: 'admin-tickets.html',      icon: '\u{1F3AB}', label: 'Tickets' },
       { href: 'admin-chat.html',         icon: '\u{1F4AC}', label: 'Team Chat' },
       { href: 'admin-broadcast.html',    icon: '\u{1F4E2}', label: 'Broadcast' },
+      { href: 'admin-compose-email.html', icon: '✉\uFE0F', label: 'Compose Email' },
       { href: 'admin-emails.html',       icon: '\u{1F4E7}', label: 'Email Events' },
       { href: 'admin-sms.html',          icon: '\u{1F4F1}', label: 'SMS' },
       { section: 'Network' },
