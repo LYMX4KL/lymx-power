@@ -161,6 +161,32 @@ let resolvedRecipientEmail = null;
 
   setupRecipientTypeahead();
   loadRecentSends();
+
+  // Pre-fill from URL params (Reply button on feedback / tickets pages link here)
+  try {
+    const q = new URLSearchParams(location.search);
+    const qTo = q.get('to');
+    const qName = q.get('name');
+    const qSubject = q.get('subject');
+    const qBody = q.get('body');
+    const qChannel = q.get('channel');
+    if (qTo) {
+      document.getElementById('recipientEmail').value = qTo;
+      document.getElementById('resolved').textContent = '✓ Pre-filled from URL';
+      document.getElementById('resolved').style.display = '';
+      resolvedRecipientEmail = qTo;
+    }
+    if (qName) document.getElementById('recipientName').value = qName;
+    if (qSubject) document.getElementById('subject').value = qSubject;
+    if (qBody) document.getElementById('bodyText').value = qBody;
+    // Auto-select a channel if provided, else default to transactional for Replies
+    const channelToPick = qChannel || (qTo ? 'transactional' : null);
+    if (channelToPick && (channelToPick === 'outreach' || channelToPick === 'transactional')) {
+      selectChannel(channelToPick);
+      // Don't overwrite the subject from selectChannel if URL provided one
+      if (qSubject) document.getElementById('subject').value = qSubject;
+    }
+  } catch (e) { console.warn('compose prefill failed', e); }
 })();
 
 function selectChannel(channel) {
