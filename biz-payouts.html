@@ -50,6 +50,10 @@
   <h1>Set up payouts</h1>
   <p class="lede">Connect your bank with Stripe so LYMX can send you USD when customers redeem the LYMX they earned. Takes about 5 minutes; you'll come back here when done.</p>
 
+  <div style="background:#fff8e6;border:1.5px solid #f0a020;color:#7a5a08;padding:14px 18px;border-radius:11px;margin-bottom:16px;font-size:14px;line-height:1.55">
+    <strong>Coming soon — waiting on Stripe approval.</strong> We've submitted LYMX's Stripe Connect platform application; approval typically takes 1–2 weeks. Until then, this page is paused. The moment Stripe clears us, every approved business gets an email with a link to come back here and finish setup. Your business application is already approved — you just can't connect a bank yet because Stripe hasn't cleared LYMX's platform application.
+  </div>
+
   <div id="statusBlock" class="status pending">Loading your Stripe status…</div>
 
   <div class="card">
@@ -66,7 +70,7 @@
       <li><span class="ic">·</span>About 5 minutes</li>
     </ul>
 
-    <button class="btn" id="connectBtn" type="button">Connect Stripe →</button>
+    <button class="btn" id="connectBtn" type="button" disabled style="background:#9aa0b2;cursor:not-allowed">Connect Stripe (pending platform approval)</button>
     <div class="err-box" id="errBox"></div>
     <p class="help">You'll be redirected to Stripe. After completing onboarding, you'll come back here and see a green "complete" badge.</p>
   </div>
@@ -138,7 +142,8 @@
     }
   }
 
-  connectBtn.addEventListener('click', async () => {
+  // PRE-LAUNCH: disable the Connect button until Stripe clears
+if (false) connectBtn.addEventListener('click', async () => {
     connectBtn.disabled = true;
     connectBtn.textContent = 'Preparing your Stripe link…';
     errBox.className = 'err-box';
