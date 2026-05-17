@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Business Applications — LYMX Admin</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--err:#b81324}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+  .main{margin-left:240px;padding:24px 28px}
+  @media(max-width:880px){.main{margin-left:0;padding:16px}}
+  h1{margin:0 0 6px;font-size:26px;font-weight:800}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+  .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+  .tab{padding:10px 16px;cursor:pointer;font-size:14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;flex-shrink:0;background:transparent;border-left:0;border-right:0;border-top:0;font-family:inherit}
+  .tab.active{color:var(--ink);border-bottom-color:var(--accent)}
+  .tab .ct{display:inline-block;background:#eef2f7;color:var(--muted);font-size:11.5px;padding:1px 7px;border-radius:999px;margin-left:6px;font-weight:700}
+  .tab.active .ct{background:var(--accent);color:#fff}
+  .list{display:grid;gap:12px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
+  .card .head{display:flex;justify-content:space-between;align-items:start;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+  .card .head .name{font-weight:800;font-size:17px;color:var(--ink)}
+  .card .head .meta{font-size:13px;color:var(--muted);margin-top:2px}
+  .badge{font-size:11px;padding:3px 9px;border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .badge.pending{background:#fff8e6;color:#8a5e00;border:1px solid #f0d28a}
+  .badge.approved{background:#e6f5ee;color:var(--ok);border:1px solid #a8d8c0}
+  .badge.rejected{background:#fbe6ea;color:var(--err);border:1px solid #f0a8b4}
+  .detail{display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:13.5px;color:var(--ink-2);margin-bottom:14px}
+  @media(max-width:680px){.detail{grid-template-columns:1fr}}
+  .detail dt{color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+  .detail dd{margin:0;font-weight:600}
+  .detail .full{grid-column:1/-1}
+  .rejection{background:#fbe6ea;border:1px solid #f0a8b4;color:var(--err);padding:9px 12px;border-radius:7px;font-size:13px;margin:8px 0}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px}
+  .btn{padding:9px 16px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;border:0;font-family:inherit}
+  .btn.approve{background:var(--ok);color:#fff}
+  .btn.reject{background:#fff;color:var(--err);border:1.5px solid var(--err)}
+  .btn.outline{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn.copy{background:transparent;color:var(--accent);font-weight:600;font-size:12.5px;padding:4px 8px}
+  .empty{padding:48px 24px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px}
+  .empty a{color:var(--accent);font-weight:700}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:9px;font-size:14px;font-weight:600;display:none;z-index:99999}
+  .toast.show{display:block}
+  .toast.ok{background:var(--ok)} .toast.err{background:var(--err)}
+  .welcome-link{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;background:#f6f7f9;padding:4px 8px;border-radius:5px;border:1px solid var(--line);display:inline-block}
+</style>
+</head>
+<body>
+
+<script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<main class="main">
+  <h1>Business Applications</h1>
+  <div class="sub">Self-serve biz signups via <code>biz-signup.html</code>. Approve = activate their <code>business_partners</code> bridge row so <code>welcome.html?biz=&lt;slug&gt;</code> goes live for their customers.</div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="pending">Pending <span class="ct" id="ctPending">—</span></button>
+    <button class="tab" data-tab="approved">Approved <span class="ct" id="ctApproved">—</span></button>
+    <button class="tab" data-tab="rejected">Rejected <span class="ct" id="ctRejected">—</span></button>
+  </div>
+
+  <div id="list" class="list"></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(async function () {
+  while (!window.LYMX_CONFIG || !window.LYMX || !window.LYMX.getSession) { await new Promise(r => setTimeout(r, 100)); }
+  const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  const URL = window.LYMX_CONFIG.SUPABASE_URL;
+  const session = await window.LYMX.getSession();
+  if (!session) { location.href = 'login.html?return=admin-business-applications.html'; return; }
+
+  // Admin guard
+  const adminR = await fetch(URL + '/rest/v1/rpc/am_i_admin', { method: 'POST', headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' }, body: '{}' });
+  if (!adminR.ok || !(await adminR.json())) {
+    document.body.innerHTML = '<div style="padding:48px;text-align:center;color:#b81324;font-weight:700">Admin only — you do not have access to this page.</div>';
+    return;
+  }
+
+  const H = { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' };
+  let currentTab = 'pending';
+  const listEl = document.getElementById('list');
+  const toastEl = document.getElementById('toast');
+
+  function toast(msg, cls) {
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show ' + (cls || '');
+    setTimeout(() => toastEl.className = 'toast', 2800);
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[<>&"]/g, c => ({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;' })[c]); }
+  function fmt(iso) { return iso ? new Date(iso).toLocaleString([], { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' }) : '—'; }
+
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    currentTab = t.dataset.tab;
+    loadList();
+  }));
+
+  async function refreshCounts() {
+    try {
+      const r = await fetch(URL + '/rest/v1/businesses?select=approval_status', { headers: H });
+      const rows = await r.json();
+      const ct = { pending: 0, approved: 0, rejected: 0 };
+      (Array.isArray(rows) ? rows : []).forEach(x => { if (ct[x.approval_status] !== undefined) ct[x.approval_status]++; });
+      document.getElementById('ctPending').textContent  = ct.pending;
+      document.getElementById('ctApproved').textContent = ct.approved;
+      document.getElementById('ctRejected').textContent = ct.rejected;
+    } catch (e) {}
+  }
+
+  async function loadList() {
+    listEl.innerHTML = '<div class="empty">Loading…</div>';
+    try {
+      const cols = 'id,slug,legal_name,display_name,category,contact_email,contact_phone,owner_user_id,approval_status,approved_at,approved_by,rejection_reason,created_at,issuance_rate,redemption_rate';
+      const r = await fetch(URL + '/rest/v1/businesses?approval_status=eq.' + currentTab + '&select=' + cols + '&order=created_at.desc&limit=200', { headers: H });
+      const rows = r.ok ? await r.json() : [];
+      if (!Array.isArray(rows) || !rows.length) { listEl.innerHTML = '<div class="empty">No ' + currentTab + ' applications.</div>'; return; }
+      listEl.innerHTML = '';
+      rows.forEach(b => listEl.appendChild(buildCard(b)));
+    } catch (e) {
+      listEl.innerHTML = '<div class="empty" style="color:#b81324">Could not load: ' + e.message + '</div>';
+    }
+  }
+
+  function buildCard(b) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const welcomeUrl = 'https://getlymx.com/welcome.html?biz=' + encodeURIComponent(b.slug || '');
+    card.innerHTML = ''
+      + '<div class="head">'
+      +   '<div><div class="name">' + esc(b.display_name || b.legal_name || 'Unnamed business') + '</div>'
+      +     '<div class="meta">' + esc(b.category || '—') + ' · ' + esc(b.contact_email) + (b.contact_phone ? ' · ' + esc(b.contact_phone) : '') + '</div></div>'
+      +   '<span class="badge ' + b.approval_status + '">' + b.approval_status + '</span>'
+      + '</div>'
+      + '<dl class="detail">'
+      +   '<div><dt>Legal name</dt><dd>' + esc(b.legal_name || '—') + '</dd></div>'
+      +   '<div><dt>Slug</dt><dd>' + esc(b.slug || '—') + '</dd></div>'
+      +   '<div><dt>Issuance rate</dt><dd>' + (b.issuance_rate || 0) + ' LYMX / $1</dd></div>'
+      +   '<div><dt>Redemption rate</dt><dd>' + (b.redemption_rate || 0) + ' LYMX / 1¢</dd></div>'
+      +   '<div class="full"><dt>Submitted</dt><dd>' + fmt(b.created_at) + (b.approved_at ? ' · approved ' + fmt(b.approved_at) : '') + '</dd></div>'
+      +   '<div class="full"><dt>Customer landing URL (once approved)</dt><dd><span class="welcome-link">' + esc(welcomeUrl) + '</span> <button class="btn copy" data-copy="' + esc(welcomeUrl) + '">Copy</button></dd></div>'
+      + '</dl>'
+      + (b.rejection_reason ? '<div class="rejection"><strong>Rejection reason:</strong> ' + esc(b.rejection_reason) + '</div>' : '')
+      + '<div class="actions"></div>';
+
+    const actions = card.querySelector('.actions');
+    if (b.approval_status === 'pending') {
+      const ok = document.createElement('button');
+      ok.className = 'btn approve'; ok.textContent = '✓ Approve';
+      ok.addEventListener('click', () => doApprove(b.id, b.display_name || b.legal_name, ok));
+      const no = document.createElement('button');
+      no.className = 'btn reject'; no.textContent = '✗ Reject';
+      no.addEventListener('click', () => doReject(b.id, no));
+      actions.appendChild(ok); actions.appendChild(no);
+    } else if (b.approval_status === 'approved') {
+      const live = document.createElement('a');
+      live.className = 'btn outline'; live.textContent = 'Open landing page →';
+      live.href = welcomeUrl; live.target = '_blank';
+      actions.appendChild(live);
+      const undo = document.createElement('button');
+      undo.className = 'btn reject'; undo.textContent = 'Unapprove (mark pending)';
+      undo.addEventListener('click', () => doSetStatus(b.id, 'pending', undo));
+      actions.appendChild(undo);
+    } else {
+      const redo = document.createElement('button');
+      redo.className = 'btn approve'; redo.textContent = 'Reconsider (mark pending)';
+      redo.addEventListener('click', () => doSetStatus(b.id, 'pending', redo));
+      actions.appendChild(redo);
+    }
+
+    // Copy button
+    card.querySelectorAll('button[data-copy]').forEach(btn => btn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(btn.dataset.copy); toast('Copied.', 'ok'); }
+      catch (e) { toast('Copy failed', 'err'); }
+    }));
+
+    return card;
+  }
+
+  async function doApprove(id, name, btn) {
+    btn.disabled = true; btn.textContent = 'Approving…';
+    try {
+      const r = await fetch(URL + '/rest/v1/businesses?id=eq.' + id, {
+        method: 'PATCH',
+        headers: { ...H, Prefer: 'return=minimal' },
+        body: JSON.stringify({ approval_status: 'approved', approved_by: session.user.id, approved_at: new Date().toISOString() })
+      });
+      if (!r.ok) throw new Error(await r.text());
+      toast('Approved. Their welcome URL is now live.', 'ok');
+      refreshCounts(); loadList();
+    } catch (e) {
+      btn.disabled = false; btn.textContent = '✓ Approve';
+      toast('Approve failed: ' + e.message.slice(0, 100), 'err');
+    }
+  }
+
+  async function doReject(id, btn) {
+    const reason = prompt('Reason for rejecting this application?\n\nThis will be visible to the business owner.');
+    if (reason === null) return;
+    if (!reason.trim()) { toast('A reason is required.', 'err'); return; }
+    btn.disabled = true; btn.textContent = 'Rejecting…';
+    try {
+      const r = await fetch(URL + '/rest/v1/businesses?id=eq.' + id, {
+        method: 'PATCH',
+        headers: { ...H, Prefer: 'return=minimal' },
+        body: JSON.stringify({ approval_status: 'rejected', rejection_reason: reason.trim(), approved_by: session.user.id, approved_at: new Date().toISOString() })
+      });
+      if (!r.ok) throw new Error(await r.text());
+      toast('Rejected.', 'ok');
+      refreshCounts(); loadList();
+    } catch (e) {
+      btn.disabled = false; btn.textContent = '✗ Reject';
+      toast('Reject failed: ' + e.message.slice(0, 100), 'err');
+    }
+  }
+
+  async function doSetStatus(id, status, btn) {
+    btn.disabled = true; btn.textContent = '…';
+    try {
+      const r = await fetch(URL + '/rest/v1/businesses?id=eq.' + id, {
+        method: 'PATCH',
+        headers: { ...H, Prefer: 'return=minimal' },
+        body: JSON.stringify({ approval_status: status, rejection_reason: null })
+      });
+      if (!r.ok) throw new Error(await r.text());
+      toast('Moved to ' + status + '.', 'ok');
+      refreshCounts(); loadList();
+    } catch (e) {
+      btn.disabled = false;
+      toast('Move failed', 'err');
+    }
+  }
+
+  refreshCounts();
+  loadList();
+})();
+</script>
+
+</body>
+</html>
