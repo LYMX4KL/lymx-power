@@ -1,12 +1,12 @@
 // =============================================================================
-// LYMX Power — SMS Inbound Webhook  (Twilio)
+// LYMX Power — SMS Inbound Webhook  (Twilio)  [updated for conversations]
 // =============================================================================
 // POST /functions/v1/sms-inbound
 //
 // Twilio posts a form-urlencoded body here when our number receives an SMS.
-// We persist the inbound message to sms_messages with direction='inbound',
-// match the from-number against partners/businesses/customers to resolve a
-// recipient_user_id, and return empty TwiML so Twilio doesn't auto-reply.
+// We persist the inbound message to sms_messages AND route it into the
+// appropriate conversation thread (mirroring InvestPro PM's owner/tenant
+// communications model).
 //
 // Configure in Twilio console:
 //   Phone Numbers → [your number] → "A MESSAGE COMES IN"
@@ -35,7 +35,6 @@ async function verifyTwilioSig(req: Request, raw: string, authToken: string): Pr
     const provided = req.headers.get("x-twilio-signature");
     if (!provided) return false;
     const url = new URL(req.url).toString();
-    // Twilio signs URL + sorted-params-concatenated for form-urlencoded
     const params = new URLSearchParams(raw);
     const sortedKeys = Array.from(params.keys()).sort();
     let signing = url;
@@ -51,6 +50,10 @@ async function verifyTwilioSig(req: Request, raw: string, authToken: string): Pr
     return sigB64 === provided;
 }
 
+function normalizePhone(p: string): string {
+    return (p || "").replace(/[^\d+]/g, "");
+}
+
 serve(async (req) => {
     if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
     if (req.method !== "POST")    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
@@ -58,11 +61,11 @@ serve(async (req) => {
     const raw = await req.text();
     const params = new URLSearchParams(raw);
 
-    // Optional verify
+    // Optional signature verification
     const AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
     if (AUTH_TOKEN) {
-        const ok = await verifyTwilioSig(req, raw, AUTH_TOKEN);
-        if (!ok) return new Response("Bad signature", { status: 403, headers: corsHeaders });
+        const sigOk = await verifyTwilioSig(req, raw, AUTH_TOKEN);
+        if (!sigOk) return new Response("Bad signature", { status: 403, headers: corsHeaders });
     }
 
     const from   = params.get("From") || "";
@@ -76,24 +79,118 @@ serve(async (req) => {
     const SVC_KEY      = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase     = createClient(SUPABASE_URL, SVC_KEY);
 
-    // Try to resolve a user by phone — partners.phone, businesses.phone, contacts.phone
-    let recipientUserId: string | null = null;
-    const numClean = from.replace(/[^\d+]/g, "");
-    for (const tbl of ["partners", "businesses"]) {
-        const { data } = await supabase.from(tbl).select("user_id, phone").or(`phone.eq.${numClean},phone.eq.${from}`).maybeSingle();
-        if (data?.user_id) { recipientUserId = data.user_id; break; }
+    // ---------------------------------------------------------------------
+    // Resolve sender by phone — customers / businesses / partners
+    // ---------------------------------------------------------------------
+    const fromClean = normalizePhone(from);
+    let senderUserId: string | null = null;
+    let subjectType: "customer" | "business" | "partner" | "none" = "none";
+    let subjectId: string | null = null;
+    let senderType: "customer" | "business" | "partner" | "inbound_unknown" = "inbound_unknown";
+
+    // customers.phone (required + unique on customers)
+    const { data: cust } = await supabase.from("customers")
+        .select("id, user_id, phone")
+        .or(`phone.eq.${from},phone.eq.${fromClean}`)
+        .maybeSingle();
+    if (cust) {
+        senderUserId = cust.user_id;
+        subjectType = "customer";
+        subjectId = cust.id;
+        senderType = "customer";
+    } else {
+        // businesses.contact_phone
+        const { data: biz } = await supabase.from("businesses")
+            .select("id, owner_user_id, contact_phone")
+            .or(`contact_phone.eq.${from},contact_phone.eq.${fromClean}`)
+            .maybeSingle();
+        if (biz) {
+            senderUserId = biz.owner_user_id;
+            subjectType = "business";
+            subjectId = biz.id;
+            senderType = "business";
+        } else {
+            // partners.contact_phone
+            const { data: part } = await supabase.from("partners")
+                .select("id, user_id, contact_phone")
+                .or(`contact_phone.eq.${from},contact_phone.eq.${fromClean}`)
+                .maybeSingle();
+            if (part) {
+                senderUserId = part.user_id;
+                subjectType = "partner";
+                subjectId = part.id;
+                senderType = "partner";
+            }
+        }
     }
 
-    await supabase.from("sms_messages").insert({
+    // ---------------------------------------------------------------------
+    // Find or create conversation (sticky to most recent open thread)
+    // ---------------------------------------------------------------------
+    let conversationId: string | null = null;
+    if (subjectId) {
+        const subjectColumn = subjectType === "customer" ? "subject_customer_id"
+                            : subjectType === "business" ? "subject_business_id"
+                            : "subject_partner_id";
+        const { data: openConv } = await supabase
+            .from("conversations").select("id")
+            .eq("subject_type", subjectType)
+            .eq(subjectColumn, subjectId)
+            .in("status", ["open", "pending"])
+            .order("last_message_at", { ascending: false, nullsFirst: false })
+            .limit(1).maybeSingle();
+        if (openConv) conversationId = openConv.id;
+    }
+
+    if (!conversationId) {
+        const { data: newId, error: rpcErr } = await supabase.rpc("fn_find_or_create_conversation", {
+            p_subject_type: subjectType,
+            p_subject_id:   subjectId,
+            p_kind:         "support",
+            p_title:        `SMS from ${from}`,
+            p_source:       "inbound_sms",
+            p_created_by:   senderUserId,
+        });
+        if (!rpcErr && newId) conversationId = newId as unknown as string;
+    }
+
+    // ---------------------------------------------------------------------
+    // Persist to sms_messages (legacy log, still useful)
+    // ---------------------------------------------------------------------
+    const { data: smsRow } = await supabase.from("sms_messages").insert({
         sender_user_id:    null,
-        recipient_user_id: recipientUserId,
+        recipient_user_id: senderUserId,
         from_number:       from,
         to_number:         to,
         body:              bodyTx,
         direction:         "inbound",
         twilio_sid:        sid || null,
         send_status:       "received",
-    });
+        conversation_id:   conversationId,
+    }).select().single();
+
+    // ---------------------------------------------------------------------
+    // Persist to conversation_messages (the unified inbox view)
+    // ---------------------------------------------------------------------
+    if (conversationId) {
+        await supabase.from("conversation_messages").insert({
+            conversation_id: conversationId,
+            sender_user_id:  senderUserId,
+            sender_type:     senderType,
+            sender_address_snapshot: from,
+            channel:         "sms_in",
+            body:            bodyTx,
+            external_id:     sid || null,
+            direction:       "inbound",
+            sms_message_id:  smsRow?.id || null,
+        });
+
+        // Re-open if was resolved/closed
+        await supabase.from("conversations")
+            .update({ status: "open" })
+            .eq("id", conversationId)
+            .in("status", ["resolved", "closed"]);
+    }
 
     return emptyTwiml();
 });
