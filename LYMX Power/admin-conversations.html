@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Conversations · LYMX Admin</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--err:#b81324;--soft:#eef4ff}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+  .layout{margin-left:240px;display:grid;grid-template-columns:240px 380px 1fr;height:100vh;overflow:hidden}
+  @media(max-width:1100px){.layout{grid-template-columns:200px 1fr;margin-left:0}.layout .thread-pane{display:none}.layout.show-thread .thread-pane{display:flex}.layout.show-thread .list-pane{display:none}}
+  @media(max-width:760px){.layout{grid-template-columns:1fr}.layout .filter-pane{display:none}}
+
+  /* FILTER PANE */
+  .filter-pane{background:#fff;border-right:1px solid var(--line);padding:18px 14px;overflow-y:auto}
+  .filter-pane h2{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:18px 4px 8px}
+  .filter-pane h2:first-child{margin-top:0}
+  .filter-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:14px;color:var(--ink);transition:.12s}
+  .filter-row:hover{background:var(--soft)}
+  .filter-row.active{background:var(--ink);color:#fff;font-weight:600}
+  .filter-row .count{margin-left:auto;font-size:12px;background:#eef4ff;color:var(--accent-2);padding:1px 7px;border-radius:999px;font-weight:600}
+  .filter-row.active .count{background:rgba(255,255,255,.2);color:#fff}
+
+  /* LIST PANE */
+  .list-pane{background:#fff;border-right:1px solid var(--line);overflow-y:auto;display:flex;flex-direction:column}
+  .list-head{padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:5}
+  .list-head h1{margin:0 0 4px;font-size:18px;font-weight:800}
+  .list-head .search{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px;margin-top:8px}
+  .conv-item{padding:13px 16px;border-bottom:1px solid #f3f4f6;cursor:pointer;transition:.12s}
+  .conv-item:hover{background:#fafbfc}
+  .conv-item.active{background:var(--soft);border-left:3px solid var(--accent)}
+  .conv-item .top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+  .conv-item .subject-name{font-weight:700;color:var(--ink);font-size:14px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .conv-item .time{font-size:11.5px;color:var(--muted);white-space:nowrap}
+  .conv-item .preview{font-size:13px;color:#475569;line-height:1.4;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .conv-item .meta{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11.5px;color:var(--muted)}
+  .chip{display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:600}
+  .chip.customer{background:#dbeafe;color:#1e3a8a}
+  .chip.business{background:#fef3c7;color:#854d0e}
+  .chip.partner{background:#dcfce7;color:#14532d}
+  .chip.priority-urgent{background:#fee2e2;color:#991b1b}
+  .chip.priority-high{background:#ffedd5;color:#9a3412}
+  .chip.kind{background:#f3f4f6;color:#374151}
+  .chip.unread{background:var(--accent);color:#fff}
+  .chip.handler{background:#e0e7ff;color:#3730a3}
+  .empty-state{padding:60px 24px;text-align:center;color:var(--muted);font-size:14px}
+
+  /* THREAD PANE */
+  .thread-pane{background:#fff;display:flex;flex-direction:column;overflow:hidden;height:100vh}
+  .thread-head{padding:16px 22px;border-bottom:1px solid var(--line);background:#fff;flex-shrink:0}
+  .thread-head .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .thread-head h2{margin:0;font-size:18px;font-weight:800;flex:1}
+  .thread-head .actions{display:flex;gap:6px;flex-wrap:wrap}
+  .btn{padding:6px 12px;border-radius:7px;font-weight:600;font-size:13px;cursor:pointer;border:1px solid var(--line);background:#fff;font-family:inherit;color:var(--ink)}
+  .btn:hover{background:#fafbfc}
+  .btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn.primary:hover{background:#000}
+  .btn.warn{border-color:#fdba74;color:#9a3412}
+  .btn.ok{border-color:#86efac;color:#14532d}
+  .thread-head .meta{margin-top:8px;font-size:12.5px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+
+  .thread-body{flex:1;overflow-y:auto;padding:18px 22px;background:#fafbfc}
+  .msg{margin-bottom:18px;display:flex;gap:10px;align-items:flex-start}
+  .msg.outbound{flex-direction:row-reverse}
+  .msg .avatar{width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+  .msg.outbound .avatar{background:var(--accent)}
+  .msg .bubble{max-width:580px;padding:11px 14px;border-radius:12px;background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .msg.outbound .bubble{background:var(--soft);border-color:#d3e3ff}
+  .msg.system .bubble{background:#fef3c7;border-color:#fde68a;font-size:12.5px;color:#854d0e}
+  .msg.internal .bubble{background:#fef9c3;border-color:#fde047}
+  .msg .who{font-size:12.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .msg .who .channel-tag{font-size:10.5px;background:#e5e7eb;color:#374151;padding:1px 6px;border-radius:999px;font-weight:600}
+  .msg .who .channel-tag.email_out,.msg .who .channel-tag.email_in{background:#dbeafe;color:#1e3a8a}
+  .msg .who .channel-tag.sms_out,.msg .who .channel-tag.sms_in{background:#dcfce7;color:#14532d}
+  .msg .body{font-size:14px;line-height:1.55;color:var(--ink-2);white-space:pre-wrap;word-wrap:break-word}
+  .msg .when{font-size:11px;color:var(--muted);margin-top:4px}
+
+  .reply-bar{flex-shrink:0;border-top:1px solid var(--line);background:#fff;padding:14px 22px}
+  .reply-channel-row{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+  .channel-pill{padding:5px 11px;border-radius:7px;border:1px solid var(--line);background:#fff;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink)}
+  .channel-pill.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .channel-pill.internal.active{background:#f0a020;color:#fff;border-color:#f0a020}
+  .reply-input{width:100%;min-height:80px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;resize:vertical}
+  .reply-row{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap}
+  .reply-row .send-btn{margin-left:auto}
+  .subject-input{display:none;width:100%;padding:8px 11px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px;margin-bottom:6px}
+  .subject-input.show{display:block}
+
+  .alert{padding:10px 14px;border-radius:8px;margin:10px 0;font-size:13.5px;line-height:1.5}
+  .alert.ok{background:#e6f5ee;color:#065f46;border-left:3px solid #10b981}
+  .alert.err{background:#fee2e2;color:#991b1b;border-left:3px solid #dc2626}
+
+  .back-btn{display:none}
+  @media(max-width:1100px){.back-btn{display:inline-flex}}
+</style>
+</head>
+<body>
+
+<script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<div class="layout" id="layout">
+  <!-- FILTER PANE -->
+  <aside class="filter-pane">
+    <h2>Inbox</h2>
+    <div class="filter-row active" data-filter="mine"><span>📥</span><span>Assigned to me</span><span class="count" id="cnt-mine">0</span></div>
+    <div class="filter-row" data-filter="unassigned"><span>🆕</span><span>Unassigned</span><span class="count" id="cnt-unassigned">0</span></div>
+    <div class="filter-row" data-filter="all"><span>📋</span><span>All open</span><span class="count" id="cnt-all">0</span></div>
+    <div class="filter-row" data-filter="resolved"><span>✅</span><span>Resolved</span><span class="count" id="cnt-resolved">0</span></div>
+
+    <h2>Kind</h2>
+    <div class="filter-row" data-filter="kind:support"><span>💬</span><span>Support</span><span class="count" id="cnt-support">0</span></div>
+    <div class="filter-row" data-filter="kind:bug"><span>🐛</span><span>Bugs</span><span class="count" id="cnt-bug">0</span></div>
+    <div class="filter-row" data-filter="kind:feedback"><span>💡</span><span>Feedback</span><span class="count" id="cnt-feedback">0</span></div>
+    <div class="filter-row" data-filter="kind:sales"><span>💼</span><span>Sales</span><span class="count" id="cnt-sales">0</span></div>
+    <div class="filter-row" data-filter="kind:onboarding"><span>🚀</span><span>Onboarding</span><span class="count" id="cnt-onboarding">0</span></div>
+
+    <h2>Priority</h2>
+    <div class="filter-row" data-filter="priority:urgent"><span>🔴</span><span>Urgent</span><span class="count" id="cnt-urgent">0</span></div>
+    <div class="filter-row" data-filter="priority:high"><span>🟠</span><span>High</span><span class="count" id="cnt-high">0</span></div>
+  </aside>
+
+  <!-- LIST PANE -->
+  <section class="list-pane">
+    <div class="list-head">
+      <h1>Conversations</h1>
+      <input class="search" id="search" placeholder="Search subject or contact name…" />
+    </div>
+    <div id="convList"></div>
+  </section>
+
+  <!-- THREAD PANE -->
+  <section class="thread-pane" id="threadPane">
+    <div class="thread-head">
+      <div class="row">
+        <button class="btn back-btn" id="backBtn">← Back</button>
+        <h2 id="threadTitle">Select a conversation</h2>
+        <div class="actions">
+          <button class="btn" id="claimBtn" style="display:none">Claim</button>
+          <button class="btn ok" id="resolveBtn" style="display:none">Resolve</button>
+          <button class="btn warn" id="reopenBtn" style="display:none">Re-open</button>
+        </div>
+      </div>
+      <div class="meta" id="threadMeta"></div>
+    </div>
+
+    <div class="thread-body" id="threadBody">
+      <div class="empty-state">Pick a conversation from the list to view messages.</div>
+    </div>
+
+    <div class="reply-bar" id="replyBar" style="display:none">
+      <div class="reply-channel-row" id="channelRow">
+        <button class="channel-pill active" data-ch="in_app">💬 In-app</button>
+        <button class="channel-pill" data-ch="email_out">📧 Email</button>
+        <button class="channel-pill" data-ch="sms_out">📱 SMS</button>
+        <button class="channel-pill internal" data-ch="internal">📝 Internal note</button>
+      </div>
+      <input class="subject-input" id="subjectInput" placeholder="Email subject (defaults to thread title)" />
+      <textarea class="reply-input" id="replyInput" placeholder="Type your reply…"></textarea>
+      <div class="reply-row">
+        <small style="color:var(--muted)" id="recipientHint"></small>
+        <button class="btn primary send-btn" id="sendBtn">Send</button>
+      </div>
+      <div id="banner"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  if (typeof window.supabase === "undefined" || !window.LYMX_CONFIG) {
+    console.error("Supabase or config not loaded");
+    return;
+  }
+  const SUPABASE_URL = window.LYMX_CONFIG.SUPABASE_URL;
+  const SUPABASE_ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true } });
+
+  let me = null;
+  let amIAdmin = false;
+  let activeFilter = "mine";
+  let activeConvId = null;
+  let replyChannel = "in_app";
+  let convCache = [];
+  let messageRealtimeSub = null;
+
+  // ------------------------- helpers -------------------------------
+  function elt(id){ return document.getElementById(id); }
+  function bannerOK(m){ elt("banner").innerHTML = '<div class="alert ok">'+escapeHtml(m)+'</div>'; setTimeout(()=>elt("banner").innerHTML="", 4000); }
+  function bannerErr(m){ elt("banner").innerHTML = '<div class="alert err">'+escapeHtml(m)+'</div>'; }
+  function escapeHtml(s){ return String(s==null?"":s).replace(/[<>&"]/g, c=>({ "<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;" }[c])); }
+  function timeAgo(iso){
+    if(!iso) return "";
+    const d = new Date(iso), now = new Date();
+    const s = Math.round((now - d)/1000);
+    if (s < 60) return "just now";
+    if (s < 3600) return Math.round(s/60)+"m ago";
+    if (s < 86400) return Math.round(s/3600)+"h ago";
+    if (s < 604800) return Math.round(s/86400)+"d ago";
+    return d.toLocaleDateString();
+  }
+  function initials(name){ return (name||"?").split(/\s+/).map(s=>s[0]).filter(Boolean).slice(0,2).join("").toUpperCase(); }
+
+  // ------------------------- subject resolution --------------------
+  async function resolveSubjectName(conv){
+    if (conv.__subjectName) return conv.__subjectName;
+    let nm = "(no subject)";
+    try {
+      if (conv.subject_type === "customer" && conv.subject_customer_id) {
+        const { data } = await sb.from("customers").select("display_name, email, phone").eq("id", conv.subject_customer_id).maybeSingle();
+        nm = data?.display_name || data?.email || data?.phone || "Customer";
+      } else if (conv.subject_type === "business" && conv.subject_business_id) {
+        const { data } = await sb.from("businesses").select("display_name, legal_name").eq("id", conv.subject_business_id).maybeSingle();
+        nm = data?.display_name || data?.legal_name || "Business";
+      } else if (conv.subject_type === "partner" && conv.subject_partner_id) {
+        const { data } = await sb.from("partners").select("display_name, legal_name").eq("id", conv.subject_partner_id).maybeSingle();
+        nm = data?.display_name || data?.legal_name || "Partner";
+      } else if (conv.title) {
+        nm = conv.title;
+      }
+    } catch(e){}
+    conv.__subjectName = nm;
+    return nm;
+  }
+
+  // ------------------------- load conversations --------------------
+  async function loadConversations(){
+    let q = sb.from("conversations").select("*").order("last_message_at", { ascending:false, nullsFirst:false }).limit(500);
+    if (activeFilter === "mine") q = q.eq("assigned_to_user_id", me.id).in("status", ["open","pending"]);
+    else if (activeFilter === "unassigned") q = q.is("assigned_to_user_id", null).in("status", ["open","pending"]);
+    else if (activeFilter === "all") q = q.in("status", ["open","pending"]);
+    else if (activeFilter === "resolved") q = q.in("status", ["resolved","closed"]);
+    else if (activeFilter.startsWith("kind:")) q = q.eq("kind", activeFilter.slice(5)).in("status", ["open","pending"]);
+    else if (activeFilter.startsWith("priority:")) q = q.eq("priority", activeFilter.slice(9)).in("status", ["open","pending"]);
+
+    const { data, error } = await q;
+    if (error) { bannerErr("Could not load: "+error.message); return; }
+    convCache = data || [];
+    await Promise.all(convCache.map(resolveSubjectName));
+    renderList();
+    updateCounts();
+  }
+
+  function renderList(){
+    const search = (elt("search").value || "").toLowerCase();
+    let rows = convCache;
+    if (search) rows = rows.filter(c => (c.__subjectName||"").toLowerCase().includes(search) || (c.title||"").toLowerCase().includes(search) || (c.last_message_preview||"").toLowerCase().includes(search));
+
+    if (rows.length === 0) {
+      elt("convList").innerHTML = '<div class="empty-state">No conversations match this filter.</div>';
+      return;
+    }
+    elt("convList").innerHTML = rows.map(c => {
+      const unread = c.unread_count_admin || 0;
+      const priorityChip = c.priority === "urgent" || c.priority === "high"
+        ? '<span class="chip priority-'+c.priority+'">'+c.priority+'</span>' : "";
+      return `<div class="conv-item ${c.id===activeConvId?'active':''}" data-id="${c.id}">
+        <div class="top">
+          <span class="chip ${c.subject_type}">${c.subject_type}</span>
+          <span class="subject-name">${escapeHtml(c.__subjectName)}</span>
+          <span class="time">${timeAgo(c.last_message_at || c.created_at)}</span>
+        </div>
+        <div class="preview">${escapeHtml(c.last_message_preview||"(no messages yet)")}</div>
+        <div class="meta">
+          <span class="chip kind">${c.kind}</span>
+          ${priorityChip}
+          ${unread > 0 ? '<span class="chip unread">'+unread+' new</span>' : ''}
+          ${c.assigned_to_user_id ? '<span class="chip handler">→ '+(c.assigned_to_user_id===me.id?'you':'team')+'</span>' : ''}
+        </div>
+      </div>`;
+    }).join("");
+    document.querySelectorAll(".conv-item").forEach(el => el.addEventListener("click", () => openConv(el.dataset.id)));
+  }
+
+  function updateCounts(){
+    // Quick local counts; real ones require a global query
+    elt("cnt-mine").textContent = convCache.filter(c => c.assigned_to_user_id === me.id && ["open","pending"].includes(c.status)).length;
+    elt("cnt-unassigned").textContent = convCache.filter(c => !c.assigned_to_user_id && ["open","pending"].includes(c.status)).length;
+    elt("cnt-all").textContent = convCache.filter(c => ["open","pending"].includes(c.status)).length;
+    elt("cnt-resolved").textContent = convCache.filter(c => ["resolved","closed"].includes(c.status)).length;
+    ["support","bug","feedback","sales","onboarding"].forEach(k => {
+      const el = elt("cnt-"+k); if(el) el.textContent = convCache.filter(c => c.kind===k && ["open","pending"].includes(c.status)).length;
+    });
+    elt("cnt-urgent").textContent = convCache.filter(c => c.priority==="urgent" && ["open","pending"].includes(c.status)).length;
+    elt("cnt-high").textContent = convCache.filter(c => c.priority==="high" && ["open","pending"].includes(c.status)).length;
+  }
+
+  // ------------------------- open thread ---------------------------
+  async function openConv(convId){
+    activeConvId = convId;
+    document.getElementById("layout").classList.add("show-thread");
+    document.querySelectorAll(".conv-item").forEach(el => el.classList.toggle("active", el.dataset.id===convId));
+    elt("replyBar").style.display = "block";
+
+    const conv = convCache.find(c => c.id === convId);
+    if (!conv) return;
+    await resolveSubjectName(conv);
+
+    elt("threadTitle").textContent = conv.__subjectName + " — " + (conv.title || conv.kind);
+    elt("threadMeta").innerHTML = `
+      <span><b>${conv.kind}</b></span>
+      <span>status: <b>${conv.status}</b></span>
+      <span>priority: <b>${conv.priority}</b></span>
+      <span>${conv.message_count||0} messages</span>
+      <span>last handled ${timeAgo(conv.last_handled_at)} ${conv.last_handled_by_user_id ? '(by '+(conv.last_handled_by_user_id===me.id?'you':'teammate')+')' : ''}</span>
+    `;
+
+    const isMine = conv.assigned_to_user_id === me.id;
+    const isStale = conv.last_handled_at && (Date.now() - new Date(conv.last_handled_at).getTime()) > 4*3600*1000;
+    elt("claimBtn").style.display = (!isMine && (!conv.assigned_to_user_id || isStale)) ? "" : "none";
+    elt("resolveBtn").style.display = (conv.status === "open" || conv.status === "pending") ? "" : "none";
+    elt("reopenBtn").style.display = (conv.status === "resolved" || conv.status === "closed") ? "" : "none";
+
+    await loadMessages(convId);
+    updateRecipientHint();
+
+    // Mark as read by zeroing unread_count_admin
+    sb.from("conversations").update({ unread_count_admin: 0 }).eq("id", convId).then(()=>{});
+
+    // Realtime subscription on this thread
+    if (messageRealtimeSub) sb.removeChannel(messageRealtimeSub);
+    messageRealtimeSub = sb.channel("conv-msgs-"+convId)
+      .on("postgres_changes", { event:"INSERT", schema:"public", table:"conversation_messages", filter:"conversation_id=eq."+convId }, () => loadMessages(convId))
+      .subscribe();
+  }
+
+  async function loadMessages(convId){
+    const { data, error } = await sb.from("conversation_messages")
+      .select("*").eq("conversation_id", convId).order("created_at", { ascending: true });
+    if (error) { bannerErr("Could not load messages: "+error.message); return; }
+    renderMessages(data || []);
+  }
+
+  function renderMessages(msgs){
+    const body = elt("threadBody");
+    if (msgs.length === 0) {
+      body.innerHTML = '<div class="empty-state">No messages yet.</div>';
+      return;
+    }
+    body.innerHTML = msgs.map(m => {
+      const isOut = m.direction === "outbound" || ["email_out","sms_out"].includes(m.channel);
+      const isSystem = m.channel === "system";
+      const isInternal = m.is_internal_note;
+      const cls = isInternal ? "internal" : isSystem ? "system" : isOut ? "outbound" : "inbound";
+      const who = m.sender_name_snapshot || (m.sender_type || "Unknown");
+      return `<div class="msg ${cls}">
+        <div class="avatar">${initials(who)}</div>
+        <div class="bubble">
+          <div class="who">${escapeHtml(who)} <span class="channel-tag ${m.channel}">${m.channel.replace("_"," ")}</span>${isInternal?' <span class="channel-tag" style="background:#fde047;color:#854d0e">internal</span>':''}</div>
+          ${m.subject_line ? '<div style="font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:4px">'+escapeHtml(m.subject_line)+'</div>' : ''}
+          <div class="body">${escapeHtml(m.body||"")}</div>
+          <div class="when">${new Date(m.created_at).toLocaleString()}</div>
+        </div>
+      </div>`;
+    }).join("");
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function updateRecipientHint(){
+    const conv = convCache.find(c => c.id === activeConvId);
+    if (!conv) return;
+    const hints = {
+      in_app: "Posts to thread — recipient sees it next time they log in.",
+      email_out: "Sends email to subject's contact_email.",
+      sms_out: "Sends SMS to subject's phone.",
+      internal: "Internal admin note — NOT visible to "+conv.subject_type+"."
+    };
+    elt("recipientHint").textContent = hints[replyChannel] || "";
+    elt("subjectInput").classList.toggle("show", replyChannel === "email_out");
+  }
+
+  // ------------------------- send a reply --------------------------
+  async function sendReply(){
+    if (!activeConvId) return;
+    const text = elt("replyInput").value.trim();
+    if (!text) { bannerErr("Type a reply first"); return; }
+
+    const isInternal = replyChannel === "internal";
+    const channel = isInternal ? "in_app" : replyChannel;
+    const subjectLine = elt("subjectInput").value.trim();
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { bannerErr("Not signed in"); return; }
+
+    elt("sendBtn").disabled = true;
+    elt("sendBtn").textContent = "Sending…";
+    try {
+      const r = await fetch(SUPABASE_URL+"/functions/v1/conversation-send-message", {
+        method: "POST",
+        headers: { "Content-Type":"application/json", "Authorization":"Bearer "+session.access_token, "apikey":SUPABASE_ANON },
+        body: JSON.stringify({
+          conversation_id: activeConvId,
+          channel,
+          body: text,
+          subject_line: subjectLine || null,
+          is_internal_note: isInternal,
+          email_channel: "transactional",
+        }),
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || "send failed");
+      elt("replyInput").value = "";
+      elt("subjectInput").value = "";
+      bannerOK("Sent.");
+      await loadMessages(activeConvId);
+      await loadConversations();
+    } catch(e) {
+      bannerErr("Send failed: " + e.message);
+    } finally {
+      elt("sendBtn").disabled = false;
+      elt("sendBtn").textContent = "Send";
+    }
+  }
+
+  // ------------------------- claim / resolve / reopen --------------
+  async function claimConv(){
+    if (!activeConvId) return;
+    const { data, error } = await sb.rpc("fn_claim_conversation", { p_conversation_id: activeConvId, p_staleness_hours: 4 });
+    if (error) { bannerErr("Could not claim: "+error.message); return; }
+    if (data && data[0]?.claimed) { bannerOK("Claimed. You're the assignee now."); }
+    else { bannerErr("Could not claim — still in active handoff (not stale yet)."); }
+    await loadConversations();
+    await openConv(activeConvId);
+  }
+
+  async function setConvStatus(newStatus){
+    const patch = { status: newStatus };
+    if (newStatus === "resolved") { patch.resolved_at = new Date().toISOString(); patch.resolved_by_user_id = me.id; }
+    const { error } = await sb.from("conversations").update(patch).eq("id", activeConvId);
+    if (error) { bannerErr("Could not update: "+error.message); return; }
+    bannerOK("Status set to "+newStatus);
+    await loadConversations();
+    await openConv(activeConvId);
+  }
+
+  // ------------------------- init ---------------------------------
+  async function init(){
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) { window.location.href = "login.html?next="+encodeURIComponent(location.pathname); return; }
+    me = user;
+
+    const { data: staff } = await sb.from("staff_roles").select("user_id").eq("user_id", me.id).maybeSingle();
+    amIAdmin = !!staff || me.id === "1405bb50-2c97-48dd-bfa5-31f32320de9b";
+
+    if (!amIAdmin) { document.body.innerHTML = '<div style="padding:40px;text-align:center"><h2>Admins only</h2></div>'; return; }
+
+    // Wire filter clicks
+    document.querySelectorAll(".filter-row").forEach(el => el.addEventListener("click", () => {
+      document.querySelectorAll(".filter-row").forEach(x => x.classList.remove("active"));
+      el.classList.add("active");
+      activeFilter = el.dataset.filter;
+      loadConversations();
+    }));
+
+    // Channel pills
+    document.querySelectorAll(".channel-pill").forEach(el => el.addEventListener("click", () => {
+      document.querySelectorAll(".channel-pill").forEach(x => x.classList.remove("active"));
+      el.classList.add("active");
+      replyChannel = el.dataset.ch;
+      updateRecipientHint();
+    }));
+
+    // Buttons
+    elt("sendBtn").addEventListener("click", sendReply);
+    elt("claimBtn").addEventListener("click", claimConv);
+    elt("resolveBtn").addEventListener("click", () => setConvStatus("resolved"));
+    elt("reopenBtn").addEventListener("click", () => setConvStatus("open"));
+    elt("backBtn").addEventListener("click", () => document.getElementById("layout").classList.remove("show-thread"));
+    elt("search").addEventListener("input", renderList);
+
+    await loadConversations();
+
+    // Top-level realtime: any new conversation_message refreshes list
+    sb.channel("conv-list-refresh")
+      .on("postgres_changes", { event:"INSERT", schema:"public", table:"conversation_messages" }, () => loadConversations())
+      .subscribe();
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+</script>
+</body>
+</html>
