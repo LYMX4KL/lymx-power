@@ -287,6 +287,64 @@ serve(async (req) => {
         }).select().single();
     if (bookErr) return err(`Could not save booking: ${bookErr.message}`, 500);
 
+    // ---- 8b. Push event to calendar owner's Google Calendar (if connected) -----
+    try {
+        const { data: tokenRow } = await supabase
+            .from("oauth_tokens").select("*")
+            .eq("user_id", cal.user_id).eq("provider", "google").maybeSingle();
+        if (tokenRow && tokenRow.push_bookings) {
+            // Refresh if expiring within 30 seconds
+            let access = tokenRow.access_token;
+            const isExpiring = tokenRow.expires_at && new Date(tokenRow.expires_at) < new Date(Date.now() + 30000);
+            if (isExpiring && tokenRow.refresh_token) {
+                const CID = Deno.env.get("GOOGLE_OAUTH_CLIENT_ID");
+                const CSECRET = Deno.env.get("GOOGLE_OAUTH_CLIENT_SECRET");
+                if (CID && CSECRET) {
+                    const rr = await fetch("https://oauth2.googleapis.com/token", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: new URLSearchParams({ client_id: CID, client_secret: CSECRET, refresh_token: tokenRow.refresh_token, grant_type: "refresh_token" }).toString(),
+                    });
+                    if (rr.ok) {
+                        const jj = await rr.json();
+                        access = jj.access_token;
+                        await supabase.from("oauth_tokens").update({
+                            access_token: access,
+                            expires_at: jj.expires_in ? new Date(Date.now() + jj.expires_in * 1000).toISOString() : null,
+                            last_refreshed_at: new Date().toISOString(),
+                        }).eq("id", tokenRow.id);
+                    }
+                }
+            }
+            // Insert calendar event
+            const eventPayload = {
+                summary: `LYMX call: ${cal.display_name} ↔ ${booker_name}`,
+                description: `Booking via LYMX (${handle}.${SB_URL.replace(/.*\/\/|\..*/g, "")})\n\nGuest: ${booker_name} <${normalizedEmail}>${body.company ? "\nCompany: " + body.company : ""}${body.booker_message ? "\n\nNote:\n" + body.booker_message : ""}\n\nVideo: ${videoUrl}`,
+                start: { dateTime: starts.toISOString() },
+                end: { dateTime: ends.toISOString() },
+                attendees: [{ email: normalizedEmail, displayName: booker_name }, { email: ownerEmail, displayName: cal.display_name, organizer: true }],
+                conferenceData: videoProvider === "daily" ? undefined : undefined,
+                reminders: { useDefault: false, overrides: [{ method: "popup", minutes: 10 }, { method: "email", minutes: 60 }] },
+            };
+            const evResp = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=none", {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${access}`, "Content-Type": "application/json" },
+                body: JSON.stringify(eventPayload),
+            });
+            if (evResp.ok) {
+                const ev = await evResp.json();
+                await supabase.from("bookings").update({
+                    video_room_data: { ...(booking.video_room_data || {}), google_event_id: ev.id, google_event_link: ev.htmlLink },
+                }).eq("id", booking.id);
+                await supabase.from("oauth_tokens").update({ last_used_at: new Date().toISOString() }).eq("id", tokenRow.id);
+            } else {
+                console.warn(`[book-call] Google Calendar insert failed: ${evResp.status} ${await evResp.text().catch(() => "")}`);
+            }
+        }
+    } catch (e: any) {
+        console.warn(`[book-call] Google Calendar push threw: ${e.message}`);
+    }
+
     // ---- 9. Append a system message to the conversation -----------------
     if (conversationId) {
         const startsLocal = starts.toLocaleString("en-US", { timeZone: cal.timezone, dateStyle: "full", timeStyle: "short" });
