@@ -6,9 +6,6 @@
 <meta name="description" content="Your LYMX activity grouped by Business. See where you earned and where you spent — with a favorite-Business breakdown." />
 <meta name="robots" content="noindex,nofollow" />
 <title>My history · LYMX Wallet</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px}
   *{box-sizing:border-box}
@@ -102,6 +99,17 @@
   /* Empty */
   .empty{padding:30px 14px;text-align:center;color:var(--muted);font-size:13.5px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 <div class="top">
@@ -189,9 +197,10 @@
 </div>
 
 <script>
-  // Mock transaction data — covers ~5 months for richer time filtering
-  const TXS = [
-    // April 2026
+  // Transaction data — populated by loadHistoryFromDb() at page init.
+  // Mock data wrapped 2026-05-18 so real customers don't see fake Brew & Bean history.
+  let TXS = [];
+  /* legacy-mock-disabled
     {date:'2026-04-28',biz:'Brew & Bean',cat:'café',type:'earn',amt:140},
     {date:'2026-04-26',biz:'Brew & Bean',cat:'café',type:'spend',amt:200},
     {date:'2026-04-25',biz:'Oakline Kitchen',cat:'restaurant',type:'earn',amt:520},
@@ -229,6 +238,7 @@
     {date:'2026-01-15',biz:'Two Birds Café',cat:'café',type:'spend',amt:280},
     {date:'2026-01-10',biz:'Welcome bonus',cat:'system',type:'earn',amt:100}
   ];
+  end-legacy-mock-disabled */
 
   const CATEGORY_COLOR = {
     'café':'#a01644','restaurant':'#c4742d','bakery':'#7a5e10','fitness':'#0d7d51',
@@ -386,8 +396,68 @@
 
   render();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Load real transaction history from issuances + redemptions.
+(async function loadHistoryFromDb(){
+  try {
+    if (!window.LYMX || !window.LYMX.requireAuth) return;
+    const user = await window.LYMX.requireAuth();
+    if (!user) return;
+    const sb = window.LYMX.sb;
+
+    const [issRes, txRes] = await Promise.all([
+      sb.from('lymx_issuances')
+        .select('amount_lymx, reason, created_at, source_business_id, businesses(display_name, category)')
+        .eq('recipient_user_id', user.id)
+        .order('created_at', { ascending: false }).limit(500),
+      sb.from('transactions')
+        .select('lymx_amount, type, created_at, business_id, businesses(display_name, category)')
+        .eq('customer_id', user.id)
+        .in('type', ['redemption', 'transfer_out', 'transfer_in', 'adjustment'])
+        .order('created_at', { ascending: false }).limit(500)
+    ]);
+
+    const rows = [];
+    (issRes.data || []).forEach(i => {
+      rows.push({
+        date: (i.created_at || '').slice(0, 10),
+        biz: (i.businesses && i.businesses.display_name) || (i.reason || 'LYMX Network'),
+        cat: (i.businesses && i.businesses.category) || 'system',
+        type: 'earn',
+        amt: Math.abs(Number(i.amount_lymx || 0))
+      });
+    });
+    (txRes.data || []).forEach(t => {
+      const isEarn = (t.type === 'transfer_in' || (t.type === 'adjustment' && Number(t.lymx_amount) > 0));
+      rows.push({
+        date: (t.created_at || '').slice(0, 10),
+        biz: (t.businesses && t.businesses.display_name) || 'LYMX Business',
+        cat: (t.businesses && t.businesses.category) || 'system',
+        type: isEarn ? 'earn' : 'spend',
+        amt: Math.abs(Number(t.lymx_amount || 0))
+      });
+    });
+
+    rows.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+    TXS.length = 0;
+    rows.forEach(r => TXS.push(r));
+
+    if (typeof render === 'function') render();
+    const txList = document.getElementById('tx-list');
+    if (txList && rows.length === 0) {
+      txList.innerHTML = '<div style="padding:24px;text-align:center;color:#5b6472;font-size:14px">No transactions yet. Your earn and spend history will appear here as you use LYMX.</div>';
+    }
+  } catch (e) {
+    console.warn('[customer-history] load failed', e);
+  }
+})();
+</script>
 <script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>
 </html>

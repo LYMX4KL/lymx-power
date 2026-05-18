@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX notifications — earn confirmations, redemption receipts, promo alerts, referral updates." />
 <title>Notifications · LYMX</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://getlymx.com/notifications" />
 <meta property="og:title" content="LYMX Notifications" />
@@ -81,6 +78,17 @@
   .botnav a .b{font-size:18px;display:block;margin-bottom:1px}
   .botnav a .badge{position:absolute;top:2px;right:30%;width:7px;height:7px;background:var(--danger,#e0413e);border-radius:50%}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 
@@ -117,7 +125,10 @@
 </div>
 
 <script>
-  const notifications = [
+  // Notifications data — populated from real DB by loadNotificationsFromDb() below.
+  // Mock array wrapped 2026-05-18 so customers don't see fake Brew & Bean push.
+  let notifications = [];
+  /* legacy-mock-disabled
     { id:1, type:'promo', day:'Today', time:'8:14 AM', title:'2× LYMX active at Brew & Bean Coffee', desc:'Happy Hour multiplier · until 6:00 PM. Earn 10 LYMX per $1 instead of 5.',  cta:'Brew & Bean is 0.2 mi from you', unread:true,  v:'2× boost', vClass:'gold' },
     { id:2, type:'earn',  day:'Today', time:'7:42 AM', title:'You earned 1,200 LYMX',                desc:'Brew & Bean Coffee · Latte + scone',                                                          unread:true,  v:'+1,200',   vClass:'green' },
     { id:3, type:'referral', day:'Today', time:'7:15 AM', title:'Emma joined LYMX!',                  desc:'She used your code SARAH-7K9F. You’ll get 200 LYMX when she makes her first purchase.', unread:true,  v:'+0 LYMX',  vClass:'muted' },
@@ -129,6 +140,7 @@
     { id:7, type:'referral', day:'Apr 26', time:'11:22 AM', title:'Daniel made his first purchase',  desc:'You earned 200 LYMX from your referral!',                                                     unread:false, v:'+200 LYMX', vClass:'green' },
     { id:8, type:'earn',  day:'Apr 24', time:'2:08 PM',  title:'You earned 640 LYMX',                desc:'Sun Market & Deli · Groceries',                                                                unread:false, v:'+640',     vClass:'green' },
   ];
+  end-legacy-mock-disabled */
 
   let currentFilter = 'all';
 
@@ -203,5 +215,126 @@
 
   render();
 </script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>
+  }
+
+  function markAllRead(){
+    notifications.forEach(n => { n.unread = false; });
+    render();
+  }
+
+  render();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Load real notifications by deriving from issuances + transactions + referrals.
+(async function loadNotificationsFromDb(){
+  try {
+    if (!window.LYMX || !window.LYMX.requireAuth) return;
+    const user = await window.LYMX.requireAuth();
+    if (!user) return;
+    const sb = window.LYMX.sb;
+
+    const day14ago = new Date(Date.now() - 14*24*60*60*1000).toISOString();
+    const [issRes, txRes, refRes] = await Promise.all([
+      sb.from('lymx_issuances')
+        .select('id, amount_lymx, reason, created_at, businesses(display_name)')
+        .eq('recipient_user_id', user.id)
+        .gte('created_at', day14ago)
+        .order('created_at', { ascending: false }).limit(60),
+      sb.from('transactions')
+        .select('id, lymx_amount, type, created_at, businesses(display_name)')
+        .eq('customer_id', user.id)
+        .eq('type', 'redemption')
+        .gte('created_at', day14ago)
+        .order('created_at', { ascending: false }).limit(60),
+      sb.from('referrals')
+        .select('id, status, invitee_email, created_at, inviter_bonus_amount')
+        .eq('inviter_user_id', user.id)
+        .gte('created_at', day14ago)
+        .order('created_at', { ascending: false }).limit(30)
+    ]);
+
+    function dayLabel(iso) {
+      const d = new Date(iso);
+      const today = new Date(); today.setHours(0,0,0,0);
+      const y = new Date(today.getTime() - 86400000);
+      if (d >= today) return 'Today';
+      if (d >= y) return 'Yesterday';
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    }
+    function timeLabel(iso) {
+      return new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    }
+    function fmt(n) { return Math.abs(Number(n||0)).toLocaleString('en-US'); }
+
+    notifications.length = 0;
+    let nextId = 1;
+    (issRes.data || []).forEach(i => {
+      const biz = (i.businesses && i.businesses.display_name) || (i.reason || 'LYMX Network');
+      notifications.push({
+        id: nextId++, type: 'earn',
+        day: dayLabel(i.created_at), time: timeLabel(i.created_at),
+        title: 'You earned ' + fmt(i.amount_lymx) + ' LYMX',
+        desc: biz + (i.reason ? ' · ' + i.reason : ''),
+        unread: false,
+        v: '+' + fmt(i.amount_lymx), vClass: 'green',
+        _ts: i.created_at
+      });
+    });
+    (txRes.data || []).forEach(t => {
+      const biz = (t.businesses && t.businesses.display_name) || 'LYMX Business';
+      notifications.push({
+        id: nextId++, type: 'spend',
+        day: dayLabel(t.created_at), time: timeLabel(t.created_at),
+        title: fmt(t.lymx_amount) + ' LYMX redeemed',
+        desc: biz,
+        unread: false,
+        v: '−' + fmt(t.lymx_amount), vClass: 'muted',
+        _ts: t.created_at
+      });
+    });
+    (refRes.data || []).forEach(r => {
+      notifications.push({
+        id: nextId++, type: 'referral',
+        day: dayLabel(r.created_at), time: timeLabel(r.created_at),
+        title: r.status === 'credited' ? 'Referral bonus credited' : (r.invitee_email ? 'You invited ' + r.invitee_email : 'Referral pending'),
+        desc: r.status === 'credited' ? ('+' + fmt(r.inviter_bonus_amount) + ' LYMX added to your wallet') : 'Will credit when they make their first purchase',
+        unread: r.status === 'credited',
+        v: r.status === 'credited' ? ('+' + fmt(r.inviter_bonus_amount)) : 'Pending',
+        vClass: r.status === 'credited' ? 'green' : 'muted',
+        _ts: r.created_at
+      });
+    });
+
+    notifications.sort((a, b) => (b._ts || '').localeCompare(a._ts || ''));
+    if (typeof render === 'function') render();
+
+    const feed = document.getElementById('feed');
+    if (feed && notifications.length === 0) {
+      feed.innerHTML = '<div class="empty"><div class="ic">📭</div>No notifications yet. Earn, spend, or invite a friend and updates will show up here.</div>';
+    }
+  } catch (e) {
+    console.warn('[notifications] load failed', e);
+  }
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>
+    console.warn('[notifications] load failed', e);
+  }
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
 </body>
 </html>
