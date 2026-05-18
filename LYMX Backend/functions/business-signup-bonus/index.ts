@@ -207,6 +207,27 @@ serve(async (req) => {
         }
     }
 
+    // Side-effect: fire-and-forget welcome email. Non-blocking — failures don't
+    // break the signup flow. The recipient's preferred_locale (or browser hint)
+    // drives the language; translation happens inside customer-welcome-email.
+    try {
+        const anon = Deno.env.get("SUPABASE_ANON_KEY");
+        if (anon) {
+            // We don't await; this Edge Function spawns the request and moves on.
+            fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/customer-welcome-email`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${anon}`, "apikey": anon },
+                body: JSON.stringify({
+                    user_id,
+                    bonus_amount: totalLymx,
+                    business_name: biz.display_name || biz.slug,
+                    business_slug: biz.slug,
+                    locale_hint: (body as any).locale_hint || null,
+                }),
+            }).catch(() => { /* best-effort */ });
+        }
+    } catch (_e) { /* swallow */ }
+
     return json({
         success: true,
         amount_lymx: totalLymx,
