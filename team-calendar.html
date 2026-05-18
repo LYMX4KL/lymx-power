@@ -64,69 +64,69 @@
 <script src="lymx-app.js" defer></script>
 
 <main class="main">
-  <h1>📅 My Calendar</h1>
-  <div class="sub">Set your weekly availability — anyone with your booking link can pick a slot and you'll both get a calendar invite + video room URL.</div>
+  <h1 data-i18n="tc.page_title">📅 My Calendar</h1>
+  <div class="sub" data-i18n="tc.page_sub">Set your weekly availability — anyone with your booking link can pick a slot and you'll both get a calendar invite + video room URL.</div>
 
   <div class="public-link" id="publicLinkBox" style="display:none">
     <div>
-      <div class="label">Your public link</div>
+      <div class="label" data-i18n="tc.public_link">Your public link</div>
       <code id="publicLink"></code>
     </div>
-    <button id="copyLink">Copy</button>
-    <button id="openLink" style="background:#0a84ff">Open</button>
+    <button id="copyLink" data-i18n="tc.copy">Copy</button>
+    <button id="openLink" data-i18n="tc.open" style="background:#0a84ff">Open</button>
   </div>
 
   <div id="noCalBox" class="card" style="display:none">
-    <h2>Create your calendar</h2>
+    <h2 data-i18n="tc.create_title">Create your calendar</h2>
     <p style="color:var(--muted);font-size:13.5px">You don't have a team calendar yet. Pick a handle for your public booking page (letters, numbers, dashes).</p>
-    <div class="form-row"><label>Handle</label><input id="newHandle" placeholder="e.g. yourname" /></div>
-    <div class="form-row"><label>Display name</label><input id="newDisplay" placeholder="Your name" /></div>
-    <div class="form-row"><label>Role title</label><input id="newRole" placeholder="e.g. Customer Success" /></div>
-    <button class="save-btn" id="createBtn">Create my calendar</button>
+    <div class="form-row"><label data-i18n="tc.handle">Handle</label><input id="newHandle" data-i18n-placeholder="booking.cancel.reason_placeholder" placeholder="e.g. yourname" /></div>
+    <div class="form-row"><label data-i18n="tc.display_name">Display name</label><input id="newDisplay" data-i18n-placeholder="booking.your_name" placeholder="Your name" /></div>
+    <div class="form-row"><label data-i18n="tc.role_title">Role title</label><input id="newRole" data-i18n-placeholder="booking.company_optional" placeholder="e.g. Customer Success" /></div>
+    <button class="save-btn" id="createBtn" data-i18n="tc.create_btn">Create my calendar</button>
     <div id="createBanner"></div>
   </div>
 
   <div id="calUI" style="display:none">
     <div class="card">
-      <h2>Profile</h2>
-      <div class="form-row"><label>Display name</label><input id="fDisplay" /></div>
-      <div class="form-row"><label>Role title</label><input id="fRole" /></div>
-      <div class="form-row"><label>Welcome message (shown to bookers)</label><textarea id="fWelcome"></textarea></div>
-      <div class="form-row"><label>Default duration (minutes)</label><input id="fDuration" type="number" min="10" max="180" /></div>
-      <div class="form-row"><label>Accepting bookings</label><select id="fActive"><option value="true">Yes</option><option value="false">Paused</option></select></div>
-      <button class="save-btn" id="saveProfileBtn">Save profile</button>
+      <h2 data-i18n="tc.profile">Profile</h2>
+      <div class="form-row"><label data-i18n="tc.display_name">Display name</label><input id="fDisplay" /></div>
+      <div class="form-row"><label data-i18n="tc.role_title">Role title</label><input id="fRole" /></div>
+      <div class="form-row"><label data-i18n="tc.welcome_msg">Welcome message (shown to bookers)</label><textarea id="fWelcome"></textarea></div>
+      <div class="form-row"><label data-i18n="tc.duration">Default duration (minutes)</label><input id="fDuration" type="number" min="10" max="180" /></div>
+      <div class="form-row"><label data-i18n="tc.accepts">Accepting bookings</label><select id="fActive"><option value="true" data-i18n="tc.yes">Yes</option><option value="false" data-i18n="tc.paused">Paused</option></select></div>
+      <button class="save-btn" id="saveProfileBtn" data-i18n="tc.save_profile">Save profile</button>
       <div id="profileBanner"></div>
     </div>
 
     <div class="card">
-      <h2>Weekly availability</h2>
-      <p style="color:var(--muted);font-size:13px;margin:0 0 12px">Pick days + start/end times. Bookers see slots every 30 min within these windows.</p>
+      <h2 data-i18n="tc.availability">Weekly availability</h2>
+      <p data-i18n="tc.availability_sub" style="color:var(--muted);font-size:13px;margin:0 0 12px">Pick days + start/end times. Bookers see slots every 30 min within these windows.</p>
       <div class="row" id="daysRow"></div>
       <div id="rulesArea"></div>
-      <button class="save-btn" id="saveAvailBtn" style="margin-top:8px">Save availability</button>
+      <button class="save-btn" id="saveAvailBtn" data-i18n="tc.save_avail" style="margin-top:8px">Save availability</button>
       <div id="availBanner"></div>
     </div>
 
     <div class="card" id="googleCard">
-      <h2>📅 Google Calendar sync</h2>
+      <h2 data-i18n="tc.gcal_title">📅 Google Calendar sync</h2>
       <div id="googleStatus" style="font-size:13.5px;color:var(--muted);margin-bottom:10px">—</div>
       <div id="googleActions"></div>
     </div>
 
     <div class="card">
-      <h2>Time off / blocked dates</h2>
-      <p style="color:var(--muted);font-size:13px;margin:0 0 12px">Add specific dates (vacation, sick, conferences) when you can't take bookings. These override your weekly availability.</p>
+      <h2 data-i18n="tc.timeoff">Time off / blocked dates</h2>
+      <p data-i18n="tc.timeoff_sub" style="color:var(--muted);font-size:13px;margin:0 0 12px">Add specific dates (vacation, sick, conferences) when you can't take bookings. These override your weekly availability.</p>
       <div id="overridesList" style="margin-bottom:12px"></div>
       <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
         <div><label style="font-size:12px;color:var(--muted);font-weight:600">Block this date</label><br><input type="date" id="overrideDate" style="padding:7px 9px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px" /></div>
-        <div style="flex:1;min-width:160px"><label style="font-size:12px;color:var(--muted);font-weight:600">Reason (optional)</label><br><input id="overrideReason" placeholder="e.g. vacation, conference" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px" /></div>
+        <div style="flex:1;min-width:160px"><label style="font-size:12px;color:var(--muted);font-weight:600">Reason (optional)</label><br><input id="overrideReason" data-i18n-placeholder="tc.block_reason_ph" placeholder="e.g. vacation, conference" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px" /></div>
         <button class="save-btn" id="addOverrideBtn">Block date</button>
       </div>
       <div id="overrideBanner"></div>
     </div>
 
     <div class="card">
-      <h2>Upcoming bookings</h2>
+      <h2 data-i18n="tc.upcoming">Upcoming bookings</h2>
       <div id="bookingsList"></div>
     </div>
   </div>
@@ -362,4 +362,41 @@
       .limit(20);
     if (!data || !data.length) { $('bookingsList').innerHTML = '<div class="empty">No upcoming bookings.</div>'; return; }
     $('bookingsList').innerHTML = data.map(b => {
-      const when = new Date(b.starts_at).toLocaleStr
+      const when = new Date(b.starts_at).toLocaleString(undefined, { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+      return `<div class="booking-row" data-booking-id="${esc(b.id)}" data-token="${esc(b.cancel_token||'')}">
+        <div class="when">${when}</div>
+        <div class="who"><b>${esc(b.booker_name)}</b><small>${esc(b.booker_email)}${b.booker_message ? '<br>"' + esc(b.booker_message.slice(0,80)) + '"' : ''}</small></div>
+        <a class="join" href="${esc(b.video_room_url)}" target="_blank">Join</a>
+        <button class="join cancel-btn" style="background:#fee2e2;color:#991b1b;border:0;cursor:pointer">Cancel</button>
+      </div>`;
+    }).join('');
+    document.querySelectorAll('.cancel-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const row = e.target.closest('.booking-row');
+        const id = row.dataset.bookingId;
+        const tok = row.dataset.token;
+        if (!id || !tok) { alert('Missing cancel token — refresh the page'); return; }
+        const reason = prompt('Why are you cancelling? (optional — helps the booker understand)') || '';
+        btn.disabled = true; btn.textContent = 'Cancelling…';
+        try {
+          const r = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/functions/v1/booking-cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': window.LYMX_CONFIG.SUPABASE_ANON_KEY },
+            body: JSON.stringify({ booking_id: id, token: tok, reason, cancelled_by: 'team' }),
+          });
+          const j = await r.json();
+          if (!j.ok) throw new Error(j.error || 'Cancel failed');
+          await loadBookings();
+        } catch (err) {
+          btn.disabled = false; btn.textContent = 'Cancel';
+          alert('Cancel failed: ' + err.message);
+        }
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
