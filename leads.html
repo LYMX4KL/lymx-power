@@ -96,10 +96,10 @@
     <div class="stats" id="stats">—</div>
     <div class="filters">
       <select id="ownerFilter">
-        <option value="all">All owners</option>
-        <option value="me">My leads</option>
+        <option value="all" data-i18n="leads.all_owners">All owners</option>
+        <option value="me" data-i18n="leads.my_leads">My leads</option>
       </select>
-      <input id="search" placeholder="Search name/email/company…" />
+      <input id="search" data-i18n-placeholder="leads.search_ph" placeholder="Search name/email/company…" />
     </div>
   </div>
 
@@ -118,12 +118,14 @@
 <script>
 (function(){
   if (!window.LYMX_CONFIG || typeof window.supabase === 'undefined') return;
+  const t = (k, fb) => (window.LymxI18n && window.LymxI18n.t) ? window.LymxI18n.t(k, fb) : fb;
   const SUPABASE_URL = window.LYMX_CONFIG.SUPABASE_URL;
   const SUPABASE_ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true } });
 
   const STAGES = ['new','contacted','qualified','demoed','proposal','won','lost','nurture'];
-  const STAGE_LABELS = { new:'New', contacted:'Contacted', qualified:'Qualified', demoed:'Demoed', proposal:'Proposal', won:'Won', lost:'Lost', nurture:'Nurture' };
+  const STAGE_LABELS_BASE = { new:'New', contacted:'Contacted', qualified:'Qualified', demoed:'Demoed', proposal:'Proposal', won:'Won', lost:'Lost', nurture:'Nurture' };
+  const STAGE_LABELS = new Proxy(STAGE_LABELS_BASE, { get: (target, prop) => t('leads.stage.' + prop, target[prop]) });
 
   let me = null, amIAdmin = false;
   let allLeads = [];
@@ -203,7 +205,7 @@
           <span class="name">${STAGE_LABELS[stage]}</span>
           <span class="count">${byStage[stage].length}</span>
         </div>
-        <div class="col-cards">${byStage[stage].length ? byStage[stage].map(renderCard).join('') : '<div class="empty-col">No leads</div>'}</div>
+        <div class="col-cards">${byStage[stage].length ? byStage[stage].map(renderCard).join('') : `<div class="empty-col">${t('leads.no_leads', 'No leads')}</div>`}</div>
       </div>
     `).join('');
 
@@ -269,54 +271,54 @@
     }
 
     $('drawerBody').innerHTML = `
-      <div class="drawer-row"><div class="lbl">Email</div><div class="val">${esc(lead.email)}</div></div>
-      <div class="drawer-row"><div class="lbl">Phone</div><div class="val">${esc(lead.phone || '—')}</div></div>
-      <div class="drawer-row"><div class="lbl">Company</div><div class="val">${esc(lead.company || '—')}${lead.role_title ? ' · ' + esc(lead.role_title) : ''}</div></div>
-      <div class="drawer-row"><div class="lbl">Source</div><div class="val">${esc(lead.source)}${lead.source_detail ? ' · ' + esc(lead.source_detail) : ''}</div></div>
+      <div class="drawer-row"><div class="lbl">${t("leads.email", "Email")}</div><div class="val">${esc(lead.email)}</div></div>
+      <div class="drawer-row"><div class="lbl">${t("leads.phone", "Phone")}</div><div class="val">${esc(lead.phone || '—')}</div></div>
+      <div class="drawer-row"><div class="lbl">${t("leads.company", "Company")}</div><div class="val">${esc(lead.company || '—')}${lead.role_title ? ' · ' + esc(lead.role_title) : ''}</div></div>
+      <div class="drawer-row"><div class="lbl">${t("leads.source", "Source")}</div><div class="val">${esc(lead.source)}${lead.source_detail ? ' · ' + esc(lead.source_detail) : ''}</div></div>
 
       <div class="drawer-row">
-        <div class="lbl">Stage</div>
+        <div class="lbl">${t("leads.stage_label", "Stage")}</div>
         <select id="drawerStage">${STAGES.map(s => `<option value="${s}" ${s===lead.stage?'selected':''}>${STAGE_LABELS[s]}</option>`).join('')}</select>
       </div>
 
       <div class="drawer-row">
-        <div class="lbl">Next action</div>
-        <input id="drawerNext" placeholder="What's the next step?" value="${esc(lead.next_action || '')}" />
+        <div class="lbl">${t("leads.next_action", "Next action")}</div>
+        <input id="drawerNext" data-i18n-placeholder="leads.next_action_ph" placeholder="What's the next step?" value="${esc(lead.next_action || '')}" />
       </div>
 
       <div class="drawer-row">
-        <div class="lbl">Notes</div>
-        <textarea id="drawerNotes" placeholder="Private notes about this lead…">${esc(lead.notes || '')}</textarea>
+        <div class="lbl">${t("leads.notes", "Notes")}</div>
+        <textarea id="drawerNotes" data-i18n-placeholder="leads.notes_ph" placeholder="Private notes about this lead…">${esc(lead.notes || '')}</textarea>
       </div>
 
       <div class="drawer-actions">
-        <button class="btn primary" id="drawerSave">Save</button>
-        <a class="btn" href="admin-compose-email.html?to=${encodeURIComponent(lead.email)}&name=${encodeURIComponent(lead.full_name||'')}">✉️ Email</a>
-        ${lead.conversation_id ? `<a class="btn" href="admin-conversations.html#${lead.conversation_id}">💬 Open thread</a>` : ''}
-        <a class="btn" href="/c/kenny?prefill=${encodeURIComponent(lead.email)}" target="_blank">📅 Book call</a>
+        <button class="btn primary" id="drawerSave">${t("leads.save", "Save")}</button>
+        <a class="btn" href="admin-compose-email.html?to=${encodeURIComponent(lead.email)}&name=${encodeURIComponent(lead.full_name||'')}">${t("leads.email_btn", "✉️ Email")}</a>
+        ${lead.conversation_id ? `<a class="btn" href="admin-conversations.html#${lead.conversation_id}">${t("leads.open_thread", "💬 Open thread")}</a>` : ''}
+        <a class="btn" href="/c/kenny?prefill=${encodeURIComponent(lead.email)}" target="_blank">${t("leads.book_call", "📅 Book call")}</a>
       </div>
 
       ${leadBookings.length ? `
         <div class="drawer-row" style="margin-top:18px">
-          <div class="lbl">Bookings (${leadBookings.length})</div>
+          <div class="lbl">${t("leads.bookings", "Bookings")} (${leadBookings.length})</div>
           ${leadBookings.map(b => `
             <div class="booking-row">
               <div class="when">${new Date(b.starts_at).toLocaleString(undefined, { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}</div>
               <span style="font-size:11px;color:var(--muted)">${b.status}</span>
-              ${b.video_room_url ? `<a href="${esc(b.video_room_url)}" target="_blank">Join</a>` : ''}
+              ${b.video_room_url ? `<a href="${esc(b.video_room_url)}" target="_blank">${t("leads.join", "Join")}</a>` : ''}
             </div>
           `).join('')}
         </div>
       ` : ''}
 
       <div class="drawer-row" style="margin-top:18px">
-        <div class="lbl">Recent timeline</div>
+        <div class="lbl">${t("leads.timeline", "Recent timeline")}</div>
         ${timeline.length ? timeline.map(m => `
           <div class="timeline-row ${esc(m.channel||'')}">
             <div class="when">${new Date(m.created_at).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })} · ${esc(m.sender_name_snapshot || m.sender_type)}${m.channel?' · '+esc(m.channel):''}</div>
             <div class="body">${esc((m.body||'').slice(0, 240))}${(m.body||'').length>240?'…':''}</div>
           </div>
-        `).join('') : '<div style="color:var(--muted);font-size:13px">No messages yet.</div>'}
+        `).join('') : `<div style="color:var(--muted);font-size:13px">${t('leads.no_messages', 'No messages yet.')}</div>`}
       </div>
     `;
 
@@ -333,7 +335,7 @@
       if (error) { alert('Save failed: ' + error.message); return; }
       Object.assign(lead, patch);
       $('drawerSave').textContent = '✓ Saved';
-      setTimeout(() => { $('drawerSave').textContent = 'Save'; }, 1500);
+      setTimeout(() => { $('drawerSave').textContent = t("leads.save", "Save"); }, 1500);
       render();
     });
   }
