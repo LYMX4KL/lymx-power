@@ -51,8 +51,8 @@
 <script src="lymx-app.js" defer></script>
 
 <div class="wrap" id="mainWrap">
-  <div id="loading" style="text-align:center;padding:60px 0;color:var(--muted);font-size:14px">Loading calendar…</div>
-  <div id="notFound" style="display:none;text-align:center;padding:60px 20px"><h2 style="margin:0 0 8px">Calendar not found</h2><p style="color:var(--muted)">No active booking calendar exists for that link. Double-check the URL or contact LYMX.</p></div>
+  <div id="loading" data-i18n="booking.loading" style="text-align:center;padding:60px 0;color:var(--muted);font-size:14px">Loading calendar…</div>
+  <div id="notFound" style="display:none;text-align:center;padding:60px 20px"><h2 data-i18n="booking.not_found_title" style="margin:0 0 8px">Calendar not found</h2><p data-i18n="booking.not_found_body" style="color:var(--muted)">No active booking calendar exists for that link. Double-check the URL or contact LYMX.</p></div>
 
   <div id="bookingUI" style="display:none">
     <div class="header">
@@ -66,34 +66,34 @@
 
     <div class="grid">
       <div class="card">
-        <h2 data-i18n="filter.pick_day">Pick a day</h2>
+        <h2 data-i18n="booking.pick_day">Pick a day</h2>
         <div id="dayList"></div>
       </div>
       <div class="card">
-        <h2 data-i18n="filter.pick_time">Pick a time</h2>
-        <div id="slotsArea" style="font-size:13px;color:var(--muted)">Pick a day first.</div>
+        <h2 data-i18n="booking.pick_time">Pick a time</h2>
+        <div id="slotsArea" data-i18n="booking.pick_day_first" style="font-size:13px;color:var(--muted)">Pick a day first.</div>
       </div>
     </div>
 
     <div class="card" id="detailsCard" style="margin-top:16px;display:none">
-      <h2 data-i18n="filter.your_details">Your details</h2>
-      <div class="form-row"><label>Your name <span style="color:#b91c1c">*</span></label><input id="fName" autocomplete="name" /></div>
-      <div class="form-row"><label>Email <span style="color:#b91c1c">*</span></label><input id="fEmail" type="email" autocomplete="email" /></div>
-      <div class="form-row"><label>Phone (optional)</label><input id="fPhone" type="tel" autocomplete="tel" /></div>
-      <div class="form-row"><label>Company (optional)</label><input id="fCompany" autocomplete="organization" /></div>
-      <div class="form-row"><label>What would you like to talk about?</label><textarea id="fMessage" placeholder="A few words helps me prep before the call…"></textarea></div>
-      <button class="submit-btn" id="submitBtn">Confirm booking</button>
+      <h2 data-i18n="booking.your_details">Your details</h2>
+      <div class="form-row"><label><span data-i18n="booking.your_name">Your name</span> <span style="color:#b91c1c">*</span></label><input id="fName" autocomplete="name" data-i18n-placeholder="booking.your_name" /></div>
+      <div class="form-row"><label><span data-i18n="form.email">Email</span> <span style="color:#b91c1c">*</span></label><input id="fEmail" type="email" autocomplete="email" /></div>
+      <div class="form-row"><label data-i18n="booking.phone_optional">Phone (optional)</label><input id="fPhone" type="tel" autocomplete="tel" /></div>
+      <div class="form-row"><label data-i18n="booking.company_optional">Company (optional)</label><input id="fCompany" autocomplete="organization" /></div>
+      <div class="form-row"><label data-i18n="booking.talk_about">What would you like to talk about?</label><textarea id="fMessage" data-i18n-placeholder="booking.prep_help" placeholder="A few words helps me prep before the call…"></textarea></div>
+      <button class="submit-btn" id="submitBtn" data-i18n="booking.confirm">Confirm booking</button>
       <div id="banner"></div>
     </div>
   </div>
 
   <div class="success-card" id="successCard">
     <div class="icon">✓</div>
-    <h2>Booked!</h2>
-    <p style="margin:0 0 4px;color:var(--muted)">You'll get a confirmation email + calendar invite shortly.</p>
+    <h2 data-i18n="booking.booked">Booked!</h2>
+    <p data-i18n="booking.confirmation_note" style="margin:0 0 4px;color:var(--muted)">You'll get a confirmation email + calendar invite shortly.</p>
     <div class="when" id="successWhen"></div>
-    <a class="join-btn" id="joinLink" href="#" target="_blank">🎥 Join the call</a>
-    <p style="margin-top:14px;font-size:12.5px;color:var(--muted)">You can also save this page — the link is yours.</p>
+    <a class="join-btn" id="joinLink" href="#" target="_blank" data-i18n="booking.join_call">🎥 Join the call</a>
+    <p data-i18n="booking.save_page" style="margin-top:14px;font-size:12.5px;color:var(--muted)">You can also save this page — the link is yours.</p>
   </div>
 </div>
 

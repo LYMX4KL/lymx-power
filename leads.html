@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Leads · LYMX</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--soft:#eef4ff;--warn:#f0a020;--err:#b81324}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  .layout{margin-left:240px;padding:20px 24px;min-height:100vh}
+  @media(max-width:1100px){.layout{margin-left:0;padding:14px}}
+  .head{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+  .head h1{margin:0;font-size:24px;font-weight:800}
+  .head .stats{color:var(--muted);font-size:13.5px}
+  .filters{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .filters select, .filters input{padding:7px 11px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13px;background:#fff}
+
+  .board{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;align-items:flex-start}
+  .col{flex:0 0 280px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px}
+  .col-head{display:flex;align-items:center;gap:8px;padding:4px 6px 10px;border-bottom:1px solid #f3f4f6;margin-bottom:8px}
+  .col-head .name{font-weight:700;font-size:14px;flex:1;color:var(--ink)}
+  .col-head .count{background:#f3f4f6;color:#5b6472;font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:999px}
+  .stage-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .stage-new{background:#94a3b8}
+  .stage-contacted{background:#0a84ff}
+  .stage-qualified{background:#7c3aed}
+  .stage-demoed{background:#0891b2}
+  .stage-proposal{background:#ea580c}
+  .stage-won{background:#13a26b}
+  .stage-lost{background:#dc2626}
+  .stage-nurture{background:#facc15}
+
+  .card{background:#fff;border:1px solid #e6e8ec;border-radius:9px;padding:9px 11px;margin-bottom:7px;cursor:grab;transition:.12s;user-select:none}
+  .card:hover{border-color:var(--accent);box-shadow:0 2px 6px rgba(10,132,255,.1)}
+  .card.dragging{opacity:.4}
+  .card .name{font-weight:700;font-size:13.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .card .meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .card .meta b{color:var(--ink-2);font-weight:600}
+  .card .row2{display:flex;align-items:center;gap:6px;margin-top:5px;font-size:11px;color:var(--muted)}
+  .card .next-call{background:#eef4ff;color:#0050c7;padding:1px 6px;border-radius:999px;font-weight:600}
+
+  .col.drag-over{background:#eef4ff;border-color:var(--accent)}
+  .empty-col{text-align:center;color:var(--muted);font-size:12px;padding:18px 6px}
+
+  /* Drawer */
+  .drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000}
+  .drawer-overlay.open{display:block}
+  .drawer{position:fixed;top:0;right:0;height:100vh;width:520px;max-width:95vw;background:#fff;z-index:1001;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
+  .drawer.open{transform:translateX(0)}
+  .drawer-head{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .drawer-head h2{margin:0;font-size:18px;font-weight:800;flex:1}
+  .drawer-head .close{background:transparent;border:0;cursor:pointer;color:var(--muted);font-size:22px;padding:0 4px;font-family:inherit}
+  .drawer-body{flex:1;overflow-y:auto;padding:16px 22px}
+  .drawer-row{margin-bottom:14px}
+  .drawer-row .lbl{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+  .drawer-row .val{font-size:14px;color:var(--ink-2)}
+  .drawer-row select, .drawer-row textarea, .drawer-row input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px;background:#fff}
+  .drawer-row textarea{min-height:70px;resize:vertical}
+  .drawer-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .btn{padding:7px 13px;background:#fff;border:1px solid var(--line);border-radius:7px;cursor:pointer;font:inherit;font-size:13px;color:var(--ink-2);font-weight:600}
+  .btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn:hover{background:#fafbfc}
+  .btn.primary:hover{background:#000}
+  .timeline-row{padding:9px 11px;border-left:3px solid #e6e8ec;margin:4px 0 0 4px;font-size:13px;color:var(--ink-2)}
+  .timeline-row.system{border-left-color:#facc15;background:#fefce8}
+  .timeline-row.in_app{border-left-color:#0a84ff}
+  .timeline-row.email_out, .timeline-row.email_in{border-left-color:#7c3aed}
+  .timeline-row .when{font-size:11px;color:var(--muted);margin-bottom:2px}
+  .timeline-row .body{white-space:pre-wrap;line-height:1.45}
+  .booking-row{padding:8px 11px;background:#f6f7f9;border-radius:7px;margin-bottom:5px;font-size:13px;display:flex;align-items:center;gap:8px}
+  .booking-row .when{font-weight:700;flex:1}
+  .booking-row a{color:var(--accent-2);text-decoration:none;font-size:11.5px;font-weight:600}
+  .alert{padding:9px 12px;border-radius:7px;margin:8px 0;font-size:13px}
+  .alert.ok{background:#e6f5ee;color:#065f46;border-left:3px solid #10b981}
+  .alert.err{background:#fee2e2;color:#991b1b;border-left:3px solid #dc2626}
+</style>
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<div class="layout">
+  <div class="head">
+    <h1 data-i18n="leads.title">📌 Leads pipeline</h1>
+    <div class="stats" id="stats">—</div>
+    <div class="filters">
+      <select id="ownerFilter">
+        <option value="all">All owners</option>
+        <option value="me">My leads</option>
+      </select>
+      <input id="search" placeholder="Search name/email/company…" />
+    </div>
+  </div>
+
+  <div class="board" id="board"></div>
+</div>
+
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <h2 id="drawerName">—</h2>
+    <button class="close" id="drawerClose" type="button" aria-label="Close">×</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</div>
+
+<script>
+(function(){
+  if (!window.LYMX_CONFIG || typeof window.supabase === 'undefined') return;
+  const SUPABASE_URL = window.LYMX_CONFIG.SUPABASE_URL;
+  const SUPABASE_ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true } });
+
+  const STAGES = ['new','contacted','qualified','demoed','proposal','won','lost','nurture'];
+  const STAGE_LABELS = { new:'New', contacted:'Contacted', qualified:'Qualified', demoed:'Demoed', proposal:'Proposal', won:'Won', lost:'Lost', nurture:'Nurture' };
+
+  let me = null, amIAdmin = false;
+  let allLeads = [];
+  let allBookings = [];
+  let openLeadId = null;
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s==null?"":s).replace(/[<>&"]/g, c=>({ "<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;" }[c]));
+  function timeAgo(iso){
+    if(!iso) return ""; const d = new Date(iso), s = Math.round((Date.now()-d)/1000);
+    if (s < 60) return "now"; if (s < 3600) return Math.round(s/60)+"m"; if (s < 86400) return Math.round(s/3600)+"h"; if (s < 604800) return Math.round(s/86400)+"d";
+    return d.toLocaleDateString();
+  }
+
+  async function init(){
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) { location.href = '/login.html?next=/leads.html'; return; }
+    me = user;
+    const { data: staff } = await sb.from('staff_roles').select('user_id').eq('user_id', me.id).maybeSingle();
+    amIAdmin = !!staff || me.id === '1405bb50-2c97-48dd-bfa5-31f32320de9b';
+
+    await loadAll();
+    render();
+
+    $('ownerFilter').addEventListener('change', render);
+    $('search').addEventListener('input', render);
+    $('drawerClose').addEventListener('click', closeDrawer);
+    $('drawerOverlay').addEventListener('click', closeDrawer);
+  }
+
+  async function loadAll(){
+    let q = sb.from('leads').select('*').order('updated_at', { ascending: false }).limit(500);
+    const { data: leads, error } = await q;
+    if (error) { console.warn('leads load:', error); return; }
+    allLeads = leads || [];
+
+    if (allLeads.length > 0) {
+      const ids = allLeads.map(l => l.id);
+      const { data: bks } = await sb.from('bookings')
+        .select('id, lead_id, team_calendar_id, starts_at, ends_at, status, video_room_url, booker_message')
+        .in('lead_id', ids).order('starts_at', { ascending: false });
+      allBookings = bks || [];
+    }
+  }
+
+  function filterLeads(){
+    const ownerScope = $('ownerFilter').value;
+    const search = ($('search').value || '').toLowerCase().trim();
+    return allLeads.filter(l => {
+      if (ownerScope === 'me' && l.owner_user_id !== me.id) return false;
+      if (search) {
+        const hay = ((l.full_name||'') + ' ' + (l.email||'') + ' ' + (l.company||'')).toLowerCase();
+        if (!hay.includes(search)) return false;
+      }
+      return true;
+    });
+  }
+
+  function render(){
+    const filtered = filterLeads();
+    const byStage = {};
+    STAGES.forEach(s => byStage[s] = []);
+    filtered.forEach(l => { (byStage[l.stage] || byStage.new).push(l); });
+
+    $('stats').textContent = `${filtered.length} leads`;
+
+    $('board').innerHTML = STAGES.map(stage => `
+      <div class="col" data-stage="${stage}">
+        <div class="col-head">
+          <span class="stage-dot stage-${stage}"></span>
+          <span class="name">${STAGE_LABELS[stage]}</span>
+          <span class="count">${byStage[stage].length}</span>
+        </div>
+        <div class="col-cards">${byStage[stage].length ? byStage[stage].map(renderCard).join('') : '<div class="empty-col">No leads</div>'}</div>
+      </div>
+    `).join('');
+
+    // Wire drag-drop
+    document.querySelectorAll('.card').forEach(card => {
+      card.draggable = true;
+      card.addEventListener('dragstart', e => { card.classList.add('dragging'); e.dataTransfer.setData('text/plain', card.dataset.leadId); });
+      card.addEventListener('dragend',   () => card.classList.remove('dragging'));
+      card.addEventListener('click', () => openDrawer(card.dataset.leadId));
+    });
+    document.querySelectorAll('.col').forEach(col => {
+      col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
+      col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+      col.addEventListener('drop', async e => {
+        e.preventDefault();
+        col.classList.remove('drag-over');
+        const leadId = e.dataTransfer.getData('text/plain');
+        const newStage = col.dataset.stage;
+        await changeStage(leadId, newStage);
+      });
+    });
+  }
+
+  function renderCard(l){
+    const nextBooking = allBookings.find(b => b.lead_id === l.id && new Date(b.starts_at) > new Date() && b.status === 'confirmed');
+    const nextLine = nextBooking ? `<span class="next-call">📅 ${new Date(nextBooking.starts_at).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}</span>` : '';
+    return `<div class="card" data-lead-id="${l.id}">
+      <div class="name">${esc(l.full_name || l.email)}</div>
+      <div class="meta">${esc(l.company || '')}${l.company && l.email ? ' · ' : ''}${esc(l.email)}</div>
+      <div class="row2">
+        ${nextLine}
+        <span>${l.last_contacted_at ? 'last ' + timeAgo(l.last_contacted_at) : 'never contacted'}</span>
+      </div>
+    </div>`;
+  }
+
+  async function changeStage(leadId, newStage){
+    const lead = allLeads.find(l => l.id === leadId);
+    if (!lead || lead.stage === newStage) return;
+    const patch = { stage: newStage, last_contacted_at: new Date().toISOString() };
+    if (newStage === 'won') patch.won_at = new Date().toISOString();
+    if (newStage === 'lost') patch.lost_at = new Date().toISOString();
+    const { error } = await sb.from('leads').update(patch).eq('id', leadId);
+    if (error) { alert('Update failed: ' + error.message); return; }
+    Object.assign(lead, patch);
+    render();
+  }
+
+  async function openDrawer(leadId){
+    openLeadId = leadId;
+    const lead = allLeads.find(l => l.id === leadId);
+    if (!lead) return;
+    $('drawerName').textContent = lead.full_name || lead.email;
+    $('drawer').classList.add('open');
+    $('drawerOverlay').classList.add('open');
+
+    const leadBookings = allBookings.filter(b => b.lead_id === leadId);
+    let timeline = [];
+    if (lead.conversation_id) {
+      const { data: msgs } = await sb.from('conversation_messages')
+        .select('*').eq('conversation_id', lead.conversation_id).order('created_at', { ascending: false }).limit(12);
+      timeline = msgs || [];
+    }
+
+    $('drawerBody').innerHTML = `
+      <div class="drawer-row"><div class="lbl">Email</div><div class="val">${esc(lead.email)}</div></div>
+      <div class="drawer-row"><div class="lbl">Phone</div><div class="val">${esc(lead.phone || '—')}</div></div>
+      <div class="drawer-row"><div class="lbl">Company</div><div class="val">${esc(lead.company || '—')}${lead.role_title ? ' · ' + esc(lead.role_title) : ''}</div></div>
+      <div class="drawer-row"><div class="lbl">Source</div><div class="val">${esc(lead.source)}${lead.source_detail ? ' · ' + esc(lead.source_detail) : ''}</div></div>
+
+      <div class="drawer-row">
+        <div class="lbl">Stage</div>
+        <select id="drawerStage">${STAGES.map(s => `<option value="${s}" ${s===lead.stage?'selected':''}>${STAGE_LABELS[s]}</option>`).join('')}</select>
+      </div>
+
+      <div class="drawer-row">
+        <div class="lbl">Next action</div>
+        <input id="drawerNext" placeholder="What's the next step?" value="${esc(lead.next_action || '')}" />
+      </div>
+
+      <div class="drawer-row">
+        <div class="lbl">Notes</div>
+        <textarea id="drawerNotes" placeholder="Private notes about this lead…">${esc(lead.notes || '')}</textarea>
+      </div>
+
+      <div class="drawer-actions">
+        <button class="btn primary" id="drawerSave">Save</button>
+        <a class="btn" href="admin-compose-email.html?to=${encodeURIComponent(lead.email)}&name=${encodeURIComponent(lead.full_name||'')}">✉️ Email</a>
+        ${lead.conversation_id ? `<a class="btn" href="admin-conversations.html#${lead.conversation_id}">💬 Open thread</a>` : ''}
+        <a class="btn" href="/c/kenny?prefill=${encodeURIComponent(lead.email)}" target="_blank">📅 Book call</a>
+      </div>
+
+      ${leadBookings.length ? `
+        <div class="drawer-row" style="margin-top:18px">
+          <div class="lbl">Bookings (${leadBookings.length})</div>
+          ${leadBookings.map(b => `
+            <div class="booking-row">
+              <div class="when">${new Date(b.starts_at).toLocaleString(undefined, { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}</div>
+              <span style="font-size:11px;color:var(--muted)">${b.status}</span>
+              ${b.video_room_url ? `<a href="${esc(b.video_room_url)}" target="_blank">Join</a>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+
+      <div class="drawer-row" style="margin-top:18px">
+        <div class="lbl">Recent timeline</div>
+        ${timeline.length ? timeline.map(m => `
+          <div class="timeline-row ${esc(m.channel||'')}">
+            <div class="when">${new Date(m.created_at).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })} · ${esc(m.sender_name_snapshot || m.sender_type)}${m.channel?' · '+esc(m.channel):''}</div>
+            <div class="body">${esc((m.body||'').slice(0, 240))}${(m.body||'').length>240?'…':''}</div>
+          </div>
+        `).join('') : '<div style="color:var(--muted);font-size:13px">No messages yet.</div>'}
+      </div>
+    `;
+
+    $('drawerSave').addEventListener('click', async () => {
+      const patch = {
+        stage: $('drawerStage').value,
+        next_action: $('drawerNext').value.trim() || null,
+        notes: $('drawerNotes').value.trim() || null,
+        last_contacted_at: new Date().toISOString(),
+      };
+      if (patch.stage === 'won') patch.won_at = new Date().toISOString();
+      if (patch.stage === 'lost') patch.lost_at = new Date().toISOString();
+      const { error } = await sb.from('leads').update(patch).eq('id', leadId);
+      if (error) { alert('Save failed: ' + error.message); return; }
+      Object.assign(lead, patch);
+      $('drawerSave').textContent = '✓ Saved';
+      setTimeout(() => { $('drawerSave').textContent = 'Save'; }, 1500);
+      render();
+    });
+  }
+
+  function closeDrawer(){
+    $('drawer').classList.remove('open');
+    $('drawerOverlay').classList.remove('open');
+    openLeadId = null;
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
