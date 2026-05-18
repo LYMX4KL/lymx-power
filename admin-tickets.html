@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX Admin — customer support ticket queue. Triage open tickets, assign owners, reply, resolve." />
 <title>Support tickets · LYMX Admin</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
   *{box-sizing:border-box}
@@ -138,6 +135,17 @@
 
   footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 <header class="nav">
@@ -243,8 +251,11 @@
 </footer>
 
 <script>
-  // Mock ticket data
-  let tickets = [
+  // Ticket data — populated from real feedback rows by loadTicketsFromDb() below.
+  // The mock array used to live here; replaced 2026-05-18 to stop showing fake
+  // "Maya Hopkins / Oakline Kitchen" customers to staff.
+  let tickets = [];
+  /* legacy-mock-disabled
     {id:'T-1042',subj:'Promo not applying at Brew & Bean',role:'customer',name:'Maya Hopkins',contact:'mhopkins@gmail.com',status:'open',priority:'high',assignee:'Sam',created:'2026-04-29 09:14',thread:[
       {from:'Maya Hopkins',staff:false,when:'2026-04-29 09:14',body:"I bought a latte at Brew & Bean this morning and the Happy Hour 2× didn't show up. The promo banner was on at the counter. Did I miss something?"}
     ]},
@@ -292,6 +303,7 @@
       {from:'Renée Doucet',staff:false,when:'2026-04-26 13:00',body:"Got it, thanks!"}
     ]}
   ];
+  end-legacy-mock-disabled */
 
   let activeId = null;
   let filterStatus = 'all';
@@ -506,8 +518,72 @@
 
   render();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Load real tickets from the feedback table (2026-05-18).
+(async function loadTicketsFromDb(){
+  try {
+    if (!window.LYMX || !window.LYMX.getSession) return;
+    const s = await window.LYMX.getSession();
+    if (!s) return;
+    const sb = window.LYMX.sb;
+    const { data, error } = await sb.from('feedback')
+      .select('id, created_at, user_email, user_role, type, priority, status, subject, message, page_url')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    if (error || !data) return;
+
+    function mapStatus(s) {
+      if (s === 'new') return 'open';
+      if (s === 'in_progress') return 'pending';
+      if (s === 'resolved') return 'resolved';
+      return 'closed';
+    }
+    function mapPriority(p) {
+      const x = (p || '').toLowerCase();
+      if (x === 'urgent' || x === 'high') return 'high';
+      if (x === 'low') return 'low';
+      return 'medium';
+    }
+    function shortId(uuid) { return 'T-' + (uuid || '').slice(0, 6).toUpperCase(); }
+    function nameFromEmail(email) {
+      if (!email) return 'Anonymous';
+      const local = email.split('@')[0] || email;
+      return local.split(/[._-]/).slice(0,2).map(s => s ? s[0].toUpperCase() + s.slice(1) : '').join(' ').trim() || email;
+    }
+    function fmtCreated(iso) { return new Date(iso).toISOString().slice(0, 16).replace('T', ' '); }
+
+    tickets.length = 0;
+    data.forEach(r => {
+      tickets.push({
+        id: shortId(r.id),
+        uuid: r.id,
+        subj: r.subject || (r.message || '').slice(0, 80) || '(no subject)',
+        role: r.user_role || 'customer',
+        name: nameFromEmail(r.user_email),
+        contact: r.user_email || '—',
+        status: mapStatus(r.status),
+        priority: mapPriority(r.priority),
+        assignee: 'unassigned',
+        created: fmtCreated(r.created_at),
+        thread: [{
+          from: nameFromEmail(r.user_email),
+          staff: false,
+          when: fmtCreated(r.created_at),
+          body: (r.message || r.subject || '').toString()
+        }]
+      });
+    });
+    if (typeof render === 'function') render();
+  } catch (e) {
+    console.warn('[admin-tickets] DB load failed', e);
+  }
+})();
+</script>
 <script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>
 </html>
