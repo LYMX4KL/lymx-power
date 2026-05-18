@@ -19,7 +19,7 @@ window.LYMX_CONFIG = {
   // an OAuth 2.0 Web client in Google Cloud Console and added
   // https://getlymx.com/google-oauth-done.html to its Authorized redirect URIs.
   // The Client SECRET stays in Supabase secrets as GOOGLE_OAUTH_CLIENT_SECRET — never put it here.
-  GOOGLE_OAUTH_CLIENT_ID: ''
+  GOOGLE_OAUTH_CLIENT_ID: '108170223593-4hfk5ilud07p2ff3bt74k2ne55mtsh2p.apps.googleusercontent.com'
 };
 
 // ----- PWA tag injection (idempotent, runs synchronously at parse time) -----
