@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>My bookings · LYMX</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f59e0b;--err:#dc2626}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  .layout{margin-left:240px;padding:20px 24px;min-height:100vh;max-width:920px}
+  @media(max-width:1100px){.layout{margin-left:0;padding:14px}}
+  h1{margin:0 0 4px;font-size:26px;font-weight:800}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+  .tabs{display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+  .tab{padding:9px 14px;background:transparent;border:0;border-bottom:2px solid transparent;cursor:pointer;font:inherit;font-size:14px;font-weight:600;color:var(--muted)}
+  .tab.on{color:var(--ink);border-bottom-color:var(--accent)}
+  .booking{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+  .booking .when{font-weight:700;font-size:15px;min-width:180px}
+  .booking .when small{display:block;color:var(--muted);font-weight:500;font-size:12px;margin-top:2px}
+  .booking .who{flex:1;min-width:200px}
+  .booking .who .name{font-size:14.5px;font-weight:700;color:var(--ink)}
+  .booking .who .role{font-size:12.5px;color:var(--muted);margin-top:1px}
+  .booking .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .pill{padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .pill.confirmed{background:#dbeafe;color:#1d4ed8}
+  .pill.completed{background:#d1fae5;color:#065f46}
+  .pill.no_show{background:#fef3c7;color:#92400e}
+  .pill.cancelled{background:#fee2e2;color:#991b1b}
+  .btn{padding:7px 13px;border-radius:7px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn.join{background:#0a84ff;color:#fff;border:0}
+  .btn.cancel{background:#fff;color:#991b1b;border:1px solid #fee2e2}
+  .btn.reschedule{background:#fff;color:#0050c7;border:1px solid #dbeafe}
+  .empty{color:var(--muted);font-size:14px;padding:48px 0;text-align:center}
+  .summary-box{background:#eef4ff;border-left:3px solid var(--accent);padding:10px 14px;border-radius:8px;margin-top:10px;font-size:13.5px;color:var(--ink-2);width:100%}
+  .summary-box .lbl{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+  @media(max-width:600px){
+    .booking{flex-direction:column}
+    .booking .when{min-width:0}
+    .actions{width:100%}
+    .btn{flex:1;text-align:center}
+  }
+</style>
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<div class="layout">
+  <h1 data-i18n="mybk.title">📅 My bookings</h1>
+  <div class="sub" data-i18n="mybk.sub">Your upcoming and past calls. Cancel or reschedule any upcoming call right from here — no email needed.</div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="upcoming" data-i18n="mybk.tab_upcoming">Upcoming</button>
+    <button class="tab" data-tab="past" data-i18n="mybk.tab_past">Past</button>
+  </div>
+
+  <div id="rows"></div>
+</div>
+
+<script>
+(function(){
+  if (!window.LYMX_CONFIG || typeof window.supabase === 'undefined') return;
+  const sb = window.supabase.createClient(window.LYMX_CONFIG.SUPABASE_URL, window.LYMX_CONFIG.SUPABASE_ANON_KEY, { auth:{ persistSession:true } });
+  const t = (k, fb) => (window.LymxI18n && window.LymxI18n.t) ? window.LymxI18n.t(k, fb) : fb;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s==null?'':s).replace(/[<>&"]/g, c=>({"<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;"}[c]));
+
+  let allBookings = [];
+  let allCalendars = [];
+  let myEmail = '';
+  let myUserId = '';
+  let currentTab = 'upcoming';
+
+  async function init(){
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) {
+      $('rows').innerHTML = `<div class="empty">${t('mybk.signin_required','Please sign in to see your bookings.')} <a href="/login.html?next=/my-bookings.html" style="color:var(--accent)">${t('mybk.sign_in','Sign in')}</a></div>`;
+      return;
+    }
+    myEmail = (user.email || '').toLowerCase().trim();
+    myUserId = user.id;
+
+    // Fetch bookings where booker matches this user (by email or user_id)
+    const { data: bks } = await sb.from('bookings')
+      .select('id, team_calendar_id, starts_at, ends_at, duration_min, status, video_room_url, summary, cancel_token, booker_name, booker_email, booker_user_id')
+      .or(`booker_email.eq.${myEmail},booker_user_id.eq.${myUserId}`)
+      .order('starts_at', { ascending: false })
+      .limit(100);
+    allBookings = bks || [];
+
+    if (allBookings.length) {
+      const calIds = [...new Set(allBookings.map(b => b.team_calendar_id).filter(Boolean))];
+      const { data: cals } = await sb.from('team_calendars')
+        .select('id, handle, display_name, role_title, brand_color, timezone')
+        .in('id', calIds);
+      allCalendars = cals || [];
+    }
+
+    render();
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+        tab.classList.add('on');
+        currentTab = tab.dataset.tab;
+        render();
+      });
+    });
+  }
+
+  function calMap(id) { return allCalendars.find(c => c.id === id); }
+
+  function render(){
+    const nowIso = new Date().toISOString();
+    const upcoming = allBookings.filter(b => b.status === 'confirmed' && b.starts_at >= nowIso).sort((a,b) => a.starts_at.localeCompare(b.starts_at));
+    const past = allBookings.filter(b => !(b.status === 'confirmed' && b.starts_at >= nowIso));
+    const list = currentTab === 'upcoming' ? upcoming : past;
+
+    if (!list.length) {
+      $('rows').innerHTML = `<div class="empty">${currentTab === 'upcoming' ? t('mybk.no_upcoming','No upcoming calls. Book one with someone from the LYMX team.') : t('mybk.no_past','No past calls yet.')}</div>`;
+      return;
+    }
+
+    $('rows').innerHTML = list.map(b => {
+      const c = calMap(b.team_calendar_id);
+      const d = new Date(b.starts_at);
+      const tz = c?.timezone || undefined;
+      const date = d.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric', timeZone: tz });
+      const time = d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit', timeZone: tz });
+      const statusKey = 'adminbk.status_' + b.status;
+      const statusLabel = t(statusKey, b.status);
+      const isUpcoming = b.status === 'confirmed' && b.starts_at >= nowIso;
+
+      let actions = '';
+      if (isUpcoming) {
+        const cancelUrl = `/booking-cancel.html?id=${b.id}&token=${encodeURIComponent(b.cancel_token||'')}`;
+        const rescheduleUrl = c ? `/c/${esc(c.handle)}?reschedule_from=${b.id}&token=${encodeURIComponent(b.cancel_token||'')}` : '#';
+        actions = `
+          <a class="btn join" href="${esc(b.video_room_url||'#')}" target="_blank">${t('mybk.join','🎥 Join')}</a>
+          <a class="btn reschedule" href="${esc(rescheduleUrl)}">${t('mybk.reschedule','📅 Reschedule')}</a>
+          <a class="btn cancel" href="${esc(cancelUrl)}">${t('mybk.cancel','Cancel')}</a>`;
+      } else if (b.status === 'completed' && b.video_room_url) {
+        // Past call — show join link in case recording is still up
+        actions = ''; // No actions for past calls
+      }
+
+      const summaryBlock = (b.status === 'completed' && b.summary)
+        ? `<div class="summary-box"><div class="lbl">${t('mybk.call_recap','Call recap')}</div>${esc(b.summary.slice(0, 300))}${b.summary.length > 300 ? '…' : ''}</div>`
+        : '';
+
+      return `<div class="booking">
+        <div class="when">${esc(date)}<small>${esc(time)}${c?.timezone ? ` · ${esc(c.timezone)}` : ''} · ${b.duration_min} min</small></div>
+        <div class="who">
+          <div class="name">${c ? esc(c.display_name || c.handle) : '—'}</div>
+          ${c?.role_title ? `<div class="role">${esc(c.role_title)}</div>` : ''}
+          <div style="margin-top:6px"><span class="pill ${esc(b.status)}">${esc(statusLabel)}</span></div>
+        </div>
+        <div class="actions">${actions}</div>
+        ${summaryBlock}
+      </div>`;
+    }).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
