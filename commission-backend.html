@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX Partner commission engine — period totals, per-Partner and per-Business breakdowns, ACH payout CSV export." />
 <title>Commission Engine · LYMX Admin</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://getlymx.com/commission-backend" />
 <meta property="og:title" content="LYMX Commission Engine" />
@@ -115,6 +112,17 @@
   footer{background:var(--ink);color:#9aa3b0;padding:30px 0;font-size:13px;text-align:center;margin-top:48px}
   footer a{color:#c6ccd4;margin:0 10px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 <header class="nav">
@@ -270,8 +278,10 @@
   const RATES = { direct:0.09, g1:0.03, g2:0.02, g3:0.01 };
   const TIERS = { 0:'bronze', 1:'bronze', 5:'silver', 15:'gold', 40:'platinum' };
 
-  // Mock partners
-  const partners = [
+  // Partner roster — populated by loadFromDb() below.
+  // Mock partners wrapped 2026-05-18 so admin doesn't see fake Mike Chen etc.
+  let partners = [];
+  /* legacy-mock-disabled
     {id:'p1', name:'Mike Chen', email:'mike@example.com', tier:'gold'},
     {id:'p2', name:'Sarah Lee', email:'sarah@example.com', tier:'silver'},
     {id:'p3', name:'Lisa Park', email:'lisa@example.com', tier:'gold'},
@@ -283,10 +293,11 @@
     {id:'p9', name:'Alex Kim', email:'alex@example.com', tier:'platinum'},
     {id:'p10', name:'Elena Ross', email:'elena@example.com', tier:'silver'},
   ];
+  end-legacy-mock-disabled-partners */
 
-  // Mock businesses with chain (direct, g1, g2, g3 = partner ids)
-  // Each business has signupMonth (when they activated), monthly LYMX issued
-  const businesses = [
+  // Business roster — populated by loadFromDb() below.
+  let businesses = [];
+  /* legacy-mock-disabled-businesses
     {name:'Brew & Bean Coffee', activated:'2026-01-15', lymxIssued:8200, chain:['p1','p9','p3','p2'], signedUpThisPeriod:false},
     {name:'Oakline Kitchen', activated:'2026-01-22', lymxIssued:14400, chain:['p1','p9','p3','p2'], signedUpThisPeriod:false},
     {name:'Sun Market & Deli', activated:'2026-02-04', lymxIssued:6800, chain:['p2','p1','p9','p3'], signedUpThisPeriod:false},
@@ -300,8 +311,9 @@
     {name:'Ember Pizza', activated:'2026-04-22', lymxIssued:3600, chain:['p8','p3','p1','p9'], signedUpThisPeriod:true},
     {name:'Crescent Yoga Studio', activated:'2026-04-25', lymxIssued:1200, chain:['p10','p9',null,null], signedUpThisPeriod:true},
   ];
+  end-legacy-mock-disabled-businesses */
 
-  // Period data — using April for "this" by default
+  // Period data — using current month for "this" by default
   let currentPeriod = 'this';
   let currentTab = 'partner';
 
@@ -522,5 +534,127 @@
 
   render();
 </script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>
+   setTimeout(()=> t.classList.remove('on'), 2400);
+  }
+
+  render();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Load real partners + businesses + commission chain from DB.
+(async function loadFromDb(){
+  try {
+    if (!window.LYMX || !window.LYMX.getSession) return;
+    const s = await window.LYMX.getSession();
+    if (!s) return;
+    const sb = window.LYMX.sb;
+
+    // 1) All partners
+    const { data: pRows } = await sb.from('partners')
+      .select('id, display_name, legal_name, contact_email, is_founding_25, sponsor_partner_id')
+      .is('archived_at', null).limit(500);
+    if (!pRows) return;
+
+    function tierFor(p, ownBiz) {
+      if (p.is_founding_25) return 'founding';
+      if (ownBiz >= 40) return 'platinum';
+      if (ownBiz >= 15) return 'gold';
+      if (ownBiz >= 5) return 'silver';
+      return 'bronze';
+    }
+
+    // 2) All businesses (with attribution + recent activity)
+    const { data: bRows } = await sb.from('businesses')
+      .select('id, display_name, legal_name, signed_up_by_partner_id, signup_paid_at, created_at')
+      .is('archived_at', null).limit(1000);
+
+    // 3) Sum lymx_issuances per business for the current period (last 30 days for now)
+    const day30 = new Date(Date.now() - 30*24*60*60*1000).toISOString();
+    const { data: issRows } = await sb.from('lymx_issuances')
+      .select('source_business_id, amount_lymx').gte('created_at', day30);
+    const issuedByBiz = {};
+    (issRows || []).forEach(i => {
+      if (!i.source_business_id) return;
+      issuedByBiz[i.source_business_id] = (issuedByBiz[i.source_business_id] || 0) + Number(i.amount_lymx || 0);
+    });
+
+    // 4) Walk sponsor chain per partner: chain[0]=direct (themselves), [1]=g1, [2]=g2, [3]=g3
+    const byId = {};
+    pRows.forEach(p => { byId[p.id] = p; });
+    function chainFor(partnerId) {
+      const chain = [partnerId, null, null, null];
+      let cur = byId[partnerId] && byId[partnerId].sponsor_partner_id;
+      for (let i = 1; i <= 3 && cur; i++) {
+        chain[i] = cur;
+        cur = byId[cur] && byId[cur].sponsor_partner_id;
+      }
+      return chain;
+    }
+
+    // 5) Build partners[] for the page
+    const ownBizCount = {};
+    (bRows || []).forEach(b => {
+      if (b.signed_up_by_partner_id) ownBizCount[b.signed_up_by_partner_id] = (ownBizCount[b.signed_up_by_partner_id] || 0) + 1;
+    });
+    partners.length = 0;
+    pRows.forEach(p => {
+      const own = ownBizCount[p.id] || 0;
+      partners.push({
+        id: p.id,
+        name: p.display_name || (p.legal_name || 'Partner').split(' ')[0],
+        email: p.contact_email || '',
+        tier: tierFor(p, own)
+      });
+    });
+
+    // 6) Build businesses[] for the page
+    const periodStart = new Date(Date.now() - 30*24*60*60*1000);
+    businesses.length = 0;
+    (bRows || []).forEach(b => {
+      const direct = b.signed_up_by_partner_id;
+      if (!direct) return;
+      const ch = chainFor(direct);
+      const activated = b.signup_paid_at || b.created_at;
+      businesses.push({
+        name: b.display_name || b.legal_name || 'Business',
+        activated: (activated || '').slice(0, 10),
+        lymxIssued: issuedByBiz[b.id] || 0,
+        chain: ch,
+        signedUpThisPeriod: activated && new Date(activated) >= periodStart
+      });
+    });
+
+    // 7) Refresh period config + render
+    const month = new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    if (typeof periodConfig === 'object' && periodConfig.this) {
+      periodConfig.this.label = month;
+      periodConfig.this.biz = businesses;
+    }
+    const banner = document.getElementById('banner-period');
+    if (banner) banner.textContent = month;
+    if (typeof render === 'function') render();
+  } catch (e) {
+    console.warn('[commission-backend] load failed', e);
+  }
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>
+led', e);
+  }
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
 </body>
 </html>
