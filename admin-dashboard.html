@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX Admin home — pending tasks across all admin tools, today's activity feed, key network stats." />
 <title>Admin home · LYMX</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
   *{box-sizing:border-box}
@@ -119,6 +116,17 @@
 
   footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 
@@ -214,6 +222,24 @@
           </div>
           <div class="tasks" id="pending-tasks">
             <div style="padding:24px 22px;color:var(--muted);font-size:13.5px">Loading…</div>
+          </div>
+        </div>
+
+        <!-- Pipeline pulse — today's calls + leads at-a-glance (mirrors daily-digest content) -->
+        <div class="card" id="pulseCard">
+          <div class="card-h">
+            <h2>📊 Pipeline pulse · today</h2>
+            <div class="meta"><a href="leads.html">Open pipeline →</a></div>
+          </div>
+          <div id="pulseGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line)">
+            <div style="background:#fff;padding:18px 16px"><div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700">Calls today</div><div style="font-size:24px;font-weight:800;margin-top:4px" id="pulseCallsToday">—</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px" id="pulseCallsTodaySub">scheduled</div></div>
+            <div style="background:#fff;padding:18px 16px"><div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700">Completed yest.</div><div style="font-size:24px;font-weight:800;margin-top:4px" id="pulseCompletedYday">—</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px" id="pulseCompletedYdaySub">vs 0 no-shows</div></div>
+            <div style="background:#fff;padding:18px 16px"><div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700">New leads · 7d</div><div style="font-size:24px;font-weight:800;margin-top:4px" id="pulseNewLeads">—</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px" id="pulseNewLeadsSub">across all owners</div></div>
+            <div style="background:#fff;padding:18px 16px"><div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700">⏳ Going stale</div><div style="font-size:24px;font-weight:800;margin-top:4px;color:#dc2626" id="pulseStaleLeads">—</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">3+ days, no movement</div></div>
+          </div>
+          <div id="pulseUpcoming" style="padding:14px 22px 18px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted)">
+            <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px">Next 3 calls today</div>
+            <div id="pulseUpcomingList">Loading…</div>
           </div>
         </div>
 
@@ -356,39 +382,28 @@
     } else {
       const rows = await fbRes.json();
       if (!rows.length) {
-        tasksEl.innerHTML = '<div style="padding:18px 22px;color:var(--muted);font-size:13.5px">Inbox is clear. No pending feedback.</div>';
+        tasksEl.innerHTML = '<div style="padding:18px 22px;color:var(--muted);font-size:13.5px">No pending feedback. \u{1F389}</div>';
       } else {
-        tasksEl.innerHTML = rows.map(r => {
-          const ic = r.priority === 'urgent' ? 'danger' : r.priority === 'high' ? 'warn' : 'info';
-          const emoji = r.type === 'bug' ? '🐛' : r.type === 'suggestion' ? '💡' : r.type === 'question' ? '❓' : '📝';
-          const subj = r.subject || (r.message || '').slice(0, 60);
-          return `<a class="task" href="admin-tech-support.html?id=${r.id}">
-            <div class="ic ${ic}">${emoji}</div>
-            <div class="body">
-              <div class="h">${(subj || '').replace(/</g,'&lt;')}</div>
-              <div class="d">${(r.page_url || '').replace(/^https?:\/\/[^/]+/, '')}</div>
-            </div>
-            <div class="ct ${ic === 'danger' ? 'danger' : ic === 'warn' ? 'warn' : ''}">${r.priority || 'normal'}<small>${r.type}</small></div>
-          </a>`;
+        tasksEl.innerHTML = rows.map(function (r) {
+          const when = new Date(r.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+          const pri = (r.priority || 'normal').toUpperCase();
+          const subj = (r.subject || r.message || '').toString().replace(/[<>]/g, '').slice(0, 90);
+          return '<a href="admin-tech-support.html?id=' + r.id + '" style="display:block;padding:14px 18px;text-decoration:none;color:inherit;background:#fff"><div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#5b6472">' + pri + ' · ' + (r.type || 'feedback') + '</div><div style="font-weight:700;margin-top:4px">' + subj + '</div><div style="font-size:12px;color:#5b6472;margin-top:2px">' + when + '</div></a>';
         }).join('');
       }
     }
   }
 
-  // Recent activity — from lymx_issuances (last 24h)
-  const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-  const actRes = await fetch(SUPA + `/rest/v1/lymx_issuances?select=id,amount_lymx,reason,created_at,recipient_user_id&created_at=gte.${since}&order=created_at.desc&limit=8`, { headers: h });
+  // Today's activity — recent lymx_issuances
+  const ar = await fetch(SUPA + '/rest/v1/lymx_issuances?select=amount_lymx,reason,created_at&order=created_at.desc&limit=6', { headers: h });
   const feedEl = document.getElementById('activity-feed');
-  if (feedEl && actRes.ok) {
-  const actRes = await fetch(SUPA + `/rest/v1/lymx_issuances?select=id,amount_lymx,reason,created_at,recipient_user_id&created_at=gte.${since}&order=created_at.desc&limit=8`, { headers: h });
-  const feedEl = document.getElementById('activity-feed');
-  if (feedEl && actRes.ok) {
-    const acts = await actRes.json();
+  if (feedEl && ar.ok) {
+    const acts = await ar.json();
     if (acts.length) {
       feedEl.innerHTML = acts.map(a => {
         const when = new Date(a.created_at).toLocaleString([], { hour: 'numeric', minute: '2-digit' });
         return `<div class="feed-row green"><div class="dot"></div><div class="body">
-          <strong>${a.amount_lymx.toLocaleString()} LYMX</strong> issued \u00b7 ${a.reason}
+          <strong>${a.amount_lymx.toLocaleString()} LYMX</strong> issued · ${a.reason}
           <div class="when">${when}</div>
         </div></div>`;
       }).join('');
@@ -396,6 +411,119 @@
   }
 })();
 </script>
+
+<script>
+// Pipeline pulse — today's calls + lead movement at-a-glance (mirrors daily-digest content)
+(async function loadPulse() {
+  try {
+    if (!window.LYMX_CONFIG) return;
+    const SUPA = window.LYMX_CONFIG.SUPABASE_URL;
+    const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+    let token = ANON;
+    try {
+      if (window.LYMX && window.LYMX.getSession) {
+        const s = await window.LYMX.getSession();
+        if (s && s.access_token) token = s.access_token;
+      }
+    } catch {}
+    const h = { 'apikey': ANON, 'Authorization': 'Bearer ' + token };
+
+    // Date windows
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrowStart = new Date(todayStart.getTime() + 24*60*60*1000);
+    const yesterdayStart = new Date(todayStart.getTime() - 24*60*60*1000);
+    const weekAgo = new Date(now.getTime() - 7*24*60*60*1000);
+    const threeDaysAgo = new Date(now.getTime() - 3*24*60*60*1000);
+
+    function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+
+    // 1) Calls scheduled today (confirmed, starts_at in [todayStart, tomorrowStart))
+    const callsTodayUrl = SUPA + '/rest/v1/bookings'
+      + '?status=eq.confirmed'
+      + '&starts_at=gte.' + encodeURIComponent(todayStart.toISOString())
+      + '&starts_at=lt.'  + encodeURIComponent(tomorrowStart.toISOString())
+      + '&select=id,team_calendar_id,starts_at,duration_min,booker_name,video_room_url'
+      + '&order=starts_at.asc';
+    let callsToday = [];
+    try {
+      const r = await fetch(callsTodayUrl, { headers: h });
+      if (r.ok) callsToday = await r.json();
+    } catch (e) {}
+    setText('pulseCallsToday', callsToday.length);
+
+    // Find next 3 callable calls (starts_at >= now)
+    const nowIso = now.toISOString();
+    const upcomingToday = callsToday.filter(b => b.starts_at >= nowIso).slice(0, 3);
+    setText('pulseCallsTodaySub', upcomingToday.length + ' still upcoming');
+
+    // Load calendar names for upcoming
+    const upcomingListEl = document.getElementById('pulseUpcomingList');
+    if (upcomingListEl) {
+      if (!upcomingToday.length) {
+        upcomingListEl.innerHTML = '<div style="color:#5b6472">No more calls scheduled today.</div>';
+      } else {
+        const calIds = [...new Set(upcomingToday.map(b => b.team_calendar_id).filter(Boolean))];
+        let cals = [];
+        if (calIds.length) {
+          try {
+            const cr = await fetch(SUPA + '/rest/v1/team_calendars?id=in.(' + encodeURIComponent(calIds.join(',')) + ')&select=id,handle,display_name', { headers: h });
+            if (cr.ok) cals = await cr.json();
+          } catch (e) {}
+        }
+        const calOf = id => cals.find(c => c.id === id);
+        upcomingListEl.innerHTML = upcomingToday.map(b => {
+          const c = calOf(b.team_calendar_id);
+          const d = new Date(b.starts_at);
+          const t = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+          const host = c ? (c.display_name || c.handle) : '—';
+          const guest = (b.booker_name || 'guest').toString().replace(/[<>]/g, '').slice(0, 30);
+          return '<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:var(--ink-2);border-bottom:1px solid var(--bg-soft)"><span><strong>' + t + '</strong> · ' + host + ' / ' + guest + '</span><a href="admin-bookings.html" style="font-size:12px;color:var(--accent-2);font-weight:600">View</a></div>';
+        }).join('');
+      }
+    }
+
+    // 2) Completed + no-shows yesterday
+    const yUrl = SUPA + '/rest/v1/bookings'
+      + '?starts_at=gte.' + encodeURIComponent(yesterdayStart.toISOString())
+      + '&starts_at=lt.'  + encodeURIComponent(todayStart.toISOString())
+      + '&status=in.(completed,no_show)'
+      + '&select=id,status';
+    let yRows = [];
+    try {
+      const r = await fetch(yUrl, { headers: h });
+      if (r.ok) yRows = await r.json();
+    } catch (e) {}
+    const completedYday = yRows.filter(b => b.status === 'completed').length;
+    const noShowYday = yRows.filter(b => b.status === 'no_show').length;
+    setText('pulseCompletedYday', completedYday);
+    setText('pulseCompletedYdaySub', noShowYday + ' no-show' + (noShowYday === 1 ? '' : 's'));
+
+    // 3) New leads in the last 7 days
+    try {
+      const r = await fetch(SUPA + '/rest/v1/leads?created_at=gte.' + encodeURIComponent(weekAgo.toISOString()) + '&select=id&limit=2000', {
+        headers: { ...h, 'Prefer': 'count=exact', 'Range': '0-0' }
+      });
+      const cr = r.headers.get('content-range') || '0/0';
+      const c = parseInt(cr.split('/').pop(), 10) || 0;
+      setText('pulseNewLeads', c);
+    } catch (e) { setText('pulseNewLeads', '0'); }
+
+    // 4) Stale leads — open stage, stage_changed_at older than 3 days ago
+    try {
+      const r = await fetch(SUPA + '/rest/v1/leads?stage_changed_at=lt.' + encodeURIComponent(threeDaysAgo.toISOString()) + '&stage=in.(new,contacted,qualified,proposal,negotiation)&select=id&limit=2000', {
+        headers: { ...h, 'Prefer': 'count=exact', 'Range': '0-0' }
+      });
+      const cr = r.headers.get('content-range') || '0/0';
+      const c = parseInt(cr.split('/').pop(), 10) || 0;
+      setText('pulseStaleLeads', c);
+    } catch (e) { setText('pulseStaleLeads', '0'); }
+  } catch (e) {
+    console.warn('[pulse] failed', e);
+  }
+})();
+</script>
+
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
