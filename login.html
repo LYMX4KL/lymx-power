@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="Sign in to LYMX — your loyalty rewards across every Business in the network." />
 <title>Sign in · LYMX</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://getlymx.com/login" />
 <meta property="og:title" content="Sign in · LYMX" />
@@ -88,6 +85,17 @@
 
   footer{padding:32px 0 28px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;text-align:center}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 
@@ -204,7 +212,7 @@
 
 <footer>
   <div class="wrap">
-    <div>© LYMX Power · <a href="customer-privacy.html">Privacy</a> · <a href="customer-terms.html">Terms</a> · <a href="support.html">Support</a></div>
+    <div>© LYMX Power · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="support.html">Support</a></div>
   </div>
 </footer>
 
@@ -319,8 +327,28 @@
 
     if (data && data.session) {
       // Email confirmation OFF — user is signed in immediately
-      showNotice('signupNotice', 'Account created! Redirecting to your wallet…', 'ok');
-      setTimeout(() => window.location.replace('customer-dashboard.html'), 600);
+      // Award the 100 LYMX welcome bonus via business-signup-bonus EF (slug=lymx for naked signups)
+      try {
+        const refMatch = (location.search || '').match(/[?&]ref=([^&]+)/);
+        const ref = refMatch ? decodeURIComponent(refMatch[1]) : null;
+        const idem = 'login-signup-' + data.user.id;
+        await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/functions/v1/business-signup-bonus', {
+          method: 'POST',
+          headers: { apikey: window.LYMX_CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + data.session.access_token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: data.user.id,
+            business_slug: 'lymx',
+            idempotency_key: idem,
+            landing_url: location.href,
+            user_agent: navigator.userAgent,
+            inviter_ref: ref
+          })
+        });
+      } catch (bonusErr) {
+        console.warn('Welcome bonus call failed:', bonusErr);
+      }
+      showNotice('signupNotice', 'Account created! +100 LYMX welcome bonus. Redirecting to your wallet…', 'ok');
+      setTimeout(() => window.location.replace('customer-dashboard.html'), 800);
     } else {
       // Email confirmation ON — user needs to click the link
       showNotice('signupNotice', 'Account created. Check your email for the confirmation link, then sign in.', 'ok');
