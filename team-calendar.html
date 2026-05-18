@@ -95,6 +95,12 @@
       <div id="availBanner"></div>
     </div>
 
+    <div class="card" id="googleCard">
+      <h2>📅 Google Calendar sync</h2>
+      <div id="googleStatus" style="font-size:13.5px;color:var(--muted);margin-bottom:10px">—</div>
+      <div id="googleActions"></div>
+    </div>
+
     <div class="card">
       <h2>Time off / blocked dates</h2>
       <p style="color:var(--muted);font-size:13px;margin:0 0 12px">Add specific dates (vacation, sick, conferences) when you can't take bookings. These override your weekly availability.</p>
@@ -181,6 +187,56 @@
     $('saveAvailBtn').addEventListener('click', saveAvail);
     $('addOverrideBtn').addEventListener('click', addOverride);
     await loadOverrides();
+    await renderGoogleCard();
+  }
+
+  // ----- Google Calendar sync card -----
+  async function renderGoogleCard(){
+    const status = $('googleStatus');
+    const actions = $('googleActions');
+    const clientId = (window.LYMX_CONFIG && window.LYMX_CONFIG.GOOGLE_OAUTH_CLIENT_ID) || '';
+    if (!clientId) {
+      status.innerHTML = '<span style="color:#9a3412">Google sign-in client ID not configured yet.</span> Once Kenny adds <code>GOOGLE_OAUTH_CLIENT_ID</code> to <code>lymx-config.js</code> + Supabase secrets, the Connect button will work.';
+      actions.innerHTML = '';
+      return;
+    }
+    const { data: tok } = await sb.from('oauth_tokens').select('id, provider_email, push_bookings, pull_busy, connected_at, last_used_at').eq('user_id', me.id).eq('provider', 'google').maybeSingle();
+    if (!tok) {
+      status.textContent = 'Not connected. Hooking it up lets bookings on your LYMX page automatically appear in your Google Calendar, and the booking page only shows slots when you are actually free.';
+      const scopes = 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.freebusy openid email';
+      const redirect = location.origin + '/google-oauth-done.html';
+      const url = 'https://accounts.google.com/o/oauth2/v2/auth?'
+        + 'response_type=code&'
+        + 'access_type=offline&'
+        + 'prompt=consent&'
+        + 'client_id=' + encodeURIComponent(clientId) + '&'
+        + 'redirect_uri=' + encodeURIComponent(redirect) + '&'
+        + 'scope=' + encodeURIComponent(scopes);
+      actions.innerHTML = '<a class="save-btn" href="' + url + '" style="display:inline-block;text-decoration:none">🔗 Connect Google Calendar</a>';
+      return;
+    }
+    status.innerHTML = `Connected as <b>${esc(tok.provider_email||'(unknown)')}</b> · since ${new Date(tok.connected_at).toLocaleDateString()}`;
+    actions.innerHTML = `
+      <label style="font-size:13px;display:block;margin-bottom:6px"><input type="checkbox" id="gPushBookings" ${tok.push_bookings?'checked':''}> Push new bookings into my Google Calendar</label>
+      <label style="font-size:13px;display:block;margin-bottom:10px"><input type="checkbox" id="gPullBusy" ${tok.pull_busy?'checked':''}> Filter booking slots by my Google busy times</label>
+      <button class="save-btn" id="gSavePrefs">Save preferences</button>
+      <button class="save-btn" id="gDisconnect" style="background:#fee2e2;color:#991b1b;margin-left:6px">Disconnect</button>
+      <div id="gBanner"></div>
+    `;
+    $('gSavePrefs').addEventListener('click', async () => {
+      const { error } = await sb.from('oauth_tokens').update({
+        push_bookings: $('gPushBookings').checked,
+        pull_busy: $('gPullBusy').checked,
+      }).eq('id', tok.id);
+      if (error) { $('gBanner').innerHTML = '<div class="alert err">'+esc(error.message)+'</div>'; return; }
+      $('gBanner').innerHTML = '<div class="alert ok">Saved.</div>';
+      setTimeout(() => $('gBanner').innerHTML = '', 2500);
+    });
+    $('gDisconnect').addEventListener('click', async () => {
+      if (!confirm('Disconnect Google Calendar? Bookings already in your calendar will stay there; new bookings will no longer push.')) return;
+      await sb.from('oauth_tokens').delete().eq('id', tok.id);
+      await renderGoogleCard();
+    });
   }
 
   async function loadOverrides(){

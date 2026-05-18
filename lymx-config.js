@@ -14,7 +14,12 @@
 
 window.LYMX_CONFIG = {
   SUPABASE_URL: 'https://apffootxzfwmtyjlnteo.supabase.co',
-  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwZmZvb3R4emZ3bXR5amxudGVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NjMxNjksImV4cCI6MjA5MzIzOTE2OX0.05FqSREKhwOz7zAtz70UXPuNXtPNl_YfH8WLYo79DtE'
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwZmZvb3R4emZ3bXR5amxudGVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NjMxNjksImV4cCI6MjA5MzIzOTE2OX0.05FqSREKhwOz7zAtz70UXPuNXtPNl_YfH8WLYo79DtE',
+  // Google OAuth Client ID (public, safe to ship). Set this once you've created
+  // an OAuth 2.0 Web client in Google Cloud Console and added
+  // https://getlymx.com/google-oauth-done.html to its Authorized redirect URIs.
+  // The Client SECRET stays in Supabase secrets as GOOGLE_OAUTH_CLIENT_SECRET — never put it here.
+  GOOGLE_OAUTH_CLIENT_ID: ''
 };
 
 // ----- PWA tag injection (idempotent, runs synchronously at parse time) -----

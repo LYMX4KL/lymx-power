@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<base href="/" />
+<title>Connecting your Google Calendar…</title>
+<style>
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;background:#f6f7f9;color:#0e1116;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+  .card{max-width:480px;background:#fff;border:1px solid #e6e8ec;border-radius:14px;padding:28px 32px;text-align:center;box-shadow:0 6px 24px rgba(14,17,22,.06)}
+  h1{margin:0 0 8px;font-size:20px}
+  .sub{color:#5b6472;font-size:14px;margin-bottom:14px}
+  .ok{font-size:48px;margin-bottom:8px}
+  .err{font-size:36px;margin-bottom:8px;color:#dc2626}
+  .alert{padding:10px 14px;border-radius:8px;font-size:13.5px;text-align:left;margin-top:14px}
+  .alert.error{background:#fee2e2;color:#991b1b;border-left:3px solid #dc2626}
+  a.btn{display:inline-block;margin-top:14px;padding:9px 18px;background:#0e1116;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px}
+</style>
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+
+<div class="card" id="card">
+  <div id="working">
+    <h1>Connecting your Google Calendar…</h1>
+    <div class="sub">Hang tight, exchanging the auth code with Google.</div>
+  </div>
+  <div id="success" style="display:none">
+    <div class="ok">✓</div>
+    <h1>Google Calendar connected</h1>
+    <div class="sub">Bookings on your LYMX page will now appear in your Google Calendar, and your booking page will check your real busy times before showing slots.</div>
+    <div class="sub" id="successEmail"></div>
+    <a class="btn" href="/team-calendar.html">Back to my calendar</a>
+  </div>
+  <div id="failed" style="display:none">
+    <div class="err">✕</div>
+    <h1>Couldn't finish connecting</h1>
+    <div class="alert error" id="errMsg"></div>
+    <a class="btn" href="/team-calendar.html">Back to my calendar</a>
+  </div>
+</div>
+
+<script>
+(async function(){
+  const params = new URLSearchParams(location.search);
+  const code = params.get('code');
+  const errParam = params.get('error');
+  if (errParam) {
+    document.getElementById('working').style.display = 'none';
+    document.getElementById('failed').style.display = 'block';
+    document.getElementById('errMsg').textContent = 'Google returned: ' + errParam;
+    return;
+  }
+  if (!code) {
+    document.getElementById('working').style.display = 'none';
+    document.getElementById('failed').style.display = 'block';
+    document.getElementById('errMsg').textContent = 'No auth code received from Google. Try connecting again.';
+    return;
+  }
+
+  const sb = window.supabase.createClient(window.LYMX_CONFIG.SUPABASE_URL, window.LYMX_CONFIG.SUPABASE_ANON_KEY, { auth:{ persistSession:true } });
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    document.getElementById('working').style.display = 'none';
+    document.getElementById('failed').style.display = 'block';
+    document.getElementById('errMsg').textContent = 'You need to be signed in to LYMX before connecting Google. Sign in and try again.';
+    return;
+  }
+
+  try {
+    const r = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/functions/v1/google-oauth-callback', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+        'apikey': window.LYMX_CONFIG.SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ code }),
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'token exchange failed');
+    document.getElementById('working').style.display = 'none';
+    document.getElementById('success').style.display = 'block';
+    if (j.provider_email) document.getElementById('successEmail').textContent = 'Connected as ' + j.provider_email;
+    // Clean URL (remove ?code= so refresh doesn't re-try)
+    history.replaceState(null, '', '/google-oauth-done.html');
+  } catch (e) {
+    document.getElementById('working').style.display = 'none';
+    document.getElementById('failed').style.display = 'block';
+    document.getElementById('errMsg').textContent = e.message;
+  }
+})();
+</script>
+</body>
+</html>

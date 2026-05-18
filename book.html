@@ -167,29 +167,27 @@
     document.querySelectorAll('.day-btn').forEach(b => b.addEventListener('click', () => selectDay(b)));
   }
 
-  function selectDay(btn){
+  async function selectDay(btn){
     document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     selectedDate = btn.dataset.date;
     selectedSlot = null;
-    renderSlots();
+    await renderSlots();
   }
 
-  function renderSlots(){
+  async function renderSlots(){
     const d = new Date(selectedDate + 'T00:00:00');
     const dow = d.getDay();
     const dayRules = rules.filter(r => r.day_of_week === dow);
     if (!dayRules.length) { $('slotsArea').innerHTML = '<div style="color:var(--muted);font-size:13px">No availability that day.</div>'; return; }
+
+    $('slotsArea').innerHTML = '<div style="color:var(--muted);font-size:13px">Checking real-time availability…</div>';
 
     const slots = [];
     const duration = cal.default_duration_min;
     const minNoticeMs = cal.min_notice_hours * 3600000;
     const now = Date.now();
     for (const rule of dayRules) {
-      const [sh, sm] = rule.start_time.split(':').map(Number);
-      const [eh, em] = rule.end_time.split(':').map(Number);
-      // Build slots in the calendar's TIMEZONE — approximated here by treating the entered times as UTC offsets from local
-      // For correctness on day 1 we let the booker's local browser decide display (the EF validates final UTC time).
       const dayStart = new Date(selectedDate + 'T' + rule.start_time + ':00');
       const dayEnd   = new Date(selectedDate + 'T' + rule.end_time   + ':00');
       for (let t = dayStart.getTime(); t + duration*60000 <= dayEnd.getTime(); t += duration*60000) {
@@ -199,7 +197,44 @@
       }
     }
     if (!slots.length) { $('slotsArea').innerHTML = '<div style="color:var(--muted);font-size:13px">No more slots today.</div>'; return; }
-    $('slotsArea').innerHTML = '<div class="slots">' + slots.map(s => {
+
+    // Also fetch existing bookings on this calendar that day (so we don't show double-booked slots)
+    const dayStartUtc = new Date(selectedDate + 'T00:00:00Z').toISOString();
+    const dayEndUtc = new Date(selectedDate + 'T23:59:59Z').toISOString();
+    const { data: existingBookings } = await sb.from('bookings').select('starts_at, ends_at').eq('team_calendar_id', cal.id).in('status', ['confirmed','pending']).gte('starts_at', dayStartUtc).lte('starts_at', dayEndUtc);
+
+    // Optionally fetch Google busy ranges for the calendar owner
+    let googleBusy = [];
+    try {
+      const gbR = await fetch(SUPABASE_URL + '/functions/v1/google-busy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON },
+        body: JSON.stringify({ handle, from: dayStartUtc, to: dayEndUtc }),
+      });
+      const gbJ = await gbR.json();
+      if (gbJ.ok && gbJ.busy) googleBusy = gbJ.busy;
+    } catch(_e){ /* swallow */ }
+
+    function isConflict(slotStart){
+      const slotEnd = new Date(slotStart.getTime() + duration*60000);
+      // existing LYMX bookings
+      for (const b of (existingBookings || [])) {
+        const bs = new Date(b.starts_at).getTime();
+        const be = new Date(b.ends_at).getTime();
+        if (slotStart.getTime() < be && slotEnd.getTime() > bs) return true;
+      }
+      // Google busy ranges
+      for (const b of googleBusy) {
+        const bs = new Date(b.start).getTime();
+        const be = new Date(b.end).getTime();
+        if (slotStart.getTime() < be && slotEnd.getTime() > bs) return true;
+      }
+      return false;
+    }
+
+    const openSlots = slots.filter(s => !isConflict(s));
+    if (!openSlots.length) { $('slotsArea').innerHTML = '<div style="color:var(--muted);font-size:13px">All slots are taken on this day. Pick another day.</div>'; return; }
+    $('slotsArea').innerHTML = '<div class="slots">' + openSlots.map(s => {
       const iso = s.toISOString();
       return `<button class="slot" data-iso="${iso}">${fmtTime(s)}</button>`;
     }).join('') + '</div>';
