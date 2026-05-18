@@ -124,7 +124,7 @@
       { href: 'partner-tree.html',       icon: '\u{1F333}', label: 'My Tree' },
       { href: 'partner-leaderboard.html', icon: '\u{1F3C6}', label: 'Leaderboard' },
       { href: 'partner-payouts.html',    icon: '\u{1F4B8}', label: 'Payouts' },
-      { href: 'partner-crm.html',        icon: '\u{1F3AF}', label: 'My Prospects' },
+      { href: 'prospects.html',          icon: '\u{1F3AF}', label: 'My Prospects' },
       { href: 'team-calendar.html',      icon: '\u{1F4C5}', label: 'My Calendar' },
       { section: 'Account' },
       { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },

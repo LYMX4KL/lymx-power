@@ -140,6 +140,12 @@
     const { data: staff } = await sb.from('staff_roles').select('user_id').eq('user_id', me.id).maybeSingle();
     amIAdmin = !!staff || me.id === '1405bb50-2c97-48dd-bfa5-31f32320de9b';
 
+    // Pre-select "My leads" filter when ?owner=me in the URL (prospects.html redirects here with this param)
+    try {
+      const params = new URLSearchParams(location.search);
+      if (params.get('owner') === 'me') $('ownerFilter').value = 'me';
+    } catch(e){}
+
     await loadAll();
     render();
 

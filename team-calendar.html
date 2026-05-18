@@ -96,6 +96,18 @@
     </div>
 
     <div class="card">
+      <h2>Time off / blocked dates</h2>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 12px">Add specific dates (vacation, sick, conferences) when you can't take bookings. These override your weekly availability.</p>
+      <div id="overridesList" style="margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+        <div><label style="font-size:12px;color:var(--muted);font-weight:600">Block this date</label><br><input type="date" id="overrideDate" style="padding:7px 9px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px" /></div>
+        <div style="flex:1;min-width:160px"><label style="font-size:12px;color:var(--muted);font-weight:600">Reason (optional)</label><br><input id="overrideReason" placeholder="e.g. vacation, conference" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px" /></div>
+        <button class="save-btn" id="addOverrideBtn">Block date</button>
+      </div>
+      <div id="overrideBanner"></div>
+    </div>
+
+    <div class="card">
       <h2>Upcoming bookings</h2>
       <div id="bookingsList"></div>
     </div>
@@ -167,6 +179,43 @@
 
     $('saveProfileBtn').addEventListener('click', saveProfile);
     $('saveAvailBtn').addEventListener('click', saveAvail);
+    $('addOverrideBtn').addEventListener('click', addOverride);
+    await loadOverrides();
+  }
+
+  async function loadOverrides(){
+    const today = new Date().toISOString().slice(0,10);
+    const { data } = await sb.from('availability_overrides').select('*').eq('team_calendar_id', myCal.id).gte('override_date', today).order('override_date');
+    if (!data || !data.length) { $('overridesList').innerHTML = '<div style="color:var(--muted);font-size:13px">No blocked dates upcoming.</div>'; return; }
+    $('overridesList').innerHTML = data.map(o => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f6f7f9;border-radius:7px;margin-bottom:5px;font-size:13.5px">
+        <span style="font-weight:700;min-width:130px">${new Date(o.override_date + 'T00:00:00').toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric', year:'numeric' })}</span>
+        <span style="flex:1;color:var(--muted)">${esc(o.reason || 'blocked')}</span>
+        <button data-id="${o.id}" class="remove-override" style="background:transparent;border:0;cursor:pointer;color:#dc2626;font:inherit;font-size:12.5px;font-weight:600">Remove</button>
+      </div>
+    `).join('');
+    document.querySelectorAll('.remove-override').forEach(b => b.addEventListener('click', () => removeOverride(b.dataset.id)));
+  }
+
+  async function addOverride(){
+    const date = $('overrideDate').value;
+    if (!date) { banner('overrideBanner', 'Pick a date first', 'err'); return; }
+    const { error } = await sb.from('availability_overrides').insert({
+      team_calendar_id: myCal.id,
+      override_date: date,
+      is_blocked: true,
+      reason: $('overrideReason').value.trim() || null,
+    });
+    if (error) { banner('overrideBanner', error.message, 'err'); return; }
+    $('overrideDate').value = ''; $('overrideReason').value = '';
+    banner('overrideBanner', 'Date blocked.', 'ok');
+    await loadOverrides();
+  }
+
+  async function removeOverride(id){
+    const { error } = await sb.from('availability_overrides').delete().eq('id', id);
+    if (error) { alert('Could not remove: ' + error.message); return; }
+    await loadOverrides();
   }
 
   function renderAvail(){
