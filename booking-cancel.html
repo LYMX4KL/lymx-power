@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<base href="/" />
+<title>Cancel your call · LYMX</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;background:#f6f7f9;color:#0e1116;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .card{max-width:500px;width:100%;background:#fff;border:1px solid #e6e8ec;border-radius:14px;padding:28px 32px;box-shadow:0 6px 24px rgba(14,17,22,.06)}
+  h1{margin:0 0 12px;font-size:22px}
+  .sub{color:#5b6472;font-size:14.5px;margin-bottom:18px}
+  .when{background:#eef4ff;border-left:3px solid #0a84ff;padding:14px 16px;border-radius:8px;margin:14px 0}
+  .when-time{font-weight:700;font-size:16px}
+  .when-tz{font-size:13px;color:#5b6472;margin-top:3px}
+  .row{margin:14px 0}
+  label{display:block;font-size:13px;font-weight:600;color:#3a414b;margin-bottom:6px}
+  textarea{width:100%;min-height:80px;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-family:inherit;font-size:14px;resize:vertical}
+  textarea:focus{outline:none;border-color:#0a84ff;box-shadow:0 0 0 3px rgba(10,132,255,.15)}
+  .btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+  .btn{padding:11px 22px;border-radius:9px;font-weight:700;font-size:14.5px;cursor:pointer;border:none;text-decoration:none;display:inline-block;text-align:center;transition:filter .12s}
+  .btn:hover{filter:brightness(.96)}
+  .btn-danger{background:#dc2626;color:#fff}
+  .btn-ghost{background:#fff;color:#0e1116;border:1px solid #d1d5db}
+  .btn-primary{background:#0a84ff;color:#fff}
+  .alert{padding:12px 14px;border-radius:8px;font-size:14px;margin-top:14px}
+  .alert.error{background:#fee2e2;color:#991b1b;border-left:3px solid #dc2626}
+  .alert.success{background:#d1fae5;color:#065f46;border-left:3px solid #10b981}
+  .icon{font-size:42px;text-align:center;margin-bottom:6px}
+  .center{text-align:center}
+  @media (max-width:480px){
+    .card{padding:22px 20px}
+    .btn-row{flex-direction:column}
+    .btn{width:100%}
+  }
+</style>
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+
+<div class="card" id="card">
+  <!-- Loading state -->
+  <div id="loading">
+    <div class="sub">Looking up your booking…</div>
+  </div>
+
+  <!-- Confirm-cancel state -->
+  <div id="confirm" style="display:none">
+    <h1>Cancel this call?</h1>
+    <div class="sub">You're about to cancel:</div>
+    <div class="when">
+      <div class="when-time" id="confWho"></div>
+      <div class="when-tz" id="confWhen"></div>
+    </div>
+    <div class="row">
+      <label for="reason">Reason (optional — helps us improve)</label>
+      <textarea id="reason" placeholder="e.g. Scheduling conflict came up, I'll book a new time"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-danger" id="confirmBtn">Yes, cancel the call</button>
+      <a class="btn btn-ghost" id="keepBtn">No, keep the call</a>
+    </div>
+  </div>
+
+  <!-- Success state -->
+  <div id="success" style="display:none">
+    <div class="icon">✓</div>
+    <h1 class="center">Call cancelled</h1>
+    <div class="sub center" id="successSub">Your booking has been removed and the host has been notified.</div>
+    <div class="btn-row" style="justify-content:center">
+      <a class="btn btn-primary" id="rebookBtn">📅 Book a different time</a>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div id="error" style="display:none">
+    <div class="icon">✕</div>
+    <h1 class="center">Couldn't cancel</h1>
+    <div class="alert error" id="errorMsg"></div>
+    <div class="btn-row" style="justify-content:center;margin-top:14px">
+      <a class="btn btn-ghost" href="/">Back to LYMX</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(async function(){
+  const $ = id => document.getElementById(id);
+  const show = id => { ['loading','confirm','success','error'].forEach(x => $(x).style.display = (x === id ? 'block' : 'none')); };
+  const showError = msg => { $('errorMsg').textContent = msg; show('error'); };
+
+  const params = new URLSearchParams(location.search);
+  const bookingId = params.get('id');
+  const token = params.get('token');
+  if (!bookingId || !token) { showError('This cancel link is missing required information.'); return; }
+
+  const sb = window.supabase.createClient(window.LYMX_CONFIG.SUPABASE_URL, window.LYMX_CONFIG.SUPABASE_ANON_KEY);
+
+  // Validate token + fetch booking summary via RPC (anon-callable)
+  const { data: rows, error: rpcErr } = await sb.rpc('fn_validate_booking_cancel_token', {
+    p_booking_id: bookingId,
+    p_token: token,
+  });
+  if (rpcErr) { showError('Server error: ' + rpcErr.message); return; }
+  if (!rows || rows.length === 0) { showError('This cancel link has expired or the booking was not found.'); return; }
+  const b = rows[0];
+
+  if (b.status === 'cancelled') {
+    $('successSub').textContent = 'This call was already cancelled.';
+    $('rebookBtn').href = '/c/' + encodeURIComponent(b.handle);
+    show('success'); return;
+  }
+  if (b.status === 'completed') {
+    showError('This call has already happened — there is nothing to cancel.'); return;
+  }
+
+  // Populate confirm screen
+  $('confWho').textContent = b.display_name + ' ↔ ' + b.booker_name;
+  const startsLocal = new Date(b.starts_at).toLocaleString(undefined, { timeZone: b.timezone || undefined, dateStyle: 'full', timeStyle: 'short' });
+  $('confWhen').textContent = startsLocal + ' (' + (b.timezone || 'UTC') + ')';
+  $('keepBtn').href = '/c/' + encodeURIComponent(b.handle);
+  $('rebookBtn').href = '/c/' + encodeURIComponent(b.handle);
+  show('confirm');
+
+  $('confirmBtn').addEventListener('click', async () => {
+    $('confirmBtn').disabled = true;
+    $('confirmBtn').textContent = 'Cancelling…';
+    const reason = $('reason').value.trim();
+    try {
+      const r = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/functions/v1/booking-cancel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': window.LYMX_CONFIG.SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ booking_id: bookingId, token, reason, cancelled_by: 'booker' }),
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || 'Cancel failed');
+      show('success');
+    } catch (e) {
+      $('confirmBtn').disabled = false;
+      $('confirmBtn').textContent = 'Yes, cancel the call';
+      showError(e.message);
+    }
+  });
+})();
+</script>
+</body>
+</html>
