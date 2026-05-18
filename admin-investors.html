@@ -6,9 +6,6 @@
 <meta name="description" content="LYMX Admin — investor pipeline tracker. Stages from Lead to Closed, per-investor cards with check size, last contact, next action." />
 <meta name="robots" content="noindex,nofollow" />
 <title>Investor pipeline · LYMX Admin</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--maxw:1400px}
   *{box-sizing:border-box}
@@ -106,6 +103,17 @@
 
   footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 <header class="nav">
@@ -242,8 +250,18 @@
   const STAGES = ['lead','firstcall','diligence','termsheet','closed'];
   const STAGE_LABEL = {lead:'Lead',firstcall:'First call',diligence:'Diligence',termsheet:'Term sheet / SAFE',closed:'Closed'};
 
-  // Mock pipeline
-  let investors = [
+  // Investor pipeline — persisted to localStorage so Kenny's tracking survives
+  // page reloads. Mock data below disabled 2026-05-18 (was showing fake Brushwood
+  // Capital / Marcus Liu etc. to anyone who landed on this page).
+  let investors = (function(){
+    try { return JSON.parse(localStorage.getItem('lymx_investors') || '[]'); }
+    catch (e) { return []; }
+  })();
+  function saveInvestors(){
+    try { localStorage.setItem('lymx_investors', JSON.stringify(investors)); }
+    catch (e) {}
+  }
+  /* legacy-mock-disabled
     {id:1,firm:'Brushwood Capital',type:'vc',person:'Marcus Liu',email:'marcus@brushwood.vc',check:300,stage:'diligence',source:'Warm intro from Sarah Tan',lastContact:'2026-04-26',nextAction:'Send Q1 cohort retention deck',nextDate:'2026-04-30',activity:[
       {when:'2026-04-26',body:'Marcus came back with 8 diligence questions on cohort retention and unit econ. Promised data by end of week.'},
       {when:'2026-04-22',body:'1-hour pitch went well. Asked for data room access.'},
@@ -295,6 +313,10 @@
       {when:'2026-04-20',body:'Inbound: their CEO is curious about LYMX. May be acquirer or partner — too early to tell.'}
     ]}
   ];
+  end-legacy-mock-disabled */
+
+  // Persist investors[] after every render so additions / edits survive page reload
+  const _origRender = typeof render === 'function' ? render : null;
 
   let filterType = 'all';
   let searchQ = '';
@@ -409,44 +431,60 @@
     closeDetail();
     render();
   }
-  function closeDetail(){ document.getElementById('ovr-detail').classList.remove('on'); }
 
+  // ------ New / edit / export ------
   function openNew(){ document.getElementById('ovr-new').classList.add('on'); }
   function closeNew(){ document.getElementById('ovr-new').classList.remove('on'); }
   function addNew(){
     const firm = document.getElementById('n-firm').value.trim();
-    const type = document.getElementById('n-type').value;
     const person = document.getElementById('n-person').value.trim();
+    if (!firm || !person) { alert('Firm and contact name are required'); return; }
+    const type = (document.getElementById('n-type') || {value:'vc'}).value;
     const email = document.getElementById('n-email').value.trim();
-    const check = parseInt(document.getElementById('n-check').value,10) || 0;
-    const stage = document.getElementById('n-stage').value;
+    const check = Number(document.getElementById('n-check').value) || 0;
+    const stage = (document.getElementById('n-stage') || {value:'lead'}).value;
     const source = document.getElementById('n-source').value.trim();
     const note = document.getElementById('n-note').value.trim();
-    if(!firm || !person){ alert('Firm and contact name required.'); return; }
     const today = new Date().toISOString().slice(0,10);
-    const id = Math.max(...investors.map(i=>i.id))+1;
+    const id = investors.length ? Math.max(...investors.map(i=>i.id))+1 : 1;
     investors.push({id,firm,type,person,email,check,stage,source:source||'—',lastContact:today,nextAction:note?'Follow up on '+note.slice(0,40):'Schedule first conversation',nextDate:today,activity:[{when:today,body:note||'Added to pipeline'}]});
     closeNew();
-    ['n-firm','n-person','n-email','n-check','n-source','n-note'].forEach(i=>document.getElementById(i).value='');
+    ['n-firm','n-person','n-email','n-check','n-source','n-note'].forEach(i=>{ const el=document.getElementById(i); if (el) el.value=''; });
+    saveInvestors();
     render();
   }
 
-  function escapeHTML(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+  // CSV export
+  function exportCSV(){
+    const rows = [['id','firm','type','person','email','check_K','stage','source','last_contact','next_action','next_date']];
+    investors.forEach(i=>rows.push([i.id,i.firm,i.type,i.person,i.email,i.check,i.stage,i.source,i.lastContact,i.nextAction,i.nextDate]));
+    const csv = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob = new Blob([csv],{type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'lymx-investors-'+new Date().toISOString().slice(0,10)+'.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
 
-  document.querySelectorAll('#type-chips .chip').forEach(c=>{
-    c.onclick = ()=>{
-      document.querySelectorAll('#type-chips .chip').forEach(x=>x.classList.remove('on'));
-      c.classList.add('on');
-      filterType = c.dataset.f;
-      render();
+  // Persistence wrapper — saves to localStorage after every render so additions
+  // and stage changes survive a page reload.
+  if (_origRender) {
+    const _wrappedRender = function(){
+      _origRender();
+      saveInvestors();
     };
-  });
-  document.getElementById('search').oninput = e=>{ searchQ = e.target.value; render(); };
+    // Replace global render with wrapped version
+    window.render = _wrappedRender;
+    // (Existing handlers still reference local `render` — they'll keep working;
+    //  new calls via window.render() also persist.)
+  }
 
   render();
 </script>
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>
 </html>
