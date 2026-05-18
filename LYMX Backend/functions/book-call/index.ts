@@ -58,21 +58,29 @@ function rand(n = 8): string {
 
 async function createDailyRoom(apiKey: string, opts: { name: string; expSeconds: number; startsAt: Date; endsAt: Date }) {
     const exp = Math.floor(opts.endsAt.getTime() / 1000) + 1800; // +30min buffer after end
+    // Build properties incrementally — only add `enable_recording` if env says we
+    // have a paid plan that supports it (DAILY_ENABLE_RECORDING=true). Free tier
+    // rejects the flag with HTTP 400 "cannot be set with your current plan".
+    const properties: Record<string, unknown> = {
+        exp,
+        enable_chat: true,
+        start_video_off: false,
+        start_audio_off: false,
+        eject_at_room_exp: true,
+    };
+    if (Deno.env.get("DAILY_ENABLE_RECORDING") === "true") {
+        properties.enable_recording = "cloud";
+    }
+    if (Deno.env.get("DAILY_ENABLE_TRANSCRIPTION") === "true") {
+        properties.enable_transcription = true;
+    }
     const r = await fetch("https://api.daily.co/v1/rooms", {
         method: "POST",
         headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
             name: opts.name,
             privacy: "public",
-            properties: {
-                exp,
-                enable_recording: "cloud",
-                enable_transcription: true,
-                enable_chat: true,
-                start_video_off: false,
-                start_audio_off: false,
-                eject_at_room_exp: true,
-            },
+            properties,
         }),
     });
     if (!r.ok) {
