@@ -90,6 +90,7 @@
       <div class="form-row"><label><span data-i18n="form.email">Email</span> <span style="color:#b91c1c">*</span></label><input id="fEmail" type="email" autocomplete="email" /></div>
       <div class="form-row"><label data-i18n="booking.phone_optional">Phone (optional)</label><input id="fPhone" type="tel" autocomplete="tel" /></div>
       <div class="form-row"><label data-i18n="booking.company_optional">Company (optional)</label><input id="fCompany" autocomplete="organization" /></div>
+      <div id="intakeQuestions"></div>
       <div class="form-row"><label data-i18n="booking.talk_about">What would you like to talk about?</label><textarea id="fMessage" data-i18n-placeholder="booking.prep_help" placeholder="A few words helps me prep before the call…"></textarea></div>
       <button class="submit-btn" id="submitBtn" data-i18n="booking.confirm">Confirm booking</button>
       <div id="banner"></div>
@@ -168,6 +169,34 @@
 
     $('loading').style.display='none';
     $('bookingUI').style.display='block';
+
+    // Render any intake questions the host configured
+    try {
+      var qs = Array.isArray(cal.intake_questions) ? cal.intake_questions : [];
+      var ic = document.getElementById('intakeQuestions');
+      if (ic && qs.length) {
+        ic.innerHTML = qs.map(function (q) {
+          var safeId = 'iq_' + esc(q.id || '');
+          var lbl = esc(q.label || q.id || '');
+          var req = q.required ? ' <span style="color:#b91c1c">*</span>' : '';
+          var ph = esc(q.placeholder || '');
+          if (q.type === 'textarea') {
+            return '<div class="form-row"><label>' + lbl + req + '</label><textarea id="' + safeId + '" data-iq-id="' + esc(q.id) + '"' + (q.required?' required':'') + ' placeholder="' + ph + '"></textarea></div>';
+          } else if (q.type === 'select' && Array.isArray(q.options)) {
+            var opts = q.options.map(function (o) {
+              var ov = (typeof o === 'string') ? o : (o.value || o.label || '');
+              var ol = (typeof o === 'string') ? o : (o.label || o.value || '');
+              return '<option value="' + esc(ov) + '">' + esc(ol) + '</option>';
+            }).join('');
+            return '<div class="form-row"><label>' + lbl + req + '</label><select id="' + safeId + '" data-iq-id="' + esc(q.id) + '"><option value="">—</option>' + opts + '</select></div>';
+          } else {
+            var t = (q.type === 'email' || q.type === 'tel' || q.type === 'number') ? q.type : 'text';
+            return '<div class="form-row"><label>' + lbl + req + '</label><input id="' + safeId + '" data-iq-id="' + esc(q.id) + '" type="' + t + '"' + (q.required?' required':'') + ' placeholder="' + ph + '" /></div>';
+          }
+        }).join('');
+      }
+    } catch (_e) { /* non-fatal */ }
+
 
     // Reschedule mode: show banner + prefill name/email/phone/company/message from the old booking
     const urlParams = new URLSearchParams(location.search);
@@ -310,6 +339,13 @@
       const urlParams = new URLSearchParams(location.search);
       const rescheduleFrom = urlParams.get('reschedule_from');
       const rescheduleToken = urlParams.get('token');
+      // Collect intake question answers
+      const bookerAnswers = {};
+      document.querySelectorAll('[data-iq-id]').forEach(function (el) {
+        const id = el.getAttribute('data-iq-id');
+        const v = (el.value || '').trim();
+        if (id && v) bookerAnswers[id] = v;
+      });
       const r = await fetch(SUPABASE_URL + '/functions/v1/book-call', {
         method:'POST',
         headers,
@@ -322,6 +358,7 @@
           booker_user_id: session?.user?.id || null,
           reschedule_from: rescheduleFrom || null,
           reschedule_token: rescheduleToken || null,
+          booker_answers: bookerAnswers,
         }),
       });
       const j = await r.json();
