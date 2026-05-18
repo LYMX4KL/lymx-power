@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX Partner — payout history, ACH details, 1099-NEC tax forms." />
 <title>Payouts · LYMX Partner</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://getlymx.com/partner-payouts" />
 <meta property="og:title" content="LYMX Partner Payouts" />
@@ -134,6 +131,17 @@
   footer{background:var(--ink);color:#9aa3b0;padding:30px 0;font-size:13px;text-align:center;margin-top:48px}
   footer a{color:#c6ccd4;margin:0 10px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 <header class="nav">
@@ -348,8 +356,120 @@
 
   render();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Wire partner-payouts to REAL settlements + partner_commissions.
+(async function wirePayouts(){
+  try {
+    if (!window.LYMX || !window.LYMX.requireAuth) return;
+    const user = await window.LYMX.requireAuth();
+    if (!user) return;
+    const sb = window.LYMX.sb;
+    let { data: partnerArr } = await sb.from('partners')
+      .select('id, display_name, legal_name, contact_email, partner_code, is_founding_25')
+      .eq('user_id', user.id).limit(1);
+    if ((!partnerArr || !partnerArr.length) && user.email) {
+      const r = await sb.from('partners')
+        .select('id, display_name, legal_name, contact_email, partner_code, is_founding_25')
+        .ilike('contact_email', user.email).limit(1);
+      partnerArr = r.data;
+    }
+    if (!partnerArr || !partnerArr.length) return;
+    const partner = partnerArr[0];
+    const partnerId = partner.id;
+
+    const fmtUsd = (n) => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtN   = (n) => Number(n || 0).toLocaleString('en-US');
+
+    const { data: settlements } = await sb.from('settlements')
+      .select('id, period_start, period_end, total_amount, status, paid_at, payment_method, payment_ref, created_at')
+      .eq('partner_id', partnerId)
+      .order('period_end', { ascending: false }).limit(50);
+
+    const { data: allComms } = await sb.from('partner_commissions')
+      .select('amount, type, generation, settlement_id, source_partner_id, created_at')
+      .eq('partner_id', partnerId);
+    const comms = allComms || [];
+    const sum = (arr) => arr.reduce((s, c) => s + Number(c.amount || 0), 0);
+    const startYr = new Date(new Date().getFullYear(), 0, 1).toISOString();
+    const ytdComms = comms.filter(c => c.created_at >= startYr);
+
+    const paidYtd = (settlements || []).filter(s => s.status === 'paid' && s.paid_at && s.paid_at >= startYr)
+                                       .reduce((s, x) => s + Number(x.total_amount || 0), 0);
+    const heroCells = document.querySelectorAll('.hero .cell');
+    let accountLast4 = '----';
+    if (heroCells.length >= 4) {
+      heroCells[0].querySelector('.big').textContent = fmtUsd(paidYtd);
+      heroCells[0].querySelector('.sub').textContent = paidYtd > 0 ? 'ACH deposits this year' : 'No payouts yet';
+
+      const pendingComm = sum(comms.filter(c => !c.settlement_id));
+      heroCells[1].querySelector('.v').textContent = fmtUsd(pendingComm);
+      const nextPending = (settlements || []).find(s => s.status === 'pending');
+      heroCells[1].querySelector('.sub').textContent = nextPending
+        ? ('Period ' + nextPending.period_start + ' → ' + nextPending.period_end)
+        : (pendingComm > 0 ? 'Will pay on the 5th of next month' : 'No payout scheduled');
+
+      const lymxEarned = comms.filter(c => c.type === 'lymx_issuance' || c.type === 'lymx_bonus')
+                              .reduce((s, x) => s + Number(x.amount || 0), 0);
+      heroCells[2].querySelector('.v').textContent = fmtN(lymxEarned);
+
+      try {
+        const { data: methods } = await sb.from('partner_payout_methods')
+          .select('bank_name, last4, is_default').eq('partner_id', partnerId).eq('is_default', true).limit(1);
+        if (methods && methods.length) {
+          accountLast4 = methods[0].last4 || '----';
+          heroCells[3].querySelector('.v').innerHTML = (methods[0].bank_name || 'ACH') + ' ****' + accountLast4;
+          heroCells[3].querySelector('.sub').textContent = 'Default account';
+        }
+      } catch (e) {}
+    }
+
+    const ytdSignup  = sum(ytdComms.filter(c => c.type === 'signup_bonus'));
+    const ytdDirect  = sum(ytdComms.filter(c => (c.type === 'override' || c.type === 'direct') && Number(c.generation) <= 1));
+    const ytdGens    = sum(ytdComms.filter(c => c.type === 'override' && Number(c.generation) >= 2));
+    const ytdLymx    = sum(ytdComms.filter(c => c.type === 'lymx_issuance' || c.type === 'lymx_bonus'));
+    const ytdCash    = ytdSignup + ytdDirect + ytdGens;
+
+    const breakdownCard = Array.from(document.querySelectorAll('.panel .card')).find(c => /YTD breakdown/i.test(c.textContent));
+    if (breakdownCard) {
+      const stats = breakdownCard.querySelectorAll('.stat');
+      if (stats[0]) stats[0].querySelector('.r').textContent = fmtUsd(ytdSignup);
+      if (stats[1]) stats[1].querySelector('.r').textContent = fmtUsd(ytdDirect);
+      if (stats[2]) stats[2].querySelector('.r').textContent = fmtUsd(ytdGens);
+      if (stats[3]) stats[3].querySelector('.r').textContent = fmtN(ytdLymx) + ' LYMX';
+      if (stats[4]) stats[4].querySelector('.r').textContent = fmtUsd(ytdCash);
+    }
+
+    if (settlements && settlements.length) {
+      payouts.length = 0;
+      settlements.forEach(s => {
+        const myComms = comms.filter(c => c.settlement_id === s.id);
+        const signupAmt = sum(myComms.filter(c => c.type === 'signup_bonus'));
+        const directAmt = sum(myComms.filter(c => (c.type === 'override' || c.type === 'direct') && Number(c.generation) <= 1));
+        const gensAmt = sum(myComms.filter(c => c.type === 'override' && Number(c.generation) >= 2));
+        const lymxAmt = sum(myComms.filter(c => c.type === 'lymx_issuance' || c.type === 'lymx_bonus'));
+        payouts.push({
+          period: s.period_start + ' → ' + s.period_end,
+          year: String(new Date(s.period_end).getFullYear()),
+          scheduled: s.created_at, sent: s.paid_at,
+          cash: Number(s.total_amount || 0), lymx: Math.round(lymxAmt),
+          status: s.status || 'pending',
+          breakdown: { signup: signupAmt, direct: directAmt, gens: gensAmt, lymx: lymxAmt }
+        });
+      });
+      if (typeof render === 'function') render();
+      const tbody = document.getElementById('tbody');
+      if (tbody) tbody.querySelectorAll('td.account').forEach(td => { td.textContent = '****' + accountLast4; });
+    }
+  } catch (e) {
+    console.warn('[partner-payouts] wire failed', e);
+  }
+})();
+</script>
 <script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>
 </html>
