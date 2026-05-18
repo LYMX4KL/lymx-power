@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>All bookings · LYMX Admin</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--err:#dc2626;--noshow:#f59e0b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  .layout{margin-left:240px;padding:20px 24px;min-height:100vh}
+  @media(max-width:1100px){.layout{margin-left:0;padding:14px}}
+  .head{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+  .head h1{margin:0;font-size:24px;font-weight:800}
+  .head .stats{color:var(--muted);font-size:13.5px}
+  .filters{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .filters select, .filters input{padding:7px 11px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13px;background:#fff}
+  .filters input{min-width:200px}
+
+  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+  .stat .lbl{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .stat .num{font-size:22px;font-weight:800;color:var(--ink);margin-top:2px}
+  .stat .num.warn{color:var(--noshow)}
+  .stat .num.err{color:var(--err)}
+  .stat .num.ok{color:var(--ok)}
+
+  table.bookings{width:100%;background:#fff;border:1px solid var(--line);border-radius:11px;border-collapse:separate;border-spacing:0;font-size:13.5px;overflow:hidden}
+  table.bookings th, table.bookings td{padding:11px 13px;text-align:left;border-bottom:1px solid #f3f4f6;vertical-align:top}
+  table.bookings th{background:#fafbfc;color:var(--muted);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  table.bookings tr:last-child td{border-bottom:0}
+  table.bookings tr.row-link{cursor:pointer;transition:.1s}
+  table.bookings tr.row-link:hover{background:#fafbfc}
+  .when-cell .date{font-weight:700;color:var(--ink)}
+  .when-cell .time{font-size:11.5px;color:var(--muted)}
+  .booker-cell b{font-weight:600;color:var(--ink-2)}
+  .booker-cell small{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
+  .status-pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .status-pill.confirmed{background:#dbeafe;color:#1d4ed8}
+  .status-pill.completed{background:#d1fae5;color:#065f46}
+  .status-pill.no_show{background:#fef3c7;color:#92400e}
+  .status-pill.cancelled{background:#fee2e2;color:#991b1b}
+  .status-pill.pending{background:#f3f4f6;color:#374151}
+  .empty{text-align:center;color:var(--muted);padding:42px 0;font-size:14px}
+
+  @media(max-width:760px){
+    table.bookings{font-size:12.5px}
+    table.bookings th, table.bookings td{padding:9px 8px}
+    th.col-cal, td.col-cal{display:none}
+    th.col-note, td.col-note{display:none}
+  }
+</style>
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<div class="layout">
+  <div class="head">
+    <h1 data-i18n="adminbk.title">📋 All bookings</h1>
+    <div class="stats" id="stats">—</div>
+    <div class="filters">
+      <select id="statusFilter">
+        <option value="all" data-i18n="adminbk.all_statuses">All statuses</option>
+        <option value="upcoming" data-i18n="adminbk.upcoming">Upcoming</option>
+        <option value="confirmed" data-i18n="adminbk.confirmed">Confirmed</option>
+        <option value="completed" data-i18n="adminbk.completed">Completed</option>
+        <option value="no_show" data-i18n="adminbk.no_show">No-show</option>
+        <option value="cancelled" data-i18n="adminbk.cancelled">Cancelled</option>
+      </select>
+      <select id="calFilter"><option value="all" data-i18n="adminbk.all_calendars">All calendars</option></select>
+      <input id="search" data-i18n-placeholder="adminbk.search_ph" placeholder="Search booker name/email…" />
+    </div>
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+  <table class="bookings" id="bookingsTbl">
+    <thead>
+      <tr>
+        <th data-i18n="adminbk.col_when">When</th>
+        <th class="col-cal" data-i18n="adminbk.col_calendar">Calendar</th>
+        <th data-i18n="adminbk.col_booker">Booker</th>
+        <th data-i18n="adminbk.col_status">Status</th>
+        <th class="col-note" data-i18n="adminbk.col_note">Note / Outcome</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+</div>
+
+<script>
+(function(){
+  if (!window.LYMX_CONFIG || typeof window.supabase === 'undefined') return;
+  const sb = window.supabase.createClient(window.LYMX_CONFIG.SUPABASE_URL, window.LYMX_CONFIG.SUPABASE_ANON_KEY, { auth:{ persistSession:true } });
+  const t = (k, fb) => (window.LymxI18n && window.LymxI18n.t) ? window.LymxI18n.t(k, fb) : fb;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s==null?'':s).replace(/[<>&"]/g, c=>({"<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;"}[c]));
+
+  let allBookings = [];
+  let allCals = [];
+
+  async function init(){
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) { document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">Sign in required.</p>'; return; }
+
+    // Load calendars first to populate filter dropdown
+    const { data: cals } = await sb.from('team_calendars').select('id, handle, display_name').order('display_name');
+    allCals = cals || [];
+    const calSel = $('calFilter');
+    allCals.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = '@' + c.handle + ' · ' + (c.display_name || '');
+      calSel.appendChild(opt);
+    });
+
+    // Load bookings — admin sees all, otherwise just user's own
+    const { data: bk } = await sb.from('bookings')
+      .select('*')
+      .order('starts_at', { ascending: false })
+      .limit(200);
+    allBookings = bk || [];
+
+    render();
+    $('statusFilter').addEventListener('change', render);
+    $('calFilter').addEventListener('change', render);
+    $('search').addEventListener('input', render);
+
+    // Auto-refresh every 60s
+    setInterval(async () => {
+      const { data: fresh } = await sb.from('bookings').select('*').order('starts_at', { ascending: false }).limit(200);
+      if (fresh) { allBookings = fresh; render(); }
+    }, 60000);
+  }
+
+  function calMap(id) {
+    return allCals.find(c => c.id === id);
+  }
+
+  function render(){
+    const statusFilter = $('statusFilter').value;
+    const calFilter = $('calFilter').value;
+    const q = $('search').value.toLowerCase().trim();
+    const nowIso = new Date().toISOString();
+
+    let filtered = allBookings.filter(b => {
+      if (calFilter !== 'all' && b.team_calendar_id !== calFilter) return false;
+      if (statusFilter === 'upcoming') { if (b.status !== 'confirmed' || b.starts_at < nowIso) return false; }
+      else if (statusFilter !== 'all' && b.status !== statusFilter) return false;
+      if (q) {
+        const hay = ((b.booker_name||'') + ' ' + (b.booker_email||'') + ' ' + (b.booker_message||'')).toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    // Summary counts
+    const total = allBookings.length;
+    const upcoming = allBookings.filter(b => b.status === 'confirmed' && b.starts_at >= nowIso).length;
+    const completed = allBookings.filter(b => b.status === 'completed').length;
+    const noShow = allBookings.filter(b => b.status === 'no_show').length;
+    const cancelled = allBookings.filter(b => b.status === 'cancelled').length;
+    $('summary').innerHTML =
+        `<div class="stat"><div class="lbl">${t('adminbk.total','Total')}</div><div class="num">${total}</div></div>` +
+        `<div class="stat"><div class="lbl">${t('adminbk.upcoming','Upcoming')}</div><div class="num ok">${upcoming}</div></div>` +
+        `<div class="stat"><div class="lbl">${t('adminbk.completed','Completed')}</div><div class="num">${completed}</div></div>` +
+        `<div class="stat"><div class="lbl">${t('adminbk.no_show','No-shows')}</div><div class="num warn">${noShow}</div></div>` +
+        `<div class="stat"><div class="lbl">${t('adminbk.cancelled','Cancelled')}</div><div class="num err">${cancelled}</div></div>`;
+    $('stats').textContent = filtered.length + ' / ' + total + ' shown';
+
+    if (!filtered.length) {
+      $('rows').innerHTML = `<tr><td colspan="5" class="empty">${t('adminbk.no_rows','No bookings match these filters.')}</td></tr>`;
+      return;
+    }
+
+    $('rows').innerHTML = filtered.map(b => {
+      const c = calMap(b.team_calendar_id);
+      const d = new Date(b.starts_at);
+      const date = d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+      const time = d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+      const statusKey = 'adminbk.status_' + b.status;
+      const statusLabel = t(statusKey, b.status);
+      const note = b.summary ? esc(b.summary.slice(0, 120)) + (b.summary.length > 120 ? '…' : '')
+                : b.cancelled_reason ? '<i style="color:var(--muted)">' + esc(b.cancelled_reason.slice(0,120)) + '</i>'
+                : b.booker_message ? '<i style="color:var(--muted)">"' + esc(b.booker_message.slice(0, 80)) + '"</i>'
+                : '';
+      const leadHref = b.lead_id ? `leads.html?lead=${b.lead_id}` : '#';
+      return `<tr class="row-link" data-href="${leadHref}">
+        <td class="when-cell"><div class="date">${esc(date)}</div><div class="time">${esc(time)}</div></td>
+        <td class="col-cal">${c ? '@' + esc(c.handle) : '—'}<br><small style="color:var(--muted);font-size:11px">${c?esc(c.display_name||''):''}</small></td>
+        <td class="booker-cell"><b>${esc(b.booker_name||'—')}</b><small>${esc(b.booker_email||'')}</small></td>
+        <td><span class="status-pill ${esc(b.status)}">${esc(statusLabel)}</span></td>
+        <td class="col-note">${note}</td>
+      </tr>`;
+    }).join('');
+
+    document.querySelectorAll('tr.row-link').forEach(r => {
+      r.addEventListener('click', () => { const h = r.dataset.href; if (h && h !== '#') location.href = h; });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
