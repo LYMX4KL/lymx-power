@@ -6,9 +6,6 @@
 <meta name="description" content="LYMX Partner downline — your G1 / G2 / G3 Partners visualized. Generations track recruited Partners only; your own Businesses are your production." />
 <meta name="robots" content="noindex,nofollow" />
 <title>My downline · LYMX Partner</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
   *{box-sizing:border-box}
@@ -115,6 +112,17 @@
 
   footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 <header class="nav">
@@ -435,8 +443,130 @@
 
   renderTree();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Wire partner-tree to REAL data from partners + businesses + partner_commissions.
+// Pulls my partner row, walks G1/G2/G3 via sponsor_partner_id, counts businesses
+// each downline signed up, sums my own income from partner_commissions.
+// Falls back silently to the placeholder if there's no auth or no partner row.
+(async function loadRealTree(){
+  try {
+    if (!window.LYMX || !window.LYMX.getSession || !window.LYMX_CONFIG) return;
+    const SUPA = window.LYMX_CONFIG.SUPABASE_URL;
+    const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+    const s = await window.LYMX.getSession();
+    if (!s) return;
+    const headers = { apikey: ANON, Authorization: 'Bearer ' + s.access_token, 'Content-Type': 'application/json' };
+
+    async function get(path) {
+      const r = await fetch(SUPA + path, { headers: headers });
+      if (!r.ok) return null;
+      return r.json();
+    }
+
+    // Resolve my partner record. Try in order:
+    //   (1) user_id = auth.uid()  — canonical link
+    //   (2) contact_email = auth email — catches partners onboarded via invite where user_id wasn't backfilled
+    //   (3) partner_code stored in localStorage by sign-up flow — last-ditch lookup
+    let me = null;
+    let lookup = await get('/rest/v1/partners?user_id=eq.' + s.user.id + '&select=id,display_name,legal_name,is_founding_25,contact_email,partner_code,sponsor_partner_id&limit=1');
+    if (lookup && lookup.length) me = lookup[0];
+
+    if (!me && s.user.email) {
+      const email = encodeURIComponent((s.user.email || '').toLowerCase().trim());
+      lookup = await get('/rest/v1/partners?contact_email=ilike.' + email + '&select=id,display_name,legal_name,is_founding_25,contact_email,partner_code,sponsor_partner_id&limit=1');
+      if (lookup && lookup.length) me = lookup[0];
+    }
+
+    if (!me) {
+      try {
+        const cachedCode = localStorage.getItem('lymx_partner_code');
+        if (cachedCode) {
+          lookup = await get('/rest/v1/partners?partner_code=eq.' + encodeURIComponent(cachedCode) + '&select=id,display_name,legal_name,is_founding_25,contact_email,partner_code,sponsor_partner_id&limit=1');
+          if (lookup && lookup.length) me = lookup[0];
+        }
+      } catch (e) {}
+    }
+
+    if (!me) {
+      // Viewer is signed in but has no partners row — show friendly explanation
+      // instead of the silent empty placeholder.
+      const wrap = document.querySelector('.tree-svg-wrap');
+      if (wrap) {
+        wrap.innerHTML = '<div style="padding:40px 20px;text-align:center;max-width:480px;margin:0 auto;color:#5b6472">'
+          + '<div style="font-size:42px;margin-bottom:8px">🌱</div>'
+          + '<div style="font-weight:800;font-size:16px;color:#0e1116;margin-bottom:4px">No partner record yet</div>'
+          + '<div style="font-size:13.5px;line-height:1.55">We couldn\'t find your partner profile. If you signed up recently, our team is finishing your onboarding — try again in a few minutes, or ping us via chat.</div>'
+          + '</div>';
+      }
+      return;
+    }
+
+    const partnerById = {};
+    partnerById[me.id] = { id: me.id, generation: 'me', children: [],
+      name: me.display_name || (me.legal_name || 'You').split(' ')[0] || 'You',
+      tier: me.is_founding_25 ? 'Founding 25' : 'Starter',
+      production: 0, productionIncome: 0 };
+
+    let currentLevel = [me.id];
+    const genLabels = ['g1', 'g2', 'g3'];
+    for (let g = 0; g < 3 && currentLevel.length; g++) {
+      const ids = encodeURIComponent('(' + currentLevel.join(',') + ')');
+      const kids = await get('/rest/v1/partners?sponsor_partner_id=in.' + ids + '&select=id,display_name,legal_name,is_founding_25,sponsor_partner_id&limit=500');
+      if (!kids || !kids.length) break;
+      kids.forEach(k => {
+        partnerById[k.id] = { id: k.id, generation: genLabels[g], children: [],
+          name: k.display_name || (k.legal_name || 'Partner').split(' ')[0],
+          tier: k.is_founding_25 ? 'Founding 25' : 'Starter',
+          production: 0, productionIncome: 0 };
+        const parent = partnerById[k.sponsor_partner_id];
+        if (parent) parent.children.push(partnerById[k.id]);
+      });
+      currentLevel = kids.map(k => k.id);
+    }
+
+    // Count businesses each partner signed up
+    const allIds = Object.keys(partnerById);
+    if (allIds.length) {
+      const idsParam = encodeURIComponent('(' + allIds.join(',') + ')');
+      const biz = await get('/rest/v1/businesses?signed_up_by_partner_id=in.' + idsParam + '&archived_at=is.null&select=signed_up_by_partner_id&limit=2000');
+      (biz || []).forEach(b => {
+        if (partnerById[b.signed_up_by_partner_id]) partnerById[b.signed_up_by_partner_id].production++;
+      });
+    }
+
+    // Estimate productionIncome: $750 activation bonus per business
+    const ESTIMATED_PER_BIZ = 750;
+    Object.values(partnerById).forEach(p => {
+      p.productionIncome = p.production * ESTIMATED_PER_BIZ;
+    });
+
+    // Real income for me from partner_commissions
+    const myComms = await get('/rest/v1/partner_commissions?partner_id=eq.' + me.id + '&select=amount,generation,type&limit=2000');
+    if (myComms && myComms.length) {
+      const ownIncome = myComms
+        .filter(c => Number(c.generation) === 0 || Number(c.generation) === 1)
+        .reduce((sum, c) => sum + Number(c.amount || 0), 0);
+      if (ownIncome > 0) partnerById[me.id].productionIncome = ownIncome;
+    }
+
+    // Replace TREE in place and re-render
+    const root = partnerById[me.id];
+    TREE.name = root.name;
+    TREE.tier = root.tier;
+    TREE.production = root.production;
+    TREE.productionIncome = root.productionIncome;
+    TREE.children = root.children;
+    renderTree();
+  } catch (e) {
+    console.warn('[partner-tree] real-data load failed, keeping placeholder', e);
+  }
+})();
+</script>
 <script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>
 </html>
