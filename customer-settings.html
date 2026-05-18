@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX account settings — manage your profile, notifications, privacy, and referral code." />
 <title>Settings · LYMX</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://getlymx.com/customer-settings" />
 <meta property="og:title" content="LYMX Account Settings" />
@@ -99,6 +96,17 @@
   .toast.success{background:var(--ok)}
   @keyframes up{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 
@@ -218,14 +226,14 @@
         </div>
         <div class="toggle on"></div>
       </div>
-      <div class="item">
+      <a class="item" href="data-export.html" style="text-decoration:none;color:inherit;display:flex">
         <div class="ic">⬇️</div>
         <div class="body">
           <div class="h">Download my data</div>
-          <div class="d">Get a copy of everything we have on you</div>
+          <div class="d">Get a copy of everything we have on you · GDPR + CCPA self-service</div>
         </div>
         <div class="arrow">›</div>
-      </div>
+      </a>
     </div>
 
     <!-- Refer / earn -->
@@ -382,5 +390,144 @@
     document.getElementById('del-btn').disabled = document.getElementById('del-confirm').value.trim().toUpperCase() !== 'DELETE';
   }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Wire customer-settings to REAL account data.
+(async function wireSettings(){
+  try {
+    if (!window.LYMX || !window.LYMX.requireAuth) return;
+    const user = await window.LYMX.requireAuth();
+    if (!user) return;
+    const sb = window.LYMX.sb;
+
+    const { data: cArr } = await sb.from('customers')
+      .select('id, display_name, phone, email').eq('user_id', user.id).limit(1);
+    let custName = '', custPhone = '', custEmail = (user.email || '');
+    if (cArr && cArr.length) {
+      custName = cArr[0].display_name || '';
+      custPhone = cArr[0].phone || '';
+      custEmail = cArr[0].email || user.email || '';
+    }
+    const meta = user.user_metadata || {};
+    if (!custName) custName = meta.full_name || meta.name || (custEmail.split('@')[0]) || 'Customer';
+    if (!custPhone) custPhone = meta.phone || '';
+
+    function fmtPhone(p) {
+      if (!p) return '';
+      const d = p.replace(/\D/g, '');
+      if (d.length === 11 && d[0] === '1') return '+1 (' + d.slice(1,4) + ') ' + d.slice(4,7) + '-' + d.slice(7);
+      if (d.length === 10) return '(' + d.slice(0,3) + ') ' + d.slice(3,6) + '-' + d.slice(6);
+      return p;
+    }
+    function escAttr(s) { return String(s == null ? '' : s).replace(/"/g, '&quot;'); }
+
+    let phoneDisplay = fmtPhone(custPhone);
+    const initials = custName.split(/\s+/).filter(Boolean).slice(0,2).map(s => s[0] ? s[0].toUpperCase() : '').join('') || 'U';
+
+    const profile = document.querySelector('.profile');
+    if (profile) {
+      const av = profile.querySelector('.av'); if (av) av.textContent = initials;
+      const nm = profile.querySelector('.nm'); if (nm) nm.textContent = custName;
+      const em = profile.querySelector('.em'); if (em) em.textContent = (phoneDisplay ? phoneDisplay + ' · ' : '') + custEmail;
+    }
+
+    document.querySelectorAll('.item').forEach(item => {
+      const h = item.querySelector('.h');
+      const d = item.querySelector('.d');
+      if (!h || !d) return;
+      const label = h.textContent.trim();
+      if (label === 'Name') d.textContent = custName;
+      else if (label === 'Phone') d.textContent = phoneDisplay || '— not set —';
+      else if (label === 'Email') d.textContent = custEmail || '— not set —';
+    });
+
+    function patchSave(fn) {
+      const orig = window.saveEdit;
+      window.saveEdit = async function () {
+        try { await fn(); } catch (e) { console.warn('[settings] save failed', e); }
+        window.saveEdit = orig;
+        if (typeof orig === 'function') orig();
+      };
+    }
+
+    window.openEditName = function () {
+      window.openEdit('Update name', 'How it appears on receipts.',
+        '<div class="field"><label>Full name</label><input id="ed-name" class="input" value="' + escAttr(custName) + '" /></div>');
+      patchSave(async () => {
+        const v = (document.getElementById('ed-name') || {}).value || '';
+        if (!v.trim()) return;
+        if (cArr && cArr.length) {
+          await sb.from('customers').update({ display_name: v.trim() }).eq('id', cArr[0].id);
+        }
+        custName = v.trim();
+        const nm = document.querySelector('.profile .nm'); if (nm) nm.textContent = custName;
+        document.querySelectorAll('.item').forEach(it => {
+          const h = it.querySelector('.h'); const d = it.querySelector('.d');
+          if (h && d && h.textContent.trim() === 'Name') d.textContent = custName;
+        });
+      });
+    };
+    window.openEditPhone = function () {
+      window.openEdit('Update phone', "We'll send a code to confirm.",
+        '<div class="field"><label>New mobile number</label><input id="ed-phone" class="input" value="' + escAttr(phoneDisplay) + '" /></div>');
+      patchSave(async () => {
+        const v = (document.getElementById('ed-phone') || {}).value || '';
+        if (!v.trim()) return;
+        const cleaned = v.replace(/[^\d+]/g, '');
+        if (cArr && cArr.length) {
+          await sb.from('customers').update({ phone: cleaned }).eq('id', cArr[0].id);
+        }
+        custPhone = cleaned;
+        phoneDisplay = fmtPhone(cleaned);
+        document.querySelectorAll('.item').forEach(it => {
+          const h = it.querySelector('.h'); const d = it.querySelector('.d');
+          if (h && d && h.textContent.trim() === 'Phone') d.textContent = phoneDisplay;
+        });
+        const em = document.querySelector('.profile .em'); if (em) em.textContent = (phoneDisplay ? phoneDisplay + ' · ' : '') + custEmail;
+      });
+    };
+    window.openEditEmail = function () {
+      window.openEdit('Update email', 'Used for digital receipts.',
+        '<div class="field"><label>Email</label><input id="ed-email" class="input" type="email" value="' + escAttr(custEmail) + '" /></div>');
+      patchSave(async () => {
+        const v = (document.getElementById('ed-email') || {}).value || '';
+        if (!v.trim() || !v.includes('@')) return;
+        if (cArr && cArr.length) {
+          await sb.from('customers').update({ email: v.trim() }).eq('id', cArr[0].id);
+        }
+        custEmail = v.trim();
+        document.querySelectorAll('.item').forEach(it => {
+          const h = it.querySelector('.h'); const d = it.querySelector('.d');
+          if (h && d && h.textContent.trim() === 'Email') d.textContent = custEmail;
+        });
+        const em = document.querySelector('.profile .em'); if (em) em.textContent = (phoneDisplay ? phoneDisplay + ' · ' : '') + custEmail;
+      });
+    };
+    window.openEditPassword = function () {
+      window.openEdit('Change password', "You'll be signed out of other devices.",
+        '<div class="field"><label>New password</label><input id="ed-pw" class="input" type="password" /></div>');
+      patchSave(async () => {
+        const v = (document.getElementById('ed-pw') || {}).value || '';
+        if (v.length < 8) { window.showToast && window.showToast('Password must be 8+ characters', false); return; }
+        const { error } = await sb.auth.updateUser({ password: v });
+        if (error) { window.showToast && window.showToast('Password change failed', false); return; }
+      });
+    };
+
+    window.signOut = async function () {
+      if (!confirm('Sign out of LYMX?')) return;
+      try { await sb.auth.signOut(); } catch (e) {}
+      location.href = '/login.html';
+    };
+  } catch (e) {
+    console.warn('[customer-settings] wire failed', e);
+  }
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
 </body>
 </html>
