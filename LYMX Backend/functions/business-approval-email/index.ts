@@ -197,6 +197,38 @@ serve(async (req) => {
         composed = rejectedEmail(displayName, reason);
     }
 
+    // ----- Locale-aware translation -----
+    // Resolve the recipient's preferred_locale (NULL = default English).
+    let recipientLocale = "en";
+    if (biz.owner_user_id) {
+        try {
+            const { data: locData } = await supabase.rpc("fn_resolve_recipient_locale", { p_user_id: biz.owner_user_id });
+            if (locData && ["en","es","zh-CN","zh-TW","ko","ja"].includes(locData as string)) recipientLocale = locData as string;
+        } catch { /* fall back to en */ }
+    }
+    if (recipientLocale !== "en") {
+        try {
+            const SB_URL_VAL = Deno.env.get("SUPABASE_URL")!;
+            const ANON_VAL = Deno.env.get("SUPABASE_ANON_KEY")!;
+            const tx = async (text: string, ctx: string) => {
+                const r = await fetch(SB_URL_VAL + "/functions/v1/translate-text", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "apikey": ANON_VAL, "Authorization": `Bearer ${ANON_VAL}` },
+                    body: JSON.stringify({ text, target_locale: recipientLocale, source_locale: "en", context: ctx }),
+                });
+                if (!r.ok) return text;
+                const j = await r.json();
+                return j.ok ? (j.translated_text || text) : text;
+            };
+            const newSubject = await tx(composed.subject, "transactional email subject for a business approval/rejection notification");
+            // For HTML body we translate text content but keep markup. Simplest path: strip tags, translate, re-wrap minimal HTML.
+            const textOnly = composed.html.replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").trim();
+            const newText = await tx(textOnly, "transactional email body from a small rewards platform; preserve tone, URLs, and any numbers/amounts as-is");
+            const newHtml = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;font-size:15px;line-height:1.55;color:#0e1116;max-width:600px;margin:0 auto;padding:20px;white-space:pre-wrap">${newText.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" style="color:#0a84ff">$1</a>').replace(/\n/g,"<br>")}</div>`;
+            composed = { subject: newSubject, html: newHtml };
+        } catch (_e) { /* keep English on translation error */ }
+    }
+
     const sent = await sendViaResend(toEmail, composed.subject, composed.html, resendKey);
     if (!sent.ok) return errorResponse(`Email send failed: ${sent.error}`, 502);
 
