@@ -21,42 +21,44 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script src="lymx-i18n.js" defer></script>
 
 <div class="card" id="card">
   <div id="working">
-    <h1>Connecting your Google Calendar…</h1>
-    <div class="sub">Hang tight, exchanging the auth code with Google.</div>
+    <h1 data-i18n="oauth.connecting">Connecting your Google Calendar…</h1>
+    <div class="sub" data-i18n="oauth.connecting_sub">Hang tight, exchanging the auth code with Google.</div>
   </div>
   <div id="success" style="display:none">
     <div class="ok">✓</div>
-    <h1>Google Calendar connected</h1>
-    <div class="sub">Bookings on your LYMX page will now appear in your Google Calendar, and your booking page will check your real busy times before showing slots.</div>
+    <h1 data-i18n="oauth.connected_title">Google Calendar connected</h1>
+    <div class="sub" data-i18n="oauth.connected_sub">Bookings on your LYMX page will now appear in your Google Calendar, and your booking page will check your real busy times before showing slots.</div>
     <div class="sub" id="successEmail"></div>
-    <a class="btn" href="/team-calendar.html">Back to my calendar</a>
+    <a class="btn" href="/team-calendar.html" data-i18n="oauth.back_to_calendar">Back to my calendar</a>
   </div>
   <div id="failed" style="display:none">
     <div class="err">✕</div>
-    <h1>Couldn't finish connecting</h1>
+    <h1 data-i18n="oauth.failed_title">Couldn't finish connecting</h1>
     <div class="alert error" id="errMsg"></div>
-    <a class="btn" href="/team-calendar.html">Back to my calendar</a>
+    <a class="btn" href="/team-calendar.html" data-i18n="oauth.back_to_calendar">Back to my calendar</a>
   </div>
 </div>
 
 <script>
 (async function(){
+  const t = (k, fb) => (window.LymxI18n && window.LymxI18n.t) ? window.LymxI18n.t(k, fb) : fb;
   const params = new URLSearchParams(location.search);
   const code = params.get('code');
   const errParam = params.get('error');
   if (errParam) {
     document.getElementById('working').style.display = 'none';
     document.getElementById('failed').style.display = 'block';
-    document.getElementById('errMsg').textContent = 'Google returned: ' + errParam;
+    document.getElementById('errMsg').textContent = t('oauth.google_returned', 'Google returned: ') + errParam;
     return;
   }
   if (!code) {
     document.getElementById('working').style.display = 'none';
     document.getElementById('failed').style.display = 'block';
-    document.getElementById('errMsg').textContent = 'No auth code received from Google. Try connecting again.';
+    document.getElementById('errMsg').textContent = t('oauth.no_code', 'No auth code received from Google. Try connecting again.');
     return;
   }
 
@@ -65,7 +67,7 @@
   if (!session) {
     document.getElementById('working').style.display = 'none';
     document.getElementById('failed').style.display = 'block';
-    document.getElementById('errMsg').textContent = 'You need to be signed in to LYMX before connecting Google. Sign in and try again.';
+    document.getElementById('errMsg').textContent = t('oauth.must_signin', 'You need to be signed in to LYMX before connecting Google. Sign in and try again.');
     return;
   }
 
@@ -83,8 +85,7 @@
     if (!j.ok) throw new Error(j.error || 'token exchange failed');
     document.getElementById('working').style.display = 'none';
     document.getElementById('success').style.display = 'block';
-    if (j.provider_email) document.getElementById('successEmail').textContent = 'Connected as ' + j.provider_email;
-    // Clean URL (remove ?code= so refresh doesn't re-try)
+    if (j.provider_email) document.getElementById('successEmail').textContent = t('oauth.connected_as', 'Connected as') + ' ' + j.provider_email;
     history.replaceState(null, '', '/google-oauth-done.html');
   } catch (e) {
     document.getElementById('working').style.display = 'none';

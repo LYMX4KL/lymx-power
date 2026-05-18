@@ -40,45 +40,42 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script src="lymx-i18n.js" defer></script>
 
 <div class="card" id="card">
-  <!-- Loading state -->
   <div id="loading">
-    <div class="sub">Looking up your booking…</div>
+    <div class="sub" data-i18n="booking.cancel.loading">Looking up your booking…</div>
   </div>
 
-  <!-- Confirm-cancel state -->
   <div id="confirm" style="display:none">
-    <h1>Cancel this call?</h1>
-    <div class="sub">You're about to cancel:</div>
+    <h1 data-i18n="booking.cancel.title">Cancel this call?</h1>
+    <div class="sub" data-i18n="booking.cancel.about_to">You're about to cancel:</div>
     <div class="when">
       <div class="when-time" id="confWho"></div>
       <div class="when-tz" id="confWhen"></div>
     </div>
     <div class="row">
-      <label for="reason">Reason (optional — helps us improve)</label>
-      <textarea id="reason" placeholder="e.g. Scheduling conflict came up, I'll book a new time"></textarea>
+      <label for="reason" data-i18n="booking.cancel.reason_label">Reason (optional — helps us improve)</label>
+      <textarea id="reason" data-i18n-placeholder="booking.cancel.reason_placeholder" placeholder="e.g. Scheduling conflict came up, I'll book a new time"></textarea>
     </div>
     <div class="btn-row">
-      <button class="btn btn-danger" id="confirmBtn">Yes, cancel the call</button>
-      <a class="btn btn-ghost" id="keepBtn">No, keep the call</a>
+      <button class="btn btn-danger" id="confirmBtn" data-i18n="booking.cancel.confirm_btn">Yes, cancel the call</button>
+      <a class="btn btn-ghost" id="keepBtn" data-i18n="booking.cancel.keep_btn">No, keep the call</a>
     </div>
   </div>
 
-  <!-- Success state -->
   <div id="success" style="display:none">
     <div class="icon">✓</div>
-    <h1 class="center">Call cancelled</h1>
-    <div class="sub center" id="successSub">Your booking has been removed and the host has been notified.</div>
+    <h1 class="center" data-i18n="booking.cancel.success_title">Call cancelled</h1>
+    <div class="sub center" id="successSub" data-i18n="booking.cancel.success_sub">Your booking has been removed and the host has been notified.</div>
     <div class="btn-row" style="justify-content:center">
-      <a class="btn btn-primary" id="rebookBtn">📅 Book a different time</a>
+      <a class="btn btn-primary" id="rebookBtn" data-i18n="booking.cancel.rebook">📅 Book a different time</a>
     </div>
   </div>
 
-  <!-- Error state -->
   <div id="error" style="display:none">
     <div class="icon">✕</div>
-    <h1 class="center">Couldn't cancel</h1>
+    <h1 class="center" data-i18n="booking.cancel.error_title">Couldn't cancel</h1>
     <div class="alert error" id="errorMsg"></div>
     <div class="btn-row" style="justify-content:center;margin-top:14px">
       <a class="btn btn-ghost" href="/">Back to LYMX</a>
@@ -90,34 +87,33 @@
 (async function(){
   const $ = id => document.getElementById(id);
   const show = id => { ['loading','confirm','success','error'].forEach(x => $(x).style.display = (x === id ? 'block' : 'none')); };
+  const t = (k, fb) => (window.LymxI18n && window.LymxI18n.t) ? window.LymxI18n.t(k, fb) : fb;
   const showError = msg => { $('errorMsg').textContent = msg; show('error'); };
 
   const params = new URLSearchParams(location.search);
   const bookingId = params.get('id');
   const token = params.get('token');
-  if (!bookingId || !token) { showError('This cancel link is missing required information.'); return; }
+  if (!bookingId || !token) { showError(t('booking.cancel.err_missing', 'This cancel link is missing required information.')); return; }
 
   const sb = window.supabase.createClient(window.LYMX_CONFIG.SUPABASE_URL, window.LYMX_CONFIG.SUPABASE_ANON_KEY);
 
-  // Validate token + fetch booking summary via RPC (anon-callable)
   const { data: rows, error: rpcErr } = await sb.rpc('fn_validate_booking_cancel_token', {
     p_booking_id: bookingId,
     p_token: token,
   });
   if (rpcErr) { showError('Server error: ' + rpcErr.message); return; }
-  if (!rows || rows.length === 0) { showError('This cancel link has expired or the booking was not found.'); return; }
+  if (!rows || rows.length === 0) { showError(t('booking.cancel.err_expired', 'This cancel link has expired or the booking was not found.')); return; }
   const b = rows[0];
 
   if (b.status === 'cancelled') {
-    $('successSub').textContent = 'This call was already cancelled.';
+    $('successSub').textContent = t('booking.cancel.success_sub_already', 'This call was already cancelled.');
     $('rebookBtn').href = '/c/' + encodeURIComponent(b.handle);
     show('success'); return;
   }
   if (b.status === 'completed') {
-    showError('This call has already happened — there is nothing to cancel.'); return;
+    showError(t('booking.cancel.err_completed', 'This call has already happened — there is nothing to cancel.')); return;
   }
 
-  // Populate confirm screen
   $('confWho').textContent = b.display_name + ' ↔ ' + b.booker_name;
   const startsLocal = new Date(b.starts_at).toLocaleString(undefined, { timeZone: b.timezone || undefined, dateStyle: 'full', timeStyle: 'short' });
   $('confWhen').textContent = startsLocal + ' (' + (b.timezone || 'UTC') + ')';
@@ -127,15 +123,12 @@
 
   $('confirmBtn').addEventListener('click', async () => {
     $('confirmBtn').disabled = true;
-    $('confirmBtn').textContent = 'Cancelling…';
+    $('confirmBtn').textContent = t('booking.cancel.cancelling', 'Cancelling…');
     const reason = $('reason').value.trim();
     try {
       const r = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/functions/v1/booking-cancel', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': window.LYMX_CONFIG.SUPABASE_ANON_KEY,
-        },
+        headers: { 'Content-Type': 'application/json', 'apikey': window.LYMX_CONFIG.SUPABASE_ANON_KEY },
         body: JSON.stringify({ booking_id: bookingId, token, reason, cancelled_by: 'booker' }),
       });
       const j = await r.json();
@@ -143,7 +136,7 @@
       show('success');
     } catch (e) {
       $('confirmBtn').disabled = false;
-      $('confirmBtn').textContent = 'Yes, cancel the call';
+      $('confirmBtn').textContent = t('booking.cancel.confirm_btn', 'Yes, cancel the call');
       showError(e.message);
     }
   });
