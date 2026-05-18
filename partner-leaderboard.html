@@ -98,6 +98,17 @@
 
   .footer{text-align:center;padding:48px 24px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 
@@ -242,8 +253,132 @@
   <strong>LYMX Power</strong> · Partner leaderboard · <a href="rep-dashboard.html">Dashboard</a> · <a href="partner-stories.html">Partner stories</a> · <a href="partner-bootcamp.html">Bootcamp</a>
 </div>
 
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Wire leaderboard to REAL partners + commissions.
+(async function wireLeaderboard(){
+  try {
+    if (!window.LYMX || !window.LYMX.requireAuth) return;
+    const user = await window.LYMX.requireAuth();
+    if (!user) return;
+    const sb = window.LYMX.sb;
+
+    let { data: meArr } = await sb.from('partners')
+      .select('id, display_name, legal_name, contact_email, is_founding_25')
+      .eq('user_id', user.id).limit(1);
+    if ((!meArr || !meArr.length) && user.email) {
+      const r = await sb.from('partners')
+        .select('id, display_name, legal_name, contact_email, is_founding_25')
+        .ilike('contact_email', user.email).limit(1);
+      meArr = r.data;
+    }
+    const me = (meArr && meArr.length) ? meArr[0] : null;
+
+    const { data: allPartners } = await sb.from('partners')
+      .select('id, display_name, legal_name, is_founding_25, sponsor_partner_id')
+      .is('archived_at', null).limit(500);
+    if (!allPartners || allPartners.length === 0) return;
+    const partnerCount = allPartners.length;
+
+    const byId = {};
+    allPartners.forEach(p => { byId[p.id] = { ...p, ownProduction: 0, g1Count: 0, downlineCount: 0, lifetimeEarnings: 0, lastMonthEarnings: 0 }; });
+
+    allPartners.forEach(p => {
+      if (p.sponsor_partner_id && byId[p.sponsor_partner_id]) byId[p.sponsor_partner_id].g1Count++;
+    });
+
+    const childrenOf = {};
+    allPartners.forEach(p => {
+      if (!p.sponsor_partner_id) return;
+      if (!childrenOf[p.sponsor_partner_id]) childrenOf[p.sponsor_partner_id] = [];
+      childrenOf[p.sponsor_partner_id].push(p.id);
+    });
+    function countDescendants(id) {
+      const kids = childrenOf[id] || [];
+      let total = kids.length;
+      kids.forEach(k => { total += countDescendants(k); });
+      return total;
+    }
+    Object.keys(byId).forEach(id => { byId[id].downlineCount = countDescendants(id); });
+
+    const ids = Object.keys(byId);
+    const { data: bizRows } = await sb.from('businesses')
+      .select('signed_up_by_partner_id').is('archived_at', null).in('signed_up_by_partner_id', ids);
+    (bizRows || []).forEach(b => {
+      if (byId[b.signed_up_by_partner_id]) byId[b.signed_up_by_partner_id].ownProduction++;
+    });
+
+    const monthAgo = new Date(); monthAgo.setMonth(monthAgo.getMonth() - 1);
+    const monthAgoIso = monthAgo.toISOString();
+    const { data: commRows } = await sb.from('partner_commissions')
+      .select('partner_id, amount, type, created_at').in('partner_id', ids);
+    (commRows || []).forEach(c => {
+      if (!byId[c.partner_id]) return;
+      const amt = Number(c.amount || 0);
+      byId[c.partner_id].lifetimeEarnings += amt;
+      if (c.created_at >= monthAgoIso) byId[c.partner_id].lastMonthEarnings += amt;
+    });
+
+    const ranked = Object.values(byId).sort((a,b) => b.lifetimeEarnings - a.lifetimeEarnings || b.downlineCount - a.downlineCount || b.ownProduction - a.ownProduction);
+    const myEntry = me ? ranked.find(p => p.id === me.id) : null;
+    const myRank = myEntry ? (ranked.indexOf(myEntry) + 1) : null;
+    const fmtUsd = (n) => '$' + Math.round(Number(n||0)).toLocaleString('en-US');
+
+    if (myEntry) {
+      const myRankBox = document.querySelector('.my-rank');
+      if (myRankBox) {
+        const rkEl = myRankBox.querySelector('.rk');
+        const bodyH3 = myRankBox.querySelector('.body h3');
+        const bodyP  = myRankBox.querySelector('.body p');
+        const stats  = myRankBox.querySelectorAll('.stat .n');
+        const firstName = (me.display_name || me.legal_name || (user.email || '').split('@')[0] || 'You').split(/\s+/)[0];
+        if (rkEl) rkEl.textContent = partnerCount >= 5 ? ('#' + myRank) : '—';
+        if (bodyH3) bodyH3.textContent = firstName + (me.is_founding_25 ? ' · Founding 25' : '');
+        if (bodyP) bodyP.textContent = partnerCount >= 5
+          ? ('You are #' + myRank + ' of ' + partnerCount + ' partners')
+          : 'Your rank appears here once 5+ Partners are active in the network.';
+        if (stats[0]) stats[0].textContent = fmtUsd(myEntry.lastMonthEarnings);
+        if (stats[1]) stats[1].textContent = '—';
+      }
+    }
+
+    if (partnerCount < 5) return;
+    const podium = document.querySelector('.wrap > div[style*="🏆"]');
+    if (podium) podium.style.display = 'none';
+
+    const tbody = document.querySelector('.leaderboard tbody');
+    if (tbody) {
+      const top25 = ranked.slice(0, 25);
+      tbody.innerHTML = top25.map((p, i) => {
+        const rank = i + 1;
+        const tier = p.is_founding_25 ? 'Founding 25' : (p.ownProduction >= 10 ? 'Master' : p.ownProduction >= 3 ? 'Active' : 'Side');
+        const isMe = me && p.id === me.id;
+        const anon = isMe ? (p.display_name || (p.legal_name || 'You').split(' ')[0]) : ('Partner-' + p.id.slice(0,4).toUpperCase());
+        return '<tr' + (isMe ? ' class="you"' : '') + '>'
+          + '<td class="rk' + (rank===1?' gold':rank===2?' silver':rank===3?' bronze':'') + '"><span class="pos">' + rank + '</span></td>'
+          + '<td>' + anon + (isMe ? ' <span class="badge master">YOU</span>' : '') + '</td>'
+          + '<td>' + tier + '</td>'
+          + '<td style="color:#5d6470">—</td>'
+          + '<td class="num">' + p.ownProduction + '</td>'
+          + '<td class="num">' + p.g1Count + '</td>'
+          + '<td class="num">' + p.downlineCount + '</td>'
+          + '</tr>';
+      }).join('');
+    }
+
+    const tableH2 = document.querySelector('.leaderboard-h h2');
+    if (tableH2) tableH2.textContent = 'Top ' + Math.min(25, ranked.length) + ' Partners — All time';
+
+  } catch (e) {
+    console.warn('[leaderboard] wire failed', e);
+  }
+})();
+</script>
 <script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>
 </html>
