@@ -129,6 +129,8 @@
       { href: 'prospects.html',          icon: '\u{1F3AF}', label: 'My Prospects' },
       { href: 'team-calendar.html',      icon: '\u{1F4C5}', label: 'My Calendar' },
       { href: 'my-bookings.html',        icon: '\u{1F4DD}', label: 'My bookings' },
+      { section: 'Team' },
+      { href: 'staff-clock-in.html',     icon: '⏱',    label: 'Clock In' },
       { section: 'Account' },
       { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
@@ -160,6 +162,7 @@
       { href: 'team-calendar.html',      icon: '\u{1F5D3}', label: 'My Calendar' },
       { href: 'admin-verifications.html', icon: '\u{1FAAA}', label: 'Verifications' },
       { section: 'Team' },
+      { href: 'staff-clock-in.html',     icon: '⏱',    label: 'Clock In' },
       { href: 'admin-team-roster.html',  icon: '\u{1F5C2}', label: 'Roster' },
       { href: 'admin-timesheets.html',   icon: '⏱',    label: 'Timesheets' },
       { href: 'admin-time-off.html',     icon: '\u{1F334}', label: 'Time-off' },
@@ -296,14 +299,9 @@
     }
   };
 
-  function boot() {
-    waitForConfig(function () {
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', mount);
-      } else {
-        mount();
-      }
-    });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mount);
+  } else {
+    mount();
   }
-  boot();
 })();
