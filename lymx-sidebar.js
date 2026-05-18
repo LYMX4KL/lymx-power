@@ -146,6 +146,7 @@
       { href: 'admin-sms.html',          icon: '\u{1F4F1}', label: 'SMS' },
       { section: 'Network' },
       { href: 'leads.html',              icon: '\u{1F4CC}', label: 'Leads' },
+      { href: 'admin-bookings.html',     icon: '\u{1F4CB}', label: 'All bookings' },
       { href: 'admin-businesses.html',   icon: '\u{1F3E2}', label: 'Businesses' },
       { href: 'admin-business-applications.html', icon: '\u{1F4DD}', label: 'Biz Applications' },
       { href: 'admin-customers.html',    icon: '\u{1F465}', label: 'Customers' },
