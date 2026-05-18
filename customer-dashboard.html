@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="Your LYMX dashboard — balance, recent activity, pending reviews, offers, saved places, and referrals." />
 <title>Your LYMX Dashboard</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://getlymx.com/customer-dashboard" />
 <meta property="og:title" content="Your LYMX Dashboard" />
@@ -184,6 +181,17 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
 <script src="lymx-auth.js"></script>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 
@@ -366,6 +374,15 @@
     <!-- RIGHT COLUMN -->
     <div class="col">
 
+      <!-- Upcoming calls (hidden until data loads) -->
+      <div class="card" id="upcomingCallsCard" style="display:none">
+        <div class="card-h">
+          <h2 data-i18n="cust.upcoming_calls_title">Upcoming calls</h2>
+          <a href="my-bookings.html" class="more" data-i18n="cust.upcoming_calls_more">See all →</a>
+        </div>
+        <div id="upcomingCallsList" style="display:flex;flex-direction:column;gap:12px"></div>
+      </div>
+
       <!-- My recent reviews -->
       <div class="card">
         <div class="card-h">
@@ -522,6 +539,7 @@
       const body    = encodeURIComponent('Hey — I\'ve been using LYMX (one rewards balance you can earn + spend across local businesses). If you sign up through my link we BOTH earn 100 LYMX:\n\n' + shareUrl + '\n\n— ' + firstName);
       const emailEl = document.getElementById('refShareEmail');
       const smsEl   = document.getElementById('refShareSms');
+      const twEl    = document.getElementById('refShareTw');
       if (emailEl) emailEl.href = 'mailto:?subject=' + subject + '&body=' + body;
       if (smsEl)   smsEl.href   = 'sms:?&body=' + body;
       if (twEl)    twEl.href    = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Join me on LYMX — we both earn 100 LYMX 🎁 ' + shareUrl);
@@ -604,8 +622,8 @@
       // Earned this month
       let earnedMo = 0, spentMo = 0, lifetime = 0;
       try {
-        const r = await fetch(URL + '/rest/v1/lymx_issuances?recipient_user_id=eq.' + userId + '&created_at=gte.' + encodeURIComponent(startIso) + '&select=amount', { headers });
-        if (r.ok) { const rows = await r.json(); earnedMo = rows.reduce((s, x) => s + (Number(x.amount) || 0), 0); }
+        const r = await fetch(URL + '/rest/v1/lymx_issuances?recipient_user_id=eq.' + userId + '&created_at=gte.' + encodeURIComponent(startIso) + '&select=amount_lymx', { headers });
+        if (r.ok) { const rows = await r.json(); earnedMo = rows.reduce((s, x) => s + (Number(x.amount_lymx) || 0), 0); }
       } catch (e) {}
       try {
         const r = await fetch(URL + '/rest/v1/customer_redemptions?customer_user_id=eq.' + userId + '&created_at=gte.' + encodeURIComponent(startIso) + '&select=amount', { headers });
@@ -782,6 +800,114 @@ window.addEventListener('DOMContentLoaded', async function () {
       });
     }
   } catch (e) {}
+});
+</script>
+
+<script>
+// Upcoming calls widget — loads bookings where booker matches this user
+// (by email or user_id), filters to upcoming + confirmed, renders top 3
+// in the right-column card. Mirrors my-bookings.html query pattern.
+window.addEventListener('DOMContentLoaded', async function () {
+  try {
+    if (!window.LYMX || !window.LYMX.getSession) { setTimeout(arguments.callee, 200); return; }
+    var s = await window.LYMX.getSession();
+    if (!s) return;
+    var URL  = window.LYMX_CONFIG.SUPABASE_URL;
+    var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+    var headers = { apikey: ANON, Authorization: 'Bearer ' + s.access_token };
+    var userId  = s.user.id;
+    var email   = (s.user.email || '').toLowerCase().trim();
+    var nowIso  = new Date().toISOString();
+
+    function t(k, fallback){
+      try {
+        if (window.LymxI18n && typeof window.LymxI18n.t === 'function') {
+          var v = window.LymxI18n.t(k);
+          if (v && v !== k) return v;
+        }
+      } catch(e){}
+      return fallback;
+    }
+    function esc(x){
+      return String(x == null ? '' : x).replace(/[&<>"']/g, function(c){
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+      });
+    }
+
+    // Build a single REST query: booker_email = email OR booker_user_id = userId, upcoming + confirmed
+    var orClause = encodeURIComponent('booker_email.eq.' + email + ',booker_user_id.eq.' + userId);
+    var qs = '/rest/v1/bookings'
+      + '?or=(' + orClause + ')'
+      + '&status=eq.confirmed'
+      + '&starts_at=gte.' + encodeURIComponent(nowIso)
+      + '&select=id,team_calendar_id,starts_at,duration_min,video_room_url,cancel_token'
+      + '&order=starts_at.asc'
+      + '&limit=3';
+    var r = await fetch(URL + qs, { headers: headers });
+    if (!r.ok) return;
+    var bks = await r.json();
+    if (!Array.isArray(bks) || !bks.length) return;
+
+    // Look up calendar metadata for the bookings we got
+    var calIds = bks.map(function(b){ return b.team_calendar_id; }).filter(Boolean);
+    var cals = [];
+    if (calIds.length) {
+      var idList = encodeURIComponent('(' + calIds.join(',') + ')');
+      var cr = await fetch(URL + '/rest/v1/team_calendars?id=in.' + idList + '&select=id,handle,display_name,role_title,timezone', { headers: headers });
+      if (cr.ok) cals = await cr.json();
+    }
+    function calOf(id){ for (var i=0;i<cals.length;i++) if (cals[i].id===id) return cals[i]; return null; }
+
+    var card  = document.getElementById('upcomingCallsCard');
+    var list  = document.getElementById('upcomingCallsList');
+    if (!card || !list) return;
+
+    list.innerHTML = bks.map(function(b){
+      var c = calOf(b.team_calendar_id);
+      var d = new Date(b.starts_at);
+      var tz = (c && c.timezone) || undefined;
+      var dateStr = d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric', timeZone: tz });
+      var timeStr = d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit', timeZone: tz });
+      var who = c ? (c.display_name || c.handle) : '—';
+      var role = (c && c.role_title) ? c.role_title : '';
+
+      // "Join" is enabled only within 15 min before start (or while in-progress until +duration_min)
+      var startMs = new Date(b.starts_at).getTime();
+      var nowMs   = Date.now();
+      var endMs   = startMs + (Number(b.duration_min || 30) * 60000);
+      var joinable = (nowMs >= startMs - 15*60000) && (nowMs <= endMs);
+
+      var joinBtn = '';
+      if (b.video_room_url) {
+        if (joinable) {
+          joinBtn = '<a class="btn-w solid" href="' + esc(b.video_room_url) + '" target="_blank" rel="noopener" style="background:#0a84ff;color:#fff;border-color:#0a84ff;padding:6px 12px;font-size:12.5px;border-radius:7px;text-decoration:none;font-weight:600">🎥 ' + esc(t('cust.join_now','Join now')) + '</a>';
+        } else {
+          joinBtn = '<span style="font-size:12px;color:var(--muted);font-weight:500">' + esc(t('cust.join_opens_15m','Join opens 15 min before')) + '</span>';
+        }
+      }
+
+      var rescheduleUrl = c ? '/c/' + esc(c.handle) + '?reschedule_from=' + esc(b.id) + '&token=' + esc(b.cancel_token || '') : '#';
+      var manageBtn = '<a href="' + rescheduleUrl + '" style="font-size:12px;color:var(--accent-2);font-weight:600;text-decoration:none">' + esc(t('cust.manage','Manage')) + ' →</a>';
+
+      return ''
+        + '<div style="padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg-soft)">'
+        +   '<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:4px">'
+        +     '<div style="font-weight:700;font-size:14px">' + esc(who) + '</div>'
+        +     '<div style="font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap">' + esc(dateStr) + '</div>'
+        +   '</div>'
+        +   (role ? '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">' + esc(role) + '</div>' : '')
+        +   '<div style="font-size:13px;color:var(--ink-2);margin-bottom:10px">⏰ ' + esc(timeStr) + ' · ' + esc(String(b.duration_min || 30)) + ' min</div>'
+        +   '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">'
+        +     joinBtn
+        +     manageBtn
+        +   '</div>'
+        + '</div>';
+    }).join('');
+
+    card.style.display = 'block';
+  } catch (e) {
+    console.warn('[upcoming-calls] widget load failed', e);
+  }
 });
 </script>
 </body>
