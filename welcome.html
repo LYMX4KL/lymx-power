@@ -340,6 +340,17 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
         user_agent: navigator.userAgent,
         signup_token: signupToken,
         inviter_ref: inviterRef || null,
+        locale_hint: (function(){
+          // Resolve from active LymxI18n locale (if signed-in toggle was used) or browser
+          try { if (window.LymxI18n && window.LymxI18n.getLocale) return window.LymxI18n.getLocale(); } catch(e){}
+          var b = (navigator.language || '').toLowerCase();
+          if (/^zh.*(hant|tw|hk|mo)/.test(b)) return 'zh-TW';
+          if (b.startsWith('zh')) return 'zh-CN';
+          if (b.startsWith('es')) return 'es';
+          if (b.startsWith('ko')) return 'ko';
+          if (b.startsWith('ja')) return 'ja';
+          return 'en';
+        })(),
       })
     });
     bonusJson = await bonusRes.json();
