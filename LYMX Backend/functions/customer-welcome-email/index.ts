@@ -77,18 +77,29 @@ Kenny + the LYMX team`;
     return { subject, body_text };
 }
 
-async function translateIfNeeded(supabase: ReturnType<typeof createClient>, anon: string, supabaseUrl: string, text: string, targetLocale: string, context: string): Promise<string> {
+async function translateIfNeeded(supabase: ReturnType<typeof createClient>, authToken: string, supabaseUrl: string, text: string, targetLocale: string, context: string): Promise<string> {
     if (targetLocale === "en" || !SUPPORTED.includes(targetLocale)) return text;
     try {
         const r = await fetch(supabaseUrl + "/functions/v1/translate-text", {
             method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${anon}`, "apikey": anon },
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${authToken}`, "apikey": authToken },
             body: JSON.stringify({ text, target_locale: targetLocale, source_locale: "en", context }),
         });
-        if (!r.ok) return text;
+        if (!r.ok) {
+            const errBody = await r.text().catch(() => "");
+            console.warn(`[customer-welcome-email] translate-text HTTP ${r.status}: ${errBody.slice(0, 200)}`);
+            return text;
+        }
         const j = await r.json();
-        return j.ok ? (j.translated_text || text) : text;
-    } catch { return text; }
+        if (!j.ok) {
+            console.warn(`[customer-welcome-email] translate-text returned ok:false: ${JSON.stringify(j).slice(0, 200)}`);
+            return text;
+        }
+        return j.translated_text || text;
+    } catch (e: any) {
+        console.warn(`[customer-welcome-email] translate-text threw: ${e.message}`);
+        return text;
+    }
 }
 
 serve(async (req) => {
@@ -133,13 +144,15 @@ serve(async (req) => {
         businessSlug: business_slug || null,
     });
 
-    // Translate body + subject if needed
+    // Translate body + subject if needed. Use the SERVICE_ROLE key for the
+    // function-to-function call so we bypass any JWT verification issues that
+    // ANON-key calls hit when one Edge Function calls another inside Supabase.
     let subject = composed.subject;
     let body_text = composed.body_text;
     let translated = false;
     if (locale !== "en") {
-        subject = await translateIfNeeded(supabase, ANON, SB_URL, composed.subject, locale, "email subject line, marketing tone");
-        body_text = await translateIfNeeded(supabase, ANON, SB_URL, composed.body_text, locale, "warm welcome email from a small rewards startup; preserve the warm friendly tone and any URLs or numbers as-is");
+        subject = await translateIfNeeded(supabase, SB_KEY, SB_URL, composed.subject, locale, "email subject line, marketing tone");
+        body_text = await translateIfNeeded(supabase, SB_KEY, SB_URL, composed.body_text, locale, "warm welcome email from a small rewards startup; preserve the warm friendly tone and any URLs or numbers as-is");
         translated = (subject !== composed.subject) || (body_text !== composed.body_text);
     }
 
