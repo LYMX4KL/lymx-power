@@ -113,6 +113,15 @@
       <div id="googleActions"></div>
     </div>
 
+    <div class="card" id="intakeCard">
+      <h2 data-i18n="tc.intake_title">❓ Pre-call questions</h2>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 12px" data-i18n="tc.intake_sub">Questions bookers answer right on your /c/<handle> page. Answers show up in the confirmation email + the lead drawer. Keep it short — 2-3 questions max.</p>
+      <div id="intakeList"></div>
+      <button class="save-btn" id="addIntakeBtn" type="button" style="background:#fff;color:var(--ink);border:1px dashed var(--line);margin-top:6px" data-i18n="tc.intake_add">+ Add question</button>
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="save-btn" id="saveIntakeBtn" type="button" data-i18n="tc.intake_save">Save questions</button></div>
+      <div id="intakeBanner"></div>
+    </div>
+
     <div class="card">
       <h2 data-i18n="tc.timeoff">Time off / blocked dates</h2>
       <p data-i18n="tc.timeoff_sub" style="color:var(--muted);font-size:13px;margin:0 0 12px">Add specific dates (vacation, sick, conferences) when you can't take bookings. These override your weekly availability.</p>
@@ -193,6 +202,7 @@
     const { data: rules } = await sb.from('availability_rules').select('*').eq('team_calendar_id', myCal.id).order('day_of_week');
     myRules = rules || [];
     renderAvail();
+    wireIntakeCard();
     await loadBookings();
 
     $('saveProfileBtn').addEventListener('click', saveProfile);
@@ -393,6 +403,77 @@
         }
       });
     });
+  }
+
+  // ---------- Pre-call questions (intake) ----------
+  let intakeDraft = [];
+  function renderIntakeList(){
+    const wrap = $('intakeList');
+    if (!wrap) return;
+    if (!intakeDraft.length) { wrap.innerHTML = '<div class="empty" style="text-align:left">No questions yet. Click + Add question to start.</div>'; return; }
+    wrap.innerHTML = intakeDraft.map((q, i) => `
+      <div style="background:#fafbfc;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px">
+        <div class="form-row" style="margin-bottom:6px"><label style="font-size:11.5px">Question label</label><input data-intake-field="label" data-intake-idx="${i}" value="${esc(q.label||'')}" placeholder="e.g. Company size?" /></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select data-intake-field="type" data-intake-idx="${i}" style="padding:6px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:13px">
+            ${['text','textarea','email','tel','number'].map(t => `<option value="${t}" ${q.type===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+          <label style="font-size:12.5px;color:var(--muted)"><input type="checkbox" data-intake-field="required" data-intake-idx="${i}" ${q.required?'checked':''}> Required</label>
+          <input data-intake-field="placeholder" data-intake-idx="${i}" value="${esc(q.placeholder||'')}" placeholder="placeholder (optional)" style="flex:1;min-width:160px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:13px" />
+          <button data-intake-remove="${i}" type="button" style="background:#fee2e2;color:#991b1b;border:0;border-radius:6px;padding:5px 9px;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600">Remove</button>
+        </div>
+      </div>
+    `).join('');
+    wrap.querySelectorAll('[data-intake-field]').forEach(el => {
+      el.addEventListener('input', () => {
+        const i = +el.dataset.intakeIdx;
+        const f = el.dataset.intakeField;
+        if (f === 'required') intakeDraft[i].required = el.checked;
+        else intakeDraft[i][f] = el.value;
+      });
+      el.addEventListener('change', () => {
+        const i = +el.dataset.intakeIdx;
+        const f = el.dataset.intakeField;
+        if (f === 'required') intakeDraft[i].required = el.checked;
+        else intakeDraft[i][f] = el.value;
+      });
+    });
+    wrap.querySelectorAll('[data-intake-remove]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        intakeDraft.splice(+btn.dataset.intakeRemove, 1);
+        renderIntakeList();
+      });
+    });
+  }
+  function genIntakeId(){ return 'q_' + Math.random().toString(36).slice(2, 8); }
+  function wireIntakeCard(){
+    if (!myCal) return;
+    intakeDraft = Array.isArray(myCal.intake_questions) ? JSON.parse(JSON.stringify(myCal.intake_questions)) : [];
+    renderIntakeList();
+    const addBtn = $('addIntakeBtn');
+    if (addBtn && !addBtn.dataset.wired) {
+      addBtn.dataset.wired = '1';
+      addBtn.addEventListener('click', () => {
+        intakeDraft.push({ id: genIntakeId(), label: '', type: 'text', required: false, placeholder: '' });
+        renderIntakeList();
+      });
+    }
+    const saveBtn = $('saveIntakeBtn');
+    if (saveBtn && !saveBtn.dataset.wired) {
+      saveBtn.dataset.wired = '1';
+      saveBtn.addEventListener('click', async () => {
+        // Drop empty labels; ensure each has an id
+        const clean = intakeDraft
+          .map(q => ({ id: q.id || genIntakeId(), label: (q.label||'').trim(), type: q.type || 'text', required: !!q.required, placeholder: (q.placeholder||'').trim() }))
+          .filter(q => q.label);
+        const { error } = await sb.from('team_calendars').update({ intake_questions: clean }).eq('id', myCal.id);
+        if (error) { banner('intakeBanner', error.message, 'err'); return; }
+        myCal.intake_questions = clean;
+        intakeDraft = JSON.parse(JSON.stringify(clean));
+        renderIntakeList();
+        banner('intakeBanner', 'Questions saved. Bookers see them on your /c/' + myCal.handle + ' page.', 'ok');
+      });
+    }
   }
 
   document.addEventListener('DOMContentLoaded', init);

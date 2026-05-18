@@ -130,6 +130,7 @@
   let me = null, amIAdmin = false;
   let allLeads = [];
   let allBookings = [];
+  let allCalendars = [];
   let openLeadId = null;
 
   const $ = id => document.getElementById(id);
@@ -167,11 +168,15 @@
     const { data: leads, error } = await q;
     if (error) { console.warn('leads load:', error); return; }
     allLeads = leads || [];
+    // Cache team_calendars so we can map intake_questions → labels in the drawer
+    const { data: cals } = await sb.from('team_calendars').select('id, handle, display_name, intake_questions');
+    allCalendars = cals || [];
+
 
     if (allLeads.length > 0) {
       const ids = allLeads.map(l => l.id);
       const { data: bks } = await sb.from('bookings')
-        .select('id, lead_id, team_calendar_id, starts_at, ends_at, status, video_room_url, booker_message')
+        .select('id, lead_id, team_calendar_id, starts_at, ends_at, status, video_room_url, booker_message, booker_answers')
         .in('lead_id', ids).order('starts_at', { ascending: false });
       allBookings = bks || [];
     }
@@ -301,13 +306,23 @@
       ${leadBookings.length ? `
         <div class="drawer-row" style="margin-top:18px">
           <div class="lbl">${t("leads.bookings", "Bookings")} (${leadBookings.length})</div>
-          ${leadBookings.map(b => `
-            <div class="booking-row">
+          ${leadBookings.map(b => {
+            const cal = allCalendars.find(c => c.id === b.team_calendar_id);
+            const qs = (cal && Array.isArray(cal.intake_questions)) ? cal.intake_questions : [];
+            const answers = (b.booker_answers && typeof b.booker_answers === 'object') ? b.booker_answers : {};
+            const answeredRows = qs
+              .map(q => ({ label: q.label || q.id, val: answers[q.id] }))
+              .filter(a => a.val && String(a.val).trim())
+              .map(a => `<div style="margin-top:3px;font-size:12px"><b style="color:var(--ink-2)">${esc(a.label)}:</b> <span style="color:var(--muted)">${esc(String(a.val).slice(0,120))}${String(a.val).length>120?'…':''}</span></div>`)
+              .join('');
+            return `
+            <div class="booking-row" style="flex-wrap:wrap">
               <div class="when">${new Date(b.starts_at).toLocaleString(undefined, { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}</div>
               <span style="font-size:11px;color:var(--muted)">${b.status}</span>
               ${b.video_room_url ? `<a href="${esc(b.video_room_url)}" target="_blank">${t("leads.join", "Join")}</a>` : ''}
-            </div>
-          `).join('')}
+              ${answeredRows ? `<div style="width:100%;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)">${answeredRows}</div>` : ''}
+            </div>`;
+          }).join('')}
         </div>
       ` : ''}
 
