@@ -101,6 +101,7 @@
       </select>
       <input id="search" data-i18n-placeholder="leads.search_ph" placeholder="Search name/email/company…" />
       <button id="newLeadBtn" type="button" style="padding:7px 13px;background:#0e1116;color:#fff;border:0;border-radius:7px;cursor:pointer;font:inherit;font-size:13px;font-weight:700" data-i18n="leads.new_lead_btn">+ New lead</button>
+      <button id="csvBtn" type="button" style="padding:7px 13px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:7px;cursor:pointer;font:inherit;font-size:13px;font-weight:600" data-i18n="leads.export_csv">↓ CSV</button>
     </div>
   </div>
 
@@ -261,11 +262,19 @@
   function renderCard(l){
     const nextBooking = allBookings.find(b => b.lead_id === l.id && new Date(b.starts_at) > new Date() && b.status === 'confirmed');
     const nextLine = nextBooking ? `<span class="next-call">📅 ${new Date(nextBooking.starts_at).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}</span>` : '';
+    // Stage aging pill — green/yellow/red based on days in current stage
+    let agePill = '';
+    if (l.stage_changed_at && l.stage !== 'won' && l.stage !== 'lost') {
+      const days = Math.floor((Date.now() - new Date(l.stage_changed_at).getTime()) / 86400000);
+      if (days > 7) agePill = `<span style="background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:999px;font-weight:700" title="${days} days in this stage — getting stale">${days}d</span>`;
+      else if (days > 3) agePill = `<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:999px;font-weight:700" title="${days} days in this stage">${days}d</span>`;
+    }
     return `<div class="card" data-lead-id="${l.id}">
       <div class="name">${esc(l.full_name || l.email)}</div>
       <div class="meta">${esc(l.company || '')}${l.company && l.email ? ' · ' : ''}${esc(l.email)}</div>
       <div class="row2">
         ${nextLine}
+        ${agePill}
         <span>${l.last_contacted_at ? 'last ' + timeAgo(l.last_contacted_at) : 'never contacted'}</span>
       </div>
     </div>`;
@@ -449,14 +458,33 @@
         if (upsertErr) { bannerNL(upsertErr.message, 'err'); return; }
         bannerNL(existing ? t('leads.new_lead_updated','Lead updated.') : t('leads.new_lead_created','Lead added.'), 'ok');
         ['nl_name','nl_email','nl_phone','nl_company','nl_role','nl_source','nl_notes'].forEach(id => { const e = $(id); if (e) e.value = ''; });
-        // Refresh the board
         await loadAll();
         render();
       });
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => { init(); setTimeout(wireNewLead, 0); });
+  // ----- CSV export of currently-filtered leads -----
+  function wireCsv(){
+    const btn = $('csvBtn');
+    if (!btn || btn.dataset.wired) return;
+    btn.dataset.wired = '1';
+    btn.addEventListener('click', () => {
+      const rows = filterLeads();
+      const cols = ['stage','full_name','email','phone','company','role_title','source','source_detail','last_contacted_at','stage_changed_at','created_at','notes'];
+      const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""').replace(/\n/g, ' ').slice(0, 1000) + '"';
+      const lines = [cols.join(',')].concat(rows.map(r => cols.map(c => esc(r[c])).join(',')));
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'lymx-leads-' + new Date().toISOString().slice(0,10) + '.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => { init(); setTimeout(() => { wireNewLead(); wireCsv(); }, 0); });
 })();
 </script>
 </body>

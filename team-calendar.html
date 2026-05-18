@@ -113,6 +113,18 @@
       <div id="googleActions"></div>
     </div>
 
+    <div class="card" id="digestCard">
+      <h2 data-i18n="tc.digest_title">📊 Daily digest email</h2>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 12px" data-i18n="tc.digest_sub">Every day at your chosen hour, get an email recap of completed calls, no-shows, new leads, and stale leads. Set to "Off" to disable.</p>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <label style="font-size:13px;font-weight:600" data-i18n="tc.digest_when">Send at:</label>
+        <select id="digestHour" style="padding:7px 11px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px;background:#fff"></select>
+        <span style="font-size:13px;color:var(--muted)" id="digestTz">—</span>
+        <button class="save-btn" id="saveDigestBtn" type="button" data-i18n="tc.digest_save">Save</button>
+      </div>
+      <div id="digestBanner"></div>
+    </div>
+
     <div class="card" id="intakeCard">
       <h2 data-i18n="tc.intake_title">❓ Pre-call questions</h2>
       <p style="color:var(--muted);font-size:13px;margin:0 0 12px" data-i18n="tc.intake_sub">Questions bookers answer right on your /c/<handle> page. Answers show up in the confirmation email + the lead drawer. Keep it short — 2-3 questions max.</p>
@@ -203,6 +215,7 @@
     myRules = rules || [];
     renderAvail();
     wireIntakeCard();
+    wireDigestCard();
     await loadBookings();
 
     $('saveProfileBtn').addEventListener('click', saveProfile);
@@ -474,6 +487,33 @@
         banner('intakeBanner', 'Questions saved. Bookers see them on your /c/' + myCal.handle + ' page.', 'ok');
       });
     }
+  }
+
+  // ---------- Daily digest preferences ----------
+  function wireDigestCard(){
+    if (!myCal) return;
+    const sel = $('digestHour');
+    const tz = $('digestTz');
+    const saveBtn = $('saveDigestBtn');
+    if (!sel || !tz || !saveBtn) return;
+    tz.textContent = '(' + (myCal.timezone || 'UTC') + ')';
+    // Populate hours
+    sel.innerHTML = '<option value="">Off (no digest)</option>' +
+      Array.from({length:24}, (_,h)=>h).map(h => {
+        const lbl = (h === 0 ? '12:00 AM' : h < 12 ? (h + ':00 AM') : (h === 12 ? '12:00 PM' : (h-12) + ':00 PM'));
+        return `<option value="${h}">${lbl}</option>`;
+      }).join('');
+    sel.value = (myCal.digest_send_hour == null) ? '' : String(myCal.digest_send_hour);
+    if (saveBtn.dataset.wired) return;
+    saveBtn.dataset.wired = '1';
+    saveBtn.addEventListener('click', async () => {
+      const v = sel.value;
+      const newHour = v === '' ? null : parseInt(v, 10);
+      const { error } = await sb.from('team_calendars').update({ digest_send_hour: newHour }).eq('id', myCal.id);
+      if (error) { banner('digestBanner', error.message, 'err'); return; }
+      myCal.digest_send_hour = newHour;
+      banner('digestBanner', newHour == null ? 'Daily digest turned off.' : `Daily digest set to ${newHour}:00 ${myCal.timezone || 'UTC'}.`, 'ok');
+    });
   }
 
   document.addEventListener('DOMContentLoaded', init);

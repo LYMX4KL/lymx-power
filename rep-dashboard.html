@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX Partner dashboard — Multi-Generation Compensation, referral tree, commissions, leaderboard." />
 <title>Partner Dashboard · LYMX</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://getlymx.com/rep-dashboard" />
 <meta property="og:title" content="Partner Dashboard · LYMX" />
@@ -206,6 +203,17 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
 <script src="lymx-auth.js"></script>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 
@@ -554,6 +562,82 @@
       if (fl) fl.textContent = 'Activations toward Founding 25';
     }
   })();
+</script>
+
+<script>
+// Recent activity widget — pulls last 7 days of leads + bookings for this partner.
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[<>&"]/g, c => ({ "<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;" }[c])); }
+  function timeAgo(iso) {
+    if (!iso) return "";
+    var d = new Date(iso); var s = Math.round((Date.now() - d) / 1000);
+    if (s < 60) return "just now"; if (s < 3600) return Math.round(s/60) + "m ago";
+    if (s < 86400) return Math.round(s/3600) + "h ago"; if (s < 604800) return Math.round(s/86400) + "d ago";
+    return d.toLocaleDateString();
+  }
+  async function load() {
+    if (!window.LYMX || !window.LYMX.sb || !window.LYMX.user) {
+      setTimeout(load, 250);
+      return;
+    }
+    var sb = window.LYMX.sb;
+    var userId = window.LYMX.user.id;
+    var weekAgo = new Date(Date.now() - 7 * 86400 * 1000).toISOString();
+
+    // Find my team_calendar (if any) so I can also surface bookings on it
+    var calIds = [];
+    try {
+      var c = await sb.from("team_calendars").select("id").eq("user_id", userId);
+      if (c.data) calIds = c.data.map(x => x.id);
+    } catch (_) {}
+
+    // Parallel queries for the three event types
+    var pNewLeads = sb.from("leads")
+      .select("id, full_name, email, source, created_at, stage")
+      .eq("owner_user_id", userId)
+      .gte("created_at", weekAgo)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    var pClosedLeads = sb.from("leads")
+      .select("id, full_name, email, stage, stage_changed_at")
+      .eq("owner_user_id", userId)
+      .in("stage", ["won", "lost"])
+      .gte("stage_changed_at", weekAgo)
+      .order("stage_changed_at", { ascending: false })
+      .limit(20);
+    var pBookings = calIds.length
+      ? sb.from("bookings")
+          .select("id, booker_name, starts_at, status, lead_id")
+          .in("team_calendar_id", calIds)
+          .gte("starts_at", weekAgo)
+          .order("starts_at", { ascending: false })
+          .limit(20)
+      : Promise.resolve({ data: [] });
+    var [nlR, clR, bkR] = await Promise.all([pNewLeads, pClosedLeads, pBookings]);
+
+    var events = [];
+    (nlR.data || []).forEach(l => events.push({ when: l.created_at, icon: "➕", text: "Added <b>" + esc(l.full_name || l.email) + "</b>" + (l.source ? ' <span style="color:var(--muted);font-size:12px">via ' + esc(l.source) + '</span>' : "") }));
+    (clR.data || []).forEach(l => events.push({ when: l.stage_changed_at, icon: l.stage === "won" ? "🎉" : "❌", text: (l.stage === "won" ? "Won " : "Lost ") + "<b>" + esc(l.full_name || l.email) + "</b>" }));
+    (bkR.data || []).forEach(b => {
+      var icon = b.status === "completed" ? "✅" : b.status === "no_show" ? "🙁" : b.status === "cancelled" ? "↩" : "📅";
+      var verb = b.status === "completed" ? "Completed call with" : b.status === "no_show" ? "No-show:" : b.status === "cancelled" ? "Cancelled:" : "Booked:";
+      events.push({ when: b.starts_at, icon: icon, text: verb + " <b>" + esc(b.booker_name || "Guest") + "</b>" });
+    });
+
+    events.sort((a, b) => (b.when || "").localeCompare(a.when || ""));
+    events = events.slice(0, 12);
+
+    if (!events.length) return; // leave the placeholder
+    var wrap = $("repActivity");
+    if (!wrap) return;
+    wrap.innerHTML = events.map(e => '<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6;align-items:center"><div style="font-size:18px">' + e.icon + '</div><div style="flex:1;font-size:13.5px">' + e.text + '</div><div style="font-size:11.5px;color:var(--muted)">' + esc(timeAgo(e.when)) + '</div></div>').join("");
+    var moreLink = wrap.parentElement && wrap.parentElement.querySelector(".more");
+    if (moreLink) moreLink.setAttribute("href", "/leads.html?owner=me");
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", load);
+  else load();
+})();
 </script>
 
 <script src="lymx-feedback.js" defer></script>
