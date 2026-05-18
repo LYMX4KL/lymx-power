@@ -59,6 +59,7 @@
       <textarea id="reason" data-i18n-placeholder="booking.cancel.reason_placeholder" placeholder="e.g. Scheduling conflict came up, I'll book a new time"></textarea>
     </div>
     <div class="btn-row">
+      <a class="btn btn-primary" id="rescheduleBtn" data-i18n="booking.cancel.reschedule_btn">📅 Reschedule instead</a>
       <button class="btn btn-danger" id="confirmBtn" data-i18n="booking.cancel.confirm_btn">Yes, cancel the call</button>
       <a class="btn btn-ghost" id="keepBtn" data-i18n="booking.cancel.keep_btn">No, keep the call</a>
     </div>
@@ -119,6 +120,7 @@
   $('confWhen').textContent = startsLocal + ' (' + (b.timezone || 'UTC') + ')';
   $('keepBtn').href = '/c/' + encodeURIComponent(b.handle);
   $('rebookBtn').href = '/c/' + encodeURIComponent(b.handle);
+  $('rescheduleBtn').href = '/c/' + encodeURIComponent(b.handle) + '?reschedule_from=' + encodeURIComponent(bookingId) + '&token=' + encodeURIComponent(token);
   show('confirm');
 
   $('confirmBtn').addEventListener('click', async () => {

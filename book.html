@@ -67,6 +67,10 @@
         <div class="role" id="roleTitle">—</div>
       </div>
     </div>
+    <div id="rescheduleBanner" style="display:none;background:#fef3c7;border-left:3px solid #f59e0b;padding:11px 14px;border-radius:8px;margin:0 0 14px;font-size:13.5px;color:#7c2d12">
+      <b data-i18n="booking.reschedule_banner_title">📅 Rescheduling your call</b>
+      <div style="margin-top:2px" data-i18n="booking.reschedule_banner_sub">Pick a new time below. Confirming will cancel your previous booking automatically.</div>
+    </div>
     <div class="welcome" id="welcomeMsg"></div>
 
     <div class="grid">
@@ -165,6 +169,24 @@
     $('loading').style.display='none';
     $('bookingUI').style.display='block';
 
+    // Reschedule mode: show banner + prefill name/email/phone/company/message from the old booking
+    const urlParams = new URLSearchParams(location.search);
+    const rescheduleFrom = urlParams.get('reschedule_from');
+    const rescheduleToken = urlParams.get('token');
+    if (rescheduleFrom && rescheduleToken) {
+      $('rescheduleBanner').style.display = 'block';
+      try {
+        const { data: oldRows } = await sb.rpc('fn_validate_booking_cancel_token', {
+          p_booking_id: rescheduleFrom,
+          p_token: rescheduleToken,
+        });
+        if (oldRows && oldRows[0]) {
+          if ($('fName')) $('fName').value = oldRows[0].booker_name || '';
+          if ($('fEmail')) $('fEmail').value = oldRows[0].booker_email || '';
+        }
+      } catch(_e) { /* prefill is best-effort */ }
+    }
+
     renderDays();
 
     // Pre-fill if logged in
@@ -245,13 +267,11 @@
 
     function isConflict(slotStart){
       const slotEnd = new Date(slotStart.getTime() + duration*60000);
-      // existing LYMX bookings
       for (const b of (existingBookings || [])) {
         const bs = new Date(b.starts_at).getTime();
         const be = new Date(b.ends_at).getTime();
         if (slotStart.getTime() < be && slotEnd.getTime() > bs) return true;
       }
-      // Google busy ranges
       for (const b of googleBusy) {
         const bs = new Date(b.start).getTime();
         const be = new Date(b.end).getTime();
@@ -287,6 +307,9 @@
     try {
       const { data: { session } } = await sb.auth.getSession();
       const headers = { 'Content-Type':'application/json', 'apikey':SUPABASE_ANON, 'Authorization': 'Bearer ' + (session?.access_token || SUPABASE_ANON) };
+      const urlParams = new URLSearchParams(location.search);
+      const rescheduleFrom = urlParams.get('reschedule_from');
+      const rescheduleToken = urlParams.get('token');
       const r = await fetch(SUPABASE_URL + '/functions/v1/book-call', {
         method:'POST',
         headers,
@@ -297,11 +320,12 @@
           company: $('fCompany').value.trim() || null,
           booker_message: $('fMessage').value.trim() || null,
           booker_user_id: session?.user?.id || null,
+          reschedule_from: rescheduleFrom || null,
+          reschedule_token: rescheduleToken || null,
         }),
       });
       const j = await r.json();
       if (!j.ok) throw new Error(j.error || 'Booking failed');
-      // Show success card
       $('bookingUI').style.display = 'none';
       $('successCard').style.display = 'block';
       const when = new Date(j.starts_at_iso);
