@@ -77,12 +77,16 @@ Kenny + the LYMX team`;
     return { subject, body_text };
 }
 
-async function translateIfNeeded(supabase: ReturnType<typeof createClient>, authToken: string, supabaseUrl: string, text: string, targetLocale: string, context: string): Promise<string> {
+async function translateIfNeeded(supabase: ReturnType<typeof createClient>, anonKey: string, serviceKey: string, supabaseUrl: string, text: string, targetLocale: string, context: string): Promise<string> {
     if (targetLocale === "en" || !SUPPORTED.includes(targetLocale)) return text;
     try {
         const r = await fetch(supabaseUrl + "/functions/v1/translate-text", {
             method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${authToken}`, "apikey": authToken },
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${serviceKey}`,   // bypasses verify_jwt on the target EF
+                "apikey": anonKey,                          // project identification for the gateway
+            },
             body: JSON.stringify({ text, target_locale: targetLocale, source_locale: "en", context }),
         });
         if (!r.ok) {
@@ -144,15 +148,15 @@ serve(async (req) => {
         businessSlug: business_slug || null,
     });
 
-    // Translate body + subject if needed. Use the SERVICE_ROLE key for the
-    // function-to-function call so we bypass any JWT verification issues that
-    // ANON-key calls hit when one Edge Function calls another inside Supabase.
+    // Translate body + subject if needed. Pass ANON key as `apikey` (project
+    // identification for the Supabase gateway) and SERVICE_ROLE as the Bearer
+    // token (bypasses verify_jwt on the target Edge Function).
     let subject = composed.subject;
     let body_text = composed.body_text;
     let translated = false;
     if (locale !== "en") {
-        subject = await translateIfNeeded(supabase, SB_KEY, SB_URL, composed.subject, locale, "email subject line, marketing tone");
-        body_text = await translateIfNeeded(supabase, SB_KEY, SB_URL, composed.body_text, locale, "warm welcome email from a small rewards startup; preserve the warm friendly tone and any URLs or numbers as-is");
+        subject = await translateIfNeeded(supabase, ANON, SB_KEY, SB_URL, composed.subject, locale, "email subject line, marketing tone");
+        body_text = await translateIfNeeded(supabase, ANON, SB_KEY, SB_URL, composed.body_text, locale, "warm welcome email from a small rewards startup; preserve the warm friendly tone and any URLs or numbers as-is");
         translated = (subject !== composed.subject) || (body_text !== composed.body_text);
     }
 
