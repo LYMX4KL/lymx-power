@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>My Calendar · LYMX</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--soft:#eef4ff}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+  .main{margin-left:240px;padding:24px 28px;max-width:980px}
+  @media(max-width:880px){.main{margin-left:0;padding:16px}}
+  h1{margin:0 0 4px;font-size:26px;font-weight:800}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+  .public-link{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .public-link .label{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .public-link code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;color:var(--accent-2);flex:1;word-break:break-all}
+  .public-link button{padding:5px 10px;background:#0e1116;color:#fff;border:0;border-radius:6px;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+  .card h2{margin:0 0 10px;font-size:15.5px;color:var(--accent-2)}
+  .row{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:10px}
+  .day-col{text-align:center}
+  .day-col .day-label{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:4px;text-transform:uppercase}
+  .day-toggle{padding:6px 4px;border:1px solid var(--line);border-radius:7px;background:#fff;cursor:pointer;font:inherit;font-size:12.5px;width:100%}
+  .day-toggle.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .time-row{display:flex;gap:8px;align-items:center;margin-top:6px}
+  .time-row input{padding:5px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:13px;width:80px}
+  .form-row{margin-bottom:10px}
+  .form-row label{display:block;font-size:13px;font-weight:600;margin-bottom:3px}
+  .form-row input, .form-row textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px}
+  .form-row textarea{min-height:60px;resize:vertical}
+  .save-btn{padding:9px 16px;background:var(--ink);color:#fff;border:0;border-radius:7px;font-weight:700;cursor:pointer;font:inherit}
+  .booking-row{padding:11px 14px;border-bottom:1px solid #f3f4f6;display:flex;gap:12px;align-items:center}
+  .booking-row:last-child{border-bottom:0}
+  .booking-row .when{font-weight:700;min-width:160px;font-size:13.5px}
+  .booking-row .who{font-size:13.5px;color:var(--ink-2);flex:1}
+  .booking-row .who small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px}
+  .booking-row .join{padding:5px 10px;background:#0a84ff;color:#fff;border-radius:6px;font:inherit;font-size:12px;font-weight:600;text-decoration:none}
+  .empty{color:var(--muted);font-size:13.5px;padding:14px 0;text-align:center}
+  .alert{padding:9px 12px;border-radius:7px;margin:8px 0;font-size:13.5px}
+  .alert.ok{background:#e6f5ee;color:#065f46;border-left:3px solid #10b981}
+  .alert.err{background:#fee2e2;color:#991b1b;border-left:3px solid #dc2626}
+</style>
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<main class="main">
+  <h1>📅 My Calendar</h1>
+  <div class="sub">Set your weekly availability — anyone with your booking link can pick a slot and you'll both get a calendar invite + video room URL.</div>
+
+  <div class="public-link" id="publicLinkBox" style="display:none">
+    <div>
+      <div class="label">Your public link</div>
+      <code id="publicLink"></code>
+    </div>
+    <button id="copyLink">Copy</button>
+    <button id="openLink" style="background:#0a84ff">Open</button>
+  </div>
+
+  <div id="noCalBox" class="card" style="display:none">
+    <h2>Create your calendar</h2>
+    <p style="color:var(--muted);font-size:13.5px">You don't have a team calendar yet. Pick a handle for your public booking page (letters, numbers, dashes).</p>
+    <div class="form-row"><label>Handle</label><input id="newHandle" placeholder="e.g. yourname" /></div>
+    <div class="form-row"><label>Display name</label><input id="newDisplay" placeholder="Your name" /></div>
+    <div class="form-row"><label>Role title</label><input id="newRole" placeholder="e.g. Customer Success" /></div>
+    <button class="save-btn" id="createBtn">Create my calendar</button>
+    <div id="createBanner"></div>
+  </div>
+
+  <div id="calUI" style="display:none">
+    <div class="card">
+      <h2>Profile</h2>
+      <div class="form-row"><label>Display name</label><input id="fDisplay" /></div>
+      <div class="form-row"><label>Role title</label><input id="fRole" /></div>
+      <div class="form-row"><label>Welcome message (shown to bookers)</label><textarea id="fWelcome"></textarea></div>
+      <div class="form-row"><label>Default duration (minutes)</label><input id="fDuration" type="number" min="10" max="180" /></div>
+      <div class="form-row"><label>Accepting bookings</label><select id="fActive"><option value="true">Yes</option><option value="false">Paused</option></select></div>
+      <button class="save-btn" id="saveProfileBtn">Save profile</button>
+      <div id="profileBanner"></div>
+    </div>
+
+    <div class="card">
+      <h2>Weekly availability</h2>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 12px">Pick days + start/end times. Bookers see slots every 30 min within these windows.</p>
+      <div class="row" id="daysRow"></div>
+      <div id="rulesArea"></div>
+      <button class="save-btn" id="saveAvailBtn" style="margin-top:8px">Save availability</button>
+      <div id="availBanner"></div>
+    </div>
+
+    <div class="card">
+      <h2>Upcoming bookings</h2>
+      <div id="bookingsList"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+  if (!window.LYMX_CONFIG || typeof window.supabase === 'undefined') return;
+  const SUPABASE_URL = window.LYMX_CONFIG.SUPABASE_URL;
+  const SUPABASE_ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true } });
+
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let me = null, myCal = null, myRules = [];
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?"":s).replace(/[<>&"]/g, c=>({ "<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;" }[c])); }
+  function banner(id, msg, kind){ $(id).innerHTML = `<div class="alert ${kind}">${esc(msg)}</div>`; setTimeout(()=>$(id).innerHTML='', kind==='ok'?3000:6000); }
+
+  async function init(){
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) { location.href = '/login.html?next=/team-calendar.html'; return; }
+    me = user;
+    const { data: cal } = await sb.from('team_calendars').select('*').eq('user_id', me.id).maybeSingle();
+    if (!cal) {
+      $('noCalBox').style.display = 'block';
+      $('newDisplay').value = user.user_metadata?.full_name || (user.email||'').split('@')[0];
+      $('newHandle').value = (user.email||'').split('@')[0].toLowerCase().replace(/[^a-z0-9-]/g, '');
+      $('createBtn').addEventListener('click', createCalendar);
+      return;
+    }
+    myCal = cal;
+    await renderUI();
+  }
+
+  async function createCalendar(){
+    const handle = $('newHandle').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+    const display = $('newDisplay').value.trim();
+    if (!handle || !display) { banner('createBanner', 'Handle + display name required', 'err'); return; }
+    const { data, error } = await sb.from('team_calendars').insert({
+      user_id: me.id,
+      handle, display_name: display,
+      role_title: $('newRole').value.trim() || null,
+    }).select().single();
+    if (error) { banner('createBanner', error.message, 'err'); return; }
+    myCal = data;
+    $('noCalBox').style.display = 'none';
+    await renderUI();
+  }
+
+  async function renderUI(){
+    $('calUI').style.display = 'block';
+    const url = `${location.origin}/book.html?u=${encodeURIComponent(myCal.handle)}`;
+    $('publicLink').textContent = url;
+    $('publicLinkBox').style.display = 'flex';
+    $('copyLink').addEventListener('click', () => { navigator.clipboard.writeText(url); $('copyLink').textContent = 'Copied!'; setTimeout(()=>$('copyLink').textContent='Copy', 1500); });
+    $('openLink').addEventListener('click', () => window.open(url, '_blank'));
+
+    $('fDisplay').value = myCal.display_name || '';
+    $('fRole').value = myCal.role_title || '';
+    $('fWelcome').value = myCal.welcome_message || '';
+    $('fDuration').value = myCal.default_duration_min || 30;
+    $('fActive').value = myCal.accepts_bookings ? 'true' : 'false';
+
+    const { data: rules } = await sb.from('availability_rules').select('*').eq('team_calendar_id', myCal.id).order('day_of_week');
+    myRules = rules || [];
+    renderAvail();
+    await loadBookings();
+
+    $('saveProfileBtn').addEventListener('click', saveProfile);
+    $('saveAvailBtn').addEventListener('click', saveAvail);
+  }
+
+  function renderAvail(){
+    $('daysRow').innerHTML = DAYS.map((d, i) => `
+      <div class="day-col">
+        <div class="day-label">${d}</div>
+        <button class="day-toggle ${myRules.some(r => r.day_of_week === i) ? 'on' : ''}" data-day="${i}">${myRules.some(r => r.day_of_week === i) ? 'on' : 'off'}</button>
+      </div>
+    `).join('');
+    document.querySelectorAll('.day-toggle').forEach(b => b.addEventListener('click', () => {
+      const day = +b.dataset.day;
+      const existing = myRules.findIndex(r => r.day_of_week === day);
+      if (existing >= 0) myRules.splice(existing, 1);
+      else myRules.push({ day_of_week: day, start_time: '09:00:00', end_time: '17:00:00', is_active: true });
+      renderAvail();
+    }));
+    const rows = myRules.slice().sort((a,b) => a.day_of_week - b.day_of_week).map((r, idx) => `
+      <div class="time-row">
+        <span style="width:50px;font-size:13px;font-weight:600">${DAYS[r.day_of_week]}</span>
+        <input type="time" data-idx="${idx}" data-field="start_time" value="${(r.start_time||'09:00:00').slice(0,5)}" />
+        <span style="color:var(--muted)">to</span>
+        <input type="time" data-idx="${idx}" data-field="end_time" value="${(r.end_time||'17:00:00').slice(0,5)}" />
+      </div>
+    `).join('');
+    $('rulesArea').innerHTML = rows;
+    document.querySelectorAll('#rulesArea input').forEach(inp => inp.addEventListener('change', (e) => {
+      const idx = +e.target.dataset.idx;
+      const field = e.target.dataset.field;
+      const sorted = myRules.slice().sort((a,b) => a.day_of_week - b.day_of_week);
+      sorted[idx][field] = e.target.value + ':00';
+      myRules = sorted;
+    }));
+  }
+
+  async function saveProfile(){
+    const patch = {
+      display_name: $('fDisplay').value.trim(),
+      role_title: $('fRole').value.trim() || null,
+      welcome_message: $('fWelcome').value.trim() || null,
+      default_duration_min: parseInt($('fDuration').value, 10) || 30,
+      accepts_bookings: $('fActive').value === 'true',
+    };
+    const { error } = await sb.from('team_calendars').update(patch).eq('id', myCal.id);
+    if (error) { banner('profileBanner', error.message, 'err'); return; }
+    banner('profileBanner', 'Profile saved.', 'ok');
+    Object.assign(myCal, patch);
+  }
+
+  async function saveAvail(){
+    // Delete all existing rules, re-insert from myRules array
+    await sb.from('availability_rules').delete().eq('team_calendar_id', myCal.id);
+    if (myRules.length > 0) {
+      const inserts = myRules.map(r => ({
+        team_calendar_id: myCal.id,
+        day_of_week: r.day_of_week,
+        start_time: r.start_time,
+        end_time: r.end_time,
+        is_active: true,
+      }));
+      const { error } = await sb.from('availability_rules').insert(inserts);
+      if (error) { banner('availBanner', error.message, 'err'); return; }
+    }
+    banner('availBanner', 'Availability saved.', 'ok');
+  }
+
+  async function loadBookings(){
+    const { data } = await sb.from('bookings').select('*').eq('team_calendar_id', myCal.id).gte('starts_at', new Date().toISOString()).order('starts_at').limit(20);
+    if (!data || !data.length) { $('bookingsList').innerHTML = '<div class="empty">No upcoming bookings.</div>'; return; }
+    $('bookingsList').innerHTML = data.map(b => {
+      const when = new Date(b.starts_at).toLocaleString(undefined, { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+      return `<div class="booking-row">
+        <div class="when">${when}</div>
+        <div class="who"><b>${esc(b.booker_name)}</b><small>${esc(b.booker_email)}${b.company ? ' · ' + esc(b.company) : ''}${b.booker_message ? '<br>"' + esc(b.booker_message.slice(0,80)) + '"' : ''}</small></div>
+        <a class="join" href="${esc(b.video_room_url)}" target="_blank">Join</a>
+      </div>`;
+    }).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>

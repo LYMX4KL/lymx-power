@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Book a call · LYMX</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+  .wrap{max-width:760px;margin:0 auto;padding:30px 18px 60px}
+  .header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .avatar{width:60px;height:60px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800}
+  .who h1{margin:0;font-size:22px;font-weight:800}
+  .who .role{color:var(--muted);font-size:14px}
+  .welcome{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:18px;font-size:14.5px;color:var(--ink-2)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .card h2{margin:0 0 10px;font-size:15px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .day-btn{display:block;width:100%;padding:11px 14px;margin-bottom:8px;border:1px solid var(--line);border-radius:9px;background:#fff;font:inherit;font-size:14px;cursor:pointer;text-align:left;transition:.12s}
+  .day-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .day-btn.selected{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .slots{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:6px}
+  .slot{padding:9px 6px;border:1px solid var(--line);border-radius:7px;background:#fff;font:inherit;font-size:13px;cursor:pointer;text-align:center;font-weight:600}
+  .slot:hover{border-color:var(--accent);color:var(--accent)}
+  .slot.selected{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .slot:disabled{background:#f3f4f6;color:#9ca3af;cursor:not-allowed}
+  .form-row{margin-bottom:12px}
+  .form-row label{display:block;font-size:13px;font-weight:600;margin-bottom:4px;color:var(--ink-2)}
+  .form-row input, .form-row textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:14px;background:#fff}
+  .form-row textarea{min-height:70px;resize:vertical}
+  .submit-btn{padding:12px 22px;background:var(--ink);color:#fff;border:0;border-radius:9px;font-weight:700;font-size:15px;cursor:pointer;width:100%}
+  .submit-btn:disabled{background:#9aa0b2;cursor:not-allowed}
+  .alert{padding:11px 14px;border-radius:8px;margin:10px 0;font-size:14px;line-height:1.5}
+  .alert.ok{background:#e6f5ee;color:#065f46;border-left:3px solid #10b981}
+  .alert.err{background:#fee2e2;color:#991b1b;border-left:3px solid #dc2626}
+  .success-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px 26px;text-align:center;margin:14px 0;display:none}
+  .success-card .icon{font-size:50px;margin-bottom:10px}
+  .success-card h2{margin:0 0 8px;font-size:22px;font-weight:800}
+  .success-card .join-btn{display:inline-block;margin-top:14px;padding:12px 22px;background:#0a84ff;color:#fff;border-radius:10px;font-weight:700;text-decoration:none}
+  .success-card .when{background:#eef4ff;border-radius:8px;padding:10px;margin:14px 0;font-size:14.5px;font-weight:600}
+</style>
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-app.js" defer></script>
+
+<div class="wrap" id="mainWrap">
+  <div id="loading" style="text-align:center;padding:60px 0;color:var(--muted);font-size:14px">Loading calendar…</div>
+  <div id="notFound" style="display:none;text-align:center;padding:60px 20px"><h2 style="margin:0 0 8px">Calendar not found</h2><p style="color:var(--muted)">No active booking calendar exists for that link. Double-check the URL or contact LYMX.</p></div>
+
+  <div id="bookingUI" style="display:none">
+    <div class="header">
+      <div class="avatar" id="avatar">??</div>
+      <div class="who">
+        <h1 id="ownerName">—</h1>
+        <div class="role" id="roleTitle">—</div>
+      </div>
+    </div>
+    <div class="welcome" id="welcomeMsg"></div>
+
+    <div class="grid">
+      <div class="card">
+        <h2 data-i18n="filter.pick_day">Pick a day</h2>
+        <div id="dayList"></div>
+      </div>
+      <div class="card">
+        <h2 data-i18n="filter.pick_time">Pick a time</h2>
+        <div id="slotsArea" style="font-size:13px;color:var(--muted)">Pick a day first.</div>
+      </div>
+    </div>
+
+    <div class="card" id="detailsCard" style="margin-top:16px;display:none">
+      <h2 data-i18n="filter.your_details">Your details</h2>
+      <div class="form-row"><label>Your name <span style="color:#b91c1c">*</span></label><input id="fName" autocomplete="name" /></div>
+      <div class="form-row"><label>Email <span style="color:#b91c1c">*</span></label><input id="fEmail" type="email" autocomplete="email" /></div>
+      <div class="form-row"><label>Phone (optional)</label><input id="fPhone" type="tel" autocomplete="tel" /></div>
+      <div class="form-row"><label>Company (optional)</label><input id="fCompany" autocomplete="organization" /></div>
+      <div class="form-row"><label>What would you like to talk about?</label><textarea id="fMessage" placeholder="A few words helps me prep before the call…"></textarea></div>
+      <button class="submit-btn" id="submitBtn">Confirm booking</button>
+      <div id="banner"></div>
+    </div>
+  </div>
+
+  <div class="success-card" id="successCard">
+    <div class="icon">✓</div>
+    <h2>Booked!</h2>
+    <p style="margin:0 0 4px;color:var(--muted)">You'll get a confirmation email + calendar invite shortly.</p>
+    <div class="when" id="successWhen"></div>
+    <a class="join-btn" id="joinLink" href="#" target="_blank">🎥 Join the call</a>
+    <p style="margin-top:14px;font-size:12.5px;color:var(--muted)">You can also save this page — the link is yours.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  if (!window.LYMX_CONFIG || typeof window.supabase === 'undefined') {
+    document.getElementById('loading').textContent = 'Config not loaded — please refresh.';
+    return;
+  }
+  const SUPABASE_URL = window.LYMX_CONFIG.SUPABASE_URL;
+  const SUPABASE_ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true } });
+
+  // Get handle from URL: /book.html?u=kenny  OR  /c/kenny (rewrite)
+  const params = new URLSearchParams(location.search);
+  const handle = (params.get('u') || (location.pathname.split('/c/')[1] || '').replace(/\.html$/, '') || '').replace(/[^\w-]/g, '').toLowerCase();
+  if (!handle) { document.getElementById('loading').style.display='none'; document.getElementById('notFound').style.display='block'; return; }
+
+  let cal = null, rules = [], overrides = [];
+  let selectedDate = null, selectedSlot = null;
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?"":s).replace(/[<>&"]/g, c=>({ "<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;" }[c])); }
+
+  async function load(){
+    const { data: c } = await sb.from('team_calendars').select('*').eq('handle', handle).eq('is_active', true).maybeSingle();
+    if (!c) { $('loading').style.display='none'; $('notFound').style.display='block'; return; }
+    cal = c;
+    document.title = `Book a call with ${c.display_name} · LYMX`;
+    document.documentElement.style.setProperty('--accent', c.brand_color || '#0a84ff');
+    $('avatar').textContent = (c.display_name||'?').split(/\s+/).map(s=>s[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
+    $('ownerName').textContent = c.display_name;
+    $('roleTitle').textContent = c.role_title || '';
+    $('welcomeMsg').textContent = c.welcome_message || '';
+
+    const { data: r } = await sb.from('availability_rules').select('*').eq('team_calendar_id', c.id).eq('is_active', true);
+    rules = r || [];
+    const { data: o } = await sb.from('availability_overrides').select('*').eq('team_calendar_id', c.id);
+    overrides = o || [];
+
+    $('loading').style.display='none';
+    $('bookingUI').style.display='block';
+
+    renderDays();
+
+    // Pre-fill if logged in
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+      $('fEmail').value = user.email || '';
+      const meta = user.user_metadata || {};
+      $('fName').value = meta.full_name || ((meta.first_name||'') + ' ' + (meta.last_name||'')).trim();
+    }
+  }
+
+  function fmtDate(d){ return d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' }); }
+  function fmtTime(d){ return d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit', hour12:true }); }
+
+  function renderDays(){
+    const out = [];
+    const start = new Date(); start.setHours(0,0,0,0);
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(start.getTime() + i*86400000);
+      const dow = d.getDay();
+      const hasRule = rules.some(r => r.day_of_week === dow);
+      const dateStr = d.toISOString().slice(0,10);
+      const blocked = overrides.some(o => o.override_date === dateStr && o.is_blocked && !o.start_time);
+      if (!hasRule || blocked) continue;
+      out.push({ date: d, dateStr });
+    }
+    $('dayList').innerHTML = out.map(x => `<button class="day-btn" data-date="${x.dateStr}">${fmtDate(x.date)}</button>`).join('') || '<div style="color:var(--muted);font-size:13px">No availability in the next 2 weeks. Email us!</div>';
+    document.querySelectorAll('.day-btn').forEach(b => b.addEventListener('click', () => selectDay(b)));
+  }
+
+  function selectDay(btn){
+    document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedDate = btn.dataset.date;
+    selectedSlot = null;
+    renderSlots();
+  }
+
+  function renderSlots(){
+    const d = new Date(selectedDate + 'T00:00:00');
+    const dow = d.getDay();
+    const dayRules = rules.filter(r => r.day_of_week === dow);
+    if (!dayRules.length) { $('slotsArea').innerHTML = '<div style="color:var(--muted);font-size:13px">No availability that day.</div>'; return; }
+
+    const slots = [];
+    const duration = cal.default_duration_min;
+    const minNoticeMs = cal.min_notice_hours * 3600000;
+    const now = Date.now();
+    for (const rule of dayRules) {
+      const [sh, sm] = rule.start_time.split(':').map(Number);
+      const [eh, em] = rule.end_time.split(':').map(Number);
+      // Build slots in the calendar's TIMEZONE — approximated here by treating the entered times as UTC offsets from local
+      // For correctness on day 1 we let the booker's local browser decide display (the EF validates final UTC time).
+      const dayStart = new Date(selectedDate + 'T' + rule.start_time + ':00');
+      const dayEnd   = new Date(selectedDate + 'T' + rule.end_time   + ':00');
+      for (let t = dayStart.getTime(); t + duration*60000 <= dayEnd.getTime(); t += duration*60000) {
+        const slotStart = new Date(t);
+        if (slotStart.getTime() - now < minNoticeMs) continue;
+        slots.push(slotStart);
+      }
+    }
+    if (!slots.length) { $('slotsArea').innerHTML = '<div style="color:var(--muted);font-size:13px">No more slots today.</div>'; return; }
+    $('slotsArea').innerHTML = '<div class="slots">' + slots.map(s => {
+      const iso = s.toISOString();
+      return `<button class="slot" data-iso="${iso}">${fmtTime(s)}</button>`;
+    }).join('') + '</div>';
+    document.querySelectorAll('.slot').forEach(b => b.addEventListener('click', () => selectSlot(b)));
+  }
+
+  function selectSlot(btn){
+    document.querySelectorAll('.slot').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedSlot = btn.dataset.iso;
+    $('detailsCard').style.display = 'block';
+    $('detailsCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function submit(){
+    const name = $('fName').value.trim();
+    const email = $('fEmail').value.trim();
+    if (!name || !email) { $('banner').innerHTML = '<div class="alert err">Please fill name + email.</div>'; return; }
+    if (!selectedSlot) { $('banner').innerHTML = '<div class="alert err">Pick a time slot.</div>'; return; }
+    $('submitBtn').disabled = true;
+    $('submitBtn').textContent = 'Booking…';
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const headers = { 'Content-Type':'application/json', 'apikey':SUPABASE_ANON, 'Authorization': 'Bearer ' + (session?.access_token || SUPABASE_ANON) };
+      const r = await fetch(SUPABASE_URL + '/functions/v1/book-call', {
+        method:'POST',
+        headers,
+        body: JSON.stringify({
+          handle, starts_at: selectedSlot,
+          booker_name: name, booker_email: email,
+          booker_phone: $('fPhone').value.trim() || null,
+          company: $('fCompany').value.trim() || null,
+          booker_message: $('fMessage').value.trim() || null,
+          booker_user_id: session?.user?.id || null,
+        }),
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || 'Booking failed');
+      // Show success card
+      $('bookingUI').style.display = 'none';
+      $('successCard').style.display = 'block';
+      const when = new Date(j.starts_at_iso);
+      $('successWhen').textContent = when.toLocaleString(undefined, { weekday:'long', month:'long', day:'numeric', hour:'numeric', minute:'2-digit' });
+      $('joinLink').href = j.video_room_url;
+    } catch(e) {
+      $('banner').innerHTML = '<div class="alert err">' + esc(e.message) + '</div>';
+      $('submitBtn').disabled = false;
+      $('submitBtn').textContent = 'Confirm booking';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    load();
+    $('submitBtn').addEventListener('click', submit);
+  });
+})();
+</script>
+</body>
+</html>
