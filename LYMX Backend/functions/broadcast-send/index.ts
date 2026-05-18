@@ -222,16 +222,72 @@ serve(async (req) => {
         return json({ success: true, sent_count: uniq.length, mode: "in_app", reason });
     }
 
+    // ----- Locale-aware translation -----
+    // Build a per-recipient (email → locale) map by joining the audience emails
+    // against customers/businesses/partners.preferred_locale. Then pre-translate
+    // the body+subject ONCE per unique locale (cached in translation_cache).
+    const SUPPORTED_LOC = ["en", "es", "zh-CN", "zh-TW", "ko", "ja"];
+    const emailToLocale: Record<string, string> = {};
+    try {
+        const lowerEmails = uniq.map(e => e.toLowerCase());
+        const tables = ["customers", "businesses", "partners"] as const;
+        for (const tbl of tables) {
+            const col = tbl === "businesses" ? "contact_email" : "email";
+            // Use single-column query because PostgREST can OR but only safely with literal lists
+            const { data: rows } = await supabase
+                .from(tbl).select(`${col},preferred_locale`).in(col, lowerEmails);
+            (rows || []).forEach((r: any) => {
+                const em = (r[col] || "").toLowerCase();
+                if (em && r.preferred_locale && SUPPORTED_LOC.includes(r.preferred_locale)) {
+                    if (!emailToLocale[em]) emailToLocale[em] = r.preferred_locale;
+                }
+            });
+        }
+    } catch { /* on lookup failure all recipients default to en */ }
+
+    // Pre-translate body+subject for each non-English locale that's actually needed.
+    const localesInUse = new Set<string>(["en"]);
+    uniq.forEach(e => { const loc = emailToLocale[e.toLowerCase()]; if (loc && loc !== "en") localesInUse.add(loc); });
+
+    const translatedBundle: Record<string, { subject: string; html: string; text: string }> = {
+        en: { subject: bc.subject, html: wrapHtml(bc.subject, bc.body_html), text: bc.body_text },
+    };
+    if (localesInUse.size > 1) {
+        const SB_URL_VAL = Deno.env.get("SUPABASE_URL")!;
+        const ANON_VAL = Deno.env.get("SUPABASE_ANON_KEY")!;
+        const tx = async (text: string, locale: string, ctx: string): Promise<string> => {
+            try {
+                const r = await fetch(SB_URL_VAL + "/functions/v1/translate-text", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "apikey": ANON_VAL, "Authorization": "Bearer " + ANON_VAL },
+                    body: JSON.stringify({ text, target_locale: locale, source_locale: "en", context: ctx }),
+                });
+                if (!r.ok) return text;
+                const j = await r.json();
+                return j.ok ? (j.translated_text || text) : text;
+            } catch { return text; }
+        };
+        for (const loc of localesInUse) {
+            if (loc === "en") continue;
+            const sb = await tx(bc.subject, loc, "marketing email subject line");
+            // Translate the plain-text version (cleaner for translation) then re-wrap
+            const txt = await tx(bc.body_text, loc, "marketing broadcast email body from a small rewards platform; preserve URLs, numbers, and brand name LYMX as-is");
+            const safeHtml = txt.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" style="color:#0a84ff">$1</a>').replace(/\n/g, "<br>");
+            translatedBundle[loc] = { subject: sb, html: wrapHtml(sb, safeHtml), text: txt };
+        }
+    }
+
     let sent = 0, failed = 0;
     const errors: string[] = [];
     const resendIds: string[] = [];
-    const html = wrapHtml(bc.subject, bc.body_html);
     for (const to of uniq) {
+        const recipLoc = emailToLocale[to.toLowerCase()] || "en";
+        const pkg = translatedBundle[recipLoc] || translatedBundle["en"];
         let resendId: string | null = null;
         let sendStatus: "sent" | "failed" = "sent";
         let errMsg: string | null = null;
         try {
-            const r = await sendOne({ apiKey: RESEND, from: FROM, replyTo: REPLY_TO, to, subject: bc.subject, html, text: bc.body_text });
+            const r = await sendOne({ apiKey: RESEND, from: FROM, replyTo: REPLY_TO, to, subject: pkg.subject, html: pkg.html, text: pkg.text });
             sent++;
             resendId = r.resend_id;
             if (resendId) resendIds.push(resendId);
@@ -250,7 +306,7 @@ serve(async (req) => {
                 from_address:      FROM,
                 reply_to:          REPLY_TO,
                 to_address:        to,
-                subject:           bc.subject,
+                subject:           pkg.subject,
                 template_key:      "broadcast",
                 resend_message_id: resendId,
                 send_status:       sendStatus,
