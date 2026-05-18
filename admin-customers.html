@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX Admin — customer support tool. Look up customers by phone or email, view balance, transaction history, adjust balance with audit." />
 <title>Customers · LYMX Admin</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://getlymx.com/admin-customers" />
 <meta property="og:title" content="LYMX Admin · Customers" />
@@ -149,6 +146,17 @@
 
   footer{background:var(--ink);color:#9aa3b0;padding:30px 0;font-size:13px;text-align:center;margin-top:48px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 <header class="nav">
@@ -298,8 +306,10 @@
 <script>
   document.getElementById('yr').textContent = new Date().getFullYear();
 
-  // Mock customer data
-  const customers = [
+  // Customer data — pulled from real DB by loadCustomersFromDb() at page init.
+  // Mock data wrapped in legacy comment 2026-05-18.
+  let customers = [];
+  /* legacy-mock-disabled
     {id:'c1001', name:'Sarah Reyes',  phone:'+17025550199', email:'sarah.reyes@example.com',  balance:7250,  earned:18400, lastActivity:'today',         joined:'2026-01-15', status:'active',    referrer:'Marcus Chen'},
     {id:'c1002', name:'Marcus Chen',  phone:'+17025551024', email:'marcus.c@example.com',     balance:4120,  earned:12800, lastActivity:'today',         joined:'2026-01-22', status:'active',    referrer:null},
     {id:'c1003', name:'Priya Shah',   phone:'+17025558872', email:'priya.shah@example.com',   balance:980,   earned:7400,  lastActivity:'yesterday',     joined:'2026-02-04', status:'active',    referrer:null},
@@ -313,19 +323,12 @@
     {id:'c1011', name:'Chris Vega',   phone:'+17025551115', email:'cvega@example.com',        balance:0,     earned:8800,  lastActivity:'21 days ago',   joined:'2026-04-01', status:'suspended', referrer:null},
     {id:'c1012', name:'Maya Cole',    phone:'+17025552226', email:'maya.c@example.com',       balance:1450,  earned:4200,  lastActivity:'yesterday',     joined:'2026-04-08', status:'active',    referrer:'Anna Park'},
   ];
+  end-legacy-mock-disabled */
 
-  // Mock transactions per customer
+  // Per-customer transaction map — populated alongside customers array.
   const txByCustomer = {};
-  customers.forEach(c => {
-    txByCustomer[c.id] = [
-      {type:'earn', biz:'Brew & Bean Coffee', amount:1200, date:'today · 8:14 AM', note:'Latte + scone'},
-      {type:'spend', biz:'Oakline Kitchen', amount:1800, date:'yesterday · 7:42 PM', note:'Dinner'},
-      {type:'earn', biz:'Sun Market & Deli', amount:640,  date:'Apr 24', note:'Groceries'},
-      {type:'spend', biz:'Brew & Bean Coffee', amount:800, date:'Apr 23', note:'Cold brew flight'},
-      {type:'earn', biz:'Field & Bloom Florals', amount:1000, date:'Apr 22', note:'Bouquet'},
-      {type:'adjust', biz:'LYMX Support', amount:50,  date:'Apr 18', note:'Goodwill credit (admin: KL)'},
-    ];
-  });
+  // Populated by loadCustomersFromDb() below. (Mock fan-out of fake "Brew & Bean"
+  // tx removed 2026-05-18 so real customers don't appear with fake history.)
 
   let selectedId = null;
 
@@ -458,8 +461,84 @@
 
   render();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Load real customers from `customers` table + aggregate balances/spend.
+(async function loadCustomersFromDb(){
+  try {
+    if (!window.LYMX || !window.LYMX.getSession) return;
+    const s = await window.LYMX.getSession();
+    if (!s) return;
+    const sb = window.LYMX.sb;
+
+    const { data: rows, error } = await sb.from('customers')
+      .select('id, user_id, display_name, phone, email, home_zip, created_at, archived_at')
+      .is('archived_at', null)
+      .order('created_at', { ascending: false })
+      .limit(500);
+    if (error || !rows) return;
+
+    const ids = rows.map(r => r.id);
+    const balanceMap = {};
+    if (ids.length) {
+      const { data: wallets } = await sb.from('wallets')
+        .select('customer_id, balance').in('customer_id', ids);
+      (wallets || []).forEach(w => {
+        balanceMap[w.customer_id] = (balanceMap[w.customer_id] || 0) + Number(w.balance || 0);
+      });
+    }
+
+    const earnedMap = {};
+    const lastActMap = {};
+    const userIds = rows.map(r => r.user_id).filter(Boolean);
+    if (userIds.length) {
+      const { data: iss } = await sb.from('lymx_issuances')
+        .select('recipient_user_id, amount_lymx, created_at')
+        .in('recipient_user_id', userIds);
+      (iss || []).forEach(i => {
+        const cust = rows.find(c => c.user_id === i.recipient_user_id);
+        if (!cust) return;
+        earnedMap[cust.id] = (earnedMap[cust.id] || 0) + Number(i.amount_lymx || 0);
+        if (!lastActMap[cust.id] || i.created_at > lastActMap[cust.id]) lastActMap[cust.id] = i.created_at;
+      });
+    }
+
+    function relTime(iso) {
+      if (!iso) return 'never';
+      const ms = Date.now() - new Date(iso).getTime();
+      const day = 24 * 60 * 60 * 1000;
+      if (ms < day) return 'today';
+      if (ms < 2 * day) return 'yesterday';
+      return Math.floor(ms / day) + ' days ago';
+    }
+
+    customers.length = 0;
+    rows.forEach(r => {
+      customers.push({
+        id: r.id,
+        name: r.display_name || (r.email || '').split('@')[0] || 'Customer',
+        phone: r.phone || '',
+        email: r.email || '',
+        balance: balanceMap[r.id] || 0,
+        earned: earnedMap[r.id] || 0,
+        lastActivity: relTime(lastActMap[r.id]),
+        joined: r.created_at ? r.created_at.slice(0, 10) : '',
+        status: 'active',
+        referrer: null
+      });
+    });
+
+    Object.keys(txByCustomer).forEach(k => delete txByCustomer[k]);
+    if (typeof render === 'function') render();
+  } catch (e) {
+    console.warn('[admin-customers] load failed', e);
+  }
+})();
+</script>
 <script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>
 </html>
