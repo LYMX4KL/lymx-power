@@ -495,11 +495,59 @@
       av.title = fullName;
     }
 
-    // Earnings + balance — placeholders for now (commission tables not wired yet)
-    document.getElementById('repEarningsMonth').firstChild.textContent = '$0.00';
-    const lymxEl = document.getElementById('repLymxBalance');
-    if (lymxEl) lymxEl.textContent = ' + 0 LYMX';
-    document.getElementById('repLifetime').textContent = '$0.00';
+    // Earnings + balance — wired to partner_commissions + settlements
+    try {
+      const fmtUsd = (n) => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const startMo = new Date(); startMo.setDate(1); startMo.setHours(0,0,0,0);
+      const startYr = new Date(new Date().getFullYear(), 0, 1);
+
+      const { data: allComms } = await LYMX.sb.from('partner_commissions')
+        .select('amount, type, generation, source_partner_id, settlement_id, created_at')
+        .eq('partner_id', partner.id);
+      const comms = allComms || [];
+      const sum = (arr) => arr.reduce((s, c) => s + Number(c.amount || 0), 0);
+
+      const thisMonth = comms.filter(c => c.created_at >= startMo.toISOString());
+      const thisYear  = comms.filter(c => c.created_at >= startYr.toISOString());
+      const lifetime  = sum(comms);
+      const ytd       = sum(thisYear);
+      const monthAmt  = sum(thisMonth);
+      const overrideThisMo = sum(thisMonth.filter(c => c.type === 'override' || (c.source_partner_id && c.source_partner_id !== partner.id)));
+
+      document.getElementById('repEarningsMonth').firstChild.textContent = fmtUsd(monthAmt);
+      const lymxEl = document.getElementById('repLymxBalance');
+      if (lymxEl) lymxEl.textContent = '';
+      document.getElementById('repLifetime').textContent = fmtUsd(lifetime);
+      const ytdEl = document.getElementById('repYtdEarnings');
+      if (ytdEl) ytdEl.textContent = fmtUsd(ytd);
+      const treePayEl = document.getElementById('repTreeYouPay');
+      if (treePayEl) treePayEl.innerHTML = fmtUsd(overrideThisMo) + ' <span class="sub">this month</span>';
+
+      // Next payout — open settlement (unsettled commissions)
+      const pendingComms = comms.filter(c => !c.settlement_id);
+      const pendingAmt = sum(pendingComms);
+      const nextEl = document.getElementById('repNextPayoutAmt');
+      if (nextEl) nextEl.textContent = fmtUsd(pendingAmt);
+
+      // Commission breakdown — replace the empty state if we have any
+      if (thisMonth.length) {
+        const breakdownEl = document.getElementById('commissionBreakdown');
+        if (breakdownEl) {
+          const byType = {};
+          thisMonth.forEach(c => {
+            const key = c.type || 'other';
+            byType[key] = (byType[key] || 0) + Number(c.amount || 0);
+          });
+          breakdownEl.innerHTML = Object.entries(byType).map(([t, amt]) =>
+            '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px"><span style="font-weight:600;text-transform:capitalize">' + t.replace(/_/g, ' ') + '</span><span style="font-weight:800;color:var(--ok)">' + fmtUsd(amt) + '</span></div>'
+          ).join('');
+        }
+      }
+    } catch (e) {
+      console.warn('[rep-dashboard] earnings wire failed', e);
+      document.getElementById('repEarningsMonth').firstChild.textContent = '$0.00';
+      document.getElementById('repLifetime').textContent = '$0.00';
+    }
 
     // Wire the share link to the partner's actual ref ID
     const shareUrl = 'https://getlymx.com/welcome.html?ref=' + partner.id;
@@ -598,48 +646,59 @@
       .eq("owner_user_id", userId)
       .gte("created_at", weekAgo)
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(12);
+
     var pClosedLeads = sb.from("leads")
-      .select("id, full_name, email, stage, stage_changed_at")
+      .select("id, full_name, stage, stage_changed_at")
       .eq("owner_user_id", userId)
       .in("stage", ["won", "lost"])
       .gte("stage_changed_at", weekAgo)
       .order("stage_changed_at", { ascending: false })
-      .limit(20);
-    var pBookings = calIds.length
+      .limit(12);
+
+    var pBookings = (calIds.length
       ? sb.from("bookings")
-          .select("id, booker_name, starts_at, status, lead_id")
+          .select("id, starts_at, booker_name, status")
           .in("team_calendar_id", calIds)
           .gte("starts_at", weekAgo)
           .order("starts_at", { ascending: false })
-          .limit(20)
-      : Promise.resolve({ data: [] });
-    var [nlR, clR, bkR] = await Promise.all([pNewLeads, pClosedLeads, pBookings]);
+          .limit(12)
+      : Promise.resolve({ data: [] }));
 
+    var results = await Promise.all([pNewLeads, pClosedLeads, pBookings]);
     var events = [];
-    (nlR.data || []).forEach(l => events.push({ when: l.created_at, icon: "➕", text: "Added <b>" + esc(l.full_name || l.email) + "</b>" + (l.source ? ' <span style="color:var(--muted);font-size:12px">via ' + esc(l.source) + '</span>' : "") }));
-    (clR.data || []).forEach(l => events.push({ when: l.stage_changed_at, icon: l.stage === "won" ? "🎉" : "❌", text: (l.stage === "won" ? "Won " : "Lost ") + "<b>" + esc(l.full_name || l.email) + "</b>" }));
-    (bkR.data || []).forEach(b => {
-      var icon = b.status === "completed" ? "✅" : b.status === "no_show" ? "🙁" : b.status === "cancelled" ? "↩" : "📅";
-      var verb = b.status === "completed" ? "Completed call with" : b.status === "no_show" ? "No-show:" : b.status === "cancelled" ? "Cancelled:" : "Booked:";
-      events.push({ when: b.starts_at, icon: icon, text: verb + " <b>" + esc(b.booker_name || "Guest") + "</b>" });
+    (results[0].data || []).forEach(function (l) {
+      events.push({ at: l.created_at, icon: "➕", title: "New lead", who: l.full_name || l.email || "—", sub: l.source || "" });
     });
-
-    events.sort((a, b) => (b.when || "").localeCompare(a.when || ""));
+    (results[1].data || []).forEach(function (l) {
+      events.push({ at: l.stage_changed_at, icon: l.stage === "won" ? "🎉" : "❌", title: l.stage === "won" ? "Won" : "Lost", who: l.full_name || "—", sub: "" });
+    });
+    (results[2].data || []).forEach(function (b) {
+      var icon = b.status === "completed" ? "✅" : b.status === "no_show" ? "🙁" : "📅";
+      events.push({ at: b.starts_at, icon: icon, title: b.status === "completed" ? "Call done" : b.status === "no_show" ? "No-show" : "Call scheduled", who: b.booker_name || "—", sub: "" });
+    });
+    events.sort(function (a, b) { return (b.at || "").localeCompare(a.at || ""); });
     events = events.slice(0, 12);
 
-    if (!events.length) return; // leave the placeholder
-    var wrap = $("repActivity");
-    if (!wrap) return;
-    wrap.innerHTML = events.map(e => '<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6;align-items:center"><div style="font-size:18px">' + e.icon + '</div><div style="flex:1;font-size:13.5px">' + e.text + '</div><div style="font-size:11.5px;color:var(--muted)">' + esc(timeAgo(e.when)) + '</div></div>').join("");
-    var moreLink = wrap.parentElement && wrap.parentElement.querySelector(".more");
-    if (moreLink) moreLink.setAttribute("href", "/leads.html?owner=me");
+    var el = document.getElementById("repActivity");
+    if (!el) return;
+    if (!events.length) {
+      el.innerHTML = '<div style="padding:18px;color:#5b6472;font-size:13.5px">No recent activity yet. Add a lead or activate a Business to see things here.</div>';
+      return;
+    }
+    el.innerHTML = events.map(function (e) {
+      var when = new Date(e.at).toLocaleDateString([], { month: "short", day: "numeric" });
+      return '<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;align-items:center"><span style="font-size:18px">' + e.icon + '</span>'
+        + '<div style="flex:1;min-width:0"><div style="font-weight:700">' + e.title + ' · ' + String(e.who).replace(/[<>]/g, '') + '</div>'
+        + (e.sub ? '<div style="font-size:12px;color:#5b6472;margin-top:1px">' + String(e.sub).replace(/[<>]/g, '') + '</div>' : '')
+        + '</div>'
+        + '<span style="font-size:11.5px;color:#5b6472;font-weight:600;white-space:nowrap">' + when + '</span></div>';
+    }).join('');
+  } catch (e) {
+    console.warn('[rep-dashboard] activity widget failed', e);
   }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", load);
-  else load();
 })();
 </script>
-
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>

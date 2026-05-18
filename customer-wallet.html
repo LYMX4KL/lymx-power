@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX Wallet — your LYMX balance, transaction history, and pay-with-LYMX QR code." />
 <title>Wallet · LYMX</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://getlymx.com/wallet" />
 <meta property="og:title" content="LYMX Wallet" />
@@ -108,6 +105,17 @@
   /* Disclaimer */
   .dis{padding:14px 22px 18px;font-size:11px;color:var(--muted);text-align:center;line-height:1.5;border-top:1px solid var(--line);margin-top:8px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 
@@ -275,8 +283,107 @@
   function openQR(){ document.getElementById('qr-modal').classList.add('on'); }
   function closeQR(){ document.getElementById('qr-modal').classList.remove('on'); }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Wire customer-wallet to REAL data — balance, recent tx, greeting.
+// Replaces hardcoded "7,250 LYMX / Sarah / Brew & Bean" defaults.
+(async function wireWallet(){
+  try {
+    if (!window.LYMX || !window.LYMX.requireAuth) return;
+    const user = await window.LYMX.requireAuth();
+    if (!user) return;
+
+    const meta = user.user_metadata || {};
+    const fullName = meta.full_name || meta.name || (user.email || '').split('@')[0] || '';
+    const first = fullName.split(/\s+/)[0] || 'there';
+    const initials = fullName.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || (user.email || 'U')[0].toUpperCase();
+
+    const greetEl = document.querySelector('.greeting');
+    if (greetEl) greetEl.innerHTML = 'Welcome back<strong>' + first.replace(/[<>]/g, '') + '</strong>';
+    const avatarEl = document.querySelector('.avatar');
+    if (avatarEl) avatarEl.textContent = initials;
+
+    let totalLymx = 0;
+    try {
+      const { data: ledger } = await window.LYMX.sb.from('v_my_lymx_balance').select('*').maybeSingle();
+      if (ledger) totalLymx += Number(ledger.available_lymx || 0);
+    } catch(e){}
+    try {
+      const { data: wallets } = await window.LYMX.sb.from('wallets').select('lymx_balance').eq('customer_id', user.id);
+      if (wallets && wallets.length) wallets.forEach(w => totalLymx += Number(w.lymx_balance || 0));
+    } catch(e){}
+
+    const balEl = document.getElementById('bal-display');
+    if (balEl) balEl.innerHTML = totalLymx.toLocaleString('en-US') + ' <small>LYMX</small>';
+
+    const startMo = new Date(); startMo.setDate(1); startMo.setHours(0,0,0,0);
+    const startIso = startMo.toISOString();
+    let earnedMo = 0, spentMo = 0;
+    try {
+      const { data: iss } = await window.LYMX.sb.from('lymx_issuances')
+        .select('amount_lymx').eq('recipient_user_id', user.id).gte('created_at', startIso);
+      (iss || []).forEach(r => earnedMo += Number(r.amount_lymx || 0));
+    } catch (e) {}
+    try {
+      const { data: red } = await window.LYMX.sb.from('customer_redemptions')
+        .select('amount').eq('customer_user_id', user.id).gte('created_at', startIso);
+      (red || []).forEach(r => spentMo += Number(r.amount || 0));
+    } catch (e) {}
+
+    const rows = document.querySelectorAll('.balance .row');
+    if (rows.length >= 2) {
+      rows[0].querySelector('.v').textContent = (earnedMo > 0 ? '+' : '') + earnedMo.toLocaleString('en-US') + ' LYMX';
+      rows[1].querySelector('.v').textContent = (spentMo > 0 ? '−' : '') + spentMo.toLocaleString('en-US') + ' LYMX';
+    }
+
+    const txSection = document.querySelector('.section');
+    if (txSection && window.LYMX.fetchMyTransactions) {
+      const { data: txs, error } = await window.LYMX.fetchMyTransactions(5);
+      if (!error && Array.isArray(txs)) {
+        txSection.querySelectorAll('.tx').forEach(el => el.remove());
+        const sh = txSection.querySelector('.sec-h');
+        if (!txs.length) {
+          const empty = document.createElement('div');
+          empty.style.cssText = 'padding:24px;text-align:center;color:#5b6472;font-size:14px';
+          empty.textContent = 'No activity yet. Earn LYMX at your first visit to a LYMX Business.';
+          if (sh && sh.parentNode === txSection) sh.after(empty);
+        } else {
+          const frag = document.createDocumentFragment();
+          txs.forEach(t => {
+            const earn = (t.type === 'issuance' || t.type === 'transfer_in');
+            const sign = earn ? '+' : '−';
+            const cls = earn ? 'earn' : 'spend';
+            const bizName = (t.businesses && t.businesses.display_name) || 'LYMX Business';
+            const when = window.LYMX.fmtDate ? window.LYMX.fmtDate(t.created_at) : new Date(t.created_at).toLocaleDateString();
+            const lymx = Math.abs(Number(t.lymx_amount || 0)).toLocaleString('en-US');
+            const usd = (t.usd_amount != null && window.LYMX.fmtUSD) ? window.LYMX.fmtUSD(t.usd_amount) + (earn ? ' spent' : ' off') : '';
+            const a = document.createElement('a');
+            a.className = 'tx';
+            a.href = 'transaction-detail.html?id=' + (t.id || '');
+            a.style.cssText = 'text-decoration:none;color:inherit;cursor:pointer';
+            a.innerHTML = '<div class="ic ' + cls + '">' + sign + '</div>'
+              + '<div class="who"><div class="n">' + bizName.replace(/[<>]/g, '') + '</div><div class="d">' + when + (usd ? ' · ' + usd : '') + '</div></div>'
+              + '<div class="v ' + cls + '">' + sign + lymx + ' LYMX</div>';
+            frag.appendChild(a);
+          });
+          txSection.appendChild(frag);
+        }
+      }
+    }
+
+    const qrBalEl = document.querySelector('.qr-bal strong');
+    if (qrBalEl) qrBalEl.textContent = totalLymx.toLocaleString('en-US') + ' LYMX';
+    const qrCodeEl = document.querySelector('.qr-code');
+    if (qrCodeEl) qrCodeEl.textContent = 'LYMX-' + (user.id || '').slice(0, 4).toUpperCase() + '-' + (user.id || '').slice(-4).toUpperCase();
+  } catch (e) {
+    console.warn('[customer-wallet] wire failed', e);
+  }
+})();
+</script>
 <script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>
 </html>
