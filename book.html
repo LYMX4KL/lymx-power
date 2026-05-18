@@ -52,7 +52,12 @@
 
 <div class="wrap" id="mainWrap">
   <div id="loading" data-i18n="booking.loading" style="text-align:center;padding:60px 0;color:var(--muted);font-size:14px">Loading calendar…</div>
-  <div id="notFound" style="display:none;text-align:center;padding:60px 20px"><h2 data-i18n="booking.not_found_title" style="margin:0 0 8px">Calendar not found</h2><p data-i18n="booking.not_found_body" style="color:var(--muted)">No active booking calendar exists for that link. Double-check the URL or contact LYMX.</p></div>
+  <div id="notFound" style="display:none;text-align:center;padding:48px 20px">
+    <h2 data-i18n="booking.not_found_title" style="margin:0 0 8px">Calendar not found</h2>
+    <p data-i18n="booking.not_found_body" style="color:var(--muted);margin:0 0 18px">No active booking calendar exists for that link. Try one of the LYMX team members below:</p>
+    <div id="teamRoster" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;max-width:540px;margin:0 auto 18px"></div>
+    <p style="font-size:13px;color:var(--muted)">Or <a href="/contact.html" style="color:var(--accent)">contact LYMX</a> if you were sent here in error.</p>
+  </div>
 
   <div id="bookingUI" style="display:none">
     <div class="header">
@@ -110,7 +115,30 @@
   // Get handle from URL: /book.html?u=kenny  OR  /c/kenny (rewrite)
   const params = new URLSearchParams(location.search);
   const handle = (params.get('u') || (location.pathname.split('/c/')[1] || '').replace(/\.html$/, '') || '').replace(/[^\w-]/g, '').toLowerCase();
-  if (!handle) { document.getElementById('loading').style.display='none'; document.getElementById('notFound').style.display='block'; return; }
+  async function showNotFound(){
+    document.getElementById('loading').style.display='none';
+    document.getElementById('notFound').style.display='block';
+    try {
+      const { data: roster } = await sb.from('team_calendars').select('handle, display_name, role_title, brand_color').eq('is_active', true).eq('accepts_bookings', true).limit(12);
+      const wrap = document.getElementById('teamRoster');
+      if (!wrap || !roster || !roster.length) return;
+      const esc = s => String(s==null?"":s).replace(/[<>&"]/g, c=>({"<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;"}[c]));
+      wrap.innerHTML = roster.map(r => {
+        const initials = (r.display_name||'?').split(/\s+/).map(s=>s[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
+        const color = r.brand_color || '#0a84ff';
+        return `<a href="/c/${esc(r.handle)}" style="display:block;padding:14px 12px;background:#fff;border:1px solid #e6e8ec;border-radius:10px;text-decoration:none;color:#0e1116;text-align:left;transition:transform .12s">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:38px;height:38px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px">${initials}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.display_name||r.handle)}</div>
+              ${r.role_title ? `<div style="font-size:11.5px;color:#5b6472;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.role_title)}</div>`:''}
+            </div>
+          </div>
+        </a>`;
+      }).join('');
+    } catch(_e) { /* no-op */ }
+  }
+  if (!handle) { return showNotFound(); }
 
   let cal = null, rules = [], overrides = [];
   let selectedDate = null, selectedSlot = null;
@@ -120,7 +148,7 @@
 
   async function load(){
     const { data: c } = await sb.from('team_calendars').select('*').eq('handle', handle).eq('is_active', true).maybeSingle();
-    if (!c) { $('loading').style.display='none'; $('notFound').style.display='block'; return; }
+    if (!c) { return showNotFound(); }
     cal = c;
     document.title = `Book a call with ${c.display_name} · LYMX`;
     document.documentElement.style.setProperty('--accent', c.brand_color || '#0a84ff');
