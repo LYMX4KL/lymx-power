@@ -11,6 +11,18 @@
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
   .main{margin-left:240px;padding:24px 28px;max-width:980px}
   @media(max-width:880px){.main{margin-left:0;padding:16px}}
+  @media(max-width:600px){
+    .row{grid-template-columns:repeat(7, minmax(0, 1fr));gap:3px}
+    .day-col .day-label{font-size:10.5px;letter-spacing:0}
+    .day-toggle{font-size:11px;padding:5px 2px}
+    .time-row{flex-wrap:wrap;gap:5px}
+    .time-row input{width:90px;font-size:12.5px}
+    .booking-row{flex-wrap:wrap}
+    .booking-row .when{min-width:0;width:100%;font-size:13px}
+    .booking-row .who{font-size:13px}
+    .public-link{flex-direction:column;align-items:stretch}
+    .public-link code{font-size:11.5px}
+  }
   h1{margin:0 0 4px;font-size:26px;font-weight:800}
   .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
   .public-link{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -350,42 +362,4 @@
       .limit(20);
     if (!data || !data.length) { $('bookingsList').innerHTML = '<div class="empty">No upcoming bookings.</div>'; return; }
     $('bookingsList').innerHTML = data.map(b => {
-      const when = new Date(b.starts_at).toLocaleString(undefined, { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
-      return `<div class="booking-row" data-booking-id="${esc(b.id)}" data-token="${esc(b.cancel_token||'')}">
-        <div class="when">${when}</div>
-        <div class="who"><b>${esc(b.booker_name)}</b><small>${esc(b.booker_email)}${b.booker_message ? '<br>"' + esc(b.booker_message.slice(0,80)) + '"' : ''}</small></div>
-        <a class="join" href="${esc(b.video_room_url)}" target="_blank">Join</a>
-        <button class="join cancel-btn" style="background:#fee2e2;color:#991b1b;border:0;cursor:pointer">Cancel</button>
-      </div>`;
-    }).join('');
-    // Wire cancel buttons
-    document.querySelectorAll('.cancel-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const row = e.target.closest('.booking-row');
-        const id = row.dataset.bookingId;
-        const tok = row.dataset.token;
-        if (!id || !tok) { alert('Missing cancel token — refresh the page'); return; }
-        const reason = prompt('Why are you cancelling? (optional — helps the booker understand)') || '';
-        btn.disabled = true; btn.textContent = 'Cancelling…';
-        try {
-          const r = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/functions/v1/booking-cancel', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'apikey': window.LYMX_CONFIG.SUPABASE_ANON_KEY },
-            body: JSON.stringify({ booking_id: id, token: tok, reason, cancelled_by: 'team' }),
-          });
-          const j = await r.json();
-          if (!j.ok) throw new Error(j.error || 'Cancel failed');
-          await loadBookings();
-        } catch (err) {
-          btn.disabled = false; btn.textContent = 'Cancel';
-          alert('Cancel failed: ' + err.message);
-        }
-      });
-    });
-  }
-
-  document.addEventListener('DOMContentLoaded', init);
-})();
-</script>
-</body>
-</html>
+      const when = new Date(b.starts_at).toLocaleStr
