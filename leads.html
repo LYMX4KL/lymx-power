@@ -100,8 +100,32 @@
         <option value="me" data-i18n="leads.my_leads">My leads</option>
       </select>
       <input id="search" data-i18n-placeholder="leads.search_ph" placeholder="Search name/email/company…" />
+      <button id="newLeadBtn" type="button" style="padding:7px 13px;background:#0e1116;color:#fff;border:0;border-radius:7px;cursor:pointer;font:inherit;font-size:13px;font-weight:700" data-i18n="leads.new_lead_btn">+ New lead</button>
     </div>
   </div>
+
+  <div id="newLeadForm" style="display:none;background:#fff;border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin-bottom:14px">
+    <div style="font-weight:700;margin-bottom:10px" data-i18n="leads.new_lead_title">Add a lead manually</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px">
+      <input id="nl_name"  placeholder="Full name *" />
+      <input id="nl_email" type="email" placeholder="Email *" />
+      <input id="nl_phone" type="tel" placeholder="Phone (optional)" />
+      <input id="nl_company" placeholder="Company (optional)" />
+      <input id="nl_role" placeholder="Role title (optional)" />
+      <input id="nl_source" placeholder="Source (cold-call, referral, etc.)" />
+    </div>
+    <textarea id="nl_notes" placeholder="Private notes (optional)" style="width:100%;margin-top:8px;min-height:60px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button id="nl_save" type="button" style="padding:8px 14px;background:#0e1116;color:#fff;border:0;border-radius:7px;cursor:pointer;font:inherit;font-size:13.5px;font-weight:700" data-i18n="leads.new_lead_save">Save lead</button>
+      <button id="nl_cancel" type="button" style="padding:8px 14px;background:#fff;color:var(--ink-2);border:1px solid var(--line);border-radius:7px;cursor:pointer;font:inherit;font-size:13.5px;font-weight:600" data-i18n="leads.new_lead_cancel">Cancel</button>
+    </div>
+    <div id="nl_banner" style="margin-top:8px"></div>
+  </div>
+
+  <style>
+    .form-row input{padding:6px 9px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13px;background:#fff}
+    #newLeadForm input{padding:7px 10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px;background:#fff}
+  </style>
 
   <div class="board" id="board"></div>
 </div>
@@ -361,7 +385,78 @@
     openLeadId = null;
   }
 
-  document.addEventListener('DOMContentLoaded', init);
+  // ----- Add lead manually -----
+  function bannerNL(msg, kind){
+    const el = $('nl_banner');
+    if (!el) return;
+    el.innerHTML = `<div class="alert ${kind === 'ok' ? 'ok' : 'err'}">${esc(msg)}</div>`;
+    if (kind === 'ok') setTimeout(() => { el.innerHTML = ''; }, 3500);
+  }
+  function wireNewLead(){
+    const btn = $('newLeadBtn');
+    if (btn && !btn.dataset.wired) {
+      btn.dataset.wired = '1';
+      btn.addEventListener('click', () => {
+        const f = $('newLeadForm');
+        f.style.display = f.style.display === 'none' ? 'block' : 'none';
+        if (f.style.display === 'block') $('nl_name').focus();
+      });
+    }
+    const cancel = $('nl_cancel');
+    if (cancel && !cancel.dataset.wired) {
+      cancel.dataset.wired = '1';
+      cancel.addEventListener('click', () => {
+        $('newLeadForm').style.display = 'none';
+        ['nl_name','nl_email','nl_phone','nl_company','nl_role','nl_source','nl_notes'].forEach(id => { const e = $(id); if (e) e.value = ''; });
+      });
+    }
+    const save = $('nl_save');
+    if (save && !save.dataset.wired) {
+      save.dataset.wired = '1';
+      save.addEventListener('click', async () => {
+        const name = $('nl_name').value.trim();
+        const email = ($('nl_email').value || '').trim().toLowerCase();
+        if (!name || !email) { bannerNL(t('leads.new_lead_need_name_email','Name and email are required'), 'err'); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { bannerNL(t('leads.new_lead_bad_email','Email looks invalid'), 'err'); return; }
+        save.disabled = true; save.textContent = t('leads.new_lead_saving','Saving…');
+        const payload = {
+          full_name: name,
+          email: email,
+          phone: $('nl_phone').value.trim() || null,
+          company: $('nl_company').value.trim() || null,
+          role_title: $('nl_role').value.trim() || null,
+          source: ($('nl_source').value.trim() || 'manual').slice(0, 80),
+          notes: $('nl_notes').value.trim() || null,
+          stage: 'new',
+          owner_user_id: me?.id || null,
+        };
+        // Upsert by email to avoid duplicates
+        const { data: existing } = await sb.from('leads').select('id, stage').ilike('email', email).maybeSingle();
+        let upsertErr;
+        if (existing) {
+          const { error } = await sb.from('leads').update({
+            full_name: payload.full_name, phone: payload.phone, company: payload.company,
+            role_title: payload.role_title, notes: payload.notes || undefined,
+            owner_user_id: payload.owner_user_id || undefined,
+            last_contacted_at: new Date().toISOString(),
+          }).eq('id', existing.id);
+          upsertErr = error;
+        } else {
+          const { error } = await sb.from('leads').insert(payload);
+          upsertErr = error;
+        }
+        save.disabled = false; save.textContent = t('leads.new_lead_save','Save lead');
+        if (upsertErr) { bannerNL(upsertErr.message, 'err'); return; }
+        bannerNL(existing ? t('leads.new_lead_updated','Lead updated.') : t('leads.new_lead_created','Lead added.'), 'ok');
+        ['nl_name','nl_email','nl_phone','nl_company','nl_role','nl_source','nl_notes'].forEach(id => { const e = $(id); if (e) e.value = ''; });
+        // Refresh the board
+        await loadAll();
+        render();
+      });
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => { init(); setTimeout(wireNewLead, 0); });
 })();
 </script>
 </body>
