@@ -7,8 +7,6 @@
 <title>LYMX Leaderboard · Top Referrers</title>
 <meta property="og:title" content="LYMX Leaderboard" />
 <meta property="og:image" content="og-image.png" />
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--silver:#c0c0c0;--bronze:#cd7f32;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1100px}
   *{box-sizing:border-box}
@@ -101,6 +99,17 @@
 
   footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 <header class="nav">
@@ -180,7 +189,14 @@
 </footer>
 
 <script>
-  const DATA = {
+  // Public leaderboard data — populated by loadFromDb() below.
+  // Mock data wrapped 2026-05-18 so no fake "Maya Hopkins / Sienna Vega" appears.
+  let DATA = {
+    customer: { title: 'Top referrers — Customers', podium: [], list: [] },
+    partner:  { title: 'Top referrers — Partners',  podium: [], list: [] },
+    business: { title: 'Top referrers — Businesses', podium: [], list: [] }
+  };
+  /* legacy-mock-disabled
     customer: {
       title: 'Top referrers — Customers',
       podium: [
@@ -223,21 +239,22 @@
     business: {
       title: 'Top referrers — Businesses',
       podium: [
-        {name:'Two Birds Café', role:'Founding Business · Downtown', av:'cust1', count:5, badges:['gold']},
-        {name:'Brew &amp; Bean', role:'Founding Business · The Strip', av:'cust2', count:2, badges:['silver']},
-        {name:'Pulse Studio', role:'Founding Business · The Strip', av:'cust3', count:2, badges:['bronze']}
+        {name:'Two Birds Café', role:'Launch 25 Business · Downtown', av:'cust1', count:5, badges:['gold']},
+        {name:'Brew &amp; Bean', role:'Launch 25 Business · The Strip', av:'cust2', count:2, badges:['silver']},
+        {name:'Pulse Studio', role:'Launch 25 Business · The Strip', av:'cust3', count:2, badges:['bronze']}
       ],
       list: [
-        {rank:4, name:'Sage &amp; Stone Bakery', role:'Founding Business · Henderson', av:'cust4', count:1, badges:[]},
-        {rank:5, name:'Pink Note Co', role:'Founding Business · The Strip', av:'cust5', count:1, badges:[]},
-        {rank:6, name:'Oakline Kitchen', role:'Founding Business · Downtown', av:'cust1', count:1, badges:[]},
-        {rank:7, name:'Sunlit Salon Studio', role:'Founding Business · The Strip', av:'cust2', count:0, badges:[]},
-        {rank:8, name:'Yumi Sushi', role:'Founding Business · Downtown', av:'cust3', count:0, badges:[]},
-        {rank:9, name:'CityRow Studio', role:'Founding Business · Summerlin', av:'cust4', count:0, badges:[]},
-        {rank:10, name:'Lavender &amp; Sage', role:'Founding Business · Downtown', av:'cust5', count:0, badges:[]}
+        {rank:4, name:'Sage &amp; Stone Bakery', role:'Launch 25 Business · Henderson', av:'cust4', count:1, badges:[]},
+        {rank:5, name:'Pink Note Co', role:'Launch 25 Business · The Strip', av:'cust5', count:1, badges:[]},
+        {rank:6, name:'Oakline Kitchen', role:'Launch 25 Business · Downtown', av:'cust1', count:1, badges:[]},
+        {rank:7, name:'Sunlit Salon Studio', role:'Launch 25 Business · The Strip', av:'cust2', count:0, badges:[]},
+        {rank:8, name:'Yumi Sushi', role:'Launch 25 Business · Downtown', av:'cust3', count:0, badges:[]},
+        {rank:9, name:'CityRow Studio', role:'Launch 25 Business · Summerlin', av:'cust4', count:0, badges:[]},
+        {rank:10, name:'Lavender &amp; Sage', role:'Launch 25 Business · Downtown', av:'cust5', count:0, badges:[]}
       ]
     }
   };
+  end-legacy-mock-disabled */
 
   let active = 'customer';
 
@@ -250,57 +267,111 @@
     return `<span class="b ${b}">${labels[b]}</span>`;
   }
 
+  // Render the active category. Friendly empty state until referrals start landing.
   function render(){
     const data = DATA[active];
-    document.getElementById('list-h-title').textContent = data.title;
+    const podiumEl = document.querySelector('.podium');
+    const listShell = document.querySelector('.list-shell');
+    const empty = !data || (!data.podium.length && !data.list.length);
 
-    // Podium
-    const ranksOrder = [
-      {key:'second', idx:1, label:'2'},
-      {key:'first', idx:0, label:'1'},
-      {key:'third', idx:2, label:'3'}
-    ];
-    document.getElementById('podium-wrap').innerHTML = '<div class="podium">' + ranksOrder.map(p=>{
-      const e = data.podium[p.idx];
-      return `<div class="pod ${p.key}">
-        <div class="rank">${p.label}</div>
-        <div class="av ${e.av}">${initials(e.name)}</div>
-        <h3>${e.name}</h3>
-        <div class="role">${e.role}</div>
-        <div class="v">${e.count}</div>
-        <div class="sub">referrals this quarter</div>
-        ${e.badges.length ? '<div style="margin-top:8px;display:flex;justify-content:center;gap:4px;flex-wrap:wrap">'+e.badges.map(badgeHTML).join('')+'</div>' : ''}
-      </div>`;
-    }).join('') + '</div>';
-
-    // List
-    document.getElementById('list').innerHTML = data.list.map(e=>{
-      const initialsStr = initials(e.name);
-      return `<div class="row ${e.you?'you':''}">
-        <div class="rank-cell">${e.rank}${e.you?' (you)':''}</div>
-        <div class="who">
-          <div class="av ${e.av}">${initialsStr}</div>
-          <div style="min-width:0">
-            <div class="name">${e.name}</div>
-            <div class="meta">${e.role}</div>
-          </div>
-        </div>
-        <div class="v">${e.count}</div>
-        <div class="badge-count">${e.badges.length ? e.badges.map(badgeHTML).join('') : '<span style="color:var(--muted);font-size:11px;font-weight:600">—</span>'}</div>
-      </div>`;
-    }).join('');
+    if (podiumEl) podiumEl.style.display = empty ? 'none' : '';
+    if (listShell) {
+      if (empty) {
+        listShell.innerHTML = '<div style="padding:48px 20px;text-align:center;color:#5b6472"><div style="font-size:42px;margin-bottom:8px">🏆</div><div style="font-weight:800;font-size:15px;color:#0e1116;margin-bottom:6px">Leaderboard launches once referrals land</div><div style="font-size:13.5px;line-height:1.55;max-width:380px;margin:0 auto">Top ' + active + ' referrers will appear here as soon as their friends sign up and make their first purchase. Share your code from the wallet to enter.</div></div>';
+      } else if (data.list && data.list.length) {
+        // Build a basic row list for non-empty data
+        const rows = data.list.map(e =>
+          '<div class="row' + (e.you ? ' you' : '') + '">'
+            + '<div class="rank-cell">' + e.rank + '</div>'
+            + '<div class="who"><div class="av ' + (e.av || 'cust1') + '">' + initials(e.name.replace(/&amp;/g,'&')) + '</div>'
+            + '<div style="min-width:0"><div class="name">' + e.name + '</div><div class="meta">' + e.role + '</div></div></div>'
+            + '<div class="v">' + e.count + '</div>'
+            + '<div class="badge-count">' + (e.badges || []).map(badgeHTML).join('') + '</div>'
+          + '</div>'
+        ).join('');
+        listShell.innerHTML = '<div class="list-h"><span>Rank · Name</span><span>Referrals</span></div>' + rows;
+      }
+    }
   }
 
-  document.querySelectorAll('#tabs .tab').forEach(b=>{
-    b.onclick = ()=>{
-      document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.remove('on'));
-      b.classList.add('on');
-      active = b.dataset.t;
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+      t.classList.add('on');
+      active = t.dataset.cat || t.textContent.trim().toLowerCase();
       render();
-    };
+    });
   });
 
   render();
+})();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Load real referrer leaderboard from referrals table.
+(async function loadFromDb(){
+  try {
+    if (!window.LYMX || !window.LYMX.getSession) return;
+    const sb = window.LYMX.sb;
+
+    // Pull all credited referrals (filter to last quarter or all-time)
+    const { data: refs } = await sb.from('referrals')
+      .select('inviter_user_id, status, inviter_bonus_amount, created_at')
+      .eq('status', 'credited').limit(2000);
+    if (!refs || !refs.length) return;
+
+    // Tally credited referrals per inviter
+    const tally = {};
+    refs.forEach(r => {
+      if (!r.inviter_user_id) return;
+      tally[r.inviter_user_id] = (tally[r.inviter_user_id] || 0) + 1;
+    });
+    const inviterIds = Object.keys(tally);
+    if (!inviterIds.length) return;
+
+    // Resolve names — try customers + partners + business owners
+    const [{ data: custs }, { data: partners }, { data: bizs }] = await Promise.all([
+      sb.from('customers').select('user_id, display_name, home_zip').in('user_id', inviterIds),
+      sb.from('partners').select('user_id, display_name, legal_name, is_founding_25').in('user_id', inviterIds),
+      sb.from('businesses').select('owner_user_id, display_name, category').in('owner_user_id', inviterIds)
+    ]);
+
+    function makeRow(arr, role, palettes) {
+      return arr.map((u, i) => ({
+        user_id: u.user_id || u.owner_user_id,
+        name: u.display_name || u.legal_name || 'Member',
+        role: role + (u.home_zip ? ' · ' + u.home_zip : (u.category ? ' · ' + u.category : '')),
+        count: tally[u.user_id || u.owner_user_id] || 0,
+        av: palettes[i % palettes.length],
+        badges: u.is_founding_25 ? ['gold'] : []
+      })).filter(r => r.count > 0).sort((a,b) => b.count - a.count);
+    }
+    const palettes = ['cust1','cust2','cust3','cust4','cust5'];
+    DATA.customer.list  = makeRow(custs || [], 'Customer', palettes);
+    DATA.partner.list   = makeRow(partners || [], 'Partner', palettes);
+    DATA.business.list  = makeRow((bizs || []).map(b => ({...b, user_id: b.owner_user_id})), 'Business', palettes);
+
+    // Build podium (top 3) from each list
+    ['customer','partner','business'].forEach(cat => {
+      const list = DATA[cat].list;
+      DATA[cat].podium = list.slice(0,3).map((e,i) => ({
+        ...e,
+        badges: i === 0 ? ['gold'] : i === 1 ? ['silver'] : ['bronze']
+      }));
+      // Re-number list to start at rank 4 (after podium)
+      DATA[cat].list = list.slice(3).map((e, i) => ({ ...e, rank: i + 4 }));
+    });
+
+    if (typeof render === 'function') render();
+  } catch (e) {
+    console.warn('[leaderboard] load failed', e);
+  }
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
 </body>
 </html>
