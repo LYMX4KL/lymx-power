@@ -279,6 +279,21 @@
     FULL_NAMES: FULL_NAMES
   };
 
+  // ---------- Auto-translate add-on -------------------------------------
+  // Loads /auto-translate-page.js once, which walks the DOM and translates
+  // anything not owned by data-i18n into the active locale via Supabase EF
+  // /functions/v1/translate-text (DeepL → Google → Haiku, server-cached).
+  function loadAutoTranslate() {
+    if (window.__LYMX_AUTOTRANSLATE_LOADED__) return;
+    if (document.getElementById('lymxAutoTranslateScript')) return;
+    var s = document.createElement('script');
+    s.id = 'lymxAutoTranslateScript';
+    s.src = 'auto-translate-page.js?v=1';
+    s.defer = true;
+    s.onerror = function () { console.warn('[i18n] auto-translate-page.js failed to load'); };
+    document.head.appendChild(s);
+  }
+
   // ---------- Init -----------------------------------------------------
   function start() {
     var locale = resolveLocale();
@@ -287,6 +302,7 @@
       applyAll(locale);
       observeMutations(locale);
       injectChip();
+      loadAutoTranslate();
     });
   }
 
