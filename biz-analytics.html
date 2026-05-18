@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX Business analytics — customer cohorts, peak hours, LTV, top items, promo ROI." />
 <title>Analytics · LYMX Business</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://getlymx.com/biz-analytics" />
 <meta property="og:title" content="LYMX Business Analytics" />
@@ -130,6 +127,17 @@
   footer{background:var(--ink);color:#9aa3b0;padding:30px 0;font-size:13px;text-align:center;margin-top:48px}
   footer a{color:#c6ccd4;margin:0 10px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 <header class="nav">
@@ -154,7 +162,7 @@
     <div class="page-head">
       <div>
         <h1>Analytics</h1>
-        <p>Brew &amp; Bean Coffee · Customer cohorts, peak hours, LTV, promo ROI.</p>
+        <p id="bizSubtitle">Loading… · Customer cohorts, peak hours, LTV, promo ROI.</p>
       </div>
       <div class="period-pick">
         <button class="on">Last 30 days</button>
@@ -167,27 +175,27 @@
     <div class="strip">
       <div class="stat-card">
         <div class="lab">Customers served</div>
-        <div class="v">412</div>
-        <div class="delta">▲ +18% vs prior 30 days</div>
-        <div class="sub">73 new this period</div>
+        <div class="v" id="statCustomers">—</div>
+        <div class="delta" id="statCustomersDelta">last 30 days</div>
+        <div class="sub" id="statCustomersSub">Fills in as customers transact</div>
       </div>
       <div class="stat-card">
         <div class="lab">Repeat-customer rate</div>
-        <div class="v green">68%</div>
-        <div class="delta">▲ +6 pts vs prior</div>
-        <div class="sub">Up sharply since Happy Hour 2× launched</div>
+        <div class="v green" id="statRepeat">—</div>
+        <div class="delta" id="statRepeatDelta">last 30 days</div>
+        <div class="sub" id="statRepeatSub">Share of customers with 2+ visits</div>
       </div>
       <div class="stat-card">
         <div class="lab">Avg ticket — LYMX customer</div>
-        <div class="v">$28.40</div>
-        <div class="delta">▲ +24% vs cash-only</div>
-        <div class="sub">Cash-only avg: $22.90</div>
+        <div class="v" id="statTicket">—</div>
+        <div class="delta" id="statTicketDelta">last 30 days</div>
+        <div class="sub" id="statTicketSub">From LYMX-earning transactions</div>
       </div>
       <div class="stat-card">
         <div class="lab">90-day LTV — LYMX customer</div>
-        <div class="v gold">$182</div>
-        <div class="delta">▲ Up 31% vs cash-only</div>
-        <div class="sub">Cash-only LTV: $139</div>
+        <div class="v gold" id="statLtv">—</div>
+        <div class="delta" id="statLtvDelta">90-day window</div>
+        <div class="sub" id="statLtvSub">Avg total spend per LYMX customer</div>
       </div>
     </div>
 
@@ -411,12 +419,110 @@
 <footer>
   <div class="wrap">
     <div>LYMX Business · <a href="biz-dashboard.html">Dashboard</a> · <a href="pos.html">POS</a> · <a href="settlement.html">Settlement</a> · <a href="support.html">Support</a></div>
-    <div style="margin-top:8px;font-size:12px;color:#5b6472">© <span id="yr"></span> LYMX. Analytics shown are illustrative for prototype review.</div>
+    <div style="margin-top:8px;font-size:12px;color:#5b6472">© <span id="yr"></span> LYMX. Some panels show example layout until your customer activity accumulates.</div>
   </div>
 </footer>
 <script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Wire biz-analytics top stats to REAL business data.
+(async function wireAnalytics(){
+  try {
+    if (!window.LYMX || !window.LYMX.requireAuth) return;
+    const user = await window.LYMX.requireAuth();
+    if (!user) return;
+    const sb = window.LYMX.sb;
+
+    let bizArr = (await sb.from('businesses').select('id, display_name, legal_name').eq('owner_user_id', user.id).is('archived_at', null).limit(1)).data;
+    if (!bizArr || !bizArr.length) {
+      try {
+        const { data: bp } = await sb.from('business_partners')
+          .select('business_id, businesses(id, display_name, legal_name)')
+          .eq('user_id', user.id).limit(1);
+        if (bp && bp.length && bp[0].businesses) bizArr = [bp[0].businesses];
+      } catch (e) {}
+    }
+    if (!bizArr || !bizArr.length) {
+      const sub = document.getElementById('bizSubtitle');
+      if (sub) sub.textContent = 'No business linked to this account · Contact support if this is wrong.';
+      return;
+    }
+    const biz = bizArr[0];
+    const bizName = biz.display_name || biz.legal_name || 'Your Business';
+
+    const subEl = document.getElementById('bizSubtitle');
+    if (subEl) subEl.textContent = bizName + ' · Customer cohorts, peak hours, LTV, promo ROI.';
+
+    const day30 = new Date(); day30.setDate(day30.getDate() - 30);
+    const day60 = new Date(); day60.setDate(day60.getDate() - 60);
+    const day90 = new Date(); day90.setDate(day90.getDate() - 90);
+
+    const { data: tx30 } = await sb.from('transactions')
+      .select('id, customer_id, usd_amount, type, created_at')
+      .eq('business_id', biz.id).gte('created_at', day30.toISOString());
+    const { data: tx60 } = await sb.from('transactions')
+      .select('id, customer_id, usd_amount, type, created_at')
+      .eq('business_id', biz.id).gte('created_at', day60.toISOString()).lt('created_at', day30.toISOString());
+    const { data: tx90 } = await sb.from('transactions')
+      .select('id, customer_id, usd_amount, type, created_at')
+      .eq('business_id', biz.id).gte('created_at', day90.toISOString());
+
+    function uniqueCustomers(arr) { return new Set((arr || []).map(t => t.customer_id).filter(Boolean)); }
+    function fmt(n) { return Number(n || 0).toLocaleString('en-US'); }
+    function fmtUsd(n) { return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+
+    const customers30 = uniqueCustomers(tx30);
+    const customers60 = uniqueCustomers(tx60);
+    setText('statCustomers', customers30.size > 0 ? fmt(customers30.size) : '—');
+    if (customers60.size > 0) {
+      const pctChange = Math.round(((customers30.size - customers60.size) / customers60.size) * 100);
+      setText('statCustomersDelta', (pctChange >= 0 ? '▲ +' : '▼ ') + pctChange + '% vs prior 30 days');
+    } else if (customers30.size > 0) {
+      setText('statCustomersDelta', 'New this period');
+    }
+    setText('statCustomersSub', customers30.size > 0
+      ? customers30.size + ' unique customers'
+      : 'Fills in as customers transact');
+
+    const byCust = {};
+    (tx30 || []).forEach(t => { if (t.customer_id) byCust[t.customer_id] = (byCust[t.customer_id] || 0) + 1; });
+    const repeatCt = Object.values(byCust).filter(n => n >= 2).length;
+    const repeatPct = customers30.size > 0 ? Math.round((repeatCt / customers30.size) * 100) : 0;
+    setText('statRepeat', customers30.size > 0 ? (repeatPct + '%') : '—');
+    setText('statRepeatSub', customers30.size > 0
+      ? (repeatCt + ' returning of ' + customers30.size)
+      : 'Share of customers with 2+ visits');
+
+    const charges30 = (tx30 || []).filter(t => Number(t.usd_amount) > 0);
+    const avgTicket = charges30.length > 0
+      ? charges30.reduce((s, t) => s + Number(t.usd_amount || 0), 0) / charges30.length
+      : 0;
+    setText('statTicket', avgTicket > 0 ? fmtUsd(avgTicket) : '—');
+    setText('statTicketSub', charges30.length > 0
+      ? (charges30.length + ' transactions')
+      : 'From LYMX-earning transactions');
+
+    const ltvByCust = {};
+    (tx90 || []).forEach(t => {
+      if (!t.customer_id) return;
+      ltvByCust[t.customer_id] = (ltvByCust[t.customer_id] || 0) + Number(t.usd_amount || 0);
+    });
+    const ltvValues = Object.values(ltvByCust).filter(v => v > 0);
+    const ltv = ltvValues.length > 0 ? (ltvValues.reduce((a, b) => a + b, 0) / ltvValues.length) : 0;
+    setText('statLtv', ltv > 0 ? fmtUsd(ltv) : '—');
+    setText('statLtvSub', ltvValues.length > 0
+      ? ('Across ' + ltvValues.length + ' customers · 90-day window')
+      : 'Avg total spend per LYMX customer');
+  } catch (e) {
+    console.warn('[biz-analytics] wire failed', e);
+  }
+})();
+</script>
 <script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>
 </html>
