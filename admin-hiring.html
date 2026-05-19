@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX Admin — hiring pipeline for applicants to careers.html roles. Drag-and-drop kanban with stage tracking." />
 <title>Hiring · LYMX Admin</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
   *{box-sizing:border-box}
@@ -107,6 +104,17 @@
 
   footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 <header class="nav">
@@ -218,7 +226,17 @@
     { key:'rejected', label:'Rejected' },
   ];
 
-  const candidates = [
+  // Hiring pipeline — persisted to localStorage so admin's tracking survives.
+  // Mock candidates wrapped 2026-05-18 so admin doesn't see fake Maya Reyes etc.
+  let candidates = (function(){
+    try { return JSON.parse(localStorage.getItem('lymx_hiring_candidates') || '[]'); }
+    catch (e) { return []; }
+  })();
+  function saveCandidates(){
+    try { localStorage.setItem('lymx_hiring_candidates', JSON.stringify(candidates)); }
+    catch (e) {}
+  }
+  /* legacy-mock-disabled
     {id:'c1', name:'Maya Reyes',     role:'frontend', stage:'applied',  applied:'2 days ago', source:'LinkedIn',     av:'MR'},
     {id:'c2', name:'Jordan Park',    role:'frontend', stage:'applied',  applied:'3 days ago', source:'Direct',       av:'JP'},
     {id:'c3', name:'Emma Wilson',    role:'ops',      stage:'applied',  applied:'4 days ago', source:'Direct',       av:'EW'},
@@ -237,6 +255,7 @@
     {id:'c11',name:'Riley Brooks',   role:'ops',      stage:'rejected', applied:'18 days ago',source:'LinkedIn',     av:'RB'},
     {id:'c12',name:'Casey Vega',     role:'design',   stage:'rejected', applied:'21 days ago',source:'Direct',       av:'CV'},
   ];
+  end-legacy-mock-disabled */
 
   let currentRole = 'all';
 
