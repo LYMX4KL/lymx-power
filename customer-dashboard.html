@@ -424,7 +424,7 @@
       <div class="card">
         <div class="card-h">
           <h2>Saved places</h2>
-          <span class="count">8 saved</span>
+          <span class="count" id="savedCount">— saved</span>
         </div>
         <div class="saved-list">
           <a class="saved-item" href="biz-brew-and-bean.html"><div class="ic">☕</div><div style="flex:1"><div class="name">Brew &amp; Bean</div><div class="miles">0.8 mi · Café</div></div></a>
@@ -525,8 +525,17 @@
     }
 
     // 4a) Wire the Refer-a-Friend card to the real user (Kenny 2026-05-14)
+    // Fix #6ff734a6: use the friendly partner_code (e.g. P-000123) for
+    // partners. Customers still fall back to the UUID, which welcome.html
+    // already accepts. Looks like "ref=P-000123" instead of "ref=<uuid>".
+    let refCode = user.id;
     try {
-      const shareUrl = 'https://getlymx.com/welcome.html?ref=' + user.id;
+      const { data: prow } = await LYMX.sb.from('partners')
+        .select('partner_code').eq('user_id', user.id).maybeSingle();
+      if (prow && prow.partner_code) refCode = prow.partner_code;
+    } catch (e) {}
+    try {
+      const shareUrl = 'https://getlymx.com/welcome.html?ref=' + refCode;
       const shareUrlEl = document.getElementById('refShareUrl');
       if (shareUrlEl) shareUrlEl.textContent = shareUrl;
       const copyBtn = document.getElementById('refCopyBtn');
@@ -541,7 +550,7 @@
       const smsEl   = document.getElementById('refShareSms');
       const twEl    = document.getElementById('refShareTw');
       if (emailEl) emailEl.href = 'mailto:?subject=' + subject + '&body=' + body;
-      if (smsEl)   smsEl.href   = 'sms:?&body=' + body;
+      if (smsEl)   smsEl.href   = 'sms:?body=' + body;
       if (twEl)    twEl.href    = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Join me on LYMX — we both earn 100 LYMX 🎁 ' + shareUrl);
 
       // Pull referral stats from the referrals table
@@ -685,8 +694,8 @@ window.addEventListener('DOMContentLoaded', async function () {
     document.querySelectorAll('a, button').forEach(function (b) {
       var t = (b.textContent || '').trim().toLowerCase();
       if (/^sms$/.test(t) || /^text$/.test(t) || /share via sms/.test(t)) {
-        if (b.tagName === 'A') b.href = 'sms:?&body=' + encodeURIComponent(bodyTxt);
-        else b.addEventListener('click', function () { location.href = 'sms:?&body=' + encodeURIComponent(bodyTxt); });
+        if (b.tagName === 'A') b.href = 'sms:?body=' + encodeURIComponent(bodyTxt);
+        else b.addEventListener('click', function () { location.href = 'sms:?body=' + encodeURIComponent(bodyTxt); });
       }
     });
     // Wire X share button
@@ -754,18 +763,28 @@ window.addEventListener('DOMContentLoaded', async function () {
   var userId = session.user.id;
   var headers = { apikey: ANON, Authorization: 'Bearer ' + session.access_token };
 
-  // Saved Places — look for a card section we can repurpose. Pages vary, so
-  // append a new section if there's a Saved Places card slot.
+  // Saved Places — wire the .saved-list container to real saved_businesses rows.
+  // Replaces hard-coded placeholders (Brew & Bean / Oakline / Avery / EverGrid)
+  // that were the actual user-facing bug in #14c10478.
   try {
-    var r = await fetch(URL + '/rest/v1/saved_businesses?user_id=eq.' + userId + '&select=business_slug,business_name,business_emoji,saved_at&order=saved_at.desc&limit=8', { headers: headers });
+    var r = await fetch(URL + '/rest/v1/saved_businesses?user_id=eq.' + userId + '&select=business_slug,business_name,business_emoji,business_category,saved_at&order=saved_at.desc&limit=8', { headers: headers });
     if (r.ok) {
       var saved = await r.json();
-      // Replace the offers-grid empty state with a real Saved Places card when any saves exist
-      var offersGrid = document.querySelector('.offers-grid');
-      if (offersGrid && saved.length) {
-        offersGrid.innerHTML = saved.map(function (s) {
-          return '<a class="offer-mini" href="' + encodeURIComponent(s.business_slug) + '.html"><span class="biz">' + (s.business_emoji || '⭐') + ' ' + (s.business_name || '').replace(/[<>]/g, '') + '</span><span class="title">Saved for later</span><span class="desc">' + new Date(s.saved_at).toLocaleDateString([], { month: 'short', day: 'numeric' }) + '</span><span class="tag">Saved</span></a>';
-        }).join('');
+      var listEl = document.querySelector('.saved-list');
+      // Find the "8 saved" count badge in the card head
+      var countEl = (listEl && listEl.parentElement) ? listEl.parentElement.querySelector('.count') : null;
+      if (countEl) countEl.textContent = saved.length + ' saved';
+      if (listEl) {
+        if (saved.length) {
+          listEl.innerHTML = saved.map(function (s) {
+            var safeName = (s.business_name || '').replace(/[<>]/g, '');
+            var safeCat  = (s.business_category || 'Saved').replace(/[<>]/g, '');
+            var href = 'biz-' + encodeURIComponent((s.business_slug || '').toLowerCase()) + '.html';
+            return '<a class="saved-item" href="' + href + '"><div class="ic">' + (s.business_emoji || '⭐') + '</div><div style="flex:1"><div class="name">' + safeName + '</div><div class="miles">' + safeCat + '</div></div></a>';
+          }).join('');
+        } else {
+          listEl.innerHTML = '<div style="padding:18px;text-align:center;color:#5b6472;font-size:13.5px"><div style="font-size:24px;margin-bottom:6px">📍</div>No saved places yet.<br><a href="browse.html" style="color:#0050c7;font-weight:600;text-decoration:none">Browse businesses →</a></div>';
+        }
       }
     }
   } catch (e) {}
@@ -894,6 +913,13 @@ window.addEventListener('DOMContentLoaded', async function () {
         +   '<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:4px">'
         +     '<div style="font-weight:700;font-size:14px">' + esc(who) + '</div>'
         +     '<div style="font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap">' + esc(dateStr) + '</div>'
+        +  >';
+
+      return ''
+        + '<div style="padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg-soft)">'
+        +   '<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:4px">'
+        +     '<div style="font-weight:700;font-size:14px">' + esc(who) + '</div>'
+        +     '<div style="font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap">' + esc(dateStr) + '</div>'
         +   '</div>'
         +   (role ? '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">' + esc(role) + '</div>' : '')
         +   '<div style="font-size:13px;color:var(--ink-2);margin-bottom:10px">⏰ ' + esc(timeStr) + ' · ' + esc(String(b.duration_min || 30)) + ' min</div>'
@@ -906,9 +932,10 @@ window.addEventListener('DOMContentLoaded', async function () {
 
     card.style.display = 'block';
   } catch (e) {
-    console.warn('[upcoming-calls] widget load failed', e);
+    console.warn('[upcoming-calls] customer widget load failed', e);
   }
 });
 </script>
+<script src="lymx-app.js" defer></script>
 </body>
 </html>

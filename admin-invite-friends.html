@@ -864,21 +864,38 @@ async function resendInvite({ email, name, template }) {
   myEmail  = s.user.email;
   document.getElementById('userInitial').textContent = (myEmail || 'L')[0].toUpperCase();
 
-  // If user came from contacts.html with selected emails, pre-fill them
+  // If user came from contacts.html with selected emails, pre-fill them.
+  // Fix #aa42f2ae: form was rebuilt to use a picker+pills UI; the old
+  // emailPaste-only pre-fill no longer reached the rendered controls.
+  // Now we load contacts first, then funnel each preselected email
+  // through the picker pipeline so pills + textarea + parsedEmails all sync.
   try {
     const preselected = sessionStorage.getItem('lymx_invite_preselected');
     if (preselected) {
       const list = JSON.parse(preselected);
       if (Array.isArray(list) && list.length) {
-        const ta = document.getElementById('emailPaste');
-        ta.value = list.join('\n');
-        ta.dispatchEvent(new Event('input', { bubbles: true }));
+        // Ensure contacts are loaded so name lookup can succeed
+        await loadMyContacts();
+        let added = 0;
+        for (const raw of list) {
+          const email = (raw || '').trim().toLowerCase();
+          if (!email) continue;
+          // Try to find this contact's full name for nicer pill display
+          const match = (allContacts || []).find(c => (c.email || '').toLowerCase() === email);
+          const name = match ? (match.full_name || ((match.first_name || '') + ' ' + (match.last_name || '')).trim()) : '';
+          if (typeof pickAddEmail === 'function' && pickAddEmail(email, name)) added++;
+        }
+        // Belt-and-suspenders: also write into the textarea + recompute so the
+        // "valid emails ready" counter and Send button enable correctly even
+        // if pickAddEmail returned early for any address.
+        if (typeof syncPickedToTextarea === 'function') syncPickedToTextarea();
         if (typeof recompute === 'function') recompute();
+        if (typeof renderInvitedPills === 'function') renderInvitedPills();
         sessionStorage.removeItem('lymx_invite_preselected');
-        setStatus(`Loaded ${list.length} contact${list.length === 1 ? '' : 's'} from your address book.`, 'ok');
+        setStatus(`Loaded ${added} contact${added === 1 ? '' : 's'} from your address book.`, 'ok');
       }
     }
-  } catch {}
+  } catch (e) { console.warn('preselect prefill failed', e); }
 
   // Load Kenny's partner_id
   const pr = await authedFetch(`/rest/v1/partners?select=id&user_id=eq.${myUserId}&limit=1`);
@@ -897,6 +914,5 @@ async function resendInvite({ email, name, template }) {
 })();
 </script>
 <script src="lymx-app.js" defer></script>
-<script src="lymx-role-gate.js" defer></script>
 </body>
 </html>

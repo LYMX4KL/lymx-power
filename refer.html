@@ -4,7 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Refer a Friend · LYMX</title>
-<link rel="icon" type="image/png" href="favicon.png" />
 <style>
   :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4a017;--maxw:880px}
   *{box-sizing:border-box}
@@ -35,6 +34,17 @@
   .reward{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid var(--gold);border-radius:12px;padding:18px;margin-bottom:18px}
   .reward .big{font-size:32px;font-weight:800;color:var(--gold)}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 <header class="nav">
@@ -111,7 +121,7 @@
   const subject = encodeURIComponent('Join me on LYMX');
   const bodyTxt = encodeURIComponent('Hey — I am using LYMX (cash-back rewards for local businesses). Sign up with my link and we both get 100 LYMX: ' + link);
   document.getElementById('emailShare').href = 'mailto:?subject=' + subject + '&body=' + bodyTxt;
-  document.getElementById('smsShare').href   = 'sms:?&body=' + bodyTxt;
+  document.getElementById('smsShare').href   = 'sms:?body=' + bodyTxt;
   document.getElementById('xShare').href     = 'https://twitter.com/intent/tweet?text=' + bodyTxt;
   document.getElementById('fbShare').href    = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(link);
   document.getElementById('copyBtn').addEventListener('click', async () => {

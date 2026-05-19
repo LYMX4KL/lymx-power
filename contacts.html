@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX Contacts — your private address book. Import from CSV / Google / Outlook / Apple. Tag, list, group. Send invites." />
 <title>Contacts · LYMX</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
   *{box-sizing:border-box}
@@ -121,6 +118,17 @@
   .status-msg.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
   .status-msg.info{background:#e6eefc;border:1px solid #b3c7ed;color:#1d4ed8}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 
@@ -726,8 +734,12 @@ document.getElementById('cSave').addEventListener('click', async () => {
   if (!/[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(payload.email)) { alert('Email is required.'); return; }
   let r;
   if (editingId) {
+    // PATCH with return=minimal so PostgREST does not try to SELECT the row
+    // back (which can fail when the row's RLS permits UPDATE but the view
+    // hasn't refreshed yet). Fixes feedback #4e45b65f.
     r = await authedFetch(`/rest/v1/contacts?id=eq.${editingId}`, {
       method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
       body: JSON.stringify(payload),
     });
   } else {
@@ -737,7 +749,12 @@ document.getElementById('cSave').addEventListener('click', async () => {
       body: JSON.stringify({ ...payload, owner_id: myUserId, source: 'manual' }),
     });
   }
-  if (!r.ok) { alert('Save failed (HTTP ' + r.status + ').'); return; }
+  if (!r.ok) {
+    let detail = '';
+    try { const b = await r.json(); detail = b && (b.message || b.error || b.hint) ? ' — ' + (b.message || b.error || b.hint) : ''; } catch(e) {}
+    alert('Save failed (HTTP ' + r.status + ')' + detail);
+    return;
+  }
   document.getElementById('contactModal').classList.remove('on');
   await loadAll();
 });
