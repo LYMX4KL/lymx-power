@@ -6,8 +6,6 @@
 <meta name="description" content="LYMX weekly digest — Kenny's Monday-morning view of the network. KPIs, top movers, watchlist, action items." />
 <meta name="robots" content="noindex,nofollow" />
 <title>Weekly Digest · LYMX Admin</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--maxw:1320px}
   *{box-sizing:border-box}
@@ -122,8 +120,19 @@
 
   footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
-<body>
+<body data-role-required="admin">
 <header class="nav">
   <div class="wrap nav-inner">
     <div class="brand">
@@ -147,7 +156,7 @@
   <div class="wrap">
     <div class="page-head">
       <div>
-        <h1>Weekly digest — Apr 28, 2026</h1>
+        <h1 id="digestTitle">Weekly digest</h1>
         <p>Your Monday-morning view of the network. Sent every Monday at 7 AM PT to <strong>kenny@getlymx.com</strong>.</p>
       </div>
       <div class="toolbar">
@@ -165,12 +174,12 @@
 
     <!-- KPIs -->
     <div class="kpis">
-      <div class="kpi"><div class="l">Active customers</div><div class="v">8,420</div><div class="delta up">+312 wow</div></div>
-      <div class="kpi"><div class="l">Active Businesses</div><div class="v green">13</div><div class="delta up">+1 this week</div></div>
-      <div class="kpi"><div class="l">LYMX issued (wk)</div><div class="v gold">540K</div><div class="delta up">+14% wow</div></div>
-      <div class="kpi"><div class="l">LYMX redeemed (wk)</div><div class="v">348K</div><div class="delta up">+8% wow</div></div>
-      <div class="kpi"><div class="l">Open support tickets</div><div class="v">11</div><div class="delta flat">+1 wow</div></div>
-      <div class="kpi"><div class="l">SAFE round</div><div class="v gold">$750K</div><div class="delta flat">$750K open</div></div>
+      <div class="kpi"><div class="l">Active customers</div><div class="v" id="kpiCustomers">—</div><div class="delta up" id="kpiCustomersDelta">—</div></div>
+      <div class="kpi"><div class="l">Active Businesses</div><div class="v green" id="kpiBiz">—</div><div class="delta up" id="kpiBizDelta">—</div></div>
+      <div class="kpi"><div class="l">LYMX issued (wk)</div><div class="v gold" id="kpiIssued">—</div><div class="delta up" id="kpiIssuedDelta">—</div></div>
+      <div class="kpi"><div class="l">LYMX redeemed (wk)</div><div class="v" id="kpiRedeemed">—</div><div class="delta up" id="kpiRedeemedDelta">—</div></div>
+      <div class="kpi"><div class="l">Open support tickets</div><div class="v" id="kpiTickets">—</div><div class="delta flat" id="kpiTicketsDelta">—</div></div>
+      <div class="kpi"><div class="l">Active Partners</div><div class="v gold" id="kpiPartners">—</div><div class="delta flat" id="kpiPartnersDelta">—</div></div>
     </div>
 
     <div class="layout">
@@ -396,6 +405,135 @@
 </script>
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>
+ender();
+    };
+  });
+  render();
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Wire admin-digest KPIs to real DB.
+(async function wireDigest(){
+  try {
+    if (!window.LYMX || !window.LYMX.getSession) return;
+    const s = await window.LYMX.getSession();
+    if (!s) return;
+    const sb = window.LYMX.sb;
+
+    // Heading date
+    const now = new Date();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    const title = document.getElementById('digestTitle');
+    if (title) title.textContent = 'Weekly digest — week of ' + monday.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+    function setText(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+    function shortNum(n) {
+      n = Number(n || 0);
+      if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n/1000).toFixed(0) + 'K';
+      return n.toLocaleString('en-US');
+    }
+
+    const day7 = new Date(Date.now() - 7*24*60*60*1000);
+    const day14 = new Date(Date.now() - 14*24*60*60*1000);
+
+    // Active customers — total count
+    try {
+      const { count } = await sb.from('customers')
+        .select('id', { count: 'exact', head: true }).is('archived_at', null);
+      setText('kpiCustomers', shortNum(count));
+      // New this week
+      const { count: newCt } = await sb.from('customers')
+        .select('id', { count: 'exact', head: true })
+        .is('archived_at', null).gte('created_at', day7.toISOString());
+      setText('kpiCustomersDelta', (newCt ? '+' + newCt : '0') + ' this week');
+    } catch (e) {}
+
+    // Active Businesses
+    try {
+      const { count } = await sb.from('businesses')
+        .select('id', { count: 'exact', head: true }).is('archived_at', null);
+      setText('kpiBiz', shortNum(count));
+      const { count: newCt } = await sb.from('businesses')
+        .select('id', { count: 'exact', head: true })
+        .is('archived_at', null).gte('created_at', day7.toISOString());
+      setText('kpiBizDelta', (newCt ? '+' + newCt : '0') + ' this week');
+    } catch (e) {}
+
+    // LYMX issued this week + last week
+    try {
+      const { data: iss7 } = await sb.from('lymx_issuances')
+        .select('amount_lymx').gte('created_at', day7.toISOString());
+      const wk = (iss7 || []).reduce((s, r) => s + Number(r.amount_lymx || 0), 0);
+      setText('kpiIssued', shortNum(wk));
+      const { data: iss14 } = await sb.from('lymx_issuances')
+        .select('amount_lymx').gte('created_at', day14.toISOString()).lt('created_at', day7.toISOString());
+      const prev = (iss14 || []).reduce((s, r) => s + Number(r.amount_lymx || 0), 0);
+      if (prev > 0) {
+        const pct = Math.round(((wk - prev) / prev) * 100);
+        setText('kpiIssuedDelta', (pct >= 0 ? '+' : '') + pct + '% wow');
+      } else if (wk > 0) {
+        setText('kpiIssuedDelta', 'first week of activity');
+      }
+    } catch (e) {}
+
+    // LYMX redeemed this week
+    try {
+      const { data: red7 } = await sb.from('transactions')
+        .select('lymx_amount').eq('type', 'redemption').gte('created_at', day7.toISOString());
+      const wk = (red7 || []).reduce((s, r) => s + Math.abs(Number(r.lymx_amount || 0)), 0);
+      setText('kpiRedeemed', shortNum(wk));
+      const { data: red14 } = await sb.from('transactions')
+        .select('lymx_amount').eq('type', 'redemption').gte('created_at', day14.toISOString()).lt('created_at', day7.toISOString());
+      const prev = (red14 || []).reduce((s, r) => s + Math.abs(Number(r.lymx_amount || 0)), 0);
+      if (prev > 0) {
+        const pct = Math.round(((wk - prev) / prev) * 100);
+        setText('kpiRedeemedDelta', (pct >= 0 ? '+' : '') + pct + '% wow');
+      }
+    } catch (e) {}
+
+    // Open support tickets
+    try {
+      const { count } = await sb.from('feedback')
+        .select('id', { count: 'exact', head: true }).in('status', ['new','in_progress']);
+      setText('kpiTickets', String(count || 0));
+      setText('kpiTicketsDelta', count > 0 ? 'need triage' : 'all clear');
+    } catch (e) {}
+
+    // Active Partners
+    try {
+      const { count } = await sb.from('partners')
+        .select('id', { count: 'exact', head: true }).is('archived_at', null);
+      setText('kpiPartners', String(count || 0));
+      const { count: foundCt } = await sb.from('partners')
+        .select('id', { count: 'exact', head: true })
+        .is('archived_at', null).eq('is_founding_25', true);
+      setText('kpiPartnersDelta', (foundCt || 0) + ' Founding 25');
+    } catch (e) {}
+  } catch (e) {
+    console.warn('[admin-digest] wire failed', e);
+  }
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>
+ire failed', e);
+  }
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Schedule Builder · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#dc2626;--maxw:1280px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;width:100%}
+  header.nav{background:#fff;border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .brand{font-weight:800;font-size:18px}
+  main{padding:24px 0 60px}
+  h1{font-size:24px;font-weight:800;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+  .toolbar{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+  .toolbar .left{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .toolbar .right{display:flex;gap:8px;flex-wrap:wrap}
+  .nav-btn{background:#fff;border:1.5px solid var(--line);padding:8px 14px;border-radius:8px;font-weight:600;cursor:pointer;font:inherit;font-size:13px}
+  .nav-btn:hover{border-color:var(--ink)}
+  .nav-btn.primary{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .nav-btn.primary:hover{background:#0f8b5a}
+  .nav-btn.warn{background:var(--warn);color:#fff;border-color:var(--warn)}
+  .week-title{font-size:16px;font-weight:800}
+  .grid-card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:auto}
+  table.grid{width:100%;border-collapse:collapse;font-size:13px;min-width:840px}
+  table.grid th{background:var(--bg-soft);font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+  table.grid th:first-child{position:sticky;left:0;background:var(--bg-soft);z-index:2;border-right:1px solid var(--line)}
+  table.grid td{padding:6px 8px;border-bottom:1px solid #f1f3f6;border-right:1px solid #f1f3f6;vertical-align:top;min-width:120px}
+  table.grid td:first-child{position:sticky;left:0;background:#fff;font-weight:700;z-index:1;border-right:1px solid var(--line)}
+  table.grid tr:hover td{background:#fafbfc}
+  table.grid tr:hover td:first-child{background:#fafbfc}
+  .shift-input{width:100%;padding:6px 8px;border:1px solid transparent;border-radius:5px;font:inherit;font-size:12px;background:transparent}
+  .shift-input:focus{border-color:var(--accent);background:#fff;outline:none}
+  .shift-input::placeholder{color:#c0c4ca}
+  .status-pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em;margin-left:6px;vertical-align:middle}
+  .status-pill.draft{background:#e5e7eb;color:#374151}
+  .status-pill.proposed{background:#fef3c7;color:#78350f}
+  .status-pill.accepted{background:#d1fae5;color:#065f46}
+  .status-pill.declined{background:#fee2e2;color:#7f1d1d}
+  .legend{font-size:12px;color:var(--muted);margin-top:8px}
+  .legend code{background:var(--bg-soft);padding:1px 6px;border-radius:4px;font-size:11.5px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:99;opacity:0;transition:opacity .2s}
+  .toast.on{opacity:1}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--danger)}
+  .who{display:flex;flex-direction:column;gap:1px}
+  .who .name{font-size:13px;font-weight:700;color:var(--ink)}
+  .who .role{font-size:11px;color:var(--muted);font-weight:500}
+  .empty{padding:40px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body data-role-required="staff">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="admin-dashboard.html" class="brand">LYMX Admin</a>
+    <a href="admin-dashboard.html" style="font-size:13px;color:var(--muted)">← Dashboard</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>📅 Schedule Builder</h1>
+  <p class="sub">Build the weekly schedule and publish to staff. Enter hours like <code>9-17</code> or <code>9:00-17:30</code>. Leave blank for off-days. Save your changes, then Publish to send for acceptance.</p>
+
+  <div class="toolbar">
+    <div class="left">
+      <button class="nav-btn" id="prevWeek">← Prev</button>
+      <span class="week-title" id="weekTitle">—</span>
+      <button class="nav-btn" id="nextWeek">Next →</button>
+      <button class="nav-btn" id="thisWeek">This week</button>
+      <button class="nav-btn" id="copyPrev">⎘ Copy from previous week</button>
+    </div>
+    <div class="right">
+      <button class="nav-btn" id="saveBtn">💾 Save draft</button>
+      <button class="nav-btn primary" id="publishBtn">📣 Publish to staff</button>
+    </div>
+  </div>
+
+  <div class="grid-card">
+    <table class="grid" id="gridTable">
+      <thead>
+        <tr>
+          <th>Staff</th>
+          <th id="dayHead0">Mon</th>
+          <th id="dayHead1">Tue</th>
+          <th id="dayHead2">Wed</th>
+          <th id="dayHead3">Thu</th>
+          <th id="dayHead4">Fri</th>
+          <th id="dayHead5">Sat</th>
+          <th id="dayHead6">Sun</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="gridBody">
+        <tr><td colspan="9" class="empty">Loading staff…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="legend">
+    💡 Format: <code>9-17</code> (9am to 5pm), <code>9:30-12,13-17:30</code> (split with break), or blank for off.
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPA = window.LYMX_CONFIG.SUPABASE_URL;
+const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+let weekStart = mondayOf(new Date());
+let staff = [];
+let weeksById = {};  // user_id -> week row
+let shiftsByUid = {}; // user_id -> [shifts]
+
+function $(id){return document.getElementById(id);}
+function toast(msg, kind){const t=$('toast');t.textContent=msg;t.className='toast on '+(kind||'');setTimeout(()=>t.className='toast',2800);}
+function esc(s){return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+function mondayOf(d) {
+  const x = new Date(d);
+  x.setHours(0,0,0,0);
+  const dow = x.getDay(); // 0=Sun .. 6=Sat
+  const diff = (dow === 0 ? -6 : 1 - dow);
+  x.setDate(x.getDate() + diff);
+  return x;
+}
+function isoDate(d) { return d.toISOString().slice(0,10); }
+function addDays(d, n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
+function fmtWeek(start) {
+  const end = addDays(start, 6);
+  return start.toLocaleDateString(undefined,{month:'short',day:'numeric'}) + ' – ' + end.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+}
+
+async function authedFetch(path, opts) {
+  opts = opts || {};
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const tok = (s && s.access_token) || ANON;
+  return fetch(SUPA + path, {
+    ...opts,
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json', ...(opts.headers||{}) }
+  });
+}
+
+// Parse "9-17" / "09:30-12,13-17:30" -> [{starts_at:'09:00',ends_at:'17:00'}]
+function parseRanges(s) {
+  if (!s || !s.trim()) return [];
+  const result = [];
+  s.split(',').forEach(part => {
+    const m = part.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*-\s*(\d{1,2})(?::(\d{2}))?$/);
+    if (!m) return;
+    const sh = +m[1], sm = +(m[2]||0), eh = +m[3], em = +(m[4]||0);
+    if (sh > 23 || eh > 23 || sm > 59 || em > 59) return;
+    if (eh*60+em <= sh*60+sm) return;
+    result.push({ starts_at: pad(sh)+':'+pad(sm)+':00', ends_at: pad(eh)+':'+pad(em)+':00' });
+  });
+  return result;
+}
+function pad(n){ return String(n).padStart(2,'0'); }
+function rangesToString(rs) {
+  if (!rs || !rs.length) return '';
+  return rs.map(r => {
+    const [sh,sm] = r.starts_at.split(':');
+    const [eh,em] = r.ends_at.split(':');
+    const a = sm === '00' ? +sh : sh+':'+sm;
+    const b = em === '00' ? +eh : eh+':'+em;
+    return a + '-' + b;
+  }).join(',');
+}
+
+async function loadStaff() {
+  const r = await authedFetch('/rest/v1/staff_roles?select=user_id,role,job_title&order=role.asc');
+  if (!r.ok) return;
+  const rows = await r.json();
+  if (!rows.length) { staff = []; return; }
+
+  // Fetch emails from auth.users via the roster view
+  const uids = rows.map(r => r.user_id);
+  const er = await authedFetch('/rest/v1/v_team_roster?user_id=in.(' + encodeURIComponent(uids.join(',')) + ')&select=user_id,email,role,job_title');
+  if (er.ok) {
+    const emails = await er.json();
+    staff = rows.map(r => {
+      const e = emails.find(x => x.user_id === r.user_id);
+      return { user_id: r.user_id, role: r.role, job_title: r.job_title, email: e ? e.email : '' };
+    });
+  } else {
+    staff = rows;
+  }
+}
+
+async function loadWeek() {
+  weeksById = {};
+  shiftsByUid = {};
+  $('weekTitle').textContent = fmtWeek(weekStart);
+  for (let i=0;i<7;i++) {
+    const dHead = $('dayHead'+i);
+    const d = addDays(weekStart, i);
+    dHead.textContent = d.toLocaleDateString(undefined,{weekday:'short',month:'numeric',day:'numeric'});
+  }
+
+  if (!staff.length) {
+    $('gridBody').innerHTML = '<tr><td colspan="9" class="empty">No staff yet. Promote users via Staff Roles page first.</td></tr>';
+    return;
+  }
+
+  const uids = staff.map(s => s.user_id);
+  // Load existing weeks for this week_start
+  const wr = await authedFetch('/rest/v1/schedule_weeks?week_start_date=eq.' + isoDate(weekStart) + '&user_id=in.(' + encodeURIComponent(uids.join(',')) + ')&select=id,user_id,status,proposed_at,accepted_at,declined_at,declined_reason');
+  if (wr.ok) {
+    const ws = await wr.json();
+    ws.forEach(w => { weeksById[w.user_id] = w; });
+  }
+  // Load shifts for these weeks
+  const weekIds = Object.values(weeksById).map(w => w.id);
+  if (weekIds.length) {
+    const sr = await authedFetch('/rest/v1/schedule_shifts?week_id=in.(' + encodeURIComponent(weekIds.join(',')) + ')&select=id,user_id,week_id,shift_date,starts_at,ends_at');
+    if (sr.ok) {
+      const ss = await sr.json();
+      ss.forEach(s => {
+        if (!shiftsByUid[s.user_id]) shiftsByUid[s.user_id] = [];
+        shiftsByUid[s.user_id].push(s);
+      });
+    }
+  }
+  renderGrid();
+}
+
+function renderGrid() {
+  $('gridBody').innerHTML = staff.map(s => {
+    const w = weeksById[s.user_id];
+    const statusBadge = w ? '<span class="status-pill ' + w.status + '">' + w.status + '</span>' : '<span class="status-pill draft">draft</span>';
+    const cells = [];
+    for (let i=0;i<7;i++) {
+      const d = isoDate(addDays(weekStart, i));
+      const dayShifts = (shiftsByUid[s.user_id] || []).filter(x => x.shift_date === d);
+      const val = rangesToString(dayShifts.map(x => ({ starts_at:x.starts_at, ends_at:x.ends_at })));
+      cells.push('<td><input class="shift-input" data-uid="' + s.user_id + '" data-day="' + d + '" placeholder="9-17" value="' + esc(val) + '" /></td>');
+    }
+    return '<tr>'
+      + '<td><div class="who"><div class="name">' + esc(s.email || s.user_id.slice(0,8)) + '</div><div class="role">' + esc(s.job_title || s.role) + '</div></div></td>'
+      + cells.join('')
+      + '<td>' + statusBadge + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+async function saveAll(targetStatus) {
+  // targetStatus: 'draft' or 'proposed'
+  const inputs = document.querySelectorAll('.shift-input');
+  // Collect intent per user
+  const userShifts = {};
+  inputs.forEach(inp => {
+    const uid = inp.dataset.uid;
+    const day = inp.dataset.day;
+    const parsed = parseRanges(inp.value);
+    if (!userShifts[uid]) userShifts[uid] = [];
+    parsed.forEach(p => userShifts[uid].push({ shift_date: day, starts_at: p.starts_at, ends_at: p.ends_at, user_id: uid }));
+  });
+
+  let ok = 0, failed = 0;
+  for (const uid of Object.keys(userShifts)) {
+    // 1) Upsert week row
+    let week = weeksById[uid];
+    if (!week) {
+      const wbody = { user_id: uid, week_start_date: isoDate(weekStart), status: targetStatus };
+      if (targetStatus === 'proposed') wbody.proposed_at = new Date().toISOString();
+      const wr = await authedFetch('/rest/v1/schedule_weeks', {
+        method: 'POST', headers: { 'Prefer':'return=representation' },
+        body: JSON.stringify(wbody)
+      });
+      if (!wr.ok) { failed++; continue; }
+      const arr = await wr.json();
+      week = arr[0];
+      weeksById[uid] = week;
+    } else if (week.status !== targetStatus) {
+      const patch = { status: targetStatus };
+      if (targetStatus === 'proposed') patch.proposed_at = new Date().toISOString();
+      await authedFetch('/rest/v1/schedule_weeks?id=eq.' + week.id, {
+        method: 'PATCH', headers: { 'Prefer':'return=minimal' }, body: JSON.stringify(patch)
+      });
+    }
+
+    // 2) Delete old shifts for this week, then insert fresh
+    await authedFetch('/rest/v1/schedule_shifts?week_id=eq.' + week.id, { method: 'DELETE', headers: { 'Prefer':'return=minimal' } });
+    const inserts = userShifts[uid].map(s => ({ ...s, week_id: week.id }));
+    if (inserts.length) {
+      const ir = await authedFetch('/rest/v1/schedule_shifts', {
+        method: 'POST', headers: { 'Prefer':'return=minimal' },
+        body: JSON.stringify(inserts)
+      });
+      if (!ir.ok) { failed++; continue; }
+    }
+    ok++;
+  }
+  toast((targetStatus === 'proposed' ? '📣 Published' : '💾 Saved') + ' for ' + ok + ' staff' + (failed ? ' · ' + failed + ' failed' : ''), failed ? 'err' : 'ok');
+  await loadWeek();
+}
+
+$('prevWeek').addEventListener('click', () => { weekStart = addDays(weekStart, -7); loadWeek(); });
+$('nextWeek').addEventListener('click', () => { weekStart = addDays(weekStart, 7);  loadWeek(); });
+$('thisWeek').addEventListener('click', () => { weekStart = mondayOf(new Date());   loadWeek(); });
+$('saveBtn').addEventListener('click',   () => saveAll('draft'));
+$('publishBtn').addEventListener('click', () => {
+  if (!confirm('Publish this week to all staff? They\'ll be asked to Accept or Decline.')) return;
+  saveAll('proposed');
+});
+
+$('copyPrev').addEventListener('click', async () => {
+  if (!confirm('Copy the previous week\'s shifts into this week? Any existing draft for this week will be replaced.')) return;
+  const prevStart = isoDate(addDays(weekStart, -7));
+  const uids = staff.map(s => s.user_id);
+  const wr = await authedFetch('/rest/v1/schedule_weeks?week_start_date=eq.' + prevStart + '&user_id=in.(' + encodeURIComponent(uids.join(',')) + ')&select=id,user_id');
+  if (!wr.ok) return;
+  const prevWeeks = await wr.json();
+  const prevWeekIds = prevWeeks.map(w => w.id);
+  if (!prevWeekIds.length) { toast('No previous-week shifts to copy','err'); return; }
+  const sr = await authedFetch('/rest/v1/schedule_shifts?week_id=in.(' + encodeURIComponent(prevWeekIds.join(',')) + ')&select=user_id,shift_date,starts_at,ends_at');
+  if (!sr.ok) return;
+  const prevShifts = await sr.json();
+  // Reflect into the input fields with new dates
+  const inputs = document.querySelectorAll('.shift-input');
+  inputs.forEach(i => i.value = '');
+  prevShifts.forEach(s => {
+    const oldDate = new Date(s.shift_date + 'T12:00:00');
+    const newDate = addDays(oldDate, 7);
+    const inp = document.querySelector('.shift-input[data-uid="' + s.user_id + '"][data-day="' + isoDate(newDate) + '"]');
+    if (inp) {
+      const existing = inp.value;
+      const range = rangesToString([{ starts_at:s.starts_at, ends_at:s.ends_at }]);
+      inp.value = existing ? existing + ',' + range : range;
+    }
+  });
+  toast('Copied — hit Save draft to commit','ok');
+});
+
+(async function init(){
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  if (!s) { location.href = '/login.html?next=/admin-schedule.html'; return; }
+  await loadStaff();
+  await loadWeek();
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

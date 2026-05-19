@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Time-off · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#dc2626;--maxw:780px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px;width:100%}
+  header.nav{background:#fff;border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:var(--maxw);margin:0 auto;padding:0 20px}
+  .brand{font-weight:800;font-size:18px}
+  main{padding:28px 0 60px}
+  h1{font-size:24px;font-weight:800;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:24px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:18px}
+  .card h2{margin:0 0 10px;font-size:16px;font-weight:800}
+  .req-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){.req-form{grid-template-columns:1fr}}
+  .req-form .full{grid-column:1/-1}
+  .field label{display:block;font-size:13px;font-weight:700;margin-bottom:4px}
+  .field input,.field select,.field textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:9px;font:inherit;font-size:14px}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);outline:none}
+  .field textarea{min-height:80px;resize:vertical}
+  .btn{padding:12px 24px;border-radius:10px;font-weight:700;font-size:14px;border:0;cursor:pointer;font:inherit}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent-2)}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+  .req-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid #f1f3f6}
+  .req-row:last-child{border-bottom:0}
+  .req-row .info .kind{font-weight:700;font-size:14px;margin-bottom:2px}
+  .req-row .info .dates{font-size:13px;color:var(--ink-2)}
+  .req-row .info .reason{font-size:12.5px;color:var(--muted);margin-top:4px;font-style:italic}
+  .req-row .meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:140px}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em}
+  .pill.pending{background:#fef3c7;color:#78350f}
+  .pill.approved{background:#d1fae5;color:#065f46}
+  .pill.denied{background:#fee2e2;color:#7f1d1d}
+  .pill.cancelled{background:#e5e7eb;color:#374151}
+  .cancel-btn{background:transparent;border:1px solid var(--line);color:var(--muted);padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font:inherit}
+  .cancel-btn:hover{border-color:var(--danger);color:var(--danger)}
+  .empty{padding:28px;text-align:center;color:var(--muted);font-size:14px}
+  .empty .ic{font-size:36px;margin-bottom:8px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:99;opacity:0;transition:opacity .2s}
+  .toast.on{opacity:1}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--danger)}
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+  @media(max-width:520px){.summary{grid-template-columns:repeat(2,1fr)}}
+  .summary .stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+  .summary .v{font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .summary .k{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+</style>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+</head>
+<body data-role-required="staff">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand">LYMX Staff</a>
+    <a href="rep-dashboard.html" style="font-size:13px;color:var(--muted)" data-i18n="tof.back">Dashboard</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 data-i18n="tof.title">My Time-off</h1>
+  <p class="sub" data-i18n="tof.sub">Request days off, sick leave, or personal time. Your manager will review and approve.</p>
+
+  <div class="summary">
+    <div class="stat"><div class="v" id="statPending">0</div><div class="k" data-i18n="tof.k_pending">Pending</div></div>
+    <div class="stat"><div class="v" id="statApproved">0</div><div class="k" data-i18n="tof.k_approved">Approved</div></div>
+    <div class="stat"><div class="v" id="statHours">0</div><div class="k" data-i18n="tof.k_hours">Hours this year</div></div>
+    <div class="stat"><div class="v" id="statDenied">0</div><div class="k" data-i18n="tof.k_denied">Denied</div></div>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="tof.new_h">📝 New request</h2>
+    <div class="req-form">
+      <div class="field">
+        <label data-i18n="tof.kind_label">Type</label>
+        <select id="kindInput">
+          <option value="vacation" data-i18n="tof.kind_vacation">Vacation</option>
+          <option value="sick" data-i18n="tof.kind_sick">Sick</option>
+          <option value="personal" data-i18n="tof.kind_personal">Personal</option>
+          <option value="bereavement" data-i18n="tof.kind_bereavement">Bereavement</option>
+          <option value="other" data-i18n="tof.kind_other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label data-i18n="tof.hours_label">Hours (optional)</label>
+        <input id="hoursInput" type="number" min="0" step="0.5" placeholder="e.g. 8" />
+      </div>
+      <div class="field">
+        <label data-i18n="tof.start_label">Start date</label>
+        <input id="startInput" type="date" />
+      </div>
+      <div class="field">
+        <label data-i18n="tof.end_label">End date</label>
+        <input id="endInput" type="date" />
+      </div>
+      <div class="field full">
+        <label data-i18n="tof.reason_label">Reason / notes (optional)</label>
+        <textarea id="reasonInput" placeholder="e.g. family trip, doctor appointment"></textarea>
+      </div>
+      <div class="full" style="display:flex;justify-content:flex-end">
+        <button class="btn btn-primary" id="submitBtn" data-i18n="tof.submit_btn">Submit request</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="tof.history_h">📋 My requests</h2>
+    <div id="reqList"><div class="empty"><div class="ic">⏳</div><span data-i18n="tof.loading">Loading…</span></div></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPA = window.LYMX_CONFIG.SUPABASE_URL;
+const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+let myUser = null;
+let allReqs = [];
+
+function $(id){return document.getElementById(id);}
+function toast(msg, kind){const t=$('toast');t.textContent=msg;t.className='toast on '+(kind||'');setTimeout(()=>t.className='toast',2800);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function t(k, fallback){ try { if (window.LymxI18n) { const v = window.LymxI18n.t(k); if (v && v !== k) return v; } } catch(e){} return fallback; }
+
+async function authedFetch(path, opts) {
+  opts = opts || {};
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const tok = (s && s.access_token) || ANON;
+  return fetch(SUPA + path, {
+    ...opts,
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json', ...(opts.headers||{}) }
+  });
+}
+
+function fmtDate(iso) {
+  return new Date(iso + 'T12:00:00').toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+}
+
+async function loadRequests() {
+  const r = await authedFetch('/rest/v1/time_off?user_id=eq.' + myUser.id + '&select=id,kind,start_date,end_date,hours,reason,status,decided_at,decided_notes,created_at&order=created_at.desc&limit=50');
+  if (!r.ok) { $('reqList').innerHTML = '<div class="empty"><div class="ic">⚠</div>Could not load requests.</div>'; return; }
+  allReqs = await r.json();
+
+  // Stats
+  const pending = allReqs.filter(r => r.status === 'pending').length;
+  const approved = allReqs.filter(r => r.status === 'approved').length;
+  const denied = allReqs.filter(r => r.status === 'denied').length;
+  const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0,10);
+  const hoursThisYear = allReqs
+    .filter(r => r.status === 'approved' && r.start_date >= yearStart)
+    .reduce((sum, r) => sum + (Number(r.hours) || 0), 0);
+  $('statPending').textContent = pending;
+  $('statApproved').textContent = approved;
+  $('statDenied').textContent = denied;
+  $('statHours').textContent = hoursThisYear.toFixed(1);
+
+  if (!allReqs.length) {
+    $('reqList').innerHTML = '<div class="empty"><div class="ic">🌴</div><span>' + esc(t('tof.no_requests','No requests yet. Submit one above when you need time off.')) + '</span></div>';
+    return;
+  }
+
+  $('reqList').innerHTML = allReqs.map(r => {
+    const kindLabel = t('tof.kind_' + r.kind, r.kind);
+    const dateRange = r.start_date === r.end_date
+      ? fmtDate(r.start_date)
+      : fmtDate(r.start_date) + ' → ' + fmtDate(r.end_date);
+    const hoursStr = r.hours ? ' · ' + r.hours + 'h' : '';
+    const reasonBlock = r.reason ? '<div class="reason">' + esc(r.reason) + '</div>' : '';
+    const decidedNote = r.decided_notes ? '<div class="reason">' + t('tof.manager_note','Manager note:') + ' ' + esc(r.decided_notes) + '</div>' : '';
+    const cancelBtn = r.status === 'pending'
+      ? '<button class="cancel-btn" data-cancel="' + r.id + '">' + esc(t('tof.cancel_btn','Cancel')) + '</button>'
+      : '';
+    return ''
+      + '<div class="req-row">'
+      +   '<div class="info">'
+      +     '<div class="kind">' + esc(kindLabel) + hoursStr + '</div>'
+      +     '<div class="dates">' + esc(dateRange) + '</div>'
+      +     reasonBlock
+      +     decidedNote
+      +   '</div>'
+      +   '<div class="meta">'
+      +     '<span class="pill ' + r.status + '">' + esc(t('tof.status_' + r.status, r.status)) + '</span>'
+      +     cancelBtn
+      +   '</div>'
+      + '</div>';
+  }).join('');
+
+  // Wire cancel buttons
+  document.querySelectorAll('button[data-cancel]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm(t('tof.cancel_confirm','Cancel this request?'))) return;
+      const id = btn.dataset.cancel;
+      const r = await authedFetch('/rest/v1/time_off?id=eq.' + id, {
+        method: 'PATCH', headers: { 'Prefer':'return=minimal' },
+        body: JSON.stringify({ status: 'cancelled' })
+      });
+      if (!r.ok) { toast('Cancel failed','err'); return; }
+      toast(t('tof.cancelled','Request cancelled'),'ok');
+      await loadRequests();
+    });
+  });
+}
+
+$('submitBtn').addEventListener('click', async () => {
+  const kind = $('kindInput').value;
+  const startDate = $('startInput').value;
+  const endDate   = $('endInput').value || startDate;
+  const hours     = $('hoursInput').value ? Number($('hoursInput').value) : null;
+  const reason    = $('reasonInput').value.trim() || null;
+
+  if (!startDate) { toast(t('tof.need_start','Please pick a start date'),'err'); return; }
+  if (endDate < startDate) { toast(t('tof.bad_dates','End date can\'t be before start'),'err'); return; }
+
+  $('submitBtn').disabled = true;
+  $('submitBtn').textContent = t('tof.submitting','Submitting…');
+
+  const r = await authedFetch('/rest/v1/time_off', {
+    method: 'POST', headers: { 'Prefer': 'return=minimal' },
+    body: JSON.stringify({
+      user_id: myUser.id, kind: kind, start_date: startDate, end_date: endDate,
+      hours: hours, reason: reason, status: 'pending'
+    })
+  });
+
+  if (!r.ok) {
+    const tx = await r.text();
+    toast('Failed: ' + tx.slice(0,80),'err');
+    $('submitBtn').disabled = false;
+    $('submitBtn').textContent = t('tof.submit_btn','Submit request');
+    return;
+  }
+
+  $('submitBtn').disabled = false;
+  $('submitBtn').textContent = t('tof.submit_btn','Submit request');
+  $('startInput').value = '';
+  $('endInput').value = '';
+  $('hoursInput').value = '';
+  $('reasonInput').value = '';
+  toast(t('tof.submitted','✓ Request submitted'),'ok');
+  await loadRequests();
+});
+
+(async function init(){
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  if (!s) { location.href = '/login.html?next=/my-time-off.html'; return; }
+  myUser = s.user;
+  // Default start = today
+  const today = new Date().toISOString().slice(0,10);
+  $('startInput').value = today;
+  $('endInput').value = today;
+  await loadRequests();
+})();
+</script>
+<script src="lymx-i18n.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

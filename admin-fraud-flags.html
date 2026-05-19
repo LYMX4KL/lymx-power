@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — fraud flags inbox. Review and resolve suspicious LYMX issuance + transfer patterns." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Fraud flags · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--maxw:1280px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+
+  .page{padding:30px 0 64px}
+  .page-head{margin-bottom:18px}
+  .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:14px}
+
+  /* Stat strip */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+  @media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+  .stat-card .lab{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+  .stat-card .v{font-size:24px;font-weight:800}
+  .stat-card .v.danger{color:var(--danger)}
+  .stat-card .v.warn{color:var(--warn)}
+  .stat-card .v.ok{color:var(--ok)}
+
+  /* Filter chips */
+  .filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{padding:7px 13px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* Flag cards */
+  .flag{background:#fff;border:1px solid var(--line);border-left:5px solid var(--warn);border-radius:11px;padding:18px 22px;margin-bottom:12px}
+  .flag.critical{border-left-color:#a01644}
+  .flag.high{border-left-color:var(--danger)}
+  .flag.medium{border-left-color:var(--warn)}
+  .flag.low{border-left-color:var(--muted)}
+  .flag-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+  .flag-h .lab{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+  .flag-h .when{font-size:12px;color:var(--muted);font-weight:600}
+  .flag h3{margin:0 0 6px;font-size:15px;font-weight:800;line-height:1.4}
+  .flag .meta{font-size:12.5px;color:var(--muted);margin-bottom:8px}
+  .flag .meta strong{color:var(--ink-2)}
+  .flag .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .btn{padding:7px 14px;border-radius:8px;font-weight:700;font-size:12.5px;border:1px solid transparent;cursor:pointer;font-family:inherit}
+  .btn-clear{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .btn-confirm{background:var(--danger);color:#fff;border-color:var(--danger)}
+  .btn-ghost{background:#fff;border-color:var(--line);color:var(--ink-2)}
+
+  .empty{padding:60px 24px;text-align:center;color:var(--muted)}
+  .empty .ic{font-size:56px;margin-bottom:10px}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:99;opacity:0;transition:opacity .2s}
+  .toast.on{opacity:1}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--danger)}
+</style>
+</head>
+<body data-role-required="admin">
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="admin-dashboard.html">LYMX <span class="role-tag">Admin</span></a>
+    <a href="admin-dashboard.html" style="font-size:13px;color:var(--muted)">← Dashboard</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>🚨 Fraud flags</h1>
+      <p>Open suspicious LYMX issuance + transfer patterns. Review and clear or confirm.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card"><div class="lab">Open</div><div class="v danger" id="ct-open">—</div></div>
+      <div class="stat-card"><div class="lab">Reviewing</div><div class="v warn" id="ct-reviewing">—</div></div>
+      <div class="stat-card"><div class="lab">Cleared (30d)</div><div class="v ok" id="ct-cleared">—</div></div>
+      <div class="stat-card"><div class="lab">Confirmed (30d)</div><div class="v danger" id="ct-confirmed">—</div></div>
+    </div>
+
+    <div class="filter-row">
+      <button class="chip on" data-f="open">Open</button>
+      <button class="chip" data-f="reviewing">Reviewing</button>
+      <button class="chip" data-f="cleared">Cleared</button>
+      <button class="chip" data-f="confirmed">Confirmed</button>
+      <button class="chip" data-f="all">All</button>
+    </div>
+
+    <div id="flagList"></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+let currentFilter = 'open';
+let allFlags = [];
+
+function $(id){return document.getElementById(id);}
+function toast(msg, kind){const t=$('toast');t.textContent=msg;t.className='toast on '+(kind||'');setTimeout(()=>t.className='toast',2400);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+async function load(){
+  if (!window.LYMX || !window.LYMX.requireAuth) return;
+  const user = await window.LYMX.requireAuth();
+  if (!user) return;
+  const sb = window.LYMX.sb;
+
+  const { data: rows } = await sb.from('fraud_flags')
+    .select('id, flag_type, severity, status, business_id, user_id, amount_lymx, summary, created_at, reviewed_at')
+    .order('created_at', { ascending: false }).limit(500);
+  allFlags = rows || [];
+
+  // Stats
+  const day30Ago = new Date(Date.now() - 30*86400000).toISOString();
+  $('ct-open').textContent       = allFlags.filter(f => f.status === 'open').length;
+  $('ct-reviewing').textContent  = allFlags.filter(f => f.status === 'reviewing').length;
+  $('ct-cleared').textContent    = allFlags.filter(f => f.status === 'cleared' && f.reviewed_at && f.reviewed_at >= day30Ago).length;
+  $('ct-confirmed').textContent  = allFlags.filter(f => f.status === 'confirmed' && f.reviewed_at && f.reviewed_at >= day30Ago).length;
+
+  render();
+}
+
+function render(){
+  let items = allFlags;
+  if (currentFilter !== 'all') items = items.filter(f => f.status === currentFilter);
+
+  if (!items.length) {
+    $('flagList').innerHTML = '<div class="empty"><div class="ic">✅</div><div style="font-size:16px;font-weight:800;color:#0e1116;margin-bottom:4px">All clear</div><div>No ' + currentFilter + ' fraud flags right now.</div></div>';
+    return;
+  }
+
+  $('flagList').innerHTML = items.map(f => {
+    const when = new Date(f.created_at).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    const amt = f.amount_lymx ? Number(f.amount_lymx).toLocaleString() + ' LYMX' : '';
+    const actions = (f.status === 'open' || f.status === 'reviewing')
+      ? '<button class="btn btn-clear" data-act="cleared" data-id="' + f.id + '">✓ Clear (false positive)</button>'
+        + '<button class="btn btn-confirm" data-act="confirmed" data-id="' + f.id + '">⚠ Confirm fraud</button>'
+        + (f.status === 'open' ? '<button class="btn btn-ghost" data-act="reviewing" data-id="' + f.id + '">📝 Mark reviewing</button>' : '')
+      : '<span style="font-size:12px;color:var(--muted)">Resolved ' + (f.reviewed_at ? new Date(f.reviewed_at).toLocaleDateString() : '') + '</span>';
+
+    return ''
+      + '<div class="flag ' + esc(f.severity) + '">'
+      +   '<div class="flag-h">'
+      +     '<span class="lab" style="color:' + (f.severity === 'critical' ? '#a01644' : f.severity === 'high' ? '#e0413e' : f.severity === 'medium' ? '#a06808' : '#5b6472') + '">' + esc(f.severity) + ' · ' + esc(f.flag_type.replace(/_/g, ' ')) + '</span>'
+      +     '<span class="when">' + esc(when) + '</span>'
+      +   '</div>'
+      +   '<h3>' + esc(f.summary) + '</h3>'
+      +   (amt ? '<div class="meta">Amount: <strong>' + esc(amt) + '</strong></div>' : '')
+      +   '<div class="actions">' + actions + '</div>'
+      + '</div>';
+  }).join('');
+
+  document.querySelectorAll('button[data-act]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      const newStatus = btn.dataset.act;
+      btn.disabled = true;
+      const sb = window.LYMX.sb;
+      const sess = await window.LYMX.getSession();
+      const { error } = await sb.from('fraud_flags').update({
+        status: newStatus,
+        reviewer_id: sess && sess.user ? sess.user.id : null,
+        reviewed_at: new Date().toISOString()
+      }).eq('id', id);
+      if (error) { toast('Update failed: ' + error.message, 'err'); btn.disabled = false; return; }
+      toast('Updated', 'ok');
+      await load();
+    });
+  });
+}
+
+document.querySelectorAll('.chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+    c.classList.add('on');
+    currentFilter = c.dataset.f;
+    render();
+  });
+});
+
+load();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

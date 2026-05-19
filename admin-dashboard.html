@@ -128,7 +128,7 @@
 <meta name="apple-mobile-web-app-title" content="LYMX" />
 <meta name="mobile-web-app-capable" content="yes" />
 </head>
-<body>
+<body data-role-required="admin">
 
 <header class="nav">
   <div class="wrap nav-inner">
@@ -223,6 +223,15 @@
           <div class="tasks" id="pending-tasks">
             <div style="padding:24px 22px;color:var(--muted);font-size:13.5px">Loading…</div>
           </div>
+        </div>
+
+        <!-- Fraud flags — open suspicious patterns (Kenny 2026-05-18 fraud build) -->
+        <div class="card" id="fraudCard" style="display:none;border-color:#a01644;border-width:2px">
+          <div class="card-h">
+            <h2 style="color:#a01644">🚨 Fraud flags · needs review</h2>
+            <div class="meta"><a href="admin-fraud-flags.html">Open all →</a></div>
+          </div>
+          <div id="fraudList" style="padding:6px 22px 16px"></div>
         </div>
 
         <!-- Pipeline pulse — today's calls + leads at-a-glance (mirrors daily-digest content) -->
@@ -524,8 +533,55 @@
 })();
 </script>
 
+<script>
+// Fraud flags widget — shows open suspicious patterns from v_open_fraud_flags.
+// Surfaces self-issuance attempts + customer-transfer attempts so admin sees them ASAP.
+(async function loadFraudFlags() {
+  try {
+    if (!window.LYMX_CONFIG) return;
+    const SUPA = window.LYMX_CONFIG.SUPABASE_URL;
+    const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+    let token = ANON;
+    try {
+      if (window.LYMX && window.LYMX.getSession) {
+        const s = await window.LYMX.getSession();
+        if (s && s.access_token) token = s.access_token;
+      }
+    } catch {}
+    const headers = { apikey: ANON, Authorization: 'Bearer ' + token };
+
+    const r = await fetch(SUPA + '/rest/v1/v_open_fraud_flags?select=id,flag_type,severity,business_name,amount_lymx,summary,created_at&order=severity.asc,created_at.desc&limit=8', { headers });
+    if (!r.ok) return;
+    const rows = await r.json();
+    if (!Array.isArray(rows) || rows.length === 0) return;
+
+    const card = document.getElementById('fraudCard');
+    const list = document.getElementById('fraudList');
+    if (!card || !list) return;
+
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    const sevColor = { critical: '#a01644', high: '#e0413e', medium: '#a06808', low: '#5b6472' };
+
+    list.innerHTML = rows.map(f => {
+      const when = new Date(f.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      return '<div style="padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.5">'
+        + '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline">'
+        +   '<span style="font-weight:800;color:' + (sevColor[f.severity] || '#5b6472') + ';font-size:11.5px;letter-spacing:.05em;text-transform:uppercase">' + esc(f.severity) + ' · ' + esc(f.flag_type.replace(/_/g, ' ')) + '</span>'
+        +   '<span style="font-size:11.5px;color:var(--muted)">' + when + '</span>'
+        + '</div>'
+        + '<div style="margin-top:3px;color:var(--ink-2)">' + esc(f.summary) + '</div>'
+        + (f.business_name ? '<div style="margin-top:2px;font-size:12px;color:var(--muted)">Business: ' + esc(f.business_name) + '</div>' : '')
+        + '</div>';
+    }).join('');
+    card.style.display = 'block';
+  } catch (e) {
+    console.warn('[fraud-flags] load failed', e);
+  }
+})();
+</script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
 </body>
 </html>

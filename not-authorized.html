@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="This area is restricted to specific LYMX account types." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Not authorized · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--danger:#e0413e;--maxw:560px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink);line-height:1.55;display:flex;flex-direction:column;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px;width:100%;flex:1;display:flex;align-items:center;justify-content:center}
+  header.nav{background:#fff;border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:var(--maxw);margin:0 auto;padding:0 20px}
+  .brand{font-weight:800;font-size:18px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:40px 28px;text-align:center;width:100%;margin:30px 0}
+  .ic{font-size:48px;margin-bottom:14px}
+  h1{font-size:24px;font-weight:800;margin:0 0 8px}
+  .lead{color:var(--muted);font-size:15px;margin-bottom:24px;line-height:1.6}
+  .role-pill{display:inline-block;background:var(--bg-soft);border:1px solid var(--line);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);margin-bottom:18px}
+  .actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+  .btn{padding:11px 22px;border-radius:9px;font-weight:700;font-size:14px;border:0;cursor:pointer;text-decoration:none;display:inline-block;font-family:inherit}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--ink)}
+  footer{padding:18px 0;text-align:center;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="/">LYMX</a>
+    <a href="/" style="font-size:13px;color:var(--muted)">Home</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="card">
+    <div class="ic">🔒</div>
+    <h1>This page isn't for you</h1>
+    <p class="lead">The page you tried to open is restricted to a specific account type. You're signed in, but your account doesn't have access here.</p>
+    <div class="role-pill" id="rolePill">Restricted</div>
+    <div class="actions">
+      <a class="btn btn-primary" href="/" id="homeBtn">Go to my dashboard</a>
+      <a class="btn btn-ghost" href="/support.html">Contact support</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  If you think this is a mistake, message support — we'll sort it out.
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Show the role we required and route Home to the correct dashboard for the
+// account type the user actually has.
+(async function () {
+  const params = new URLSearchParams(location.search);
+  const required = (params.get('role') || '').trim();
+  const labels = { partner: '👥 Partner-only', business: '🏪 Business-only', admin: '🛡 Admin-only', staff: '⏱ Staff-only' };
+  const pill = document.getElementById('rolePill');
+  if (pill && required) pill.textContent = labels[required] || ('Restricted · ' + required);
+
+  // Detect the user's actual role and point Home to their natural dashboard
+  let homeHref = '/';
+  try {
+    if (!window.LYMX || !window.LYMX.getSession) return;
+    const s = await window.LYMX.getSession();
+    if (!s) { homeHref = '/login.html'; }
+    else {
+      const sb = window.LYMX.sb;
+      // Try partner first, then business, then customer
+      let { data: p } = await sb.from('partners').select('id').eq('user_id', s.user.id).limit(1);
+      if (p && p.length) homeHref = '/rep-dashboard.html';
+      else {
+        let { data: b } = await sb.from('businesses').select('id').eq('owner_user_id', s.user.id).is('archived_at', null).limit(1);
+        if (b && b.length) homeHref = '/biz-dashboard.html';
+        else homeHref = '/customer-dashboard.html';
+      }
+    }
+  } catch (e) {}
+  const btn = document.getElementById('homeBtn');
+  if (btn) btn.setAttribute('href', homeHref);
+})();
+</script>
+</body>
+</html>
