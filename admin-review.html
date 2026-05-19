@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — 3-mode performance review (self / manager / sign)." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Performance review · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--maxw:880px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .page{padding:24px 0 64px}
+  .page-head h1{margin:0;font-size:24px;font-weight:800}
+  .page-head p{margin:6px 0 14px;color:var(--muted);font-size:14px}
+  .status-bar{padding:11px 14px;border-radius:9px;background:#eef5ff;border:1px solid #c5dffb;color:#1d4ed8;font-size:13.5px;font-weight:600;margin-bottom:16px}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:14px}
+  .panel h2{margin:0 0 4px;font-size:16px;font-weight:800}
+  .panel .sub{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+  .panel.locked{background:var(--bg-soft);opacity:.85}
+  .form-group{margin-bottom:12px}
+  .form-group label{display:block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+  .form-group textarea, .form-group select, .form-group input{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-family:inherit}
+  .form-group textarea{min-height:70px;resize:vertical}
+  .readonly{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg-soft);font-size:14px;white-space:pre-wrap;min-height:30px}
+  .rating-strip{display:flex;gap:6px}
+  .rating-btn{flex:1;padding:9px;border:1.5px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;font-weight:700;font-size:15px;font-family:inherit;color:var(--muted)}
+  .rating-btn.on{background:var(--gold);color:#fff;border-color:var(--gold)}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:560px){.grid-2{grid-template-columns:1fr}}
+  .btn{padding:9px 18px;border-radius:9px;font-weight:700;font-size:14px;border:0;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+  .btn-primary{background:var(--ink);color:#fff}
+  .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+</style>
+</head>
+<body data-role-required="admin">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="admin-dashboard.html">LYMX <span class="role-tag">Admin</span></a>
+    <a href="admin-personnel-records.html" style="font-size:13px;color:var(--muted)">← Personnel records</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>⭐ Performance review</h1>
+      <p id="reviewSubtitle">Loading…</p>
+    </div>
+
+    <div class="status-bar" id="statusBar">—</div>
+
+    <div class="panel" id="selfPanel">
+      <h2>Self-assessment</h2>
+      <p class="sub">The staff fills this out first. Manager assessment unlocks after.</p>
+      <div id="selfBody"></div>
+    </div>
+
+    <div class="panel locked" id="managerPanel">
+      <h2>Manager assessment</h2>
+      <p class="sub">Fill in after the staff submits their self-assessment.</p>
+      <div id="managerBody"></div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const reviewId = params.get('id');
+let review = null;
+let me = null;
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function ymd(d){ if (!d) return '—'; try { return new Date(d).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}); } catch(e){ return d; } }
+
+if (!reviewId) { document.body.innerHTML = '<div style="padding:40px;text-align:center;font-family:system-ui">Missing ?id= param.</div>'; }
+
+async function load(){
+  if (!reviewId || !window.LYMX || !window.LYMX.requireAuth) return;
+  me = await window.LYMX.requireAuth();
+  if (!me) return;
+  const sb = window.LYMX.sb;
+  const { data: r } = await sb.from('performance_reviews').select('*').eq('id', reviewId).maybeSingle();
+  if (!r) { document.body.innerHTML = '<div style="padding:40px;text-align:center">Review not found.</div>'; return; }
+  review = r;
+
+  let subjectName = r.profile_id.slice(0,8);
+  try {
+    const { data: emails } = await sb.rpc('admin_list_user_emails');
+    const found = (emails || []).find(e => e.user_id === r.profile_id);
+    if (found) subjectName = found.full_name || found.email || subjectName;
+  } catch (e) {}
+
+  $('reviewSubtitle').textContent = subjectName + ' · ' + r.period.replace(/_/g,' ') + ' · scheduled ' + ymd(r.scheduled_for);
+  $('statusBar').textContent = 'Status: ' + r.status.replace(/_/g,' ');
+
+  renderSelf();
+  renderManager();
+}
+
+function renderSelf(){
+  const isMe = review.profile_id === me.id;
+  const editable = isMe && ['scheduled','self_pending'].includes(review.status);
+
+  if (editable) {
+    $('selfBody').innerHTML = `
+      <div class="form-group">
+        <label>Top wins this period</label>
+        <textarea id="self_top">${esc(review.self_top_wins || '')}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Where you want to grow</label>
+        <textarea id="self_growth">${esc(review.self_growth_areas || '')}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Blockers / what needs to change</label>
+        <textarea id="self_blockers">${esc(review.self_blockers || '')}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Goals for next period</label>
+        <textarea id="self_goals">${esc(review.self_goals_next || '')}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Overall rating (1-5)</label>
+        <div class="rating-strip" id="selfRatingStrip">
+          ${[1,2,3,4,5].map(n => '<button class="rating-btn' + (review.self_overall_rating === n ? ' on' : '') + '" data-r="' + n + '">' + '★'.repeat(n) + '</button>').join('')}
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="submitSelfBtn">Submit self-assessment →</button>
+      </div>`;
+
+    let selfRating = review.self_overall_rating || 0;
+    document.querySelectorAll('#selfRatingStrip .rating-btn').forEach(b => b.addEventListener('click', () => {
+      document.querySelectorAll('#selfRatingStrip .rating-btn').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      selfRating = parseInt(b.dataset.r, 10);
+    }));
+
+    $('submitSelfBtn').addEventListener('click', async () => {
+      const sb = window.LYMX.sb;
+      const { error } = await sb.rpc('submit_review_self_assessment', {
+        p_id: reviewId,
+        p_top_wins: $('self_top').value || null,
+        p_growth_areas: $('self_growth').value || null,
+        p_blockers: $('self_blockers').value || null,
+        p_goals_next: $('self_goals').value || null,
+        p_overall_rating: selfRating || null
+      });
+      if (error) { alert(error.message); return; }
+      alert('Self-assessment submitted.');
+      location.reload();
+    });
+  } else {
+    $('selfBody').innerHTML = `
+      <div class="form-group"><label>Top wins</label><div class="readonly">${esc(review.self_top_wins || '—')}</div></div>
+      <div class="form-group"><label>Growth areas</label><div class="readonly">${esc(review.self_growth_areas || '—')}</div></div>
+      <div class="form-group"><label>Blockers</label><div class="readonly">${esc(review.self_blockers || '—')}</div></div>
+      <div class="form-group"><label>Goals next period</label><div class="readonly">${esc(review.self_goals_next || '—')}</div></div>
+      <div class="form-group"><label>Self overall rating</label><div class="readonly">${review.self_overall_rating ? '★'.repeat(review.self_overall_rating) : '—'}</div></div>`;
+  }
+}
+
+function renderManager(){
+  // Manager / HR can fill in once self phase is done
+  const editable = review.status === 'manager_pending' || review.status === 'self_pending';
+
+  if (editable) {
+    $('managerPanel').classList.remove('locked');
+    $('managerBody').innerHTML = `
+      <div class="form-group">
+        <label>Manager's assessment</label>
+        <textarea id="m_assess">${esc(review.manager_assessment || '')}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Strengths</label>
+        <textarea id="m_strengths">${esc(review.manager_strengths || '')}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Growth areas</label>
+        <textarea id="m_growth">${esc(review.manager_growth_areas || '')}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Action items</label>
+        <textarea id="m_action">${esc(review.manager_action_items || '')}</textarea>
+      </div>
+      <div class="grid-2">
+        ${['overall','attendance','quality','initiative','teamwork'].map(k => `
+          <div class="form-group">
+            <label>${k}</label>
+            <select id="r_${k}">
+              <option value="">—</option>
+              ${[1,2,3,4,5].map(n => '<option value="' + n + '"' + (review['rating_'+k] === n ? ' selected' : '') + '>' + n + ' ' + '★'.repeat(n) + '</option>').join('')}
+            </select>
+          </div>`).join('')}
+        <div class="form-group">
+          <label>Compensation rec</label>
+          <select id="r_comp">
+            <option value="">—</option>
+            ${['hold','small_raise','mid_raise','big_raise','promotion','pip','term'].map(c => '<option value="' + c + '"' + (review.compensation_rec === c ? ' selected' : '') + '>' + c.replace(/_/g,' ') + '</option>').join('')}
+          </select>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="submitMgrBtn">Submit manager assessment →</button>
+      </div>`;
+
+    $('submitMgrBtn').addEventListener('click', async () => {
+      const sb = window.LYMX.sb;
+      const { error } = await sb.rpc('submit_review_manager_assessment', {
+        p_id: reviewId,
+        p_assessment: $('m_assess').value || null,
+        p_strengths: $('m_strengths').value || null,
+        p_growth_areas: $('m_growth').value || null,
+        p_action_items: $('m_action').value || null,
+        p_rating_overall:    parseInt($('r_overall').value, 10) || null,
+        p_rating_attendance: parseInt($('r_attendance').value, 10) || null,
+        p_rating_quality:    parseInt($('r_quality').value, 10) || null,
+        p_rating_initiative: parseInt($('r_initiative').value, 10) || null,
+        p_rating_teamwork:   parseInt($('r_teamwork').value, 10) || null,
+        p_compensation_rec:  $('r_comp').value || null
+      });
+      if (error) { alert(error.message); return; }
+      alert('Manager assessment submitted. Staff will be asked to acknowledge.');
+      location.reload();
+    });
+  } else if (['complete','signed'].includes(review.status)) {
+    $('managerPanel').classList.remove('locked');
+    $('managerBody').innerHTML = `
+      <div class="form-group"><label>Manager assessment</label><div class="readonly">${esc(review.manager_assessment || '—')}</div></div>
+      <div class="form-group"><label>Strengths</label><div class="readonly">${esc(review.manager_strengths || '—')}</div></div>
+      <div class="form-group"><label>Growth areas</label><div class="readonly">${esc(review.manager_growth_areas || '—')}</div></div>
+      <div class="form-group"><label>Action items</label><div class="readonly">${esc(review.manager_action_items || '—')}</div></div>
+      <div class="grid-2">
+        <div class="form-group"><label>Overall</label><div class="readonly">${review.rating_overall ? '★'.repeat(review.rating_overall) : '—'}</div></div>
+        <div class="form-group"><label>Attendance</label><div class="readonly">${review.rating_attendance ? '★'.repeat(review.rating_attendance) : '—'}</div></div>
+        <div class="form-group"><label>Quality</label><div class="readonly">${review.rating_quality ? '★'.repeat(review.rating_quality) : '—'}</div></div>
+        <div class="form-group"><label>Initiative</label><div class="readonly">${review.rating_initiative ? '★'.repeat(review.rating_initiative) : '—'}</div></div>
+        <div class="form-group"><label>Teamwork</label><div class="readonly">${review.rating_teamwork ? '★'.repeat(review.rating_teamwork) : '—'}</div></div>
+        <div class="form-group"><label>Comp rec</label><div class="readonly">${esc(review.compensation_rec || '—')}</div></div>
+      </div>
+      ${review.status === 'complete' && review.profile_id === me.id
+        ? `<div class="actions"><button class="btn btn-primary" id="ackBtn">Acknowledge review</button></div>`
+        : (review.status === 'signed'
+            ? `<div class="status-bar" style="background:#e6f5ee;border-color:#a8d8c0;color:#0a6e44">✓ Acknowledged on ${ymd(review.acknowledged_at)}</div>`
+            : '')}
+    `;
+    const ack = $('ackBtn');
+    if (ack) ack.addEventListener('click', async () => {
+      const sb = window.LYMX.sb;
+      const { error } = await sb.rpc('acknowledge_performance_review', { p_id: reviewId });
+      if (error) { alert(error.message); return; }
+      alert('Acknowledged.');
+      location.reload();
+    });
+  } else {
+    $('managerBody').innerHTML = '<div class="readonly">Locked until staff submits self-assessment.</div>';
+  }
+}
+
+load();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

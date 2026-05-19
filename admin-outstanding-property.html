@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — outstanding property queue (post-termination)." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Outstanding property · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .page{padding:28px 0 64px}
+  .page-head h1{margin:0;font-size:26px;font-weight:800}
+  .page-head p{margin:6px 0 14px;color:var(--muted);font-size:14px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+  .stat .lab{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+  .stat .v{font-size:26px;font-weight:800;color:var(--ink)}
+  .stat .v.danger{color:var(--danger)}
+  .stat .v.warn{color:var(--warn)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .card-h{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:800;font-size:15px}
+  .tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+  .tbl th{text-align:left;background:#f9fafb;padding:11px 14px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line)}
+  .tbl td{padding:13px 14px;border-bottom:1px solid #f0f1f4;vertical-align:middle}
+  .badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:#eef0f4}
+  .badge.danger{background:#fdecec;color:#9b1c1c}
+  .badge.warn{background:#fff3d4;color:#92400e}
+  .btn{padding:6px 12px;border-radius:7px;font-weight:700;font-size:12.5px;border:0;cursor:pointer;font-family:inherit}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-danger{background:var(--danger);color:#fff}
+  .empty{padding:48px;text-align:center;color:var(--muted)}
+  .empty .ic{font-size:48px;margin-bottom:8px}
+  .nv-banner{background:linear-gradient(135deg,#eef5ff,#dbeafe);border:1px solid #c5dffb;border-radius:11px;padding:14px 18px;color:#1d4ed8;font-size:13.5px;margin-bottom:16px}
+  .nv-banner strong{color:#1e40af}
+</style>
+</head>
+<body data-role-required="admin">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="admin-dashboard.html">LYMX <span class="role-tag">Admin</span></a>
+    <a href="admin-personnel-records.html" style="font-size:13px;color:var(--muted)">← Personnel records</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>📦 Outstanding property queue</h1>
+      <p>Items that left the building with terminated staff. Pursue or write off.</p>
+    </div>
+
+    <div class="nv-banner">
+      <strong>NRS 608.020 / 608.030:</strong> Final pay must be issued on the statutory timeline regardless of property return. Unreturned items are pursued separately — never as a hold-back against wages.
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="lab">Open items</div><div class="v danger" id="ct-open">—</div></div>
+      <div class="stat"><div class="lab">Aged 90+ days</div><div class="v warn" id="ct-aged">—</div></div>
+      <div class="stat"><div class="lab">Total value at risk</div><div class="v" id="ct-value">—</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">Outstanding items</div>
+      <div id="listWrap">
+        <div class="empty"><div class="ic">⏳</div>Loading…</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function ymd(d){ if (!d) return '—'; try { return new Date(d).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}); } catch(e){ return d; } }
+
+async function load(){
+  if (!window.LYMX || !window.LYMX.requireAuth) return;
+  const user = await window.LYMX.requireAuth();
+  if (!user) return;
+  const sb = window.LYMX.sb;
+
+  const { data: items, error } = await sb.from('outstanding_property_queue').select('*');
+  if (error) { $('listWrap').innerHTML = '<div class="empty">Error: ' + esc(error.message) + '</div>'; return; }
+
+  const list = items || [];
+  const aged = list.filter(i => (i.days_outstanding || 0) >= 90).length;
+  const totalVal = list.reduce((s, i) => s + Number(i.estimated_value_usd || 0), 0);
+
+  $('ct-open').textContent = list.length;
+  $('ct-aged').textContent = aged;
+  $('ct-value').textContent = '$' + totalVal.toFixed(2);
+
+  if (!list.length) {
+    $('listWrap').innerHTML = '<div class="empty"><div class="ic">✅</div>No outstanding items — every terminated staff returned everything.</div>';
+    return;
+  }
+
+  $('listWrap').innerHTML =
+    '<table class="tbl"><thead><tr>' +
+      '<th>Item</th><th>Holder</th><th>Outstanding since</th><th>Days</th><th>Value</th><th>Actions</th>' +
+    '</tr></thead><tbody>' +
+    list.map(i => {
+      const days = i.days_outstanding || 0;
+      const dCls = days >= 90 ? 'danger' : days >= 30 ? 'warn' : '';
+      return '<tr>' +
+        '<td><div style="font-weight:700">' + esc(i.label) + '</div><div style="font-size:12px;color:var(--muted)">' + esc(i.category) + '</div></td>' +
+        '<td><div style="font-weight:600">' + esc(i.holder_name || i.profile_id.slice(0,8)) + '</div>' +
+            (i.term_last_day ? '<div style="font-size:12px;color:var(--muted)">Left ' + ymd(i.term_last_day) + (i.termination_type ? ' · ' + esc(i.termination_type) : '') + '</div>' : '') +
+        '</td>' +
+        '<td>' + ymd(i.flagged_outstanding_at) + '</td>' +
+        '<td><span class="badge ' + dCls + '">' + days + 'd</span></td>' +
+        '<td>$' + Number(i.estimated_value_usd || 0).toFixed(2) + '</td>' +
+        '<td><button class="btn btn-danger" data-id="' + esc(i.id) + '" data-act="write_off">Write off</button></td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table>';
+
+  document.querySelectorAll('[data-act="write_off"]').forEach(b => b.addEventListener('click', async () => {
+    const reason = prompt('Write-off reason (required for audit)?');
+    if (!reason) return;
+    const sb = window.LYMX.sb;
+    const { error } = await sb.from('staff_property_items').update({
+      disposition: 'written_off',
+      written_off_at: new Date().toISOString(),
+      written_off_reason: reason
+    }).eq('id', b.dataset.id);
+    if (error) { alert(error.message); return; }
+    load();
+  }));
+}
+
+load();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — personnel records hub. Staff roster with quick actions per row." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Personnel Records · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--maxw:1280px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:14px;margin-bottom:18px}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:15px}
+
+  /* Stat strip */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+  .stat-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+  .stat-card .lab{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+  .stat-card .v{font-size:26px;font-weight:800;color:var(--ink)}
+  .stat-card .v.warn{color:var(--warn)}
+  .stat-card .v.danger{color:var(--danger)}
+  .stat-card .v.ok{color:var(--ok)}
+
+  /* Filter chips */
+  .filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+  .chip{padding:7px 13px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .search-input{flex:1;min-width:220px;padding:8px 14px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:14px;font-family:inherit}
+
+  /* Card + table */
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .card-h{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .card-h h2{margin:0;font-size:16px;font-weight:800}
+
+  .tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+  .tbl th{text-align:left;background:#f9fafb;padding:11px 14px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:1}
+  .tbl td{padding:13px 14px;border-bottom:1px solid #f0f1f4;vertical-align:middle}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl tr:hover td{background:#f9fafb}
+
+  .name-cell{display:flex;align-items:center;gap:10px}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+  .avatar.admin{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  .avatar.terminated{background:linear-gradient(135deg,#9aa3b0,#5b6472);opacity:.7}
+  .name-cell .name{font-weight:700;color:var(--ink);font-size:14px}
+  .name-cell .email{font-size:12px;color:var(--muted);margin-top:1px}
+
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:capitalize;white-space:nowrap}
+  .pill.active{background:rgba(19,162,107,.12);color:var(--ok)}
+  .pill.on_leave{background:#fff3d4;color:#92400e}
+  .pill.suspended{background:#fdecec;color:#9b1c1c}
+  .pill.terminated{background:#eef0f4;color:#6b7280}
+  .pill.rehire_eligible{background:#eef5ff;color:var(--accent-2)}
+
+  .role-flags{display:flex;gap:4px;flex-wrap:wrap}
+  .role-flag{display:inline-block;background:#fff;border:1px solid var(--line);font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding:1px 6px;border-radius:5px}
+  .role-flag.is_hr{background:#eef5ff;color:var(--accent-2);border-color:#c5dffb}
+  .role-flag.is_cfo{background:rgba(212,175,55,.18);color:#8a6a14;border-color:rgba(212,175,55,.4)}
+  .role-flag.is_admin{background:rgba(208,32,84,.12);color:#a01644;border-color:rgba(208,32,84,.3)}
+
+  .btn{padding:6px 12px;border-radius:7px;font-weight:700;font-size:12.5px;border:0;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-secondary:hover{background:var(--bg-soft)}
+  .actions-cell{display:flex;gap:6px;flex-wrap:wrap}
+
+  .empty{padding:60px 24px;text-align:center;color:var(--muted)}
+  .empty .ic{font-size:56px;margin-bottom:10px}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:99;opacity:0;transition:opacity .2s}
+  .toast.on{opacity:1}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--danger)}
+
+  @media(max-width:780px){
+    .col-hide-sm{display:none}
+  }
+</style>
+</head>
+<body data-role-required="admin">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="admin-dashboard.html">LYMX <span class="role-tag">Admin</span></a>
+    <a href="admin-dashboard.html" style="font-size:13px;color:var(--muted)">← Dashboard</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>📂 Personnel records</h1>
+        <p>Every staff member — active, on leave, suspended, or terminated. Click in for the full file.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="admin-bulk-policy-assign.html" class="btn btn-secondary">+ Bulk-assign policies</a>
+        <a href="admin-generate-offer.html" class="btn btn-primary">+ New offer letter</a>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card"><div class="lab">Active</div><div class="v ok" id="ct-active">—</div></div>
+      <div class="stat-card"><div class="lab">On payroll</div><div class="v" id="ct-payroll">—</div></div>
+      <div class="stat-card"><div class="lab">On leave</div><div class="v warn" id="ct-leave">—</div></div>
+      <div class="stat-card"><div class="lab">Open write-ups</div><div class="v warn" id="ct-writeups">—</div></div>
+      <div class="stat-card"><div class="lab">Pending reviews</div><div class="v" id="ct-reviews">—</div></div>
+      <div class="stat-card"><div class="lab">Outstanding property</div><div class="v danger" id="ct-outstanding">—</div></div>
+    </div>
+
+    <div class="filter-row">
+      <button class="chip on" data-f="active">Active</button>
+      <button class="chip" data-f="on_leave">On leave</button>
+      <button class="chip" data-f="suspended">Suspended</button>
+      <button class="chip" data-f="terminated">Terminated</button>
+      <button class="chip" data-f="all">All</button>
+      <input class="search-input" type="search" id="searchInput" placeholder="Search name or email…" />
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <h2>Staff roster</h2>
+        <span id="staffCount" style="font-size:12px;color:var(--muted)">—</span>
+      </div>
+      <div id="staffWrap">
+        <div class="empty"><div class="ic">⏳</div>Loading staff…</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+let currentFilter = 'active';
+let allStaff = [];
+let searchQ = '';
+
+function $(id){ return document.getElementById(id); }
+function toast(msg, kind){ const t=$('toast'); t.textContent=msg; t.className='toast on '+(kind||''); setTimeout(()=>t.className='toast',2400); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function initials(name, email){ const src = name || email || 'L'; return src.split(/\s+/).filter(Boolean).slice(0,2).map(s=>s[0]||'').join('').toUpperCase().slice(0,2); }
+function ymd(d){ if (!d) return '—'; try { return new Date(d).toLocaleDateString([], {year:'numeric',month:'short',day:'numeric'}); } catch(e){ return d; } }
+
+async function load(){
+  if (!window.LYMX || !window.LYMX.requireAuth) return;
+  const user = await window.LYMX.requireAuth();
+  if (!user) return;
+  const sb = window.LYMX.sb;
+
+  // Pull staff_profiles + staff_roles + auth.users via a stitched query
+  const [{ data: profiles }, { data: roles }] = await Promise.all([
+    sb.from('staff_profiles').select('user_id, hire_date, termination_date, employment_status, is_on_payroll, classification, title, department, clock_in_exempt').limit(500),
+    sb.from('staff_roles').select('user_id, role, is_hr, is_cfo, is_compliance, is_accounting, is_admin_onsite, granted_at').limit(500)
+  ]);
+
+  // Index by user_id
+  const profileMap = {};
+  (profiles || []).forEach(p => { profileMap[p.user_id] = p; });
+  const roleMap = {};
+  (roles || []).forEach(r => { roleMap[r.user_id] = r; });
+
+  // Union of all known staff user_ids (from profiles or roles)
+  const userIds = new Set([
+    ...(profiles || []).map(p => p.user_id),
+    ...(roles || []).map(r => r.user_id)
+  ]);
+
+  // Pull email + display_name from auth.users via admin RPC — we don't have it;
+  // fall back to using user_id and showing it as initials. (A SECURITY DEFINER
+  // view `v_admin_user_emails` would be the right long-term fix.)
+  // For now, try to get email from auth via a helper.
+  let userInfo = {};
+  try {
+    const { data: emails } = await sb.rpc('admin_list_user_emails');
+    if (emails) emails.forEach(e => { userInfo[e.user_id] = e; });
+  } catch (e) { /* helper may not exist yet */ }
+
+  allStaff = Array.from(userIds).map(uid => {
+    const p = profileMap[uid] || {};
+    const r = roleMap[uid] || {};
+    const u = userInfo[uid] || {};
+    return {
+      user_id: uid,
+      email: u.email,
+      full_name: u.full_name,
+      hire_date: p.hire_date,
+      termination_date: p.termination_date,
+      employment_status: p.employment_status || 'active',
+      is_on_payroll: !!p.is_on_payroll,
+      classification: p.classification,
+      title: p.title,
+      department: p.department,
+      clock_in_exempt: !!p.clock_in_exempt,
+      role: r.role || 'staff',
+      is_hr: !!r.is_hr,
+      is_cfo: !!r.is_cfo,
+      is_compliance: !!r.is_compliance,
+      is_accounting: !!r.is_accounting,
+      is_admin_onsite: !!r.is_admin_onsite,
+      granted_at: r.granted_at
+    };
+  });
+
+  // Counts
+  const onPay = allStaff.filter(s => s.is_on_payroll).length;
+  const onLeave = allStaff.filter(s => s.employment_status === 'on_leave').length;
+  const active = allStaff.filter(s => s.employment_status === 'active').length;
+  $('ct-active').textContent = active;
+  $('ct-payroll').textContent = onPay;
+  $('ct-leave').textContent = onLeave;
+
+  // Open write-ups + pending reviews + outstanding property counts
+  try {
+    const [{ count: wuC }, { count: prC }, { count: opC }] = await Promise.all([
+      sb.from('personnel_write_ups').select('id', { count: 'exact', head: true }).in('status', ['issued','acknowledged']),
+      sb.from('performance_reviews').select('id', { count: 'exact', head: true }).in('status', ['scheduled','self_pending','manager_pending']),
+      sb.from('outstanding_property_queue').select('id', { count: 'exact', head: true })
+    ]);
+    $('ct-writeups').textContent = wuC ?? 0;
+    $('ct-reviews').textContent = prC ?? 0;
+    $('ct-outstanding').textContent = opC ?? 0;
+  } catch (e) { /* tables may not exist yet — skip */ }
+
+  render();
+}
+
+function render(){
+  let items = allStaff.slice();
+  if (currentFilter !== 'all') items = items.filter(s => s.employment_status === currentFilter);
+  if (searchQ) {
+    const q = searchQ.toLowerCase();
+    items = items.filter(s =>
+      (s.email||'').toLowerCase().includes(q) ||
+      (s.full_name||'').toLowerCase().includes(q) ||
+      (s.title||'').toLowerCase().includes(q) ||
+      (s.role||'').toLowerCase().includes(q)
+    );
+  }
+
+  $('staffCount').textContent = items.length + ' staff';
+
+  if (!items.length) {
+    $('staffWrap').innerHTML = '<div class="empty"><div class="ic">📭</div>No staff match this filter. Use "+ New offer letter" to start hiring.</div>';
+    return;
+  }
+
+  // Sort: active first, then by hire_date desc
+  items.sort((a,b) => {
+    if ((a.employment_status === 'active') !== (b.employment_status === 'active')) {
+      return a.employment_status === 'active' ? -1 : 1;
+    }
+    return (b.hire_date || '').localeCompare(a.hire_date || '');
+  });
+
+  const html = '<table class="tbl"><thead><tr>' +
+    '<th>Name</th>' +
+    '<th class="col-hide-sm">Title / Role</th>' +
+    '<th class="col-hide-sm">Hired</th>' +
+    '<th>Status</th>' +
+    '<th>Actions</th>' +
+    '</tr></thead><tbody>' +
+    items.map(s => {
+      const flags = [];
+      if (s.role === 'admin') flags.push('<span class="role-flag is_admin">Admin</span>');
+      if (s.is_cfo) flags.push('<span class="role-flag is_cfo">CFO</span>');
+      if (s.is_hr) flags.push('<span class="role-flag is_hr">HR</span>');
+      if (s.is_compliance) flags.push('<span class="role-flag">Compliance</span>');
+      if (s.is_accounting) flags.push('<span class="role-flag">Accounting</span>');
+      if (s.is_admin_onsite) flags.push('<span class="role-flag">Onsite</span>');
+      const avatarClass = s.employment_status === 'terminated' ? 'avatar terminated' :
+                          (s.role === 'admin' || s.is_cfo) ? 'avatar admin' : 'avatar';
+      return '<tr>' +
+        '<td><div class="name-cell">' +
+          '<div class="' + avatarClass + '">' + esc(initials(s.full_name, s.email)) + '</div>' +
+          '<div>' +
+            '<div class="name">' + esc(s.full_name || s.email || s.user_id.slice(0,8)) + '</div>' +
+            '<div class="email">' + esc(s.email || '—') + '</div>' +
+          '</div>' +
+        '</div></td>' +
+        '<td class="col-hide-sm"><div style="font-weight:600;font-size:13px">' + esc(s.title || s.role || '—') + '</div>' +
+          (flags.length ? '<div class="role-flags" style="margin-top:4px">' + flags.join('') + '</div>' : '') +
+        '</td>' +
+        '<td class="col-hide-sm"><div>' + ymd(s.hire_date) + '</div>' +
+          (s.termination_date ? '<div style="font-size:11.5px;color:var(--danger);margin-top:2px">Left ' + ymd(s.termination_date) + '</div>' : '') +
+        '</td>' +
+        '<td><span class="pill ' + esc(s.employment_status) + '">' + esc(s.employment_status.replace(/_/g, ' ')) + '</span></td>' +
+        '<td><div class="actions-cell">' +
+          '<a class="btn btn-primary" href="admin-personnel-file.html?id=' + esc(s.user_id) + '">Open file →</a>' +
+        '</div></td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table>';
+
+  $('staffWrap').innerHTML = html;
+}
+
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+  document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+  c.classList.add('on');
+  currentFilter = c.dataset.f;
+  render();
+}));
+
+$('searchInput').addEventListener('input', (e) => {
+  searchQ = e.target.value.trim();
+  render();
+});
+
+load();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

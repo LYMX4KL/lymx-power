@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — per-staff personnel file." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Personnel file · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--maxw:1240px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+
+  .page{padding:24px 0 64px}
+
+  /* Header card — staff summary */
+  .hdr-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:16px;display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+  .hdr-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:26px;flex-shrink:0}
+  .hdr-avatar.admin{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  .hdr-avatar.terminated{background:linear-gradient(135deg,#9aa3b0,#5b6472);opacity:.7}
+  .hdr-info{flex:1;min-width:240px}
+  .hdr-info .name{font-size:24px;font-weight:800;letter-spacing:-.01em;margin:0}
+  .hdr-info .meta{color:var(--muted);font-size:14px;margin-top:4px}
+  .hdr-info .meta strong{color:var(--ink-2)}
+  .hdr-stats{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:13px}
+  .hdr-stats .item{color:var(--muted)}
+  .hdr-stats .item strong{color:var(--ink);font-weight:700}
+  .hdr-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+  .pill{display:inline-block;padding:3px 11px;border-radius:999px;font-size:11.5px;font-weight:700;text-transform:capitalize}
+  .pill.active{background:rgba(19,162,107,.12);color:var(--ok)}
+  .pill.on_leave{background:#fff3d4;color:#92400e}
+  .pill.suspended{background:#fdecec;color:#9b1c1c}
+  .pill.terminated{background:#eef0f4;color:#6b7280}
+  .pill.rehire_eligible{background:#eef5ff;color:var(--accent-2)}
+
+  /* Tabs */
+  .tab-bar{background:#fff;border:1px solid var(--line);border-radius:11px;padding:6px;display:flex;gap:4px;margin-bottom:16px;overflow-x:auto}
+  .tab{padding:9px 16px;border-radius:8px;font-weight:700;font-size:13.5px;color:var(--muted);cursor:pointer;border:0;background:transparent;font-family:inherit;white-space:nowrap}
+  .tab.on{background:var(--ink);color:#fff}
+  .tab .ct{margin-left:6px;font-size:11px;background:rgba(255,255,255,.18);padding:1px 6px;border-radius:999px;font-weight:800}
+  .tab:not(.on) .ct{background:#eef0f4;color:var(--muted)}
+
+  /* Tab panels */
+  .panel{display:none;background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px}
+  .panel.on{display:block}
+  .panel h2{margin:0 0 14px;font-size:18px;font-weight:800}
+  .panel .sub{color:var(--muted);font-size:14px;margin:-8px 0 16px}
+
+  /* Common controls */
+  .btn{padding:7px 14px;border-radius:8px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-secondary:hover{background:var(--bg-soft)}
+  .btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+  .btn-warn{background:var(--warn);color:#fff}
+  .btn-ok{background:var(--ok);color:#fff}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+
+  /* Data lists */
+  .list{display:flex;flex-direction:column;gap:8px}
+  .list-row{padding:12px 14px;border:1px solid var(--line);border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fff}
+  .list-row .body{flex:1;min-width:0}
+  .list-row .title{font-weight:700;font-size:14px}
+  .list-row .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .list-row .meta{color:var(--muted);font-size:12px}
+  .list-row.warn{border-color:#f5d5a0;background:#fff8ee}
+  .list-row.danger{border-color:#f5b7b7;background:#fdf3f3}
+  .list-row.ok{border-color:#a8d8c0;background:#f0faf5}
+
+  .badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:#eef0f4}
+  .badge.danger{background:#fdecec;color:#9b1c1c}
+  .badge.warn{background:#fff3d4;color:#92400e}
+  .badge.ok{background:#e6f5ee;color:#0a6e44}
+  .badge.info{background:#eef5ff;color:var(--accent-2)}
+
+  /* Stepper for termination tab */
+  .stepper{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+  .step{padding:6px 11px;border-radius:7px;font-size:11.5px;font-weight:700;background:#eef0f4;color:var(--muted)}
+  .step.done{background:rgba(19,162,107,.16);color:#0a6e44}
+  .step.current{background:var(--ink);color:#fff}
+
+  /* Empty states */
+  .empty{padding:36px 18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
+  .empty .ic{font-size:40px;margin-bottom:8px}
+
+  /* Form */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:680px){.form-grid{grid-template-columns:1fr}}
+  .form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+  .form-group label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .form-group input,.form-group select,.form-group textarea{padding:9px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-family:inherit;width:100%}
+  .form-group textarea{min-height:80px;resize:vertical}
+  .form-group .hint{font-size:11.5px;color:var(--muted)}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:99;opacity:0;transition:opacity .2s}
+  .toast.on{opacity:1}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--danger)}
+</style>
+</head>
+<body data-role-required="admin">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="admin-dashboard.html">LYMX <span class="role-tag">Admin</span></a>
+    <a href="admin-personnel-records.html" style="font-size:13px;color:var(--muted)">← All personnel</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="hdr-card" id="hdrCard">
+      <div class="hdr-avatar" id="hdrAvatar">·</div>
+      <div class="hdr-info">
+        <div class="name" id="hdrName">Loading…</div>
+        <div class="meta" id="hdrMeta">—</div>
+        <div class="hdr-stats" id="hdrStats"></div>
+      </div>
+      <div class="hdr-actions" id="hdrActions"></div>
+    </div>
+
+    <div class="tab-bar" id="tabBar">
+      <button class="tab on" data-t="overview">Overview</button>
+      <button class="tab" data-t="onboarding">Offer & Onboarding <span class="ct" id="ct-onboarding">—</span></button>
+      <button class="tab" data-t="policies">Policies <span class="ct" id="ct-policies">—</span></button>
+      <button class="tab" data-t="equipment">Equipment <span class="ct" id="ct-equipment">—</span></button>
+      <button class="tab" data-t="writeups">Write-ups <span class="ct" id="ct-writeups">—</span></button>
+      <button class="tab" data-t="reviews">Reviews <span class="ct" id="ct-reviews">—</span></button>
+      <button class="tab" data-t="termination">Termination</button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="panel on" data-p="overview">
+      <h2>Overview</h2>
+      <div id="overviewBody">
+        <div class="empty"><div class="ic">⏳</div>Loading…</div>
+      </div>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div class="panel" data-p="onboarding">
+      <h2>Offer & Onboarding</h2>
+      <p class="sub">Signed offer letter (if any) + onboarding tasks. Mark complete on behalf of the staff if needed.</p>
+      <div id="onboardingBody"><div class="empty">Loading…</div></div>
+    </div>
+
+    <!-- POLICIES -->
+    <div class="panel" data-p="policies">
+      <h2>Policies</h2>
+      <p class="sub">Every policy assigned to this staff member + their sign / acknowledge state.</p>
+      <div style="margin-bottom:14px"><a class="btn btn-secondary" href="admin-bulk-policy-assign.html">+ Bulk-assign policies</a></div>
+      <div id="policiesBody"><div class="empty">Loading…</div></div>
+    </div>
+
+    <!-- EQUIPMENT -->
+    <div class="panel" data-p="equipment">
+      <h2>Equipment</h2>
+      <p class="sub">Keys, laptops, access cards, lockbox combos — anything physical the company gave them.</p>
+      <button class="btn btn-primary" id="addEquipBtn" style="margin-bottom:14px">+ Issue item</button>
+      <div id="equipmentBody"><div class="empty">Loading…</div></div>
+    </div>
+
+    <!-- WRITE-UPS -->
+    <div class="panel" data-p="writeups">
+      <h2>Write-ups</h2>
+      <p class="sub">Defensible documentation. Open and historical. 14-day response window applies to acknowledged write-ups.</p>
+      <a class="btn btn-warn" href="admin-issue-write-up.html?profile_id=" id="newWriteUpBtn" style="margin-bottom:14px">+ Issue write-up</a>
+      <div id="writeupsBody" style="margin-top:14px"><div class="empty">Loading…</div></div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="panel" data-p="reviews">
+      <h2>Performance reviews</h2>
+      <p class="sub">Probation (30 / 60 / 90 day), six-month, annual, quarterly, ad-hoc. 3-mode flow: self → manager → sign.</p>
+      <button class="btn btn-primary" id="scheduleReviewBtn" style="margin-bottom:14px">+ Schedule review</button>
+      <div id="reviewsBody"><div class="empty">Loading…</div></div>
+    </div>
+
+    <!-- TERMINATION -->
+    <div class="panel" data-p="termination">
+      <h2>Termination</h2>
+      <p class="sub">7-stage workflow. NV NRS 608.020 (3-day involuntary) / NRS 608.030 (7-day voluntary) timing baked in.</p>
+      <div id="terminationBody"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const profileId = params.get('id');
+let staff = null;     // staff_profiles row
+let roleRow = null;   // staff_roles row
+let userInfo = null;  // { email, full_name }
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toast(msg, kind){ const t=$('toast'); t.textContent=msg; t.className='toast on '+(kind||''); setTimeout(()=>t.className='toast',2400); }
+function ymd(d){ if (!d) return '—'; try { return new Date(d).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}); } catch(e){ return d; } }
+function ago(d){ if (!d) return ''; const ms = Date.now() - new Date(d).getTime(); const days = Math.floor(ms/86400000); if (days < 1) return 'today'; if (days === 1) return 'yesterday'; if (days < 30) return days + ' days ago'; const mo = Math.floor(days/30); return mo + 'mo ago'; }
+function initials(name, email){ const src = name || email || 'L'; return src.split(/\s+/).filter(Boolean).slice(0,2).map(s=>s[0]||'').join('').toUpperCase().slice(0,2); }
+
+if (!profileId) { document.body.innerHTML = '<div style="padding:40px;text-align:center;font-family:system-ui">Missing ?id= param. Go back to <a href="admin-personnel-records.html">Personnel Records</a>.</div>'; }
+
+async function load(){
+  if (!profileId || !window.LYMX || !window.LYMX.requireAuth) return;
+  const user = await window.LYMX.requireAuth();
+  if (!user) return;
+  const sb = window.LYMX.sb;
+
+  // Pull header
+  const [{ data: p }, { data: r }] = await Promise.all([
+    sb.from('staff_profiles').select('*').eq('user_id', profileId).maybeSingle(),
+    sb.from('staff_roles').select('*').eq('user_id', profileId).maybeSingle()
+  ]);
+  staff = p; roleRow = r;
+
+  // Try to get email + display_name
+  try {
+    const { data: emails } = await sb.rpc('admin_list_user_emails');
+    if (emails) {
+      const found = emails.find(e => e.user_id === profileId);
+      if (found) userInfo = found;
+    }
+  } catch (e) {}
+
+  renderHeader();
+  loadOverview();
+  loadOnboarding();
+  loadPolicies();
+  loadEquipment();
+  loadWriteUps();
+  loadReviews();
+  loadTermination();
+
+  // Wire write-up button
+  $('newWriteUpBtn').href = 'admin-issue-write-up.html?profile_id=' + encodeURIComponent(profileId);
+}
+
+function renderHeader(){
+  const name = userInfo?.full_name || userInfo?.email || profileId.slice(0,8);
+  const status = staff?.employment_status || 'active';
+  $('hdrName').textContent = name;
+  $('hdrAvatar').textContent = initials(userInfo?.full_name, userInfo?.email);
+  $('hdrAvatar').className = 'hdr-avatar' + (status === 'terminated' ? ' terminated' : (roleRow?.role === 'admin' || roleRow?.is_cfo) ? ' admin' : '');
+  $('hdrMeta').innerHTML =
+    '<strong>' + esc(staff?.title || roleRow?.role || 'Staff') + '</strong>' +
+    (staff?.department ? ' · ' + esc(staff.department) : '') +
+    (userInfo?.email ? ' · ' + esc(userInfo.email) : '');
+
+  const stats = [];
+  if (staff?.hire_date) stats.push('<div class="item">Hired <strong>' + ymd(staff.hire_date) + '</strong></div>');
+  if (staff?.is_on_payroll) stats.push('<div class="item">Payroll ✓</div>'); else stats.push('<div class="item">Not on payroll</div>');
+  if (staff?.clock_in_exempt) stats.push('<div class="item">Clock-in exempt</div>');
+  if (staff?.classification) stats.push('<div class="item">' + esc(staff.classification.replace(/_/g,' ')) + '</div>');
+  stats.push('<div class="item"><span class="pill ' + esc(status) + '">' + esc(status.replace(/_/g,' ')) + '</span></div>');
+  $('hdrStats').innerHTML = stats.join('');
+
+  const actions = [];
+  if (status === 'terminated') {
+    actions.push('<button class="btn btn-ok" id="reactivateBtn">↺ Reactivate & unban</button>');
+  } else {
+    actions.push('<a class="btn btn-warn" href="admin-issue-write-up.html?profile_id=' + encodeURIComponent(profileId) + '">⚠ Issue write-up</a>');
+    actions.push('<button class="btn btn-secondary" id="manageBtn">⚙ Manage</button>');
+  }
+  $('hdrActions').innerHTML = actions.join('');
+
+  // Wire reactivate
+  const ra = $('reactivateBtn');
+  if (ra) ra.addEventListener('click', async () => {
+    const reason = prompt('Reactivation reason?');
+    if (!reason) return;
+    const sb = window.LYMX.sb;
+    const { data: term } = await sb.from('termination_records').select('id').eq('profile_id', profileId).order('created_at', { ascending: false }).limit(1).maybeSingle();
+    if (!term) { toast('No termination record found', 'err'); return; }
+    const { error } = await sb.rpc('reactivate_staff', { p_termination_id: term.id, p_reason: reason });
+    if (error) { toast(error.message, 'err'); return; }
+    toast('Reactivated', 'ok');
+    setTimeout(() => location.reload(), 800);
+  });
+}
+
+// ---- Overview ------------------------------------------------------------
+async function loadOverview(){
+  const sb = window.LYMX.sb;
+  const [{ count: openWu }, { count: pendingRv }, { count: openTasks }, { count: outProp }] = await Promise.all([
+    sb.from('personnel_write_ups').select('id', { count: 'exact', head: true }).eq('profile_id', profileId).in('status', ['issued','acknowledged']),
+    sb.from('performance_reviews').select('id', { count: 'exact', head: true }).eq('profile_id', profileId).in('status', ['scheduled','self_pending','manager_pending']),
+    sb.from('onboarding_tasks').select('id', { count: 'exact', head: true }).eq('profile_id', profileId).eq('status', 'pending'),
+    sb.from('staff_property_items').select('id', { count: 'exact', head: true }).eq('profile_id', profileId).eq('disposition', 'outstanding')
+  ]);
+
+  const rows = [
+    ['Open write-ups',         openWu, openWu > 0 ? 'warn' : 'ok'],
+    ['Pending reviews',        pendingRv, pendingRv > 0 ? 'info' : 'ok'],
+    ['Open onboarding tasks',  openTasks, openTasks > 0 ? 'info' : 'ok'],
+    ['Outstanding property',   outProp, outProp > 0 ? 'danger' : 'ok']
+  ];
+  $('overviewBody').innerHTML =
+    '<div class="list">' + rows.map(([lab, ct, cls]) =>
+      '<div class="list-row ' + (ct > 0 ? cls : '') + '">' +
+        '<div class="body"><div class="title">' + esc(lab) + '</div></div>' +
+        '<div class="badge ' + (ct > 0 ? cls : 'ok') + '">' + (ct ?? 0) + '</div>' +
+      '</div>'
+    ).join('') + '</div>';
+}
+
+// ---- Onboarding ----------------------------------------------------------
+async function loadOnboarding(){
+  const sb = window.LYMX.sb;
+  const [{ data: offers }, { data: tasks }] = await Promise.all([
+    sb.from('offers').select('id, title, status, start_date, accepted_at, offer_letter_path').eq('applicant_profile_id', profileId).order('created_at', { ascending: false }),
+    sb.from('onboarding_tasks').select('id, title, category, status, due_date, completed_at').eq('profile_id', profileId).order('due_date', { ascending: true, nullsLast: true })
+  ]);
+
+  $('ct-onboarding').textContent = (tasks || []).filter(t => t.status === 'pending').length;
+
+  let html = '';
+  if (offers && offers.length) {
+    html += '<h3 style="margin:0 0 8px;font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Offer letter</h3>';
+    html += '<div class="list" style="margin-bottom:18px">' + offers.map(o =>
+      '<div class="list-row ' + (o.status === 'accepted' ? 'ok' : '') + '">' +
+        '<div class="body"><div class="title">' + esc(o.title) + ' · ' + esc(o.status) + '</div>' +
+        '<div class="sub">Start ' + ymd(o.start_date) + (o.accepted_at ? ' · Accepted ' + ymd(o.accepted_at) : '') + '</div></div>' +
+      '</div>').join('') + '</div>';
+  }
+
+  html += '<h3 style="margin:0 0 8px;font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Onboarding tasks</h3>';
+  if (!tasks || !tasks.length) {
+    html += '<div class="empty"><div class="ic">✓</div>No onboarding tasks. Either none assigned yet or all complete.</div>';
+  } else {
+    html += '<div class="list">' + tasks.map(t =>
+      '<div class="list-row ' + (t.status === 'completed' ? 'ok' : (t.status === 'overdue' ? 'danger' : '')) + '">' +
+        '<div class="body">' +
+          '<div class="title">' + esc(t.title) + '</div>' +
+          '<div class="sub">' + esc(t.category) + ' · ' + (t.due_date ? 'Due ' + ymd(t.due_date) : 'No due date') + '</div>' +
+        '</div>' +
+        '<div class="badge ' + (t.status === 'completed' ? 'ok' : t.status === 'overdue' ? 'danger' : 'info') + '">' + esc(t.status) + '</div>' +
+        (t.status !== 'completed'
+          ? ' <button class="btn btn-secondary" data-task-id="' + esc(t.id) + '" data-act="complete">Mark complete</button>'
+          : '') +
+      '</div>').join('') + '</div>';
+  }
+
+  $('onboardingBody').innerHTML = html;
+  document.querySelectorAll('[data-act="complete"]').forEach(b => b.addEventListener('click', async () => {
+    const sb = window.LYMX.sb;
+    const { error } = await sb.from('onboarding_tasks').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', b.dataset.taskId);
+    if (error) toast(error.message, 'err'); else { toast('Marked complete', 'ok'); loadOnboarding(); }
+  }));
+}
+
+// ---- Policies ------------------------------------------------------------
+async function loadPolicies(){
+  const sb = window.LYMX.sb;
+  const { data: assigns } = await sb.from('policy_assignments')
+    .select('id, policy_title, policy_version, policy_sign_method, status, assigned_at, acknowledged_at, signed_at')
+    .eq('profile_id', profileId)
+    .order('assigned_at', { ascending: false });
+
+  $('ct-policies').textContent = (assigns || []).filter(a => a.status === 'assigned' || a.status === 'sent').length;
+
+  if (!assigns || !assigns.length) {
+    $('policiesBody').innerHTML = '<div class="empty"><div class="ic">📄</div>No policies assigned yet. Use Bulk-assign to send the standard set.</div>';
+    return;
+  }
+  $('policiesBody').innerHTML = '<div class="list">' + assigns.map(a => {
+    const done = a.status === 'acknowledged' || a.status === 'signed';
+    const cls = done ? 'ok' : (a.status === 'expired' || a.status === 'revoked') ? 'danger' : 'warn';
+    return '<div class="list-row ' + cls + '">' +
+      '<div class="body">' +
+        '<div class="title">' + esc(a.policy_title) + ' <span class="badge">v' + esc(a.policy_version) + '</span></div>' +
+        '<div class="sub">' + esc(a.policy_sign_method.replace('_', ' ')) + ' · assigned ' + ago(a.assigned_at) + '</div>' +
+      '</div>' +
+      '<div class="badge ' + (done ? 'ok' : 'warn') + '">' + esc(a.status) + '</div>' +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+// ---- Equipment -----------------------------------------------------------
+async function loadEquipment(){
+  const sb = window.LYMX.sb;
+  const { data: items } = await sb.from('staff_property_items')
+    .select('id, label, category, serial_or_id, estimated_value_usd, is_required_return, disposition, issued_at, returned_at, returned_condition')
+    .eq('profile_id', profileId)
+    .order('issued_at', { ascending: false });
+
+  $('ct-equipment').textContent = (items || []).filter(i => i.disposition === 'in_possession').length;
+
+  if (!items || !items.length) {
+    $('equipmentBody').innerHTML = '<div class="empty"><div class="ic">🔑</div>No equipment issued. Click "+ Issue item" to start.</div>';
+    return;
+  }
+  $('equipmentBody').innerHTML = '<div class="list">' + items.map(i => {
+    const cls = i.disposition === 'outstanding' ? 'danger' :
+                i.disposition === 'returned' ? 'ok' :
+                i.disposition === 'written_off' ? '' : '';
+    return '<div class="list-row ' + cls + '">' +
+      '<div class="body">' +
+        '<div class="title">' + esc(i.label) +
+          (i.is_required_return ? ' <span class="badge warn">Required return</span>' : ' <span class="badge">Keep</span>') +
+        '</div>' +
+        '<div class="sub">' + esc(i.category) +
+          (i.serial_or_id ? ' · S/N ' + esc(i.serial_or_id) : '') +
+          (i.estimated_value_usd ? ' · $' + Number(i.estimated_value_usd).toFixed(2) : '') +
+        '</div>' +
+        '<div class="sub">Issued ' + ago(i.issued_at) +
+          (i.returned_at ? ' · Returned ' + ymd(i.returned_at) + ' (' + esc(i.returned_condition || '') + ')' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="badge ' + (i.disposition === 'outstanding' ? 'danger' : i.disposition === 'returned' ? 'ok' : 'info') + '">' +
+        esc(i.disposition.replace(/_/g,' ')) + '</div>' +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+$('addEquipBtn').addEventListener('click', async () => {
+  const label = prompt('What item? (e.g. "MacBook Air 13\\" 2024 Space Gray")');
+  if (!label) return;
+  const category = prompt('Category? (laptop / phone / tablet / keys / access_card / lockbox / headset / monitor / camera / printer / clothing / other)', 'laptop');
+  if (!category) return;
+  const serial = prompt('Serial / ID? (optional)') || null;
+  const valueStr = prompt('Estimated value USD? (optional)', '0');
+  const value = parseFloat(valueStr) || null;
+  const required = confirm('Is this a required-return item? (laptops, keys, etc. → OK. Branded swag → Cancel.)');
+  const sb = window.LYMX.sb;
+  const { error } = await sb.from('staff_property_items').insert({
+    profile_id: profileId,
+    label, category, serial_or_id: serial,
+    estimated_value_usd: value, is_required_return: required,
+    issued_by_id: (await sb.auth.getUser()).data.user.id
+  });
+  if (error) { toast(error.message, 'err'); return; }
+  toast('Issued', 'ok'); loadEquipment();
+});
+
+// ---- Write-ups -----------------------------------------------------------
+async function loadWriteUps(){
+  const sb = window.LYMX.sb;
+  const { data: wus } = await sb.from('personnel_write_ups')
+    .select('id, severity, category, incident_date, description, status, issued_at, issued_by_name, acknowledged_at, response_deadline, response_submitted_at, closed_at, rescinded_at')
+    .eq('profile_id', profileId)
+    .order('issued_at', { ascending: false });
+
+  $('ct-writeups').textContent = (wus || []).filter(w => w.status === 'issued' || w.status === 'acknowledged').length;
+
+  if (!wus || !wus.length) {
+    $('writeupsBody').innerHTML = '<div class="empty"><div class="ic">✅</div>No write-ups on file.</div>';
+    return;
+  }
+  $('writeupsBody').innerHTML = '<div class="list">' + wus.map(w => {
+    const open = w.status === 'issued' || w.status === 'acknowledged';
+    const sevBadge = w.severity === 'verbal_warning' ? 'badge warn' :
+                     w.severity === 'final_warning' || w.severity === 'pip' || w.severity === 'termination_notice' ? 'badge danger' :
+                     'badge warn';
+    return '<div class="list-row ' + (open ? 'warn' : '') + '">' +
+      '<div class="body">' +
+        '<div class="title">' + esc(w.severity.replace(/_/g,' ')) + ' · ' + ymd(w.incident_date) +
+          (w.category ? ' <span class="badge">' + esc(w.category) + '</span>' : '') +
+        '</div>' +
+        '<div class="sub">' + esc((w.description || '').slice(0, 120)) + (w.description && w.description.length > 120 ? '…' : '') + '</div>' +
+        '<div class="sub">Issued by ' + esc(w.issued_by_name) + ' · ' + ago(w.issued_at) + '</div>' +
+      '</div>' +
+      '<div class="' + sevBadge + '">' + esc(w.status.replace(/_/g,' ')) + '</div>' +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+// ---- Reviews -------------------------------------------------------------
+async function loadReviews(){
+  const sb = window.LYMX.sb;
+  const { data: rs } = await sb.from('performance_reviews')
+    .select('id, period, scheduled_for, status, rating_overall, self_submitted_at, manager_submitted_at, acknowledged_at')
+    .eq('profile_id', profileId)
+    .order('scheduled_for', { ascending: false });
+
+  $('ct-reviews').textContent = (rs || []).filter(r => r.status === 'scheduled' || r.status === 'self_pending' || r.status === 'manager_pending').length;
+
+  if (!rs || !rs.length) {
+    $('reviewsBody').innerHTML = '<div class="empty"><div class="ic">⭐</div>No reviews scheduled. Click + Schedule review.</div>';
+    return;
+  }
+  $('reviewsBody').innerHTML = '<div class="list">' + rs.map(r =>
+    '<div class="list-row ' + (r.status === 'signed' ? 'ok' : '') + '">' +
+      '<div class="body">' +
+        '<div class="title">' + esc(r.period.replace(/_/g,' ')) + ' · ' + ymd(r.scheduled_for) + '</div>' +
+        '<div class="sub">' + (r.rating_overall ? '★'.repeat(r.rating_overall) + ' overall · ' : '') + esc(r.status.replace(/_/g,' ')) + '</div>' +
+      '</div>' +
+      '<a class="btn btn-secondary" href="admin-review.html?id=' + esc(r.id) + '">Open</a>' +
+    '</div>'
+  ).join('') + '</div>';
+}
+
+$('scheduleReviewBtn').addEventListener('click', async () => {
+  const period = prompt('Period? (probation_30 / probation_60 / probation_90 / six_month / annual / quarterly / adhoc)', 'probation_30');
+  if (!period) return;
+  const start = prompt('Period start date? (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
+  const end   = prompt('Period end date? (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
+  const sched = prompt('Scheduled review date? (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
+  const sb = window.LYMX.sb;
+  const { error } = await sb.rpc('schedule_performance_review', {
+    p_profile_id: profileId, p_period: period,
+    p_period_start: start, p_period_end: end, p_scheduled_for: sched
+  });
+  if (error) { toast(error.message, 'err'); return; }
+  toast('Review scheduled', 'ok'); loadReviews();
+});
+
+// ---- Termination ---------------------------------------------------------
+async function loadTermination(){
+  const sb = window.LYMX.sb;
+  const { data: t } = await sb.from('termination_records')
+    .select('*')
+    .eq('profile_id', profileId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!t) {
+    $('terminationBody').innerHTML =
+      '<div class="empty"><div class="ic">🟢</div>No termination in progress.</div>' +
+      '<div style="margin-top:18px"><button class="btn btn-danger" id="initiateTermBtn">Initiate termination</button></div>';
+    $('initiateTermBtn').addEventListener('click', initiateTermination);
+    return;
+  }
+
+  const stages = ['initiated','notice_given','property_returned','access_revoked','final_pay_processed','exit_interview_done','closed'];
+  const currentIdx = stages.indexOf(t.stage);
+  const stepperHtml = stages.map((s, i) => {
+    const cls = i < currentIdx ? 'done' : i === currentIdx ? 'current' : '';
+    return '<span class="step ' + cls + '">' + (i+1) + '. ' + s.replace(/_/g,' ') + '</span>';
+  }).join('');
+
+  $('terminationBody').innerHTML =
+    '<div class="stepper">' + stepperHtml + '</div>' +
+    '<div class="list">' +
+      '<div class="list-row"><div class="body"><div class="title">' + esc(t.termination_type) + '</div><div class="sub">Last day worked ' + ymd(t.last_day_worked) + ' · NV final pay due by ' + ymd(t.nv_final_pay_due_by) + '</div></div></div>' +
+      '<div class="list-row"><div class="body"><div class="title">Reason</div><div class="sub">' + esc(t.reason) + '</div></div></div>' +
+    '</div>' +
+    '<div style="margin-top:18px"><a class="btn btn-primary" href="admin-termination.html?id=' + esc(t.id) + '">Open termination workflow →</a></div>';
+}
+
+async function initiateTermination(){
+  const type = prompt('Termination type? (voluntary / involuntary / layoff / mutual / end_of_contract / retirement / no_show)', 'voluntary');
+  if (!type) return;
+  const last = prompt('Last day worked? (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
+  if (!last) return;
+  const reason = prompt('Reason (short)?');
+  if (!reason) return;
+  const details = prompt('Detailed notes? (optional)');
+  const rehire = confirm('Eligible for rehire? (OK = yes)');
+  const sb = window.LYMX.sb;
+  const { error } = await sb.rpc('initiate_termination', {
+    p_profile_id: profileId,
+    p_termination_type: type,
+    p_last_day_worked: last,
+    p_reason: reason,
+    p_detailed_notes: details,
+    p_eligible_for_rehire: rehire
+  });
+  if (error) { toast(error.message, 'err'); return; }
+  toast('Termination initiated', 'ok');
+  setTimeout(() => location.reload(), 800);
+}
+
+// Tab switching
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  t.classList.add('on');
+  document.querySelector('.panel[data-p="' + t.dataset.t + '"]').classList.add('on');
+}));
+
+load();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — bulk-assign HR policies to N staff × M policies in one click." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Bulk-assign policies · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:1080px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .page{padding:28px 0 64px}
+  .page-head h1{margin:0;font-size:26px;font-weight:800}
+  .page-head p{margin:6px 0 18px;color:var(--muted);font-size:14px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:780px){.grid{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+  .card h2{margin:0 0 4px;font-size:16px;font-weight:800}
+  .card .sub{font-size:12.5px;color:var(--muted);margin-bottom:12px}
+  .list{display:flex;flex-direction:column;gap:6px;max-height:420px;overflow-y:auto;padding-right:4px}
+  .row{padding:10px 12px;border:1px solid var(--line);border-radius:9px;display:flex;align-items:center;gap:10px;cursor:pointer;background:#fff}
+  .row:hover{background:var(--bg-soft)}
+  .row.on{background:rgba(10,132,255,.06);border-color:var(--accent)}
+  .row input[type=checkbox]{width:18px;height:18px;cursor:pointer;flex-shrink:0}
+  .row .body{flex:1;min-width:0}
+  .row .title{font-weight:700;font-size:13.5px}
+  .row .sub-row{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .summary{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-top:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+  .summary .stats{font-size:14px;color:var(--ink-2)}
+  .summary .stats strong{font-size:18px;color:var(--ink)}
+  .btn{padding:9px 18px;border-radius:9px;font-weight:700;font-size:14px;border:0;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .filter-input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13.5px;margin-bottom:10px}
+  .status-msg{padding:11px 14px;border-radius:8px;font-size:14px;margin-top:14px}
+  .status-msg.ok{background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44}
+  .status-msg.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
+  .badge{display:inline-block;padding:1px 7px;border-radius:5px;font-size:10.5px;font-weight:800;color:var(--muted);background:#eef0f4;text-transform:uppercase;letter-spacing:.04em;margin-left:5px}
+  .empty{padding:24px;text-align:center;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body data-role-required="admin">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="admin-dashboard.html">LYMX <span class="role-tag">Admin</span></a>
+    <a href="admin-personnel-records.html" style="font-size:13px;color:var(--muted)">← Personnel records</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>📋 Bulk-assign policies</h1>
+      <p>Select policies on the left and staff on the right. Already-assigned cross-pairs are skipped automatically.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Policies <span id="ctPolicies" style="font-size:12px;color:var(--muted);font-weight:600">—</span></h2>
+        <div class="sub">Pick one or more active policies.</div>
+        <input class="filter-input" type="search" id="filterPolicy" placeholder="Filter policies…" />
+        <div class="list" id="policyList"><div class="empty">Loading…</div></div>
+      </div>
+
+      <div class="card">
+        <h2>Staff <span id="ctStaff" style="font-size:12px;color:var(--muted);font-weight:600">—</span></h2>
+        <div class="sub">Active staff only. Tick all that should receive these policies.</div>
+        <input class="filter-input" type="search" id="filterStaff" placeholder="Filter staff…" />
+        <div class="list" id="staffList"><div class="empty">Loading…</div></div>
+      </div>
+    </div>
+
+    <div class="summary">
+      <div class="stats">
+        Selected: <strong id="numPolicies">0</strong> policies × <strong id="numStaff">0</strong> staff
+        = <strong id="numPairs">0</strong> assignments to create
+      </div>
+      <button class="btn btn-primary" id="assignBtn" disabled>Assign →</button>
+    </div>
+
+    <div id="status"></div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+let policies = [];
+let staff = [];
+const selPolicies = new Set();
+const selStaff = new Set();
+let polFilter = '', staffFilter = '';
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function load(){
+  if (!window.LYMX || !window.LYMX.requireAuth) return;
+  const user = await window.LYMX.requireAuth();
+  if (!user) return;
+  const sb = window.LYMX.sb;
+
+  const [{ data: pols }, { data: prof }, { data: emails }] = await Promise.all([
+    sb.from('policy_documents').select('id, code, title, version, sign_method, remote_only, role_specific').eq('active', true).order('title'),
+    sb.from('staff_profiles').select('user_id, employment_status, title').eq('employment_status','active'),
+    sb.rpc('admin_list_user_emails').then(r => ({ data: r.data || [] }))
+  ]);
+
+  policies = pols || [];
+  const userInfo = {};
+  (emails || []).forEach(e => userInfo[e.user_id] = e);
+  staff = (prof || []).map(p => ({
+    ...p,
+    email: userInfo[p.user_id]?.email,
+    full_name: userInfo[p.user_id]?.full_name
+  }));
+
+  $('ctPolicies').textContent = policies.length;
+  $('ctStaff').textContent = staff.length;
+  renderPolicies(); renderStaff();
+}
+
+function renderPolicies(){
+  let items = policies;
+  if (polFilter) items = items.filter(p => (p.title + ' ' + p.code).toLowerCase().includes(polFilter.toLowerCase()));
+  if (!items.length) { $('policyList').innerHTML = '<div class="empty">No policies match.</div>'; return; }
+  $('policyList').innerHTML = items.map(p =>
+    '<label class="row ' + (selPolicies.has(p.id) ? 'on' : '') + '">' +
+      '<input type="checkbox" data-pid="' + esc(p.id) + '" ' + (selPolicies.has(p.id) ? 'checked' : '') + ' />' +
+      '<div class="body"><div class="title">' + esc(p.title) + ' <span class="badge">v' + esc(p.version) + '</span> <span class="badge">' + esc(p.sign_method.replace('_',' ')) + '</span></div>' +
+        '<div class="sub-row">' + esc(p.code) + (p.role_specific ? ' · role: ' + esc(p.role_specific) : '') + (p.remote_only ? ' · remote only' : '') + '</div>' +
+      '</div>' +
+    '</label>'
+  ).join('');
+  document.querySelectorAll('[data-pid]').forEach(c => c.addEventListener('change', () => {
+    if (c.checked) selPolicies.add(c.dataset.pid); else selPolicies.delete(c.dataset.pid);
+    updateSummary(); renderPolicies();
+  }));
+}
+
+function renderStaff(){
+  let items = staff;
+  if (staffFilter) {
+    const q = staffFilter.toLowerCase();
+    items = items.filter(s => ((s.full_name||'') + ' ' + (s.email||'') + ' ' + (s.title||'')).toLowerCase().includes(q));
+  }
+  if (!items.length) { $('staffList').innerHTML = '<div class="empty">No active staff match.</div>'; return; }
+  $('staffList').innerHTML = items.map(s => {
+    const label = s.full_name || s.email || s.user_id.slice(0,8);
+    return '<label class="row ' + (selStaff.has(s.user_id) ? 'on' : '') + '">' +
+      '<input type="checkbox" data-sid="' + esc(s.user_id) + '" ' + (selStaff.has(s.user_id) ? 'checked' : '') + ' />' +
+      '<div class="body"><div class="title">' + esc(label) + '</div>' +
+        '<div class="sub-row">' + esc(s.title || 'Staff') + (s.email ? ' · ' + esc(s.email) : '') + '</div>' +
+      '</div>' +
+    '</label>';
+  }).join('');
+  document.querySelectorAll('[data-sid]').forEach(c => c.addEventListener('change', () => {
+    if (c.checked) selStaff.add(c.dataset.sid); else selStaff.delete(c.dataset.sid);
+    updateSummary(); renderStaff();
+  }));
+}
+
+function updateSummary(){
+  $('numPolicies').textContent = selPolicies.size;
+  $('numStaff').textContent = selStaff.size;
+  $('numPairs').textContent = selPolicies.size * selStaff.size;
+  $('assignBtn').disabled = !(selPolicies.size > 0 && selStaff.size > 0);
+}
+
+$('filterPolicy').addEventListener('input', e => { polFilter = e.target.value; renderPolicies(); });
+$('filterStaff').addEventListener('input', e => { staffFilter = e.target.value; renderStaff(); });
+
+$('assignBtn').addEventListener('click', async () => {
+  $('assignBtn').disabled = true;
+  $('assignBtn').textContent = 'Assigning…';
+  const sb = window.LYMX.sb;
+  const { data, error } = await sb.rpc('bulk_assign_policies', {
+    p_policy_ids: Array.from(selPolicies),
+    p_profile_ids: Array.from(selStaff)
+  });
+  if (error) {
+    $('status').className = ''; $('status').innerHTML = '<div class="status-msg err">Failed: ' + esc(error.message) + '</div>';
+    $('assignBtn').disabled = false; $('assignBtn').textContent = 'Assign →';
+    return;
+  }
+  const r = (data && data[0]) || { created_count: 0, skipped_count: 0 };
+  $('status').innerHTML = '<div class="status-msg ok">' + r.created_count + ' new assignments created · ' + r.skipped_count + ' already existed (skipped).</div>';
+  selPolicies.clear(); selStaff.clear();
+  updateSummary(); renderPolicies(); renderStaff();
+  $('assignBtn').textContent = 'Assign →';
+});
+
+load();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

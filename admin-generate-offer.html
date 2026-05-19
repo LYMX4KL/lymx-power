@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — generate a job offer letter (pulls live benefits policy)." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Generate offer letter · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:880px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .page{padding:28px 0 64px}
+  .page-head h1{margin:0;font-size:24px;font-weight:800}
+  .page-head p{margin:6px 0 14px;color:var(--muted);font-size:14px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:14px}
+  .card h2{margin:0 0 12px;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .policy-banner{background:linear-gradient(135deg,#eef5ff,#dbeafe);border:1px solid #c5dffb;border-radius:10px;padding:12px 16px;color:#1d4ed8;font-size:13.5px;margin-bottom:14px}
+  .policy-banner.warn{background:#fff8e1;border-color:#fce696;color:#92400e}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+  .form-row.full{grid-template-columns:1fr}
+  @media(max-width:560px){.form-row{grid-template-columns:1fr}}
+  .field label{display:block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+  .field input,.field select,.field textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-family:inherit;background:#fff}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .btn{padding:10px 18px;border-radius:9px;font-weight:700;font-size:14px;border:0;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-outline{background:transparent;border:1px solid var(--line);color:var(--ink);padding:6px 12px;font-size:12.5px;border-radius:7px}
+  .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+  .status-msg{padding:10px 14px;border-radius:8px;font-size:13.5px;margin-top:12px}
+  .status-msg.ok{background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44}
+  .status-msg.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
+  .preview-frame{width:100%;min-height:560px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-top:8px}
+</style>
+</head>
+<body data-role-required="admin">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="admin-dashboard.html">LYMX <span class="role-tag">Admin</span></a>
+    <a href="admin-hiring.html" style="font-size:13px;color:var(--muted)">← Hiring pipeline</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>📄 Generate offer letter</h1>
+      <p>Pulls live values from the current Benefits Policy. Edit the policy → all future offers reflect the change.</p>
+    </div>
+
+    <div class="policy-banner" id="policyBanner">Loading current policy…</div>
+
+    <div class="card">
+      <h2>👤 Candidate &amp; position</h2>
+
+      <div class="form-row full">
+        <div class="field">
+          <label>Applicant (from hiring pipeline)</label>
+          <select id="applicationSelect"><option value="">— Loading applicants —</option></select>
+          <div class="hint">Pulls every application not yet hired. Pick one to auto-populate name/email.</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field"><label>Position title</label><input type="text" id="title" placeholder="e.g. Customer Support Specialist" /></div>
+        <div class="field">
+          <label>Target role (sets onboarding tasks)</label>
+          <select id="targetRole">
+            <option value="staff">Staff (generic)</option>
+            <option value="hr">HR</option>
+            <option value="cfo">CFO</option>
+            <option value="compliance">Compliance</option>
+            <option value="accounting">Accounting</option>
+            <option value="admin_onsite">Admin (onsite)</option>
+            <option value="engineering">Engineering</option>
+            <option value="marketing">Marketing</option>
+            <option value="support">Customer support</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Employment type</label>
+          <select id="employmentType">
+            <option value="full_time">Full-time</option>
+            <option value="part_time">Part-time</option>
+            <option value="contractor">Contractor (1099)</option>
+            <option value="intern">Intern</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Work mode</label>
+          <select id="workMode">
+            <option value="onsite">Onsite — Las Vegas, NV</option>
+            <option value="hybrid" selected>Hybrid</option>
+            <option value="remote">Remote</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Pay type</label>
+          <select id="payType">
+            <option value="salary">Salary</option>
+            <option value="hourly">Hourly</option>
+            <option value="commission_only">Commission only</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Pay period</label>
+          <select id="payPeriod">
+            <option value="year">per year</option>
+            <option value="month">per month</option>
+            <option value="biweek">bi-weekly</option>
+            <option value="week">per week</option>
+            <option value="hour">per hour</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Pay rate (USD)</label>
+          <input type="number" id="payRate" min="0" step="0.01" placeholder="50000" />
+          <div class="hint">For salary, enter the annual amount. For hourly, the hourly rate.</div>
+        </div>
+        <div class="field">
+          <label>Sign-on bonus (USD, optional)</label>
+          <input type="number" id="signOnBonus" min="0" step="0.01" placeholder="0" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field"><label>Start date</label><input type="date" id="startDate" /></div>
+        <div class="field"><label>Location</label><input type="text" id="location" value="Las Vegas, NV" /></div>
+      </div>
+
+      <div class="form-row">
+        <div class="field"><label>Manager / who signs the offer</label><input type="text" id="managerName" placeholder="Kenny Lin" /></div>
+        <div class="field"><label>Manager title</label><input type="text" id="managerTitle" value="Founder &amp; CEO" /></div>
+      </div>
+
+      <div class="form-row full">
+        <div class="field">
+          <label>Custom notes (markdown, optional)</label>
+          <textarea id="customNotes" rows="3" placeholder="e.g. 'Eligible for quarterly performance bonus tied to retention KPIs.'"></textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="admin-hiring.html" class="btn btn-secondary">Cancel</a>
+        <button class="btn btn-primary" id="genBtn">📄 Generate &amp; save offer</button>
+      </div>
+
+      <div id="status"></div>
+    </div>
+
+    <div class="card" id="previewCard" style="display:none">
+      <h2>📋 Preview <a id="downloadLink" href="#" target="_blank" rel="noopener" class="btn btn-outline" style="float:right">⬇ Open in new tab</a></h2>
+      <iframe class="preview-frame" id="previewFrame"></iframe>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+let currentPolicy = null;
+let me = null;
+
+async function init(){
+  if (!window.LYMX || !window.LYMX.requireAuth) return;
+  const user = await window.LYMX.requireAuth();
+  if (!user) return;
+  me = user;
+  const sb = window.LYMX.sb;
+
+  // Default manager name to current admin
+  const { data: meRow } = await sb.from('staff_profiles').select('full_name').eq('user_id', user.id).maybeSingle();
+  if (meRow?.full_name) $('managerName').value = meRow.full_name;
+  $('startDate').value = (() => { const d = new Date(); d.setDate(d.getDate()+14); return d.toISOString().slice(0,10); })();
+
+  // Pull current policy
+  const { data: policy } = await sb.from('benefits_policy').select('*').eq('is_current', true).maybeSingle();
+  currentPolicy = policy;
+  const banner = $('policyBanner');
+  if (policy) {
+    banner.classList.remove('warn');
+    banner.innerHTML = 'Using <strong>Benefits Policy v' + policy.version + '</strong> (effective ' +
+      new Date(policy.effective_from).toLocaleDateString() + '). Full-time PTO: ' +
+      policy.pto_days_full_time + ' days · Sick: ' + policy.sick_days_full_time + ' days · ' +
+      policy.eligibility_wait_days + '-day waiting period.';
+  } else {
+    banner.classList.add('warn');
+    banner.innerHTML = '⚠ No current benefits policy. Seed one via migration 055 or HR admin first.';
+  }
+
+  // Pull applications (most recent first, exclude hired/rejected for cleaner picking)
+  const { data: apps } = await sb.from('job_applications')
+    .select('id, first_name, last_name, email, status, submitted_at, job_id')
+    .in('status', ['new','phone_screen','interview','offer'])
+    .order('submitted_at', { ascending: false })
+    .limit(100);
+  const sel = $('applicationSelect');
+  sel.innerHTML = '<option value="">— Choose applicant —</option>' +
+    (apps || []).map(a =>
+      '<option value="' + esc(a.id) + '" data-fn="' + esc(a.first_name) + '" data-ln="' + esc(a.last_name) +
+      '" data-em="' + esc(a.email) + '" data-job="' + esc(a.job_id || '') + '">' +
+      esc((a.first_name||'') + ' ' + (a.last_name||'')) + ' · ' + esc(a.email) +
+      ' [' + esc(a.status) + ']</option>'
+    ).join('');
+
+  sel.addEventListener('change', async () => {
+    const opt = sel.selectedOptions[0];
+    if (!opt || !opt.value) return;
+    // If application linked to a job, pre-fill title + target_role from jobs row
+    const jobId = opt.dataset.job;
+    if (jobId) {
+      const { data: job } = await sb.from('jobs').select('title, target_role, work_mode, location, employment_type, pay_type, pay_rate_cents, pay_period').eq('id', jobId).maybeSingle();
+      if (job) {
+        if (job.title) $('title').value = job.title;
+        if (job.target_role) $('targetRole').value = job.target_role;
+        if (job.work_mode) $('workMode').value = job.work_mode;
+        if (job.location) $('location').value = job.location;
+        if (job.employment_type) $('employmentType').value = job.employment_type;
+        if (job.pay_type) $('payType').value = job.pay_type;
+        if (job.pay_period) $('payPeriod').value = job.pay_period;
+        if (job.pay_rate_cents) $('payRate').value = (Number(job.pay_rate_cents)/100).toFixed(2);
+      }
+    }
+  });
+}
+init();
+
+$('genBtn').addEventListener('click', async () => {
+  const status = $('status');
+  status.innerHTML = '';
+  const appId = $('applicationSelect').value;
+  const title = $('title').value.trim();
+  const targetRole = $('targetRole').value;
+  const employmentType = $('employmentType').value;
+  const workMode = $('workMode').value;
+  const payType = $('payType').value;
+  const payPeriod = $('payPeriod').value;
+  const payRate = parseFloat($('payRate').value);
+  const signOnBonus = parseFloat($('signOnBonus').value) || 0;
+  const startDate = $('startDate').value;
+  const location = $('location').value.trim() || 'Las Vegas, NV';
+  const managerName = $('managerName').value.trim();
+  const managerTitle = $('managerTitle').value.trim() || 'Founder & CEO';
+  const customNotes = $('customNotes').value.trim() || null;
+
+  if (!appId)         { status.innerHTML = '<div class="status-msg err">Pick an applicant first.</div>'; return; }
+  if (!title)         { status.innerHTML = '<div class="status-msg err">Position title required.</div>'; return; }
+  if (!payRate || payRate <= 0) { status.innerHTML = '<div class="status-msg err">Pay rate must be > 0.</div>'; return; }
+  if (!startDate)     { status.innerHTML = '<div class="status-msg err">Start date required.</div>'; return; }
+  if (!currentPolicy) { status.innerHTML = '<div class="status-msg err">No current benefits policy — seed one first.</div>'; return; }
+
+  $('genBtn').disabled = true; $('genBtn').textContent = 'Generating…';
+  status.innerHTML = '<div class="status-msg" style="background:#eef5ff;border:1px solid #c5dffb;color:#1d4ed8">Generating offer letter…</div>';
+
+  const sb = window.LYMX.sb;
+  const { data: { session } } = await sb.auth.getSession();
+  const supaUrl = (window.LYMX.SUPABASE_URL || '').replace(/\/$/, '');
+
+  const payload = {
+    application_id: appId,
+    title, target_role: targetRole,
+    employment_type: employmentType,
+    work_mode: workMode,
+    pay_type: payType,
+    pay_period: payPeriod,
+    pay_rate_cents: Math.round(payRate * 100),
+    sign_on_bonus_cents: Math.round(signOnBonus * 100),
+    start_date: startDate,
+    location,
+    manager_name: managerName,
+    manager_title: managerTitle,
+    custom_notes_md: customNotes
+  };
+
+  let result;
+  try {
+    const r = await fetch(supaUrl + '/functions/v1/generate-offer-letter', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+        'apikey': window.LYMX.SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify(payload)
+    });
+    result = await r.json();
+    if (!r.ok || !result.ok) throw new Error(result.error || ('HTTP ' + r.status));
+  } catch (e) {
+    status.innerHTML = '<div class="status-msg err">Failed: ' + esc(e.message || 'unknown') + '</div>';
+    $('genBtn').disabled = false; $('genBtn').textContent = '📄 Generate & save offer';
+    return;
+  }
+
+  status.innerHTML = '<div class="status-msg ok">✓ Offer saved (policy v' + result.policy_version + '). Offer id: ' + esc(result.offer_id || 'n/a') + '. Applicant sees it in their personnel file.</div>';
+  $('previewCard').style.display = '';
+  $('previewFrame').srcdoc = result.html;
+  if (result.signed_url) $('downloadLink').href = result.signed_url;
+  $('genBtn').disabled = false; $('genBtn').textContent = '📄 Generate & save offer';
+});
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

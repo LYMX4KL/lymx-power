@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — 7-stage termination workflow." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Termination workflow · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:1080px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .page{padding:24px 0 64px}
+  .page-head h1{margin:0;font-size:24px;font-weight:800}
+  .page-head p{margin:6px 0 14px;color:var(--muted);font-size:14px}
+
+  .nv-banner{background:linear-gradient(135deg,#eef5ff,#dbeafe);border:1px solid #c5dffb;border-radius:11px;padding:12px 16px;color:#1d4ed8;font-size:13px;margin-bottom:16px}
+
+  .stepper{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:11px}
+  .step{padding:6px 11px;border-radius:7px;font-size:11.5px;font-weight:700;background:#eef0f4;color:var(--muted)}
+  .step.done{background:rgba(19,162,107,.18);color:#0a6e44}
+  .step.current{background:var(--ink);color:#fff}
+
+  .section{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:14px}
+  .section h2{margin:0 0 6px;font-size:16px;font-weight:800}
+  .section .sub{font-size:12.5px;color:var(--muted);margin-bottom:12px}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.grid-2{grid-template-columns:1fr}}
+  .form-group{margin-bottom:12px}
+  .form-group label{display:block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+  .form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-family:inherit}
+  .form-group textarea{min-height:70px;resize:vertical}
+  .btn{padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;border:0;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-warn{background:var(--warn);color:#fff}
+  .btn-ok{background:var(--ok);color:#fff}
+  .item-row{padding:10px 12px;border:1px solid var(--line);border-radius:9px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px;background:#fff}
+  .item-row.returned{background:#f0faf5;border-color:#a8d8c0}
+  .item-row.outstanding{background:#fdf3f3;border-color:#f5b7b7}
+  .badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:800;color:var(--muted);background:#eef0f4;text-transform:uppercase;letter-spacing:.04em}
+</style>
+</head>
+<body data-role-required="admin">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="admin-dashboard.html">LYMX <span class="role-tag">Admin</span></a>
+    <a href="admin-personnel-records.html" style="font-size:13px;color:var(--muted)">← Personnel records</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>🚪 Termination workflow</h1>
+      <p id="termSubtitle">Loading…</p>
+    </div>
+
+    <div class="nv-banner">
+      <strong>NV NRS 608.020 / 608.030:</strong> Final pay must be issued by <span id="finalDueLabel">—</span>, regardless of whether all property has been returned.
+    </div>
+
+    <div class="stepper" id="stepper"></div>
+
+    <div class="section">
+      <h2>Property return</h2>
+      <p class="sub">Dynamic checklist from equipment issued to this staff. Mark each item as you collect it.</p>
+      <div id="propertyList"></div>
+    </div>
+
+    <div class="section">
+      <h2>Final pay</h2>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Gross amount (cents)</label>
+          <input type="number" id="payGrossCents" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Unused PTO hours paid</label>
+          <input type="number" id="payPtoHours" step="0.25" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Payment method</label>
+          <select id="payMethod">
+            <option value="">—</option>
+            <option value="direct_deposit">Direct deposit</option>
+            <option value="paper_check">Paper check</option>
+            <option value="wire">Wire</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <input type="text" id="payNotes" />
+        </div>
+      </div>
+      <button class="btn btn-primary" id="markPaidBtn">Mark final pay as paid</button>
+    </div>
+
+    <div class="section">
+      <h2>Exit interview</h2>
+      <p class="sub">Four standard questions + private conductor notes. Or skip with a reason.</p>
+      <div class="form-group">
+        <label>What went well during their time here?</label>
+        <textarea id="exitQ1"></textarea>
+      </div>
+      <div class="form-group">
+        <label>What could LYMX have done better?</label>
+        <textarea id="exitQ2"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Would they recommend LYMX as a workplace?</label>
+        <textarea id="exitQ3"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Anything else?</label>
+        <textarea id="exitQ4"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Conductor private notes</label>
+        <textarea id="exitNotes"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="saveExitBtn">Save + mark exit interview done</button>
+        <button class="btn btn-secondary" id="skipExitBtn">Skip exit interview…</button>
+      </div>
+    </div>
+
+    <div class="section" style="background:linear-gradient(135deg,#fff8ee,#fdf0d0);border-color:#f5d5a0">
+      <h2 style="color:#92400e">Close termination</h2>
+      <p class="sub" style="color:#92400e">Closes the workflow, flags any still-in-possession required items as outstanding, and deactivates the staff_profile. Reactivation is available if needed later.</p>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;margin-bottom:10px">
+        <input type="checkbox" id="deactivateChk" checked />
+        Also deactivate their account (recommended)
+      </label>
+      <button class="btn btn-danger" id="closeBtn">⊘ Close termination</button>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const termId = params.get('id');
+let term = null;
+let items = [];
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function ymd(d){ if (!d) return '—'; try { return new Date(d).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}); } catch(e){ return d; } }
+
+if (!termId) { document.body.innerHTML = '<div style="padding:40px;text-align:center;font-family:system-ui">Missing ?id= param.</div>'; }
+
+async function load(){
+  if (!termId || !window.LYMX || !window.LYMX.requireAuth) return;
+  const user = await window.LYMX.requireAuth();
+  if (!user) return;
+  const sb = window.LYMX.sb;
+  const [{ data: t }] = await Promise.all([sb.from('termination_records').select('*').eq('id', termId).maybeSingle()]);
+  if (!t) { document.body.innerHTML = '<div style="padding:40px;text-align:center">Termination not found.</div>'; return; }
+  term = t;
+
+  // staff name
+  let staffName = t.profile_id.slice(0,8);
+  try {
+    const { data: emails } = await sb.rpc('admin_list_user_emails');
+    const found = (emails || []).find(e => e.user_id === t.profile_id);
+    if (found) staffName = found.full_name || found.email || staffName;
+  } catch (e) {}
+
+  $('termSubtitle').textContent = staffName + ' · last day worked ' + ymd(t.last_day_worked) + ' · ' + t.termination_type;
+  $('finalDueLabel').textContent = ymd(t.nv_final_pay_due_by);
+  renderStepper();
+
+  // Pre-fill form
+  $('payGrossCents').value = t.final_pay_gross_amount_cents || '';
+  $('payPtoHours').value = t.unused_pto_hours_paid || '';
+  $('payMethod').value = t.final_pay_method || '';
+  $('payNotes').value = t.final_pay_notes || '';
+  $('exitQ1').value = t.exit_q1_what_went_well || '';
+  $('exitQ2').value = t.exit_q2_what_to_improve || '';
+  $('exitQ3').value = t.exit_q3_recommendation || '';
+  $('exitQ4').value = t.exit_q4_anything_else || '';
+  $('exitNotes').value = t.exit_conductor_notes || '';
+
+  // Load property
+  const { data: spi } = await sb.from('staff_property_items')
+    .select('*').eq('profile_id', t.profile_id).order('issued_at', { ascending: false });
+  items = spi || [];
+  renderProperty();
+}
+
+function renderStepper(){
+  const stages = ['initiated','notice_given','property_returned','access_revoked','final_pay_processed','exit_interview_done','closed'];
+  const cur = stages.indexOf(term.stage);
+  $('stepper').innerHTML = stages.map((s,i) => {
+    const cls = i < cur ? 'done' : i === cur ? 'current' : '';
+    return '<span class="step ' + cls + '">' + (i+1) + '. ' + s.replace(/_/g,' ') + '</span>';
+  }).join('');
+}
+
+function renderProperty(){
+  if (!items.length) { $('propertyList').innerHTML = '<div style="color:var(--muted);font-size:13px">No equipment issued.</div>'; return; }
+  $('propertyList').innerHTML = items.map(i => {
+    const cls = i.disposition === 'returned' ? 'returned' : i.disposition === 'outstanding' ? 'outstanding' : '';
+    return '<div class="item-row ' + cls + '">' +
+      '<div><strong>' + esc(i.label) + '</strong> ' +
+        (i.is_required_return ? '<span class="badge">Required</span>' : '<span class="badge">Keep</span>') +
+        '<div style="font-size:12px;color:var(--muted)">' + esc(i.category) +
+          (i.serial_or_id ? ' · ' + esc(i.serial_or_id) : '') +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:6px;align-items:center">' +
+        '<span class="badge">' + esc(i.disposition.replace(/_/g,' ')) + '</span>' +
+        (i.disposition === 'in_possession'
+          ? '<button class="btn btn-ok" data-id="' + esc(i.id) + '" data-act="return">Mark returned</button>'
+          : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+  document.querySelectorAll('[data-act="return"]').forEach(b => b.addEventListener('click', async () => {
+    const cond = prompt('Returned in what condition? (good / damaged / lost)', 'good');
+    if (!cond) return;
+    const sb = window.LYMX.sb;
+    const { error } = await sb.from('staff_property_items').update({
+      disposition: 'returned',
+      returned_at: new Date().toISOString(),
+      returned_condition: cond
+    }).eq('id', b.dataset.id);
+    if (error) { alert(error.message); return; }
+    load();
+  }));
+}
+
+$('markPaidBtn').addEventListener('click', async () => {
+  const sb = window.LYMX.sb;
+  const { error } = await sb.from('termination_records').update({
+    final_pay_gross_amount_cents: parseInt($('payGrossCents').value, 10) || null,
+    unused_pto_hours_paid: parseFloat($('payPtoHours').value) || null,
+    final_pay_method: $('payMethod').value || null,
+    final_pay_notes: $('payNotes').value || null,
+    final_pay_paid_at: new Date().toISOString(),
+    stage: 'final_pay_processed'
+  }).eq('id', termId);
+  if (error) { alert(error.message); return; }
+  alert('Final pay marked as paid.');
+  load();
+});
+
+$('saveExitBtn').addEventListener('click', async () => {
+  const sb = window.LYMX.sb;
+  const { error } = await sb.from('termination_records').update({
+    exit_q1_what_went_well:   $('exitQ1').value || null,
+    exit_q2_what_to_improve:  $('exitQ2').value || null,
+    exit_q3_recommendation:   $('exitQ3').value || null,
+    exit_q4_anything_else:    $('exitQ4').value || null,
+    exit_conductor_notes:     $('exitNotes').value || null,
+    exit_interview_done_at:   new Date().toISOString(),
+    stage: 'exit_interview_done'
+  }).eq('id', termId);
+  if (error) { alert(error.message); return; }
+  alert('Exit interview saved.');
+  load();
+});
+
+$('skipExitBtn').addEventListener('click', async () => {
+  const reason = prompt('Reason for skipping the exit interview?');
+  if (!reason) return;
+  const sb = window.LYMX.sb;
+  const { error } = await sb.rpc('skip_exit_interview', { p_id: termId, p_reason: reason });
+  if (error) { alert(error.message); return; }
+  alert('Skipped.');
+  load();
+});
+
+$('closeBtn').addEventListener('click', async () => {
+  if (!confirm('Close this termination? This will flag any required-return items still in their possession as OUTSTANDING and (if checked) deactivate their staff_profile.')) return;
+  const sb = window.LYMX.sb;
+  const { data, error } = await sb.rpc('close_termination', { p_id: termId, p_deactivate_profile: $('deactivateChk').checked });
+  if (error) { alert(error.message); return; }
+  alert((data?.outstanding_items_flagged ?? 0) + ' items flagged outstanding. Termination closed.');
+  setTimeout(() => location.href = 'admin-personnel-file.html?id=' + encodeURIComponent(term.profile_id), 600);
+});
+
+load();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

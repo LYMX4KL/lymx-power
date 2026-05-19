@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — add inventory items in bulk." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Add inventory · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:760px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .page{padding:28px 0 64px}
+  .page-head h1{margin:0;font-size:24px;font-weight:800}
+  .page-head p{margin:6px 0 16px;color:var(--muted);font-size:14px}
+  .form-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px}
+  .form-group{margin-bottom:14px}
+  .form-group label{display:block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+  .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-family:inherit}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.grid-2{grid-template-columns:1fr}}
+  .btn{padding:10px 18px;border-radius:9px;font-weight:700;font-size:14px;border:0;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+  .hint{font-size:12px;color:var(--muted);margin-top:4px}
+  .status-msg{padding:10px 14px;border-radius:8px;font-size:13.5px;margin-top:12px}
+  .status-msg.ok{background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44}
+  .status-msg.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
+</style>
+</head>
+<body data-role-required="admin">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="admin-dashboard.html">LYMX <span class="role-tag">Admin</span></a>
+    <a href="admin-inventory.html" style="font-size:13px;color:var(--muted)">← Inventory</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>📦 Add inventory</h1>
+      <p>Bulk-add new equipment. Use quantity + serial-prefix to auto-number (e.g. <code>KEY-001, KEY-002, …</code>).</p>
+    </div>
+
+    <div class="form-card">
+      <div class="form-group">
+        <label>Label (what the thing is called)</label>
+        <input type="text" id="label" placeholder='e.g. "MacBook Air 13&quot; M3 2024 Space Gray"' />
+      </div>
+
+      <div class="form-group">
+        <label>Category</label>
+        <select id="category">
+          <option value="laptop">Laptop</option>
+          <option value="phone">Phone</option>
+          <option value="tablet">Tablet</option>
+          <option value="keys">Keys</option>
+          <option value="access_card">Access card</option>
+          <option value="lockbox">Lockbox</option>
+          <option value="headset">Headset</option>
+          <option value="monitor">Monitor</option>
+          <option value="camera">Camera</option>
+          <option value="printer">Printer</option>
+          <option value="clothing">Clothing</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Quantity</label>
+          <input type="number" id="quantity" min="1" max="100" value="1" />
+        </div>
+        <div class="form-group">
+          <label>Serial prefix (optional)</label>
+          <input type="text" id="serialPrefix" placeholder="e.g. KEY-" />
+          <div class="hint">If set + quantity > 1 → autogenerates KEY-001, KEY-002, …</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Estimated value per unit (USD)</label>
+          <input type="number" id="value" step="0.01" min="0" value="0" />
+        </div>
+        <div class="form-group">
+          <label>Acquisition date</label>
+          <input type="date" id="acquiredAt" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Notes (optional)</label>
+        <textarea id="notes" placeholder="Vendor, model, warranty info, anything useful for future you" rows="3"></textarea>
+      </div>
+
+      <div class="actions">
+        <a href="admin-inventory.html" class="btn btn-secondary">Cancel</a>
+        <button class="btn btn-primary" id="submitBtn">Add to inventory →</button>
+      </div>
+
+      <div id="status"></div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+function $(id){ return document.getElementById(id); }
+async function init(){
+  if (!window.LYMX || !window.LYMX.requireAuth) return;
+  const user = await window.LYMX.requireAuth();
+  if (!user) return;
+  $('acquiredAt').value = new Date().toISOString().slice(0,10);
+}
+init();
+
+$('submitBtn').addEventListener('click', async () => {
+  const label = $('label').value.trim();
+  const category = $('category').value;
+  const qty = parseInt($('quantity').value, 10) || 1;
+  const prefix = $('serialPrefix').value.trim();
+  const value = parseFloat($('value').value) || 0;
+  const acquired = $('acquiredAt').value || null;
+  const notes = $('notes').value.trim() || null;
+  if (!label) { $('status').innerHTML = '<div class="status-msg err">Label required.</div>'; return; }
+
+  $('submitBtn').disabled = true; $('submitBtn').textContent = 'Adding…';
+  const sb = window.LYMX.sb;
+  const rows = [];
+  for (let i = 0; i < qty; i++) {
+    rows.push({
+      label, category,
+      serial_or_id: prefix ? (prefix + String(i+1).padStart(3, '0')) : null,
+      estimated_value_usd: value,
+      acquired_at: acquired,
+      status: 'available',
+      notes
+    });
+  }
+  const { error } = await sb.from('inventory_items').insert(rows);
+  if (error) {
+    $('status').innerHTML = '<div class="status-msg err">Failed: ' + (error.message || 'unknown') + '</div>';
+    $('submitBtn').disabled = false; $('submitBtn').textContent = 'Add to inventory →';
+    return;
+  }
+  $('status').innerHTML = '<div class="status-msg ok">Added ' + qty + ' item' + (qty===1?'':'s') + '.</div>';
+  setTimeout(() => { location.href = 'admin-inventory.html'; }, 1200);
+});
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

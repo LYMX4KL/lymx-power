@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — inventory master." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Inventory · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:1280px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:14px;margin-bottom:14px}
+  .page-head h1{margin:0;font-size:26px;font-weight:800}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:14px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+  .stat .lab{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+  .stat .v{font-size:24px;font-weight:800}
+  .filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+  .chip{padding:7px 13px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .search-input{flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:14px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+  .tbl th{text-align:left;background:#f9fafb;padding:11px 14px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line)}
+  .tbl td{padding:13px 14px;border-bottom:1px solid #f0f1f4;vertical-align:middle}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:capitalize;white-space:nowrap}
+  .pill.available{background:rgba(19,162,107,.12);color:var(--ok)}
+  .pill.assigned{background:#eef5ff;color:var(--accent-2)}
+  .pill.damaged{background:#fff3d4;color:#92400e}
+  .pill.lost{background:#fdecec;color:#9b1c1c}
+  .pill.written_off{background:#eef0f4;color:#6b7280}
+  .pill.retired{background:#eef0f4;color:#6b7280}
+  .btn{padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;border:0;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;text-decoration:none}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .empty{padding:48px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body data-role-required="admin">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="admin-dashboard.html">LYMX <span class="role-tag">Admin</span></a>
+    <a href="admin-dashboard.html" style="font-size:13px;color:var(--muted)">← Dashboard</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>🔑 Inventory master</h1>
+        <p>Every physical item the company owns. Auto-syncs from staff equipment assignments.</p>
+      </div>
+      <a class="btn btn-primary" href="admin-inventory-new.html">+ Add inventory</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="lab">Total items</div><div class="v" id="ct-total">—</div></div>
+      <div class="stat"><div class="lab">Available</div><div class="v" id="ct-available" style="color:var(--ok)">—</div></div>
+      <div class="stat"><div class="lab">Assigned</div><div class="v" id="ct-assigned" style="color:var(--accent-2)">—</div></div>
+      <div class="stat"><div class="lab">Lost / damaged</div><div class="v" id="ct-bad" style="color:var(--warn)">—</div></div>
+      <div class="stat"><div class="lab">Total value</div><div class="v" id="ct-value">—</div></div>
+    </div>
+
+    <div class="filter-row">
+      <button class="chip on" data-f="all">All</button>
+      <button class="chip" data-f="available">Available</button>
+      <button class="chip" data-f="assigned">Assigned</button>
+      <button class="chip" data-f="damaged">Damaged</button>
+      <button class="chip" data-f="lost">Lost</button>
+      <button class="chip" data-f="written_off">Written off</button>
+      <button class="chip" data-f="retired">Retired</button>
+      <input class="search-input" type="search" id="searchInput" placeholder="Search label, serial, holder…" />
+    </div>
+
+    <div class="card">
+      <div id="listWrap"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+let items = [];
+let filt = 'all', q = '';
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function ymd(d){ if (!d) return '—'; try { return new Date(d).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}); } catch(e){ return d; } }
+
+async function load(){
+  if (!window.LYMX || !window.LYMX.requireAuth) return;
+  const user = await window.LYMX.requireAuth();
+  if (!user) return;
+  const { data, error } = await window.LYMX.sb.from('inventory_items').select('*').order('created_at',{ascending:false});
+  if (error) { $('listWrap').innerHTML = '<div class="empty">Error: ' + esc(error.message) + '</div>'; return; }
+  items = data || [];
+  $('ct-total').textContent = items.length;
+  $('ct-available').textContent = items.filter(i => i.status === 'available').length;
+  $('ct-assigned').textContent = items.filter(i => i.status === 'assigned').length;
+  $('ct-bad').textContent = items.filter(i => i.status === 'damaged' || i.status === 'lost').length;
+  const v = items.reduce((s,i) => s + Number(i.estimated_value_usd||0), 0);
+  $('ct-value').textContent = '$' + v.toFixed(0);
+  render();
+}
+
+function render(){
+  let list = items;
+  if (filt !== 'all') list = list.filter(i => i.status === filt);
+  if (q) {
+    const qq = q.toLowerCase();
+    list = list.filter(i => ((i.label||'') + ' ' + (i.serial_or_id||'') + ' ' + (i.current_holder_name||'')).toLowerCase().includes(qq));
+  }
+  if (!list.length) { $('listWrap').innerHTML = '<div class="empty">No items match this filter.</div>'; return; }
+  $('listWrap').innerHTML = '<table class="tbl"><thead><tr><th>Label</th><th>Category</th><th>Serial / ID</th><th>Status</th><th>Holder</th><th>Value</th></tr></thead><tbody>' +
+    list.map(i =>
+      '<tr>' +
+        '<td><div style="font-weight:700">' + esc(i.label) + '</div></td>' +
+        '<td>' + esc(i.category) + '</td>' +
+        '<td style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px">' + esc(i.serial_or_id || '—') + '</td>' +
+        '<td><span class="pill ' + esc(i.status) + '">' + esc(i.status.replace(/_/g,' ')) + '</span></td>' +
+        '<td>' + esc(i.current_holder_name || '—') + '</td>' +
+        '<td>$' + Number(i.estimated_value_usd||0).toFixed(2) + '</td>' +
+      '</tr>'
+    ).join('') + '</tbody></table>';
+}
+
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+  document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+  c.classList.add('on'); filt = c.dataset.f; render();
+}));
+$('searchInput').addEventListener('input', e => { q = e.target.value; render(); });
+
+load();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

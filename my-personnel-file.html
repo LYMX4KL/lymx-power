@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Your LYMX personnel file — pending tasks, policies to sign, write-ups, reviews, equipment." />
+<title>My personnel file · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--maxw:1080px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+
+  .page{padding:28px 0 64px}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:15px}
+
+  /* Actions-required alert */
+  .alert{background:linear-gradient(135deg,#fff8ee,#fdf0d0);border:1px solid #f5d5a0;border-radius:12px;padding:16px 18px;margin:18px 0;display:flex;gap:14px;align-items:start}
+  .alert.danger{background:linear-gradient(135deg,#fdf3f3,#fde0e0);border-color:#f5b7b7}
+  .alert .ic{font-size:24px;flex-shrink:0}
+  .alert .body{flex:1}
+  .alert .title{font-weight:800;font-size:15px;color:#92400e}
+  .alert.danger .title{color:#9b1c1c}
+  .alert .desc{font-size:13.5px;color:var(--ink-2);margin-top:4px}
+
+  /* Section cards */
+  .section{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
+  .section h2{margin:0 0 4px;font-size:17px;font-weight:800}
+  .section .sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+
+  /* Item row */
+  .list{display:flex;flex-direction:column;gap:8px}
+  .list-row{padding:12px 14px;border:1px solid var(--line);border-radius:10px;display:flex;gap:12px;align-items:center;background:#fff}
+  .list-row .body{flex:1;min-width:0}
+  .list-row .title{font-weight:700;font-size:14px}
+  .list-row .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .list-row.warn{border-color:#f5d5a0;background:#fff8ee}
+  .list-row.danger{border-color:#f5b7b7;background:#fdf3f3}
+  .list-row.ok{border-color:#a8d8c0;background:#f0faf5}
+
+  .badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:#eef0f4}
+  .badge.danger{background:#fdecec;color:#9b1c1c}
+  .badge.warn{background:#fff3d4;color:#92400e}
+  .badge.ok{background:#e6f5ee;color:#0a6e44}
+  .badge.info{background:#eef5ff;color:var(--accent-2)}
+
+  .btn{padding:7px 14px;border-radius:8px;font-weight:700;font-size:13px;border:0;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;text-decoration:none}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-warn{background:var(--warn);color:#fff}
+
+  .empty{padding:24px 14px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
+
+  /* Modal */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(14,17,22,.55);z-index:99;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto}
+  .modal-bg.on{display:flex}
+  .modal{background:#fff;border-radius:14px;max-width:640px;width:100%;padding:24px 28px}
+  .modal h3{margin:0 0 6px;font-size:18px;font-weight:800}
+  .modal .meta{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+  .modal .body-md{max-height:280px;overflow-y:auto;padding:14px;background:var(--bg-soft);border-radius:8px;font-size:13.5px;line-height:1.55;white-space:pre-wrap}
+  .modal label{display:block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px}
+  .modal textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-family:inherit;min-height:90px;resize:vertical}
+  .modal .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:99;opacity:0;transition:opacity .2s}
+  .toast.on{opacity:1}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--danger)}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="customer-dashboard.html">LYMX</a>
+    <div class="user-avatar" id="userInitial">·</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>📂 My personnel file</h1>
+      <p>Everything HR has on file for you — and anything we need from you.</p>
+    </div>
+
+    <div id="actionsRequired"></div>
+
+    <div class="section">
+      <h2>About me</h2>
+      <div id="aboutBody" class="sub">Loading…</div>
+    </div>
+
+    <div class="section">
+      <h2>Onboarding tasks</h2>
+      <p class="sub">Things to complete in your first few weeks.</p>
+      <div id="tasksBody"><div class="empty">Loading…</div></div>
+    </div>
+
+    <div class="section">
+      <h2>Policies to sign or acknowledge</h2>
+      <p class="sub">Click each policy to read + sign. Required to complete onboarding.</p>
+      <div id="policiesBody"><div class="empty">Loading…</div></div>
+    </div>
+
+    <div class="section">
+      <h2>Write-ups</h2>
+      <p class="sub">Open + history. Use the 14-day window to add your response in writing.</p>
+      <div id="writeupsBody"><div class="empty">Loading…</div></div>
+    </div>
+
+    <div class="section">
+      <h2>Performance reviews</h2>
+      <p class="sub">Self-assessments to complete + finished reviews to acknowledge.</p>
+      <div id="reviewsBody"><div class="empty">Loading…</div></div>
+    </div>
+
+    <div class="section">
+      <h2>Equipment issued to me</h2>
+      <div id="equipmentBody"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+</main>
+
+<!-- Policy view + sign modal -->
+<div class="modal-bg" id="policyModal">
+  <div class="modal">
+    <h3 id="pmTitle">—</h3>
+    <div class="meta" id="pmMeta">—</div>
+    <div class="body-md" id="pmBody">—</div>
+    <div class="actions">
+      <button class="btn btn-secondary" id="pmClose">Close</button>
+      <button class="btn btn-primary" id="pmSign">I acknowledge</button>
+    </div>
+  </div>
+</div>
+
+<!-- Write-up view + ack/response modal -->
+<div class="modal-bg" id="wuModal">
+  <div class="modal">
+    <h3 id="wuTitle">—</h3>
+    <div class="meta" id="wuMeta">—</div>
+    <div class="body-md" id="wuBody">—</div>
+    <label id="wuRespLabel" style="display:none">Your response (in writing — saved permanently next to this write-up)</label>
+    <textarea id="wuResp" placeholder="Your written response…" style="display:none"></textarea>
+    <div class="actions">
+      <button class="btn btn-secondary" id="wuClose">Close</button>
+      <button class="btn btn-warn" id="wuAck" style="display:none">I acknowledge receipt</button>
+      <button class="btn btn-primary" id="wuSubmit" style="display:none">Submit response</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+let me = null; // auth user
+let staffRow = null;
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toast(msg, kind){ const t=$('toast'); t.textContent=msg; t.className='toast on '+(kind||''); setTimeout(()=>t.className='toast',2400); }
+function ymd(d){ if (!d) return '—'; try { return new Date(d).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}); } catch(e){ return d; } }
+function ago(d){ if (!d) return ''; const ms = Date.now() - new Date(d).getTime(); const days = Math.floor(ms/86400000); if (days < 1) return 'today'; if (days === 1) return 'yesterday'; if (days < 30) return days + ' days ago'; return Math.floor(days/30) + 'mo ago'; }
+function initials(name, email){ const src = name || email || 'L'; return src.split(/\s+/).filter(Boolean).slice(0,2).map(s=>s[0]||'').join('').toUpperCase().slice(0,2); }
+
+async function load(){
+  if (!window.LYMX || !window.LYMX.requireAuth) return;
+  me = await window.LYMX.requireAuth();
+  if (!me) return;
+  $('userInitial').textContent = initials(me.user_metadata?.full_name, me.email);
+
+  const sb = window.LYMX.sb;
+  const { data: sp } = await sb.from('staff_profiles').select('*').eq('user_id', me.id).maybeSingle();
+  staffRow = sp;
+
+  renderAbout();
+  renderActionsRequired();
+  loadTasks();
+  loadPolicies();
+  loadWriteUps();
+  loadReviews();
+  loadEquipment();
+}
+
+function renderAbout(){
+  const name = me.user_metadata?.full_name || me.email;
+  if (!staffRow) {
+    $('aboutBody').innerHTML =
+      'You\'re signed in as <strong>' + esc(me.email) + '</strong>. No HR profile yet — once HR creates your staff record, hire date and benefits will show here.';
+    return;
+  }
+  $('aboutBody').innerHTML =
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;font-size:13.5px">' +
+      '<div><strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:2px">Name</strong>' + esc(name) + '</div>' +
+      '<div><strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:2px">Email</strong>' + esc(me.email) + '</div>' +
+      (staffRow.title ? '<div><strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:2px">Title</strong>' + esc(staffRow.title) + '</div>' : '') +
+      (staffRow.department ? '<div><strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:2px">Department</strong>' + esc(staffRow.department) + '</div>' : '') +
+      (staffRow.hire_date ? '<div><strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:2px">Hire date</strong>' + ymd(staffRow.hire_date) + '</div>' : '') +
+      (staffRow.classification ? '<div><strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:2px">Status</strong>' + esc(staffRow.classification.replace(/_/g,' ')) + '</div>' : '') +
+    '</div>';
+}
+
+async function renderActionsRequired(){
+  const sb = window.LYMX.sb;
+  const [{ data: pendingWu }, { data: pendingPolicy }, { data: pendingReview }, { data: openTask }] = await Promise.all([
+    sb.from('personnel_write_ups').select('id, severity').eq('profile_id', me.id).eq('status', 'issued').limit(5),
+    sb.from('policy_assignments').select('id, policy_title').eq('profile_id', me.id).in('status', ['assigned','sent']).limit(5),
+    sb.from('performance_reviews').select('id, period, status').eq('profile_id', me.id).in('status', ['scheduled','self_pending','complete']).limit(5),
+    sb.from('onboarding_tasks').select('id').eq('profile_id', me.id).eq('status', 'pending').limit(5)
+  ]);
+
+  const alerts = [];
+  if (pendingWu && pendingWu.length) {
+    alerts.push('<div class="alert danger"><div class="ic">⚠️</div><div class="body"><div class="title">' + pendingWu.length + ' write-up' + (pendingWu.length===1?'':'s') + ' awaiting your acknowledgment</div><div class="desc">Scroll to the Write-ups section to read + acknowledge. You have 14 days from acknowledgment to add a written response.</div></div></div>');
+  }
+  if (pendingPolicy && pendingPolicy.length) {
+    alerts.push('<div class="alert"><div class="ic">📄</div><div class="body"><div class="title">' + pendingPolicy.length + ' polic' + (pendingPolicy.length===1?'y':'ies') + ' awaiting your signature</div><div class="desc">Click any policy below to read and sign.</div></div></div>');
+  }
+  if (pendingReview && pendingReview.length) {
+    const selfPending = pendingReview.filter(r => r.status === 'self_pending').length;
+    const ackPending  = pendingReview.filter(r => r.status === 'complete').length;
+    if (selfPending) alerts.push('<div class="alert"><div class="ic">⭐</div><div class="body"><div class="title">' + selfPending + ' self-assessment' + (selfPending===1?'':'s') + ' due</div><div class="desc">Fill out your self-assessment so your manager can finish their portion.</div></div></div>');
+    if (ackPending)  alerts.push('<div class="alert"><div class="ic">✍️</div><div class="body"><div class="title">' + ackPending + ' review' + (ackPending===1?'':'s') + ' waiting for your acknowledgment</div><div class="desc">Your manager finished their assessment. Read + click acknowledge to close the review.</div></div></div>');
+  }
+  if (openTask && openTask.length) {
+    alerts.push('<div class="alert"><div class="ic">✅</div><div class="body"><div class="title">' + openTask.length + ' onboarding task' + (openTask.length===1?'':'s') + ' open</div><div class="desc">See the Onboarding tasks section below.</div></div></div>');
+  }
+
+  $('actionsRequired').innerHTML = alerts.join('');
+}
+
+// ---- Onboarding tasks ----
+async function loadTasks(){
+  const sb = window.LYMX.sb;
+  const { data } = await sb.from('onboarding_tasks').select('id, title, category, status, due_date, completed_at').eq('profile_id', me.id).order('due_date', { ascending: true, nullsLast: true });
+  if (!data || !data.length) { $('tasksBody').innerHTML = '<div class="empty">No onboarding tasks assigned.</div>'; return; }
+  $('tasksBody').innerHTML = '<div class="list">' + data.map(t => {
+    const cls = t.status === 'completed' ? 'ok' : t.status === 'overdue' ? 'danger' : '';
+    return '<div class="list-row ' + cls + '">' +
+      '<div class="body"><div class="title">' + esc(t.title) + '</div>' +
+      '<div class="sub">' + esc(t.category) + (t.due_date ? ' · due ' + ymd(t.due_date) : '') + '</div></div>' +
+      '<div class="badge ' + (t.status === 'completed' ? 'ok' : t.status === 'overdue' ? 'danger' : 'info') + '">' + esc(t.status) + '</div>' +
+      (t.status === 'pending' ? ' <button class="btn btn-primary" data-tid="' + esc(t.id) + '">Mark done</button>' : '') +
+    '</div>';
+  }).join('') + '</div>';
+
+  document.querySelectorAll('[data-tid]').forEach(b => b.addEventListener('click', async () => {
+    const sb = window.LYMX.sb;
+    const { error } = await sb.from('onboarding_tasks').update({ status: 'completed', completed_at: new Date().toISOString(), completed_by_id: me.id }).eq('id', b.dataset.tid);
+    if (error) toast(error.message, 'err'); else { toast('Marked done', 'ok'); loadTasks(); renderActionsRequired(); }
+  }));
+}
+
+// ---- Policies ----
+async function loadPolicies(){
+  const sb = window.LYMX.sb;
+  const { data } = await sb.from('policy_assignments')
+    .select('id, policy_id, policy_title, policy_version, policy_sign_method, status, assigned_at, acknowledged_at, signed_at')
+    .eq('profile_id', me.id)
+    .order('assigned_at', { ascending: false });
+  if (!data || !data.length) { $('policiesBody').innerHTML = '<div class="empty">No policies assigned.</div>'; return; }
+  $('policiesBody').innerHTML = '<div class="list">' + data.map(a => {
+    const done = a.status === 'acknowledged' || a.status === 'signed';
+    const cls = done ? 'ok' : 'warn';
+    return '<div class="list-row ' + cls + '">' +
+      '<div class="body"><div class="title">' + esc(a.policy_title) + ' <span class="badge">v' + esc(a.policy_version) + '</span></div>' +
+      '<div class="sub">' + esc(a.policy_sign_method.replace('_',' ')) + ' · assigned ' + ago(a.assigned_at) + '</div></div>' +
+      '<div class="badge ' + (done ? 'ok' : 'warn') + '">' + esc(a.status) + '</div>' +
+      (done ? '' : ' <button class="btn btn-primary" data-pa-id="' + esc(a.id) + '" data-policy-id="' + esc(a.policy_id) + '">Read + sign</button>') +
+    '</div>';
+  }).join('') + '</div>';
+
+  document.querySelectorAll('[data-pa-id]').forEach(b => b.addEventListener('click', () => openPolicyModal(b.dataset.paId, b.dataset.policyId)));
+}
+
+async function openPolicyModal(assignmentId, policyId){
+  const sb = window.LYMX.sb;
+  const { data: doc } = await sb.from('policy_documents').select('title, version, sign_method, body_md').eq('id', policyId).maybeSingle();
+  if (!doc) return;
+  $('pmTitle').textContent = doc.title;
+  $('pmMeta').textContent = 'v' + doc.version + ' · ' + doc.sign_method.replace('_',' ');
+  $('pmBody').textContent = doc.body_md;
+  $('pmSign').dataset.assignmentId = assignmentId;
+  $('policyModal').classList.add('on');
+}
+
+$('pmClose').addEventListener('click', () => $('policyModal').classList.remove('on'));
+$('pmSign').addEventListener('click', async () => {
+  const sb = window.LYMX.sb;
+  const { error } = await sb.rpc('acknowledge_policy_assignment', { p_assignment_id: $('pmSign').dataset.assignmentId });
+  if (error) { toast(error.message, 'err'); return; }
+  toast('Acknowledged. Thanks.', 'ok');
+  $('policyModal').classList.remove('on');
+  loadPolicies(); renderActionsRequired();
+});
+
+// ---- Write-ups ----
+async function loadWriteUps(){
+  const sb = window.LYMX.sb;
+  const { data } = await sb.from('personnel_write_ups')
+    .select('id, severity, category, incident_date, description, expectations, consequences, status, issued_at, issued_by_name, response_deadline')
+    .eq('profile_id', me.id)
+    .order('issued_at', { ascending: false });
+  if (!data || !data.length) { $('writeupsBody').innerHTML = '<div class="empty">✅ No write-ups on file.</div>'; return; }
+  $('writeupsBody').innerHTML = '<div class="list">' + data.map(w => {
+    const open = w.status === 'issued';
+    const ackOnly = w.status === 'acknowledged';
+    const cls = open ? 'warn' : ackOnly ? 'warn' : '';
+    return '<div class="list-row ' + cls + '">' +
+      '<div class="body"><div class="title">' + esc(w.severity.replace(/_/g,' ')) + ' · ' + ymd(w.incident_date) + '</div>' +
+      '<div class="sub">' + esc((w.description||'').slice(0,140)) + ((w.description||'').length>140?'…':'') + '</div>' +
+      '<div class="sub">Issued by ' + esc(w.issued_by_name) + ' · ' + ago(w.issued_at) +
+        (w.response_deadline ? ' · Response window ends ' + ymd(w.response_deadline) : '') + '</div></div>' +
+      '<button class="btn btn-secondary" data-wu-id="' + esc(w.id) + '">Read</button>' +
+    '</div>';
+  }).join('') + '</div>';
+
+  document.querySelectorAll('[data-wu-id]').forEach(b => b.addEventListener('click', () => openWuModal(b.dataset.wuId)));
+}
+
+async function openWuModal(wuId){
+  const sb = window.LYMX.sb;
+  const { data: w } = await sb.from('personnel_write_ups').select('*').eq('id', wuId).maybeSingle();
+  if (!w) return;
+  $('wuTitle').textContent = w.severity.replace(/_/g,' ') + ' — ' + ymd(w.incident_date);
+  $('wuMeta').textContent = 'Issued by ' + w.issued_by_name + ' · ' + ago(w.issued_at);
+  $('wuBody').textContent =
+    'WHAT HAPPENED:\n' + w.description +
+    (w.policy_violated ? '\n\nPOLICY:\n' + w.policy_violated : '') +
+    '\n\nEXPECTATIONS:\n' + w.expectations +
+    '\n\nCONSEQUENCES:\n' + w.consequences;
+
+  $('wuAck').dataset.wuId = wuId;
+  $('wuSubmit').dataset.wuId = wuId;
+  $('wuRespLabel').style.display = $('wuResp').style.display = $('wuAck').style.display = $('wuSubmit').style.display = 'none';
+  $('wuResp').value = '';
+
+  if (w.status === 'issued') {
+    $('wuAck').style.display = '';
+  } else if (w.status === 'acknowledged') {
+    $('wuRespLabel').style.display = 'block';
+    $('wuResp').style.display = 'block';
+    $('wuSubmit').style.display = '';
+  } else if (w.response_text) {
+    $('wuBody').textContent += '\n\n--- MY RESPONSE ---\n' + w.response_text;
+  }
+
+  $('wuModal').classList.add('on');
+}
+
+$('wuClose').addEventListener('click', () => $('wuModal').classList.remove('on'));
+$('wuAck').addEventListener('click', async () => {
+  const sb = window.LYMX.sb;
+  const { error } = await sb.rpc('acknowledge_write_up', { p_id: $('wuAck').dataset.wuId });
+  if (error) { toast(error.message, 'err'); return; }
+  toast('Acknowledged. 14-day response window started.', 'ok');
+  $('wuModal').classList.remove('on');
+  loadWriteUps(); renderActionsRequired();
+});
+$('wuSubmit').addEventListener('click', async () => {
+  const text = $('wuResp').value.trim();
+  if (text.length < 5) { toast('Response too short', 'err'); return; }
+  const sb = window.LYMX.sb;
+  const { error } = await sb.rpc('submit_write_up_response', { p_id: $('wuSubmit').dataset.wuId, p_response: text });
+  if (error) { toast(error.message, 'err'); return; }
+  toast('Response saved', 'ok');
+  $('wuModal').classList.remove('on');
+  loadWriteUps(); renderActionsRequired();
+});
+
+// ---- Reviews ----
+async function loadReviews(){
+  const sb = window.LYMX.sb;
+  const { data } = await sb.from('performance_reviews')
+    .select('id, period, status, scheduled_for, rating_overall')
+    .eq('profile_id', me.id)
+    .order('scheduled_for', { ascending: false });
+  if (!data || !data.length) { $('reviewsBody').innerHTML = '<div class="empty">No reviews scheduled.</div>'; return; }
+  $('reviewsBody').innerHTML = '<div class="list">' + data.map(r =>
+    '<div class="list-row ' + (r.status === 'signed' ? 'ok' : '') + '">' +
+      '<div class="body"><div class="title">' + esc(r.period.replace(/_/g,' ')) + ' · ' + ymd(r.scheduled_for) + '</div>' +
+      '<div class="sub">' + (r.rating_overall ? '★'.repeat(r.rating_overall) + ' overall · ' : '') + esc(r.status.replace(/_/g,' ')) + '</div></div>' +
+      '<a class="btn btn-primary" href="review.html?id=' + esc(r.id) + '">Open</a>' +
+    '</div>'
+  ).join('') + '</div>';
+}
+
+// ---- Equipment ----
+async function loadEquipment(){
+  const sb = window.LYMX.sb;
+  const { data } = await sb.from('staff_property_items')
+    .select('id, label, category, serial_or_id, is_required_return, disposition, issued_at, returned_at')
+    .eq('profile_id', me.id)
+    .order('issued_at', { ascending: false });
+  if (!data || !data.length) { $('equipmentBody').innerHTML = '<div class="empty">No equipment issued.</div>'; return; }
+  $('equipmentBody').innerHTML = '<div class="list">' + data.map(i =>
+    '<div class="list-row ' + (i.disposition === 'outstanding' ? 'danger' : i.disposition === 'returned' ? 'ok' : '') + '">' +
+      '<div class="body"><div class="title">' + esc(i.label) +
+        (i.is_required_return ? ' <span class="badge warn">Required return</span>' : ' <span class="badge">Keep</span>') +
+      '</div><div class="sub">' + esc(i.category) + (i.serial_or_id ? ' · S/N ' + esc(i.serial_or_id) : '') + ' · issued ' + ago(i.issued_at) + '</div></div>' +
+      '<div class="badge ' + (i.disposition === 'outstanding' ? 'danger' : i.disposition === 'returned' ? 'ok' : 'info') + '">' + esc(i.disposition.replace(/_/g,' ')) + '</div>' +
+    '</div>'
+  ).join('') + '</div>';
+}
+
+load();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>
