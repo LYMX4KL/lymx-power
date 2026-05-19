@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0e1116" />
+<meta name="description" content="Scanned a LYMX QR? Earn or redeem your LYMX rewards here." />
+<title>Earn or Redeem · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100vh}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+
+  header.bar{padding:18px 22px;display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px}
+  .brand .mark{display:inline-grid;grid-template-columns:8px 8px;grid-template-rows:8px 8px;gap:2px}
+  .brand .mark span{background:var(--ink);display:block}
+  .lang-toggle{font-size:12px;font-weight:600;color:var(--muted);background:#f1f3f6;padding:5px 10px;border-radius:999px;border:0;cursor:pointer;font-family:inherit}
+
+  main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 22px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:32px 28px;max-width:440px;width:100%;box-shadow:0 8px 24px rgba(14,17,22,.06);text-align:center}
+  .biz-name{font-size:13px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+  .biz-name #bizDisplay{color:var(--ink);text-transform:none;letter-spacing:normal;font-size:22px;font-weight:800;display:block;margin-top:4px}
+  .ask{font-size:18px;font-weight:600;color:var(--ink-2);margin:24px 0 28px}
+  .balance{background:linear-gradient(135deg,#fef7e0,#f9e9bd);border-radius:14px;padding:14px 18px;margin-bottom:24px;display:none}
+  .balance.show{display:block}
+  .balance .lbl{font-size:11px;font-weight:700;color:#8a6a14;text-transform:uppercase;letter-spacing:.06em}
+  .balance .v{font-size:28px;font-weight:800;color:var(--gold);margin-top:2px}
+
+  .btns{display:grid;gap:12px}
+  .btn{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;padding:22px 18px;border-radius:14px;font-weight:700;font-size:18px;cursor:pointer;border:0;font-family:inherit;text-align:center;transition:transform .12s ease, box-shadow .12s ease}
+  .btn:active{transform:scale(.98)}
+  .btn .ico{font-size:30px;line-height:1}
+  .btn .sub{font-size:12.5px;font-weight:500;opacity:.85;margin-top:2px}
+  .btn-earn{background:var(--ink);color:#fff}
+  .btn-earn:hover{background:#000;box-shadow:0 6px 16px rgba(14,17,22,.18)}
+  .btn-redeem{background:#fff;color:var(--ink);border:2px solid var(--ink)}
+  .btn-redeem:hover{background:var(--bg-soft);box-shadow:0 6px 16px rgba(14,17,22,.08)}
+
+  .help{margin-top:24px;font-size:13px;color:var(--muted)}
+  .help a{color:var(--accent);font-weight:600}
+
+  .signin-prompt{display:none;margin-top:16px;padding:14px;background:#eef4ff;border:1px solid #b3c7ed;border-radius:10px;font-size:13.5px;color:#1d4ed8;text-align:left}
+  .signin-prompt.show{display:block}
+  .signin-prompt a{color:#1d4ed8;font-weight:700;text-decoration:underline}
+
+  footer{padding:18px;text-align:center;color:var(--muted);font-size:11.5px;border-top:1px solid var(--line);background:#fff}
+
+  @media(max-width:380px){
+    .card{padding:24px 20px}
+    .btn{padding:18px 14px;font-size:16px}
+    .btn .ico{font-size:26px}
+  }
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="index.html">
+    <span class="mark"><span></span><span></span><span></span><span></span></span>
+    LYMX
+  </a>
+  <button class="lang-toggle" id="langToggle" title="Switch language">EN</button>
+</header>
+
+<main>
+  <div class="card">
+    <div class="biz-name" data-i18n="pay.at">You're at <span id="bizDisplay">a LYMX business</span></div>
+
+    <div class="balance" id="balanceBox">
+      <div class="lbl" data-i18n="pay.your_balance">Your LYMX balance</div>
+      <div class="v"><span id="balanceVal">0</span> LYMX</div>
+    </div>
+
+    <div class="ask" data-i18n="pay.ask">What would you like to do?</div>
+
+    <div class="btns">
+      <button class="btn btn-earn" id="btnEarn">
+        <span class="ico">+</span>
+        <span data-i18n="pay.earn">Earn LYMX</span>
+        <span class="sub" data-i18n="pay.earn_sub">Show your purchase &amp; get rewarded</span>
+      </button>
+      <button class="btn btn-redeem" id="btnRedeem">
+        <span class="ico">★</span>
+        <span data-i18n="pay.redeem">Redeem LYMX</span>
+        <span class="sub" data-i18n="pay.redeem_sub">Use your rewards for a discount</span>
+      </button>
+    </div>
+
+    <div class="signin-prompt" id="signinPrompt">
+      <span data-i18n="pay.new_here">New to LYMX?</span>
+      <a href="welcome.html" id="signupLink" data-i18n="pay.signup_free">Sign up free → get 100 LYMX</a>
+    </div>
+
+    <div class="help">
+      <span data-i18n="pay.help">Need help?</span>
+      <a href="support.html" data-i18n="pay.contact">Contact support</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span data-i18n="pay.footer">LYMX rewards · Earn at one business, spend at any other</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// ----- pay.html — QR landing page (Earn/Redeem chooser) -------------------
+// Triggered when a customer scans the QR on a window decal, counter sticker,
+// table tent, etc. URL pattern: pay.html?biz=<slug>
+// Shows business name + 2 big buttons + sign-in nudge for new users.
+// Locale-aware via lymx-i18n.
+
+var I18N = {
+  en: {
+    'pay.at':"You're at", 'pay.your_balance':'Your LYMX balance', 'pay.ask':'What would you like to do?',
+    'pay.earn':'Earn LYMX', 'pay.earn_sub':'Show your purchase &amp; get rewarded',
+    'pay.redeem':'Redeem LYMX', 'pay.redeem_sub':'Use your rewards for a discount',
+    'pay.new_here':'New to LYMX?', 'pay.signup_free':'Sign up free → get 100 LYMX',
+    'pay.help':'Need help?', 'pay.contact':'Contact support',
+    'pay.footer':'LYMX rewards · Earn at one business, spend at any other',
+    'pay.default_biz':'a LYMX business'
+  },
+  es: {
+    'pay.at':'Estás en', 'pay.your_balance':'Tu saldo LYMX', 'pay.ask':'¿Qué deseas hacer?',
+    'pay.earn':'Ganar LYMX', 'pay.earn_sub':'Muestra tu compra y obtén recompensas',
+    'pay.redeem':'Usar LYMX', 'pay.redeem_sub':'Usa tus recompensas como descuento',
+    'pay.new_here':'¿Nuevo en LYMX?', 'pay.signup_free':'Regístrate gratis → 100 LYMX de bono',
+    'pay.help':'¿Necesitas ayuda?', 'pay.contact':'Contactar soporte',
+    'pay.footer':'Recompensas LYMX · Gana en un negocio, gasta en otro',
+    'pay.default_biz':'un negocio LYMX'
+  },
+  'zh-CN': {
+    'pay.at':'你在', 'pay.your_balance':'你的 LYMX 余额', 'pay.ask':'你想做什么？',
+    'pay.earn':'赚取 LYMX', 'pay.earn_sub':'出示购买并获得奖励',
+    'pay.redeem':'使用 LYMX', 'pay.redeem_sub':'用你的奖励折扣',
+    'pay.new_here':'初次使用 LYMX？', 'pay.signup_free':'免费注册 → 获得 100 LYMX',
+    'pay.help':'需要帮助？', 'pay.contact':'联系支持',
+    'pay.footer':'LYMX 奖励 · 一个商家赚取，另一个使用',
+    'pay.default_biz':'一家 LYMX 商家'
+  }
+};
+
+function getLang(){
+  try {
+    var saved = localStorage.getItem('lymx_locale');
+    if (saved && I18N[saved]) return saved;
+  } catch(e) {}
+  var b = (navigator.language || 'en').toLowerCase();
+  if (b.startsWith('es')) return 'es';
+  if (b.startsWith('zh')) return 'zh-CN';
+  return 'en';
+}
+
+function applyI18n(lang){
+  var dict = I18N[lang] || I18N.en;
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var k = el.dataset.i18n;
+    if (dict[k]) {
+      // Allow inline HTML for &amp; etc.
+      if (k === 'pay.earn_sub' || k === 'pay.redeem_sub') el.innerHTML = dict[k];
+      else el.textContent = dict[k];
+    }
+  });
+  document.getElementById('langToggle').textContent = lang === 'es' ? 'ES' : lang === 'zh-CN' ? '中' : 'EN';
+}
+
+function cycleLang(){
+  var order = ['en','es','zh-CN'];
+  var cur = getLang();
+  var next = order[(order.indexOf(cur) + 1) % order.length];
+  try { localStorage.setItem('lymx_locale', next); } catch(e) {}
+  applyI18n(next);
+  // Re-render dynamic strings (biz name + balance) post-lang change
+  hydrate();
+}
+
+function getBizSlug(){
+  var p = new URLSearchParams(location.search);
+  return (p.get('biz') || p.get('b') || '').toLowerCase().trim();
+}
+
+async function hydrate(){
+  var lang = getLang();
+  applyI18n(lang);
+  var dict = I18N[lang] || I18N.en;
+
+  var slug = getBizSlug();
+  var display = document.getElementById('bizDisplay');
+  if (!slug) {
+    display.textContent = dict['pay.default_biz'];
+  } else {
+    // Try to fetch the business name from the public business_partners view
+    try {
+      var sb = (window.LYMX && window.LYMX.sb) || (window.supabase && window.LYMX_CONFIG && window.supabase.createClient(window.LYMX_CONFIG.SUPABASE_URL, window.LYMX_CONFIG.SUPABASE_ANON_KEY));
+      if (sb) {
+        var { data, error } = await sb.from('business_partners').select('display_name,business_name,name').eq('slug', slug).maybeSingle();
+        if (data) display.textContent = data.display_name || data.business_name || data.name || slug;
+        else display.textContent = slug.replace(/-/g,' ').replace(/\b\w/g, function(c){return c.toUpperCase();});
+      } else {
+        display.textContent = slug.replace(/-/g,' ').replace(/\b\w/g, function(c){return c.toUpperCase();});
+      }
+    } catch (e) {
+      display.textContent = slug.replace(/-/g,' ').replace(/\b\w/g, function(c){return c.toUpperCase();});
+    }
+  }
+
+  // Fetch wallet balance if signed in
+  try {
+    var sb = window.LYMX && window.LYMX.sb;
+    var sess = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+    if (sb && sess && sess.user) {
+      var { data: w } = await sb.from('wallets').select('balance_lymx').eq('customer_id', sess.user.id).maybeSingle();
+      if (w && typeof w.balance_lymx === 'number') {
+        document.getElementById('balanceVal').textContent = Math.round(w.balance_lymx).toLocaleString();
+        document.getElementById('balanceBox').classList.add('show');
+      }
+      document.getElementById('signinPrompt').classList.remove('show');
+    } else {
+      document.getElementById('signinPrompt').classList.add('show');
+    }
+  } catch (e) {
+    document.getElementById('signinPrompt').classList.add('show');
+  }
+}
+
+// Earn → routes to review-write.html (the receipt-verified earning flow we
+// already shipped — migrations 030-033 + lymx-reviews.js). Verified receipts
+// auto-credit LYMX to the customer's wallet.
+document.getElementById('btnEarn').addEventListener('click', function(){
+  var slug = getBizSlug();
+  var ret = 'review-write.html?action=earn' + (slug ? '&biz=' + encodeURIComponent(slug) : '');
+  var hasAuth = !!localStorage.getItem('sb-apffootxzfwmtyjlnteo-auth-token');
+  if (!hasAuth) location.href = 'login.html?return=' + encodeURIComponent(ret);
+  else location.href = ret;
+});
+
+// Redeem → routes to customer-wallet.html with biz context so the page shows
+// the user's balance and a "show staff this code" panel for in-store redemption.
+document.getElementById('btnRedeem').addEventListener('click', function(){
+  var slug = getBizSlug();
+  var ret = 'customer-wallet.html?action=redeem' + (slug ? '&biz=' + encodeURIComponent(slug) : '');
+  var hasAuth = !!localStorage.getItem('sb-apffootxzfwmtyjlnteo-auth-token');
+  if (!hasAuth) location.href = 'login.html?return=' + encodeURIComponent(ret);
+  else location.href = ret;
+});
+
+document.getElementById('langToggle').addEventListener('click', cycleLang);
+
+// Pass biz slug through to signup link so the welcome bonus credits the right business
+(function(){
+  var slug = getBizSlug();
+  var lnk = document.getElementById('signupLink');
+  if (slug && lnk) lnk.href = 'welcome.html?biz=' + encodeURIComponent(slug);
+})();
+
+hydrate();
+</script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>
