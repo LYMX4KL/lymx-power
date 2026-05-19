@@ -79,7 +79,7 @@
   // ---- 2) Swap guest buttons → "My account" -------------------------------
   function swapGuestButtons(payload) {
     var dest = routeFor(payload);
-    // Find anchors that look like guest CTAs in the page chrome
+    // Find anchors that look like guest CTAs in the page chrome OR by text content
     var guestSelectors = [
       'a[href$="login.html"]',
       'a[href="login.html"]',
@@ -89,13 +89,27 @@
       'a[href="business.html"]',
       'a[href$="customer-signup.html"]',
       'a[href$="partner-signup.html"]',
-      'a[href$="biz-signup.html"]'
+      'a[href$="biz-signup.html"]',
+      'a[href$="signup.html"]',
+      'a[href="signup.html"]',
+      'a[href*="/login"]',
+      'a[href*="/signup"]'
     ];
     var seen = new Set();
+    // Combined: links by href + links by visible text (catches "Sign In", "Sign Up", "Sign Up Free", "Get Started", "Join")
+    var textPattern = /^(\s*)(sign\s*in|log\s*in|sign\s*up(\s+free)?|join\s*free|get\s*started|join\s+lymx)(\s*→?\s*)$/i;
+    // Anchors AND buttons in nav/header
+    document.querySelectorAll('header a, header button, nav a, nav button, .nav a, .nav button, .nav-cta a, .nav-cta button, .header a, .top-nav a, .topbar a, .navbar a, .site-header a').forEach(function (el) {
+      var txt = (el.textContent || '').trim();
+      if (textPattern.test(txt) && !seen.has(el)) {
+        seen.add(el);
+        el.style.display = 'none';
+      }
+    });
     guestSelectors.forEach(function (sel) {
       document.querySelectorAll(sel).forEach(function (a) {
         // Only swap nav / header / footer area links — skip body content links
-        var inNav = a.closest('header, nav, .nav, .topbar, .nav-cta, .header, .top-nav');
+        var inNav = a.closest('header, nav, .nav, .topbar, .nav-cta, .header, .top-nav, .navbar, .site-header');
         if (!inNav) return;
         // Skip if already swapped
         if (seen.has(a)) return;
@@ -341,31 +355,28 @@
     function close() { overlay.classList.remove('open'); drawer.classList.remove('open'); document.body.style.overflow = ''; }
     btn.addEventListener('click', open);
     overlay.addEventListener('click', close);
-    drawer.querySelector('.drawer-close').addEventListener('click', close);
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
-    drawer.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', close); });
-  }
-
-  function mount() {
-    var tok = readToken();
-    if (!tok) {
-      injectSignInChip();
-      injectMobileHamburger();
-      return;
-    }
-    var payload = decode(tok);
-    redirectIfSignedIn(payload);
-    enforceAdminGuard(payload);
-    swapGuestButtons(payload);
-    wireAvatar(payload);
-    injectMobileHamburger();
-  }
-
-  function boot() {
-    waitForConfig(function () {
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
-      else mount();
+    drawer.addEventListener('click', function (e) {
+      if (e.target.closest('a')) close();
     });
   }
-  boot();
+
+  // ---- Run on DOMContentLoaded ---------------------------------------------
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run);
+  } else {
+    run();
+  }
+
+  async function run() {
+    var payload = await getAuthPayload();
+    if (!payload) {
+      injectFloatingSigninChip();
+      injectMobileNav();
+      return;
+    }
+    redirectIfOnSignup(payload);
+    swapGuestButtons(payload);
+    wireAvatar(payload);
+    injectMobileNav();
+  }
 })();
