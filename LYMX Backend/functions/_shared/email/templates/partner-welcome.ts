@@ -59,7 +59,7 @@ export interface PartnerWelcomeData {
 export function partnerWelcomeEmail(data: PartnerWelcomeData) {
     const siteUrl = data.siteUrl || "https://getlymx.com";
     const referralLink = `${siteUrl}/?ref=${data.referralCode}`;
-    const dashboardLink = `${siteUrl}/partners/dashboard`;
+    const dashboardLink = `${siteUrl}/rep-dashboard.html`;
     const firstName = data.fullName.split(" ")[0] || data.fullName;
     const port = data.smtpPort || 587;
 

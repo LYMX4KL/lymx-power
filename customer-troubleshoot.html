@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Troubleshooting · LYMX customer</title>
+<meta name="description" content="Common LYMX wallet issues and how to fix them. From slow loading to QR scan failures to balance discrepancies.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--err:#c0392b;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--accent)}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:36px;margin:0 0 12px;letter-spacing:-.025em}
+  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;border-bottom:1px solid var(--line);padding-bottom:16px}
+  .filter-pill{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:600;background:#fff;cursor:pointer;color:var(--ink)}
+  .filter-pill.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .issue{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 26px;margin-bottom:14px}
+  .issue-head{display:flex;justify-content:space-between;align-items:start;gap:14px;flex-wrap:wrap}
+  .issue h3{margin:0 0 4px;font-size:17px}
+  .issue .cat{font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:3px 8px;border-radius:6px;background:#f1f3f5;color:var(--mute)}
+  .issue .cat.app{background:#e6f0ff;color:#0050c7}
+  .issue .cat.payment{background:#fef9e7;color:#7a5a00}
+  .issue .cat.balance{background:#e8f6ee;color:#0a7a4d}
+  .issue .cat.business{background:#f3e8fd;color:#5b3697}
+  .issue .symptom{margin:10px 0;font-size:14.5px;color:var(--mute)}
+  .issue .symptom b{color:var(--ink)}
+  .issue .fix{background:#f8fafc;border-left:3px solid var(--ok);padding:14px 16px;border-radius:6px;margin-top:10px;font-size:14px}
+  .issue .fix b{color:var(--ok);display:block;margin-bottom:4px;font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+  .issue .fix ol{margin:6px 0 0;padding-left:18px}
+  .issue .fix ol li{margin-bottom:4px}
+  .issue .escalate{background:#fff8e6;border:1px solid #f0c961;border-radius:6px;padding:10px 14px;font-size:13px;color:#7a5a00;margin-top:10px}
+  .issue .escalate b{color:#5a4200}
+
+  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<div class="nav">
+  <div class="nav-inner">
+    <div class="brand">LYMX <span>·</span> Power</div>
+    <div class="nav-links">
+      <a href="customer-faq.html">FAQ</a>
+      <a href="emergency-protocol.html">Emergency</a>
+      <a href="support.html">Support</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb">Customer · <a href="customer-faq.html">FAQ</a> · Troubleshooting</div>
+  <h1>Something not working?</h1>
+  <p class="lead">Most LYMX issues fix themselves with one of three things: refresh the page, sign out and back in, or wait 60 seconds. The list below covers what to do when those don't work.</p>
+
+  <div class="filter-row">
+    <span class="filter-pill on">All issues</span>
+    <span class="filter-pill">App / wallet</span>
+    <span class="filter-pill">Payment / QR</span>
+    <span class="filter-pill">Balance</span>
+    <span class="filter-pill">Business issues</span>
+  </div>
+
+  <!-- App / wallet -->
+  <div class="issue">
+    <div class="issue-head"><h3>Wallet won't load — blank page or spinning</h3><span class="cat app">App</span></div>
+    <div class="symptom"><b>Symptom:</b> wallet.lymx.com loads to a blank screen, or the spinner never stops.</div>
+    <div class="fix">
+      <b>Fix in 60 seconds</b>
+      <ol>
+        <li>Hard refresh: hold Shift + tap reload, or close and reopen the browser tab</li>
+        <li>Check status.lymx.com — if our network is down, this isn't your issue</li>
+        <li>Try a different browser (Safari → Chrome or vice versa)</li>
+        <li>Clear browser cache for lymx.com</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>QR code won't scan at the register</h3><span class="cat payment">Payment</span></div>
+    <div class="symptom"><b>Symptom:</b> Cashier holds scanner over your phone, nothing happens.</div>
+    <div class="fix">
+      <b>Fix in 30 seconds</b>
+      <ol>
+        <li>Increase your phone brightness all the way up (low brightness = scanner can't read)</li>
+        <li>Wipe your screen — fingerprints break QR contrast</li>
+        <li>Tap your phone screen so it doesn't dim mid-scan</li>
+        <li>Hold phone flat, scanner 4-6 inches above</li>
+        <li>If still failing — give cashier your phone number instead. Same effect.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>I paid but no LYMX appeared in my wallet</h3><span class="cat balance">Balance</span></div>
+    <div class="symptom"><b>Symptom:</b> You paid 30+ minutes ago and your balance hasn't updated.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Pull-to-refresh the wallet (drag down on home screen)</li>
+        <li>Check if the Business actually scanned your QR — sometimes cashier forgets. Look at your purchase receipt; if no LYMX line item, it wasn't scanned.</li>
+        <li>If Business scanned but no LYMX: file a "Missing LYMX claim" via wallet → Help → Missing LYMX. Include receipt photo. We resolve within 24 hours.</li>
+        <li>Note: most Businesses sync to LYMX in real-time. A few sync once per day at midnight — your LYMX appears next morning. Check the Business' integration page if you're unsure.</li>
+      </ol>
+    </div>
+    <div class="escalate"><b>Still missing after 24 hours?</b> Email <code>missing@lymx.com</code> with receipt photo. We track down where the issuance failed.</div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>I was double-charged in LYMX</h3><span class="cat balance">Balance</span></div>
+    <div class="symptom"><b>Symptom:</b> Your balance dropped twice for what should have been a single redemption.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Check transaction history (wallet → History) — confirm two separate debits</li>
+        <li>If both at the same Business at the same minute, that's a duplicate charge — file dispute via <a href="customer-dispute.html">customer-dispute.html</a></li>
+        <li>Refund typically resolves within 3 business days after Business confirms the duplicate</li>
+      </ol>
+    </div>
+    <div class="escalate"><b>Need it faster?</b> Show the cashier the duplicate in your history — most Businesses can reverse the second charge on the spot from their POS.</div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Business says "we don't accept LYMX" but they're on the network</h3><span class="cat business">Business</span></div>
+    <div class="symptom"><b>Symptom:</b> The Business map shows them as a LYMX Business but the cashier says no.</div>
+    <div class="fix">
+      <b>Likely causes (in order)</b>
+      <ol>
+        <li>Cashier is new and doesn't know — ask for the manager</li>
+        <li>Business is leaving the network — they should still accept (90-day wind-down rule). If they refuse, file a complaint via <a href="customer-dispute.html">customer-dispute.html</a></li>
+        <li>POS integration is down at that location today — Business should manually note your purchase and apply LYMX retroactively</li>
+        <li>Map data is stale — the Business may have actually left more than 90 days ago. Check their listing — should show "Inactive" badge.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Wallet says "session expired" — won't let me log back in</h3><span class="cat app">App</span></div>
+    <div class="symptom"><b>Symptom:</b> You log in, screen flashes, "session expired" appears immediately.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>This is almost always a system clock issue — your phone's time/date is off</li>
+        <li>Settings → General → Date & Time → enable "Set automatically"</li>
+        <li>Refresh wallet, log in again</li>
+        <li>If it persists, clear browser cookies for lymx.com — then log in</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>I never get the verification text</h3><span class="cat app">App</span></div>
+    <div class="symptom"><b>Symptom:</b> You request a verification code, never receive a text.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Wait 90 seconds — sometimes carrier-side delay</li>
+        <li>Check spam/blocked messages folder — some carriers route shortcodes there</li>
+        <li>Confirm you typed your phone number correctly (no extra digit, country code if international)</li>
+        <li>Try voice call instead — tap "Call instead" on the verification screen, we read the code aloud</li>
+        <li>If your carrier blocks shortcodes (some prepaid carriers do): contact <code>support@lymx.com</code> for manual verification</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>"Insufficient LYMX" but my balance shows enough</h3><span class="cat balance">Balance</span></div>
+    <div class="symptom"><b>Symptom:</b> You have 5,000 LYMX, you try to redeem 3,000, get error.</div>
+    <div class="fix">
+      <b>Likely causes</b>
+      <ol>
+        <li>Some of your LYMX is "pending" (recently issued, not yet settled — usually clears in 24 hours). Pending LYMX shows in balance but can't be spent.</li>
+        <li>Wallet → tap balance → see "Available" vs "Pending" breakdown</li>
+        <li>Wait 24 hours, retry</li>
+        <li>If still failing with no pending balance: it's a sync issue. Pull-to-refresh, then retry.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Promo I saw earlier disappeared from my wallet</h3><span class="cat business">Business</span></div>
+    <div class="symptom"><b>Symptom:</b> A 2x LYMX promo was advertised yesterday — gone today.</div>
+    <div class="fix">
+      <b>Likely causes</b>
+      <ol>
+        <li>Promo was time-limited (most are 1-7 days)</li>
+        <li>Promo had a daily cap and the Business hit it</li>
+        <li>Business ended the promo early — within their right</li>
+        <li>You can see all live promos at wallet → "Promos near me" — if you don't see it, it's not active</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>I don't recognize a transaction in my history</h3><span class="cat balance">Balance</span></div>
+    <div class="symptom"><b>Symptom:</b> Random Business name showing a charge you don't remember.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Check the Business' real-world name vs LYMX name — sometimes "Maria's Cafe LLC" shows as "Cafe Maria"</li>
+        <li>Check date/time — sometimes friend used your phone while you were at a Business, or you forgot a small purchase</li>
+        <li>If truly unauthorized: file a dispute within 30 days. We refund verified unauthorized activity.</li>
+        <li>Lock your wallet first if you think someone has access — see <a href="customer-account-recovery.html">account recovery</a></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Add to Home Screen doesn't work / disappears</h3><span class="cat app">App</span></div>
+    <div class="symptom"><b>Symptom:</b> You added the wallet icon, now it's gone — or it never installed.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>iOS: must use Safari (not Chrome) to "Add to Home Screen." Chrome adds bookmarks but not home-screen icons.</li>
+        <li>Android: in Chrome, must tap ⋮ → "Install app" (not "Add to Home Screen")</li>
+        <li>If icon disappeared: phone may have offloaded unused apps. iOS Settings → App Store → Offload Unused Apps → off.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>Wallet super slow on weekends</h3><span class="cat app">App</span></div>
+    <div class="symptom"><b>Symptom:</b> Page loads in 1 second on weekday, 8 seconds on Saturday night.</div>
+    <div class="fix">
+      <b>Likely causes</b>
+      <ol>
+        <li>Network congestion — wallet uses cellular when out and about, Saturday in Vegas means tower congestion. Switch to wifi if possible.</li>
+        <li>Map view is heavy — if you always land on map, switch home page to "Recent" (Settings → Default home tab).</li>
+        <li>Old phone — the wallet works on phones back to iOS 14 / Android 9 but performs best on newer hardware.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>I send LYMX to a friend — never arrived</h3><span class="cat balance">Balance</span></div>
+    <div class="symptom"><b>Symptom:</b> You sent LYMX to friend's number — they say they never got it.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Check if friend has a LYMX wallet — if not, the LYMX is held for them for 30 days waiting for sign-up</li>
+        <li>Confirm phone number — typo by one digit goes to wrong wallet (you can see in your "Sent" history)</li>
+        <li>If wrong number: file recovery request via wallet → Sent → tap transaction → "I sent to wrong person." We can claw back if not yet redeemed.</li>
+        <li>If friend has wallet but doesn't see it: have them check "Pending" tab (wallet → balance → Pending)</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>App/wallet feels stuck in another language</h3><span class="cat app">App</span></div>
+    <div class="symptom"><b>Symptom:</b> Wallet showing in Spanish (or another language) when you want English.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>The wallet auto-detects browser language. Settings → Language → English (US)</li>
+        <li>If your phone is set to Spanish system-wide, the auto-detect picks Spanish. Override in wallet settings.</li>
+        <li>We support: English, Spanish, Mandarin, Cantonese, Vietnamese, Tagalog, Korean (rolling out 2026)</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><h3>I'm getting too many LYMX notifications</h3><span class="cat app">App</span></div>
+    <div class="symptom"><b>Symptom:</b> Promo notifications, transaction alerts, "Business near you" pings — overwhelmed.</div>
+    <div class="fix">
+      <b>Fix steps</b>
+      <ol>
+        <li>Settings → Notifications → choose level: "Critical only" / "Promos & critical" / "All"</li>
+        <li>Critical-only = transaction confirmations + security alerts</li>
+        <li>Or turn off all browser notifications for lymx.com in your phone settings</li>
+      </ol>
+    </div>
+  </div>
+
+  <h2 style="font-size:22px;margin:32px 0 14px">Still stuck?</h2>
+  <p style="color:var(--mute);font-size:14.5px;margin-bottom:14px">If your issue isn't here, contact us. Most tickets resolve within 4 hours during business hours, 24 hours overnight.</p>
+  <p>📧 <a href="mailto:support@lymx.com">support@lymx.com</a> · ☎️ 1-833-LYMX-911 (24/7 emergency) · 💬 <a href="support.html">Live chat (9am-9pm PT)</a></p>
+
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="customer-faq.html" style="color:#5a6373">Customer FAQ</a> · <a href="emergency-protocol.html" style="color:#5a6373">Emergency protocol</a>
+</footer>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

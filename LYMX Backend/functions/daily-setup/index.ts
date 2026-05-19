@@ -49,7 +49,7 @@ serve(async (req) => {
             headers: { "Authorization": `Bearer ${DAILY_KEY}`, "Content-Type": "application/json" },
             body: JSON.stringify({
                 url: webhookUrl,
-                eventTypes: ["meeting.ended", "transcript.ready", "recording.ready"],
+                eventTypes: ["meeting.ended", "transcript.ready-to-download", "recording.ready-to-download"],
             }),
         });
         const body = await r.json();

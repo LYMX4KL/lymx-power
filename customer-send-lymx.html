@@ -3,181 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Send LYMX to a friend · LYMX</title>
-<meta name="description" content="Gift LYMX to family or friends. Free, instant, redeemable at any LYMX Business. The local-loyalty equivalent of treating someone to lunch.">
+<title>LYMX rewards stay in your wallet · LYMX</title>
+<meta name="description" content="LYMX rewards are non-transferable. Earn them at any LYMX Business, spend them at any LYMX Business — they always stay in your wallet.">
+<meta name="robots" content="noindex,nofollow" />
 <style>
-  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--err:#c0392b}
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b}
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
   a{color:var(--accent);text-decoration:none}
   .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
-  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .nav-inner{max-width:780px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
   .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
-  .brand span{color:var(--accent)}
   .nav-links{display:flex;gap:18px;font-size:14px}
   .nav-links a{color:var(--ink);font-weight:500}
-  .wrap{max-width:920px;margin:0 auto;padding:32px 24px 64px}
-  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
-  h1{font-size:38px;margin:0 0 12px;letter-spacing:-.025em}
-  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+  .wrap{max-width:780px;margin:0 auto;padding:48px 24px 64px}
 
-  .gift-card-mock{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border-radius:18px;padding:32px 36px;margin-bottom:32px;position:relative;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center}
-  @media(max-width:680px){.gift-card-mock{grid-template-columns:1fr}}
-  .gift-card-mock::after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(245,209,114,.18),transparent 70%);right:-100px;top:-100px;pointer-events:none}
-  .gift-card-mock .badge{display:inline-block;background:rgba(255,255,255,.18);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;padding:4px 12px;border-radius:99px;margin-bottom:14px;position:relative}
-  .gift-card-mock .from{font-size:13.5px;color:#a3c5ff;margin-bottom:4px;position:relative}
-  .gift-card-mock .amount{font-size:48px;font-weight:800;color:#f5d172;letter-spacing:-.025em;line-height:1;position:relative}
-  .gift-card-mock .amount-sub{font-size:14px;color:#a3c5ff;margin-top:6px;position:relative}
-  .gift-card-mock .msg-card{background:rgba(255,255,255,.1);padding:18px;border-radius:12px;font-size:14px;color:#fff;font-style:italic;position:relative;line-height:1.55}
-  .gift-card-mock .msg-card .h{font-size:11px;color:#a3c5ff;font-style:normal;letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-bottom:6px}
+  .hero{text-align:center;padding:14px 0 28px}
+  .hero .ic{font-size:56px;margin-bottom:10px}
+  h1{font-size:34px;margin:0 0 12px;letter-spacing:-.02em}
+  .lead{color:var(--mute);font-size:16px;max-width:600px;margin:0 auto;line-height:1.6}
 
-  .step-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px}
-  @media(max-width:760px){.step-grid{grid-template-columns:repeat(2,1fr)}}
-  .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;text-align:center}
-  .step .num{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;font-size:14px;margin-bottom:10px}
-  .step h4{margin:0 0 6px;font-size:15px}
-  .step p{margin:0;font-size:13px;color:var(--mute)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:18px}
+  .card h2{margin:0 0 8px;font-size:18px;letter-spacing:-.01em}
+  .card p{margin:0 0 8px;font-size:14.5px;color:var(--ink);line-height:1.6}
+  .card p:last-child{margin-bottom:0}
+  .card .accent{background:rgba(10,132,255,.06);border:1px solid rgba(10,132,255,.2);padding:14px 18px;border-radius:10px;margin-top:12px;font-size:14px;color:#0a4cb3}
 
-  .scenarios{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:32px}
-  @media(max-width:760px){.scenarios{grid-template-columns:1fr}}
-  .scenario{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 26px}
-  .scenario h3{margin:0 0 6px;font-size:16px;display:flex;align-items:center;gap:8px}
-  .scenario h3 .ico{font-size:22px}
-  .scenario p{margin:0 0 8px;font-size:14px;color:var(--mute)}
-  .scenario .amount{font-size:13px;color:var(--accent);font-weight:700}
+  .scenarios{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+  @media(max-width:680px){.scenarios{grid-template-columns:1fr}}
+  .scenario{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  .scenario h3{margin:0 0 6px;font-size:15px;display:flex;align-items:center;gap:8px}
+  .scenario .ico{font-size:22px}
+  .scenario p{margin:0;font-size:13.5px;color:var(--mute);line-height:1.55}
 
-  .important-box{background:#fff8e6;border:1px solid #f0c961;border-radius:12px;padding:18px 22px;margin:24px 0;font-size:14px;color:#7a5a00}
-  .important-box b{color:#5a4200}
+  .legal-box{background:#fff8e6;border:1px solid #f0c961;border-radius:11px;padding:16px 22px;margin:24px 0;font-size:13.5px;color:#7a5a00;line-height:1.65}
+  .legal-box b{color:#5a4200}
 
-  .recipient-flow{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:24px}
-  .recipient-flow h2{margin:0 0 14px;font-size:20px}
-  .rf-row{display:grid;grid-template-columns:80px 1fr;gap:18px;padding:14px 0;border-bottom:1px solid var(--line);align-items:start}
-  .rf-row:last-child{border-bottom:0}
-  .rf-row .when{font-weight:800;font-size:14px;color:var(--ink)}
-  .rf-row .what{font-size:14px;color:var(--mute)}
-  .rf-row .what b{color:var(--ink)}
-
-  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
-  summary{cursor:pointer;font-weight:600;font-size:14.5px}
-  details[open] summary{margin-bottom:8px}
-  details p{margin:0;color:var(--mute);font-size:14px}
+  .actions{display:flex;gap:10px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+  .btn{padding:11px 22px;border-radius:10px;font-weight:700;font-size:14px;border:1px solid transparent;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-outline{background:#fff;border-color:var(--line);color:var(--ink)}
 
   footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
 </style>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
 </head>
 <body>
 <div class="nav">
   <div class="nav-inner">
-    <div class="brand">LYMX <span>·</span> Power</div>
+    <div class="brand">LYMX</div>
     <div class="nav-links">
-      <a href="customer-faq.html">FAQ</a>
       <a href="customer-wallet.html">My wallet</a>
-      <a href="gift-card-buy.html">Buy gift card</a>
+      <a href="customer-faq.html">FAQ</a>
     </div>
   </div>
 </div>
 
 <div class="wrap">
-  <div class="crumb">Customer · Wallet · Send LYMX</div>
-  <h1>Send LYMX to a friend</h1>
-  <p class="lead">Birthday? Thanks for dinner? "Lunch on me?" You can transfer LYMX from your wallet to anyone's, instantly and free. They redeem at any LYMX Business — same as your own balance.</p>
+  <div class="hero">
+    <div class="ic">🔒</div>
+    <h1>LYMX rewards stay in your wallet</h1>
+    <p class="lead">LYMX is a personal rewards balance. You earned it at a participating Business — it stays linked to you. It's not transferable to other customers, and it isn't cash.</p>
+  </div>
 
-  <div class="gift-card-mock">
-    <div>
-      <span class="badge">★ LYMX Gift</span>
-      <div class="from">From: Maria L.</div>
-      <div class="amount">2,500 LYMX</div>
-      <div class="amount-sub">$25 of redemption value · network-wide</div>
-    </div>
-    <div class="msg-card">
-      <div class="h">Maria's message</div>
-      "Happy birthday Sarah! Use this for your favorite coffee shop. Love you 💕"
+  <div class="card">
+    <h2>Why LYMX isn't transferable between customers</h2>
+    <p>LYMX is loyalty rewards, not currency. Allowing customer-to-customer transfers would turn LYMX into a money-like instrument, which triggers a different regulatory category we're deliberately staying outside of (Nevada NRS 671). Keeping LYMX inside your wallet — earned by you, spent by you — keeps the platform simple, fast, and compliant.</p>
+    <div class="accent">
+      <strong>Simple rule:</strong> You earn LYMX at Business A, you spend LYMX at any LYMX Business in the network. That's the whole flow.
     </div>
   </div>
 
-  <h2 style="font-size:24px;margin:0 0 14px">How to send LYMX in 4 steps</h2>
-  <div class="step-grid">
-    <div class="step"><div class="num">1</div><h4>Open wallet</h4><p>wallet.lymx.com → Send</p></div>
-    <div class="step"><div class="num">2</div><h4>Pick recipient</h4><p>By phone number — no email or app required</p></div>
-    <div class="step"><div class="num">3</div><h4>Choose amount</h4><p>Any value, $1 to your full balance</p></div>
-    <div class="step"><div class="num">4</div><h4>Add a note</h4><p>Optional message — sent with the LYMX</p></div>
-  </div>
-
-  <h2 style="font-size:24px;margin:0 0 14px">When people send LYMX</h2>
+  <h2 style="font-size:22px;margin:32px 0 14px;letter-spacing:-.01em">Want to treat someone? Here are real options.</h2>
   <div class="scenarios">
     <div class="scenario">
-      <h3><span class="ico">🎂</span>Birthday gifts</h3>
-      <p>2,500 LYMX = $25. Recipient redeems at their favorite Business. Better than a gift card because it works at 218 places, not one.</p>
-      <div class="amount">Typical: 2,500 LYMX</div>
+      <h3><span class="ico">🎁</span>Gift cards (coming soon)</h3>
+      <p>Buy a LYMX gift card from the platform with your credit card. Send to anyone. They claim it as their own LYMX balance. <em>Different from transferring — the gift card is a fresh purchase from us.</em></p>
     </div>
     <div class="scenario">
-      <h3><span class="ico">🍽️</span>Splitting the bill</h3>
-      <p>You pay the $40 dinner with your card, earn 200 LYMX. Friend Venmos you their $20. Send them 100 LYMX — they get their share.</p>
-      <div class="amount">Typical: 100-300 LYMX</div>
+      <h3><span class="ico">📍</span>Visit a LYMX Business together</h3>
+      <p>Take a friend out. You pay the bill (cash or card). Both of you earn LYMX at the visit (they sign up at the counter — takes 30 seconds).</p>
     </div>
     <div class="scenario">
-      <h3><span class="ico">🙏</span>"Thanks for the favor"</h3>
-      <p>Babysitter, dog-walker, friend who helped you move. Send 1,000 LYMX with a thank-you note. They'll spend it locally.</p>
-      <div class="amount">Typical: 500-1,000 LYMX</div>
+      <h3><span class="ico">🤝</span>Invite them to LYMX</h3>
+      <p>Share your referral link. When they sign up and make their first purchase, you both earn a 100 LYMX bonus. <a href="customer-referral.html">Share your link →</a></p>
     </div>
     <div class="scenario">
-      <h3><span class="ico">👨‍👩‍👧</span>Family support</h3>
-      <p>Adult child in college, parents on a budget. Send LYMX they can use for groceries / restaurants / services in your local network.</p>
-      <div class="amount">Typical: 5,000-25,000 LYMX</div>
-    </div>
-    <div class="scenario">
-      <h3><span class="ico">🎁</span>Holiday gifts (with card)</h3>
-      <p>Want it printed? Use the <a href="gift-card-buy.html">gift card flow</a> instead — same effect plus you get a printable card to wrap.</p>
-      <div class="amount">Typical: 5,000+ LYMX</div>
-    </div>
-    <div class="scenario">
-      <h3><span class="ico">💝</span>Group gifts</h3>
-      <p>Office baby shower? Multiple wallets can send into a single recipient wallet. Combine up to a meaningful amount.</p>
-      <div class="amount">Typical: 100 LYMX from each of 30 people = $30</div>
+      <h3><span class="ico">💸</span>Pay them back in cash</h3>
+      <p>If you owe someone money, send them cash or use Venmo/Zelle. LYMX is your loyalty balance — not a money-transfer service.</p>
     </div>
   </div>
 
-  <div class="important-box">
-    <b>Why "phone number, not email"?</b> The LYMX wallet works on phone numbers — no email signup required. If you send LYMX to a phone number that doesn't have a wallet yet, it's held for 30 days. We text the recipient with a link to claim by setting up their free wallet (takes 10 seconds).
+  <div class="legal-box">
+    <strong>📌 Non-transferable, by design.</strong><br>
+    LYMX rewards are issued to a specific customer wallet and are not transferable to another customer's wallet. The only exception is the formal gift-card flow (purchased fresh from the platform). Attempting unauthorized transfers will be detected and the affected balances may be reversed.<br><br>
+    This rule is part of why LYMX is classified as a promotional credit (not stored value, not cryptocurrency, not money transmission). See <a href="terms.html">Terms of Service</a> and <a href="privacy.html">Privacy</a> for the full text.
   </div>
 
-  <div class="recipient-flow">
-    <h2>What happens on the recipient's end</h2>
-    <div class="rf-row">
-      <div class="when">If active wallet</div>
-      <div class="what"><b>Instant.</b> They get a notification: "[Your name] sent you 2,500 LYMX." Balance updates within 5 seconds. Note (if any) appears in their LYMX activity history.</div>
-    </div>
-    <div class="rf-row">
-      <div class="when">If no wallet yet</div>
-      <div class="what"><b>30-day hold.</b> We text them: "[Your name] sent you 2,500 LYMX on the LYMX rewards network. Claim it here: [link]." They tap, set up their free wallet (10 sec), the LYMX is theirs.</div>
-    </div>
-    <div class="rf-row">
-      <div class="when">If they don't claim in 30 days</div>
-      <div class="what"><b>LYMX returns to you.</b> Auto-reversal after 30 days. We notify you: "Your gift to [number] wasn't claimed; LYMX returned." Try a different number or follow up directly.</div>
-    </div>
-    <div class="rf-row">
-      <div class="when">If wrong number</div>
-      <div class="what"><b>Reverse it within 24 hours.</b> If you typed a typo, go to wallet → Sent → tap transaction → "I sent to wrong person" → confirm. Reverses if recipient hasn't redeemed.</div>
-    </div>
+  <div class="actions">
+    <a class="btn btn-primary" href="customer-wallet.html">← Back to my wallet</a>
+    <a class="btn btn-outline" href="browse.html">Browse LYMX Businesses</a>
   </div>
-
-  <h2 style="font-size:22px;margin:32px 0 14px">FAQ</h2>
-  <details><summary>Is there a fee for sending LYMX?</summary><p>Free — both for senders and recipients. No transfer fee. No claim fee. Receiving LYMX is always free.</p></details>
-  <details><summary>What's the maximum I can send?</summary><p>Your full available balance. Pending LYMX (issued in the last 24 hours) can't be sent — only available LYMX.</p></details>
-  <details><summary>Can I send LYMX to multiple people at once?</summary><p>One recipient at a time in the standard flow. For bulk gifts (like office or family), use <a href="gift-card-buy.html">gift cards</a> which support multi-recipient sends.</p></details>
-  <details><summary>Can the recipient send LYMX to someone else?</summary><p>Yes — once received, LYMX behaves like any LYMX in their wallet. They can redeem at Businesses or send to others.</p></details>
-  <details><summary>Will my recipient see my phone number?</summary><p>They see your first name (and last initial if you set it). Not your phone number. Privacy preserved both directions.</p></details>
-  <details><summary>What if I'm sending to someone in a different city / state?</summary><p>Their wallet works wherever LYMX is. Today that's primarily Las Vegas. As we expand to other cities, their LYMX works in their city's network too.</p></details>
-  <details><summary>Can I send LYMX as a recurring monthly transfer (e.g., to a family member)?</summary><p>Not directly today — but it's on our roadmap. For now, set a phone reminder + manually send. Family wallet (shared balance) is also coming.</p></details>
-  <details><summary>Are there any tax implications for sending or receiving LYMX?</summary><p>For most personal use cases — no. LYMX is loyalty rewards, not a financial transfer. If you're sending large amounts as effective gifts, consult your tax advisor on annual gift-tax exclusion limits.</p></details>
-
 </div>
 
 <footer>
-  © 2026 LYMX Power · Las Vegas, NV · <a href="customer-wallet.html" style="color:#5a6373">My wallet</a> · <a href="gift-card-buy.html" style="color:#5a6373">Buy gift card</a> · <a href="customer-faq.html" style="color:#5a6373">Customer FAQ</a>
+  © <span id="yr"></span> LYMX Power · Las Vegas, NV · <a href="customer-wallet.html" style="color:#5a6373">Wallet</a> · <a href="terms.html" style="color:#5a6373">Terms</a> · <a href="customer-faq.html" style="color:#5a6373">FAQ</a>
 </footer>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>
 </html>

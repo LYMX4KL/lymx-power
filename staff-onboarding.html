@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Staff Onboarding · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#dc2626;--maxw:680px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px;width:100%}
+  header.nav{background:#fff;border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:var(--maxw);margin:0 auto;padding:0 20px}
+  .brand{font-weight:800;font-size:18px}
+  main{padding:28px 0 60px}
+  h1{font-size:26px;font-weight:800;margin:0 0 6px}
+  .lead{color:var(--muted);font-size:15px;margin-bottom:24px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:18px}
+  .card h2{margin:0 0 6px;font-size:16px;font-weight:800}
+  .card .sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;font-weight:700;margin-bottom:4px}
+  .field .hint{font-size:12px;color:var(--muted);margin-top:3px}
+  .field input,.field select,.field textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:9px;font:inherit;font-size:14px}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);outline:none}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:520px){.row2{grid-template-columns:1fr}}
+  .gps-box{background:var(--bg-soft);border:1px solid var(--line);border-radius:9px;padding:12px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .gps-box .ok{color:var(--ok);font-weight:700}
+  .gps-box .err{color:var(--danger);font-weight:700}
+  .gps-box .btn-mini{background:var(--ink);color:#fff;padding:7px 12px;border-radius:7px;border:0;font-weight:700;font-size:12px;cursor:pointer}
+  .checkbox-row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;font-size:14px}
+  .checkbox-row input{margin-top:3px;width:16px;height:16px}
+  .agreement{background:var(--bg-soft);border:1px solid var(--line);border-radius:9px;padding:14px;font-size:13px;color:var(--muted);max-height:200px;overflow-y:auto;margin-bottom:10px}
+  .agreement strong{color:var(--ink)}
+  .btn{display:inline-block;padding:13px 26px;border-radius:10px;font-weight:700;font-size:15px;border:0;cursor:pointer;font:inherit}
+  .btn-primary{background:var(--ok);color:#fff}
+  .btn-primary:hover{background:#0f8b5a}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:99;opacity:0;transition:opacity .2s}
+  .toast.on{opacity:1}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--danger)}
+  .success{padding:24px;text-align:center}
+  .success .check{font-size:48px;margin-bottom:8px}
+</style>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand">LYMX Staff</a>
+    <a href="rep-dashboard.html" style="font-size:13px;color:var(--muted)">Dashboard</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 data-i18n="onb.title">Welcome to the team 👋</h1>
+  <p class="lead" data-i18n="onb.lead">Two quick things before you start: tell us where you'll be working, and accept the work agreement. Takes about 2 minutes.</p>
+
+  <div id="onbForm">
+
+    <div class="card">
+      <h2 data-i18n="onb.where_title">📍 Where you'll be working</h2>
+      <div class="sub" data-i18n="onb.where_sub">This is your "home base" — for remote staff, your home; for in-office, your office address. We use this for clock-in geofencing so you can punch in when you start work.</div>
+
+      <div class="field">
+        <label data-i18n="onb.address_label">Home / work address</label>
+        <input id="addressInput" type="text" placeholder="123 Main St, City, State" />
+        <div class="hint" data-i18n="onb.address_hint">Full street address. We don't share this — used only for time-clock verification.</div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label data-i18n="onb.gps_label">Your GPS coordinates</label>
+          <div class="gps-box" id="gpsBox">
+            <span id="gpsStatus">📍 Tap "Use my current location"</span>
+            <button class="btn-mini" id="gpsBtn" type="button" data-i18n="onb.use_gps">Use my location</button>
+          </div>
+          <div class="hint" data-i18n="onb.gps_hint">Stand at your usual workspace when you tap this — that's your anchor.</div>
+        </div>
+        <div class="field">
+          <label data-i18n="onb.radius_label">Geofence radius (meters)</label>
+          <input id="radiusInput" type="number" min="50" max="2000" step="50" value="200" />
+          <div class="hint" data-i18n="onb.radius_hint">How far from your anchor counts as "at work". 200m is a good default.</div>
+        </div>
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="remoteAllowed" checked />
+        <label for="remoteAllowed" data-i18n="onb.remote_label">I'm authorised to clock in from anywhere (remote work). If unchecked, punches outside your geofence will be flagged for review.</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="onb.employment_title">📋 Employment details</h2>
+      <div class="sub" data-i18n="onb.employment_sub">Quick info for payroll + scheduling.</div>
+
+      <div class="row2">
+        <div class="field">
+          <label data-i18n="onb.title_label">Your job title</label>
+          <input id="jobTitleInput" type="text" placeholder="e.g. Partner Success Manager" />
+        </div>
+        <div class="field">
+          <label data-i18n="onb.type_label">Employment type</label>
+          <select id="employmentType">
+            <option value="full_time" data-i18n="onb.type_full">Full-time</option>
+            <option value="part_time" data-i18n="onb.type_part">Part-time</option>
+            <option value="contractor" data-i18n="onb.type_contractor">Contractor</option>
+            <option value="intern" data-i18n="onb.type_intern">Intern</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="onb.agreement_title">✍️ Work agreement</h2>
+      <div class="sub" data-i18n="onb.agreement_sub">Please read carefully and accept.</div>
+
+      <div class="agreement">
+        <strong data-i18n="onb.agreement_h1">LYMX Power Staff Working Agreement (v1)</strong><br><br>
+        <span data-i18n="onb.agreement_p1">As a member of the LYMX team, you agree to:</span><br>
+        • <span data-i18n="onb.agreement_p2">Work the hours scheduled and accepted via the LYMX schedule system.</span><br>
+        • <span data-i18n="onb.agreement_p3">Clock in at the start of each shift and clock out at the end. Outside scheduled hours, work features are turned off.</span><br>
+        • <span data-i18n="onb.agreement_p4">Keep customer + partner information confidential. Don't share login credentials.</span><br>
+        • <span data-i18n="onb.agreement_p5">Submit time-off requests in advance through your dashboard.</span><br>
+        • <span data-i18n="onb.agreement_p6">Use the chat / conversations tools for all work communication so it stays on-record.</span><br><br>
+        <span data-i18n="onb.agreement_p7">This agreement can be updated. You'll be re-prompted to re-accept any material changes.</span>
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="agreeBox" />
+        <label for="agreeBox" data-i18n="onb.agreement_check">I have read and accept the LYMX Staff Working Agreement (v1).</label>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px">
+      <button class="btn btn-primary" id="submitBtn" type="button" disabled data-i18n="onb.submit">Complete onboarding</button>
+    </div>
+  </div>
+
+  <div id="successCard" class="card success" style="display:none">
+    <div class="check">✅</div>
+    <h2 data-i18n="onb.done_title">You're all set!</h2>
+    <p data-i18n="onb.done_p">Your onboarding is complete. The team will publish your first weekly schedule shortly — you'll see it on <a href="my-schedule.html">My Schedule</a> and need to accept it before you can clock in.</p>
+    <div style="margin-top:14px">
+      <a class="btn btn-primary" href="rep-dashboard.html" data-i18n="onb.done_btn">Go to my dashboard</a>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+const SUPA = window.LYMX_CONFIG.SUPABASE_URL;
+const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+let myUser = null;
+let gps = null;
+
+function $(id){return document.getElementById(id);}
+function toast(msg, kind){const t=$('toast');t.textContent=msg;t.className='toast on '+(kind||'');setTimeout(()=>t.className='toast',2800);}
+
+async function authedFetch(path, opts) {
+  opts = opts || {};
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  const tok = (s && s.access_token) || ANON;
+  return fetch(SUPA + path, {
+    ...opts,
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json', ...(opts.headers||{}) }
+  });
+}
+
+$('gpsBtn').addEventListener('click', function(){
+  if (!navigator.geolocation) { toast('GPS not supported in this browser','err'); return; }
+  $('gpsStatus').textContent = '📍 Locating…';
+  navigator.geolocation.getCurrentPosition(
+    function(pos){
+      gps = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
+      $('gpsStatus').innerHTML = '<span class="ok">✓ Locked</span> ±' + Math.round(gps.accuracy) + 'm';
+      checkSubmit();
+    },
+    function(err){
+      $('gpsStatus').innerHTML = '<span class="err">⚠ ' + (err.message || 'GPS denied') + '</span>';
+    },
+    { enableHighAccuracy:true, timeout:10000 }
+  );
+});
+
+$('agreeBox').addEventListener('change', checkSubmit);
+$('addressInput').addEventListener('input', checkSubmit);
+
+function checkSubmit(){
+  const ready = gps && $('agreeBox').checked && $('addressInput').value.trim().length >= 8;
+  $('submitBtn').disabled = !ready;
+}
+
+$('submitBtn').addEventListener('click', async function(){
+  $('submitBtn').disabled = true;
+  $('submitBtn').textContent = 'Saving…';
+
+  // Upsert into staff_roles for this user
+  const body = {
+    user_id: myUser.id,
+    job_title: $('jobTitleInput').value.trim() || null,
+    employment_type: $('employmentType').value,
+    home_office_lat: gps.lat,
+    home_office_lng: gps.lng,
+    geofence_radius_m: Number($('radiusInput').value) || 200,
+    remote_allowed: $('remoteAllowed').checked,
+    home_office_address: $('addressInput').value.trim(),
+    work_agreement_accepted_at: new Date().toISOString(),
+    work_agreement_version: 'v1',
+    onboarding_completed_at: new Date().toISOString()
+  };
+
+  const r = await authedFetch('/rest/v1/staff_roles?on_conflict=user_id', {
+    method: 'POST',
+    headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify(body)
+  });
+
+  if (!r.ok) {
+    const t = await r.text();
+    toast('Save failed: ' + t.slice(0,80), 'err');
+    $('submitBtn').disabled = false;
+    $('submitBtn').textContent = 'Complete onboarding';
+    return;
+  }
+
+  $('onbForm').style.display = 'none';
+  $('successCard').style.display = 'block';
+});
+
+(async function init(){
+  const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+  if (!s) { location.href = '/login.html?next=/staff-onboarding.html'; return; }
+  myUser = s.user;
+
+  // If already onboarded, show success card directly
+  const r = await authedFetch('/rest/v1/staff_roles?user_id=eq.' + myUser.id + '&select=onboarding_completed_at,home_office_lat&limit=1');
+  if (r.ok) {
+    const arr = await r.json();
+    if (arr.length && arr[0].onboarding_completed_at) {
+      $('onbForm').style.display = 'none';
+      $('successCard').style.display = 'block';
+    }
+  }
+})();
+</script>
+<script src="lymx-i18n.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

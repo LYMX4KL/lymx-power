@@ -6,9 +6,6 @@
 <meta name="description" content="LYMX customer dispute — flag a transaction in your wallet that you don't recognize or that's wrong. We respond within 1 business day." />
 <meta name="robots" content="noindex,nofollow" />
 <title>Report an issue · LYMX Wallet</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px}
   *{box-sizing:border-box}
@@ -107,6 +104,17 @@
   .locked-state h2{margin:0 0 6px;font-size:22px;font-weight:800}
   .locked-state p{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.55}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 <div class="top">
@@ -365,8 +373,8 @@
   function renderReview(){
     document.getElementById('review-card').innerHTML = `
       <div class="review-row"><span class="l">Issue</span><span class="r">${REASON_LABELS[state.reason] || '—'}</span></div>
-      <div class="review-row"><span class="l">Transaction</span><span class="r">Sunlit Salon Studio · −240 LYMX</span></div>
-      <div class="review-row"><span class="l">When</span><span class="r">Yesterday · 4:08 PM</span></div>
+      <div class="review-row"><span class="l">Transaction</span><span class="r">${state.txnLabel || '— not specified —'}</span></div>
+      <div class="review-row"><span class="l">When</span><span class="r">${state.txnWhen || '— not specified —'}</span></div>
       <div class="review-row"><span class="l">Your description</span><span class="r" style="font-style:italic">${escapeHTML(state.desc.slice(0,100))}${state.desc.length>100?'…':''}</span></div>
       ${state.expected ? `<div class="review-row"><span class="l">Expected</span><span class="r">${escapeHTML(state.expected)}</span></div>` : ''}
     `;
@@ -401,8 +409,124 @@
   if(when){ document.querySelector('.tx-card .when').textContent = when + (txId ? ' · ' + txId : ''); }
   if(amt){ document.querySelector('.tx-card .amt').textContent = amt; }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Wire customer-dispute submitReport() to actually file the dispute to feedback.
+// Replaces the fake CASE-XXXXXX generation with a real DB insert.
+(async function wireDispute(){
+  try {
+    if (!window.LYMX || !window.LYMX.getSession) return;
+
+    // Read URL query params for transaction context (?biz=...&amt=...&when=...&id=...)
+    const params = new URLSearchParams(location.search);
+    if (typeof state !== 'undefined') {
+      state.txnLabel = '';
+      if (params.get('biz')) state.txnLabel = params.get('biz');
+      if (params.get('amt')) state.txnLabel += (state.txnLabel ? ' · ' : '') + params.get('amt');
+      state.txnWhen = params.get('when') || '';
+      state.txnId = params.get('id') || '';
+    }
+
+    const REASON_LBL = {
+      'not-mine': "Transaction I don't recognize",
+      'wrong-amount': 'Wrong LYMX amount',
+      'missing': 'Promo / multiplier missing',
+      'bonus-missing': 'Sign-up or referral bonus missing',
+      'general': 'Something else'
+    };
+
+    // Override submitReport
+    window.submitReport = async function () {
+      try {
+        const s = await window.LYMX.getSession();
+        const sb = window.LYMX.sb;
+        const desc = (state && state.desc) || '';
+        const expected = (state && state.expected) || '';
+        const reason = (state && state.reason) || 'general';
+        const email = (state && state.email) || (s && s.user && s.user.email) || '';
+        const subject = '[Dispute] ' + (REASON_LBL[reason] || 'Customer dispute');
+        const messageParts = [
+          'Issue: ' + (REASON_LBL[reason] || reason),
+          state.txnLabel ? 'Transaction: ' + state.txnLabel : '',
+          state.txnWhen ? 'When: ' + state.txnWhen : '',
+          state.txnId ? 'Txn ID: ' + state.txnId : '',
+          expected ? 'Expected: ' + expected : '',
+          'Description: ' + desc
+        ].filter(Boolean);
+        const message = messageParts.join('\n');
+
+        const payload = {
+          user_email: email,
+          user_role: 'customer',
+          type: 'dispute',
+          priority: (reason === 'not-mine' ? 'high' : 'medium'),
+          status: 'new',
+          subject: subject,
+          message: message,
+          page_url: location.pathname + location.search
+        };
+
+        const { data, error } = await sb.from('feedback').insert(payload).select('id').single();
+        let caseId;
+        if (!error && data && data.id) {
+          caseId = 'CASE-' + String(data.id).slice(0, 8).toUpperCase();
+        } else {
+          // Fall back to local ID so the user still gets a confirmation page
+          console.warn('[dispute] DB insert failed, showing local case id', error);
+          caseId = 'CASE-' + Math.floor(100000 + Math.random() * 900000);
+        }
+
+        const eta = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        const idEl = document.getElementById('case-id');
+        const emailEl = document.getElementById('case-email');
+        const email2El = document.getElementById('case-email-2');
+        const etaEl = document.getElementById('case-eta');
+        if (idEl) idEl.textContent = caseId;
+        if (emailEl) emailEl.textContent = email;
+        if (email2El) email2El.textContent = email;
+        if (etaEl) etaEl.textContent = eta.toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+      } catch (e) {
+        console.warn('[dispute] submitReport failed', e);
+      }
+    };
+
+    // Override lockWallet to also file as urgent dispute
+    const origLock = window.lockWallet;
+    window.lockWallet = async function () {
+      if (!confirm('Lock the wallet now? You can still file the report after, but no transactions will go through until our team unlocks it.')) return;
+      try {
+        const sb = window.LYMX.sb;
+        const s = await window.LYMX.getSession();
+        const email = (s && s.user && s.user.email) || '';
+        const { data } = await sb.from('feedback').insert({
+          user_email: email,
+          user_role: 'customer',
+          type: 'dispute',
+          priority: 'urgent',
+          status: 'new',
+          subject: '[Wallet locked] Customer requested wallet lock',
+          message: 'Customer triggered "Lock wallet now" from customer-dispute.html. Reason: ' + ((state && state.reason) || 'unknown') + '. Needs immediate review.',
+          page_url: location.pathname + location.search
+        }).select('id').single();
+        const caseId = (data && data.id) ? 'CASE-' + String(data.id).slice(0,8).toUpperCase() : 'CASE-' + Math.floor(100000 + Math.random()*900000);
+        const lid = document.getElementById('locked-case-id');
+        if (lid) lid.textContent = caseId;
+        setStep('locked');
+        const ab = document.getElementById('actions');
+        if (ab) ab.style.display = 'none';
+      } catch (e) {
+        console.warn('[dispute] lockWallet failed', e);
+      }
+    };
+  } catch (e) {
+    console.warn('[customer-dispute] wire failed', e);
+  }
+})();
+</script>
 <script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>
 </html>

@@ -181,7 +181,7 @@ serve(async (req) => {
     const missing = required.filter((k) => !env(k));
     if (missing.length > 0) {
         return errorResponse(
-            `Server misconfigured — missing env vars: ${missing.jwoin(", ")}`,
+            `Server misconfigured — missing env vars: ${missing.join(", ")}`,
             500
         );
     }
@@ -200,7 +200,7 @@ serve(async (req) => {
         return errorResponse("Invalid auth token", 401);
     }
 
-    // ---- Verify business ownership ------------------------------------------
+    // ---- Verify business ownership -----------------------------------------
     const { data: biz, error: bErr } = await supabase
         .from("businesses")
         .select("id, owner_user_id, archived_at")

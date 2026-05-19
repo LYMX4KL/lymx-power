@@ -47,7 +47,14 @@ async function refreshGoogleToken(supabase: ReturnType<typeof createClient>, tok
         }).toString(),
     });
     if (!r.ok) {
-        console.warn(`[google-busy] refresh failed: ${r.status} ${await r.text().catch(() => "")}`);
+        const errText = await r.text().catch(() => "");
+        console.warn(`[google-busy] refresh failed: ${r.status} ${errText}`);
+        // 400 invalid_grant / 401 = user revoked the refresh_token in Google.
+        // Mark the row as revoked so team-calendar.html shows "Reconnect required"
+        // and book-call's google push skips this token going forward.
+        if (r.status === 400 || r.status === 401) {
+            await supabase.from("oauth_tokens").update({ status: "revoked" }).eq("id", tokenRow.id);
+        }
         return null;
     }
     const j = await r.json();
@@ -81,6 +88,7 @@ serve(async (req) => {
     // Look up their Google token
     const { data: tokenRow } = await supabase.from("oauth_tokens").select("*").eq("user_id", cal.user_id).eq("provider", "google").maybeSingle();
     if (!tokenRow || !tokenRow.pull_busy) return json({ ok: true, busy: [], synced: false, reason: "user has not connected Google or has pull_busy=off" });
+    if (tokenRow.status === "revoked") return json({ ok: true, busy: [], synced: false, reason: "google_token_revoked" });
 
     // Refresh if expired
     let accessToken = tokenRow.access_token;

@@ -276,6 +276,7 @@ serve(async (req) => {
             booker_email: normalizedEmail,
             booker_phone: body.booker_phone || null,
             booker_message: body.booker_message || null,
+            booker_answers: (body.booker_answers && typeof body.booker_answers === "object") ? body.booker_answers : {},
             starts_at: starts.toISOString(),
             ends_at: ends.toISOString(),
             duration_min: durationMin,
@@ -284,17 +285,62 @@ serve(async (req) => {
             video_room_id: videoRoomId,
             video_room_data: videoData,
             status: "confirmed",
+            rescheduled_from_booking_id: body.reschedule_from || null,
         }).select().single();
     if (bookErr) return err(`Could not save booking: ${bookErr.message}`, 500);
+
+    // ---- 8a. If this is a reschedule, cancel the old booking ------------------
+    if (body.reschedule_from && body.reschedule_token) {
+        try {
+            // Validate token matches old booking before cancelling
+            const { data: oldB } = await supabase
+                .from("bookings")
+                .select("id, status, cancel_token, video_provider, video_room_id, video_room_data, lead_id, team_calendar_id")
+                .eq("id", body.reschedule_from)
+                .eq("cancel_token", body.reschedule_token)
+                .maybeSingle();
+            if (oldB && oldB.status !== "cancelled" && oldB.status !== "completed") {
+                await supabase.from("bookings").update({
+                    status: "cancelled",
+                    cancelled_at: new Date().toISOString(),
+                    cancelled_by: "booker",
+                    cancelled_reason: `Rescheduled to ${starts.toISOString()}`,
+                }).eq("id", oldB.id);
+                // Best-effort: delete the old Daily room
+                if (oldB.video_provider === "daily" && oldB.video_room_id && DAILY_KEY) {
+                    fetch(`https://api.daily.co/v1/rooms/${encodeURIComponent(oldB.video_room_id)}`, {
+                        method: "DELETE",
+                        headers: { "Authorization": `Bearer ${DAILY_KEY}` },
+                    }).catch(_e => {});
+                }
+                // Best-effort: delete old Google event
+                const oldGoogleId = (oldB.video_room_data && oldB.video_room_data.google_event_id) || null;
+                if (oldGoogleId) {
+                    const { data: tokRow } = await supabase
+                        .from("oauth_tokens").select("access_token, status")
+                        .eq("user_id", cal.user_id).eq("provider", "google").maybeSingle();
+                    if (tokRow && tokRow.status !== "revoked" && tokRow.access_token) {
+                        fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${encodeURIComponent(oldGoogleId)}?sendUpdates=none`, {
+                            method: "DELETE",
+                            headers: { "Authorization": `Bearer ${tokRow.access_token}` },
+                        }).catch(_e => {});
+                    }
+                }
+            }
+        } catch (e: any) {
+            console.warn(`[book-call] Reschedule old-booking cleanup threw: ${e.message}`);
+        }
+    }
 
     // ---- 8b. Push event to calendar owner's Google Calendar (if connected) -----
     try {
         const { data: tokenRow } = await supabase
             .from("oauth_tokens").select("*")
             .eq("user_id", cal.user_id).eq("provider", "google").maybeSingle();
-        if (tokenRow && tokenRow.push_bookings) {
+        if (tokenRow && tokenRow.push_bookings && tokenRow.status !== "revoked") {
             // Refresh if expiring within 30 seconds
             let access = tokenRow.access_token;
+            let revoked = false;
             const isExpiring = tokenRow.expires_at && new Date(tokenRow.expires_at) < new Date(Date.now() + 30000);
             if (isExpiring && tokenRow.refresh_token) {
                 const CID = Deno.env.get("GOOGLE_OAUTH_CLIENT_ID");
@@ -313,9 +359,15 @@ serve(async (req) => {
                             expires_at: jj.expires_in ? new Date(Date.now() + jj.expires_in * 1000).toISOString() : null,
                             last_refreshed_at: new Date().toISOString(),
                         }).eq("id", tokenRow.id);
+                    } else if (rr.status === 400 || rr.status === 401) {
+                        // Google revoked the refresh token (user disconnected externally)
+                        console.warn(`[book-call] Google refresh ${rr.status} — marking token as revoked for user ${cal.user_id}`);
+                        await supabase.from("oauth_tokens").update({ status: "revoked" }).eq("id", tokenRow.id);
+                        revoked = true;
                     }
                 }
             }
+            if (revoked) throw new Error("google_token_revoked");
             // Insert calendar event
             const eventPayload = {
                 summary: `LYMX call: ${cal.display_name} ↔ ${booker_name}`,
@@ -373,6 +425,18 @@ serve(async (req) => {
             organizer: ownerEmail,
             attendee: normalizedEmail,
         });
+        const cancelUrl = `https://getlymx.com/booking-cancel.html?id=${booking.id}&token=${encodeURIComponent(booking.cancel_token || "")}`;
+        // Render booker_answers as a "Pre-call info" block keyed by the labels from cal.intake_questions
+        const intakeQuestions: any[] = Array.isArray(cal.intake_questions) ? cal.intake_questions : [];
+        const answers: Record<string, string> = (body.booker_answers && typeof body.booker_answers === "object") ? body.booker_answers : {};
+        const answeredBlock = intakeQuestions
+            .map(q => ({ label: q.label || q.id, val: answers[q.id] }))
+            .filter(a => a.val && String(a.val).trim())
+            .map(a => `<div style="margin-bottom:6px"><b style="color:#0e1116">${escHtml(a.label)}</b><br><span style="color:#1a1f27">${escHtml(String(a.val))}</span></div>`)
+            .join("");
+        const answeredBlockHtml = answeredBlock
+            ? `<div style="margin:14px 0;padding:12px 14px;background:#fafbfc;border:1px solid #e6e8ec;border-radius:8px;font-size:13.5px"><div style="font-size:11.5px;color:#5b6472;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Pre-call info</div>${answeredBlock}</div>`
+            : "";
         const sharedHtml = (recipientName: string, otherName: string) =>
             `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;font-size:15px;line-height:1.55;color:#0e1116;max-width:600px;margin:0 auto;padding:24px">`
           + `<h2 style="margin:0 0 12px;font-size:22px">📅 Your call is confirmed</h2>`
@@ -384,8 +448,9 @@ serve(async (req) => {
           + `</div>`
           + `<p><a href="${videoUrl}" style="display:inline-block;background:#0a84ff;color:#fff;padding:11px 22px;border-radius:9px;font-weight:700;text-decoration:none">🎥 Join the call</a></p>`
           + (body.booker_message ? `<div style="margin:14px 0;font-size:14px;color:#5b6472"><b>Note from ${escHtml(booker_name)}:</b><br>${escHtml(body.booker_message)}</div>` : "")
+          + answeredBlockHtml
           + `<hr style="border:0;border-top:1px solid #e6e8ec;margin:24px 0 14px" />`
-          + `<div style="font-size:12px;color:#5b6472">Need to reschedule? Reply to this email — we'll sort it out.</div>`
+          + `<div style="font-size:13px;color:#5b6472">Need to change this? <a href="${cancelUrl}" style="color:#dc2626;font-weight:600">Cancel this call</a> · or <a href="https://getlymx.com/c/${cal.handle}" style="color:#0a84ff;font-weight:600">book a different time</a></div>`
           + `</div>`;
 
         const sendOne = async (to: string, html: string) => {
@@ -412,6 +477,7 @@ serve(async (req) => {
     return json({
         ok: true,
         booking_id: booking.id,
+        cancel_token: booking.cancel_token,
         lead_id: leadId,
         conversation_id: conversationId,
         video_room_url: videoUrl,

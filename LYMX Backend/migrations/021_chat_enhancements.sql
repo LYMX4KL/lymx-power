@@ -149,7 +149,7 @@ select distinct
     u.email                                       as email,
     case
         when exists (select 1 from public.partners pp where pp.user_id = u.id) then 'partner'
-        when exists (select 1 from public.businesses b where b.user_id = u.id) then 'business'
+        when exists (select 1 from public.businesses b where b.owner_user_id = u.id) then 'business'
         else 'customer'
     end                                           as role_hint
   from auth.users u
@@ -201,4 +201,4 @@ select 'migration 021 applied' as status,
          where table_schema='public' and table_name='chat_messages'
            and column_name in ('author_name_snapshot','mentions','attachments')) as new_columns_present,
        (select count(*) from information_schema.tables
-         where table_schema='public' and table_name in ('chat_attachments','chat_mention_notifications')) as new_tables_present;
+         where table_schema='public' and table_name in ('chat_attachments','chat_mention_notifications')) as new_tables_pre
