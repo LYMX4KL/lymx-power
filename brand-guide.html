@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX brand guide — logos, colors, typography, voice. Public reference for Partners, press, designers, and integration partners." />
+<title>Brand Guide · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .head{padding:50px 0 24px;border-bottom:1px solid var(--line);text-align:center}
+  .head .pre{display:inline-block;background:rgba(212,175,55,.18);color:#7a5e10;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .head h1{margin:0 0 8px;font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .head p{margin:0 auto;color:var(--muted);font-size:16px;max-width:600px}
+
+  /* Section block */
+  section{padding:50px 0;border-bottom:1px solid var(--line)}
+  section:last-of-type{border-bottom:0}
+  section h2{margin:0 0 6px;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  section p.lede{margin:0 0 26px;color:var(--muted);font-size:15.5px;max-width:680px}
+
+  /* Logo card */
+  .logos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:780px){.logos-grid{grid-template-columns:1fr}}
+  .logo-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .logo-card .display{padding:30px;display:flex;align-items:center;justify-content:center;min-height:130px;font-weight:800}
+  .logo-card .display.dark{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff}
+  .logo-card .display.gradient{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff}
+  .logo-card .meta{padding:12px 16px;border-top:1px solid var(--line);background:#fff;display:flex;justify-content:space-between;align-items:center;font-size:12px}
+  .logo-card .meta .label{font-weight:800;color:var(--ink-2)}
+  .logo-card .meta .dl{font-weight:800;color:var(--accent-2);cursor:pointer}
+
+  .logo-mark{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800}
+  .logo-mark .square{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#0a84ff,#0050c7);display:inline-block}
+  .logo-mark.dark .square{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .logo-mark.white .square{background:linear-gradient(135deg,#fff,#e0e0e0)}
+  .logo-mark.white{color:#fff}
+  .logo-icon-only{width:64px;height:64px;border-radius:14px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .wordmark{font-size:28px;font-weight:800;letter-spacing:-.03em}
+
+  /* Color palette */
+  .palette{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media(max-width:780px){.palette{grid-template-columns:repeat(2,1fr)}}
+  .swatch{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .swatch .color{height:90px}
+  .swatch .info{padding:12px 14px}
+  .swatch .info .name{font-weight:800;font-size:14px}
+  .swatch .info .hex{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:var(--muted);margin-top:2px}
+
+  /* Typography */
+  .type-list{display:grid;gap:14px}
+  .type-row{display:grid;grid-template-columns:200px 1fr;gap:24px;padding:22px 24px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius);align-items:center}
+  @media(max-width:780px){.type-row{grid-template-columns:1fr}}
+  .type-row .meta{font-size:12px;color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace}
+  .type-row .meta strong{color:var(--ink-2);font-weight:800;font-family:inherit;display:block;font-size:13px;margin-bottom:2px}
+  .type-row .sample{color:var(--ink)}
+  .sample.h1{font-size:46px;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+  .sample.h2{font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .sample.h3{font-size:18px;font-weight:800}
+  .sample.body{font-size:16px;line-height:1.6}
+  .sample.small{font-size:13px;color:var(--muted)}
+
+  /* Voice & tone */
+  .voice-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:780px){.voice-grid{grid-template-columns:1fr}}
+  .voice-card{padding:22px 24px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius)}
+  .voice-card.do{border-left:4px solid var(--ok)}
+  .voice-card.dont{border-left:4px solid var(--danger)}
+  .voice-card .h{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+  .voice-card.do .h{color:#0d7d51}
+  .voice-card.dont .h{color:#a01644}
+  .voice-card ul{margin:0;padding:0 0 0 18px}
+  .voice-card li{margin:6px 0;font-size:14.5px;color:var(--ink-2);line-height:1.55}
+  .voice-card li code{background:#fff;border:1px solid var(--line);padding:1px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+
+  /* Logo dos and donts */
+  .logo-rules{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media(max-width:780px){.logo-rules{grid-template-columns:repeat(2,1fr)}}
+  .lr{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .lr .panel{height:120px;display:flex;align-items:center;justify-content:center;background:var(--bg-soft);position:relative}
+  .lr .panel.bad::after{content:"✗";position:absolute;top:8px;right:10px;color:var(--danger);font-size:18px;font-weight:800}
+  .lr .panel.good::after{content:"✓";position:absolute;top:8px;right:10px;color:var(--ok);font-size:18px;font-weight:800}
+  .lr .lab{padding:10px 14px;font-size:11.5px;color:var(--muted);font-weight:700;border-top:1px solid var(--line)}
+
+  /* Download all */
+  .download-card{padding:22px 26px;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+  .download-card .ic{width:50px;height:50px;border-radius:11px;background:rgba(245,209,114,.18);color:#f5d172;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+  .download-card .body{flex:1;min-width:240px}
+  .download-card h3{margin:0 0 4px;color:#f5d172;font-size:17px;font-weight:800}
+  .download-card p{margin:0;color:#9aa3b0;font-size:14px;line-height:1.5}
+  .download-card .btn{padding:11px 18px;background:#f5d172;color:#0e1116;border-radius:9px;font-weight:800;font-size:13.5px;text-decoration:none;display:inline-block}
+  .download-card .btn:hover{background:#fff}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:28px 0 22px;font-size:12.5px;text-align:center;margin-top:30px}
+  footer a{color:#9aa3b0}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="press-kit.html">Press kit</a>
+      <a href="brand-guide.html" style="color:var(--accent);font-weight:700">Brand</a>
+      <a href="api.html">API</a>
+      <a href="partner-social-kit.html">Partner social kit</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="head">
+    <span class="pre">🎨 Brand Guide</span>
+    <h1>Use the LYMX brand</h1>
+    <p>For Partners, journalists, integration developers, and anyone who needs to put the LYMX logo somewhere. Free to use within these guidelines — no permission needed.</p>
+  </div>
+
+  <!-- Logo -->
+  <section>
+    <h2>Logo &amp; wordmark</h2>
+    <p class="lede">Three primary lock-ups. Pick the one that fits your background.</p>
+    <div class="logos-grid">
+      <div class="logo-card">
+        <div class="display">
+          <div class="logo-mark dark"><span class="square"></span> LYMX</div>
+        </div>
+        <div class="meta"><span class="label">Primary lock-up · light bg</span><span class="dl">SVG / PNG ↓</span></div>
+      </div>
+      <div class="logo-card">
+        <div class="display dark">
+          <div class="logo-mark white"><span class="square"></span> <span style="color:#fff">LYMX</span></div>
+        </div>
+        <div class="meta"><span class="label">Inverse · dark bg</span><span class="dl">SVG / PNG ↓</span></div>
+      </div>
+      <div class="logo-card">
+        <div class="display gradient">
+          <div class="wordmark" style="color:#fff">LYMX</div>
+        </div>
+        <div class="meta"><span class="label">Wordmark only</span><span class="dl">SVG / PNG ↓</span></div>
+      </div>
+      <div class="logo-card">
+        <div class="display">
+          <div class="logo-icon-only"></div>
+        </div>
+        <div class="meta"><span class="label">Icon only · for app icons</span><span class="dl">SVG / PNG ↓</span></div>
+      </div>
+      <div class="logo-card">
+        <div class="display">
+          <div class="logo-mark dark" style="font-size:32px"><span class="square" style="width:46px;height:46px;border-radius:11px"></span> LYMX</div>
+        </div>
+        <div class="meta"><span class="label">Large lock-up · headers</span><span class="dl">SVG / PNG ↓</span></div>
+      </div>
+      <div class="logo-card">
+        <div class="display">
+          <div class="logo-mark dark" style="font-size:14px"><span class="square" style="width:18px;height:18px;border-radius:5px"></span> LYMX</div>
+        </div>
+        <div class="meta"><span class="label">Compact · 18px+ minimum</span><span class="dl">SVG / PNG ↓</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Logo dos and donts -->
+  <section>
+    <h2>Logo do's and don'ts</h2>
+    <p class="lede">Keep some breathing room around the mark, don't recolor outside the palette, don't stretch.</p>
+    <div class="logo-rules">
+      <div class="lr">
+        <div class="panel good"><div class="logo-mark dark"><span class="square"></span> LYMX</div></div>
+        <div class="lab">✓ DO — primary lock-up on white</div>
+      </div>
+      <div class="lr">
+        <div class="panel good" style="background:#0e1116"><div class="logo-mark white"><span class="square"></span> <span style="color:#fff">LYMX</span></div></div>
+        <div class="lab">✓ DO — inverse on dark</div>
+      </div>
+      <div class="lr">
+        <div class="panel bad"><div class="logo-mark dark" style="transform:scaleX(1.4)"><span class="square"></span> LYMX</div></div>
+        <div class="lab">✗ DON'T stretch the wordmark</div>
+      </div>
+      <div class="lr">
+        <div class="panel bad" style="background:#13a26b"><div class="logo-mark dark"><span class="square" style="background:#fff"></span> <span style="color:#fff">LYMX</span></div></div>
+        <div class="lab">✗ DON'T recolor — use the gradient</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Colors -->
+  <section>
+    <h2>Color palette</h2>
+    <p class="lede">Two hero colors (LYMX Blue + Champagne Gold), three system colors, plus neutrals. WCAG-AA contrast on every combo we ship.</p>
+    <div class="palette">
+      <div class="swatch">
+        <div class="color" style="background:linear-gradient(135deg,#0a84ff,#0050c7)"></div>
+        <div class="info"><div class="name">LYMX Blue</div><div class="hex">#0A84FF → #0050C7</div></div>
+      </div>
+      <div class="swatch">
+        <div class="color" style="background:linear-gradient(135deg,#d4af37,#a08020)"></div>
+        <div class="info"><div class="name">Champagne Gold</div><div class="hex">#D4AF37 → #A08020</div></div>
+      </div>
+      <div class="swatch">
+        <div class="color" style="background:#0e1116"></div>
+        <div class="info"><div class="name">Ink</div><div class="hex">#0E1116</div></div>
+      </div>
+      <div class="swatch">
+        <div class="color" style="background:#ffffff;border-bottom:1px solid var(--line)"></div>
+        <div class="info"><div class="name">Paper</div><div class="hex">#FFFFFF</div></div>
+      </div>
+      <div class="swatch">
+        <div class="color" style="background:#13a26b"></div>
+        <div class="info"><div class="name">Success</div><div class="hex">#13A26B</div></div>
+      </div>
+      <div class="swatch">
+        <div class="color" style="background:#f0a020"></div>
+        <div class="info"><div class="name">Warning</div><div class="hex">#F0A020</div></div>
+      </div>
+      <div class="swatch">
+        <div class="color" style="background:#e0413e"></div>
+        <div class="info"><div class="name">Danger</div><div class="hex">#E0413E</div></div>
+      </div>
+      <div class="swatch">
+        <div class="color" style="background:#5b6472"></div>
+        <div class="info"><div class="name">Muted</div><div class="hex">#5B6472</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Typography -->
+  <section>
+    <h2>Typography</h2>
+    <p class="lede">System UI font stack. No web font to download — the OS-default sans-serif is fast, accessible, and the same one our customers already see in their browsers.</p>
+    <div class="type-list">
+      <div class="type-row">
+        <div class="meta">
+          <strong>Display H1</strong>
+          46px / 800 / -0.02em / line 1.05
+        </div>
+        <div class="sample h1">One credit. Every Business.</div>
+      </div>
+      <div class="type-row">
+        <div class="meta">
+          <strong>Section H2</strong>
+          28px / 800 / -0.01em
+        </div>
+        <div class="sample h2">How LYMX works</div>
+      </div>
+      <div class="type-row">
+        <div class="meta">
+          <strong>Card H3</strong>
+          18px / 800 / -0.005em
+        </div>
+        <div class="sample h3">Earn at one shop, spend at another</div>
+      </div>
+      <div class="type-row">
+        <div class="meta">
+          <strong>Body</strong>
+          16px / 400 / line 1.6
+        </div>
+        <div class="sample body">LYMX is a shared loyalty network for local Businesses in Las Vegas. Customers earn LYMX at one shop and can spend it across the network — coffee, dinner, retail, salons, fitness.</div>
+      </div>
+      <div class="type-row">
+        <div class="meta">
+          <strong>Small / meta</strong>
+          13px / 400 / muted
+        </div>
+        <div class="sample small">Updated April 30, 2026 · 3 min read</div>
+      </div>
+      <div class="type-row">
+        <div class="meta">
+          <strong>Code / mono</strong>
+          ui-monospace / Menlo / Consolas
+        </div>
+        <div class="sample" style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px">curl <span style="color:#a01644">-X POST</span> https://api.getlymx.com/v1/transactions/issue</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Voice & tone -->
+  <section>
+    <h2>Voice &amp; tone</h2>
+    <p class="lede">How LYMX sounds. Confident, plain-spoken, allergic to jargon. Treat customers and Businesses like adults — give them the math, then get out of the way.</p>
+    <div class="voice-grid">
+      <div class="voice-card do">
+        <div class="h">✓ Do say</div>
+        <ul>
+          <li><code>"1 LYMX = $0.01, always."</code> Specific math.</li>
+          <li><code>"Earn at one Business, spend at any other in the network."</code> Concrete.</li>
+          <li><code>"We don't sell your data."</code> Direct.</li>
+          <li><code>"Most Partners earn substantially less than the maximum projected."</code> Honest about the variance.</li>
+          <li><code>"3 spots open in the Launch 25."</code> Real numbers.</li>
+        </ul>
+      </div>
+      <div class="voice-card dont">
+        <div class="h">✗ Don't say</div>
+        <ul>
+          <li><code>"Revolutionary"</code>, <code>"disruptive"</code>, <code>"game-changer"</code> — empty marketing words.</li>
+          <li><code>"Easy passive income"</code> — never. We're FTC-careful.</li>
+          <li><code>"World-class"</code>, <code>"best-in-class"</code> — meaningless adjectives.</li>
+          <li><code>"Earn rewards points!"</code> — call them LYMX. Use the actual word.</li>
+          <li><code>"Your data is safe with us"</code> without specifics — vague trust language is a red flag.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tagline + boilerplate -->
+  <section>
+    <h2>Tagline &amp; boilerplate</h2>
+    <p class="lede">Use these as-is. For longer copy, see the <a href="press-kit.html" style="color:var(--accent-2);font-weight:700">press kit</a>.</p>
+    <div class="voice-grid" style="grid-template-columns:1fr">
+      <div class="voice-card" style="border-left:4px solid var(--accent)">
+        <div class="h" style="color:var(--accent-2)">Primary tagline (10 words)</div>
+        <p style="margin:0;font-size:18px;font-weight:600;color:var(--ink-2)">One loyalty credit. Every LYMX Business. Las Vegas, then everywhere.</p>
+      </div>
+      <div class="voice-card" style="border-left:4px solid var(--gold)">
+        <div class="h" style="color:#7a5e10">One-line elevator (25 words)</div>
+        <p style="margin:0;font-size:15.5px;color:var(--ink-2)">LYMX is a shared loyalty network for local Businesses. Earn LYMX at one Business, spend at any other in the network — no apps, no expiration, no fine print.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download all -->
+  <section style="border-bottom:0">
+    <div class="download-card">
+      <div class="ic">📦</div>
+      <div class="body">
+        <h3>Download the full brand kit</h3>
+        <p>Logos in SVG + PNG (3 sizes), color palette as ASE/sketch swatches, typography style sheet, social media templates. ZIP, 4.2 MB.</p>
+      </div>
+      <a class="btn" href="press-kit.html">Get the kit →</a>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · <a href="press-kit.html">Press kit</a> · <a href="api.html">API</a> · <a href="partner-social-kit.html">Partner social kit</a> · <a href="terms.html">Terms</a></div>
+</footer>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

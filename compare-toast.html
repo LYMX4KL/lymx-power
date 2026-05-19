@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX vs Toast Loyalty — head-to-head deep-dive comparison for restaurants. 20-row feature breakdown, 3 use-case scenarios, when each wins." />
+<title>LYMX vs Toast Loyalty · Compare</title>
+<meta property="og:title" content="LYMX vs Toast Loyalty" />
+<meta property="og:image" content="og-image.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--toast:#ff4c00;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  .btn{padding:10px 16px;background:var(--ink);color:#fff;border-radius:10px;font-weight:800;font-size:14px;text-decoration:none;display:inline-block}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .hero{padding:48px 0 30px;background:linear-gradient(180deg,#fff,var(--bg-soft));border-bottom:1px solid var(--line);text-align:center}
+  .hero .pre{display:inline-block;background:rgba(255,76,0,.12);color:#cc3d00;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .hero h1{margin:0 0 12px;font-size:42px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .hero p.lede{margin:0 auto;font-size:17px;color:var(--ink-2);max-width:660px;line-height:1.55}
+  .hero .meta{margin-top:14px;font-size:13px;color:var(--muted)}
+
+  /* Vs banner */
+  .vs-banner{padding:36px 0 0}
+  .vs-grid{display:grid;grid-template-columns:1fr 50px 1fr;gap:14px;align-items:center;max-width:780px;margin:0 auto}
+  @media(max-width:600px){.vs-grid{grid-template-columns:1fr}}
+  .vs-side{padding:22px 24px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);text-align:center}
+  .vs-side .logo{width:54px;height:54px;border-radius:13px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;margin-bottom:10px;letter-spacing:-.01em}
+  .vs-side.lymx .logo{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .vs-side.toast .logo{background:#ff4c00}
+  .vs-side h2{margin:0 0 4px;font-size:19px;font-weight:800;letter-spacing:-.005em}
+  .vs-side .pos{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:10px}
+  .vs-side p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+  .vs-side.lymx{border-color:rgba(10,132,255,.4);background:linear-gradient(180deg,rgba(10,132,255,.04),#fff)}
+  .vs-divider{display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:var(--muted)}
+
+  /* TL;DR */
+  .tldr{padding:30px 0 14px}
+  .tldr-card{background:linear-gradient(180deg,#fff,var(--bg-soft));border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+  .tldr-card .ic{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .tldr-card .body{flex:1;min-width:240px}
+  .tldr-card h2{margin:0 0 4px;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .tldr-card p{margin:0;font-size:16.5px;color:var(--ink-2);line-height:1.55}
+  .tldr-card p strong{color:var(--ink);font-weight:800}
+
+  /* Comparison table */
+  .compare{padding:36px 0 50px}
+  .compare h2{margin:0 0 8px;font-size:26px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .compare .lede{text-align:center;margin:0 0 24px;color:var(--muted);font-size:14.5px}
+  .table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--line);background:#fff;box-shadow:var(--shadow)}
+  table.cmp{width:100%;border-collapse:separate;border-spacing:0;min-width:680px}
+  table.cmp th,table.cmp td{padding:13px 18px;text-align:left;font-size:13.5px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.cmp th:first-child,table.cmp td:first-child{background:var(--bg-soft);min-width:240px}
+  table.cmp thead th{font-size:13px;font-weight:800;color:var(--ink);background:#fff;border-bottom:2px solid var(--line);padding:18px}
+  table.cmp thead th.lymx{background:linear-gradient(180deg,rgba(10,132,255,.08),rgba(10,132,255,.02));color:var(--accent-2)}
+  table.cmp thead th.toast{color:var(--toast)}
+  table.cmp thead th .logo{width:36px;height:36px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;margin-right:8px;letter-spacing:-.01em;vertical-align:middle}
+  table.cmp thead th.lymx .logo{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  table.cmp thead th.toast .logo{background:#ff4c00}
+  table.cmp tbody tr.section td{background:linear-gradient(180deg,#fff,var(--bg-soft));font-weight:800;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:10px 18px;border-bottom:1px solid var(--line)}
+  table.cmp tbody tr:hover td:not(.first){background:rgba(10,132,255,.02)}
+  table.cmp tr:last-child td{border-bottom:0}
+  .row-label{font-weight:800;color:var(--ink-2);font-size:14px}
+  .row-sub{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:2px}
+  .y{color:var(--ok);font-size:18px;font-weight:800}
+  .n{color:var(--danger);font-size:16px;font-weight:800}
+  .q{color:var(--muted);font-size:13px;font-weight:700}
+  td.lymx-col{background:rgba(10,132,255,.025)}
+
+  /* Scenarios */
+  .scenarios{padding:50px 0;background:var(--bg-soft);border-top:1px solid var(--line)}
+  .scenarios h2{margin:0 0 6px;font-size:26px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .scenarios .lede{text-align:center;color:var(--muted);font-size:14.5px;margin:0 0 26px}
+  .sc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:1080px;margin:0 auto}
+  @media(max-width:880px){.sc-grid{grid-template-columns:1fr}}
+  .sc{padding:24px 26px;background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
+  .sc .ic{font-size:32px;margin-bottom:8px}
+  .sc h3{margin:0 0 4px;font-size:17px;font-weight:800}
+  .sc .who{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+  .sc p{margin:0 0 12px;font-size:14px;color:var(--ink-2);line-height:1.55}
+  .sc .verdict{padding:11px 14px;background:var(--bg-soft);border-left:3px solid var(--accent);border-radius:0 9px 9px 0;font-size:13.5px;color:var(--ink-2);font-weight:600}
+  .sc .verdict.toast-wins{border-left-color:#ff4c00}
+  .sc .verdict strong{color:var(--ink);font-weight:800}
+
+  /* Honest take */
+  .honest{padding:50px 0;border-top:1px solid var(--line)}
+  .honest h2{margin:0 0 14px;font-size:24px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .honest-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:980px;margin:0 auto}
+  @media(max-width:780px){.honest-grid{grid-template-columns:1fr}}
+  .honest-card{padding:22px 24px;background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
+  .honest-card.lymx{border-color:rgba(10,132,255,.3)}
+  .honest-card.toast{border-color:rgba(255,76,0,.3)}
+  .honest-card .h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .honest-card .logo{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:11.5px;flex-shrink:0;letter-spacing:-.01em}
+  .honest-card.lymx .logo{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .honest-card.toast .logo{background:#ff4c00}
+  .honest-card h3{margin:0;font-size:14.5px;font-weight:800}
+  .honest-card ul{margin:0;padding:0 0 0 20px;font-size:14px;color:var(--ink-2);line-height:1.65}
+  .honest-card li{margin:5px 0}
+  .honest-card li strong{color:var(--ink);font-weight:800}
+
+  /* CTA */
+  .cta{padding:50px 0;text-align:center;background:linear-gradient(180deg,var(--bg-soft),#fff)}
+  .cta h2{margin:0 0 8px;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .cta p{margin:0 0 18px;color:var(--muted);font-size:15.5px}
+  .cta-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+  /* Footnote */
+  .foot-note{padding:18px 0;border-top:1px solid var(--line);font-size:11px;color:var(--muted);line-height:1.6;text-align:center}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center}
+  footer a{color:#9aa3b0}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="pricing-compare.html">All competitors</a>
+      <a href="business.html">For Business</a>
+    </nav>
+    <a href="business.html" class="btn">List my Business</a>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="wrap">
+    <span class="pre">⚖️ LYMX vs Toast Loyalty — restaurant deep-dive</span>
+    <h1>LYMX vs Toast Loyalty</h1>
+    <p class="lede">If you're a restaurant evaluating loyalty programs, Toast is probably your other option. Here's an honest, specific, restaurant-by-restaurant comparison. Some scenarios LYMX wins. Some Toast does.</p>
+    <p class="meta">Comparing LYMX (network model, $200/loc/mo) vs Toast Loyalty (POS-bundled, $75/loc/mo)</p>
+  </div>
+</section>
+
+<!-- Vs banner -->
+<section class="vs-banner">
+  <div class="wrap">
+    <div class="vs-grid">
+      <div class="vs-side lymx">
+        <div class="logo">LYMX</div>
+        <h2>LYMX</h2>
+        <div class="pos">Shared local network</div>
+        <p>Customers earn at one Business, spend at any other in the LYMX network. Cross-Business by design.</p>
+      </div>
+      <div class="vs-divider">vs</div>
+      <div class="vs-side toast">
+        <div class="logo">TS</div>
+        <h2>Toast Loyalty</h2>
+        <div class="pos">POS-bundled, single-Business</div>
+        <p>Add-on to Toast POS. Earn-and-spend stays inside your restaurant or your group's locations.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TL;DR -->
+<section class="tldr">
+  <div class="wrap">
+    <div class="tldr-card">
+      <div class="ic">⚡</div>
+      <div class="body">
+        <h2>Honest TL;DR</h2>
+        <p>If you're <strong>already deeply on Toast POS</strong> and the loyalty add-on is a checkbox on your existing setup, Toast Loyalty is fine. <strong>If you want repeat customers brought to you by other Businesses</strong>, the network effect is genuinely only available with LYMX. Best case: most independent restaurants get more total ROI from LYMX; chains with 5+ locations on Toast may prefer Toast for the operational simplicity.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Comparison table -->
+<section class="compare">
+  <div class="wrap">
+    <h2>20-row feature comparison</h2>
+    <p class="lede">Pricing as of April 2026 from each provider's public site. If something is wrong, email <a href="mailto:hello@getlymx.com" style="color:var(--accent-2);font-weight:700">hello@getlymx.com</a>.</p>
+    <div class="table-wrap">
+      <table class="cmp">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="lymx"><span class="logo">LYMX</span> LYMX</th>
+            <th class="toast"><span class="logo">TS</span> Toast Loyalty</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="section"><td colspan="3">Pricing</td></tr>
+          <tr><td><div class="row-label">Monthly cost</div><div class="row-sub">Single restaurant location</div></td><td class="lymx-col">$200/loc/mo · flat &amp; locked</td><td>$75/loc/mo · requires Toast POS plan</td></tr>
+          <tr><td><div class="row-label">One-time activation</div></td><td class="lymx-col">$850 · incl. 3 mo free + Launch 25 perks</td><td>$0 · if already on Toast POS</td></tr>
+          <tr><td><div class="row-label">Hardware required</div></td><td class="lymx-col">Use your existing iPad</td><td>Toast hardware (KDS, Flex, terminals)</td></tr>
+          <tr><td><div class="row-label">POS dependency</div></td><td class="lymx-col">Works with any POS</td><td>Toast POS only</td></tr>
+          <tr><td><div class="row-label">Contract length</div></td><td class="lymx-col">12 mo · 30-day cancel after</td><td>2-3 yr · hardware-tied</td></tr>
+
+          <tr class="section"><td colspan="3">Customer experience</td></tr>
+          <tr><td><div class="row-label">Customers spend at OTHER Businesses</div><div class="row-sub">The network effect</div></td><td class="lymx-col"><span class="y">✓</span> All LYMX Businesses in city</td><td><span class="n">✗</span> Your restaurant only</td></tr>
+          <tr><td><div class="row-label">Points / credit expiration</div></td><td class="lymx-col"><span class="y">✓</span> Never expires</td><td>12 mo default · configurable</td></tr>
+          <tr><td><div class="row-label">App-free for customers</div><div class="row-sub">Web wallet vs app download</div></td><td class="lymx-col"><span class="y">✓</span> Web wallet</td><td>Toast app or guest checkout</td></tr>
+          <tr><td><div class="row-label">Sign-up bonus to customer</div></td><td class="lymx-col">100 LYMX (≈ $1) at sign-up</td><td>Configurable</td></tr>
+          <tr><td><div class="row-label">First-time-customer multiplier</div></td><td class="lymx-col"><span class="y">✓</span> Built in</td><td><span class="y">✓</span> Built in</td></tr>
+
+          <tr class="section"><td colspan="3">Restaurant-side ops</td></tr>
+          <tr><td><div class="row-label">Loyalty applied as discount line</div></td><td class="lymx-col"><span class="y">✓</span> Native</td><td><span class="y">✓</span> Native</td></tr>
+          <tr><td><div class="row-label">Sales-tax handling</div><div class="row-sub">When customer redeems</div></td><td class="lymx-col"><span class="y">✓</span> POS shows full ticket value</td><td><span class="y">✓</span> Native to Toast</td></tr>
+          <tr><td><div class="row-label">Multi-location aggregated reporting</div></td><td class="lymx-col"><span class="y">✓</span> Standard + Enterprise tiers</td><td><span class="y">✓</span> Toast group reporting</td></tr>
+          <tr><td><div class="row-label">Tip-aware accrual</div><div class="row-sub">LYMX earned on subtotal vs total</div></td><td class="lymx-col">Subtotal default · configurable</td><td>Subtotal default</td></tr>
+          <tr><td><div class="row-label">Promotion scheduler</div><div class="row-sub">Happy Hour multipliers, item-targeted</div></td><td class="lymx-col"><span class="y">✓</span> Time + item + customer-tier rules</td><td><span class="y">✓</span> Toast promotions module</td></tr>
+
+          <tr class="section"><td colspan="3">Customer acquisition</td></tr>
+          <tr><td><div class="row-label">New customers from network</div><div class="row-sub">~1,500/mo per Business in LYMX flywheel</div></td><td class="lymx-col"><span class="y">✓</span> Built in</td><td><span class="n">✗</span> You bring them</td></tr>
+          <tr><td><div class="row-label">Refer-another-Business bonus</div></td><td class="lymx-col"><span class="y">✓</span> $200 cash + $200 LYMX</td><td><span class="n">✗</span></td></tr>
+          <tr><td><div class="row-label">Public Business directory</div></td><td class="lymx-col"><span class="y">✓</span> getlymx.com/browse</td><td><span class="n">✗</span></td></tr>
+          <tr><td><div class="row-label">Master Partner / recruiter program</div></td><td class="lymx-col"><span class="y">✓</span> 9% override + tier ladder</td><td><span class="n">✗</span></td></tr>
+
+          <tr class="section"><td colspan="3">Developer / integrations</td></tr>
+          <tr><td><div class="row-label">Public API</div></td><td class="lymx-col">Beta · open Q3 2026</td><td><span class="y">✓</span> Toast API</td></tr>
+          <tr><td><div class="row-label">QuickBooks / Xero export</div></td><td class="lymx-col"><span class="y">✓</span> Native</td><td><span class="y">✓</span> Toast accounting integrations</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Scenarios -->
+<section class="scenarios">
+  <div class="wrap">
+    <h2>Three real scenarios — who wins each</h2>
+    <p class="lede">Honest answers. Sometimes the answer is "it depends" — these are our best calls.</p>
+    <div class="sc-grid">
+      <div class="sc">
+        <div class="ic">☕</div>
+        <div class="who">Independent café · 1 location</div>
+        <h3>"I run one café and want repeat customers"</h3>
+        <p>You don't need a POS replacement. You need new customers and reasons for existing customers to come back. The LYMX network sends ~1,500 new local customers per month per Business via flywheel. Toast Loyalty sends zero — you have to bring them yourself.</p>
+        <div class="verdict"><strong>Best fit:</strong> LYMX, by a clear margin.</div>
+      </div>
+      <div class="sc">
+        <div class="ic">🍕</div>
+        <div class="who">Multi-location chain · 8 locations on Toast</div>
+        <h3>"We're already deep in Toast across 8 locations"</h3>
+        <p>You've spent 2 years building Toast workflows. Loyalty as a checkbox add-on is operationally simpler. LYMX is competitive long-term once we have a 100+ Business network in your cities (Phase 3, 2027).</p>
+        <div class="verdict toast-wins"><strong>Best fit today:</strong> Toast Loyalty. Revisit LYMX in Phase 3.</div>
+      </div>
+      <div class="sc">
+        <div class="ic">🍷</div>
+        <div class="who">Independent restaurant + bar · 2-3 locations · Las Vegas</div>
+        <h3>"We're building a multi-location restaurant brand in Vegas"</h3>
+        <p>You're early enough to lock in Launch 25 perks. The LYMX Enterprise tier scales with you. Plus the Vegas-specific network is real now — your customers are already on LYMX from coffee &amp; salon visits.</p>
+        <div class="verdict"><strong>Best fit:</strong> LYMX Enterprise tier.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Honest take -->
+<section class="honest">
+  <div class="wrap">
+    <h2>What each one is genuinely good at</h2>
+    <div class="honest-grid">
+      <div class="honest-card lymx">
+        <div class="h"><div class="logo">LYMX</div><h3>LYMX is the right answer when you...</h3></div>
+        <ul>
+          <li>Run an <strong>independent restaurant</strong> (1-3 locations) competing on community + loyalty</li>
+          <li>Want customers brought to you <strong>by the network</strong>, not just retained by your own program</li>
+          <li>Don't want a 3-year contract or POS replacement</li>
+          <li>Care about no expiration, low minimums, no app downloads for your customers</li>
+          <li>Want to <strong>refer other restaurants</strong> in your neighborhood and get paid for it</li>
+        </ul>
+      </div>
+      <div class="honest-card toast">
+        <div class="h"><div class="logo">TS</div><h3>Toast Loyalty is the right answer when you...</h3></div>
+        <ul>
+          <li>Are <strong>already on Toast POS</strong> and want one less vendor relationship</li>
+          <li>Operate <strong>5+ locations</strong> with established Toast workflows</li>
+          <li>Need deep menu-engineering integration (modifier-level promotions, etc.)</li>
+          <li>Want <strong>kitchen display + ordering + loyalty</strong> in one stack from day 1</li>
+          <li>Aren't yet in a city with a meaningful LYMX Business network</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin:24px auto 0;text-align:center;font-size:14px;color:var(--muted);max-width:680px">For most independents in Las Vegas in 2026, LYMX is the better answer. For a regional chain on Toast, the answer flips. The only honest take is: it depends on your situation, and we'd rather you pick the right tool than the LYMX tool.</p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="wrap">
+    <h2>Want to compare for your specific Business?</h2>
+    <p>30-min demo where we plug in your actual monthly volume and walk you through both options side-by-side.</p>
+    <div class="cta-row">
+      <a class="btn" href="demo.html">Schedule a demo</a>
+      <a class="btn" href="business.html" style="background:#fff;color:var(--ink);border:1px solid var(--line)">See LYMX pricing</a>
+      <a class="btn" href="pricing-compare.html" style="background:#fff;color:var(--ink);border:1px solid var(--line)">All competitors</a>
+    </div>
+  </div>
+</section>
+
+<section class="foot-note">
+  <div class="wrap">
+    Toast® and Toast Loyalty are trademarks of Toast, Inc. LYMX is not affiliated with Toast. Pricing and feature data sourced from public Toast and LYMX documentation as of April 2026 — please verify before making a purchase decision. We've tried to be fair; if anything is wrong, email <a href="mailto:hello@getlymx.com" style="color:var(--accent-2);font-weight:700">hello@getlymx.com</a>.
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · <a href="pricing-compare.html">All competitors</a> · <a href="why-lymx.html">Why LYMX</a> · <a href="business.html">For Business</a></div>
+</footer>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX customer onboarding email sequence — 7 emails over 30 days. Preview each, see triggers + cadence." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Onboarding email sequence · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  @media(max-width:1100px){.nav-links{display:none}}
+  .btn{padding:9px 14px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:14px;max-width:600px}
+
+  /* Stats strip */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:18px}
+  @media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#fff;padding:16px 20px}
+  .stat .l{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+  .stat .v{font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .stat .v.green{color:var(--ok)}
+
+  /* Timeline */
+  .timeline-wrap{position:relative;padding:30px 0 30px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .timeline-bar{position:relative;height:36px;background:linear-gradient(90deg,var(--bg-soft) 0%,var(--bg-soft) 100%);margin:0 30px 30px;border-radius:18px;display:flex}
+  .tick{flex:1;border-right:1px dashed var(--line);position:relative;font-size:11px;font-weight:800;color:var(--muted);text-align:left;padding:10px 0 0 8px}
+  .tick:last-child{border-right:0}
+  .tick:nth-child(1)::after{content:"";position:absolute;left:0;top:0;bottom:0;width:14%;background:linear-gradient(135deg,#13a26b,#0d7d51);border-radius:18px 0 0 18px;opacity:.85}
+  .tick:nth-child(2)::after{content:"";position:absolute;left:0;top:0;bottom:0;width:60%;background:linear-gradient(135deg,#0a84ff,#0050c7);opacity:.6}
+
+  /* Email list */
+  .emails{display:flex;flex-direction:column;gap:14px;margin-top:18px}
+  .email{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .email-h{display:grid;grid-template-columns:60px 1fr auto;gap:14px;padding:18px 22px;border-bottom:1px solid var(--line);align-items:center;cursor:pointer}
+  .email:hover .email-h{background:var(--bg-soft)}
+  .email-h .num{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+  .email-h .num.welcome{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .email-h .num.engage{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .email-h .num.educate{background:linear-gradient(135deg,#7426c4,#4d1888)}
+  .email-h .num.referral{background:linear-gradient(135deg,#d4af37,#a08020)}
+  .email-h .num.retain{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  .email-h .info h3{margin:0 0 3px;font-size:16px;font-weight:800;letter-spacing:-.005em}
+  .email-h .meta{font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+  .email-h .meta .tag{font-weight:800;color:var(--ink-2);font-family:ui-monospace,Menlo,Consolas,monospace}
+  .email-h .pill{padding:3px 9px;border-radius:5px;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0}
+  .pill.welcome{background:rgba(19,162,107,.14);color:#0d7d51}
+  .pill.engage{background:rgba(10,132,255,.1);color:var(--accent-2)}
+  .pill.educate{background:rgba(165,69,255,.12);color:#7426c4}
+  .pill.referral{background:rgba(212,175,55,.18);color:#7a5e10}
+  .pill.retain{background:rgba(224,65,62,.13);color:#a01644}
+
+  /* Email body preview */
+  .preview{padding:24px 28px;background:var(--bg-soft);display:none}
+  .email.expanded .preview{display:block}
+  .email .toggle{font-size:12px;color:var(--accent-2);font-weight:800;cursor:pointer}
+  .email.expanded .toggle::after{content:" ▲"}
+  .email:not(.expanded) .toggle::after{content:" ▼"}
+
+  .mail-mock{background:#fff;border:1px solid var(--line);border-radius:11px;max-width:560px;margin:0 auto;overflow:hidden}
+  .mail-from{padding:14px 20px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+  .mail-from .from-name{font-weight:800;color:var(--ink-2)}
+  .mail-from .subj{display:block;font-size:15.5px;font-weight:800;color:var(--ink);margin-top:5px;letter-spacing:-.005em}
+  .mail-body{padding:20px 24px;font-size:14.5px;color:var(--ink-2);line-height:1.6}
+  .mail-body h2{margin:0 0 8px;font-size:20px;font-weight:800;letter-spacing:-.01em}
+  .mail-body p{margin:0 0 12px}
+  .mail-body p strong{color:var(--ink);font-weight:800}
+  .mail-cta{display:inline-block;padding:10px 18px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:14px;margin:6px 0;text-decoration:none}
+  .mail-foot{padding:14px 24px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted);line-height:1.5}
+
+  /* Trigger info card */
+  .trigger{padding:14px 18px;background:#fff;border:1px dashed var(--line);border-radius:11px;margin-bottom:14px;font-size:13px;color:var(--ink-2);display:flex;gap:14px;align-items:flex-start}
+  .trigger .ic{font-size:18px}
+  .trigger strong{color:var(--ink);font-weight:800}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:36px}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html">LYMX</a>
+      <span class="role-tag">Admin</span>
+    </div>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Home</a>
+      <a href="admin-emails.html">Email templates</a>
+      <a href="email-sequence.html" style="color:var(--accent);font-weight:700">Onboarding sequence</a>
+      <a href="admin-customers.html">Customers</a>
+    </nav>
+    <div style="background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">KL</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>Customer onboarding email sequence</h1>
+        <p>7 emails over 30 days. Sent to new customers from sign-up. Editable per-template in admin-emails — this is the sequence-level view.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ghost">Pause sequence</button>
+        <a class="btn ghost" href="admin-emails.html">Edit individual templates</a>
+      </div>
+    </div>
+
+    <!-- Performance stats -->
+    <div class="stats">
+      <div class="stat"><div class="l">Customers in sequence</div><div class="v">512</div></div>
+      <div class="stat"><div class="l">Avg open rate</div><div class="v green">68%</div></div>
+      <div class="stat"><div class="l">Avg click rate</div><div class="v">22%</div></div>
+      <div class="stat"><div class="l">Drop-off after Day 14</div><div class="v">8%</div></div>
+    </div>
+
+    <!-- Timeline visualization -->
+    <div class="timeline-wrap">
+      <div style="text-align:center;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">30-day sequence</div>
+      <div class="timeline-bar">
+        <div class="tick">Day 0</div>
+        <div class="tick">Day 1</div>
+        <div class="tick">Day 3</div>
+        <div class="tick">Day 7</div>
+        <div class="tick">Day 14</div>
+        <div class="tick">Day 21</div>
+        <div class="tick">Day 30</div>
+      </div>
+      <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:6px">7 touchpoints · max 1 email per day · respects unsubscribe instantly</div>
+    </div>
+
+    <!-- Trigger info -->
+    <div class="trigger">
+      <div class="ic">⚡</div>
+      <div><strong>Sequence trigger:</strong> Customer completes phone-OTP signup. Email is added to the queue. <strong>Exit conditions:</strong> account deletion, unsubscribe, or 90 days of activity (graduates to lifecycle emails).</div>
+    </div>
+
+    <!-- Email list -->
+    <div class="emails" id="emails">
+
+      <!-- Email 1 -->
+      <div class="email">
+        <div class="email-h" onclick="toggle(this)">
+          <div class="num welcome">1</div>
+          <div class="info">
+            <h3>Welcome to LYMX — here's your 100 LYMX</h3>
+            <div class="meta"><span class="tag">welcome_v3</span><span>Day 0 · sent immediately</span><span>Open: <strong style="color:var(--ok)">82%</strong></span><span>Click: 38%</span></div>
+          </div>
+          <span class="pill welcome">Welcome</span>
+        </div>
+        <div class="preview">
+          <div class="mail-mock">
+            <div class="mail-from">
+              <span class="from-name">LYMX</span> &lt;welcome@getlymx.com&gt;
+              <span class="subj">Welcome to LYMX — your 100 LYMX is ready 🎁</span>
+            </div>
+            <div class="mail-body">
+              <h2>Hey {{first_name}},</h2>
+              <p>Welcome to LYMX. Your wallet is set up and 100 LYMX (≈ $1) is already in there as a welcome bonus.</p>
+              <p>Here's the deal: <strong>1 LYMX = $0.01, always.</strong> Earn LYMX at any LYMX Business in Las Vegas. Spend it at any other. No app, no expiration, no fine print.</p>
+              <p>Your first move: find a Business near you and try it.</p>
+              <p><a class="mail-cta" href="#">Browse Businesses near me →</a></p>
+            </div>
+            <div class="mail-foot">LYMX is a promotional credit. <a href="#" style="color:var(--accent-2)">Unsubscribe</a> · <a href="#" style="color:var(--accent-2)">Privacy</a></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email 2 -->
+      <div class="email">
+        <div class="email-h" onclick="toggle(this)">
+          <div class="num educate">2</div>
+          <div class="info">
+            <h3>How LYMX works in 60 seconds</h3>
+            <div class="meta"><span class="tag">educate_d1</span><span>Day 1 · 4 PM PT</span><span>Open: 71%</span><span>Click: 24%</span></div>
+          </div>
+          <span class="pill educate">Educate</span>
+        </div>
+        <div class="preview">
+          <div class="mail-mock">
+            <div class="mail-from">
+              <span class="from-name">Kenny @ LYMX</span> &lt;kenny@getlymx.com&gt;
+              <span class="subj">How LYMX works (60-sec read) — and why it's different</span>
+            </div>
+            <div class="mail-body">
+              <h2>Hey {{first_name}},</h2>
+              <p>Yesterday I sent you a welcome bonus. Today, the 60-second version of <strong>why LYMX is different</strong> from every other loyalty program you forgot you signed up for:</p>
+              <p>1. <strong>1 LYMX = $0.01, always.</strong> No portal where the "value" silently changes.</p>
+              <p>2. <strong>Earn at one Business, spend at any other.</strong> Coffee → dinner → salon. One wallet.</p>
+              <p>3. <strong>Never expires.</strong> Your wallet stays whole forever.</p>
+              <p>If that sounds too simple, that's the point. The complexity in regular loyalty programs is the business model.</p>
+              <p><a class="mail-cta" href="#">See LYMX vs the rest →</a></p>
+              <p style="font-size:13px;color:var(--muted)">Reply to this — Kenny reads every reply.</p>
+            </div>
+            <div class="mail-foot">From the founder. <a href="#" style="color:var(--accent-2)">Unsubscribe</a></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email 3 -->
+      <div class="email">
+        <div class="email-h" onclick="toggle(this)">
+          <div class="num engage">3</div>
+          <div class="info">
+            <h3>Find a Business near you (with personalized picks)</h3>
+            <div class="meta"><span class="tag">discover_d3</span><span>Day 3 · 11 AM PT</span><span>Open: 64%</span><span>Click: 31%</span></div>
+          </div>
+          <span class="pill engage">Engage</span>
+        </div>
+        <div class="preview">
+          <div class="mail-mock">
+            <div class="mail-from">
+              <span class="from-name">LYMX</span> &lt;hello@getlymx.com&gt;
+              <span class="subj">{{first_name}}, here are 3 LYMX Businesses near {{neighborhood}}</span>
+            </div>
+            <div class="mail-body">
+              <h2>3 places worth a visit</h2>
+              <p>Based on where you are, our top picks (all running 2× LYMX promos this week):</p>
+              <p>☕ <strong>Brew &amp; Bean Coffee</strong> · The Strip · 2× weekend mornings<br>
+              🥖 <strong>Sage &amp; Stone Bakery</strong> · Henderson · 2× Sat-Sun<br>
+              🍣 <strong>Yumi Sushi</strong> · Downtown · 2× weekday lunch</p>
+              <p><a class="mail-cta" href="#">Open the directory →</a></p>
+            </div>
+            <div class="mail-foot">Personalized to your zip code. <a href="#" style="color:var(--accent-2)">Update preferences</a></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email 4 -->
+      <div class="email">
+        <div class="email-h" onclick="toggle(this)">
+          <div class="num referral">4</div>
+          <div class="info">
+            <h3>Refer a friend, you both get 200 LYMX</h3>
+            <div class="meta"><span class="tag">refer_d7</span><span>Day 7 · 9 AM PT</span><span>Open: 59%</span><span>Click: 18%</span></div>
+          </div>
+          <span class="pill referral">Referral</span>
+        </div>
+        <div class="preview">
+          <div class="mail-mock">
+            <div class="mail-from">
+              <span class="from-name">LYMX</span> &lt;hello@getlymx.com&gt;
+              <span class="subj">Want 200 free LYMX? Tell a friend.</span>
+            </div>
+            <div class="mail-body">
+              <h2>Win-win referral</h2>
+              <p>Your unique referral link is below. When a friend signs up + earns their first LYMX:</p>
+              <ul style="margin:0 0 12px 22px;padding:0;line-height:1.7"><li>You get <strong>200 LYMX</strong> (≈ $2)</li><li>They get <strong>200 LYMX</strong> on top of the standard 100 welcome</li></ul>
+              <p>No cap. Refer 10 friends, get 2,000 LYMX.</p>
+              <p><a class="mail-cta" href="#">Copy my referral link →</a></p>
+            </div>
+            <div class="mail-foot"><a href="#" style="color:var(--accent-2)">Unsubscribe</a></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email 5 -->
+      <div class="email">
+        <div class="email-h" onclick="toggle(this)">
+          <div class="num engage">5</div>
+          <div class="info">
+            <h3>Have you spent your LYMX yet?</h3>
+            <div class="meta"><span class="tag">activate_d14</span><span>Day 14 · only if not yet redeemed</span><span>Open: 51%</span><span>Click: 12%</span></div>
+          </div>
+          <span class="pill engage">Engage</span>
+        </div>
+        <div class="preview">
+          <div class="mail-mock">
+            <div class="mail-from">
+              <span class="from-name">LYMX</span> &lt;hello@getlymx.com&gt;
+              <span class="subj">{{first_name}}, your LYMX is sitting unused. Here's an easy spend.</span>
+            </div>
+            <div class="mail-body">
+              <p>Hey — you've earned <strong>{{lymx_balance}} LYMX</strong> so far but haven't spent any yet. That's roughly <strong>${{lymx_value}}</strong> sitting there.</p>
+              <p>Easiest place to use it: a coffee at <strong>Brew &amp; Bean</strong>. Tap "Pay with QR" in your wallet at the counter.</p>
+              <p>(If something's confusing, hit reply — Sam from our team will help.)</p>
+              <p><a class="mail-cta" href="#">Open my wallet →</a></p>
+            </div>
+            <div class="mail-foot">Triggered only if you haven't redeemed in 14 days · <a href="#" style="color:var(--accent-2)">Unsubscribe</a></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email 6 -->
+      <div class="email">
+        <div class="email-h" onclick="toggle(this)">
+          <div class="num educate">6</div>
+          <div class="info">
+            <h3>Add LYMX to your home screen (no app store needed)</h3>
+            <div class="meta"><span class="tag">install_d21</span><span>Day 21 · only if not already on home screen</span><span>Open: 48%</span><span>Click: 15%</span></div>
+          </div>
+          <span class="pill educate">Educate</span>
+        </div>
+        <div class="preview">
+          <div class="mail-mock">
+            <div class="mail-from">
+              <span class="from-name">LYMX</span> &lt;hello@getlymx.com&gt;
+              <span class="subj">Add LYMX to your home screen — it's not in the app store</span>
+            </div>
+            <div class="mail-body">
+              <h2>Faster access, no app store</h2>
+              <p>LYMX runs as a Web App. There's nothing to download, but you can add it to your phone's home screen so it acts like a native app.</p>
+              <p>Two-tap install on iPhone: open <strong>getlymx.com/wallet</strong> in Safari → Share icon → "Add to Home Screen".</p>
+              <p><a class="mail-cta" href="#">Install instructions →</a></p>
+            </div>
+            <div class="mail-foot"><a href="#" style="color:var(--accent-2)">Unsubscribe</a></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email 7 -->
+      <div class="email">
+        <div class="email-h" onclick="toggle(this)">
+          <div class="num retain">7</div>
+          <div class="info">
+            <h3>30-day check-in — how's it been going?</h3>
+            <div class="meta"><span class="tag">checkin_d30</span><span>Day 30 · NPS-style touchpoint</span><span>Open: 56%</span><span>Click: 28%</span></div>
+          </div>
+          <span class="pill retain">Retain</span>
+        </div>
+        <div class="preview">
+          <div class="mail-mock">
+            <div class="mail-from">
+              <span class="from-name">Kenny @ LYMX</span> &lt;kenny@getlymx.com&gt;
+              <span class="subj">{{first_name}}, you've been on LYMX for a month — how's it going?</span>
+            </div>
+            <div class="mail-body">
+              <h2>One month in.</h2>
+              <p>Quick check-in. You've been on LYMX for 30 days. We just hit {{customer_count}} customers across {{biz_count}} Businesses on the network.</p>
+              <p>If you have a minute, we'd love a quick rating — 0-10, how likely are you to recommend LYMX to a friend?</p>
+              <p><a class="mail-cta" href="#">Take 30-sec survey →</a></p>
+              <p>If something's not working, just reply to this email. I read every one.</p>
+              <p style="margin-top:18px">— Kenny<br><span style="font-size:13px;color:var(--muted)">Founder, LYMX Power</span></p>
+            </div>
+            <div class="mail-foot">Triggered exactly 30 days after sign-up · <a href="#" style="color:var(--accent-2)">Unsubscribe</a></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Internal sequence preview · noindex · CAN-SPAM compliant unsubscribe in every email</div>
+</footer>
+
+<script>
+  function toggle(h){h.parentElement.classList.toggle('expanded')}
+  // expand the first one by default
+  document.querySelector('.email').classList.add('expanded');
+</script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX data export &amp; deletion — download your full LYMX data, manage permissions, delete your account. GDPR + CCPA self-service." />
+<meta name="robots" content="noindex,nofollow" />
+<title>My data &amp; privacy controls · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:980px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .head{padding:46px 0 22px;border-bottom:1px solid var(--line)}
+  .head .pre{display:inline-block;background:rgba(10,132,255,.1);color:var(--accent-2);font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .head h1{margin:0 0 8px;font-size:32px;font-weight:800;letter-spacing:-.01em}
+  .head p{margin:0;color:var(--muted);font-size:15px}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:1fr 280px;gap:30px;padding:24px 0 60px;align-items:start}
+  @media(max-width:880px){.layout{grid-template-columns:1fr}}
+
+  /* Card */
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;margin-bottom:14px}
+  .card h2{margin:0 0 4px;font-size:18px;font-weight:800;letter-spacing:-.01em}
+  .card .lede{margin:0 0 16px;color:var(--muted);font-size:14px;line-height:1.55}
+
+  /* Format options */
+  .formats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+  @media(max-width:600px){.formats{grid-template-columns:1fr}}
+  .fmt{padding:14px 16px;background:var(--bg-soft);border:2px solid var(--line);border-radius:11px;cursor:pointer;text-align:center;transition:.15s}
+  .fmt:hover{border-color:var(--ink)}
+  .fmt.on{border-color:var(--accent);background:rgba(10,132,255,.04)}
+  .fmt .ic{font-size:24px;margin-bottom:6px}
+  .fmt h3{margin:0;font-size:14px;font-weight:800}
+  .fmt .d{margin-top:3px;font-size:11.5px;color:var(--muted);line-height:1.4}
+
+  /* Categories checkboxes */
+  .cats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  @media(max-width:600px){.cats{grid-template-columns:1fr}}
+  .cat{display:flex;gap:10px;padding:11px 14px;background:var(--bg-soft);border:1px solid var(--line);border-radius:9px;cursor:pointer;align-items:flex-start}
+  .cat input{margin-top:3px}
+  .cat .body{flex:1}
+  .cat h4{margin:0 0 2px;font-size:13.5px;font-weight:800}
+  .cat p{margin:0;font-size:12px;color:var(--muted);line-height:1.4}
+
+  /* Buttons */
+  .btn{padding:12px 22px;background:var(--ink);color:#fff;border-radius:11px;font-weight:800;font-size:14px;cursor:pointer;border:0;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+  .btn.primary{background:var(--ink);color:#fff}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+  .btn.danger{background:#fff;color:var(--danger);border:1px solid var(--danger)}
+  .btn.danger:hover{background:var(--danger);color:#fff}
+  .btn:hover:not(.danger){opacity:.92}
+
+  /* Estimate banner */
+  .estimate{padding:12px 14px;background:rgba(10,132,255,.06);border:1px solid rgba(10,132,255,.2);border-radius:10px;font-size:13px;color:var(--accent-2);display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+  .estimate strong{color:var(--accent-2);font-weight:800}
+
+  /* Toggle row */
+  .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .toggle-row:last-child{border-bottom:0}
+  .toggle-row .body{flex:1;min-width:0}
+  .toggle-row h3{margin:0 0 2px;font-size:14.5px;font-weight:800}
+  .toggle-row p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.5}
+  .toggle{position:relative;width:46px;height:26px;background:var(--line);border-radius:13px;cursor:pointer;flex-shrink:0;transition:.2s}
+  .toggle::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:.2s}
+  .toggle.on{background:var(--ok)}
+  .toggle.on::after{left:23px}
+
+  /* Danger zone */
+  .danger-zone{background:#fff;border:1px solid rgba(224,65,62,.3);border-radius:var(--radius);padding:24px 28px;margin-bottom:14px}
+  .danger-zone h2{margin:0 0 4px;font-size:17px;font-weight:800;color:var(--danger)}
+  .danger-zone .lede{margin:0 0 14px;color:var(--muted);font-size:13.5px}
+  .danger-zone .what-happens{padding:12px 14px;background:rgba(224,65,62,.04);border-radius:9px;margin-bottom:14px}
+  .danger-zone .what-happens p{margin:0 0 5px;font-size:13px;color:var(--ink-2);line-height:1.5}
+  .danger-zone .what-happens p:last-child{margin-bottom:0}
+  .danger-zone .what-happens strong{color:var(--ink);font-weight:800}
+
+  /* Side: history */
+  .side .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px;margin-bottom:14px;position:sticky;top:88px}
+  .side h3{margin:0 0 10px;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .history{font-size:13px}
+  .history-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);align-items:flex-start;gap:8px}
+  .history-row:last-child{border-bottom:0}
+  .history-row .h{font-weight:800}
+  .history-row .when{font-size:11.5px;color:var(--muted)}
+  .history-row .pill{font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:5px;background:rgba(19,162,107,.14);color:#0d7d51;letter-spacing:.04em;text-transform:uppercase}
+
+  /* Toast (export started confirmation) */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;padding:14px 22px;border-radius:11px;font-weight:800;font-size:14px;box-shadow:0 14px 40px rgba(0,0,0,.3);transition:transform .3s ease;z-index:99}
+  .toast.on{transform:translateX(-50%) translateY(0)}
+
+  /* Confirmation modal */
+  .ovr{position:fixed;inset:0;background:rgba(14,17,22,.5);z-index:90;display:none;align-items:center;justify-content:center;padding:20px}
+  .ovr.on{display:flex}
+  .modal{background:#fff;border-radius:var(--radius);max-width:480px;width:100%;padding:28px}
+  .modal h3{margin:0 0 6px;font-size:18px;font-weight:800;color:var(--danger)}
+  .modal p{margin:0 0 14px;color:var(--ink-2);font-size:14px;line-height:1.55}
+  .modal .field{margin-bottom:12px}
+  .modal label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+  .modal input{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:14px;font-family:inherit}
+  .modal-actions{display:flex;gap:8px;justify-content:end;margin-top:14px}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center}
+  footer a{color:#9aa3b0}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="customer-wallet.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="customer-settings.html">Settings</a>
+      <a href="data-export.html" style="color:var(--accent);font-weight:700">My data</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="ai-policy.html">AI &amp; data</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="head">
+    <span class="pre">🔐 My data &amp; privacy controls</span>
+    <h1>Download or delete your LYMX data</h1>
+    <p>Self-service. No tickets, no waiting. Required by GDPR + CCPA — actually nice to have anyway.</p>
+  </div>
+
+  <div class="layout">
+    <div>
+      <!-- Download my data -->
+      <div class="card">
+        <h2>📥 Download my data</h2>
+        <p class="lede">A complete export of everything LYMX has on you. Pick what to include and what format. Most exports are ready in under 2 minutes.</p>
+
+        <h3 style="margin:14px 0 8px;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Format</h3>
+        <div class="formats">
+          <div class="fmt on" data-f="json" onclick="pickFmt('json',this)">
+            <div class="ic">{ }</div>
+            <h3>JSON</h3>
+            <div class="d">For developers · machine-readable</div>
+          </div>
+          <div class="fmt" data-f="csv" onclick="pickFmt('csv',this)">
+            <div class="ic">⊞</div>
+            <h3>CSV</h3>
+            <div class="d">For Excel · one file per category</div>
+          </div>
+          <div class="fmt" data-f="pdf" onclick="pickFmt('pdf',this)">
+            <div class="ic">📄</div>
+            <h3>PDF</h3>
+            <div class="d">Print-friendly · human readable</div>
+          </div>
+        </div>
+
+        <h3 style="margin:14px 0 8px;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">What to include</h3>
+        <div class="cats">
+          <label class="cat"><input type="checkbox" checked /><div class="body"><h4>Profile &amp; account</h4><p>Name, email, phone, sign-up date</p></div></label>
+          <label class="cat"><input type="checkbox" checked /><div class="body"><h4>Wallet balance &amp; ledger</h4><p>Current LYMX, full transaction history</p></div></label>
+          <label class="cat"><input type="checkbox" checked /><div class="body"><h4>Transactions (per Business)</h4><p>Earn + spend events with timestamps</p></div></label>
+          <label class="cat"><input type="checkbox" checked /><div class="body"><h4>Reviews you've written</h4><p>All your public Business reviews</p></div></label>
+          <label class="cat"><input type="checkbox" checked /><div class="body"><h4>Referrals</h4><p>Friends you referred + their status</p></div></label>
+          <label class="cat"><input type="checkbox" checked /><div class="body"><h4>Support tickets</h4><p>Conversations with our support team</p></div></label>
+          <label class="cat"><input type="checkbox" checked /><div class="body"><h4>Disputes</h4><p>Wallet disputes you've filed</p></div></label>
+          <label class="cat"><input type="checkbox" /><div class="body"><h4>Login history (last 12 months)</h4><p>IP addresses + timestamps · sensitive — uncheck if not needed</p></div></label>
+        </div>
+
+        <div class="estimate">
+          <span>Estimated export size: <strong>~280 KB</strong> · ready in <strong>~90 seconds</strong></span>
+          <span style="font-size:11.5px;color:var(--accent-2);font-weight:600">Email when ready</span>
+        </div>
+
+        <button class="btn primary" onclick="startExport()">📦 Generate export</button>
+      </div>
+
+      <!-- Permissions toggles -->
+      <div class="card">
+        <h2>⚙️ What we can do with your data</h2>
+        <p class="lede">Granular controls — you can turn each one on or off independently.</p>
+
+        <div class="toggle-row">
+          <div class="body">
+            <h3>Email me about my account</h3>
+            <p>Required for account security. Includes settlement statements, dispute updates, and security alerts.</p>
+          </div>
+          <div class="toggle on" style="opacity:.6;cursor:not-allowed" title="Required"></div>
+        </div>
+        <div class="toggle-row">
+          <div class="body">
+            <h3>Email me about new Businesses on the network</h3>
+            <p>Notify when a new LYMX Business opens near you. Roughly once a month.</p>
+          </div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="toggle-row">
+          <div class="body">
+            <h3>Email me about promotions</h3>
+            <p>Multipliers, Happy Hours, and Founding-Business email blasts. Up to 2 per week.</p>
+          </div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="toggle-row">
+          <div class="body">
+            <h3>SMS for transaction confirmations</h3>
+            <p>Text after every earn or redemption. Helpful for fraud detection.</p>
+          </div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="toggle-row">
+          <div class="body">
+            <h3>Show me in the public Partner / customer leaderboard</h3>
+            <p>If you opt out, your name won't appear. Default: opt-in only after you crack the top 50.</p>
+          </div>
+          <div class="toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="toggle-row">
+          <div class="body">
+            <h3>Help-center semantic search</h3>
+            <p>Uses an AI service to find articles by meaning. Turn off for keyword-only search. <a href="ai-policy.html" style="color:var(--accent-2);font-weight:700">More on AI use</a>.</p>
+          </div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="toggle-row">
+          <div class="body">
+            <h3>Anonymous analytics</h3>
+            <p>Helps us see which pages help vs. confuse. We use Plausible (cookieless, no individual tracking).</p>
+          </div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+
+      <!-- Danger zone -->
+      <div class="danger-zone">
+        <h2>⚠️ Delete my account</h2>
+        <p class="lede">Permanent. We can restore within 7 days if you change your mind — after that, the data is gone.</p>
+
+        <div class="what-happens">
+          <p><strong>What we'll delete:</strong> profile, wallet balance, transaction history, reviews, support tickets, referrals, login history.</p>
+          <p><strong>What we'll keep (anonymized):</strong> aggregate transaction counts (for our financial records), per-Business sales tax records (legal requirement, 7 years).</p>
+          <p><strong>Timeline:</strong> production deletion within 30 days · backup deletion within 90 days · final confirmation by email.</p>
+        </div>
+
+        <button class="btn danger" onclick="openDelete()">🗑 Delete my account permanently</button>
+      </div>
+    </div>
+
+    <!-- Side: history -->
+    <aside class="side">
+      <div class="panel">
+        <h3>Recent exports</h3>
+        <div class="history">
+          <div class="history-row">
+            <div>
+              <div class="h">Full export — JSON</div>
+              <div class="when">Mar 12, 2026 · 412 KB</div>
+            </div>
+            <span class="pill">Done</span>
+          </div>
+          <div class="history-row">
+            <div>
+              <div class="h">Full export — CSV</div>
+              <div class="when">Jan 4, 2026 · 318 KB</div>
+            </div>
+            <span class="pill">Done</span>
+          </div>
+        </div>
+        <p style="font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.5">Exports are kept available for download for 14 days. After that, generate a new one.</p>
+      </div>
+
+      <div class="panel" style="position:static">
+        <h3>Your rights</h3>
+        <p style="font-size:13px;color:var(--ink-2);line-height:1.55;margin:0 0 8px"><strong>Under GDPR &amp; CCPA</strong>, you have the right to: download your data, delete your account, restrict processing, port your data, object to specific uses, and complain to a regulator.</p>
+        <p style="font-size:13px;color:var(--ink-2);line-height:1.55;margin:0"><a href="privacy.html" style="color:var(--accent-2);font-weight:700">Read the full Privacy Policy →</a></p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<div class="ovr" id="ovr-delete">
+  <div class="modal">
+    <h3>This is permanent. Are you sure?</h3>
+    <p>Type your email below to confirm deletion. We'll send you a final email with a 7-day undo link.</p>
+    <div class="field">
+      <label>Confirm by typing your email</label>
+      <input type="email" id="confirm-email" placeholder="you@example.com" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeDelete()">Cancel</button>
+      <button class="btn danger" onclick="confirmDelete()">Yes, delete my account</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export started toast -->
+<div class="toast" id="toast">📦 Export started — we'll email you when ready</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · <a href="privacy.html">Privacy</a> · <a href="ai-policy.html">AI &amp; data</a> · <a href="terms.html">Terms</a></div>
+</footer>
+
+<script>
+  let activeFmt = 'json';
+  function pickFmt(f, el){
+    activeFmt = f;
+    document.querySelectorAll('.fmt').forEach(x=>x.classList.remove('on'));
+    el.classList.add('on');
+  }
+
+  function startExport(){
+    const t = document.getElementById('toast');
+    t.classList.add('on');
+    setTimeout(()=>t.classList.remove('on'), 2800);
+  }
+
+  function openDelete(){ document.getElementById('ovr-delete').classList.add('on'); }
+  function closeDelete(){ document.getElementById('ovr-delete').classList.remove('on'); }
+  function confirmDelete(){
+    const email = document.getElementById('confirm-email').value.trim();
+    if(!email || !/@/.test(email)){ alert('Type your email to confirm.'); return; }
+    closeDelete();
+    alert('Deletion request submitted. We\'ll email ' + email + ' with a 7-day undo link. After that, the deletion is permanent.\n\n(Mock for now)');
+  }
+</script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

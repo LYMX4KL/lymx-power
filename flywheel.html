@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX network flywheel — interactive simulation showing how customer + Business growth compound. Drag the sliders." />
+<title>The LYMX Flywheel · interactive explainer</title>
+<meta property="og:title" content="The LYMX Flywheel" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4af37;--radius:14px;--maxw:1200px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .hero{padding:46px 0 26px;text-align:center;background:linear-gradient(180deg,#fff,var(--bg-soft));border-bottom:1px solid var(--line)}
+  .hero .pre{display:inline-block;background:rgba(165,69,255,.12);color:#7426c4;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .hero h1{margin:0 0 8px;font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .hero p.lede{margin:0 auto;font-size:16px;color:var(--ink-2);max-width:600px}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:30px 0 60px;align-items:start}
+  @media(max-width:880px){.layout{grid-template-columns:1fr}}
+
+  /* Controls */
+  .controls{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px;position:sticky;top:88px}
+  .controls h2{margin:0 0 4px;font-size:16px;font-weight:800}
+  .controls .lede{margin:0 0 18px;color:var(--muted);font-size:13.5px}
+
+  .ctrl{margin-bottom:18px}
+  .ctrl-h{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px}
+  .ctrl-h .lab{font-size:13px;font-weight:800;color:var(--ink-2)}
+  .ctrl-h .v{font-size:22px;font-weight:800;color:var(--accent-2);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .ctrl input[type="range"]{width:100%;-webkit-appearance:none;background:transparent}
+  .ctrl input[type="range"]::-webkit-slider-runnable-track{background:var(--bg-soft);height:8px;border-radius:4px}
+  .ctrl input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;background:linear-gradient(135deg,#0a84ff,#0050c7);border-radius:50%;border:3px solid #fff;box-shadow:0 4px 12px rgba(10,132,255,.3);margin-top:-8px;cursor:pointer}
+  .ctrl input[type="range"]::-moz-range-track{background:var(--bg-soft);height:8px;border-radius:4px}
+  .ctrl input[type="range"]::-moz-range-thumb{width:24px;height:24px;background:linear-gradient(135deg,#0a84ff,#0050c7);border-radius:50%;border:3px solid #fff;box-shadow:0 4px 12px rgba(10,132,255,.3);cursor:pointer}
+  .ctrl-d{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+
+  .preset-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .preset{padding:6px 12px;background:var(--bg-soft);border:1px solid var(--line);border-radius:7px;font-size:12px;font-weight:800;color:var(--ink-2);cursor:pointer}
+  .preset:hover{border-color:var(--ink)}
+  .preset.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* Visualization */
+  .viz{background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);padding:30px;display:flex;flex-direction:column;gap:18px}
+
+  /* Big result card */
+  .result-big{padding:24px 28px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:13px;text-align:center}
+  .result-big .lab{font-size:11.5px;color:#9aa3b0;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+  .result-big .v{font-size:54px;font-weight:800;color:#f5d172;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+  .result-big .sub{font-size:13px;color:#9aa3b0;margin-top:8px;line-height:1.5}
+
+  /* Step strip */
+  .steps-flow{position:relative;padding:8px 0}
+  .step-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:14px 18px;margin-bottom:8px;display:flex;gap:14px;align-items:center;font-size:13.5px;color:#cdd2da}
+  .step-card .num{width:28px;height:28px;border-radius:50%;background:rgba(245,209,114,.18);color:#f5d172;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0}
+  .step-card .body{flex:1;min-width:0}
+  .step-card .h{color:#fff;font-weight:800;font-size:14px}
+  .step-card .calc{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:#9aa3b0;margin-top:2px}
+  .step-card .v{font-size:18px;font-weight:800;color:#f5d172;font-variant-numeric:tabular-nums;flex-shrink:0}
+
+  /* Visual chart */
+  .chart{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:18px 20px}
+  .chart h3{margin:0 0 12px;font-size:13px;font-weight:800;color:#9aa3b0;text-transform:uppercase;letter-spacing:.05em}
+  .month-row{display:flex;align-items:flex-end;gap:5px;height:120px;padding:0 0 10px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:6px}
+  .month-bar{flex:1;background:linear-gradient(180deg,#5fd198,#0d7d51);border-radius:5px 5px 0 0;position:relative;display:flex;align-items:flex-start;justify-content:center;color:#fff;font-size:11px;font-weight:800;padding:4px 0}
+  .month-labels{display:flex;justify-content:space-between;font-size:10.5px;color:#9aa3b0;font-weight:700}
+  .month-labels span{flex:1;text-align:center}
+
+  /* Story callout */
+  .story{padding:18px 22px;background:rgba(245,209,114,.08);border:1px solid rgba(245,209,114,.3);border-radius:11px;color:#f5d172;font-size:14px;line-height:1.6}
+  .story strong{color:#fff;font-weight:800}
+
+  /* Below */
+  .below{padding:48px 0;background:var(--bg-soft);border-top:1px solid var(--line)}
+  .below h2{margin:0 0 18px;font-size:24px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:1080px;margin:0 auto}
+  @media(max-width:880px){.why-grid{grid-template-columns:1fr}}
+  .why-card{padding:24px 26px;background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
+  .why-card .ic{font-size:32px;margin-bottom:8px}
+  .why-card h3{margin:0 0 6px;font-size:16px;font-weight:800}
+  .why-card p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.6}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center}
+  footer a{color:#9aa3b0}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="flywheel.html" style="color:var(--accent);font-weight:700">Flywheel</a>
+      <a href="business.html">For Business</a>
+      <a href="investor.html">Investors</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="pre">⚙️ Interactive explainer</span>
+    <h1>The LYMX flywheel — drag the sliders</h1>
+    <p class="lede">Each Business that joins LYMX brings customers into the network. Those customers spend at other Businesses. Those Businesses bring more customers. Watch the math.</p>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="layout">
+    <!-- Controls -->
+    <div class="controls">
+      <h2>Set your scenario</h2>
+      <p class="lede">Real LYMX numbers as defaults. Drag the sliders to model any scenario.</p>
+
+      <div class="ctrl">
+        <div class="ctrl-h">
+          <span class="lab">Active Businesses</span>
+          <span class="v" id="v-biz">10</span>
+        </div>
+        <input type="range" id="r-biz" min="1" max="100" step="1" value="10" />
+        <div class="ctrl-d">How many Businesses are on the LYMX network</div>
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-h">
+          <span class="lab">Avg monthly revenue per Business</span>
+          <span class="v" id="v-rev">$100K</span>
+        </div>
+        <input type="range" id="r-rev" min="20" max="500" step="10" value="100" />
+        <div class="ctrl-d">Average monthly Business volume in $K</div>
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-h">
+          <span class="lab">Avg ticket size</span>
+          <span class="v" id="v-ticket">$20</span>
+        </div>
+        <input type="range" id="r-ticket" min="5" max="100" step="1" value="20" />
+        <div class="ctrl-d">Avg dollars per transaction</div>
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-h">
+          <span class="lab">Repeat-customer rate</span>
+          <span class="v" id="v-repeat">70%</span>
+        </div>
+        <input type="range" id="r-repeat" min="20" max="95" step="1" value="70" />
+        <div class="ctrl-d">% of customers a Business sees more than once</div>
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-h">
+          <span class="lab">Cross-Business spend rate</span>
+          <span class="v" id="v-cross">35%</span>
+        </div>
+        <input type="range" id="r-cross" min="0" max="80" step="1" value="35" />
+        <div class="ctrl-d">% of LYMX customers who spend at a 2nd LYMX Business within 60 days</div>
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-h">
+          <span class="lab">Time horizon</span>
+          <span class="v" id="v-months">6 mo</span>
+        </div>
+        <input type="range" id="r-months" min="1" max="24" step="1" value="6" />
+        <div class="ctrl-d">How many months of compounding</div>
+      </div>
+
+      <div style="font-size:11.5px;color:var(--muted);margin-top:10px;font-weight:700">Quick scenarios</div>
+      <div class="preset-row">
+        <button class="preset" onclick="setScenario('today')">Today's network</button>
+        <button class="preset" onclick="setScenario('phase2')">Phase 2 (Q2)</button>
+        <button class="preset" onclick="setScenario('phase3')">Phase 3 (2027)</button>
+      </div>
+    </div>
+
+    <!-- Visualization -->
+    <div class="viz">
+      <div class="result-big">
+        <div class="lab">Net new customers brought into the network</div>
+        <div class="v" id="result-v">21,000</div>
+        <div class="sub" id="result-sub">After 6 months of compounding · 0 LYMX customer-acquisition cost</div>
+      </div>
+
+      <div class="steps-flow">
+        <div class="step-card">
+          <div class="num">1</div>
+          <div class="body">
+            <div class="h">Customers per Business per month</div>
+            <div class="calc" id="calc-1">— rev / ticket = customers</div>
+          </div>
+          <div class="v" id="step-1">5,000</div>
+        </div>
+        <div class="step-card">
+          <div class="num">2</div>
+          <div class="body">
+            <div class="h">New customers per Business per month</div>
+            <div class="calc" id="calc-2">— customers × (1 − repeat rate)</div>
+          </div>
+          <div class="v" id="step-2">1,500</div>
+        </div>
+        <div class="step-card">
+          <div class="num">3</div>
+          <div class="body">
+            <div class="h">Total new customers across network per month</div>
+            <div class="calc" id="calc-3">— new × Businesses</div>
+          </div>
+          <div class="v" id="step-3">15,000</div>
+        </div>
+        <div class="step-card">
+          <div class="num">4</div>
+          <div class="body">
+            <div class="h">Cross-Business spenders / month</div>
+            <div class="calc" id="calc-4">— total new × cross-spend %</div>
+          </div>
+          <div class="v" id="step-4">5,250</div>
+        </div>
+        <div class="step-card">
+          <div class="num">5</div>
+          <div class="body">
+            <div class="h">Compounded over horizon</div>
+            <div class="calc" id="calc-5">— growth across months</div>
+          </div>
+          <div class="v" id="step-5">21,000</div>
+        </div>
+      </div>
+
+      <div class="chart">
+        <h3>Customer growth by month</h3>
+        <div class="month-row" id="bars"></div>
+        <div class="month-labels" id="month-labels"></div>
+      </div>
+
+      <div class="story" id="story-text">
+        <strong>The takeaway:</strong> a network of 10 Businesses adds <strong>~21K net new customers</strong> in 6 months — at zero LYMX customer-acquisition cost. The 11th Business benefits from this. So does the 100th.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Below: why this matters -->
+<section class="below">
+  <div class="wrap">
+    <h2>Why this matters</h2>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="ic">📈</div>
+        <h3>Each Business gets stronger when another joins</h3>
+        <p>Unlike a stand-alone loyalty program, every new Business expands the value of existing Businesses' LYMX wallets. The opposite of competing for finite customer attention.</p>
+      </div>
+      <div class="why-card">
+        <div class="ic">💵</div>
+        <h3>CAC ≈ $0 on the network side</h3>
+        <p>Customer-acquisition cost is paid by the Business that signs up the customer. Every other LYMX Business gets free access to that customer's spend.</p>
+      </div>
+      <div class="why-card">
+        <div class="ic">🔁</div>
+        <h3>Defensibility = network density</h3>
+        <p>Once a city has 100+ LYMX Businesses, a competing network has to win 100+ Businesses to be useful. That's a real moat.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · Numbers above are illustrative · Real metrics: <a href="transparency.html" style="color:#9aa3b0">transparency report</a></div>
+</footer>
+
+<script>
+  const els = {
+    biz: document.getElementById('r-biz'),
+    rev: document.getElementById('r-rev'),
+    ticket: document.getElementById('r-ticket'),
+    repeat: document.getElementById('r-repeat'),
+    cross: document.getElementById('r-cross'),
+    months: document.getElementById('r-months')
+  };
+
+  function fmt(n){ return Math.round(n).toLocaleString(); }
+  function fmtK(n){ return n>=1000 ? '$'+Math.round(n/1000)+'K' : '$'+n; }
+
+  function calc(){
+    const biz = parseInt(els.biz.value, 10);
+    const rev = parseInt(els.rev.value, 10) * 1000;
+    const ticket = parseInt(els.ticket.value, 10);
+    const repeat = parseInt(els.repeat.value, 10) / 100;
+    const cross = parseInt(els.cross.value, 10) / 100;
+    const months = parseInt(els.months.value, 10);
+
+    document.getElementById('v-biz').textContent = biz;
+    document.getElementById('v-rev').textContent = '$' + (rev/1000) + 'K';
+    document.getElementById('v-ticket').textContent = '$' + ticket;
+    document.getElementById('v-repeat').textContent = repeat*100 + '%';
+    document.getElementById('v-cross').textContent = (cross*100).toFixed(0) + '%';
+    document.getElementById('v-months').textContent = months + ' mo';
+
+    // Step 1: customers per Business per month = rev / ticket
+    const custPerBiz = Math.floor(rev / ticket);
+    document.getElementById('step-1').textContent = fmt(custPerBiz);
+    document.getElementById('calc-1').textContent = '$' + (rev/1000) + 'K ÷ $' + ticket + ' = ' + fmt(custPerBiz);
+
+    // Step 2: new customers per Business = customers × (1 − repeat)
+    const newCustPerBiz = Math.floor(custPerBiz * (1 - repeat));
+    document.getElementById('step-2').textContent = fmt(newCustPerBiz);
+    document.getElementById('calc-2').textContent = fmt(custPerBiz) + ' × ' + ((1-repeat)*100).toFixed(0) + '% = ' + fmt(newCustPerBiz);
+
+    // Step 3: total new customers per month
+    const totalNewPerMonth = newCustPerBiz * biz;
+    document.getElementById('step-3').textContent = fmt(totalNewPerMonth);
+    document.getElementById('calc-3').textContent = fmt(newCustPerBiz) + ' × ' + biz + ' Businesses = ' + fmt(totalNewPerMonth);
+
+    // Step 4: cross-spend
+    const crossSpenders = Math.floor(totalNewPerMonth * cross);
+    document.getElementById('step-4').textContent = fmt(crossSpenders);
+    document.getElementById('calc-4').textContent = fmt(totalNewPerMonth) + ' × ' + (cross*100).toFixed(0) + '% = ' + fmt(crossSpenders);
+
+    // Step 5: compounded over months (with some decay to be realistic)
+    let cumulative = 0;
+    const monthly = [];
+    for(let m = 1; m <= months; m++){
+      // Slight saturation curve — diminishing returns over time
+      const decay = Math.pow(0.92, m-1);
+      const monthlyAdd = Math.floor(totalNewPerMonth * decay);
+      cumulative += monthlyAdd;
+      monthly.push(monthlyAdd);
+    }
+    document.getElementById('step-5').textContent = fmt(cumulative);
+    document.getElementById('calc-5').textContent = months + ' months · with light saturation';
+    document.getElementById('result-v').textContent = fmt(cumulative);
+    document.getElementById('result-sub').textContent = 'After ' + months + ' months of compounding · 0 LYMX customer-acquisition cost';
+
+    // Bar chart
+    const max = Math.max(...monthly);
+    const showMonths = Math.min(months, 12);
+    const slice = monthly.slice(0, showMonths);
+    document.getElementById('bars').innerHTML = slice.map(v => {
+      const h = max > 0 ? (v/max) * 100 : 0;
+      return `<div class="month-bar" style="height:${h}%" title="${fmt(v)}"></div>`;
+    }).join('');
+    document.getElementById('month-labels').innerHTML = slice.map((_, i) => `<span>M${i+1}</span>`).join('');
+
+    // Story text
+    const storyEl = document.getElementById('story-text');
+    if(biz <= 5){
+      storyEl.innerHTML = '<strong>Small network, real growth.</strong> Even at ' + biz + ' Business' + (biz===1?'':'es') + ', you\'re seeing ' + fmt(cumulative) + ' net new customers over ' + months + ' months. The 6th Business benefits from all of this — for free.';
+    } else if(biz <= 25){
+      storyEl.innerHTML = '<strong>The flywheel is real.</strong> ' + biz + ' Businesses → ' + fmt(cumulative) + ' net new customers in ' + months + ' months at zero LYMX customer-acquisition cost. Each Business that joins makes the next one easier to recruit.';
+    } else {
+      storyEl.innerHTML = '<strong>Network density unlocks.</strong> At ' + biz + ' Businesses, the network is dense enough that customers can find a LYMX option for almost any local need. ' + fmt(cumulative) + ' new customers in ' + months + ' months is now table stakes.';
+    }
+  }
+
+  function setScenario(s){
+    document.querySelectorAll('.preset').forEach(p=>p.classList.remove('on'));
+    event.target.classList.add('on');
+    if(s==='today'){
+      els.biz.value = 13; els.rev.value = 100; els.ticket.value = 20; els.repeat.value = 70; els.cross.value = 35; els.months.value = 6;
+    } else if(s==='phase2'){
+      els.biz.value = 35; els.rev.value = 110; els.ticket.value = 22; els.repeat.value = 72; els.cross.value = 45; els.months.value = 12;
+    } else if(s==='phase3'){
+      els.biz.value = 100; els.rev.value = 130; els.ticket.value = 25; els.repeat.value = 75; els.cross.value = 55; els.months.value = 18;
+    }
+    calc();
+  }
+
+  Object.values(els).forEach(el => el.addEventListener('input', calc));
+  calc();
+</script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

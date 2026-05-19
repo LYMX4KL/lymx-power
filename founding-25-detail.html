@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Sage &amp; Stone Bakery — Launch 25 Business on LYMX. Henderson-based. Sourdough, pastry, espresso bar. Earn LYMX on every order." />
+<title>Sage &amp; Stone Bakery · LYMX Launch 25</title>
+<meta property="og:title" content="Sage &amp; Stone Bakery · Launch 25" />
+<meta property="og:image" content="og-image.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  .btn{padding:10px 16px;background:var(--ink);color:#fff;border-radius:9px;font-weight:800;font-size:13.5px;text-decoration:none;display:inline-block}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Photo header */
+  .gallery{height:380px;background:linear-gradient(135deg,#7a4d0a,#3d2705);position:relative;overflow:hidden}
+  @media(max-width:780px){.gallery{height:260px}}
+  .gallery::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(245,209,114,.4),transparent 60%)}
+  .gallery .photo-strip{position:absolute;bottom:14px;right:14px;display:flex;gap:6px}
+  .photo-strip .thumb{width:60px;height:60px;border-radius:8px;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.3);background-size:cover;background-position:center}
+  .photo-strip .thumb.t1{background:linear-gradient(135deg,#a06808,#5a3608)}
+  .photo-strip .thumb.t2{background:linear-gradient(135deg,#1a1f27,#0e1116)}
+  .photo-strip .thumb.t3{background:linear-gradient(135deg,#d4af37,#7a5e10)}
+  .photo-strip .thumb.t4{background:linear-gradient(135deg,#7a4d0a,#3d2705);font-size:18px;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}
+
+  .badge-row{position:absolute;top:18px;left:18px;display:flex;gap:8px;flex-wrap:wrap}
+  .badge{display:inline-flex;align-items:center;gap:5px;background:rgba(245,209,114,.92);color:#0e1116;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 11px;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+  .badge.green{background:rgba(95,209,152,.95);color:#0e1116}
+
+  /* Hero */
+  .hero{padding:30px 0 22px;border-bottom:1px solid var(--line)}
+  .hero h1{margin:0 0 6px;font-size:36px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .hero .sub{font-size:15px;color:var(--muted);margin-bottom:14px}
+  .hero .meta-row{display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px;color:var(--ink-2);margin-bottom:18px}
+  .hero .meta-row span{display:flex;align-items:center;gap:6px}
+  .hero .meta-row .ic{font-size:14px}
+  .hero .stars{color:var(--gold);font-weight:800}
+  .hero .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn-primary{background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-weight:800;font-size:14px}
+  .btn-ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line);padding:11px 18px;border-radius:10px;font-weight:800;font-size:14px;text-decoration:none;display:inline-block;cursor:pointer}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:1.6fr 1fr;gap:30px;padding:32px 0 60px;align-items:start}
+  @media(max-width:880px){.layout{grid-template-columns:1fr}}
+
+  section.b{margin-bottom:30px}
+  section.b h2{margin:0 0 8px;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  section.b p{margin:0 0 12px;font-size:15px;color:var(--ink-2);line-height:1.65}
+
+  /* Promo banner */
+  .promo{padding:14px 18px;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border-radius:11px;display:flex;gap:14px;align-items:center;margin-bottom:18px}
+  .promo .ic{font-size:24px}
+  .promo .txt{flex:1}
+  .promo strong{color:#f5d172;font-weight:800}
+
+  /* Menu items */
+  .menu{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:600px){.menu{grid-template-columns:1fr}}
+  .item{padding:14px;background:var(--bg-soft);border:1px solid var(--line);border-radius:11px;display:flex;justify-content:space-between;gap:12px}
+  .item .info{flex:1;min-width:0}
+  .item h3{margin:0 0 3px;font-size:14.5px;font-weight:800}
+  .item p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.4}
+  .item .price{flex-shrink:0;font-weight:800;font-size:14px;color:var(--ink-2)}
+  .item .price .lymx{display:block;font-size:11px;color:var(--ok);font-weight:800;margin-top:2px}
+
+  /* Reviews */
+  .review{padding:16px 18px;background:#fff;border:1px solid var(--line);border-radius:11px;margin-bottom:8px}
+  .review .h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+  .review .who{font-weight:800;font-size:14px}
+  .review .when{font-size:11.5px;color:var(--muted);font-weight:700}
+  .review .stars{color:var(--gold);font-size:13px;letter-spacing:1px}
+  .review p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+
+  .leave-review{padding:14px;background:rgba(212,175,55,.08);border:1px dashed rgba(212,175,55,.5);border-radius:11px;text-align:center;margin-top:10px}
+  .leave-review p{margin:0 0 8px;font-size:13.5px;color:#7a5e10}
+  .leave-review a{padding:8px 14px;background:var(--ink);color:#fff;border-radius:8px;font-weight:800;font-size:12.5px;text-decoration:none;display:inline-block}
+
+  /* Sidebar */
+  .side{position:sticky;top:88px}
+  .info-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:14px}
+  .info-card h3{margin:0 0 12px;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .info-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--ink-2)}
+  .info-row:last-child{border-bottom:0}
+  .info-row .ic{flex-shrink:0;font-size:16px;width:22px}
+  .info-row .body{flex:1}
+  .info-row strong{color:var(--ink);font-weight:800;display:block}
+  .info-row .small{font-size:11.5px;color:var(--muted)}
+  .info-row .open{color:var(--ok);font-weight:800;font-size:11.5px}
+
+  /* Hours table */
+  .hours{font-size:13px}
+  .hours-row{display:flex;justify-content:space-between;padding:5px 0;color:var(--ink-2)}
+  .hours-row.today{font-weight:800;color:var(--ink)}
+
+  /* Stats card */
+  .stats-card{background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);padding:20px 22px;margin-bottom:14px}
+  .stats-card h3{margin:0 0 8px;color:#f5d172;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stat{padding:10px 12px;background:rgba(255,255,255,.05);border-radius:9px}
+  .stat .v{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.01em;line-height:1}
+  .stat .v.gold{color:#f5d172}
+  .stat .l{font-size:10.5px;color:#9aa3b0;text-transform:uppercase;letter-spacing:.05em;margin-top:3px;font-weight:700}
+
+  /* Owner card */
+  .owner{display:flex;gap:14px;align-items:center;padding:18px 20px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);margin-bottom:14px}
+  .owner .av{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0}
+  .owner .body{flex:1;min-width:0}
+  .owner .role{font-size:11.5px;color:var(--muted);font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .owner .name{font-size:16px;font-weight:800}
+  .owner .yr{font-size:12px;color:var(--muted)}
+
+  /* Map placeholder */
+  .map-card{aspect-ratio:1.4/1;background:linear-gradient(135deg,#1a1f27,#0e1116);border-radius:var(--radius);position:relative;overflow:hidden;color:#fff;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;margin-bottom:14px}
+  .map-card::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(245,209,114,.18),transparent 60%)}
+  .map-card .pin{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .map-card .dot{width:18px;height:18px;border-radius:50%;background:#f5d172;box-shadow:0 0 0 6px rgba(245,209,114,.3),0 0 0 14px rgba(245,209,114,.12)}
+  .map-card .label{font-size:12px;color:#9aa3b0;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center}
+  footer a{color:#9aa3b0}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="browse.html">Browse</a>
+      <a href="founding-25.html">Launch 25</a>
+      <a href="coverage-map.html">Coverage</a>
+      <a href="why-lymx.html">Why LYMX</a>
+    </nav>
+    <a href="customer-signup.html" class="btn">Get my wallet</a>
+  </div>
+</header>
+
+<!-- Photo header -->
+<div class="gallery">
+  <div class="badge-row">
+    <span class="badge">★ Launch 25</span>
+    <span class="badge green">⚡ Live now</span>
+  </div>
+  <div class="photo-strip">
+    <div class="thumb t1"></div>
+    <div class="thumb t2"></div>
+    <div class="thumb t3"></div>
+    <div class="thumb t4">+12</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <h1>Sage &amp; Stone Bakery</h1>
+    <p class="sub">Bakery · Espresso bar · Henderson, NV · Launch 25 Business #6</p>
+    <div class="meta-row">
+      <span><span class="stars">★★★★★</span> <strong>4.9</strong> (87 reviews)</span>
+      <span><span class="ic">📍</span> 1.2 mi · Henderson</span>
+      <span><span class="ic">⏱</span> Opens at 6 AM</span>
+      <span><span class="ic">⚡</span> 5 LYMX per $1 · 2× weekend mornings</span>
+    </div>
+    <div class="actions">
+      <a class="btn-primary" href="customer-wallet.html">Pay with LYMX →</a>
+      <a class="btn-ghost" href="customer-referral.html">Refer a friend (200 LYMX)</a>
+      <button class="btn-ghost" onclick="navigator.share && navigator.share({title:'Sage &amp; Stone Bakery',url:location.href})">↗ Share</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- Main column -->
+    <div>
+      <!-- Promo -->
+      <div class="promo">
+        <div class="ic">⚡</div>
+        <div class="txt">
+          <strong>Weekend 2× LYMX</strong> — Saturday and Sunday, 6 AM – 11 AM. Earn double LYMX on every order. Live now.
+        </div>
+      </div>
+
+      <!-- About -->
+      <section class="b">
+        <h2>About Sage &amp; Stone</h2>
+        <p>Riya Patel and her husband Aman opened Sage &amp; Stone in 2024 after 12 years of weekend home-baking from a 200 sq ft kitchen. The bakery is named for the two ingredients in their first sourdough starter — a cutting from a friend's sage plant and the river stone they kept by the dough.</p>
+        <p>Naturally-leavened sourdough, scratch-made pastries, and a 4-bean espresso bar. They joined LYMX in week 8 as Launch 25 Business #6.</p>
+      </section>
+
+      <!-- Menu sample -->
+      <section class="b">
+        <h2>Customer favorites</h2>
+        <div class="menu">
+          <div class="item"><div class="info"><h3>Country sourdough loaf</h3><p>Hand-shaped, 24-hour cold ferment. Crust like glass, crumb like cloud.</p></div><div class="price">$12<span class="lymx">+60 LYMX</span></div></div>
+          <div class="item"><div class="info"><h3>Brown butter croissant</h3><p>Lamination + brown butter wash. Don't skip it.</p></div><div class="price">$5.50<span class="lymx">+28 LYMX</span></div></div>
+          <div class="item"><div class="info"><h3>Cardamom morning bun</h3><p>Cinnamon roll's cooler cousin. Best with espresso.</p></div><div class="price">$6<span class="lymx">+30 LYMX</span></div></div>
+          <div class="item"><div class="info"><h3>Single-origin pour-over</h3><p>Rotating roaster. Currently Onyx Coffee from Arkansas.</p></div><div class="price">$5<span class="lymx">+25 LYMX</span></div></div>
+          <div class="item"><div class="info"><h3>Sage breakfast sandwich</h3><p>House sausage, egg, sharp cheddar, garlic confit on a brioche bun.</p></div><div class="price">$11<span class="lymx">+55 LYMX</span></div></div>
+          <div class="item"><div class="info"><h3>Hot chocolate (winter only)</h3><p>Real chocolate, real cream, real talk.</p></div><div class="price">$6<span class="lymx">+30 LYMX</span></div></div>
+        </div>
+      </section>
+
+      <!-- Reviews -->
+      <section class="b">
+        <h2>What customers say <span style="color:var(--muted);font-size:14px;font-weight:600">87 reviews · 4.9★</span></h2>
+
+        <div class="review">
+          <div class="h">
+            <div>
+              <div class="who">Maya Hopkins</div>
+              <div class="stars">★★★★★</div>
+            </div>
+            <div class="when">3 days ago</div>
+          </div>
+          <p>I drove from the Strip just for the cardamom morning bun. Worth every mile. Bonus: paid with LYMX I'd earned at Brew &amp; Bean — felt like getting it for free.</p>
+        </div>
+
+        <div class="review">
+          <div class="h">
+            <div>
+              <div class="who">Jonathan Reyes</div>
+              <div class="stars">★★★★★</div>
+            </div>
+            <div class="when">1 week ago</div>
+          </div>
+          <p>The sourdough is the real deal. Riya knows what she's doing — you can tell from the crust. Friendly staff. The 2× weekend LYMX is a nice touch too.</p>
+        </div>
+
+        <div class="review">
+          <div class="h">
+            <div>
+              <div class="who">Asha Gupta</div>
+              <div class="stars">★★★★★</div>
+            </div>
+            <div class="when">2 weeks ago</div>
+          </div>
+          <p>Stopped in for a coffee, left with a loaf, two pastries, and a future addiction. Already plotting my next visit.</p>
+        </div>
+
+        <div class="leave-review">
+          <p>Visited Sage &amp; Stone? Leave a review and earn 50 LYMX bonus.</p>
+          <a href="review-write.html?biz=Sage+%26+Stone+Bakery">Write a review →</a>
+        </div>
+      </section>
+    </div>
+
+    <!-- Sidebar -->
+    <aside>
+      <div class="side">
+        <div class="map-card">
+          <div class="pin">
+            <div class="dot"></div>
+            <div class="label">Henderson, NV</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Location &amp; hours</h3>
+          <div class="info-row">
+            <span class="ic">📍</span>
+            <div class="body">
+              <strong>112 W Sunset Rd</strong>
+              <span class="small">Henderson, NV 89015</span>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="ic">⏱</span>
+            <div class="body">
+              <strong style="display:flex;justify-content:space-between"><span>Hours</span><span class="open">Open now</span></strong>
+              <div class="hours" style="margin-top:6px">
+                <div class="hours-row today"><span>Today (Wed)</span><span>6:00 AM – 4:00 PM</span></div>
+                <div class="hours-row"><span>Thu</span><span>6:00 AM – 4:00 PM</span></div>
+                <div class="hours-row"><span>Fri</span><span>6:00 AM – 5:00 PM</span></div>
+                <div class="hours-row"><span>Sat</span><span>7:00 AM – 5:00 PM</span></div>
+                <div class="hours-row"><span>Sun</span><span>7:00 AM – 3:00 PM</span></div>
+                <div class="hours-row"><span>Mon</span><span>Closed</span></div>
+                <div class="hours-row"><span>Tue</span><span>6:00 AM – 4:00 PM</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="ic">📞</span>
+            <div class="body">
+              <strong>(702) 555-0223</strong>
+              <span class="small">Call ahead for large orders</span>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="ic">🌐</span>
+            <div class="body">
+              <a href="#" style="color:var(--accent-2);font-weight:800">sageandstone.bakery</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="owner">
+          <div class="av">RP</div>
+          <div class="body">
+            <div class="role">Owner</div>
+            <div class="name">Riya Patel</div>
+            <div class="yr">Co-founder · 2024 →</div>
+          </div>
+        </div>
+
+        <div class="stats-card">
+          <h3>Sage &amp; Stone on LYMX</h3>
+          <div class="stats-grid">
+            <div class="stat"><div class="v">8 wk</div><div class="l">On the network</div></div>
+            <div class="stat"><div class="v gold">340</div><div class="l">Repeat customers</div></div>
+            <div class="stat"><div class="v gold">5</div><div class="l">LYMX / $1</div></div>
+            <div class="stat"><div class="v">2×</div><div class="l">Weekend mornings</div></div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Categories</h3>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+            <a href="browse.html" style="font-size:12px;font-weight:800;background:var(--bg-soft);color:var(--ink-2);padding:5px 11px;border-radius:6px">Bakery</a>
+            <a href="browse.html" style="font-size:12px;font-weight:800;background:var(--bg-soft);color:var(--ink-2);padding:5px 11px;border-radius:6px">Coffee</a>
+            <a href="browse.html" style="font-size:12px;font-weight:800;background:var(--bg-soft);color:var(--ink-2);padding:5px 11px;border-radius:6px">Breakfast</a>
+            <a href="browse.html" style="font-size:12px;font-weight:800;background:var(--bg-soft);color:var(--ink-2);padding:5px 11px;border-radius:6px">Henderson</a>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · <a href="founding-25.html">All Launch 25 →</a> · <a href="biz-spotlight.html">Business of the Month</a></div>
+</footer>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

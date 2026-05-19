@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX incident history — every past incident with timeline, root cause, and what we changed. We log everything." />
+<title>Incident history · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .head{padding:48px 0 22px;border-bottom:1px solid var(--line)}
+  .head .pre{display:inline-block;background:rgba(19,162,107,.14);color:#0d7d51;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .head h1{margin:0 0 8px;font-size:34px;font-weight:800;letter-spacing:-.02em}
+  .head p{margin:0;color:var(--muted);font-size:15px}
+
+  /* Stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin:24px 0 26px}
+  @media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#fff;padding:18px 22px}
+  .stat .l{font-size:11px;color:var(--muted);font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+  .stat .v{font-size:24px;font-weight:800;letter-spacing:-.01em}
+  .stat .v.green{color:var(--ok)}
+  .stat .v.amber{color:#a06808}
+
+  /* Filter */
+  .filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:7px 13px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* Year header */
+  .year-h{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:24px 4px 14px}
+
+  /* Incident */
+  .incident{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;margin-bottom:14px;cursor:pointer;transition:.15s}
+  .incident:hover{border-color:var(--ink);box-shadow:0 6px 20px rgba(14,17,22,.06)}
+  .inc-h{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+  .inc-h .left{flex:1;min-width:240px}
+  .inc-h .date{font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+  .inc-h h3{margin:0;font-size:18px;font-weight:800;letter-spacing:-.005em}
+  .inc-h .meta{font-size:12.5px;color:var(--muted);margin-top:4px;display:flex;gap:14px;flex-wrap:wrap}
+  .inc-h .severity{padding:3px 10px;border-radius:5px;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0;height:fit-content}
+  .severity.maintenance{background:rgba(10,132,255,.1);color:var(--accent-2)}
+  .severity.minor{background:rgba(240,160,32,.16);color:#a06808}
+  .severity.major{background:rgba(224,65,62,.13);color:#a01644}
+
+  .summary{font-size:14.5px;color:var(--ink-2);line-height:1.55;margin:0 0 8px}
+
+  /* Expanded view */
+  .details{display:none;border-top:1px solid var(--line);margin-top:14px;padding-top:18px}
+  .incident.expanded .details{display:block}
+  .incident .toggle{font-size:12px;color:var(--accent-2);font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+  .incident.expanded .toggle::after{content:"▲"}
+  .incident:not(.expanded) .toggle::after{content:"▼"}
+
+  .timeline{margin:14px 0}
+  .tl-item{display:grid;grid-template-columns:84px 1fr;gap:14px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}
+  .tl-item:first-child{border-top:0}
+  .tl-item .when{font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;font-size:12.5px}
+  .tl-item .what{color:var(--ink-2);line-height:1.5}
+
+  .root{margin-top:16px;padding:14px 18px;background:rgba(224,65,62,.04);border-left:3px solid var(--danger);border-radius:0 9px 9px 0}
+  .root .lab{font-size:11px;font-weight:800;color:#a01644;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+  .root p{margin:0;font-size:14px;color:var(--ink-2);line-height:1.55}
+
+  .changes{margin-top:16px;padding:14px 18px;background:rgba(19,162,107,.06);border-left:3px solid var(--ok);border-radius:0 9px 9px 0}
+  .changes .lab{font-size:11px;font-weight:800;color:#0d7d51;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+  .changes ul{margin:0;padding:0 0 0 18px;font-size:14px;color:var(--ink-2);line-height:1.6}
+  .changes li{margin:4px 0}
+
+  /* Closing */
+  .closing{margin:30px 0 60px;padding:24px 28px;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius)}
+  .closing h3{color:#f5d172;margin:0 0 8px;font-size:17px;font-weight:800}
+  .closing p{margin:0 0 8px;color:#9aa3b0;font-size:14.5px;line-height:1.55}
+  .closing a{color:#f5d172}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center}
+  footer a{color:#9aa3b0}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="status.html">Status</a>
+      <a href="incident-history.html" style="color:var(--accent);font-weight:700">History</a>
+      <a href="security.html">Security</a>
+      <a href="transparency.html">Transparency</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="head">
+    <span class="pre">📜 Incident History</span>
+    <h1>Every incident, ever</h1>
+    <p>We commit to a public post-mortem within 14 days of resolving any incident — even minor ones. This page is the archive.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="l">Total incidents (lifetime)</div><div class="v">3</div></div>
+    <div class="stat"><div class="l">Customer data affected</div><div class="v green">0</div></div>
+    <div class="stat"><div class="l">Avg time to resolution</div><div class="v">22 min</div></div>
+    <div class="stat"><div class="l">Lifetime uptime</div><div class="v amber">99.94%</div></div>
+  </div>
+
+  <div class="filter-row">
+    <div class="chips" id="sev-chips">
+      <div class="chip on" data-s="all">All</div>
+      <div class="chip" data-s="major">Major</div>
+      <div class="chip" data-s="minor">Minor</div>
+      <div class="chip" data-s="maintenance">Maintenance</div>
+    </div>
+  </div>
+
+  <div id="list">
+    <div class="year-h">2026</div>
+
+    <div class="incident" data-s="maintenance">
+      <div class="inc-h">
+        <div class="left">
+          <div class="date">March 22, 2026 · 03:00 UTC</div>
+          <h3>Scheduled maintenance — POS settlement v2 schema migration</h3>
+          <div class="meta">
+            <span>⏱ 22 min</span>
+            <span>👥 0 customers affected (planned window)</span>
+            <span>📍 Internal</span>
+          </div>
+        </div>
+        <span class="severity maintenance">Maintenance</span>
+      </div>
+      <p class="summary">Planned 30-minute maintenance window to migrate the settlement service to the v2 schema (improves QuickBooks export reliability + adds dispute tracking). Completed in 22 minutes with no data loss.</p>
+      <span class="toggle" onclick="toggle(event)">Show post-mortem</span>
+
+      <div class="details">
+        <h4 style="margin:0 0 10px;font-size:14px;font-weight:800">Timeline</h4>
+        <div class="timeline">
+          <div class="tl-item"><div class="when">02:55 UTC</div><div class="what">Maintenance banner activated. POS endpoints returned a 503 with the maintenance page.</div></div>
+          <div class="tl-item"><div class="when">03:00 UTC</div><div class="what">Database migration started. v2 schema applied to the staging copy first.</div></div>
+          <div class="tl-item"><div class="when">03:08 UTC</div><div class="what">Staging migration validated. Started production migration.</div></div>
+          <div class="tl-item"><div class="when">03:14 UTC</div><div class="what">Production migration complete. Settlement service redeployed pointing at v2.</div></div>
+          <div class="tl-item"><div class="when">03:18 UTC</div><div class="what">Smoke tests against the new endpoints — all green.</div></div>
+          <div class="tl-item"><div class="when">03:22 UTC</div><div class="what">Maintenance banner removed. Service fully restored.</div></div>
+        </div>
+
+        <div class="root">
+          <div class="lab">Root cause</div>
+          <p>Not an incident — planned migration. Logged here for transparency.</p>
+        </div>
+
+        <div class="changes">
+          <div class="lab">What's better now</div>
+          <ul>
+            <li>QuickBooks CSV export is 4× faster on large statements (5,000+ transactions).</li>
+            <li>Settlement disputes now thread directly into the v2 schema — no manual joining needed.</li>
+            <li>Settlement statement generation moved off the request path; can no longer cause API slowdowns at month-end.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="year-h">2025</div>
+
+    <div class="incident" data-s="minor">
+      <div class="inc-h">
+        <div class="left">
+          <div class="date">December 18, 2025 · 19:42 UTC</div>
+          <h3>Stripe webhook delays caused settlement statement generation to lag 14 minutes</h3>
+          <div class="meta">
+            <span>⏱ 14 min lag</span>
+            <span>👥 4 Businesses saw delayed statement</span>
+            <span>📍 Settlement service</span>
+          </div>
+        </div>
+        <span class="severity minor">Minor</span>
+      </div>
+      <p class="summary">A burst of Stripe webhook events queued up faster than our consumer could process them, delaying the December 18 settlement statement generation. All amounts correct — just late by 14 minutes. No customer balance affected.</p>
+      <span class="toggle" onclick="toggle(event)">Show post-mortem</span>
+
+      <div class="details">
+        <h4 style="margin:0 0 10px;font-size:14px;font-weight:800">Timeline</h4>
+        <div class="timeline">
+          <div class="tl-item"><div class="when">19:30 UTC</div><div class="what">Monthly settlement job scheduled to run. Queue size starts spiking.</div></div>
+          <div class="tl-item"><div class="when">19:34 UTC</div><div class="what">Sentry alert: webhook consumer p99 latency over 60s.</div></div>
+          <div class="tl-item"><div class="when">19:38 UTC</div><div class="what">Engineer paged. Identified Stripe API throttling from a non-rate-limited internal sweep.</div></div>
+          <div class="tl-item"><div class="when">19:42 UTC</div><div class="what">Internal sweep paused. Webhook consumer drained the queue.</div></div>
+          <div class="tl-item"><div class="when">19:56 UTC</div><div class="what">Settlement statements completed for all 4 affected Businesses. Email reminders sent.</div></div>
+        </div>
+
+        <div class="root">
+          <div class="lab">Root cause</div>
+          <p>An internal data-cleanup script that calls Stripe was running on the same hour as monthly settlement. Stripe's per-account rate limit caused a thundering herd against our webhook consumer.</p>
+        </div>
+
+        <div class="changes">
+          <div class="lab">What's better now</div>
+          <ul>
+            <li>All internal Stripe-touching scripts now use a separate API token with its own rate-limit budget.</li>
+            <li>The settlement job now runs at 03:00 UTC (off-peak) instead of 19:30 UTC.</li>
+            <li>Added a Grafana alert for "settlement job lag" that pages 5 minutes earlier than the prior alert.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="incident" data-s="major">
+      <div class="inc-h">
+        <div class="left">
+          <div class="date">November 4, 2025 · 14:17 UTC</div>
+          <h3>Customer wallet QR codes failed to refresh for ~30 minutes</h3>
+          <div class="meta">
+            <span>⏱ 31 min</span>
+            <span>👥 ~840 customers</span>
+            <span>📍 Wallet service</span>
+          </div>
+        </div>
+        <span class="severity major">Major</span>
+      </div>
+      <p class="summary">A bad deploy to the wallet service caused QR code refresh requests to error out. Customers with already-loaded QR codes could still pay. New customers hitting the wallet got an error and had to refresh manually. No payments lost; some friction at the counter.</p>
+      <span class="toggle" onclick="toggle(event)">Show post-mortem</span>
+
+      <div class="details">
+        <h4 style="margin:0 0 10px;font-size:14px;font-weight:800">Timeline</h4>
+        <div class="timeline">
+          <div class="tl-item"><div class="when">14:10 UTC</div><div class="what">Wallet service deploy completed. QR code refresh endpoint started returning 500s.</div></div>
+          <div class="tl-item"><div class="when">14:14 UTC</div><div class="what">Sentry alert: 500 error rate spike on /wallet/qr/refresh.</div></div>
+          <div class="tl-item"><div class="when">14:17 UTC</div><div class="what">Engineer paged. Confirmed correlation with the deploy.</div></div>
+          <div class="tl-item"><div class="when">14:22 UTC</div><div class="what">Rolled back to the previous version. Error rate dropped to baseline within 60s.</div></div>
+          <div class="tl-item"><div class="when">14:30 UTC</div><div class="what">Affected customers (estimate via failed-refresh count): ~840.</div></div>
+          <div class="tl-item"><div class="when">14:48 UTC</div><div class="what">Service fully restored, status banner removed.</div></div>
+          <div class="tl-item"><div class="when">19:00 UTC</div><div class="what">Notification email sent to all 840 affected customers + 50 LYMX inconvenience credit.</div></div>
+        </div>
+
+        <div class="root">
+          <div class="lab">Root cause</div>
+          <p>The new deploy introduced a regression in how QR code expiry timestamps were serialized — the JSON serializer formatted the timestamp as ISO8601 instead of unix epoch, breaking the client-side expiry check. Caught in code review by one reviewer; a second reviewer didn't have the wallet client-side context to spot it.</p>
+        </div>
+
+        <div class="changes">
+          <div class="lab">What's better now</div>
+          <ul>
+            <li>Added an end-to-end smoke test that hits /wallet/qr/refresh after every deploy, before traffic flips over.</li>
+            <li>Required code reviewers for wallet-service PRs now include at least one engineer with client-side context.</li>
+            <li>Deploys to the wallet service are now canary-rolled — 5% of traffic for 10 min before full rollout.</li>
+            <li>Auto-rollback triggers if 5xx rate spikes 10× baseline during canary.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="closing">
+    <h3>Why we publish all of this</h3>
+    <p>You're trusting us with your wallet balance, your transactions, and (if you're a Partner) parts of your livelihood. The least we can do is be specific when something breaks.</p>
+    <p>If you experienced something that doesn't appear here, email <a href="mailto:incidents@getlymx.com">incidents@getlymx.com</a> — we'd rather investigate than have a customer feel unheard.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · <a href="status.html">Live status</a> · <a href="security.html">Security</a> · <a href="transparency.html">Transparency report</a></div>
+</footer>
+
+<script>
+  function toggle(e){
+    e.stopPropagation();
+    e.target.closest('.incident').classList.toggle('expanded');
+  }
+  document.querySelectorAll('.incident').forEach(i=>{
+    i.addEventListener('click', e=>{
+      if(e.target.classList.contains('toggle')) return;
+      i.classList.toggle('expanded');
+    });
+  });
+  document.querySelectorAll('#sev-chips .chip').forEach(c=>{
+    c.onclick = ()=>{
+      document.querySelectorAll('#sev-chips .chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      const f = c.dataset.s;
+      document.querySelectorAll('.incident').forEach(i=>{
+        i.style.display = (f==='all' || i.dataset.s===f) ? '' : 'none';
+      });
+    };
+  });
+</script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX AI &amp; Data Use Policy — what we do and explicitly don't do with customer transaction data, AI models, and third-party AI providers." />
+<title>AI &amp; Data Use Policy · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.7;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none;font-weight:700}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--ink)}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  .nav-links a{color:var(--ink-2);font-weight:600}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Head */
+  .head{padding:50px 0 24px;border-bottom:1px solid var(--line)}
+  .head .pre{display:inline-block;background:rgba(165,69,255,.12);color:#7426c4;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .head h1{margin:0 0 8px;font-size:36px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+  .head .meta{color:var(--muted);font-size:14px}
+
+  /* Big promise card */
+  .promise{background:linear-gradient(180deg,#fff,var(--bg-soft));border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;margin:24px 0 32px}
+  .promise h2{margin:0 0 12px;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .promise .row{padding:12px 0;border-top:1px solid var(--line);font-size:15.5px;display:flex;gap:12px;align-items:flex-start}
+  .promise .row:first-of-type{border-top:0;padding-top:0}
+  .promise .row .ic{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:800;flex-shrink:0}
+  .promise .row .ic.no{background:linear-gradient(135deg,#e0413e,#a01644)}
+  .promise .row .ic.yes{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .promise .row strong{color:var(--ink);font-weight:800}
+  .promise .row em{font-style:normal;color:var(--ink-2);font-weight:600}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:240px 1fr;gap:36px;padding:0 0 60px;align-items:start}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}.toc-side{display:none}}
+
+  .toc{position:sticky;top:88px}
+  .toc h4{margin:0 0 8px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .toc ul{list-style:none;margin:0;padding:0;border-left:2px solid var(--line)}
+  .toc li{padding:0}
+  .toc a{display:block;padding:6px 14px;font-size:13px;color:var(--ink-2);border-left:2px solid transparent;margin-left:-2px;font-weight:600;transition:.1s}
+  .toc a:hover{color:var(--accent);text-decoration:none}
+  .toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:700;background:rgba(10,132,255,.04)}
+
+  article{max-width:780px}
+  article h2{margin:36px 0 12px;font-size:24px;font-weight:800;letter-spacing:-.01em;scroll-margin-top:90px;color:var(--ink)}
+  article h3{margin:24px 0 8px;font-size:17px;font-weight:800;scroll-margin-top:90px}
+  article p{margin:0 0 14px;font-size:16px;color:var(--ink-2)}
+  article ul, article ol{margin:0 0 14px 22px;padding:0}
+  article li{margin:6px 0;font-size:16px;color:var(--ink-2);line-height:1.6}
+  article strong{color:var(--ink);font-weight:800}
+
+  /* Use-case cards */
+  .uses{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  @media(max-width:600px){.uses{grid-template-columns:1fr}}
+  .use{padding:18px 20px;background:var(--bg-soft);border:1px solid var(--line);border-radius:11px}
+  .use h4{margin:0 0 4px;font-size:14.5px;font-weight:800}
+  .use p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+  .use .who{display:inline-block;font-size:10.5px;font-weight:800;color:var(--accent-2);background:rgba(10,132,255,.1);padding:2px 8px;border-radius:5px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+
+  /* Vendor table */
+  .vendors{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-top:14px}
+  .vendors th, .vendors td{text-align:left;padding:12px 16px;font-size:14px;border-bottom:1px solid var(--line)}
+  .vendors th{background:var(--bg-soft);font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .vendors tr:last-child td{border-bottom:0}
+  .vendors td .name{font-weight:800;color:var(--ink)}
+  .vendors td .meta{font-size:12px;color:var(--muted);margin-top:2px}
+  .vendors .pill{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .vendors .pill.ok{background:rgba(19,162,107,.14);color:#0d7d51}
+  .vendors .pill.warn{background:rgba(240,160,32,.16);color:#a06808}
+
+  /* Closing */
+  .closing{margin-top:30px;padding:24px 28px;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius)}
+  .closing h3{color:#f5d172;margin:0 0 8px;font-size:17px;font-weight:800}
+  .closing p{margin:0 0 8px;color:#9aa3b0;font-size:14.5px;line-height:1.55}
+  .closing a{color:#f5d172}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:28px 0 20px;font-size:12.5px;text-align:center}
+  footer a{color:#9aa3b0}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px;color:var(--ink)"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="terms.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="ai-policy.html" style="color:var(--accent);font-weight:700">AI &amp; Data</a>
+      <a href="security.html">Security</a>
+      <a href="accessibility.html">Accessibility</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="head">
+    <span class="pre">🤖 AI &amp; Data Use</span>
+    <h1>How LYMX uses AI — and what we won't do with your data</h1>
+    <p class="meta">Effective April 30, 2026 · Last updated April 30, 2026 · Read alongside our <a href="privacy.html">Privacy Policy</a></p>
+  </div>
+
+  <!-- Big promise card -->
+  <div class="promise">
+    <h2>Our promise in 4 lines</h2>
+    <div class="row">
+      <div class="ic no">✗</div>
+      <div><strong>We do not train AI models on your data.</strong> Not your transactions, not your wallet history, not your support tickets — not by us, and not by the AI providers we use internally.</div>
+    </div>
+    <div class="row">
+      <div class="ic no">✗</div>
+      <div><strong>We do not sell your data to AI companies, ad networks, or data brokers.</strong> We do not sell your data, period. (See <a href="privacy.html">Privacy Policy</a>.)</div>
+    </div>
+    <div class="row">
+      <div class="ic no">✗</div>
+      <div><strong>We do not use AI to make adverse decisions about you</strong> — no "AI denied your wallet" or "AI flagged you as risky" without a human reviewing the context.</div>
+    </div>
+    <div class="row">
+      <div class="ic yes">✓</div>
+      <div><strong>We do use AI for narrow, transparent jobs</strong> — fraud detection, support routing, content drafts that staff review before sending. Listed in detail below. Auditable.</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside class="toc-side">
+      <nav class="toc" id="toc">
+        <h4>On this page</h4>
+        <ul>
+          <li><a href="#scope" class="on">1. Scope</a></li>
+          <li><a href="#what-we-do">2. What we use AI for</a></li>
+          <li><a href="#what-we-dont">3. What we won't do</a></li>
+          <li><a href="#vendors">4. AI vendors we use</a></li>
+          <li><a href="#training">5. No-training opt-outs</a></li>
+          <li><a href="#decisions">6. Human-in-the-loop decisions</a></li>
+          <li><a href="#opt-out">7. Your controls</a></li>
+          <li><a href="#changes">8. Changes to this policy</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <article>
+      <h2 id="scope">1. Scope</h2>
+      <p>This policy covers any use of artificial intelligence, machine-learning models, or AI-powered third-party services by LYMX Power, Inc. across getlymx.com, the customer wallet, the Business POS, our admin tools, and any AI-assisted internal operations.</p>
+      <p>It applies to all customers, Businesses, and Partners on the network. It supplements — and does not replace — our <a href="privacy.html">Privacy Policy</a> and our <a href="terms.html">Terms of Service</a>.</p>
+
+      <h2 id="what-we-do">2. What we currently use AI for</h2>
+      <p>Specific, narrow, transparent applications. Each one has a human accountable for it.</p>
+      <div class="uses">
+        <div class="use">
+          <span class="who">Internal — fraud</span>
+          <h4>Anomaly detection on transactions</h4>
+          <p>A small classification model flags transactions for human review (e.g., 5+ rapid redemptions across cities). The flag is a hint, not a decision.</p>
+        </div>
+        <div class="use">
+          <span class="who">Internal — support</span>
+          <h4>Support ticket routing</h4>
+          <p>Inbound tickets get auto-categorized (Customer / Business / Partner / Press / Investor) so they reach the right inbox faster. Always human-resolved.</p>
+        </div>
+        <div class="use">
+          <span class="who">Internal — drafts only</span>
+          <h4>Email-reply drafts</h4>
+          <p>Our support team uses AI to draft initial responses to common questions. <strong>A human reviews and edits every reply</strong> before sending.</p>
+        </div>
+        <div class="use">
+          <span class="who">Customer-facing</span>
+          <h4>Help-center search</h4>
+          <p>Semantic search across our help-center articles. Finds relevant articles based on meaning, not keyword match. No PII enters the search index.</p>
+        </div>
+        <div class="use">
+          <span class="who">Internal — analytics</span>
+          <h4>Cohort analysis &amp; insights</h4>
+          <p>For our biz-analytics dashboard, AI summarizes patterns in aggregate, anonymized data — never with individual customers identified.</p>
+        </div>
+        <div class="use">
+          <span class="who">Internal — translation</span>
+          <h4>Spanish translations</h4>
+          <p>AI-assisted first-pass translations of customer help content into Spanish. A bilingual human reviews before publishing.</p>
+        </div>
+      </div>
+
+      <h2 id="what-we-dont">3. What we explicitly will not do</h2>
+      <ul>
+        <li><strong>We will not</strong> use customer transaction data, wallet balances, or messages to train any AI model — neither our own nor a third-party provider's.</li>
+        <li><strong>We will not</strong> sell, lease, or share customer data with AI training services, data brokers, or advertising AI platforms.</li>
+        <li><strong>We will not</strong> use AI to make irreversible adverse decisions about a customer (account closure, wallet lockout) without a human reviewing the case.</li>
+        <li><strong>We will not</strong> generate AI content that impersonates a Business or a Partner. AI-generated marketing material is always labeled internally and reviewed by a human staff member.</li>
+        <li><strong>We will not</strong> deploy AI-powered tools without listing them on this page within 30 days of going live.</li>
+        <li><strong>We will not</strong> claim our AI is more accurate than it is. Our fraud-flagging model has a known false-positive rate; we publish quarterly updates in our <a href="transparency.html">transparency report</a>.</li>
+      </ul>
+
+      <h2 id="vendors">4. AI vendors we use</h2>
+      <p>Every AI provider we work with has signed a <strong>no-training-on-our-data</strong> commitment. If they don't offer that contractually, we don't use them.</p>
+      <table class="vendors">
+        <thead>
+          <tr><th>Vendor</th><th>Used for</th><th>No-training opt-out</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><div class="name">Anthropic Claude API</div><div class="meta">Customer support drafts, ticket categorization</div></td><td>Drafting initial replies, classifying inbound tickets</td><td><span class="pill ok">✓ Default off</span></td></tr>
+          <tr><td><div class="name">OpenAI API (gpt-4-class)</div><div class="meta">Help-center semantic search</div></td><td>Embedding-based search across public help articles only</td><td><span class="pill ok">✓ Opted out via API</span></td></tr>
+          <tr><td><div class="name">DeepL Pro</div><div class="meta">Spanish translation</div></td><td>First-pass translations of public-facing copy</td><td><span class="pill ok">✓ Pro plan default</span></td></tr>
+          <tr><td><div class="name">In-house fraud model</div><div class="meta">Trained on synthetic + aggregated data</div></td><td>Anomaly flags on transactions</td><td><span class="pill ok">✓ Internal only</span></td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:13px;color:var(--muted);margin-top:8px">If we add or remove a vendor, this table is updated within 30 days. Email <a href="mailto:privacy@getlymx.com">privacy@getlymx.com</a> to subscribe to changes.</p>
+
+      <h2 id="training">5. We do not train on your data</h2>
+      <p>To make the no-training commitment concrete:</p>
+      <ul>
+        <li>When we send any text to an AI provider (e.g., a support ticket for categorization), we use the provider's API setting that <strong>prevents the data from being used for model improvement</strong>.</li>
+        <li>We <strong>strip personally identifiable information</strong> (names, phone numbers, exact addresses) before sending text to AI providers wherever it's not strictly required for the task.</li>
+        <li>We do not maintain or use any AI fine-tuning dataset that contains real customer messages, real Business transactions, or real Partner communications.</li>
+        <li>If you sign up tomorrow and use LYMX for a year, <strong>nothing you type or do becomes part of any AI's training data — directly or indirectly</strong>.</li>
+      </ul>
+
+      <h2 id="decisions">6. Human-in-the-loop on adverse decisions</h2>
+      <p>Some decisions affect you significantly: locking a wallet, closing an account, denying a Partner application, hiding a customer review. Our policy:</p>
+      <ol>
+        <li>AI may <em>flag</em> these cases (e.g., "this transaction looks unusual"). The flag is treated as a hint.</li>
+        <li>A staff member <strong>reviews</strong> the flagged case before any user-affecting action is taken.</li>
+        <li>The user is <strong>notified</strong> of the action and has a clear path to dispute it via the <a href="customer-dispute.html">customer dispute flow</a>.</li>
+        <li>The reasoning and the human reviewer are logged for audit. Available on data-export request.</li>
+      </ol>
+
+      <h2 id="opt-out">7. Your controls</h2>
+      <p>You don't need to opt out of "AI training" because we don't train on your data. But here's what's in your control today:</p>
+      <ul>
+        <li><strong>Help-center search</strong> — you can opt out of semantic search by setting your help-center preference to "keyword only" in <a href="customer-settings.html">settings</a>. Speed difference is minimal.</li>
+        <li><strong>AI-drafted support replies</strong> — if you'd prefer a 100% human-written reply with no AI assist, add the phrase <code>"please reply without AI assist"</code> to your support ticket. We honor it.</li>
+        <li><strong>Data export &amp; deletion</strong> — full data export and account deletion remain available regardless of any AI features. <a href="customer-settings.html">Settings → My data</a>.</li>
+      </ul>
+
+      <h2 id="changes">8. Changes to this policy</h2>
+      <p>We'll add new AI uses to this page <strong>within 30 days</strong> of deployment. Material changes (a new vendor, a new use case affecting customer-facing decisions) are announced via email to all customers and a banner on getlymx.com.</p>
+      <p>Minor edits (typos, new examples) are noted in the <a href="changelog.html">changelog</a>.</p>
+
+      <div class="closing">
+        <h3>Plain version</h3>
+        <p>We use AI to make our own work faster — categorizing tickets, drafting support replies, finding the right help article. We do not use AI to learn anything about you that we can sell or train models on. If we ever change that, we'll tell you 30 days before, in plain English, and you can leave.</p>
+        <p>Questions? <a href="mailto:privacy@getlymx.com">privacy@getlymx.com</a> · I read every reply. — Kenny</p>
+      </div>
+    </article>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="ai-policy.html">AI &amp; Data</a> · <a href="security.html">Security</a></div>
+</footer>
+
+<script>
+  const tocLinks = document.querySelectorAll('#toc a');
+  const sections = Array.from(tocLinks).map(a=>document.querySelector(a.getAttribute('href')));
+  window.addEventListener('scroll', ()=>{
+    let active = sections[0];
+    for(const s of sections){
+      if(!s) continue;
+      if(s.getBoundingClientRect().top < 120) active = s;
+    }
+    tocLinks.forEach(a=>a.classList.toggle('on', a.getAttribute('href') === '#'+active.id));
+  }, {passive:true});
+  tocLinks.forEach(a=>{
+    a.onclick = e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'})};
+  });
+</script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>
