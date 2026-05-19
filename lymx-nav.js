@@ -136,10 +136,15 @@
     var email = (payload && payload.email) || '';
     var initial = (email[0] || 'L').toUpperCase();
     var routes = { route: routeFor(payload) };
-    // Common avatar containers (id-based first, then class-based)
+    // Common avatar containers — id-based first, then class-based.
+    // Nav-area only patterns; deliberately skips list-item avatars
+    // (mention-avatar, host-avatar, qc-avatar, w-avatar) so they remain
+    // clickable for their own item-level handlers.
     var candidates = [
-      '#userInitial', '#userAvatar', '.user-avatar', '.admin-avatar',
-      '#headerAvatar', '.nav-avatar'
+      '#userInitial', '#userAvatar', '#headerAvatar', '#avatarNav',
+      '#avatar', '#bizAvatar', '#repAvatar',
+      '.user-avatar', '.admin-avatar', '.nav-avatar', '.avatar-nav',
+      '.biz-avatar', '.rep-avatar'
     ];
     candidates.forEach(function (sel) {
       document.querySelectorAll(sel).forEach(function (el) {
@@ -360,23 +365,32 @@
     });
   }
 
-  // ---- Run on DOMContentLoaded ---------------------------------------------
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', run);
-  } else {
-    run();
+  // ---- Auth payload helper -------------------------------------------------
+  function getAuthPayload() {
+    return decode(readToken());
   }
 
-  async function run() {
-    var payload = await getAuthPayload();
-    if (!payload) {
-      injectFloatingSigninChip();
-      injectMobileNav();
-      return;
-    }
-    redirectIfOnSignup(payload);
-    swapGuestButtons(payload);
-    wireAvatar(payload);
-    injectMobileNav();
+  // ---- Run on DOMContentLoaded ---------------------------------------------
+  function boot() {
+    waitForConfig(function () {
+      var payload = getAuthPayload();
+      if (!payload) {
+        injectSignInChip();
+        injectMobileHamburger();
+        return;
+      }
+      redirectIfSignedIn(payload);
+      swapGuestButtons(payload);
+      wireAvatar(payload);
+      enforceAdminGuard(payload);
+      injectMobileHamburger();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
   }
 })();
+  
