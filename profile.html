@@ -18,6 +18,8 @@
   .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink);flex-wrap:wrap}
   .nav-links a:hover{color:var(--accent)}
   .nav-links a.on{color:var(--accent);font-weight:700}
+  /* 2026-05-19 #88c34b53 — hide horizontal nav on mobile so lymx-nav.js's injected hamburger isn't overlapping a static text nav */
+  @media(max-width:880px){.nav-links{display:none}}
   .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
 
   main{padding:28px 0 60px}
@@ -110,13 +112,15 @@
     <input id="displayName" type="text" />
 
     <label>Email</label>
-    <input id="email" type="email" readonly />
-    <div style="font-size:12px;color:var(--muted);margin-top:4px">Email is locked to your login. Contact support to change.</div>
+    <input id="email" type="email" />
+    <!-- 2026-05-19 #9e47a789 — email is now editable. On save, if it changed, we call supabase.auth.updateUser({email}) which sends a confirmation link to the new address. The change only takes effect after the user clicks that link. -->
+    <div style="font-size:12px;color:var(--muted);margin-top:4px">Used for sign-in and digital receipts. Type a new email and click Save — we'll email a confirmation link to the new address before the change goes live.</div>
 
     <div class="row2">
       <div>
         <label>Phone <span style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0">(optional)</span></label>
-        <input id="phone" type="tel" placeholder="+1 702 000 0000  or  +44 7700 900000" />
+        <!-- 2026-05-19 #da338c58 — simpler placeholder; format depends on country selected -->
+        <input id="phone" type="tel" placeholder="(555) 555-5555" />
       </div>
       <div>
         <label>Country</label>
@@ -350,6 +354,28 @@ async function save() {
     });
   }
 
+  // 2026-05-19 #9e47a789 — Email change flow. If the email input differs from
+  // the current auth email, kick off Supabase's email-change confirmation.
+  // Supabase sends a "confirm new email" link to the new address; the change
+  // only takes effect once the user clicks it.
+  var emailEl = document.getElementById('email');
+  var newEmail = emailEl ? emailEl.value.trim() : '';
+  var emailChangeNotice = '';
+  if (newEmail && newEmail.toLowerCase() !== (myUser.email || '').toLowerCase()) {
+    try {
+      if (window.LYMX && window.LYMX.client && window.LYMX.client.auth) {
+        var au = await window.LYMX.client.auth.updateUser({ email: newEmail });
+        if (au && au.error) {
+          emailChangeNotice = ' (email change failed: ' + (au.error.message || 'unknown') + ')';
+        } else {
+          emailChangeNotice = ' — confirmation sent to ' + newEmail;
+        }
+      }
+    } catch (e) {
+      emailChangeNotice = ' (email change error: ' + (e.message || 'unknown') + ')';
+    }
+  }
+
   btn.disabled = false;
   btn.textContent = 'Save changes';
   if (!r.ok) {
@@ -357,7 +383,7 @@ async function save() {
     showToast('Save failed: ' + t.slice(0, 100), 'err');
     return;
   }
-  showToast('Saved ✓', 'ok');
+  showToast('Saved ✓' + emailChangeNotice, 'ok');
   // Refresh row in memory
   const det = await detectRole();
   myRow = det.row;
