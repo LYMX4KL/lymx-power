@@ -172,8 +172,12 @@
 
     <!-- Notifications -->
     <div class="sec-h">Notifications</div>
+    <!-- 2026-05-19 #70b54da7 #68b4b62e #d62c71d8 #22c09c18 #688a2349 #55705730 —
+         was: each toggle just flipped a CSS class with no persistence. Now: each
+         has data-pref-key; togglePref() writes to customers.preferences (JSONB);
+         init reads the saved value and sets the initial state on page load. -->
     <div class="group">
-      <div class="item" onclick="toggle(this)">
+      <div class="item" onclick="togglePref(this)" data-pref-key="notify_push">
         <div class="ic">🔔</div>
         <div class="body">
           <div class="h">Push notifications</div>
@@ -181,7 +185,7 @@
         </div>
         <div class="toggle on"></div>
       </div>
-      <div class="item" onclick="toggle(this)">
+      <div class="item" onclick="togglePref(this)" data-pref-key="notify_sms">
         <div class="ic">💬</div>
         <div class="body">
           <div class="h">Text messages</div>
@@ -189,7 +193,7 @@
         </div>
         <div class="toggle on"></div>
       </div>
-      <div class="item" onclick="toggle(this)">
+      <div class="item" onclick="togglePref(this)" data-pref-key="notify_email_digest">
         <div class="ic">📧</div>
         <div class="body">
           <div class="h">Email digests</div>
@@ -197,7 +201,7 @@
         </div>
         <div class="toggle"></div>
       </div>
-      <div class="item" onclick="toggle(this)">
+      <div class="item" onclick="togglePref(this)" data-pref-key="notify_referrals">
         <div class="ic">🎁</div>
         <div class="body">
           <div class="h">Referral updates</div>
@@ -210,7 +214,7 @@
     <!-- Privacy -->
     <div class="sec-h">Privacy</div>
     <div class="group">
-      <div class="item" onclick="toggle(this)">
+      <div class="item" onclick="togglePref(this)" data-pref-key="privacy_show_reviews">
         <div class="ic">👁️</div>
         <div class="body">
           <div class="h">Show my reviews publicly</div>
@@ -218,7 +222,7 @@
         </div>
         <div class="toggle on"></div>
       </div>
-      <div class="item" onclick="toggle(this)">
+      <div class="item" onclick="togglePref(this)" data-pref-key="privacy_location_browsing">
         <div class="ic">📍</div>
         <div class="body">
           <div class="h">Location while browsing</div>
@@ -359,11 +363,50 @@
     setTimeout(()=> t.classList.remove('on'), 1800);
   }
 
+  // Legacy stub for any pre-existing markup that still calls toggle().
+  // New markup uses togglePref(this) with data-pref-key attribute.
   function toggle(row){
     const t = row.querySelector('.toggle');
     if (!t) return;
     t.classList.toggle('on');
     showToast(t.classList.contains('on') ? 'Turned on' : 'Turned off', true);
+  }
+
+  // 2026-05-19 — Persist toggle state to customers.preferences (JSONB).
+  // Optimistic UI: flip the class immediately, write to DB, revert on error.
+  async function togglePref(row){
+    const t = row.querySelector('.toggle');
+    const key = row.getAttribute('data-pref-key');
+    if (!t || !key) return;
+    const prevOn = t.classList.contains('on');
+    const newOn  = !prevOn;
+    // Optimistic flip
+    t.classList.toggle('on', newOn);
+    if (!window.__lymxCustId) {
+      // Init didn't finish yet — block writes until customer row is resolved
+      t.classList.toggle('on', prevOn);
+      showToast('Loading your account, try again in a sec', false);
+      return;
+    }
+    try {
+      const sb = window.LYMX.sb;
+      // Read current preferences, merge, write back. We can't trust an
+      // optimistic merge because two toggles in quick succession would race.
+      const { data: row1, error: e1 } = await sb.from('customers')
+        .select('preferences').eq('id', window.__lymxCustId).single();
+      if (e1) throw e1;
+      const next = Object.assign({}, row1.preferences || {}, { [key]: newOn });
+      const { error: e2 } = await sb.from('customers')
+        .update({ preferences: next }).eq('id', window.__lymxCustId);
+      if (e2) throw e2;
+      window.__lymxPrefs = next; // keep local cache fresh
+      showToast(newOn ? 'Turned on — saved' : 'Turned off — saved', true);
+    } catch (e) {
+      // Revert UI
+      t.classList.toggle('on', prevOn);
+      showToast('Could not save: ' + (e.message || 'unknown error'), false);
+      console.warn('togglePref failed', key, e);
+    }
   }
 
   function openEdit(title, sub, body){
@@ -403,13 +446,49 @@
     const sb = window.LYMX.sb;
 
     const { data: cArr } = await sb.from('customers')
-      .select('id, display_name, phone, email').eq('user_id', user.id).limit(1);
+      .select('id, display_name, phone, email, preferences').eq('user_id', user.id).limit(1);
     let custName = '', custPhone = '', custEmail = (user.email || '');
     if (cArr && cArr.length) {
       custName = cArr[0].display_name || '';
       custPhone = cArr[0].phone || '';
       custEmail = cArr[0].email || user.email || '';
+      // 2026-05-19 — expose customer id + preferences so togglePref() can write them
+      window.__lymxCustId = cArr[0].id;
+      window.__lymxPrefs  = cArr[0].preferences || {};
     }
+
+    // 2026-05-19 — Apply saved preferences to the toggle UI.
+    // Defaults match the on-disk HTML so unchanged accounts behave as before.
+    const prefDefaults = {
+      notify_push: true, notify_sms: true, notify_email_digest: false,
+      notify_referrals: true, privacy_show_reviews: true, privacy_location_browsing: true
+    };
+    document.querySelectorAll('[data-pref-key]').forEach(function (row) {
+      const key = row.getAttribute('data-pref-key');
+      const t = row.querySelector('.toggle');
+      if (!t) return;
+      const saved = (window.__lymxPrefs && key in window.__lymxPrefs) ? !!window.__lymxPrefs[key] : !!prefDefaults[key];
+      t.classList.toggle('on', saved);
+    });
+
+    // 2026-05-19 #37e1afe4 — Password "Last changed" timestamp.
+    // Read from auth.users.updated_at (updated whenever auth state changes,
+    // including password change). Fallback: last_sign_in_at, then created_at.
+    try {
+      const ts = user.updated_at || user.last_sign_in_at || user.created_at;
+      if (ts) {
+        const d = new Date(ts);
+        const days = Math.max(0, Math.floor((Date.now() - d.getTime()) / 86400000));
+        const txt = days === 0 ? 'Last changed today' :
+                    days === 1 ? 'Last changed yesterday' :
+                    'Last changed ' + days + ' days ago';
+        document.querySelectorAll('.item').forEach(function (item) {
+          const h = item.querySelector('.h');
+          const d2 = item.querySelector('.d');
+          if (h && d2 && /password/i.test(h.textContent)) d2.textContent = txt;
+        });
+      }
+    } catch (e) { console.warn('[settings] password timestamp failed', e); }
     const meta = user.user_metadata || {};
     if (!custName) custName = meta.full_name || meta.name || (custEmail.split('@')[0]) || 'Customer';
     if (!custPhone) custPhone = meta.phone || '';
