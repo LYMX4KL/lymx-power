@@ -155,6 +155,7 @@
       { href: 'admin-bookings.html',     icon: '\u{1F4CB}', label: 'All bookings' },
       { href: 'admin-businesses.html',   icon: '\u{1F3E2}', label: 'Businesses' },
       { href: 'admin-business-applications.html', icon: '\u{1F4DD}', label: 'Biz Applications' },
+      { href: 'admin-business-transfer.html', icon: '\u{1F504}', label: 'Transfer ownership' },
       { href: 'admin-customers.html',    icon: '\u{1F465}', label: 'Customers' },
       { href: 'admin-promos.html',       icon: '\u{1F381}', label: 'Promos' },
       { href: 'admin-approvals.html',    icon: '✅',    label: 'Approvals' },
