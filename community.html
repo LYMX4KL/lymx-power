@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Community — meet other LYMX customers, swap recommendations, plan local meetups. Discord, in-person events, top community members." />
+<title>Community · LYMX</title>
+<meta property="og:title" content="LYMX Community" />
+<meta property="og:image" content="og-image.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--discord:#5865f2;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--ink-2)}
+  .btn{padding:10px 16px;background:var(--ink);color:#fff;border-radius:10px;font-weight:800;font-size:14px;text-decoration:none;display:inline-block}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .hero{padding:50px 0 30px;background:linear-gradient(180deg,#fff,var(--bg-soft));border-bottom:1px solid var(--line);text-align:center}
+  .hero .pre{display:inline-block;background:rgba(165,69,255,.12);color:#7426c4;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .hero h1{margin:0 0 10px;font-size:42px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .hero p.lede{margin:0 auto;font-size:16.5px;color:var(--ink-2);max-width:600px;line-height:1.55}
+
+  /* Stat strip */
+  .stats{padding:24px 0 18px}
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  @media(max-width:780px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#fff;padding:18px 22px;text-align:center}
+  .stat .v{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .stat .v.discord{color:var(--discord)}
+  .stat .v.gold{color:var(--gold)}
+  .stat .l{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:18px 0 60px}
+  @media(max-width:880px){.layout{grid-template-columns:1fr}}
+
+  /* Discord card */
+  .discord-card{padding:30px 32px;background:linear-gradient(135deg,#5865f2,#3c45a5);color:#fff;border-radius:var(--radius);position:relative;overflow:hidden}
+  .discord-card::after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.12),transparent 70%);right:-100px;top:-100px;pointer-events:none}
+  .discord-card .ic{font-size:42px;margin-bottom:10px;position:relative}
+  .discord-card h2{margin:0 0 4px;font-size:22px;font-weight:800;color:#fff;position:relative}
+  .discord-card .sub{font-size:14px;color:rgba(255,255,255,.85);position:relative;margin-bottom:18px}
+  .discord-card .channels{margin:18px 0;position:relative;font-size:13px;color:rgba(255,255,255,.85)}
+  .discord-card .channel{padding:5px 0;display:flex;gap:6px;align-items:center}
+  .discord-card .channel::before{content:"#";color:rgba(255,255,255,.5);font-weight:800}
+  .discord-card .live-count{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;color:rgba(255,255,255,.85);background:rgba(255,255,255,.12);padding:3px 9px;border-radius:5px;margin-bottom:14px;position:relative}
+  .discord-card .live-count .dot{width:8px;height:8px;border-radius:50%;background:#5fd198;box-shadow:0 0 0 3px rgba(95,209,152,.3)}
+  .discord-card .cta{display:inline-block;padding:12px 22px;background:#fff;color:#5865f2;border-radius:9px;font-weight:800;font-size:14px;margin-top:12px;position:relative}
+  .discord-card .cta:hover{background:#f5d172;color:#0e1116}
+  .discord-card .small-note{font-size:11.5px;color:rgba(255,255,255,.65);margin-top:14px;line-height:1.5;position:relative}
+
+  /* Meetup card */
+  .meetup-card{padding:30px 32px;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);position:relative;overflow:hidden}
+  .meetup-card::after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.16),transparent 70%);right:-100px;top:-100px;pointer-events:none}
+  .meetup-card .ic{font-size:42px;margin-bottom:10px;position:relative}
+  .meetup-card h2{margin:0 0 4px;font-size:22px;font-weight:800;color:#fff;position:relative}
+  .meetup-card .sub{font-size:14px;color:#9aa3b0;position:relative;margin-bottom:14px}
+  .meetup-card .next-meetup{padding:14px 16px;background:rgba(245,209,114,.12);border:1px solid rgba(245,209,114,.3);border-radius:11px;position:relative;margin-bottom:14px}
+  .meetup-card .next-meetup .lab{font-size:10.5px;font-weight:800;color:#f5d172;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+  .meetup-card .next-meetup .name{font-size:16px;font-weight:800;color:#fff;margin-bottom:3px}
+  .meetup-card .next-meetup .when{font-size:13px;color:#9aa3b0}
+  .meetup-card .upcoming{font-size:13px;color:#9aa3b0;line-height:1.6;position:relative}
+  .meetup-card .upcoming .item{padding:5px 0;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;gap:8px}
+  .meetup-card .upcoming .item:first-child{border-top:0}
+  .meetup-card .cta{display:inline-block;padding:11px 18px;background:#f5d172;color:#0e1116;border-radius:9px;font-weight:800;font-size:13.5px;margin-top:14px;position:relative}
+  .meetup-card .cta:hover{background:#fff}
+
+  /* Top community members */
+  section.top-members{padding:36px 0}
+  section.top-members h2{margin:0 0 8px;font-size:24px;font-weight:800;letter-spacing:-.01em}
+  section.top-members p.lede{margin:0 0 20px;color:var(--muted);font-size:14.5px}
+  .members-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:880px){.members-grid{grid-template-columns:repeat(2,1fr)}}
+  .member{padding:18px 20px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);text-align:center}
+  .member .av{width:54px;height:54px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;margin:0 auto 10px;letter-spacing:-.01em}
+  .member .av.a{background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .member .av.b{background:linear-gradient(135deg,#13a26b,#0d7d51)}
+  .member .av.c{background:linear-gradient(135deg,#a01644,#6e0e2f)}
+  .member .av.d{background:linear-gradient(135deg,#d4af37,#a08020)}
+  .member .av.e{background:linear-gradient(135deg,#7426c4,#4d1888)}
+  .member .av.f{background:linear-gradient(135deg,#f0a020,#a06808)}
+  .member .name{font-weight:800;font-size:14px}
+  .member .role{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .member .badge-row{margin-top:10px;display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+  .member .badge{padding:2px 7px;border-radius:5px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .badge.discord{background:rgba(88,101,242,.15);color:#5865f2}
+  .badge.meetup{background:rgba(212,175,55,.18);color:#7a5e10}
+  .badge.contrib{background:rgba(19,162,107,.14);color:#0d7d51}
+  .badge.streak{background:rgba(224,65,62,.13);color:#a01644}
+
+  /* Recent posts */
+  section.posts{padding:36px 0;background:var(--bg-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  section.posts h2{margin:0 0 8px;font-size:24px;font-weight:800;letter-spacing:-.01em}
+  section.posts p.lede{margin:0 0 20px;color:var(--muted);font-size:14.5px}
+  .posts-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:780px){.posts-grid{grid-template-columns:1fr}}
+  .post{padding:18px 20px;background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
+  .post .meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px}
+  .post .author{display:flex;align-items:center;gap:8px;font-size:13px}
+  .post .author .av{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800}
+  .post .author .name{font-weight:800;color:var(--ink-2)}
+  .post .channel{font-size:11.5px;color:var(--muted);font-weight:700;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .post .when{font-size:11.5px;color:var(--muted);font-weight:600}
+  .post p{margin:0 0 8px;font-size:14px;color:var(--ink-2);line-height:1.55}
+  .post .reactions{display:flex;gap:8px;font-size:12px;color:var(--muted)}
+  .post .reactions span{display:inline-flex;align-items:center;gap:3px}
+
+  /* Code of conduct */
+  .conduct{padding:36px 0;text-align:center}
+  .conduct-card{max-width:760px;margin:0 auto;padding:24px 28px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius)}
+  .conduct-card h2{margin:0 0 8px;font-size:18px;font-weight:800}
+  .conduct-card p{margin:0 0 12px;font-size:14.5px;color:var(--ink-2);line-height:1.55}
+  .conduct-card a{color:var(--accent-2);font-weight:800}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:28px 0 22px;font-size:12.5px;text-align:center}
+  footer a{color:#9aa3b0}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="browse.html">Browse</a>
+      <a href="community.html" style="color:var(--accent);font-weight:700">Community</a>
+      <a href="founding-25.html">Launch 25</a>
+    </nav>
+    <a href="#discord" class="btn" style="background:var(--discord)">Join Discord →</a>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="wrap">
+    <span class="pre">💬 Customer Community</span>
+    <h1>Where LYMX customers actually hang out</h1>
+    <p class="lede">A network is more than transactions. Trade Business recommendations, find local meetups, swap LYMX with friends, get answers from the people who built it.</p>
+  </div>
+</section>
+
+<div class="wrap">
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-grid">
+      <div class="stat"><div class="v discord">2,140</div><div class="l">Discord members</div></div>
+      <div class="stat"><div class="v gold">8</div><div class="l">Monthly meetups</div></div>
+      <div class="stat"><div class="v">186</div><div class="l">Posts this week</div></div>
+      <div class="stat"><div class="v">94%</div><div class="l">Questions answered</div></div>
+    </div>
+  </div>
+
+  <!-- Two big cards -->
+  <div class="layout">
+    <!-- Discord -->
+    <div class="discord-card" id="discord">
+      <div class="ic">💬</div>
+      <h2>Join the Discord</h2>
+      <p class="sub">Real-time chat with other LYMX customers, Businesses, and the team. Free.</p>
+      <div class="live-count"><div class="dot"></div>312 online right now</div>
+      <div class="channels">
+        <div class="channel">welcome</div>
+        <div class="channel">recommendations — what's good in town</div>
+        <div class="channel">deals — promo alerts from Businesses</div>
+        <div class="channel">refer-trades — find a referral partner</div>
+        <div class="channel">feature-requests — vote on the roadmap</div>
+        <div class="channel">support — get help fast (or post a bug)</div>
+      </div>
+      <a class="cta" href="#" onclick="alert('In production: redirects to discord.gg/lymx invite')">Join the LYMX Discord →</a>
+      <div class="small-note">Free. Real names encouraged. Anti-spam: phone-verified accounts only. Code of conduct below.</div>
+    </div>
+
+    <!-- Meetups -->
+    <div class="meetup-card">
+      <div class="ic">🎉</div>
+      <h2>Monthly meetups</h2>
+      <p class="sub">In-person events at LYMX Businesses. Free for verified customers.</p>
+
+      <div class="next-meetup">
+        <div class="lab">★ Next meetup</div>
+        <div class="name">First-Friday at Brew &amp; Bean</div>
+        <div class="when">May 1 · 6 PM – 8 PM · The Strip · 100 LYMX bonus on arrival</div>
+      </div>
+
+      <div class="upcoming">
+        <div class="item"><span>📅 May 8 · Sage &amp; Stone tasting flight</span><span>Henderson</span></div>
+        <div class="item"><span>📅 May 15 · Game night at Pulse Studio</span><span>The Strip</span></div>
+        <div class="item"><span>📅 May 22 · Wine + dine at Oakline</span><span>Downtown</span></div>
+        <div class="item"><span>📅 May 29 · Saturday breakfast crawl</span><span>3-stop bus tour</span></div>
+      </div>
+
+      <a class="cta" href="launch-event.html">All meetups + RSVP →</a>
+    </div>
+  </div>
+</div>
+
+<!-- Top members -->
+<section class="top-members">
+  <div class="wrap">
+    <h2>Top community members this month</h2>
+    <p class="lede">The most helpful, most active people in the community right now. Picked manually by the team.</p>
+    <div class="members-grid">
+      <div class="member">
+        <div class="av a">MH</div>
+        <div class="name">Maya Hopkins</div>
+        <div class="role">Customer · Las Vegas</div>
+        <div class="badge-row"><span class="badge discord">Discord MVP</span><span class="badge streak">12wk streak</span></div>
+      </div>
+      <div class="member">
+        <div class="av b">JR</div>
+        <div class="name">Jonathan Reyes</div>
+        <div class="role">Customer · Henderson</div>
+        <div class="badge-row"><span class="badge meetup">Meetup host</span><span class="badge contrib">42 reviews</span></div>
+      </div>
+      <div class="member">
+        <div class="av c">DW</div>
+        <div class="name">Daniel Whitley</div>
+        <div class="role">Launch 25 Business · Brew &amp; Bean</div>
+        <div class="badge-row"><span class="badge contrib">Top answers</span></div>
+      </div>
+      <div class="member">
+        <div class="av d">SV</div>
+        <div class="name">Sienna Vega</div>
+        <div class="role">Master Partner · Las Vegas</div>
+        <div class="badge-row"><span class="badge contrib">Mentor</span><span class="badge streak">All-time</span></div>
+      </div>
+      <div class="member">
+        <div class="av e">AG</div>
+        <div class="name">Asha Gupta</div>
+        <div class="role">Customer · Summerlin</div>
+        <div class="badge-row"><span class="badge meetup">3 meetups hosted</span></div>
+      </div>
+      <div class="member">
+        <div class="av f">RP</div>
+        <div class="name">Riya Patel</div>
+        <div class="role">Launch 25 Business · Sage &amp; Stone</div>
+        <div class="badge-row"><span class="badge meetup">Meetup host</span></div>
+      </div>
+      <div class="member">
+        <div class="av a">LO</div>
+        <div class="name">Liam O'Connor</div>
+        <div class="role">Customer · Henderson</div>
+        <div class="badge-row"><span class="badge discord">Helper</span></div>
+      </div>
+      <div class="member">
+        <div class="av b">PN</div>
+        <div class="name">Priya Naidu</div>
+        <div class="role">Customer · Las Vegas</div>
+        <div class="badge-row"><span class="badge contrib">Bug-finder</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Recent posts -->
+<section class="posts">
+  <div class="wrap">
+    <h2>Recent in the Discord</h2>
+    <p class="lede">Public preview of what's been said this week. Join Discord to participate.</p>
+    <div class="posts-grid">
+      <div class="post">
+        <div class="meta">
+          <div class="author"><div class="av">MH</div><div class="name">Maya H.</div></div>
+          <div class="channel">#recommendations</div>
+        </div>
+        <p>Just had the cardamom morning bun at Sage &amp; Stone. Worth the drive to Henderson. Riya is the truth. Tip: get there before 9 AM or they sell out.</p>
+        <div class="reactions"><span>❤️ 18</span><span>🔥 12</span><span>🙌 7</span></div>
+      </div>
+      <div class="post">
+        <div class="meta">
+          <div class="author"><div class="av" style="background:linear-gradient(135deg,#13a26b,#0d7d51)">JR</div><div class="name">Jonathan R.</div></div>
+          <div class="channel">#deals</div>
+        </div>
+        <p>Heads up: Brew &amp; Bean is running 2× LYMX this Saturday morning. I do a coffee run for the office every Saturday — DM if you want me to put your order in.</p>
+        <div class="reactions"><span>👍 24</span><span>☕ 9</span></div>
+      </div>
+      <div class="post">
+        <div class="meta">
+          <div class="author"><div class="av" style="background:linear-gradient(135deg,#a01644,#6e0e2f)">AG</div><div class="name">Asha G.</div></div>
+          <div class="channel">#refer-trades</div>
+        </div>
+        <p>Looking for someone to do a referral trade — I'll sign up under your link if you sign up under mine. Both get 200 LYMX. Reply if interested.</p>
+        <div class="reactions"><span>👋 5</span></div>
+      </div>
+      <div class="post">
+        <div class="meta">
+          <div class="author"><div class="av" style="background:linear-gradient(135deg,#d4af37,#a08020)">SV</div><div class="name">Sienna V.</div></div>
+          <div class="channel">#feature-requests</div>
+        </div>
+        <p>For Partner folks here — would love to see a "schedule a follow-up" button directly inside the CRM. Currently I copy/paste into Calendar. Anyone else? Voting on the roadmap.</p>
+        <div class="reactions"><span>👍 31</span><span>💯 8</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Code of conduct -->
+<section class="conduct">
+  <div class="wrap">
+    <div class="conduct-card">
+      <h2>Community guidelines</h2>
+      <p><strong>Be helpful.</strong> Answer questions when you can. Recommend Businesses you've actually been to.</p>
+      <p><strong>No spam.</strong> Don't drop your Partner link without context. Don't sell unrelated products. Don't mass-DM.</p>
+      <p><strong>Be honest about what you are.</strong> If you're a Partner posting about LYMX in #recommendations, say so per FTC rules.</p>
+      <p><strong>Disagreements are fine. Personal attacks are not.</strong> One warning, then a 7-day timeout, then a ban.</p>
+      <p style="margin-top:14px"><a href="terms.html">Full community terms →</a> · Report issues to <a href="mailto:community@getlymx.com">community@getlymx.com</a></p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · <a href="why-lymx.html">Why LYMX</a> · <a href="customer-referral.html">Refer friends</a> · <a href="leaderboard.html">Leaderboard</a></div>
+</footer>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+</body>
+</html>
