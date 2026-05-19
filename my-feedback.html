@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="Your LYMX feedback history — see your submissions, replies from the team, and verify fixes." />
 <title>My Feedback · LYMX</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--maxw:880px}
   *{box-sizing:border-box}
@@ -53,7 +50,27 @@
   .pill.status-new{background:#fdecec;color:#9b1c1c}
   .pill.status-in_progress{background:#fff3d4;color:#92400e}
   .pill.status-resolved{background:#e6f5ee;color:#0a6e44}
+  .pill.status-awaiting{background:#fff3d4;color:#92400e}
   .pill.status-wontfix{background:#eef0f4;color:#6b7280}
+
+  /* 2026-05-19 #241b3efc Filter chips */
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{padding:7px 13px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* 2026-05-19 #ea228221 Pagination Show more */
+  .show-more{display:block;width:100%;padding:13px;background:#fff;border:1px solid var(--line);border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink);margin-top:6px}
+  .show-more:hover{background:var(--bg-soft)}
+
+  /* 2026-05-19 #a3acf19a Reopen button */
+  .btn-reopen{background:#fff;border:1px solid var(--line);color:var(--accent-2);font-weight:700;font-size:12.5px;padding:6px 12px;border-radius:7px;cursor:pointer;font-family:inherit;margin-top:8px}
+  .btn-reopen:hover{background:#eef5ff;border-color:var(--accent)}
+
+  /* 2026-05-19 #df147545 Floating Action Button */
+  .fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--ink);color:#fff;border:0;cursor:pointer;font-size:24px;font-weight:600;box-shadow:0 6px 20px rgba(14,17,22,.25);z-index:60;font-family:inherit;display:flex;align-items:center;justify-content:center}
+  .fab:hover{background:var(--ink-2);transform:translateY(-2px);transition:.15s}
+  .fab:focus{outline:3px solid rgba(10,132,255,.4);outline-offset:2px}
+  @media(max-width:560px){.fab{bottom:80px}}
 
   .reply-banner{background:#eef5ff;border-left:3px solid var(--accent);padding:10px 14px;border-radius:6px;font-size:13.5px;color:var(--ink-2);margin-top:8px}
   .reply-banner .lab{font-size:11px;color:var(--accent-2);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:3px}
@@ -84,6 +101,17 @@
   .reply .who{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;color:var(--muted)}
   .reply .when{font-size:11px;color:var(--muted);margin-top:6px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 
@@ -95,6 +123,8 @@
       <a href="my-feedback.html" class="on">My Feedback</a>
       <a href="contacts.html">Contacts</a>
       <a href="browse.html">Browse</a>
+      <!-- 2026-05-19 #b52162b6 Help link -->
+      <a href="support.html">Help</a>
     </nav>
     <div class="avatar-nav" id="userInitial">·</div>
   </div>
@@ -114,9 +144,23 @@
       <div class="stat ok"><div class="lab">Resolved</div><div class="v" id="cResolved">—</div></div>
     </div>
 
+    <!-- 2026-05-19 #241b3efc Filter chips -->
+    <div class="chips" id="filterChips">
+      <button class="chip on" data-f="all">All</button>
+      <button class="chip" data-f="open">Open</button>
+      <button class="chip" data-f="awaiting">Awaiting your verify</button>
+      <button class="chip" data-f="resolved">Resolved</button>
+      <button class="chip" data-f="bug">🐛 Bugs</button>
+      <button class="chip" data-f="suggestion">💡 Ideas</button>
+      <button class="chip" data-f="question">🆘 Questions</button>
+    </div>
+
     <div id="list">
       <div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div>
     </div>
+
+    <!-- 2026-05-19 #ea228221 Pagination Show more -->
+    <button class="show-more" id="showMore" style="display:none">Show more</button>
   </div>
 </main>
 
@@ -133,6 +177,9 @@
   </div>
 </div>
 
+<!-- 2026-05-19 #df147545 Floating Action Button — bridges to existing site-wide feedback widget -->
+<button class="fab" id="newFeedbackFab" aria-label="Send feedback" title="Send feedback">＋</button>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
 <script src="lymx-auth.js"></script>
@@ -143,15 +190,23 @@ const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
 const TYPE_LABEL = { bug:'Bug', question:'Help', suggestion:'Idea', general:'Other' };
 const TYPE_EMOJI = { bug:'🐛', question:'🆘', suggestion:'💡', general:'📋' };
 
-async function authedFetch(path, opts = {}) {
+// 2026-05-19 — module state for filter + pagination
+let ALL_ITEMS = [];
+let CUR_FILTER = 'all';
+const PAGE_SIZE = 20;
+let CUR_PAGE = 1;
+
+async function authedFetch(path, opts) {
+  opts = opts || {};
   const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
   const token = (session && session.access_token) || ANON;
   return fetch(SUPABASE_URL + path, {
-    ...opts,
-    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+    method: opts.method || 'GET',
+    headers: Object.assign({ 'apikey': ANON, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }, opts.headers || {}),
+    body: opts.body
   });
 }
-function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
 function fmtTime(iso) { return new Date(iso).toLocaleString([], { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }); }
 function fmtAgo(iso) {
   const ago = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -163,73 +218,146 @@ function fmtAgo(iso) {
 }
 
 async function loadList() {
-  const r = await authedFetch('/rest/v1/v_my_feedback?select=*&order=created_at.desc&limit=200');
+  const r = await authedFetch('/rest/v1/v_my_feedback?select=*&order=created_at.desc&limit=500');
   if (!r.ok) {
     document.getElementById('list').innerHTML = '<div class="empty">Could not load your feedback. Try signing in again.</div>';
     return;
   }
-  const items = await r.json();
+  ALL_ITEMS = await r.json();
 
-  // Stats
-  document.getElementById('cTotal').textContent    = items.length;
-  document.getElementById('cOpen').textContent     = items.filter(i => i.status === 'new' || i.status === 'in_progress').length;
-  document.getElementById('cAwaiting').textContent = items.filter(i => i.awaiting_verification).length;
-  document.getElementById('cResolved').textContent = items.filter(i => i.status === 'resolved').length;
+  // 2026-05-19 #59ddaeec — "Resolved" only counts tickets the user has
+  // actually verified. Awaiting-verification tickets are shown as awaiting,
+  // not resolved, matching Dave's complaint that resolved count was inflated
+  // before he clicked "Yes, it works".
+  document.getElementById('cTotal').textContent    = ALL_ITEMS.length;
+  document.getElementById('cOpen').textContent     = ALL_ITEMS.filter(function(i){ return i.status === 'new' || i.status === 'in_progress'; }).length;
+  document.getElementById('cAwaiting').textContent = ALL_ITEMS.filter(function(i){ return i.awaiting_verification; }).length;
+  document.getElementById('cResolved').textContent = ALL_ITEMS.filter(function(i){ return i.status === 'resolved' && !i.awaiting_verification; }).length;
 
-  if (!items.length) {
-    document.getElementById('list').innerHTML = '<div class="empty"><div class="big">💬</div><strong>Nothing here yet.</strong><br>Click the floating "Send Feedback" button on any page to submit your first bug, idea, or question.</div>';
+  CUR_PAGE = 1;
+  renderList();
+}
+
+function applyFilter(items) {
+  if (CUR_FILTER === 'all')      return items;
+  if (CUR_FILTER === 'open')     return items.filter(function(i){ return i.status === 'new' || i.status === 'in_progress'; });
+  if (CUR_FILTER === 'awaiting') return items.filter(function(i){ return i.awaiting_verification; });
+  if (CUR_FILTER === 'resolved') return items.filter(function(i){ return i.status === 'resolved' && !i.awaiting_verification; });
+  return items.filter(function(i){ return i.type === CUR_FILTER; });
+}
+
+function renderList() {
+  const filtered = applyFilter(ALL_ITEMS);
+  if (!filtered.length) {
+    if (!ALL_ITEMS.length) {
+      document.getElementById('list').innerHTML = '<div class="empty"><div class="big">💬</div><strong>Nothing here yet.</strong><br>Tap the ＋ button at bottom-right to submit your first bug, idea, or question.</div>';
+    } else {
+      document.getElementById('list').innerHTML = '<div class="empty"><div class="big">🔍</div>No items match this filter.<br>Try a different chip above.</div>';
+    }
+    document.getElementById('showMore').style.display = 'none';
     return;
   }
 
-  document.getElementById('list').innerHTML = items.map(i => {
+  const visible = filtered.slice(0, CUR_PAGE * PAGE_SIZE);
+  document.getElementById('list').innerHTML = visible.map(function(i) {
     const t = TYPE_LABEL[i.type] || i.type;
     const subject = i.subject || (i.message || '').slice(0, 80) + ((i.message || '').length > 80 ? '…' : '');
     const adminReply = i.last_admin_reply_text;
     const awaiting = i.awaiting_verification && i.verification_token;
+    const displayStatus = awaiting ? 'awaiting' : i.status;
+    const displayStatusLabel = awaiting ? 'awaiting your verify' : i.status.replace('_', ' ');
+    const showReopen = i.status === 'resolved' && !awaiting;
 
-    return '<div class="fb-item ' + (awaiting ? 'awaiting' : '') + '" data-id="' + i.id + '">' +
-      '<div class="hdr">' +
-        '<div>' +
-          '<div class="subj">' + escapeHtml(subject) + '</div>' +
-          '<div class="meta">' +
-            '<span class="pill ' + i.type + '">' + (TYPE_EMOJI[i.type] || '') + ' ' + t + '</span> ' +
-            '<span class="pill status-' + i.status + '">' + i.status.replace('_', ' ') + '</span>' +
-            ' · ' + fmtAgo(i.created_at) +
-          '</div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="msg">' + escapeHtml(i.message || '') + '</div>' +
-      (adminReply
-        ? '<div class="reply-banner">' +
-            '<div class="lab">LYMX team replied · ' + fmtAgo(i.last_admin_reply_at) + '</div>' +
-            escapeHtml(adminReply.slice(0, 250)) + (adminReply.length > 250 ? '…' : '') +
-          '</div>'
-        : '') +
-      (awaiting
-        ? '<div class="verify-banner">' +
-            '<div class="h">⚠️ Did the fix work? Let us know:</div>' +
-            'The LYMX team thinks they fixed your issue. Tap a button below to confirm or tell us it\'s still broken.' +
-            '<div class="actions">' +
-              '<button class="btn btn-confirm" data-verify="' + i.id + '" data-token="' + i.verification_token + '" data-action="confirm">✓ Yes, it works</button>' +
-              '<button class="btn btn-still" data-verify="' + i.id + '" data-token="' + i.verification_token + '" data-action="still">✗ Still broken</button>' +
-            '</div>' +
-          '</div>'
-        : '') +
-    '</div>';
+    let html = '<div class="fb-item ' + (awaiting ? 'awaiting' : '') + '" data-id="' + i.id + '">';
+    html +=   '<div class="hdr"><div>';
+    html +=     '<div class="subj">' + escapeHtml(subject) + '</div>';
+    html +=     '<div class="meta">';
+    html +=       '<span class="pill ' + i.type + '">' + (TYPE_EMOJI[i.type] || '') + ' ' + t + '</span> ';
+    html +=       '<span class="pill status-' + displayStatus + '">' + displayStatusLabel + '</span>';
+    html +=       ' · ' + fmtAgo(i.created_at);
+    html +=     '</div>';
+    html +=   '</div></div>';
+    html +=   '<div class="msg">' + escapeHtml(i.message || '') + '</div>';
+    if (adminReply) {
+      html += '<div class="reply-banner">';
+      html +=   '<div class="lab">LYMX team replied · ' + fmtAgo(i.last_admin_reply_at) + '</div>';
+      html +=   escapeHtml(adminReply.slice(0, 250)) + (adminReply.length > 250 ? '…' : '');
+      html += '</div>';
+    }
+    if (awaiting) {
+      html += '<div class="verify-banner">';
+      html +=   '<div class="h">⚠️ Did the fix work? Let us know:</div>';
+      html +=   'The LYMX team thinks they fixed your issue. Tap a button below to confirm or tell us it\'s still broken.';
+      html +=   '<div class="actions">';
+      html +=     '<button class="btn btn-confirm" data-verify="' + i.id + '" data-token="' + i.verification_token + '" data-action="confirm">✓ Yes, it works</button>';
+      html +=     '<button class="btn btn-still" data-verify="' + i.id + '" data-token="' + i.verification_token + '" data-action="still">✗ Still broken</button>';
+      html +=   '</div>';
+      html += '</div>';
+    }
+    if (showReopen) {
+      // 2026-05-19 #a3acf19a — reopen button for resolved tickets
+      html += '<div style="display:flex;justify-content:flex-end;margin-top:6px">';
+      html +=   '<button class="btn-reopen" data-reopen="' + i.id + '">↩ Reopen ticket</button>';
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
   }).join('');
 
-  document.querySelectorAll('.fb-item').forEach(el => {
-    el.addEventListener('click', e => {
+  // Show-more button
+  const showMoreBtn = document.getElementById('showMore');
+  if (visible.length < filtered.length) {
+    showMoreBtn.style.display = '';
+    showMoreBtn.textContent = 'Show more (' + (filtered.length - visible.length) + ' more)';
+  } else {
+    showMoreBtn.style.display = 'none';
+  }
+
+  document.querySelectorAll('.fb-item').forEach(function(el) {
+    el.addEventListener('click', function(e) {
       if (e.target.tagName === 'BUTTON') return;
       openDetail(el.dataset.id);
     });
   });
-  document.querySelectorAll('[data-verify]').forEach(b => {
-    b.addEventListener('click', e => {
+  document.querySelectorAll('[data-verify]').forEach(function(b) {
+    b.addEventListener('click', function(e) {
       e.stopPropagation();
       verifyFix(b.dataset.verify, b.dataset.token, b.dataset.action);
     });
   });
+  document.querySelectorAll('[data-reopen]').forEach(function(b) {
+    b.addEventListener('click', async function(e) {
+      e.stopPropagation();
+      await reopenTicket(b.dataset.reopen);
+    });
+  });
+}
+
+// 2026-05-19 #a3acf19a — Reopen handler
+async function reopenTicket(id) {
+  const reason = prompt('Quick note on why you are reopening this ticket (optional):');
+  if (reason === null) return;
+  try {
+    const r = await authedFetch('/rest/v1/feedback?id=eq.' + id, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ status: 'in_progress' })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    await authedFetch('/rest/v1/feedback_replies', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        feedback_id: id,
+        kind: 'submitter_response',
+        body_text: '↩ Reopened by submitter.' + (reason.trim() ? '\n\nReason: ' + reason.trim() : '')
+      })
+    });
+    alert('Reopened. The LYMX team will get back to you.');
+    loadList();
+  } catch (e) {
+    alert('Could not reopen: ' + e.message);
+  }
 }
 
 async function openDetail(id) {
@@ -249,33 +377,55 @@ async function openDetail(id) {
   document.getElementById('mOrig').textContent = i.message || '';
 
   document.getElementById('mThread').innerHTML = replies.length
-    ? replies.map(r => '<div class="reply ' + r.kind.replace('_response', '') + '">' +
+    ? replies.map(function(r){ return '<div class="reply ' + r.kind.replace('_response', '') + '">' +
         '<div class="who">' + (r.kind === 'admin_response' ? 'LYMX Team — ' + escapeHtml(r.author_name || 'staff') : (r.kind === 'submitter_response' ? 'You' : 'System')) + '</div>' +
         escapeHtml(r.body_text || '') +
         '<div class="when">' + fmtTime(r.created_at) + '</div>' +
-      '</div>').join('')
+      '</div>'; }).join('')
     : '<div style="color:var(--muted);font-size:13px;font-style:italic;padding:14px">No replies yet — we\'ll get to it soon.</div>';
 
   document.getElementById('modal').classList.add('on');
 }
 
-document.getElementById('mClose').addEventListener('click', () => document.getElementById('modal').classList.remove('on'));
-document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') e.target.classList.remove('on'); });
+document.getElementById('mClose').addEventListener('click', function(){ document.getElementById('modal').classList.remove('on'); });
+document.getElementById('modal').addEventListener('click', function(e){ if (e.target.id === 'modal') e.target.classList.remove('on'); });
 
 async function verifyFix(feedbackId, token, action) {
   if (!confirm(action === 'confirm' ? 'Confirm the fix works?' : 'Tell the team it\'s still broken?')) return;
   const r = await fetch(SUPABASE_URL + '/functions/v1/feedback-verify', {
     method: 'POST',
     headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ feedback_id: feedbackId, token, action })
+    body: JSON.stringify({ feedback_id: feedbackId, token: token, action: action })
   });
   if (!r.ok) { alert('Could not record your response: ' + r.status); return; }
   alert(action === 'confirm' ? 'Thanks — marked as resolved.' : 'Got it — we\'ll keep looking.');
   loadList();
 }
 
+// Filter chips + pagination
+document.getElementById('filterChips').addEventListener('click', function(e) {
+  if (e.target.tagName !== 'BUTTON') return;
+  document.querySelectorAll('#filterChips .chip').forEach(function(c){ c.classList.remove('on'); });
+  e.target.classList.add('on');
+  CUR_FILTER = e.target.dataset.f;
+  CUR_PAGE = 1;
+  renderList();
+});
+document.getElementById('showMore').addEventListener('click', function() {
+  CUR_PAGE++;
+  renderList();
+});
+
+// 2026-05-19 #df147545 — FAB bridge to existing site-wide feedback widget
+document.getElementById('newFeedbackFab').addEventListener('click', function() {
+  const widgetBtn = document.getElementById('lymx-feedback-btn') ||
+                    document.querySelector('[data-lymx-feedback-btn], .lymx-fb-btn');
+  if (widgetBtn) widgetBtn.click();
+  else alert('Send-feedback widget did not load. Refresh and try again.');
+});
+
 // Boot
-(async () => {
+(async function () {
   if (!window.LYMX || !window.LYMX.getSession) {
     document.getElementById('list').innerHTML = '<div class="empty">Sign in first to see your feedback. <a href="login.html" style="color:var(--accent-2);text-decoration:underline">Sign in</a></div>';
     return;
@@ -288,9 +438,8 @@ async function verifyFix(feedbackId, token, action) {
   document.getElementById('userInitial').textContent = (s.user.email || 'L')[0].toUpperCase();
   loadList();
 
-  // Auto-open detail if ?id= is in URL (deep link from emails)
   const urlId = new URLSearchParams(location.search).get('id');
-  if (urlId) setTimeout(() => openDetail(urlId), 800);
+  if (urlId) setTimeout(function(){ openDetail(urlId); }, 800);
 })();
 </script>
 
