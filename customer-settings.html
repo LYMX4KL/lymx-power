@@ -421,7 +421,29 @@
   function openEditName(){ openEdit('Update name', 'How it appears on receipts.', '<div class="field"><label>Full name</label><input class="input" value="Sarah Reyes" /></div>'); }
   function openEditPhone(){ openEdit('Update phone', "We'll send a code to confirm.", '<div class="field"><label>New mobile number</label><input class="input" value="+1 (702) 555-0199" /></div>'); }
   function openEditEmail(){ openEdit('Update email', 'Used for digital receipts.', '<div class="field"><label>Email</label><input class="input" type="email" value="sarah.reyes@example.com" /></div>'); }
-  function openEditPassword(){ openEdit('Change password', 'You\'ll be signed out of other devices.', '<div class="field"><label>Current password</label><input class="input" type="password" /></div><div class="field"><label>New password</label><input class="input" type="password" /></div>'); }
+  // 2026-05-19 #58ee4708 — added eye toggle on each password input so users
+  // can see what they're typing (avoids blind-typo retries).
+  function openEditPassword(){
+    var body = '<div class="field"><label>Current password</label>' +
+               '<div style="position:relative">' +
+                 '<input class="input" id="pwCur" type="password" style="padding-right:42px" />' +
+                 '<button type="button" onclick="togglePwVis(\'pwCur\', this)" aria-label="Show password" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;font-size:18px;padding:4px">👁️</button>' +
+               '</div></div>' +
+               '<div class="field"><label>New password</label>' +
+               '<div style="position:relative">' +
+                 '<input class="input" id="pwNew" type="password" style="padding-right:42px" />' +
+                 '<button type="button" onclick="togglePwVis(\'pwNew\', this)" aria-label="Show password" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;font-size:18px;padding:4px">👁️</button>' +
+               '</div></div>';
+    openEdit('Change password', 'You\'ll be signed out of other devices.', body);
+  }
+  function togglePwVis(inputId, btn) {
+    var el = document.getElementById(inputId);
+    if (!el) return;
+    var hidden = el.type === 'password';
+    el.type = hidden ? 'text' : 'password';
+    btn.textContent = hidden ? '🙈' : '👁️';
+    btn.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
+  }
 
   function signOut(){
     if (confirm('Sign out of LYMX?')) location.href = 'index.html';
@@ -531,82 +553,74 @@
       };
     }
 
+    // Hook openEditName -> save to customers.display_name
+    const _openName = window.openEditName;
     window.openEditName = function () {
-      window.openEdit('Update name', 'How it appears on receipts.',
-        '<div class="field"><label>Full name</label><input id="ed-name" class="input" value="' + escAttr(custName) + '" /></div>');
+      _openName();
+      const inputs = document.querySelectorAll('#edit-body input');
+      if (inputs[0]) inputs[0].value = custName;
       patchSave(async () => {
-        const v = (document.getElementById('ed-name') || {}).value || '';
-        if (!v.trim()) return;
+        const v = inputs[0] && inputs[0].value || '';
         if (cArr && cArr.length) {
           await sb.from('customers').update({ display_name: v.trim() }).eq('id', cArr[0].id);
         }
-        custName = v.trim();
-        const nm = document.querySelector('.profile .nm'); if (nm) nm.textContent = custName;
-        document.querySelectorAll('.item').forEach(it => {
-          const h = it.querySelector('.h'); const d = it.querySelector('.d');
-          if (h && d && h.textContent.trim() === 'Name') d.textContent = custName;
-        });
       });
     };
+
+    // Hook openEditPhone -> save to customers.phone
+    const _openPhone = window.openEditPhone;
     window.openEditPhone = function () {
-      window.openEdit('Update phone', "We'll send a code to confirm.",
-        '<div class="field"><label>New mobile number</label><input id="ed-phone" class="input" value="' + escAttr(phoneDisplay) + '" /></div>');
+      _openPhone();
+      const inputs = document.querySelectorAll('#edit-body input');
+      if (inputs[0]) inputs[0].value = phoneDisplay;
       patchSave(async () => {
-        const v = (document.getElementById('ed-phone') || {}).value || '';
-        if (!v.trim()) return;
+        const v = inputs[0] && inputs[0].value || '';
         const cleaned = v.replace(/[^\d+]/g, '');
         if (cArr && cArr.length) {
           await sb.from('customers').update({ phone: cleaned }).eq('id', cArr[0].id);
         }
-        custPhone = cleaned;
-        phoneDisplay = fmtPhone(cleaned);
-        document.querySelectorAll('.item').forEach(it => {
-          const h = it.querySelector('.h'); const d = it.querySelector('.d');
-          if (h && d && h.textContent.trim() === 'Phone') d.textContent = phoneDisplay;
-        });
-        const em = document.querySelector('.profile .em'); if (em) em.textContent = (phoneDisplay ? phoneDisplay + ' · ' : '') + custEmail;
-      });
-    };
-    window.openEditEmail = function () {
-      window.openEdit('Update email', 'Used for digital receipts.',
-        '<div class="field"><label>Email</label><input id="ed-email" class="input" type="email" value="' + escAttr(custEmail) + '" /></div>');
-      patchSave(async () => {
-        const v = (document.getElementById('ed-email') || {}).value || '';
-        if (!v.trim() || !v.includes('@')) return;
-        if (cArr && cArr.length) {
-          await sb.from('customers').update({ email: v.trim() }).eq('id', cArr[0].id);
-        }
-        custEmail = v.trim();
-        document.querySelectorAll('.item').forEach(it => {
-          const h = it.querySelector('.h'); const d = it.querySelector('.d');
-          if (h && d && h.textContent.trim() === 'Email') d.textContent = custEmail;
-        });
-        const em = document.querySelector('.profile .em'); if (em) em.textContent = (phoneDisplay ? phoneDisplay + ' · ' : '') + custEmail;
-      });
-    };
-    window.openEditPassword = function () {
-      window.openEdit('Change password', "You'll be signed out of other devices.",
-        '<div class="field"><label>New password</label><input id="ed-pw" class="input" type="password" /></div>');
-      patchSave(async () => {
-        const v = (document.getElementById('ed-pw') || {}).value || '';
-        if (v.length < 8) { window.showToast && window.showToast('Password must be 8+ characters', false); return; }
-        const { error } = await sb.auth.updateUser({ password: v });
-        if (error) { window.showToast && window.showToast('Password change failed', false); return; }
       });
     };
 
-    window.signOut = async function () {
-      if (!confirm('Sign out of LYMX?')) return;
-      try { await sb.auth.signOut(); } catch (e) {}
-      location.href = '/login.html';
+    // Hook openEditEmail -> save to customers.email AND auth.updateUser
+    const _openEmail = window.openEditEmail;
+    window.openEditEmail = function () {
+      _openEmail();
+      const inputs = document.querySelectorAll('#edit-body input');
+      if (inputs[0]) inputs[0].value = custEmail;
+      patchSave(async () => {
+        const v = inputs[0] && inputs[0].value || '';
+        if (cArr && cArr.length) {
+          await sb.from('customers').update({ email: v.trim() }).eq('id', cArr[0].id);
+        }
+        // Trigger auth email-change flow so the login email actually changes
+        try {
+          if (v && v.trim().toLowerCase() !== (user.email || '').toLowerCase()) {
+            await sb.auth.updateUser({ email: v.trim() });
+            window.showToast && window.showToast('Confirmation email sent to ' + v.trim(), true);
+          }
+        } catch (e) { console.warn('[settings] auth email update failed', e); }
+      });
+    };
+
+    // Hook openEditPassword -> auth.updateUser with new password
+    const _openPwd = window.openEditPassword;
+    window.openEditPassword = function () {
+      _openPwd();
+      patchSave(async () => {
+        const newPw = document.getElementById('pwNew');
+        if (!newPw) return;
+        const v = newPw.value || '';
+        if (v.length < 8) { window.showToast && window.showToast('Password must be at least 8 characters', false); return; }
+        const { error } = await sb.auth.updateUser({ password: v });
+        if (error) { window.showToast && window.showToast('Password change failed', false); return; }
+        window.showToast && window.showToast('Password updated', true);
+      });
     };
   } catch (e) {
-    console.warn('[customer-settings] wire failed', e);
+    console.warn('[customer-settings wireSettings failed]', e);
   }
 })();
 </script>
-<script src="lymx-feedback.js" defer></script>
-<script src="lymx-sidebar.js" defer></script>
-<script src="lymx-app.js" defer></script>
 </body>
 </html>
