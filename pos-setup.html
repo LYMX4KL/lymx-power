@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX POS hardware setup — iPad install, thermal printer pairing, signage placement, staff training. Get fully live in 90 minutes." />
+<title>POS hardware setup · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none;font-weight:700}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .role-tag{background:rgba(19,162,107,.15);color:#0d7d51;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14px;color:var(--ink-2)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  .head{padding:46px 0 22px;border-bottom:1px solid var(--line)}
+  .head .pre{display:inline-block;background:rgba(19,162,107,.14);color:#0d7d51;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .head h1{margin:0 0 8px;font-size:34px;font-weight:800;letter-spacing:-.01em}
+  .head .meta{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);margin-top:8px}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:240px 1fr;gap:36px;padding:30px 0 60px;align-items:start}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}.toc-side{display:none}}
+
+  .toc{position:sticky;top:88px}
+  .toc h4{margin:0 0 8px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .toc ul{list-style:none;margin:0;padding:0;border-left:2px solid var(--line)}
+  .toc a{display:block;padding:6px 14px;font-size:13px;color:var(--ink-2);border-left:2px solid transparent;margin-left:-2px;font-weight:600}
+  .toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:700;background:rgba(10,132,255,.04)}
+
+  /* Article */
+  article{max-width:780px}
+  article h2{margin:36px 0 12px;font-size:24px;font-weight:800;letter-spacing:-.01em;scroll-margin-top:90px}
+  article h2 .step{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--ok);padding:4px 10px;border-radius:5px;margin-right:10px;vertical-align:middle;line-height:1.5}
+  article h3{margin:22px 0 8px;font-size:16px;font-weight:800}
+  article p{margin:0 0 12px;font-size:15px;color:var(--ink-2)}
+  article ul,article ol{margin:0 0 12px 22px;padding:0}
+  article li{margin:5px 0;font-size:15px;color:var(--ink-2);line-height:1.6}
+
+  /* Step body card */
+  .step-card{padding:22px 26px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius);margin:14px 0}
+  .step-card h3{margin:0 0 6px}
+
+  /* Hardware kit grid */
+  .kit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+  @media(max-width:780px){.kit-grid{grid-template-columns:1fr}}
+  .kit{padding:18px 20px;background:#fff;border:1px solid var(--line);border-radius:11px}
+  .kit .ic{font-size:30px;margin-bottom:6px}
+  .kit h4{margin:0 0 4px;font-size:14.5px;font-weight:800}
+  .kit p{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
+  .kit .pill{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:rgba(19,162,107,.14);color:#0d7d51;padding:2px 7px;border-radius:5px;margin-top:6px}
+  .kit .pill.bring{background:rgba(240,160,32,.16);color:#a06808}
+
+  /* Time pill */
+  .time-pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;color:var(--muted);background:#fff;padding:4px 10px;border-radius:6px;border:1px solid var(--line);margin-bottom:10px}
+
+  /* Callout */
+  .callout{padding:14px 18px;border-radius:11px;margin:14px 0;display:flex;gap:12px;align-items:flex-start}
+  .callout.tip{background:rgba(10,132,255,.06);border:1px solid rgba(10,132,255,.2);color:var(--accent-2)}
+  .callout.warn{background:rgba(240,160,32,.1);border:1px solid rgba(240,160,32,.3);color:#7a4d0a}
+  .callout .ic{font-size:18px;flex-shrink:0}
+  .callout strong{font-weight:800}
+
+  /* Verify checklist */
+  .verify{padding:18px 22px;background:rgba(19,162,107,.06);border:1px solid rgba(19,162,107,.2);border-radius:var(--radius);margin:14px 0}
+  .verify h4{margin:0 0 10px;font-size:13px;font-weight:800;color:#0d7d51;text-transform:uppercase;letter-spacing:.05em}
+  .verify .row{display:flex;gap:10px;align-items:flex-start;padding:6px 0;font-size:14px;color:var(--ink-2)}
+  .verify .check{width:20px;height:20px;border-radius:50%;background:var(--ok);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;flex-shrink:0;margin-top:1px}
+
+  /* Done state */
+  .done{margin:36px 0 0;padding:30px 32px;background:linear-gradient(135deg,#13a26b,#0d4d31);color:#fff;border-radius:var(--radius);text-align:center}
+  .done h3{color:#fff;margin:0 0 8px;font-size:22px;font-weight:800}
+  .done p{margin:0 0 16px;color:rgba(255,255,255,.85);font-size:15px}
+  .done a{padding:11px 22px;background:#fff;color:#0d7d51;border-radius:9px;font-weight:800;font-size:14px;text-decoration:none;display:inline-block;margin:0 4px}
+  .done a:hover{background:#f5d172;color:#0e1116;text-decoration:none}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+      <span class="role-tag">Business</span>
+    </div>
+    <nav class="nav-links">
+      <a href="biz-onboarding-checklist.html">Setup checklist</a>
+      <a href="pos.html">POS</a>
+      <a href="help-center.html">Help center</a>
+      <a href="support.html">Support</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="head">
+    <span class="pre">🛠 POS Hardware Setup</span>
+    <h1>From box to live in 90 minutes</h1>
+    <p style="margin:0;color:var(--ink-2);font-size:15px;max-width:680px">Step-by-step walk-through for new Businesses. We assume you've completed activation and your kit shipped. If anything's confusing, your activation specialist (Sam) is on standby — text 702-555-LYMX.</p>
+    <div class="meta">
+      <span>⏱ 60–90 min total</span>
+      <span>🛠 Difficulty: easy</span>
+      <span>👤 Recommended: owner + 1 staff member</span>
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside class="toc-side">
+      <nav class="toc" id="toc">
+        <h4>Setup steps</h4>
+        <ul>
+          <li><a href="#kit" class="on">What's in the kit</a></li>
+          <li><a href="#step1">1. Install the iPad app</a></li>
+          <li><a href="#step2">2. Pair the printer</a></li>
+          <li><a href="#step3">3. Place the QR signage</a></li>
+          <li><a href="#step4">4. Test a transaction</a></li>
+          <li><a href="#step5">5. Train your staff</a></li>
+          <li><a href="#step6">6. You're live</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <article>
+      <h2 id="kit">What's in the activation kit</h2>
+      <p>Your kit shipped within 1 business day of activation. Open the box on the counter where the POS will live.</p>
+      <div class="kit-grid">
+        <div class="kit"><div class="ic">📱</div><h4>iPad stand</h4><p>10" rotating tablet stand with chip-on-back charging</p><span class="pill">Included</span></div>
+        <div class="kit"><div class="ic">🖨️</div><h4>Star TSP100 thermal printer</h4><p>Bluetooth + ethernet · 80mm receipt paper</p><span class="pill">Included</span></div>
+        <div class="kit"><div class="ic">📄</div><h4>4 QR table tents + 2 counter signs</h4><p>Branded LYMX signage with your custom welcome</p><span class="pill">Included</span></div>
+        <div class="kit"><div class="ic">🎁</div><h4>Welcome thank-you</h4><p>Handwritten card from Kenny + Sam · 50 LYMX bonus code for owner's wallet</p><span class="pill">Included</span></div>
+        <div class="kit"><div class="ic">📲</div><h4>iPad (your own)</h4><p>iPad mini or full-size · iOS 16+ · Bluetooth on</p><span class="pill bring">You bring</span></div>
+        <div class="kit"><div class="ic">📡</div><h4>WiFi access</h4><p>POS doesn't work offline · ethernet works for the printer</p><span class="pill bring">You bring</span></div>
+      </div>
+
+      <h2 id="step1"><span class="step">Step 1</span>Install the LYMX POS app on your iPad</h2>
+      <div class="time-pill">⏱ 10 min</div>
+      <p>The LYMX POS is a Web App — there's nothing to download from the App Store.</p>
+
+      <ol>
+        <li>Plug the iPad into power. Open Safari (not Chrome — Safari has better support for the home-screen install we'll do).</li>
+        <li>Go to <strong>getlymx.com/pos</strong>.</li>
+        <li>Sign in with the email you used to activate. Check your email if you didn't pick a password — we sent a magic link.</li>
+        <li>Tap the <strong>Share</strong> icon at the top of Safari → <strong>Add to Home Screen</strong>. Name it "LYMX POS".</li>
+        <li>Close Safari. Open "LYMX POS" from your home screen. <strong>This is the URL your staff will use every day.</strong></li>
+      </ol>
+
+      <div class="callout tip">
+        <div class="ic">💡</div>
+        <div><strong>Tip:</strong> in iOS Settings → Display &amp; Brightness, set <strong>Auto-Lock to Never</strong> while the iPad is plugged in. The POS doesn't time out, but the iPad's screen will sleep otherwise.</div>
+      </div>
+
+      <h2 id="step2"><span class="step">Step 2</span>Pair the thermal printer</h2>
+      <div class="time-pill">⏱ 10 min</div>
+      <p>If you're not printing physical receipts (most cafes don't), <strong>skip this step</strong>. The POS works fine without a printer — receipts default to email + SMS.</p>
+
+      <ol>
+        <li>Plug the printer into power. Plug a network cable from your router into the printer (preferred) <em>or</em> turn on the printer's Bluetooth pairing mode (hold the Feed button for 5s).</li>
+        <li>On the iPad, open the LYMX POS → <strong>Settings → Printer</strong>.</li>
+        <li>Tap <strong>Discover printers</strong>. Your Star TSP100 should appear within 30 seconds.</li>
+        <li>Tap it to pair. The POS will print a test receipt that says "PAIRED". Tape that test receipt to the wall behind the printer — you'll thank yourself in 6 months when troubleshooting.</li>
+        <li>Print a sample receipt with <a href="pos-receipt.html">Preview receipt template</a> → tap <strong>Print</strong>. Adjust the paper-cut setting if the receipt is shorter or longer than expected.</li>
+      </ol>
+
+      <div class="callout warn">
+        <div class="ic">⚠️</div>
+        <div><strong>If pairing fails:</strong> the most common cause is a Bluetooth conflict with another device. Forget all other Bluetooth devices on the iPad and try again. If still stuck, text Sam at 702-555-LYMX.</div>
+      </div>
+
+      <h2 id="step3"><span class="step">Step 3</span>Place the QR signage</h2>
+      <div class="time-pill">⏱ 5 min</div>
+      <p>The customer-facing QR signs invite customers to sign up for a LYMX wallet at the moment they're paying. They drive most of your customer acquisition in week 1.</p>
+
+      <p><strong>Where to put each piece:</strong></p>
+      <ul>
+        <li><strong>Counter sign (large)</strong> — next to the POS, visible from where the customer pays. Their eyes will land on it while they wait.</li>
+        <li><strong>Counter sign (small)</strong> — by the cash register or tip jar.</li>
+        <li><strong>4 table tents</strong> — one per table at restaurants. For cafes/retail, scatter near the entrance + at the pickup counter.</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="ic">💡</div>
+        <div><strong>Customize the welcome message:</strong> on the back of the kit you'll find QR stickers with your Business name pre-printed. Peel and stick them to the table tents to localize.</div>
+      </div>
+
+      <h2 id="step4"><span class="step">Step 4</span>Test a real transaction with your phone</h2>
+      <div class="time-pill">⏱ 10 min</div>
+      <p>Before you let real customers near the system, run through one issue + one redemption with your own phone.</p>
+
+      <ol>
+        <li>Sign yourself up at <strong>getlymx.com/join</strong> using the QR sign on your counter. Get the 100-LYMX welcome bonus.</li>
+        <li>On the POS iPad, tap <strong>Issue LYMX</strong>. Enter your phone number. Enter a $10 ticket subtotal. Tap <strong>Issue</strong>.</li>
+        <li>Check your phone — your wallet should now show your welcome bonus + the 50 LYMX (5/$1 base) you just earned.</li>
+        <li>On the iPad, tap <strong>Accept LYMX</strong>. Enter your phone number again. Enter $1.50 to redeem (= 150 LYMX from your balance).</li>
+        <li>Tap <strong>Show QR</strong> on your phone. Scan it with the iPad camera. Confirm.</li>
+        <li>Print the receipt (if you set up the printer in step 2).</li>
+      </ol>
+
+      <div class="verify">
+        <h4>✓ Verify you saw all of this</h4>
+        <div class="row"><div class="check">✓</div><div>Wallet showed 100 LYMX welcome bonus right after sign-up.</div></div>
+        <div class="row"><div class="check">✓</div><div>Issue transaction showed +50 LYMX in wallet within 5 seconds.</div></div>
+        <div class="row"><div class="check">✓</div><div>QR code appeared on phone, scannable from the iPad.</div></div>
+        <div class="row"><div class="check">✓</div><div>Redemption posted within 5 seconds. Balance dropped by 150 LYMX.</div></div>
+        <div class="row"><div class="check">✓</div><div>If you set up the printer, a receipt printed with the right amounts.</div></div>
+      </div>
+
+      <h2 id="step5"><span class="step">Step 5</span>Train your staff (15-min video + 5-min Q&amp;A)</h2>
+      <div class="time-pill">⏱ 25 min · whole-staff session</div>
+      <p>This is the highest-ROI 25 minutes of the whole setup. Trained staff convert customers; untrained staff create friction.</p>
+
+      <ol>
+        <li>Gather your full counter staff. Even part-timers.</li>
+        <li>Play the <a href="content-hub.html">staff training video</a> on the POS iPad — 15 minutes total. Covers: what to say to first-time customers, how to issue, how to accept, what to do if something goes wrong.</li>
+        <li>Walk one staff member through a real transaction at the counter, like step 4. Have everyone watch.</li>
+        <li>Open Q&amp;A. Most common questions:
+          <ul>
+            <li>"What if a customer's QR code expires?" → Tap Refresh on their phone.</li>
+            <li>"What if their phone is dead?" → Take their phone number manually, they earn the LYMX retroactively.</li>
+            <li>"Can I edit a transaction after it's posted?" → Not for the first 60 seconds. After that, file a <a href="settlement-dispute.html">settlement dispute</a>.</li>
+          </ul>
+        </li>
+        <li>Make sure every staff member knows the <strong>"first-time customer 2× promo"</strong> is active by default. They should mention it.</li>
+      </ol>
+
+      <div class="callout tip">
+        <div class="ic">💡</div>
+        <div><strong>The 30-second pitch your staff should know:</strong> "It's a shared loyalty program for local Las Vegas Businesses. You earn LYMX here, you can spend it at any other LYMX Business. No app to download. Want me to set you up while I ring this up?"</div>
+      </div>
+
+      <h2 id="step6"><span class="step">Step 6</span>You're live. Now what.</h2>
+      <p>Two things to do in your first week:</p>
+      <ol>
+        <li><strong>Schedule a Happy-Hour multiplier.</strong> Pick a slow window (e.g., 3-5 PM Tuesdays) and double the LYMX. Use <a href="promotions.html">promotions.html</a>. Customers will start coming for it.</li>
+        <li><strong>Email your existing customer list.</strong> Use the email template in the <a href="content-hub.html">content hub</a>. Subject line: "We just joined LYMX — your first visit is on us." Plug your Business referral code so they get 100 LYMX welcome.</li>
+      </ol>
+
+      <div class="done">
+        <h3>🎉 You're live on LYMX</h3>
+        <p>Your activation specialist will follow up in 7 days to see how week 1 went. In the meantime — back to running your Business.</p>
+        <a href="biz-dashboard.html">Open the dashboard</a>
+        <a href="biz-onboarding-checklist.html" style="background:rgba(255,255,255,.18);color:#fff">7-day checklist →</a>
+      </div>
+    </article>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Need help? <a href="mailto:sam@getlymx.com">sam@getlymx.com</a> or text 702-555-LYMX</div>
+</footer>
+
+<script>
+  const tocLinks = document.querySelectorAll('#toc a');
+  const sections = Array.from(tocLinks).map(a=>document.querySelector(a.getAttribute('href')));
+  window.addEventListener('scroll', ()=>{
+    let active = sections[0];
+    for(const s of sections){
+      if(!s) continue;
+      if(s.getBoundingClientRect().top < 120) active = s;
+    }
+    tocLinks.forEach(a=>a.classList.toggle('on', a.getAttribute('href') === '#'+active.id));
+  }, {passive:true});
+  tocLinks.forEach(a=>{a.onclick=e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'})}});
+</script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

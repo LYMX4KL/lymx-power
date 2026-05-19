@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Business onboarding — full video walkthrough. 18 minutes. Chapters, transcript, related resources." />
+<title>Business onboarding video · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4af37;--radius:14px;--maxw:1240px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .role-tag{background:rgba(19,162,107,.15);color:#0d7d51;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Head */
+  .head{padding:32px 0 18px}
+  .crumb{font-size:13px;color:var(--muted);margin-bottom:8px}
+  .crumb a{color:var(--accent-2);font-weight:700}
+  .crumb .sep{color:var(--line);margin:0 6px}
+  .head h1{margin:0 0 6px;font-size:30px;font-weight:800;letter-spacing:-.01em}
+  .head .meta{display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
+  .head .meta strong{color:var(--ink-2);font-weight:700}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:1.6fr 1fr;gap:24px;padding:18px 0 60px;align-items:start}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}}
+
+  /* Video player */
+  .player{background:linear-gradient(135deg,#0e1116,#1a1f27);border-radius:var(--radius);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:#fff;position:relative;overflow:hidden;cursor:pointer;box-shadow:0 20px 60px rgba(14,17,22,.18)}
+  .player::before{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);left:50%;top:-200px;transform:translateX(-50%);pointer-events:none}
+  .player .play-btn{width:80px;height:80px;border-radius:50%;background:#f5d172;color:#0e1116;font-size:32px;display:flex;align-items:center;justify-content:center;font-weight:800;border:0;box-shadow:0 14px 40px rgba(212,175,55,.4);cursor:pointer;position:relative;z-index:2;padding-left:6px}
+  .player .play-btn:hover{transform:scale(1.06);background:#fff}
+  .player .lab{position:absolute;bottom:18px;left:18px;font-size:13px;color:#9aa3b0;font-weight:700;z-index:2}
+  .player .duration{position:absolute;bottom:18px;right:18px;background:rgba(14,17,22,.7);color:#fff;font-size:12.5px;font-weight:800;padding:4px 9px;border-radius:5px;z-index:2}
+  .player .title{position:absolute;top:18px;left:18px;font-size:13px;color:#f5d172;font-weight:800;letter-spacing:.04em;text-transform:uppercase;z-index:2}
+
+  /* Below player */
+  .below-player{margin-top:18px;padding:18px 22px;background:var(--bg-soft);border-radius:var(--radius);display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .below-player .speaker{display:flex;gap:10px;align-items:center}
+  .below-player .av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+  .below-player .name{font-weight:800;font-size:14px}
+  .below-player .role{font-size:11.5px;color:var(--muted)}
+  .below-player .actions{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+  .btn{padding:9px 14px;border-radius:9px;font-weight:800;font-size:13px;text-decoration:none;display:inline-block;cursor:pointer;border:0}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--ink)}
+
+  /* Transcript */
+  .transcript{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .transcript-h{padding:14px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;background:var(--bg-soft)}
+  .transcript-h h3{margin:0;font-size:14px;font-weight:800}
+  .transcript-h .lang{font-size:12px;color:var(--muted);font-weight:700}
+  .transcript-body{padding:18px 22px;max-height:340px;overflow-y:auto;font-size:13.5px;line-height:1.7}
+  .ts-row{display:grid;grid-template-columns:64px 1fr;gap:14px;padding:8px 0;border-top:1px solid var(--line)}
+  .ts-row:first-child{border-top:0;padding-top:0}
+  .ts-row .when{font-weight:800;color:var(--accent-2);font-variant-numeric:tabular-nums;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+  .ts-row .what{color:var(--ink-2)}
+  .ts-row.active{background:rgba(245,209,114,.1);border-left:3px solid var(--gold);padding-left:10px;margin-left:-13px}
+
+  /* Side: chapters + resources */
+  .chapters{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;position:sticky;top:88px}
+  .ch-h{padding:14px 22px;border-bottom:1px solid var(--line);background:var(--bg-soft)}
+  .ch-h h3{margin:0;font-size:14px;font-weight:800}
+  .ch-h .meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .chapter{padding:13px 22px;border-bottom:1px solid var(--line);cursor:pointer;display:flex;gap:12px;align-items:flex-start;transition:.1s}
+  .chapter:hover{background:var(--bg-soft)}
+  .chapter.active{background:rgba(212,175,55,.06);border-left:3px solid var(--gold);padding-left:19px}
+  .chapter:last-child{border-bottom:0}
+  .chapter .ts{flex-shrink:0;width:54px;font-size:12px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;font-family:ui-monospace,Menlo,Consolas,monospace;margin-top:2px}
+  .chapter .body h4{margin:0 0 2px;font-size:13.5px;font-weight:800;line-height:1.3}
+  .chapter .body p{margin:0;font-size:11.5px;color:var(--muted);line-height:1.4}
+
+  /* Resources */
+  .resources{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px}
+  .resources h3{margin:0 0 10px;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .resources a{display:block;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;font-weight:700;color:var(--accent-2)}
+  .resources a:last-child{border-bottom:0}
+  .resources a small{display:block;font-weight:600;color:var(--muted);font-size:11.5px;margin-top:1px}
+  .resources a:hover{color:var(--ink)}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:30px}
+  footer a{color:#9aa3b0}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px"><span class="dot"></span> LYMX</a>
+      <span class="role-tag">Business</span>
+    </div>
+    <nav class="nav-links">
+      <a href="biz-onboarding-checklist.html">Setup checklist</a>
+      <a href="pos-setup.html">Hardware setup</a>
+      <a href="content-hub.html">Content hub</a>
+      <a href="support.html">Support</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="head">
+    <div class="crumb"><a href="biz-onboarding-checklist.html">Setup checklist</a><span class="sep">›</span> Onboarding video</div>
+    <h1>The 18-minute Business walkthrough</h1>
+    <div class="meta">
+      <span><strong>📺 18 min</strong></span>
+      <span>👤 Daniel Whitley + Kenny Lin</span>
+      <span>📅 Updated April 2026</span>
+      <span>🎬 Subtitles: English, Spanish</span>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- Video + transcript column -->
+    <div>
+      <div class="player" onclick="play()">
+        <span class="title">★ Business Onboarding</span>
+        <button class="play-btn">▶</button>
+        <span class="lab">Click to play · 18:24</span>
+        <span class="duration">18:24</span>
+      </div>
+
+      <div class="below-player">
+        <div class="speaker">
+          <div class="av">DW</div>
+          <div>
+            <div class="name">Daniel Whitley</div>
+            <div class="role">Launch 25 Business · Brew &amp; Bean</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn ghost" onclick="alert('In production: opens video player at full screen')">⛶ Fullscreen</button>
+          <button class="btn ghost" onclick="alert('In production: downloads MP4')">⬇ Download MP4</button>
+          <button class="btn ghost" onclick="alert('In production: shares the video URL')">↗ Share</button>
+        </div>
+      </div>
+
+      <!-- Transcript -->
+      <div class="transcript">
+        <div class="transcript-h">
+          <h3>Transcript</h3>
+          <span class="lang">English · auto-synced to player</span>
+        </div>
+        <div class="transcript-body" id="transcript">
+          <div class="ts-row active"><div class="when">00:00</div><div class="what"><strong>Daniel:</strong> Hey, I'm Daniel — I own Brew &amp; Bean, a coffee shop in Las Vegas. We were Launch 25 Business #2 on LYMX. In the next 18 minutes, I'll walk you through what your first week on LYMX actually looks like — based on what I did and what I'd do differently.</div></div>
+          <div class="ts-row"><div class="when">00:42</div><div class="what"><strong>Kenny:</strong> And I'm Kenny, the founder. I'll jump in occasionally to add the why behind some of the decisions Daniel describes.</div></div>
+          <div class="ts-row"><div class="when">01:10</div><div class="what"><strong>Daniel:</strong> Day 1, your activation kit shows up. You'll have a Star TSP100 thermal printer, table tents, and a counter sign. Plug in the printer, set up the iPad, and bookmark <em>getlymx.com/pos</em> as a Web App on the home screen.</div></div>
+          <div class="ts-row"><div class="when">02:30</div><div class="what"><strong>Daniel:</strong> The locked rate is the most-confused part. You set how many LYMX customers earn per dollar at sign-up — most cafes do 5 LYMX per $1. That's locked for the contract term. You can run multipliers on top, but the base doesn't change.</div></div>
+          <div class="ts-row"><div class="when">03:45</div><div class="what"><strong>Kenny:</strong> The reason it's locked is to protect the customer's expectation. If you change the rate mid-contract, customers feel betrayed. So we just made it impossible.</div></div>
+          <div class="ts-row"><div class="when">04:18</div><div class="what"><strong>Daniel:</strong> Day 2 is staff training. We did 25 minutes total — a 15-min video and 10 minutes of Q&amp;A. The single most important thing is they know how to mention LYMX during checkout: "Have you set up a LYMX wallet?"</div></div>
+          <div class="ts-row"><div class="when">05:50</div><div class="what"><strong>Daniel:</strong> Day 3, write your welcome promo. We do 2× LYMX on first-visit. About 30% of new customers I see now mention they tried me because of LYMX.</div></div>
+          <div class="ts-row"><div class="when">07:15</div><div class="what"><strong>Daniel:</strong> The signage placement matters more than I expected. Counter sign right next to the POS, table tents on every table. It's the silent salesperson.</div></div>
+          <div class="ts-row"><div class="when">08:42</div><div class="what"><strong>Kenny:</strong> About 18% of customer sign-ups happen at the counter, immediately. Another 24% happen within 7 days from the table tent QR.</div></div>
+          <div class="ts-row"><div class="when">09:30</div><div class="what"><strong>Daniel:</strong> Day 5, schedule a Happy Hour multiplier. Pick your slow window — for us it's Saturday 6-11 AM. Customers will reorganize their day around it.</div></div>
+          <div class="ts-row"><div class="when">11:00</div><div class="what"><strong>Daniel:</strong> Day 7, email your existing customer list. Use the LYMX template — copy it into Mailchimp, swap in your details. Subject line: "We just joined LYMX — your first visit is on us."</div></div>
+          <div class="ts-row"><div class="when">12:48</div><div class="what"><strong>Daniel:</strong> Settlement. The first month is confusing. Don't try to interpret it on day 5 of the next month — wait for the statement to land.</div></div>
+          <div class="ts-row"><div class="when">14:00</div><div class="what"><strong>Kenny:</strong> Settlement is just net of LYMX you bought from us vs. LYMX customers redeemed at your store. We send the ACH on the 5th business day.</div></div>
+          <div class="ts-row"><div class="when">15:20</div><div class="what"><strong>Daniel:</strong> Don't skip the QuickBooks export. Even if you don't use it on day 1, 3 months in you'll need it for taxes.</div></div>
+          <div class="ts-row"><div class="when">16:30</div><div class="what"><strong>Daniel:</strong> If something feels off, file a settlement dispute. They resolve in 1-2 days. I had two minor ones in the first 3 months — both turned out to be my staff making mistakes, not the system.</div></div>
+          <div class="ts-row"><div class="when">17:40</div><div class="what"><strong>Kenny:</strong> Last thing — refer another Business. $200 cash to you, $200 LYMX to them. Most Launch 25 came from another Launch 25's referral.</div></div>
+          <div class="ts-row"><div class="when">18:15</div><div class="what"><strong>Daniel:</strong> Welcome to LYMX. Reach out if anything doesn't make sense.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side: chapters -->
+    <aside>
+      <div class="chapters">
+        <div class="ch-h"><h3>Chapters</h3><div class="meta">7 sections · click to jump</div></div>
+        <div class="chapter active" onclick="setChapter(0,this)">
+          <div class="ts">00:00</div>
+          <div class="body"><h4>Intro &amp; what to expect</h4><p>Who we are, what this video covers</p></div>
+        </div>
+        <div class="chapter" onclick="setChapter(1,this)">
+          <div class="ts">01:10</div>
+          <div class="body"><h4>Day 1: activation kit + POS install</h4><p>Unboxing, iPad setup, printer pairing</p></div>
+        </div>
+        <div class="chapter" onclick="setChapter(2,this)">
+          <div class="ts">02:30</div>
+          <div class="body"><h4>Locked rate &amp; promotions</h4><p>The math, why it's locked, how multipliers stack</p></div>
+        </div>
+        <div class="chapter" onclick="setChapter(3,this)">
+          <div class="ts">04:18</div>
+          <div class="body"><h4>Day 2: train your staff</h4><p>The 25-min training session that matters</p></div>
+        </div>
+        <div class="chapter" onclick="setChapter(4,this)">
+          <div class="ts">05:50</div>
+          <div class="body"><h4>Day 3-5: welcome promo &amp; signage</h4><p>Where to put what, what works at the counter</p></div>
+        </div>
+        <div class="chapter" onclick="setChapter(5,this)">
+          <div class="ts">11:00</div>
+          <div class="body"><h4>Day 7: email your existing customers</h4><p>Template, subject line, expected response rate</p></div>
+        </div>
+        <div class="chapter" onclick="setChapter(6,this)">
+          <div class="ts">12:48</div>
+          <div class="body"><h4>Settlement, disputes, and growth</h4><p>Day-30 reconciliation, when to dispute, B2B referrals</p></div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h3>Continue learning</h3>
+        <a href="biz-onboarding-checklist.html">7-day setup checklist <small>The action-oriented version of this video</small></a>
+        <a href="pos-setup.html">Hardware setup walkthrough <small>Step-by-step for printer + iPad</small></a>
+        <a href="pos-receipt.html">POS receipt template <small>Customize what prints for customers</small></a>
+        <a href="promotions.html">Promotion engine <small>Schedule multipliers, track ROI</small></a>
+        <a href="biz-refer.html">Refer another Business <small>$200 cash + $200 LYMX</small></a>
+        <a href="content-hub.html">Customer email templates <small>Drop into Mailchimp / Klaviyo</small></a>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · Need help? <a href="mailto:sam@getlymx.com">sam@getlymx.com</a> or text 702-555-LYMX</div>
+</footer>
+
+<script>
+  function play(){
+    alert('In production: this opens the embedded video player.\n\n(For demo purposes, the transcript and chapter list show what the player would step through.)');
+  }
+
+  function setChapter(i, el){
+    document.querySelectorAll('.chapter').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+    // Highlight the corresponding transcript row
+    const stamps = ['00:00','01:10','02:30','04:18','05:50','11:00','12:48'];
+    document.querySelectorAll('.ts-row').forEach(r=>r.classList.remove('active'));
+    const target = Array.from(document.querySelectorAll('.ts-row')).find(r=>r.querySelector('.when').textContent === stamps[i]);
+    if(target){ target.classList.add('active'); target.scrollIntoView({behavior:'smooth', block:'nearest'}); }
+  }
+</script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

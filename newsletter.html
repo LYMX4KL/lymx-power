@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="The LYMX newsletter — monthly notes from Kenny on the network, the launch, and what we're learning. For people curious about LYMX who aren't (yet) customers." />
+<title>The LYMX Newsletter · Subscribe</title>
+<meta property="og:title" content="The LYMX Newsletter" />
+<meta property="og:image" content="og-image.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4af37;--radius:14px;--maxw:980px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none;font-weight:700}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--ink)}
+  .brand .dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+  .nav-links a{color:var(--ink-2);font-weight:600}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* Hero */
+  .hero{padding:60px 0 40px;text-align:center}
+  .hero .pre{display:inline-block;background:rgba(212,175,55,.18);color:#7a5e10;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:14px}
+  .hero h1{margin:0 0 12px;font-size:42px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .hero p.lede{margin:0 auto;font-size:17px;color:var(--ink-2);max-width:580px;line-height:1.55}
+
+  /* Subscribe form */
+  .signup{max-width:560px;margin:30px auto 36px;background:linear-gradient(180deg,#fff,var(--bg-soft));border:1px solid var(--line);border-radius:var(--radius);padding:30px 32px}
+  .signup .row{display:flex;gap:8px;flex-wrap:wrap}
+  .signup input[type="email"]{flex:1;min-width:220px;padding:13px 16px;border:1px solid var(--line);border-radius:11px;font-size:15px;font-family:inherit}
+  .signup input[type="email"]:focus{outline:0;border-color:var(--accent)}
+  .signup button{padding:13px 24px;background:var(--ink);color:#fff;border-radius:11px;font-weight:800;font-size:15px;border:0;cursor:pointer;font-family:inherit}
+  .signup button:hover{background:var(--accent-2)}
+  .signup .roles{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;justify-content:center}
+  .signup .role{padding:6px 12px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .signup .role.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .signup .promise{font-size:12px;color:var(--muted);margin-top:14px;text-align:center;line-height:1.5}
+
+  /* What you get */
+  .get{padding:30px 0;background:var(--bg-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .get h2{margin:0 0 24px;font-size:24px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .get-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:780px){.get-grid{grid-template-columns:1fr}}
+  .get-card{padding:22px 24px;background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
+  .get-card .ic{font-size:30px;margin-bottom:6px}
+  .get-card h3{margin:0 0 6px;font-size:16px;font-weight:800}
+  .get-card p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+
+  /* Past issues */
+  .past{padding:50px 0}
+  .past h2{margin:0 0 6px;font-size:24px;font-weight:800;letter-spacing:-.01em;text-align:center}
+  .past .lede{text-align:center;color:var(--muted);font-size:14.5px;margin:0 0 24px}
+  .issues{display:flex;flex-direction:column;gap:12px}
+  .issue{padding:18px 22px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);display:grid;grid-template-columns:80px 1fr auto;gap:16px;align-items:center;cursor:pointer}
+  @media(max-width:600px){.issue{grid-template-columns:1fr}}
+  .issue:hover{border-color:var(--ink)}
+  .issue .num{font-size:24px;font-weight:800;color:var(--gold);letter-spacing:-.02em;text-align:center}
+  @media(max-width:600px){.issue .num{font-size:14px;text-align:left}}
+  .issue h3{margin:0 0 3px;font-size:16px;font-weight:800}
+  .issue .meta{font-size:12px;color:var(--muted)}
+  .issue .read-time{font-size:11.5px;color:var(--muted);font-weight:700}
+
+  /* Frequency promise */
+  .promise-card{margin:30px auto;max-width:660px;padding:22px 26px;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;border-radius:var(--radius);text-align:center}
+  .promise-card h3{color:#f5d172;margin:0 0 8px;font-size:16px;font-weight:800}
+  .promise-card p{margin:0;color:#9aa3b0;font-size:14.5px;line-height:1.55}
+
+  /* Confirmation */
+  .confirmed{display:none;text-align:center;padding:30px 0}
+  .confirmed.on{display:block}
+  .confirmed .ic{width:74px;height:74px;border-radius:50%;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;font-size:34px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+  .confirmed h2{margin:0 0 6px;font-size:22px;font-weight:800}
+  .confirmed p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.55}
+
+  footer{background:var(--ink);color:#9aa3b0;padding:24px 0;font-size:12.5px;text-align:center;margin-top:30px}
+  footer a{color:#9aa3b0}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px;color:var(--ink)"><span class="dot"></span> LYMX</a>
+    </div>
+    <nav class="nav-links">
+      <a href="why-lymx.html">Why LYMX</a>
+      <a href="newsletter.html" style="color:var(--accent);font-weight:700">Newsletter</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="press.html">Press</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="pre">📬 Monthly newsletter</span>
+    <h1>Notes from the network</h1>
+    <p class="lede">Once a month, Kenny writes about what's working, what's broken, and what's next. Honest numbers, honest opinions. For people curious about LYMX who aren't (yet) customers.</p>
+  </div>
+</section>
+
+<!-- Subscribe form -->
+<div class="wrap">
+  <div class="signup" id="signup-card">
+    <div id="signup-form">
+      <h2 style="margin:0 0 4px;font-size:18px;font-weight:800;text-align:center">Subscribe (free)</h2>
+      <p style="margin:0 0 16px;color:var(--muted);font-size:13.5px;text-align:center">No spam. No upsells. One email per month, max.</p>
+      <div class="row">
+        <input type="email" id="email" placeholder="you@example.com" />
+        <button onclick="subscribe()">Subscribe</button>
+      </div>
+      <div class="roles" id="roles">
+        <span class="role on" data-r="curious">Just curious</span>
+        <span class="role" data-r="customer">Future customer</span>
+        <span class="role" data-r="business">Business owner</span>
+        <span class="role" data-r="press">Press</span>
+        <span class="role" data-r="investor">Investor</span>
+      </div>
+      <div class="promise">CAN-SPAM compliant. One-click unsubscribe in every issue. We never sell your email. <a href="privacy.html">Privacy</a>.</div>
+    </div>
+    <div class="confirmed" id="confirmed">
+      <div class="ic">✓</div>
+      <h2>You're in</h2>
+      <p>Confirmation email is on its way. First newsletter arrives next month — usually around the 5th.</p>
+    </div>
+  </div>
+</div>
+
+<!-- What you get -->
+<section class="get">
+  <div class="wrap">
+    <h2>What you'll get</h2>
+    <div class="get-grid">
+      <div class="get-card">
+        <div class="ic">📊</div>
+        <h3>Real network numbers</h3>
+        <p>Not vanity metrics — actual customer + Business growth, retention cohorts, what's working in customer-acquisition this month.</p>
+      </div>
+      <div class="get-card">
+        <div class="ic">🧠</div>
+        <h3>What I'm learning</h3>
+        <p>Patterns from talking to Business owners + customers each month. Useful even if you're not in the loyalty space.</p>
+      </div>
+      <div class="get-card">
+        <div class="ic">🔭</div>
+        <h3>What's next</h3>
+        <p>Roadmap updates, hiring news, expansion plans. Sometimes a peek at things we haven't shipped yet.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Past issues -->
+<section class="past">
+  <div class="wrap">
+    <h2>Past issues</h2>
+    <p class="lede">A few representative ones — mostly so you know what you're signing up for.</p>
+    <div class="issues">
+      <div class="issue">
+        <div class="num">#04</div>
+        <div>
+          <h3>April 2026: First Master Partner, $750K closed, the case for honest math</h3>
+          <div class="meta">Apr 5, 2026 · Sienna's milestone, the seed round halfway, why we publish actual breakage rates</div>
+        </div>
+        <div class="read-time">9 min read</div>
+      </div>
+      <div class="issue">
+        <div class="num">#03</div>
+        <div>
+          <h3>March 2026: 13 Launch 25 Businesses live, the cohort retention surprise</h3>
+          <div class="meta">Mar 5, 2026 · Q1 cohort 84% Day-90 retention, settlement v2 migration, what we got wrong</div>
+        </div>
+        <div class="read-time">7 min read</div>
+      </div>
+      <div class="issue">
+        <div class="num">#02</div>
+        <div>
+          <h3>February 2026: First cross-Business redemption, network effects in the wild</h3>
+          <div class="meta">Feb 5, 2026 · Maya earned at Brew &amp; Bean and spent at Oakline. The thesis is real.</div>
+        </div>
+        <div class="read-time">6 min read</div>
+      </div>
+      <div class="issue">
+        <div class="num">#01</div>
+        <div>
+          <h3>January 2026: Brew &amp; Bean signs as Launch 25 Business #2</h3>
+          <div class="meta">Jan 12, 2026 · The first conversion call, why the pitch worked, lessons for prospect #3</div>
+        </div>
+        <div class="read-time">8 min read</div>
+      </div>
+      <div class="issue">
+        <div class="num">#00</div>
+        <div>
+          <h3>December 2025: Why I'm building LYMX (the prelaunch version)</h3>
+          <div class="meta">Dec 1, 2025 · The 14-year-old idea, what changed in 2024, why local Businesses + shared loyalty</div>
+        </div>
+        <div class="read-time">11 min read</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="promise-card">
+    <h3>The frequency promise</h3>
+    <p>One newsletter per month, around the 5th. If we ever miss a month, the next one explains why. If we ever send more than one a month for any reason, we owe you 100 LYMX.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">© 2026 LYMX Power · Las Vegas, NV · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="changelog.html">Changelog (real-time)</a></div>
+</footer>
+
+<script>
+  document.querySelectorAll('#roles .role').forEach(r=>{
+    r.onclick=()=>{
+      document.querySelectorAll('#roles .role').forEach(x=>x.classList.remove('on'));
+      r.classList.add('on');
+    };
+  });
+
+  function subscribe(){
+    const email = document.getElementById('email').value.trim();
+    if(!email || !/@/.test(email)){ alert('Type your email to subscribe.'); return; }
+    document.getElementById('signup-form').style.display = 'none';
+    document.getElementById('confirmed').classList.add('on');
+  }
+</script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

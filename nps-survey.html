@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0" />
+<meta name="description" content="LYMX in-app NPS survey — quick check-in shown after a redemption to gauge customer sentiment." />
+<meta name="robots" content="noindex,nofollow" />
+<title>How are we doing? · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#000;height:100%;overflow:hidden}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+
+  /* Mock phone frame (same as wallet-tour) */
+  .phone-shell{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#1a1f27,#000)}
+  .phone{width:380px;height:760px;max-width:96vw;max-height:96vh;background:#fff;border-radius:42px;border:14px solid #0e1116;box-shadow:0 60px 120px rgba(0,0,0,.6);position:relative;overflow:hidden}
+  @media(max-width:480px){.phone{width:100vw;height:100vh;max-width:100vw;max-height:100vh;border-radius:0;border:0}}
+  .phone .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:24px;background:#0e1116;border-radius:0 0 14px 14px;z-index:5}
+  @media(max-width:480px){.phone .notch{display:none}}
+
+  /* Wallet content underneath */
+  .wallet{position:absolute;inset:0;background:var(--bg-soft);padding:46px 18px 18px}
+  .wallet .head{font-size:13px;color:var(--muted);margin-bottom:6px}
+  .wallet .name{font-size:18px;font-weight:800;margin-bottom:14px}
+  .wallet .balance{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border-radius:18px;padding:20px;margin-bottom:14px;opacity:.6}
+  .wallet .balance .lab{font-size:11px;color:#a3c5ff;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+  .wallet .balance .v{font-size:32px;font-weight:800;color:#fff}
+  .wallet .placeholder{height:80px;background:#fff;border-radius:14px;margin-bottom:8px;opacity:.5}
+
+  /* Survey overlay */
+  .ovr{position:absolute;inset:0;background:rgba(14,17,22,.55);z-index:50;backdrop-filter:blur(2px);display:flex;align-items:flex-end;justify-content:center;padding:0}
+  .sheet{width:100%;background:#fff;border-radius:24px 24px 0 0;padding:22px 22px 28px;box-shadow:0 -10px 40px rgba(0,0,0,.3);max-height:88%;overflow-y:auto;animation:slideUp .35s cubic-bezier(.2,.8,.2,1)}
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+
+  /* Header */
+  .sheet-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .sheet-h h2{margin:0;font-size:18px;font-weight:800;letter-spacing:-.01em}
+  .sheet-h .close{width:30px;height:30px;border-radius:50%;background:var(--bg-soft);border:0;font-size:16px;cursor:pointer;color:var(--ink-2)}
+
+  .step{display:none}
+  .step.on{display:block}
+
+  /* NPS scale */
+  .step-1 h3{margin:0 0 4px;font-size:16px;font-weight:800;line-height:1.3}
+  .step-1 .sub{margin:0 0 16px;color:var(--muted);font-size:13.5px}
+  .nps-scale{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin:14px 0 8px}
+  @media(max-width:380px){.nps-scale{grid-template-columns:repeat(6,1fr)}}
+  .nps-btn{aspect-ratio:1/1.2;border:1px solid var(--line);background:#fff;border-radius:9px;font-weight:800;font-size:14px;color:var(--ink-2);cursor:pointer;transition:.15s;font-family:inherit}
+  .nps-btn:hover{border-color:var(--ink);transform:translateY(-1px)}
+  .nps-btn[data-r="0"], .nps-btn[data-r="1"], .nps-btn[data-r="2"], .nps-btn[data-r="3"], .nps-btn[data-r="4"], .nps-btn[data-r="5"], .nps-btn[data-r="6"]{color:#a01644}
+  .nps-btn[data-r="7"], .nps-btn[data-r="8"]{color:#a06808}
+  .nps-btn[data-r="9"], .nps-btn[data-r="10"]{color:#0d7d51}
+  .nps-btn.on[data-r="0"], .nps-btn.on[data-r="1"], .nps-btn.on[data-r="2"], .nps-btn.on[data-r="3"], .nps-btn.on[data-r="4"], .nps-btn.on[data-r="5"], .nps-btn.on[data-r="6"]{background:rgba(224,65,62,.13);border-color:#a01644}
+  .nps-btn.on[data-r="7"], .nps-btn.on[data-r="8"]{background:rgba(240,160,32,.16);border-color:#a06808}
+  .nps-btn.on[data-r="9"], .nps-btn.on[data-r="10"]{background:rgba(19,162,107,.14);border-color:#0d7d51}
+
+  .scale-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:14px;font-weight:700}
+
+  /* Step 2: follow-up */
+  .step-2 h3{margin:0 0 4px;font-size:18px;font-weight:800;letter-spacing:-.01em}
+  .step-2 .sub{margin:0 0 16px;color:var(--muted);font-size:13.5px}
+  .step-2 textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 14px;font-size:14px;font-family:inherit;resize:vertical;min-height:90px;background:#fff;outline:none}
+  .step-2 textarea:focus{border-color:var(--accent)}
+  .step-2 .hint{font-size:11.5px;color:var(--muted);margin-top:5px}
+
+  /* Quick-pick reasons */
+  .reasons{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 14px}
+  .reason{padding:7px 12px;background:var(--bg-soft);border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .reason:hover{border-color:var(--ink)}
+  .reason.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* Buttons */
+  .actions{display:flex;gap:8px;margin-top:14px}
+  .btn{flex:1;padding:13px;border-radius:11px;font-weight:800;font-size:14.5px;cursor:pointer;border:0;font-family:inherit}
+  .btn.primary{background:var(--ink);color:#fff}
+  .btn.primary:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+
+  /* Step 3: thanks */
+  .step-3{text-align:center;padding:14px 8px}
+  .step-3 .ic{width:74px;height:74px;border-radius:50%;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;font-size:36px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+  .step-3 h3{margin:0 0 6px;font-size:20px;font-weight:800}
+  .step-3 p{margin:0 0 16px;color:var(--muted);font-size:14px;line-height:1.55}
+  .step-3 .reward{padding:14px;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border-radius:11px;margin-bottom:14px}
+  .step-3 .reward .lab{font-size:11px;color:#a3c5ff;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+  .step-3 .reward .v{font-size:24px;font-weight:800;letter-spacing:-.01em}
+
+  /* Detractor branch */
+  .detractor-msg{padding:12px 14px;background:rgba(224,65,62,.06);border:1px solid rgba(224,65,62,.2);border-radius:11px;margin-bottom:14px;font-size:13px;color:#a01644;line-height:1.5}
+  .detractor-msg strong{font-weight:800}
+
+  /* Demo info bar (only shows on screen, not in app) */
+  .info-bar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);font-size:11px;color:#5a6373;letter-spacing:.04em;text-transform:uppercase;font-weight:700;z-index:1}
+  .info-bar a{color:#9aa3b0}
+  @media(max-width:480px){.info-bar{display:none}}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<div class="phone-shell">
+  <div class="phone">
+    <div class="notch"></div>
+
+    <!-- Mock wallet behind -->
+    <div class="wallet">
+      <div class="head">After your redemption at</div>
+      <div class="name">Sage &amp; Stone Bakery</div>
+      <div class="balance">
+        <div class="lab">New balance</div>
+        <div class="v">2,210 LYMX</div>
+      </div>
+      <div class="placeholder"></div>
+      <div class="placeholder"></div>
+    </div>
+
+    <!-- Survey overlay -->
+    <div class="ovr" id="ovr">
+      <div class="sheet">
+        <div class="sheet-h">
+          <h2>Quick check-in</h2>
+          <button class="close" onclick="dismiss()">✕</button>
+        </div>
+
+        <!-- Step 1: NPS scale -->
+        <div class="step on step-1" id="step-1">
+          <h3>How likely are you to recommend LYMX to a friend?</h3>
+          <p class="sub">0 = not likely · 10 = extremely likely</p>
+          <div class="nps-scale" id="scale">
+            <button class="nps-btn" data-r="0" onclick="pickScore(0)">0</button>
+            <button class="nps-btn" data-r="1" onclick="pickScore(1)">1</button>
+            <button class="nps-btn" data-r="2" onclick="pickScore(2)">2</button>
+            <button class="nps-btn" data-r="3" onclick="pickScore(3)">3</button>
+            <button class="nps-btn" data-r="4" onclick="pickScore(4)">4</button>
+            <button class="nps-btn" data-r="5" onclick="pickScore(5)">5</button>
+            <button class="nps-btn" data-r="6" onclick="pickScore(6)">6</button>
+            <button class="nps-btn" data-r="7" onclick="pickScore(7)">7</button>
+            <button class="nps-btn" data-r="8" onclick="pickScore(8)">8</button>
+            <button class="nps-btn" data-r="9" onclick="pickScore(9)">9</button>
+            <button class="nps-btn" data-r="10" onclick="pickScore(10)">10</button>
+          </div>
+          <div class="scale-labels"><span>Not likely</span><span>Very likely</span></div>
+          <div class="actions">
+            <button class="btn ghost" onclick="dismiss()">Maybe later</button>
+          </div>
+        </div>
+
+        <!-- Step 2a: Promoter follow-up -->
+        <div class="step step-2" id="step-2">
+          <h3 id="step2-title">What made you give us a 9?</h3>
+          <p class="sub">Quick note — we read every one.</p>
+
+          <div class="reasons" id="reasons-promoter" style="display:none">
+            <div class="reason" data-r="network">Network of Businesses</div>
+            <div class="reason" data-r="value">Real, fixed value</div>
+            <div class="reason" data-r="no-app">No app to download</div>
+            <div class="reason" data-r="local">Local Businesses</div>
+            <div class="reason" data-r="referrals">The referral bonus</div>
+            <div class="reason" data-r="ease">Easy to use</div>
+          </div>
+
+          <div class="reasons" id="reasons-passive" style="display:none">
+            <div class="reason" data-r="more-biz">Need more Businesses</div>
+            <div class="reason" data-r="more-cats">Need more categories</div>
+            <div class="reason" data-r="ux">Some friction in the wallet</div>
+            <div class="reason" data-r="speed">Loading speed</div>
+            <div class="reason" data-r="discovery">Hard to find Businesses near me</div>
+          </div>
+
+          <div id="detractor-pre" style="display:none">
+            <div class="detractor-msg">
+              <strong>Sorry to hear that.</strong> Thanks for being honest. What's the main thing that's not working for you? We'll personally read this.
+            </div>
+            <div class="reasons" id="reasons-detractor">
+              <div class="reason" data-r="bug">Something broke</div>
+              <div class="reason" data-r="empty">Too few Businesses</div>
+              <div class="reason" data-r="confusing">Confusing UX</div>
+              <div class="reason" data-r="distrust">I don't trust LYMX yet</div>
+              <div class="reason" data-r="other">Other</div>
+            </div>
+          </div>
+
+          <textarea id="comment" placeholder="(Optional) Anything specific?"></textarea>
+          <p class="hint" id="comment-hint">Optional — but every word helps shape what we build next.</p>
+
+          <div class="actions">
+            <button class="btn ghost" onclick="back()">← Back</button>
+            <button class="btn primary" onclick="submit()">Submit</button>
+          </div>
+        </div>
+
+        <!-- Step 3: thanks -->
+        <div class="step step-3" id="step-3">
+          <div class="ic" id="thanks-ic">🙏</div>
+          <h3 id="thanks-title">Thanks!</h3>
+          <p id="thanks-msg">Your feedback is in. We read every response.</p>
+
+          <div class="reward" id="reward-card" style="display:none">
+            <div class="lab">+ For your time</div>
+            <div class="v">10 LYMX</div>
+          </div>
+
+          <button class="btn primary" onclick="dismiss()">Back to wallet</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="info-bar">Mock NPS overlay · shown periodically after redemption</div>
+
+<script>
+  let score = -1;
+  let category = '';
+  let selectedReason = '';
+
+  function pickScore(n){
+    score = n;
+    document.querySelectorAll('.nps-btn').forEach(b=>b.classList.remove('on'));
+    document.querySelector('.nps-btn[data-r="'+n+'"]').classList.add('on');
+
+    // Determine category
+    if(n <= 6){ category = 'detractor'; }
+    else if(n <= 8){ category = 'passive'; }
+    else { category = 'promoter'; }
+
+    // Move to step 2 after a beat
+    setTimeout(()=>{
+      document.getElementById('step-1').classList.remove('on');
+      document.getElementById('step-2').classList.add('on');
+
+      // Configure step 2 based on category
+      document.getElementById('step2-title').textContent =
+        category === 'promoter' ? 'What made you give us a ' + n + '?' :
+        category === 'passive'  ? 'What\'s holding you back from a 10?' :
+                                  'What\'s not working?';
+
+      document.getElementById('reasons-promoter').style.display = category === 'promoter' ? 'flex' : 'none';
+      document.getElementById('reasons-passive').style.display  = category === 'passive'  ? 'flex' : 'none';
+      document.getElementById('detractor-pre').style.display    = category === 'detractor'? 'block' : 'none';
+
+      // Set up reason picking
+      document.querySelectorAll('.reason').forEach(r=>{
+        r.classList.remove('on');
+        r.onclick = ()=>{
+          document.querySelectorAll('.reason').forEach(x=>x.classList.remove('on'));
+          r.classList.add('on');
+          selectedReason = r.dataset.r;
+        };
+      });
+
+      // Adjust comment hint for detractors
+      if(category === 'detractor'){
+        document.getElementById('comment-hint').innerHTML = 'Optional but really helpful — Kenny reads every detractor response personally.';
+      }
+    }, 220);
+  }
+
+  function back(){
+    document.getElementById('step-2').classList.remove('on');
+    document.getElementById('step-1').classList.add('on');
+  }
+
+  function submit(){
+    document.getElementById('step-2').classList.remove('on');
+    document.getElementById('step-3').classList.add('on');
+
+    // Tailor thanks state by category
+    if(category === 'promoter'){
+      document.getElementById('thanks-ic').textContent = '🎉';
+      document.getElementById('thanks-title').textContent = 'You made our day';
+      document.getElementById('thanks-msg').textContent = 'Genuinely. Thanks for the score. As a thank-you, we added 10 LYMX to your wallet.';
+      document.getElementById('reward-card').style.display = 'block';
+    } else if(category === 'passive'){
+      document.getElementById('thanks-ic').textContent = '🙏';
+      document.getElementById('thanks-title').textContent = 'Thanks for the feedback';
+      document.getElementById('thanks-msg').textContent = 'We\'ll keep working on getting you to a 10.';
+    } else {
+      document.getElementById('thanks-ic').textContent = '🙇';
+      document.getElementById('thanks-title').textContent = "Thanks — we're sorry";
+      document.getElementById('thanks-msg').innerHTML = "Kenny reads every detractor response personally. Expect a reply within a business day if you left an email.<br><br>If something's broken, please <a href=\"customer-dispute.html\" style=\"color:var(--accent-2);font-weight:800\">file a dispute</a> too — that goes to our support queue with the right context.";
+    }
+  }
+
+  function dismiss(){
+    document.getElementById('ovr').style.display = 'none';
+    // In production: location.href = 'customer-wallet.html';
+  }
+</script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>

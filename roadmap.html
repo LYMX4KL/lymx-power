@@ -8,9 +8,6 @@
 <meta property="og:title" content="LYMX Public Roadmap" />
 <meta property="og:description" content="What's shipped, what's now, next, and later. Vote on what we ship next." />
 <meta property="og:image" content="og-image.png" />
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1320px}
   *{box-sizing:border-box}
@@ -108,6 +105,17 @@
   .legend{padding:6px 0 14px;font-size:12px;color:var(--muted)}
   .legend strong{color:var(--ink-2);font-weight:800}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 <header class="nav">
@@ -222,7 +230,7 @@
     {id:'wallet', col:'shipped', aud:'customer', t:'Web Wallet (no app download)', d:'Customer wallet runs in the browser. Add to home screen for app-like experience. QR pay built in.', when:'Mar 2026', votes:188},
     {id:'mgc', col:'shipped', aud:'partner', t:'4-tier Partner program (MGC)', d:'Direct + G1 + G2 + G3 commission tracking. 9% / 3% / 2% / 1% override on production.', when:'Mar 2026', votes:96},
     {id:'sett', col:'shipped', aud:'business', t:'Monthly settlement engine', d:'Net of unit purchases vs buy-backs. ACH on the 5th business day. QuickBooks CSV export.', when:'Mar 2026', votes:78},
-    {id:'flywheel', col:'shipped', aud:'platform', t:'Founding 25 cohort flywheel', d:'13/25 active. Gold-frame badge, homepage feature, customer email blast at activation.', when:'Mar 2026', votes:64},
+    {id:'flywheel', col:'shipped', aud:'platform', t:'Launch 25 cohort flywheel', d:'13/25 active. Gold-frame badge, homepage feature, customer email blast at activation.', when:'Mar 2026', votes:64},
     {id:'spotlight', col:'shipped', aud:'partner', t:'Master Partner spotlight', d:'Monthly aspirational feature. April: Sienna Vega · 42 Businesses · $11,840.', when:'Apr 2026', votes:54},
     {id:'compl', col:'shipped', aud:'platform', t:'Pre-launch compliance tracker', d:'28-item NV money-transmitter / MLM / tax / privacy / insurance checklist.', when:'Apr 2026', votes:32},
 
@@ -245,11 +253,11 @@
     {id:'multi-city', col:'later', aud:'platform', t:'Multi-city rollout (5 cities)', d:'San Diego, Phoenix, Denver, Austin, Salt Lake. Phase 3 of the city playbook.', when:'2027', votes:152},
     {id:'soc2', col:'later', aud:'platform', t:'SOC 2 Type II audit', d:'Required for enterprise customers and partner integrations. Audit partner engaged.', when:'Q4 2026', votes:38},
     {id:'gift-physical', col:'later', aud:'customer', t:'Physical gift cards (printed)', d:'Premium physical card stock for corporate gifting at scale. Pairs with bulk-order.', when:'Q4 2026', votes:42},
-    {id:'public-api', col:'later', aud:'api', t:'Public API (out of beta)', d:'Open access. Today is Founding-25 only.', when:'Q4 2026', votes:64},
+    {id:'public-api', col:'later', aud:'api', t:'Public API (out of beta)', d:'Open access. Today is Launch 25 only.', when:'Q4 2026', votes:64},
     {id:'sub-acct', col:'later', aud:'business', t:'Multi-employee Business accounts', d:'Separate logins for owner, manager, cashiers — each with role-based permissions.', when:'Q4 2026', votes:78},
     {id:'family', col:'later', aud:'customer', t:'Family wallets (shared LYMX)', d:'Pool LYMX with family members. Useful for households making coordinated decisions.', when:'2027', votes:97},
     {id:'biz-mobile', col:'later', aud:'business', t:'Native iOS / Android Business app', d:'Web POS works today. Native app would add receipt printing, offline mode, hardware integrations.', when:'2027', votes:55},
-    {id:'crypto', col:'later', aud:'platform', t:'Stablecoin settlement (rails)', d:'Optional same-day settlement via stablecoins for Businesses who want faster cash flow. Not customer-facing.', when:'2027', votes:23}
+    {id:'fast-settle', col:'later', aud:'platform', t:'Same-day settlement option', d:'Optional same-day settlement for Businesses who want faster cash flow. Standard banking rails.', when:'2027', votes:23}
   ];
 
   const STORAGE_KEY = 'lymx-roadmap-votes-v1';
@@ -327,5 +335,8 @@
 
   render();
 </script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0" />
+<meta name="description" content="Write a review on LYMX. Mobile-first review entry — star rating, photo, text. Earn 50 LYMX bonus on first review per Business." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Write a review · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;max-width:480px;margin:0 auto;min-height:100vh;position:relative}
+  a{color:inherit;text-decoration:none}
+
+  /* Top */
+  .top{padding:14px 18px 12px;display:flex;align-items:center;gap:10px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  .back{width:36px;height:36px;border-radius:50%;background:var(--bg-soft);border:0;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink);text-decoration:none}
+  .top h1{margin:0;font-size:16px;font-weight:800;flex:1;text-align:center}
+  .top .skip{font-size:12.5px;color:var(--muted);font-weight:700;cursor:pointer}
+
+  .pips{display:flex;gap:6px;justify-content:center;padding:14px 18px 4px}
+  .pip{height:5px;flex:1;background:var(--line);border-radius:3px}
+  .pip.on{background:var(--accent)}
+  .pip.done{background:var(--ok)}
+
+  /* Body */
+  .body{padding:20px 18px 100px}
+
+  .step{display:none}
+  .step.on{display:block}
+
+  /* Biz card */
+  .biz-card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px 18px;display:flex;gap:12px;align-items:center;margin-bottom:18px}
+  .biz-card .av{width:48px;height:48px;border-radius:11px;background:linear-gradient(135deg,#7a4d0a,#3d2705);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0}
+  .biz-card .body{flex:1;min-width:0}
+  .biz-card .who{font-size:15px;font-weight:800}
+  .biz-card .meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+  /* Step heading */
+  .step h2{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-.01em;line-height:1.2}
+  .step .sub{margin:0 0 22px;color:var(--muted);font-size:14px}
+
+  /* Star rating */
+  .stars-pick{display:flex;justify-content:center;gap:6px;padding:10px 0 14px}
+  .star{width:46px;height:46px;font-size:32px;cursor:pointer;color:var(--line);transition:transform .1s}
+  .star:hover, .star.on{color:var(--gold);transform:scale(1.1)}
+  .rating-label{text-align:center;font-size:14px;color:var(--muted);font-weight:700;min-height:20px;margin-bottom:14px}
+  .rating-label.rated{color:var(--ink-2)}
+
+  .rating-prompt{text-align:center;color:var(--muted);font-size:13px;margin-bottom:14px}
+
+  /* Tag chips */
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .tag{padding:7px 12px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .tag:hover{border-color:var(--ink)}
+  .tag.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .tags-label{font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+
+  /* Text */
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  .field textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 14px;font-size:14.5px;font-family:inherit;resize:vertical;min-height:100px;background:#fff}
+  .field textarea:focus{outline:0;border-color:var(--accent)}
+  .field .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+
+  /* Photo upload */
+  .photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+  .photo{aspect-ratio:1/1;background:var(--bg-soft);border:1px dashed var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:24px;cursor:pointer;position:relative}
+  .photo:hover{border-color:var(--ink)}
+  .photo.filled{background:linear-gradient(135deg,#a06808,#5a3608);border:0;color:#fff}
+  .photo .rm{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(14,17,22,.6);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+  /* Bonus banner */
+  .bonus{padding:14px 16px;background:linear-gradient(135deg,rgba(245,209,114,.18),rgba(212,175,55,.1));border:1px solid rgba(212,175,55,.4);border-radius:11px;margin-bottom:18px;display:flex;gap:12px;align-items:center}
+  .bonus .ic{font-size:22px;flex-shrink:0}
+  .bonus h3{margin:0 0 2px;font-size:13.5px;font-weight:800;color:#7a5e10}
+  .bonus p{margin:0;font-size:12px;color:#7a5e10;line-height:1.4}
+
+  /* Bottom action */
+  .actions{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:#fff;border-top:1px solid var(--line);padding:12px 18px 22px;display:flex;gap:8px;z-index:10}
+  .btn{flex:1;padding:13px;border-radius:11px;font-weight:800;font-size:14.5px;cursor:pointer;border:0;text-align:center}
+  .btn.primary{background:var(--ink);color:#fff}
+  .btn.primary:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line);flex:0 0 auto;padding:13px 16px}
+
+  /* Confirmation */
+  .ok-state{text-align:center;padding:30px 16px}
+  .ok-state .check{width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;font-size:40px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+  .ok-state h2{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .ok-state p{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.55}
+  .reward-card{padding:18px;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border-radius:13px;margin-bottom:14px}
+  .reward-card .lab{font-size:11px;font-weight:800;color:#a3c5ff;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+  .reward-card .v{font-size:36px;font-weight:800;letter-spacing:-.02em}
+  .reward-card .v .small{font-size:13px;color:#a3c5ff;margin-left:4px;font-weight:700}
+  .reward-card p{margin:8px 0 0;font-size:12px;color:#a3c5ff}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+<div class="top">
+  <a class="back" href="customer-wallet.html">←</a>
+  <h1>Write a review</h1>
+  <span class="skip" onclick="if(confirm('Skip this review?'))location.href='customer-wallet.html'">Skip</span>
+</div>
+
+<div class="pips">
+  <div class="pip on" id="pip-1"></div>
+  <div class="pip" id="pip-2"></div>
+  <div class="pip" id="pip-3"></div>
+</div>
+
+<div class="body">
+  <!-- Biz being reviewed -->
+  <div class="biz-card">
+    <div class="av" id="biz-av">SS</div>
+    <div class="body">
+      <div class="who" id="biz-name">Sage &amp; Stone Bakery</div>
+      <div class="meta">Bakery · Henderson · Last visit: yesterday</div>
+    </div>
+  </div>
+
+  <!-- Step 1: Star rating -->
+  <div class="step on" id="step-1">
+    <h2>How was it?</h2>
+    <p class="sub">Tap the stars to rate. Then we'll ask what made it that way.</p>
+
+    <div class="rating-prompt">Tap to rate</div>
+    <div class="stars-pick" id="stars">
+      <div class="star" data-r="1">★</div>
+      <div class="star" data-r="2">★</div>
+      <div class="star" data-r="3">★</div>
+      <div class="star" data-r="4">★</div>
+      <div class="star" data-r="5">★</div>
+    </div>
+    <div class="rating-label" id="rating-label"></div>
+
+    <div class="bonus">
+      <div class="ic">🎁</div>
+      <div>
+        <h3>+50 LYMX bonus</h3>
+        <p>First review per Business earns 50 LYMX. Reviews must be at least 30 characters.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Tags + photo -->
+  <div class="step" id="step-2">
+    <h2>What stood out?</h2>
+    <p class="sub">Pick what fits — the more you tag, the more useful your review is to other customers.</p>
+
+    <div class="tags-label">What was great</div>
+    <div class="tags" id="positive-tags">
+      <div class="tag" data-t="quality">Quality</div>
+      <div class="tag" data-t="service">Service</div>
+      <div class="tag" data-t="atmosphere">Atmosphere</div>
+      <div class="tag" data-t="value">Value</div>
+      <div class="tag" data-t="speed">Quick service</div>
+      <div class="tag" data-t="friendly">Friendly staff</div>
+      <div class="tag" data-t="clean">Clean</div>
+      <div class="tag" data-t="kid">Kid-friendly</div>
+    </div>
+
+    <div class="tags-label" style="margin-top:10px">Photos (optional, max 3)</div>
+    <div class="photos" id="photos">
+      <div class="photo" onclick="addPhoto()">+</div>
+      <div class="photo" onclick="addPhoto()">+</div>
+      <div class="photo" onclick="addPhoto()">+</div>
+    </div>
+    <p style="font-size:11.5px;color:var(--muted);margin:0">Photos help other customers decide. Skip if you'd rather not.</p>
+  </div>
+
+  <!-- Step 3: Text -->
+  <div class="step" id="step-3">
+    <h2>Tell us more</h2>
+    <p class="sub">A few words go a long way. What made this visit memorable?</p>
+
+    <div class="field">
+      <label>Your review</label>
+      <textarea id="review-text" placeholder="The cardamom morning bun was outstanding. Riya remembered my name from last visit. Perfect Saturday morning find."></textarea>
+      <div class="hint" id="char-count">0 / minimum 30 characters · 50 LYMX bonus at 30+</div>
+    </div>
+
+    <div class="bonus" id="bonus-status">
+      <div class="ic">🎁</div>
+      <div>
+        <h3 id="bonus-title">Earn +50 LYMX</h3>
+        <p id="bonus-msg">Write 30+ characters to qualify for the first-review bonus.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation -->
+  <div class="step" id="step-4">
+    <div class="ok-state">
+      <div class="check">✓</div>
+      <h2>Review posted</h2>
+      <p>Thanks for sharing. Your review is live on Sage &amp; Stone's listing — and just earned you LYMX.</p>
+
+      <div class="reward-card">
+        <div class="lab">+ Added to your wallet</div>
+        <div class="v" id="reward-v">50<span class="small">LYMX</span></div>
+        <p>≈ $0.50 to spend at any LYMX Business</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <a class="btn primary" href="customer-wallet.html" style="text-decoration:none;line-height:21px">Back to my wallet</a>
+        <a class="btn ghost" href="founding-25-detail.html" style="text-decoration:none;line-height:21px;border:1px solid var(--line)">View my review on Sage &amp; Stone</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom action -->
+<div class="actions" id="actions">
+  <button class="btn ghost" id="back-btn" onclick="back()" style="display:none">← Back</button>
+  <button class="btn primary" id="next-btn" disabled onclick="next()">Continue →</button>
+</div>
+
+<script>
+  const RATING_LABELS = {
+    1:'😞 Not great',
+    2:'🙁 Below average',
+    3:'😐 OK',
+    4:'😊 Pretty good',
+    5:'😍 Loved it'
+  };
+
+  const state = {step:1, rating:0, tags:[], photos:0, text:''};
+
+  // Stars
+  document.querySelectorAll('#stars .star').forEach(s=>{
+    s.addEventListener('mouseenter', ()=>{
+      if(state.rating === 0) hover(parseInt(s.dataset.r,10));
+    });
+    s.onclick = ()=>{
+      state.rating = parseInt(s.dataset.r,10);
+      hover(state.rating);
+      document.getElementById('rating-label').textContent = RATING_LABELS[state.rating];
+      document.getElementById('rating-label').classList.add('rated');
+      document.getElementById('next-btn').disabled = false;
+    };
+  });
+  document.getElementById('stars').addEventListener('mouseleave', ()=>{
+    if(state.rating === 0){ hover(0); }
+    else { hover(state.rating); }
+  });
+  function hover(n){
+    document.querySelectorAll('#stars .star').forEach(s=>{
+      const r = parseInt(s.dataset.r,10);
+      s.classList.toggle('on', r <= n);
+    });
+  }
+
+  // Tags
+  document.querySelectorAll('#positive-tags .tag').forEach(t=>{
+    t.onclick = ()=>{
+      t.classList.toggle('on');
+      state.tags = Array.from(document.querySelectorAll('#positive-tags .tag.on')).map(x=>x.dataset.t);
+    };
+  });
+
+  // Photo placeholders
+  function addPhoto(){
+    const photos = document.querySelectorAll('#photos .photo');
+    for(const p of photos){
+      if(!p.classList.contains('filled')){
+        p.classList.add('filled');
+        p.innerHTML = '🥐<span class="rm" onclick="event.stopPropagation();removePhoto(this)">✕</span>';
+        state.photos++;
+        return;
+      }
+    }
+  }
+  function removePhoto(el){
+    const p = el.parentElement;
+    p.classList.remove('filled');
+    p.innerHTML = '+';
+    state.photos = Math.max(0, state.photos - 1);
+  }
+
+  // Text count
+  document.getElementById('review-text').addEventListener('input', e=>{
+    state.text = e.target.value;
+    const len = state.text.length;
+    document.getElementById('char-count').textContent = len + ' / minimum 30 characters' + (len>=30?' ✓ qualifies':'');
+    document.getElementById('next-btn').disabled = len < 30;
+
+    if(len >= 30){
+      document.getElementById('bonus-title').textContent = '+50 LYMX confirmed';
+      document.getElementById('bonus-msg').textContent = "We'll add 50 LYMX to your wallet when you submit.";
+    } else {
+      document.getElementById('bonus-title').textContent = 'Earn +50 LYMX';
+      document.getElementById('bonus-msg').textContent = 'Write 30+ characters to qualify for the first-review bonus.';
+    }
+  });
+
+  // Step navigation
+  function setStep(n){
+    state.step = n;
+    document.querySelectorAll('.step').forEach((el,i)=>{
+      el.classList.toggle('on', el.id === 'step-'+n);
+    });
+    [1,2,3].forEach(i=>{
+      const pip = document.getElementById('pip-'+i);
+      pip.classList.remove('on','done');
+      if(i<n) pip.classList.add('done');
+      if(i===n) pip.classList.add('on');
+    });
+
+    if(n === 4){ document.getElementById('actions').style.display='none'; return; }
+    document.getElementById('actions').style.display='flex';
+    document.getElementById('back-btn').style.display = n>1 ? 'flex' : 'none';
+
+    // Update next button state per step
+    if(n === 1){ document.getElementById('next-btn').disabled = state.rating === 0; document.getElementById('next-btn').textContent = 'Continue →'; }
+    else if(n === 2){ document.getElementById('next-btn').disabled = false; document.getElementById('next-btn').textContent = 'Continue →'; }
+    else if(n === 3){ document.getElementById('next-btn').disabled = state.text.length < 30; document.getElementById('next-btn').textContent = 'Post review'; }
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function next(){
+    if(state.step === 1) setStep(2);
+    else if(state.step === 2) setStep(3);
+    else if(state.step === 3) submitReview();
+  }
+  function back(){
+    if(state.step > 1) setStep(state.step - 1);
+  }
+  function submitReview(){ setStep(4); }
+
+  // URL param: ?biz=...
+  const params = new URLSearchParams(location.search);
+  if(params.get('biz')){
+    const name = params.get('biz');
+    document.getElementById('biz-name').textContent = name;
+    document.getElementById('biz-av').textContent = name.split(/\s+/).filter(w=>w!=='&amp;').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+  }
+</script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>
