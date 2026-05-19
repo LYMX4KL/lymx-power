@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX Business point-of-sale — issue LYMX rewards or accept LYMX as payment." />
 <title>POS · LYMX Business</title>
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://getlymx.com/pos" />
 <meta property="og:title" content="LYMX Business POS" />
@@ -120,6 +117,17 @@
   footer{background:var(--ink);color:#9aa3b0;padding:30px 0;font-size:13px;text-align:center;margin-top:48px}
   footer a{color:#c6ccd4;margin:0 10px}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 <header class="nav">
@@ -146,7 +154,7 @@
     <div class="page-head">
       <div>
         <h1>Point of sale</h1>
-        <p>Brew &amp; Bean Coffee · 142 W Main St</p>
+        <p id="bizSubtitle">Loading…</p>
       </div>
       <div style="text-align:right">
         <div style="font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase">Today</div>
@@ -157,22 +165,22 @@
     <div class="today-strip">
       <div class="cell">
         <div class="lab">Issued today</div>
-        <div class="v" id="t-issued">8,200 <small>LYMX</small></div>
-        <div class="sub">12 customers</div>
+        <div class="v" id="t-issued">— <small>LYMX</small></div>
+        <div class="sub" id="t-issued-sub">0 customers</div>
       </div>
       <div class="cell">
         <div class="lab">Accepted today</div>
-        <div class="v" id="t-redeemed">3,400 <small>LYMX</small></div>
-        <div class="sub">5 customers</div>
+        <div class="v" id="t-redeemed">— <small>LYMX</small></div>
+        <div class="sub" id="t-redeemed-sub">0 customers</div>
       </div>
       <div class="cell">
         <div class="lab">Net unit cost today</div>
-        <div class="v" id="t-net">$38.40</div>
-        <div class="sub">$65.60 purchases − $27.20 buy-backs</div>
+        <div class="v" id="t-net">$0.00</div>
+        <div class="sub" id="t-net-sub">Daily net of issuance vs redemption</div>
       </div>
       <div class="cell">
         <div class="lab">Customer rev today</div>
-        <div class="v">$1,640</div>
+        <div class="v" id="t-rev">$0</div>
         <div class="sub">From LYMX customers</div>
       </div>
     </div>
@@ -194,9 +202,9 @@
             <div class="r"><span id="rate-display">5</span> LYMX per $1 spent</div>
             <div class="locked" title="Set by LYMX at activation. Run promotions to multiply this rate.">🔒 Set by LYMX</div>
           </div>
-          <div style="background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.3);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-            <div><strong>2× Happy Hour active</strong> · 3:00–6:00 PM today · effective rate <strong>10 LYMX / $1</strong></div>
-            <a href="promotions.html" style="color:var(--accent-2);font-weight:700;font-size:12.5px;white-space:nowrap">Manage promos →</a>
+          <div id="activePromoBanner" style="display:none;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.3);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13px;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div id="activePromoText"><strong>Active promo</strong></div>
+            <a href="admin-promos.html" style="color:var(--accent-2);font-weight:700;font-size:12.5px;white-space:nowrap">Manage promos →</a>
           </div>
           <div class="field">
             <label>Customer phone</label>
@@ -480,5 +488,130 @@
   updateIssue();
   updateRedeem();
 </script>
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// Wire pos.html top strip + subtitle to real DB.
+(async function wirePOS(){
+  try {
+    if (!window.LYMX || !window.LYMX.requireAuth) return;
+    const user = await window.LYMX.requireAuth();
+    if (!user) return;
+    const sb = window.LYMX.sb;
+
+    // Resolve business
+    let { data: bizArr } = await sb.from('businesses')
+      .select('id, display_name, legal_name, issuance_rate')
+      .eq('owner_user_id', user.id).is('archived_at', null).limit(1);
+    if (!bizArr || !bizArr.length) {
+      try {
+        const { data: bp } = await sb.from('business_partners')
+          .select('business_id, businesses(id, display_name, legal_name, issuance_rate)')
+          .eq('user_id', user.id).limit(1);
+        if (bp && bp.length && bp[0].businesses) bizArr = [bp[0].businesses];
+      } catch (e) {}
+    }
+    if (!bizArr || !bizArr.length) {
+      const sub = document.getElementById('bizSubtitle');
+      if (sub) sub.textContent = 'No business linked to this account';
+      return;
+    }
+    const biz = bizArr[0];
+
+    // Subtitle
+    const sub = document.getElementById('bizSubtitle');
+    if (sub) sub.textContent = biz.display_name || biz.legal_name || 'Your Business';
+
+    // Rate display
+    const rateEl = document.getElementById('rate-display');
+    if (rateEl && biz.issuance_rate != null) rateEl.textContent = Number(biz.issuance_rate);
+
+    // Today window
+    const dayStart = new Date(); dayStart.setHours(0,0,0,0);
+    const dayStartIso = dayStart.toISOString();
+
+    // Issued today
+    let issuedToday = 0, issuedCustomers = new Set();
+    try {
+      const { data: iss } = await sb.from('lymx_issuances')
+        .select('amount_lymx, recipient_user_id')
+        .eq('source_business_id', biz.id).gte('created_at', dayStartIso);
+      (iss || []).forEach(i => {
+        issuedToday += Number(i.amount_lymx || 0);
+        if (i.recipient_user_id) issuedCustomers.add(i.recipient_user_id);
+      });
+    } catch (e) {}
+
+    // Redeemed today
+    let redeemedToday = 0, redeemUsd = 0, redeemCustomers = new Set();
+    try {
+      const { data: txs } = await sb.from('transactions')
+        .select('lymx_amount, usd_amount, customer_id, type')
+        .eq('business_id', biz.id).gte('created_at', dayStartIso)
+        .eq('type', 'redemption');
+      (txs || []).forEach(t => {
+        redeemedToday += Math.abs(Number(t.lymx_amount || 0));
+        redeemUsd += Number(t.usd_amount || 0);
+        if (t.customer_id) redeemCustomers.add(t.customer_id);
+      });
+    } catch (e) {}
+
+    // Customer revenue today (LYMX-tagged transactions, usd_amount)
+    let revToday = 0;
+    try {
+      const { data: txs } = await sb.from('transactions')
+        .select('usd_amount').eq('business_id', biz.id).gte('created_at', dayStartIso);
+      (txs || []).forEach(t => { revToday += Number(t.usd_amount || 0); });
+    } catch (e) {}
+
+    function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+    function fmtN(n) { return Number(n || 0).toLocaleString('en-US'); }
+    function fmtUsd(n) { return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+    const issuedEl = document.getElementById('t-issued');
+    if (issuedEl) issuedEl.innerHTML = fmtN(issuedToday) + ' <small>LYMX</small>';
+    setText('t-issued-sub', issuedCustomers.size + ' customer' + (issuedCustomers.size === 1 ? '' : 's'));
+
+    const redeemedEl = document.getElementById('t-redeemed');
+    if (redeemedEl) redeemedEl.innerHTML = fmtN(redeemedToday) + ' <small>LYMX</small>';
+    setText('t-redeemed-sub', redeemCustomers.size + ' customer' + (redeemCustomers.size === 1 ? '' : 's'));
+
+    // Net unit cost = redeemed (cost to biz) - issued-paid-via-customer-purchase (a proxy)
+    // Simplification: net = redeemed * 0.01 (face value)
+    setText('t-net', fmtUsd(redeemedToday * 0.01));
+    setText('t-net-sub', 'Approx. face value of LYMX redeemed today');
+
+    setText('t-rev', fmtUsd(revToday));
+
+    // Active promo check — see if there's a promo for this biz that's active right now
+    try {
+      const nowIso = new Date().toISOString();
+      const { data: promos } = await sb.from('promos')
+        .select('id, title, multiplier, starts_at, ends_at')
+        .eq('business_id', biz.id)
+        .lte('starts_at', nowIso).gte('ends_at', nowIso).limit(1);
+      if (promos && promos.length) {
+        const p = promos[0];
+        const banner = document.getElementById('activePromoBanner');
+        const text = document.getElementById('activePromoText');
+        if (banner && text) {
+          banner.style.display = 'flex';
+          text.innerHTML = '<strong>' + (p.title || 'Active promo') + '</strong>' + (p.multiplier ? ' · ' + p.multiplier + '× rate' : '');
+        }
+      }
+    } catch (e) {}
+
+    // Today date in top right
+    const td = document.getElementById('today-date');
+    if (td) td.textContent = new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  } catch (e) {
+    console.warn('[pos] wire failed', e);
+  }
+})();
+</script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
 </body>
 </html>
