@@ -269,21 +269,11 @@
     <aside class="side">
       <div class="panel">
         <h3>Recent exports</h3>
-        <div class="history">
-          <div class="history-row">
-            <div>
-              <div class="h">Full export — JSON</div>
-              <div class="when">Mar 12, 2026 · 412 KB</div>
-            </div>
-            <span class="pill">Done</span>
-          </div>
-          <div class="history-row">
-            <div>
-              <div class="h">Full export — CSV</div>
-              <div class="when">Jan 4, 2026 · 318 KB</div>
-            </div>
-            <span class="pill">Done</span>
-          </div>
+        <!-- 2026-05-19 #f259ae46 — was: 2 hard-coded fake export rows that misled
+             users into thinking they had old exports waiting. Now: honest empty
+             state until the export backend is wired (data_exports table + cron). -->
+        <div class="history" id="exportHistory">
+          <div style="padding:20px;text-align:center;color:#5b6472;font-size:13.5px;background:#f6f7f9;border-radius:9px"><div style="font-size:24px;margin-bottom:6px">📦</div>No exports yet. Request one above and it will appear here when ready.</div>
         </div>
         <p style="font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.5">Exports are kept available for download for 14 days. After that, generate a new one.</p>
       </div>

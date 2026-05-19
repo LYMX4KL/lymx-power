@@ -62,11 +62,13 @@
   // ---- 1) Redirect signed-in users away from signup / welcome pages -------
   function redirectIfSignedIn(payload) {
     var path = (location.pathname || '').toLowerCase();
+    // 2026-05-19 #8ae35834 — partner-signup is an APPLICATION form, not a
+    // new-account form. Signed-in customers SHOULD reach it (they apply as
+    // themselves, the form auto-uses their identity via ?ref=). Same for
+    // biz-signup. Only redirect away from pure new-account flows.
     var entryPages = [
       '/welcome.html', '/welcome',
       '/customer-signup.html', '/customer-signup',
-      '/biz-signup.html', '/biz-signup',
-      '/partner-signup.html', '/partner-signup',
       '/signup.html', '/signup'
     ];
     var isEntry = entryPages.some(function (p) { return path === p || path.endsWith(p); });

@@ -287,7 +287,8 @@
       <div class="card">
         <div class="card-h">
           <h2>Recent activity</h2>
-          <a href="#" class="more">See all →</a>
+          <!-- 2026-05-19 — was: <a href="#" class="more">See all →</a>; removed because there is no /my-activity page yet. Adding one is on the roadmap; until then a button that scrolls to top is worse than no button. -->
+          <span class="count" id="activityCount"></span>
         </div>
         <div class="activity" id="activityList">
           <div class="act-row">
@@ -387,7 +388,7 @@
       <div class="card">
         <div class="card-h">
           <h2>My recent reviews</h2>
-          <a href="#" class="more">See all (12)</a>
+          <a href="my-reviews.html" class="more">See all →</a>
         </div>
         <div class="my-reviews">
           <div class="my-rev">
@@ -427,10 +428,10 @@
           <span class="count" id="savedCount">— saved</span>
         </div>
         <div class="saved-list">
-          <a class="saved-item" href="biz-brew-and-bean.html"><div class="ic">☕</div><div style="flex:1"><div class="name">Brew &amp; Bean</div><div class="miles">0.8 mi · Café</div></div></a>
-          <a class="saved-item" href="#"><div class="ic">🍜</div><div style="flex:1"><div class="name">Oakline Kitchen</div><div class="miles">1.1 mi · Asian fusion</div></div></a>
-          <a class="saved-item" href="#"><div class="ic">💇</div><div style="flex:1"><div class="name">Avery Hair</div><div class="miles">1.4 mi · Salon</div></div></a>
-          <a class="saved-item" href="#"><div class="ic">🔌</div><div style="flex:1"><div class="name">EverGrid Hub</div><div class="miles">2.3 mi · EV charging</div></div></a>
+          <!-- 2026-05-19 #2bd15a05 — was: 4 hard-coded items with href="#" for 3 of them.
+               Now: JS fills with real saved_businesses rows (lines ~766+) or shows
+               an empty state. No more dead "Other categories take me back to dashboard". -->
+          <div style="padding:18px;text-align:center;color:#5b6472;font-size:13.5px"><div style="font-size:22px;margin-bottom:4px">📍</div>Loading your saved places…</div>
         </div>
       </div>
 
@@ -923,6 +924,23 @@ window.addEventListener('DOMContentLoaded', async function () {
         +   '</div>'
         +   (role ? '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">' + esc(role) + '</div>' : '')
         +   '<div style="font-size:13px;color:var(--ink-2);margin-bottom:10px">⏰ ' + esc(timeStr) + ' · ' + esc(String(b.duration_min || 30)) + ' min</div>'
+        +   '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">'
+        +     joinBtn
+        +     manageBtn
+        +   '</div>'
+        + '</div>';
+    }).join('');
+
+    card.style.display = 'block';
+  } catch (e) {
+    console.warn('[upcoming-calls] customer widget load failed', e);
+  }
+});
+</script>
+<script src="lymx-app.js" defer></script>
+</body>
+</html>
+ + ' · ' + esc(String(b.duration_min || 30)) + ' min</div>'
         +   '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">'
         +     joinBtn
         +     manageBtn
