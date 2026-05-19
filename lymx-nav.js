@@ -257,6 +257,57 @@
   }
 
 
+  // ---- 4b) Normalize brand-mark across every page -------------------------
+  // (Bug fix 2026-05-19 #23e34806 — Dave: "nav bar logo differs across pages
+  //  in appearance, size, or design")
+  //
+  // Root-cause fix: pages historically authored their own .brand markup —
+  // some used <img src="logo.png">, some used the text "LYMX Power", some
+  // showed a role-suffix span. Result: same brand rendered three different
+  // ways depending on which page you were on.
+  //
+  // This function rewrites every header .brand element to the canonical
+  // brand-mark: a 4-block SVG mark + the "LYMX" wordmark at a fixed size.
+  // Any existing role-tag suffix (Business / Admin / Partner) is preserved.
+  // Single source of truth — to change the logo, edit ONE function below
+  // and every page picks it up.
+  function normalizeBrand() {
+    // Skip on welcome.html — it shows the co-branded business logo dynamically
+    var path = (location.pathname || '').toLowerCase();
+    if (/welcome\.html$|^\/welcome$|biz-signup/.test(path)) return;
+
+    var brands = document.querySelectorAll('header a.brand, header .brand, header.nav a.brand, .nav-inner a.brand');
+    if (!brands.length) return;
+
+    // Canonical mark: inline SVG so it scales crisply at any size.
+    // 4 black squares in a 2x2 grid (matches the LYMX brand mark in memory).
+    var MARK_SVG =
+      '<svg class="lymx-mark" width="22" height="22" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="flex-shrink:0">' +
+      '<rect x="0"  y="0"  width="10" height="10" fill="#0e1116"/>' +
+      '<rect x="12" y="0"  width="10" height="10" fill="#0e1116"/>' +
+      '<rect x="0"  y="12" width="10" height="10" fill="#0e1116"/>' +
+      '<rect x="12" y="12" width="10" height="10" fill="#0e1116"/>' +
+      '</svg>';
+
+    brands.forEach(function (brand) {
+      if (brand.dataset.lymxBrandNormalized === '1') return;
+      // Preserve any role-tag the page added (e.g. <span class="biz-tag">Business</span>)
+      var roleTag = brand.querySelector('.biz-tag, .admin-tag, .partner-tag, .role-tag');
+      var roleHtml = roleTag ? roleTag.outerHTML : '';
+      // Replace inner with canonical: mark + LYMX wordmark + (preserved role tag)
+      brand.innerHTML = MARK_SVG +
+        '<span class="lymx-wordmark" style="font-weight:800;font-size:20px;letter-spacing:.02em;color:#0e1116">LYMX</span>' +
+        roleHtml;
+      // Apply consistent layout on the anchor itself
+      brand.style.display       = 'inline-flex';
+      brand.style.alignItems    = 'center';
+      brand.style.gap           = '8px';
+      brand.style.textDecoration = 'none';
+      brand.dataset.lymxBrandNormalized = '1';
+    });
+  }
+
+
   // ---- 5) Always-visible Sign In chip for logged-out users -----------------
   // (UX fix 2026-05-16 — Kenny: "user will not come back if they can't find login")
   // Adds a floating "Sign in" pill in the top-right corner on every page
@@ -372,6 +423,9 @@
 
   // ---- Run on DOMContentLoaded ---------------------------------------------
   function boot() {
+    // Brand normalization runs first, in both signed-in and signed-out paths.
+    // It does not depend on Supabase config, so it runs synchronously.
+    normalizeBrand();
     waitForConfig(function () {
       var payload = getAuthPayload();
       if (!payload) {
@@ -393,4 +447,4 @@
     boot();
   }
 })();
-  
+
