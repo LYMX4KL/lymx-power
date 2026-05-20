@@ -351,6 +351,20 @@
   })();
   </script>
 
+  <!-- 2026-05-20 #8ae35834 — My Sponsor strip.
+       Shows the partner who sponsored this user (sponsor_partner_id) so they
+       know who to ask for help. Hidden if no sponsor (rare). -->
+  <div id="mySponsorStrip" style="display:none;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:20px 0 0;align-items:center;gap:14px;flex-wrap:wrap">
+    <div style="flex:1;min-width:220px;display:flex;align-items:center;gap:12px">
+      <div id="mySponsorAvatar" style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;overflow:hidden;position:relative">·</div>
+      <div>
+        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700">Your Sponsor</div>
+        <div style="font-weight:800;font-size:15.5px;margin-top:1px"><span id="mySponsorName">Loading…</span> <span id="mySponsorCode" style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--muted);font-weight:600;margin-left:6px"></span></div>
+      </div>
+    </div>
+    <a id="mySponsorMsgBtn" href="my-conversations.html" style="padding:9px 16px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-weight:700;font-size:13.5px;text-decoration:none">\u{1F4AC} Message sponsor</a>
+  </div>
+
   <!-- 2026-05-20 #8ae35834 — My Activations widget.
        Shows every business that signed up using THIS partner's referral code.
        Empty state encourages first activation. Auto-loads on dashboard mount. -->
@@ -635,6 +649,37 @@
     if (emailLink) emailLink.href = 'mailto:?subject=' + encodeURIComponent('Try LYMX with me') + '&body=' + encodeURIComponent('Sign up here and we both get 100 LYMX: ' + shareUrl);
     const smsLink = document.getElementById('repShareSms');
     if (smsLink) smsLink.href = 'sms:?body=' + encodeURIComponent('Join me on LYMX — we both get 100 LYMX when you sign up: ' + shareUrl);
+
+    // 2026-05-20 #8ae35834 — Sponsor widget loader.
+    try {
+      if (partner && partner.sponsor_partner_id) {
+        const { data: sp } = await LYMX.sb.from('partners')
+          .select('id, legal_name, display_name, partner_code, contact_email, avatar_url')
+          .eq('id', partner.sponsor_partner_id).maybeSingle();
+        if (sp) {
+          const strip = document.getElementById('mySponsorStrip');
+          const av = document.getElementById('mySponsorAvatar');
+          const nm = document.getElementById('mySponsorName');
+          const cd = document.getElementById('mySponsorCode');
+          const btn = document.getElementById('mySponsorMsgBtn');
+          const sponsorName = sp.display_name || sp.legal_name || 'Sponsor';
+          const initials = sponsorName.split(/\s+/).filter(Boolean).slice(0,2).map(s => (s[0]||'').toUpperCase()).join('') || 'S';
+          if (av) {
+            if (sp.avatar_url) {
+              av.innerHTML = '<img src="' + sp.avatar_url + '" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">';
+            } else {
+              av.textContent = initials;
+            }
+          }
+          if (nm) nm.textContent = sponsorName;
+          if (cd && sp.partner_code) cd.textContent = '\u00b7 ' + sp.partner_code;
+          if (btn && sp.contact_email) {
+            btn.href = 'my-conversations.html?to=' + encodeURIComponent(sp.contact_email) + '&name=' + encodeURIComponent(sponsorName);
+          }
+          if (strip) strip.style.display = 'flex';
+        }
+      }
+    } catch (e) { console.warn('[rep-dashboard] sponsor widget load failed', e); }
 
     // 2026-05-20 #8ae35834 — My Activations loader.
     // Pulls businesses signed_up_by_partner_id = partner.id.
