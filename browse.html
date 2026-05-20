@@ -216,7 +216,7 @@
       </a>
 
       <!-- Customer signup invite -->
-      <a class="biz-card" href="customer-signup.html" style="grid-template-columns:1fr;background:#fff;border:1px solid var(--line);padding:24px;text-align:center;margin-top:8px">
+      <a class="biz-card guest-only" id="guestCustomerInvite" href="customer-signup.html" style="grid-template-columns:1fr;background:#fff;border:1px solid var(--line);padding:24px;text-align:center;margin-top:8px">
         <div class="body" style="align-items:center;text-align:center">
           <div style="font-size:36px;margin-bottom:6px">👋</div>
           <h3 style="font-size:17px">Want to know when Businesses go live near you?</h3>
@@ -226,7 +226,7 @@
       </a>
 
       <!-- Partner invite -->
-      <a class="biz-card" href="partner-signup.html" style="grid-template-columns:1fr;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;padding:24px;text-align:center;margin-top:8px">
+      <a class="biz-card guest-only" id="guestPartnerInvite" href="partner-signup.html" style="grid-template-columns:1fr;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;padding:24px;text-align:center;margin-top:8px">
         <div class="body" style="align-items:center;text-align:center;color:#fff">
           <div style="font-size:36px;margin-bottom:6px">🤝</div>
           <h3 style="font-size:17px;color:#fff">Or help us bring Businesses on — earn $750 per activation</h3>
@@ -467,6 +467,21 @@ window.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+</script>
+<!-- 2026-05-19 #2df1dc73 -->
+<style>.guest-only.lymx-signed-in{display:none}</style>
+<script>
+(async function hideGuestInvitesIfSignedIn() {
+  for (let i = 0; i < 30; i++) {
+    if (window.LYMX && window.LYMX.getSession) break;
+    await new Promise(r => setTimeout(r, 100));
+  }
+  if (!window.LYMX || !window.LYMX.getSession) return;
+  try {
+    const s = await window.LYMX.getSession();
+    if (s) document.querySelectorAll('.guest-only').forEach(el => el.classList.add('lymx-signed-in'));
+  } catch (e) {}
+})();
 </script>
 </body>
 </html>
