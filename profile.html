@@ -171,6 +171,16 @@
     </div>
   </div>
 
+  <!-- 2026-05-20 #97508680 - partners look here for the video-call / booking-link setup. Surface team-calendar.html clearly for partners + businesses. Hidden for plain customers. -->
+  <div class="card" id="calendarSetupCard" style="display:none">
+    <h2>📅 Your booking calendar &amp; video room</h2>
+    <p style="font-size:13.5px;color:var(--muted);margin:0 0 14px">Let clients book directly with you. Set your weekly availability, pick a handle for your public booking page (<code style="background:#f6f7f9;padding:1px 5px;border-radius:4px;font-size:12px">getlymx.com/c/yourname</code>), and every confirmed booking auto-creates a Daily.co video room you can share.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a class="btn btn-primary" href="team-calendar.html">Set up my calendar →</a>
+      <a class="btn btn-ghost" href="my-bookings.html">View my bookings</a>
+    </div>
+  </div>
+
   <div class="card" id="signupSrcCard" style="display:none">
     <h2>Signup details</h2>
     <div style="font-size:14px;color:var(--muted)" id="signupSrcText">—</div>
@@ -225,7 +235,18 @@ async function detectRole() {
 }
 
 function fillForm() {
-  if (!myRow) return;
+  // 2026-05-20 #20dafa0b - for orphaned users (auth.users exists but no row in
+  // partners/customers/businesses) myRow is null and the old code bailed out,
+  // leaving every field blank — including email. That looked like "email field
+  // is missing." Now: still populate email from myUser.email even with no row,
+  // so the form is usable on first save. Save flow already handles upsert.
+  if (!myRow) {
+    if (myUser && myUser.email) {
+      const emailEl = document.getElementById('email');
+      if (emailEl && !emailEl.value) emailEl.value = myUser.email;
+    }
+    return;
+  }
   const r = myRow;
   if (myRole === 'partner') {
     const name = r.legal_name || '';
@@ -406,6 +427,10 @@ function renderHeader() {
   const pill = document.getElementById('rolePill');
   pill.textContent = myRole;
   pill.className = 'role-pill ' + myRole;
+
+  // 2026-05-20 #97508680 - show calendar setup card for partners + businesses
+  const calCard = document.getElementById('calendarSetupCard');
+  if (calCard) calCard.style.display = (myRole === 'partner' || myRole === 'business') ? '' : 'none';
 
   const dashHref = myRole === 'partner' ? '/rep-dashboard.html'
                  : myRole === 'business' ? '/biz-dashboard.html'

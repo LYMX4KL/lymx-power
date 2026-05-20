@@ -191,17 +191,19 @@
     var s = document.createElement('style');
     s.id = 'lymxLangChipStyles';
     s.textContent = ''
-      + '#lymxLangChip{position:fixed;top:14px;right:120px;z-index:99991;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}'
+      /* 2026-05-20 #2b323e35 - right:120px overlapped Sign-out/My-account buttons on pages with full nav-cta (Help + Sign out + avatar). Bump to 220 so chip sits to the LEFT of the entire right-side cluster, not on top of it. Avatar dropdowns stay clear. */
+      + '#lymxLangChip{position:fixed;top:14px;right:220px;z-index:99991;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}'
       + '#lymxLangChipBtn{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;background:rgba(255,255,255,.94);color:#0e1116;border:1px solid #e6e8ec;border-radius:999px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(14,17,22,.08);backdrop-filter:saturate(140%) blur(8px)}'
       + '#lymxLangChipBtn:hover{background:#fff;border-color:#cfd6e0}'
-      + '#lymxLangMenu{position:fixed;top:48px;right:120px;z-index:99992;background:#fff;border:1px solid #e6e8ec;border-radius:10px;box-shadow:0 8px 24px rgba(14,17,22,.14);min-width:170px;padding:6px;display:none}'
+      + '#lymxLangMenu{position:fixed;top:48px;right:220px;z-index:99992;background:#fff;border:1px solid #e6e8ec;border-radius:10px;box-shadow:0 8px 24px rgba(14,17,22,.14);min-width:170px;padding:6px;display:none}'
       + '#lymxLangMenu.open{display:block}'
       + '#lymxLangMenu button{display:flex;width:100%;align-items:center;gap:10px;padding:8px 11px;background:transparent;border:0;border-radius:7px;cursor:pointer;font:600 13.5px/1.2 inherit;color:#1a1f27;text-align:left}'
       + '#lymxLangMenu button:hover{background:#eef4ff}'
       + '#lymxLangMenu button.active{background:#0e1116;color:#fff}'
       + '#lymxLangMenu .flag{width:22px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;background:#f3f4f6;border-radius:4px;color:#374151}'
       + '#lymxLangMenu button.active .flag{background:rgba(255,255,255,.18);color:#fff}'
-      + '@media (max-width:880px){#lymxLangChip{right:78px}#lymxLangMenu{right:78px}}';
+      /* On mobile the full nav-cta collapses to hamburger + avatar only, so 140px is enough to clear */
+      + '@media (max-width:880px){#lymxLangChip{right:140px}#lymxLangMenu{right:140px}}';
     document.head.appendChild(s);
   }
 
