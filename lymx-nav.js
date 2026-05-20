@@ -245,10 +245,27 @@
         img.src = url;
         img.alt = '';
         img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;pointer-events:none';
-        // Hide the text initials behind the image
-        Array.prototype.forEach.call(el.childNodes, function (n) {
-          if (n.nodeType === 3) { n.textContent = ''; }
-        });
+        // 2026-05-20 #a461daa8 - hide the text initials only AFTER the image
+        // actually loads. If it fails (deleted from storage / RLS denial /
+        // network), restore the initials so we never show a broken-img icon.
+        var origText = el.textContent;
+        img.onload = function () {
+          Array.prototype.forEach.call(el.childNodes, function (n) {
+            if (n.nodeType === 3) { n.textContent = ''; }
+          });
+        };
+        img.onerror = function () {
+          img.remove();
+          el.dataset.lymxAvImg = '';
+          // Purge stale cache so we don't keep retrying a dead URL.
+          try {
+            Object.keys(sessionStorage || {}).forEach(function (k) {
+              if (k.indexOf('LYMX_avatar_url_') === 0 && sessionStorage.getItem(k) === url) {
+                sessionStorage.removeItem(k);
+              }
+            });
+          } catch (e) { console.warn('[lymx-nav] cache purge after onerror', e); }
+        };
         el.appendChild(img);
       });
     });
@@ -615,9 +632,23 @@
     var img = document.createElement('img');
     img.src = url; img.alt = '';
     img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;pointer-events:none';
-    Array.prototype.forEach.call(el.childNodes, function (n) {
-      if (n.nodeType === 3) { n.textContent = ''; }
-    });
+    // 2026-05-20 #a461daa8 - only hide initials AFTER successful load.
+    img.onload = function () {
+      Array.prototype.forEach.call(el.childNodes, function (n) {
+        if (n.nodeType === 3) { n.textContent = ''; }
+      });
+    };
+    img.onerror = function () {
+      img.remove();
+      el.dataset.lymxAvImg = '';
+      try {
+        Object.keys(sessionStorage || {}).forEach(function (k) {
+          if (k.indexOf('LYMX_avatar_url_') === 0 && sessionStorage.getItem(k) === url) {
+            sessionStorage.removeItem(k);
+          }
+        });
+      } catch (e) { console.warn('[lymx-nav] cache purge after onerror', e); }
+    };
     el.appendChild(img);
   };
 

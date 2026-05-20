@@ -524,6 +524,15 @@ function paintAvatar(url) {
     img.style.display = 'block';
     ini.style.display = 'none';
     rm.style.display  = 'inline-block';
+    // 2026-05-20 #a461daa8 - if the image fails (deleted / network), fall
+    // back to initials instead of showing a broken-image icon.
+    img.onerror = function () {
+      img.style.display = 'none';
+      ini.style.display = 'inline';
+      rm.style.display  = 'none';
+      var status = document.getElementById('avatarStatus');
+      if (status) status.textContent = 'Could not load photo. Re-upload to fix.';
+    };
   } else {
     img.style.display = 'none';
     ini.style.display = 'inline';
