@@ -575,6 +575,18 @@
       const nm = profile.querySelector('.nm'); if (nm) nm.textContent = custName;
       const em = profile.querySelector('.em'); if (em) em.textContent = (phoneDisplay ? phoneDisplay + ' · ' : '') + custEmail;
     }
+    // 2026-05-20 #a461daa8 — also paint uploaded photo over the initials.
+    // Uses the global helper exposed by lymx-nav.js.
+    try {
+      if (window.LYMX && window.LYMX.lookupAvatarUrl && window.LYMX.paintAvatarOn && user && user.id) {
+        const avEl = profile && profile.querySelector('.av');
+        if (avEl) {
+          window.LYMX.lookupAvatarUrl(user.id).then(function (url) {
+            if (url) window.LYMX.paintAvatarOn(avEl, url);
+          }).catch(function (e) { console.warn('[settings] avatar paint failed', e); });
+        }
+      }
+    } catch (e) { console.warn('[settings] avatar wire-up failed', e); }
     // 2026-05-20 #1fc6adc8 — only show "Phone verified" badge when Supabase
     // auth has actually confirmed the phone (phone_confirmed_at is set).
     // Customers who only typed a phone in this form get NO verification yet —

@@ -602,10 +602,28 @@
     });
   }
 
+  // 2026-05-20 #a461daa8 — expose avatar helpers so pages with custom avatar
+  // markup (.profile .av, .av-lg, custom IDs) can paint without re-fetching.
+  window.LYMX = window.LYMX || {};
+  window.LYMX.lookupAvatarUrl = lookupAvatarUrl;
+  window.LYMX.paintAvatarOn = function (el, url) {
+    if (!el || !url) return;
+    if (el.dataset.lymxAvImg === '1') return;
+    el.dataset.lymxAvImg = '1';
+    el.style.position = el.style.position || 'relative';
+    el.style.overflow = el.style.overflow || 'hidden';
+    var img = document.createElement('img');
+    img.src = url; img.alt = '';
+    img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;pointer-events:none';
+    Array.prototype.forEach.call(el.childNodes, function (n) {
+      if (n.nodeType === 3) { n.textContent = ''; }
+    });
+    el.appendChild(img);
+  };
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {
     boot();
   }
 })();
-
