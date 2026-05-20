@@ -616,7 +616,35 @@
       wireAvatar(payload);
       enforceAdminGuard(payload);
       injectMobileHamburger();
+      hideGetAppInPwa();
     });
+  }
+
+  // 2026-05-20 #d220c320 — When the page is running as an installed PWA
+  // (standalone display-mode on Android/Chrome, navigator.standalone on iOS),
+  // hide every "Get the app" / "Install app" CTA across the site. Per-page
+  // detection existed on customer-dashboard but nowhere else, so the same
+  // user kept seeing the same prompt on every other page.
+  function hideGetAppInPwa() {
+    try {
+      var standalone =
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+        window.navigator.standalone === true ||
+        (document.referrer && document.referrer.indexOf('android-app://') === 0);
+      if (!standalone) return;
+      var selectors = ['#getAppCta', '#navGetApp', '.get-app-cta', '.install-app-cta', '[data-lymx-hide-in-pwa]'];
+      selectors.forEach(function (sel) {
+        document.querySelectorAll(sel).forEach(function (el) { el.style.display = 'none'; });
+      });
+      // Catch-all by visible text — covers any "Get the app" / "Install app"
+      // anchor that's not tagged with one of the IDs/classes above.
+      var anchors = document.querySelectorAll('a, button');
+      var rx = /^(?:\s*)?(get the app|install (?:the )?app|download (?:the )?app)(?:\s*)?$/i;
+      anchors.forEach(function (a) {
+        var txt = (a.textContent || '').trim();
+        if (rx.test(txt)) a.style.display = 'none';
+      });
+    } catch (e) { console.warn('[lymx-nav] PWA hide-getapp failed', e); }
   }
 
   // 2026-05-20 #a461daa8 — expose avatar helpers so pages with custom avatar

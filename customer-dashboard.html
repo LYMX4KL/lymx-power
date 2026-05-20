@@ -505,12 +505,18 @@
       const { data: custRow } = await LYMX.sb.from('customers').select('display_name').eq('user_id', user.id).maybeSingle();
       displayName = (custRow && custRow.display_name) || '';
     } catch (e) { console.warn('[customer-dashboard.html:L507] silent error', e); }
-    const name = displayName
+    // 2026-05-20 #043b71d3 — only greet by name when we actually have one.
+    // Email-local-part (e.g. "raemorz15") is not a name; falling back to it
+    // made the greeting feel clinical/automated per Rae's feedback.
+    const realName = displayName
       || (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name))
-      || (user.email ? user.email.split('@')[0] : 'there');
-    const firstName = name.split(/[\s.]+/)[0];
+      || '';
+    const name = realName || (user.email ? user.email.split('@')[0] : 'there');
+    const firstName = realName ? realName.split(/[\s.]+/)[0] : '';
     const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || (name[0] || 'U').toUpperCase();
-    document.getElementById('welcomeHeading').textContent = 'Welcome back, ' + firstName + ' 👋';
+    document.getElementById('welcomeHeading').textContent = firstName
+      ? ('Welcome back, ' + firstName + ' 👋')
+      : 'Welcome back! 👋';
     const av = document.getElementById('avatarNav');
     if (av) { av.textContent = initials; av.title = name; }
 
