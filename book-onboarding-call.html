@@ -66,8 +66,20 @@
     <img src="logo.png" alt="LYMX" />
   </div>
 
-  <h1>Book a 1-on-1 onboarding call</h1>
-  <p class="lede">Free 30-minute walkthrough. Bring your questions about joining LYMX as a Business — we'll get you set up live on the call.</p>
+  <h1 id="pageTitle">Book a 1-on-1 onboarding call</h1>
+  <p class="lede" id="pageLede">Free 30-minute walkthrough. Bring your questions about joining LYMX as a Business — we'll get you set up live on the call.</p>
+  <script>
+    // 2026-05-20 #8ae35834 — When ?for=partner is in the URL, reframe the
+    // copy + the form for new Partners (vs Businesses). New onboarding panel
+    // on rep-dashboard.html points partners here with ?for=partner.
+    (function () {
+      var forParam = new URLSearchParams(location.search).get('for');
+      if (forParam !== 'partner') return;
+      document.getElementById('pageTitle').textContent = 'Book your Partner onboarding call';
+      document.getElementById('pageLede').textContent = 'Free 30-minute 1-on-1 with the LYMX team. We help you build your local prospect list, walk through the pitch, and answer anything about commissions or compliance.';
+      document.title = 'Book Partner onboarding · LYMX';
+    })();
+  </script>
 
   <div id="hostCard" class="card">
     <div class="host-row">
@@ -102,9 +114,18 @@
           <input type="email" id="fEmail" required autocomplete="email" />
         </div>
         <div class="field">
-          <label>Business name</label>
+          <label id="fBizLabel">Business name</label>
           <input type="text" id="fBiz" autocomplete="organization" placeholder="If you're calling about a specific business" />
         </div>
+        <script>
+          // Relabel for partners — they don't have a Business name to give
+          if (new URLSearchParams(location.search).get('for') === 'partner') {
+            var lbl = document.getElementById('fBizLabel');
+            var inp = document.getElementById('fBiz');
+            if (lbl) lbl.textContent = 'Company / role (optional)';
+            if (inp) inp.placeholder = 'e.g. Real estate agent, Insurance broker, Local marketer';
+          }
+        </script>
         <div class="field">
           <label>Phone (optional)</label>
           <input type="tel" id="fPhone" autocomplete="tel" />
@@ -317,8 +338,7 @@
 
       document.getElementById('detailsArea').style.display = 'none';
       const slotStr = selectedSlot.start.toLocaleString([], { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-      document.getElementById('successDetail').textContent = 'See you on ' + slotStr + '. ' + host.display_name + ' will email you the meeting link before the call.';
-      document.getElementById('successArea').style.display = 'block';
+      document.getElementById('successDetail').textContent = 'See you on ' + slotStr + '. ' + host.display_name + ' will ema      document.getElementById('successArea').style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
       alert(e.message);
