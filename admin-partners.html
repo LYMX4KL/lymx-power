@@ -171,6 +171,30 @@
       </table>
     </div>
   </div>
+
+  <!-- 2026-05-20 #8ae35834 - Pending settlements (mark paid one-by-one) -->
+  <div class="card" id="settlementsCard">
+    <div class="card-h">
+      <h2>Pending settlements</h2>
+      <div class="meta" id="settlementsMeta">Loading...</div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Partner</th>
+            <th>Period</th>
+            <th class="num">Amount</th>
+            <th>Created</th>
+            <th style="text-align:right">Action</th>
+          </tr>
+        </thead>
+        <tbody id="settlementsBody">
+          <tr><td colspan="5" class="empty">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </main>
 
 <div class="toast" id="toast"></div>
@@ -380,19 +404,15 @@
     else if (act === 'reactivate') reactivatePartner(id);
   });
 
-  // 2026-05-20 #8ae35834 - Run settlement button.
+  // 2026-05-20 #8ae35834 - Run settlement batch.
   document.getElementById('runSettlementBtn').addEventListener('click', async () => {
-    if (!confirm('Run a settlement batch for ALL partners with unsettled commissions?\n\nThis bundles every pending commission into a settlements row marked status="pending" - admin still needs to mark each one paid before payment actually flows. Each partner gets a "your payout is queued" email.')) return;
+    if (!confirm('Run a settlement batch for ALL partners with unsettled commissions?\n\nBundles every pending commission into a settlements row marked status="pending". Each partner gets a "your payout is queued" email. You still need to mark each paid via the Pending Settlements table below.')) return;
     const btn = document.getElementById('runSettlementBtn');
     btn.disabled = true; btn.textContent = 'Running...';
     try {
       const r = await fetch(cfg.SUPABASE_URL + '/functions/v1/partner-settlement-run', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + (await sb.auth.getSession()).data.session.access_token,
-          'apikey': cfg.SUPABASE_ANON_KEY,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (await sb.auth.getSession()).data.session.access_token, 'apikey': cfg.SUPABASE_ANON_KEY },
         body: JSON.stringify({})
       });
       const result = await r.json();
@@ -400,7 +420,7 @@
       const runs = result.runs || [];
       const totalAmt = (result.total_amount_queued || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       toast('Queued ' + runs.length + ' settlements totaling $' + totalAmt + '.');
-      await loadPartners();
+      await loadPartners(); await loadSettlements();
     } catch (e) {
       console.warn('[admin-partners] settlement run failed', e);
       toast('Failed: ' + (e.message || 'unknown'), 'err');
@@ -409,7 +429,93 @@
     }
   });
 
+  // 2026-05-20 #8ae35834 - Pending settlements loader.
+  async function loadSettlements() {
+    const body = document.getElementById('settlementsBody');
+    const meta = document.getElementById('settlementsMeta');
+    if (!body) return;
+    try {
+      const { data: sets, error } = await sb.from('settlements')
+        .select('id, partner_id, period_start, period_end, total_amount, status, created_at')
+        .eq('status', 'pending').order('created_at', { ascending: false }).limit(100);
+      if (error) throw error;
+      const rows = sets || [];
+      if (!rows.length) {
+        if (meta) meta.textContent = 'No pending settlements';
+        body.innerHTML = '<tr><td colspan="5" class="empty">All settlements are paid. Run a new batch above when ready.</td></tr>';
+        return;
+      }
+      const pids = [...new Set(rows.map(r => r.partner_id))];
+      const { data: parts } = await sb.from('partners').select('id, legal_name, display_name, partner_code, contact_email').in('id', pids);
+      const byId = {};
+      (parts || []).forEach(p => { byId[p.id] = p; });
+      const totalAmt = rows.reduce((s, r) => s + Number(r.total_amount || 0), 0);
+      if (meta) meta.textContent = rows.length + ' pending - $' + totalAmt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' total';
+      function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+      body.innerHTML = rows.map(r => {
+        const p = byId[r.partner_id] || {};
+        const name = p.display_name || p.legal_name || 'Unknown';
+        const amt = '$' + Number(r.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return '<tr>' +
+          '<td><div style="font-weight:700">' + esc(name) + '</div><div style="font-size:11.5px;color:var(--muted);font-family:ui-monospace,Menlo,monospace">' + esc(p.partner_code || '-') + '</div></td>' +
+          '<td>' + r.period_start + ' to ' + r.period_end + '</td>' +
+          '<td class="num" style="font-weight:800;font-size:15px;color:var(--ok)">' + amt + '</td>' +
+          '<td>' + new Date(r.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' }) + '</td>' +
+          '<td style="text-align:right"><button class="btn btn-ok" data-pay-id="' + r.id + '" data-partner-id="' + r.partner_id + '" data-amt="' + r.total_amount + '">Mark paid</button></td>' +
+          '</tr>';
+      }).join('');
+    } catch (e) {
+      console.warn('[admin-partners] settlements load failed', e);
+      if (meta) meta.textContent = '';
+      body.innerHTML = '<tr><td colspan="5" class="empty">Could not load: ' + (e.message || 'unknown') + '</td></tr>';
+    }
+  }
+
+  async function markSettlementPaid(settlementId, partnerId, amt) {
+    const method = prompt('Payment method? (ach / paypal / check / venmo / wire / other)', 'ach');
+    if (!method) return;
+    const ref = prompt('Payment reference number (e.g. ACH trace #, PayPal txn id)? Leave blank if not yet.', '') || null;
+    try {
+      const { error } = await sb.from('settlements').update({
+        status: 'paid', paid_at: new Date().toISOString(), payment_method: method, payment_ref: ref,
+      }).eq('id', settlementId);
+      if (error) throw error;
+      toast('Marked paid: $' + Number(amt).toLocaleString('en-US', { minimumFractionDigits: 2 }));
+      try {
+        const { data: p } = await sb.from('partners').select('legal_name, display_name, contact_email').eq('id', partnerId).maybeSingle();
+        if (p && p.contact_email) {
+          const firstName = (p.display_name || p.legal_name || 'Partner').split(/\s+/)[0];
+          const fmt = '$' + Number(amt).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const accessToken = (await sb.auth.getSession()).data.session.access_token;
+          await fetch(cfg.SUPABASE_URL + '/functions/v1/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken, 'apikey': cfg.SUPABASE_ANON_KEY },
+            body: JSON.stringify({
+              recipient_email: p.contact_email,
+              subject: 'Your LYMX payout is on the way - ' + fmt,
+              body_text: 'Hi ' + firstName + ',\n\nYour LYMX payout of ' + fmt + ' has been marked paid.\n\nPayment method: ' + method + (ref ? '\nReference: ' + ref : '') + '\n\nIf the funds dont land in 1-3 business days, reply to this email and we will look it up.\n\nSee the full ledger on your Payouts page:\nhttps://getlymx.com/partner-payouts.html\n\n- The LYMX team',
+              kind: 'partner_settlement_paid',
+              channel: 'transactional',
+            })
+          });
+        }
+      } catch (em) { console.warn('[settlement-paid] notify failed', em); }
+      await loadSettlements();
+    } catch (e) {
+      console.warn('[mark-paid] failed', e);
+      toast('Failed: ' + (e.message || 'unknown'), 'err');
+    }
+  }
+
+  if (document.getElementById('settlementsBody')) {
+    document.getElementById('settlementsBody').addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-pay-id]'); if (!btn) return;
+      markSettlementPaid(btn.dataset.payId, btn.dataset.partnerId, btn.dataset.amt);
+    });
+  }
+
   await loadPartners();
+  await loadSettlements();
 })();
 </script>
 </body>
