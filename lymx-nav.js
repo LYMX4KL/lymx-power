@@ -240,10 +240,20 @@
     var rect = anchor.getBoundingClientRect();
     menu.style.top = (rect.bottom + window.scrollY + 6) + 'px';
     menu.style.left = (Math.max(8, rect.right - 200) + window.scrollX) + 'px';
-    // 2026-05-20 #9553efbe (consistent icons) + #ee79d549 (Settings & Privacy entry)
-    // All menu items now have a leading text icon (▦ 📬 👤 ⚙️ 📋 ↩) so none feels random.
-    menu.innerHTML =
-      '<div style="padding:8px 10px;color:#5b6472;font-size:11.5px;border-bottom:1px solid #f1f3f6;margin-bottom:4px">' + (email.replace(/[<>]/g, '')) + '</div>' +
+    // 2026-05-20 #9553efbe (consistent icons) + #ee79d549 (Settings & Privacy entry) + #a461daa8 (name + mini-avatar header instead of bare email)
+    var displayName = (payload && (payload.display_name || payload.name)) || '';
+    var seedId = (payload && payload.id) || email || 'lymx';
+    var ini = computeInitials(displayName, email);
+    var bg = avatarGradient(seedId);
+    var headerHtml =
+      '<div style="display:flex;align-items:center;gap:10px;padding:9px 10px 11px;border-bottom:1px solid #f1f3f6;margin-bottom:4px">' +
+        '<div style="width:32px;height:32px;border-radius:50%;background:' + bg + ';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0">' + ini + '</div>' +
+        '<div style="min-width:0;flex:1">' +
+          (displayName ? '<div style="font-weight:700;font-size:13.5px;color:#0e1116;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + displayName.replace(/[<>]/g,'') + '</div>' : '') +
+          '<div style="color:#5b6472;font-size:11.5px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:' + (displayName ? '2px' : '0') + '">' + (email.replace(/[<>]/g, '')) + '</div>' +
+        '</div>' +
+      '</div>';
+    menu.innerHTML = headerHtml +
       '<a href="' + dest + '" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none" data-i18n="nav.dashboard">▦ Dashboard</a>' +
       '<a href="my-conversations.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none">📬 <span data-i18n="nav.messages">Messages</span> <span id="lymxNavMsgBadge" style="display:none;background:#0a84ff;color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;margin-left:4px"></span></a>' +
       '<a href="profile.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none" data-i18n="nav.profile">👤 Profile</a>' +

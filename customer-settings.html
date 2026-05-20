@@ -243,11 +243,12 @@
     <!-- Refer / earn -->
     <div class="sec-h">Refer &amp; earn</div>
     <div class="group">
+      <!-- 2026-05-20 #e52cad90 - was hard-coded "SARAH-7K9F". Now wired to the real partner_code (for partners) or U-XXXXXX fallback (customers). -->
       <a class="item" href="customer-referral.html">
         <div class="ic">🎁</div>
         <div class="body">
           <div class="h">Your referral code</div>
-          <div class="d code">SARAH-7K9F</div>
+          <div class="d code" id="settingsRefCode">—</div>
         </div>
         <div class="v">200 LYMX</div>
         <div class="arrow">›</div>
@@ -477,6 +478,18 @@
       // 2026-05-19 — expose customer id + preferences so togglePref() can write them
       window.__lymxCustId = cArr[0].id;
       window.__lymxPrefs  = cArr[0].preferences || {};
+    }
+
+    // 2026-05-20 #e52cad90 - wire the referral code to real partner_code / U- fallback
+    try {
+      const { data: prow } = await sb.from('partners')
+        .select('partner_code').eq('user_id', user.id).maybeSingle();
+      const code = (prow && prow.partner_code) || ('U-' + user.id.slice(0, 6).toUpperCase());
+      const el = document.getElementById('settingsRefCode');
+      if (el) el.textContent = code;
+    } catch (e) {
+      const el = document.getElementById('settingsRefCode');
+      if (el) el.textContent = 'U-' + user.id.slice(0, 6).toUpperCase();
     }
 
     // 2026-05-19 — Apply saved preferences to the toggle UI.

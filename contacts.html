@@ -365,6 +365,10 @@ function setStatus(elId, text, kind) {
 
 // ---- CSV parser (handles Google/Outlook/Apple exports + simple paste) ----
 function parseCSV(text) {
+  // 2026-05-20 #9e161f6c - strip UTF-8 BOM (﻿) that Google/Excel often prepend.
+  // Without this, the FIRST column header would be "﻿Name" instead of "Name",
+  // breaking every header-detection regex and silently making the import "do nothing".
+  if (text && text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
   const rows = []; let row = []; let field = ''; let inQuotes = false;
   for (let i = 0; i < text.length; i++) {
     const c = text[i], n = text[i+1];
@@ -638,10 +642,24 @@ document.getElementById('csvFile').addEventListener('change', e => {
   if (e.target.files[0]) handleCSVFile(e.target.files[0]);
 });
 function handleCSVFile(file) {
+  // 2026-05-20 #9e161f6c - clearer status messages so users know what happened
+  setStatus('importStatus', `Reading "${file.name}"…`, 'info');
   const reader = new FileReader();
   reader.onload = ev => {
-    pendingImport = contactsFromCSV(ev.target.result);
-    setStatus('importStatus', `Found ${pendingImport.length} contacts in "${file.name}". Click Import to save.`, 'ok');
+    try {
+      pendingImport = contactsFromCSV(ev.target.result);
+      if (pendingImport.length === 0) {
+        setStatus('importStatus', `Couldn't find any contacts in "${file.name}". If this is a Google CSV, make sure you exported as "Google CSV" (not "Outlook CSV" or "vCard"). If it's still failing, paste a few rows into the box below as a fallback.`, 'err');
+      } else {
+        setStatus('importStatus', `Found ${pendingImport.length} contacts in "${file.name}". Click Import to save.`, 'ok');
+      }
+    } catch (err) {
+      console.error('CSV import error', err);
+      setStatus('importStatus', `Could not parse "${file.name}" — ${err.message || 'unknown error'}. Try a different export.`, 'err');
+    }
+  };
+  reader.onerror = () => {
+    setStatus('importStatus', `Could not read "${file.name}" — your browser may have blocked file access.`, 'err');
   };
   reader.readAsText(file);
 }
