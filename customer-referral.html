@@ -44,11 +44,16 @@
   .hero h2 .gold{color:#f5d172}
   .hero p{font-size:13.5px;color:#c6ccd4;margin:8px 0 0;position:relative;line-height:1.55}
 
-  /* Referral code box */
-  .code-box{margin:0 22px 18px;background:#fff;border:2px dashed var(--accent);border-radius:14px;padding:14px;text-align:center}
-  .code-box .lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:5px}
-  .code-box .code{font-family:'SF Mono',Menlo,monospace;font-size:24px;font-weight:800;color:var(--ink);letter-spacing:.06em;margin-bottom:5px}
-  .code-box .url{font-size:12px;color:var(--accent-2);word-break:break-all}
+  /* Referral code box (2026-05-20 #a8a50030 - whole box now copies on tap, raw URL removed) */
+  .code-box{margin:0 22px 18px;background:#fff;border:2px dashed var(--accent);border-radius:14px;padding:18px 14px;text-align:center;cursor:pointer;transition:.12s;position:relative}
+  .code-box:hover{border-color:var(--accent-2);background:#f6fbff}
+  .code-box:active{transform:scale(.98)}
+  .code-box .lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6px}
+  .code-box .code{font-family:'SF Mono',Menlo,monospace;font-size:26px;font-weight:800;color:var(--ink);letter-spacing:.06em;margin-bottom:4px}
+  .code-box .hint{font-size:12px;color:var(--accent-2);font-weight:600;margin-top:4px}
+  .code-box .toast{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--ink);color:#fff;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s}
+  .code-box.copied .toast{opacity:1}
+  .code-box.copied .code,.code-box.copied .lab,.code-box.copied .hint{opacity:.15}
 
   /* Share buttons */
   .share-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 22px;margin-bottom:18px}
@@ -140,10 +145,12 @@
     <p>For every friend who joins LYMX through your link AND makes their first purchase at any LYMX Business.</p>
   </div>
 
-  <div class="code-box">
+  <!-- 2026-05-20 #a8a50030 - whole box copies on tap, raw URL removed (was visual clutter under the bold code) -->
+  <div class="code-box" id="codeBox" role="button" tabindex="0" aria-label="Tap to copy your referral code">
     <div class="lab">Your referral code</div>
-    <div class="code">SARAH-7K9F</div>
-    <div class="url">getlymx.com/join?ref=SARAH-7K9F</div>
+    <div class="code" id="codeText">SARAH-7K9F</div>
+    <div class="hint">Tap anywhere in this box to copy</div>
+    <div class="toast">Copied!</div>
   </div>
 
   <div class="share-big">
@@ -302,6 +309,30 @@
       ()=> showToast('Tap to copy: ' + url)
     );
   }
+
+  // 2026-05-20 #a8a50030 - tap-the-whole-box to copy referral code
+  (function wireCodeBox(){
+    var box = document.getElementById('codeBox');
+    if (!box) return;
+    function copyCodeBox(){
+      var code = (document.getElementById('codeText')?.textContent || '').trim();
+      if (!code) return;
+      var url = 'https://getlymx.com/join?ref=' + code;
+      var doFlash = function(){
+        box.classList.add('copied');
+        setTimeout(function(){ box.classList.remove('copied'); }, 1100);
+      };
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(doFlash, doFlash);
+      } else {
+        doFlash();
+      }
+    }
+    box.addEventListener('click', copyCodeBox);
+    box.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copyCodeBox(); }
+    });
+  })();
 
   const msg = "I've been earning LYMX at local Las Vegas spots — coffee, dinner, errands, all of it. Use my link to get 100 LYMX free: https://getlymx.com/join?ref=SARAH-7K9F";
 

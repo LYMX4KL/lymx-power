@@ -100,6 +100,11 @@
   .reply.system{background:#eef0f4;border-left:3px solid var(--muted);color:var(--muted);font-style:italic}
   .reply .who{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;color:var(--muted)}
   .reply .when{font-size:11px;color:var(--muted);margin-top:6px}
+
+  /* 2026-05-20 #9e26d4a3 - ticket number chip */
+  .ticket-no{display:inline-block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;background:#f6f7f9;border:1px solid #e6e8ec;color:#5b6472;padding:1px 7px;border-radius:6px;letter-spacing:.04em;font-weight:600;margin-right:6px;cursor:pointer;transition:.12s}
+  .ticket-no:hover{background:#fff;border-color:#0a84ff;color:#0a84ff}
+  .ticket-no.copied{background:#0a84ff;color:#fff;border-color:#0a84ff}
 </style>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
@@ -288,6 +293,7 @@ function renderList() {
     html +=   '<div class="hdr"><div>';
     html +=     '<div class="subj">' + escapeHtml(subject) + '</div>';
     html +=     '<div class="meta">';
+    html +=       '<span class="ticket-no" data-copy="#' + i.id.slice(0,8) + '" title="Click to copy ticket number">#' + i.id.slice(0,8) + '</span>';
     html +=       '<span class="pill ' + i.type + '">' + (TYPE_EMOJI[i.type] || '') + ' ' + t + '</span> ';
     html +=       '<span class="pill status-' + displayStatus + '">' + displayStatusLabel + '</span>';
     html +=       ' · ' + fmtAgo(i.created_at);
@@ -509,6 +515,19 @@ document.getElementById('newFeedbackFab').addEventListener('click', function() {
 </script>
 
 <script src="lymx-feedback.js" defer></script>
-<script src="lymx-app.js" defer></script>
+<script src="lymx-app.js" defer>
+  // 2026-05-20 #9e26d4a3 - click ticket-no chip to copy
+  document.addEventListener('click', function(ev){
+    var el = ev.target.closest('.ticket-no');
+    if (!el) return;
+    var val = el.getAttribute('data-copy') || el.textContent.trim();
+    if (!val) return;
+    if (navigator.clipboard) navigator.clipboard.writeText(val).catch(function(){});
+    el.classList.add('copied');
+    var orig = el.textContent;
+    el.textContent = 'Copied!';
+    setTimeout(function(){ el.classList.remove('copied'); el.textContent = orig; }, 900);
+  });
+</script>
 </body>
 </html>

@@ -288,17 +288,50 @@
   async function openNewModal(){ $("newModal").classList.add("show"); }
   function closeNewModal(){ $("newModal").classList.remove("show"); $("newBanner").innerHTML=""; $("newSubject").value=""; $("newBody").value=""; }
 
+  // 2026-05-20 #d73dd292 — autocomplete upgrade per Rae: avatar circle + bold
+  // highlight of matched substring + hover styling so the dropdown feels like
+  // a real picker not a blind text box.
+  function avatarHex(name){
+    // Deterministic color from name
+    var h = 0; var s = String(name || '');
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+    var palette = ['#0a84ff','#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#0891b2','#ef4444'];
+    return palette[Math.abs(h) % palette.length];
+  }
+  function boldMatch(text, query){
+    if (!query) return esc(text);
+    var safeT = esc(text);
+    var safeQ = esc(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return safeT.replace(new RegExp('(' + safeQ + ')', 'gi'), '<strong style="color:#0a84ff">$1</strong>');
+  }
+  let _bizSearchTimer = null;
   async function searchBusinesses(q){
+    clearTimeout(_bizSearchTimer);
     if (!q || q.length < 2) { $("newBizSuggestions").style.display="none"; return; }
-    const { data } = await sb.from("businesses").select("id, display_name, legal_name").or(`display_name.ilike.%${q}%,legal_name.ilike.%${q}%`).limit(8);
-    if (!data || data.length===0) { $("newBizSuggestions").innerHTML='<div style="padding:8px;color:var(--muted);font-size:13px">No matches</div>'; $("newBizSuggestions").style.display="block"; return; }
-    $("newBizSuggestions").innerHTML = data.map(b => `<div data-id="${b.id}" data-name="${esc(b.display_name||b.legal_name)}" style="padding:8px 11px;cursor:pointer;border-bottom:1px solid #f3f4f6;font-size:13.5px">${esc(b.display_name||b.legal_name)}</div>`).join("");
-    $("newBizSuggestions").style.display="block";
-    document.querySelectorAll("#newBizSuggestions div[data-id]").forEach(el => el.addEventListener("click", () => {
-      $("newBizPicker").value = el.dataset.name;
-      $("newBizPicker").dataset.selectedId = el.dataset.id;
-      $("newBizSuggestions").style.display="none";
-    }));
+    _bizSearchTimer = setTimeout(async () => {
+      const { data } = await sb.from("businesses").select("id, display_name, legal_name").or(`display_name.ilike.%${q}%,legal_name.ilike.%${q}%`).limit(8);
+      const wrap = $("newBizSuggestions");
+      if (!data || data.length===0) {
+        wrap.innerHTML='<div style="padding:10px 12px;color:var(--muted);font-size:13px;text-align:center">No matches — try a different keyword</div>';
+        wrap.style.display="block";
+        return;
+      }
+      wrap.innerHTML = data.map(b => {
+        var name = b.display_name || b.legal_name || '';
+        var color = avatarHex(name);
+        var ini = initials(name);
+        return '<div data-id="' + b.id + '" data-name="' + esc(name) + '" style="padding:9px 11px;cursor:pointer;border-bottom:1px solid #f3f4f6;font-size:13.5px;display:flex;align-items:center;gap:10px;transition:background .1s" onmouseover="this.style.background=\'#f6f7f9\'" onmouseout="this.style.background=\'\'">' +
+          '<div style="width:30px;height:30px;border-radius:50%;background:' + color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11.5px;flex-shrink:0">' + ini + '</div>' +
+          '<div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + boldMatch(name, q) + '</div>' +
+        '</div>';
+      }).join("");
+      wrap.style.display="block";
+      wrap.querySelectorAll('div[data-id]').forEach(el => el.addEventListener("click", () => {
+        $("newBizPicker").value = el.dataset.name;
+        $("newBizPicker").dataset.selectedId = el.dataset.id;
+        $("newBizSuggestions").style.display="none";
+      }));
+    }, 140);
   }
 
   async function submitNew(){

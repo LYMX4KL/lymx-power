@@ -337,6 +337,11 @@ async function save() {
     };
   }
 
+  // 2026-05-20 #812b1f13 — was using raw POST without on_conflict, which made
+  // PostgREST treat the call as a plain INSERT. For orphaned customers (auth
+  // user exists but no customers row), the INSERT could 409 on a subsequent
+  // save (after another flow created the row). Switching to supabase-js
+  // upsert with onConflict matches the working pattern in customer-settings.html.
   let r;
   if (myRow) {
     // Update existing row
@@ -346,12 +351,17 @@ async function save() {
       body: JSON.stringify(patch),
     });
   } else {
-    // Upsert (customer-only case)
-    r = await authedFetch('/rest/v1/' + table, {
-      method: 'POST',
-      headers: { 'Prefer': 'return=minimal,resolution=merge-duplicates' },
-      body: JSON.stringify(patch),
-    });
+    // Upsert via supabase-js (customer-only path; partners/businesses always
+    // have a row created at signup so this branch is customers-only in practice)
+    try {
+      const sb = (window.LYMX && window.LYMX.sb) || (window.supabase && window.supabase.createClient && window.supabase.createClient(SUPABASE_URL, ANON));
+      const { error: upsertErr } = await sb
+        .from(table)
+        .upsert(patch, { onConflict: key });
+      r = { ok: !upsertErr, text: async () => upsertErr ? (upsertErr.message || String(upsertErr)) : '' };
+    } catch (upsertEx) {
+      r = { ok: false, text: async () => 'Upsert exception: ' + (upsertEx.message || String(upsertEx)) };
+    }
   }
 
   // 2026-05-19 #9e47a789 — Email change flow. If the email input differs from
