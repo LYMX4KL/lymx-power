@@ -113,7 +113,7 @@
       <input id="nl_phone" type="tel" placeholder="Phone (optional)" />
       <input id="nl_company" placeholder="Company (optional)" />
       <input id="nl_role" placeholder="Role title (optional)" />
-      <input id="nl_source" placeholder="Source (cold-call, referral, etc.)" />
+      <input id="nl_source" placeholder="How you found them (e.g. cold walk-in, friend referral)" />
     </div>
     <textarea id="nl_notes" placeholder="Private notes (optional)" style="width:100%;margin-top:8px;min-height:60px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px"></textarea>
     <div style="display:flex;gap:8px;margin-top:10px">
@@ -428,13 +428,23 @@
         if (!name || !email) { bannerNL(t('leads.new_lead_need_name_email','Name and email are required'), 'err'); return; }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { bannerNL(t('leads.new_lead_bad_email','Email looks invalid'), 'err'); return; }
         save.disabled = true; save.textContent = t('leads.new_lead_saving','Saving…');
+        // 2026-05-20 — `source` is an enum (booking|referral|website|admin|import|other).
+        // Map whatever Helen types into a valid enum value + keep her raw text in source_detail.
+        const rawSrc = $('nl_source').value.trim();
+        const rawSrcLower = rawSrc.toLowerCase();
+        let srcEnum = 'other';
+        if (/referral|partner|friend/.test(rawSrcLower)) srcEnum = 'referral';
+        else if (/website|web|landing/.test(rawSrcLower)) srcEnum = 'website';
+        else if (/booking|call/.test(rawSrcLower)) srcEnum = 'booking';
+        else if (/import|csv/.test(rawSrcLower)) srcEnum = 'import';
         const payload = {
           full_name: name,
           email: email,
           phone: $('nl_phone').value.trim() || null,
           company: $('nl_company').value.trim() || null,
           role_title: $('nl_role').value.trim() || null,
-          source: ($('nl_source').value.trim() || 'manual').slice(0, 80),
+          source: srcEnum,
+          source_detail: rawSrc || null,
           notes: $('nl_notes').value.trim() || null,
           stage: 'new',
           owner_user_id: me?.id || null,
