@@ -87,6 +87,17 @@
     </div>
   </div>
 
+  <!-- 2026-05-19 #f202a838 - was: only customer-style ref link, which led to confusion when partners shared it expecting a Partner-recruit signup. Now: separate "Recruit a Partner" section with a partner-signup link. -->
+  <div class="card">
+    <h2>Want to recruit Partners, not just Customers?</h2>
+    <p style="color:var(--muted);font-size:14px;margin:0 0 10px">The link above is for inviting CUSTOMERS (you both earn 100 LYMX). To recruit someone as a PARTNER (they earn $750 per Business activation + 11% recurring) use this link instead:</p>
+    <div class="link-row">
+      <input id="partnerLink" type="text" readonly value="Loading..." onclick="this.select()" />
+      <button class="btn btn-primary" id="partnerCopyBtn" type="button">📋 Copy</button>
+    </div>
+    <p style="color:var(--muted);font-size:12.5px;margin:10px 0 0">Anyone who signs up using this link lands on the Partner application form with you pre-attributed as their sponsor.</p>
+  </div>
+
   <div class="card">
     <h2 style="margin-bottom:6px">Track your invites</h2>
     <p style="margin:0;color:var(--muted);font-size:14px">Your live referral progress is below. For the full breakdown, open your <a href="customer-dashboard.html" style="color:var(--accent-2);font-weight:600">Dashboard</a>.</p>
@@ -129,6 +140,14 @@ async function boot() {
   const link = 'https://getlymx.com/welcome.html?ref=' + encodeURIComponent(code);
   document.getElementById('pcode').textContent = code;
   document.getElementById('refLink').value = link;
+  // 2026-05-19 #f202a838 - partner-recruiting link
+  const partnerLink = 'https://getlymx.com/partner-signup.html?ref=' + encodeURIComponent(code);
+  const pl = document.getElementById('partnerLink'); if (pl) pl.value = partnerLink;
+  const pcb = document.getElementById('partnerCopyBtn');
+  if (pcb) pcb.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(partnerLink); pcb.textContent = '✓ Copied'; setTimeout(() => { pcb.textContent = '📋 Copy'; }, 1500); }
+    catch (e) { pl.select(); document.execCommand('copy'); }
+  });
   // Wire share buttons
   const subject = encodeURIComponent('Join me on LYMX');
   const bodyTxt = encodeURIComponent('Hey - I am using LYMX (cash-back rewards for local businesses). Sign up with my link and we both get 100 LYMX: ' + link);

@@ -563,6 +563,8 @@
         const v = inputs[0] && inputs[0].value || '';
         if (cArr && cArr.length) {
           await sb.from('customers').update({ display_name: v.trim() }).eq('id', cArr[0].id);
+        } else {
+          await sb.from('customers').upsert({ user_id: user.id, display_name: v.trim(), email: user.email }, { onConflict: 'user_id' });
         }
       });
     };
@@ -576,9 +578,13 @@
       patchSave(async () => {
         const v = inputs[0] && inputs[0].value || '';
         const cleaned = v.replace(/[^\d+]/g, '');
+        // 2026-05-19 #e35100e9 - was: update only, silently no-op'd if customer had no row yet. Now: upsert so a row is created if missing.
         if (cArr && cArr.length) {
           await sb.from('customers').update({ phone: cleaned }).eq('id', cArr[0].id);
+        } else {
+          await sb.from('customers').upsert({ user_id: user.id, phone: cleaned, email: user.email }, { onConflict: 'user_id' });
         }
+        window.showToast && window.showToast('Phone saved', true);
       });
     };
 
@@ -592,6 +598,8 @@
         const v = inputs[0] && inputs[0].value || '';
         if (cArr && cArr.length) {
           await sb.from('customers').update({ email: v.trim() }).eq('id', cArr[0].id);
+        } else {
+          await sb.from('customers').upsert({ user_id: user.id, email: v.trim() }, { onConflict: 'user_id' });
         }
         // Trigger auth email-change flow so the login email actually changes
         try {
