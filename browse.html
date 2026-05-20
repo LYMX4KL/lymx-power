@@ -68,6 +68,21 @@
   .filters .sort{margin-left:auto;display:flex;align-items:center;gap:8px}
   .filters select{padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px;color:var(--ink);outline:0;font-family:inherit}
 
+  /* 2026-05-20 Rae cluster - browse UX polish */
+  .search-hint{max-width:680px;margin:8px auto 0;padding:0 4px;font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .search-hint::before{content:"\1F4A1";font-size:13px;opacity:.7}
+  .quick-suggest{max-width:680px;margin:10px auto 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .quick-suggest .qlabel{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-right:2px}
+  .quick-suggest a{padding:5px 11px;border:1px solid var(--line);background:#fff;border-radius:99px;font-size:12.5px;color:var(--ink-2);font-weight:600;cursor:pointer;transition:.12s}
+  .quick-suggest a:hover{border-color:var(--ink);background:var(--bg-soft)}
+  .filters.collapsed .chip.cat-hidden{display:none}
+  .filters .more-filters-toggle{padding:6px 11px;border:1px dashed var(--line);background:transparent;border-radius:99px;cursor:pointer;font-size:12px;color:var(--accent-2);font-weight:700;font-family:inherit}
+  .filters .more-filters-toggle:hover{border-color:var(--accent);background:rgba(10,132,255,.04)}
+  .filters.collapsed .chip.adv-hidden,.filters.collapsed .lbl.adv-hidden,.filters.collapsed .sep.adv-hidden{display:none}
+  .empty-encourage{padding:0 24px 14px;text-align:center}
+  .empty-encourage .ee-h{font-size:15.5px;font-weight:800;color:var(--ink);margin:4px 0 2px}
+  .empty-encourage .ee-p{font-size:13px;color:var(--muted);margin:0 auto 8px;max-width:380px;line-height:1.45}
+
   /* Layout */
   .page{display:grid;grid-template-columns:560px 1fr;gap:0;height:calc(100vh - 175px);min-height:520px}
   @media(max-width:1024px){.page{grid-template-columns:1fr;height:auto}}
@@ -143,26 +158,36 @@
   </div>
 </header>
 
-<!-- Top search -->
+<!-- Top search (2026-05-20 #a6aeee16 + #7795d910 - added helper hint + quick suggestions) -->
 <div class="top-search">
   <div class="wrap">
-    <form class="search-row" onsubmit="event.preventDefault();">
+    <form class="search-row" onsubmit="event.preventDefault();handleSearchSubmit();">
       <div class="field">
         <span class="ic">🔍</span>
-        <div class="col"><label>Find</label><input type="text" placeholder="Coffee, real estate, EV charger…" value="" /></div>
+        <div class="col"><label>Find</label><input id="searchFind" type="text" placeholder="Coffee, real estate, EV charger…" value="" autocomplete="off" /></div>
       </div>
       <div class="field">
         <span class="ic">📍</span>
-        <div class="col"><label>Near</label><input type="text" value="Las Vegas, NV" /></div>
+        <div class="col"><label>Near</label><input id="searchNear" type="text" value="Las Vegas, NV" /></div>
       </div>
       <button class="btn-search" type="submit">Search LYMX</button>
     </form>
+    <div class="search-hint">Start by searching a category or location — or pick a popular search below.</div>
+    <div class="quick-suggest" id="quickSuggest">
+      <span class="qlabel">Popular:</span>
+      <a data-q="Coffee">Coffee</a>
+      <a data-q="Dining">Dining</a>
+      <a data-q="EV charging">EV charging</a>
+      <a data-q="Salons">Salons</a>
+      <a data-q="Real estate">Real estate</a>
+      <a data-q="Fitness">Fitness</a>
+    </div>
   </div>
 </div>
 
-<!-- Filters -->
+<!-- Filters (2026-05-20 #b32cdf60 - collapsed extras behind "More filters" toggle) -->
 <div class="wrap">
-  <div class="filters" id="filters">
+  <div class="filters collapsed" id="filters">
     <span class="lbl">Category</span>
     <span class="chip cat-on" data-cat="All">All</span>
     <span class="chip" data-cat="Dining">Dining</span>
@@ -170,20 +195,21 @@
     <span class="chip" data-cat="Real Estate">Real Estate</span>
     <span class="chip" data-cat="EV Charging">EV Charging</span>
     <span class="chip" data-cat="Home Services">Home Services</span>
-    <span class="chip" data-cat="Beauty &amp; Spa">Beauty &amp; Spa</span>
-    <span class="chip" data-cat="Fitness">Fitness</span>
-    <span class="chip" data-cat="Pets">Pets</span>
-    <span class="chip" data-cat="Finance">Finance</span>
-    <span class="chip" data-cat="Automotive">Automotive</span>
-    <span class="chip" data-cat="Education">Education</span>
-    <span class="sep"></span>
-    <span class="lbl">Price</span>
-    <span class="chip" data-price="$">$</span>
-    <span class="chip" data-price="$$">$$</span>
-    <span class="chip" data-price="$$$">$$$</span>
-    <span class="sep"></span>
-    <span class="chip" data-flag="rating">★ 4.0+</span>
-    <span class="chip" data-flag="open">Open now</span>
+    <span class="chip cat-hidden" data-cat="Beauty &amp; Spa">Beauty &amp; Spa</span>
+    <span class="chip cat-hidden" data-cat="Fitness">Fitness</span>
+    <span class="chip cat-hidden" data-cat="Pets">Pets</span>
+    <span class="chip cat-hidden" data-cat="Finance">Finance</span>
+    <span class="chip cat-hidden" data-cat="Automotive">Automotive</span>
+    <span class="chip cat-hidden" data-cat="Education">Education</span>
+    <button type="button" class="more-filters-toggle" id="moreFiltersBtn" aria-expanded="false">+ More filters</button>
+    <span class="sep adv-hidden"></span>
+    <span class="lbl adv-hidden">Price</span>
+    <span class="chip adv-hidden" data-price="$">$</span>
+    <span class="chip adv-hidden" data-price="$$">$$</span>
+    <span class="chip adv-hidden" data-price="$$$">$$$</span>
+    <span class="sep adv-hidden"></span>
+    <span class="chip adv-hidden" data-flag="rating">★ 4.0+</span>
+    <span class="chip adv-hidden" data-flag="open">Open now</span>
     <div class="sort">
       <span class="lbl">Sort by</span>
       <select id="sortBy">
@@ -201,7 +227,12 @@
 <div class="page">
   <!-- Results list -->
   <div class="results">
-    <div class="meta-line"><strong id="resultCount">No Businesses live yet</strong> in <span id="locLabel">your area</span></div>
+    <div class="meta-line"><strong id="resultCount">Building the first cohort</strong> in <span id="locLabel">your area</span></div>
+    <!-- 2026-05-20 #56f14ce6 - reframe empty state to value + exploration -->
+    <div class="empty-encourage">
+      <div class="ee-h">We're onboarding the first 25 Founding Businesses now</div>
+      <div class="ee-p">Save your spot, request a business to join, or apply to be one of the first.</div>
+    </div>
     <div class="biz-list" id="bizList">
 
       <!-- Founding launch — be the first Business -->
@@ -482,6 +513,44 @@ window.addEventListener('DOMContentLoaded', function () {
     if (s) document.querySelectorAll('.guest-only').forEach(el => el.classList.add('lymx-signed-in'));
   } catch (e) {}
 })();
+</script>
+<script>
+// 2026-05-20 Rae cluster - browse UX wiring (#a6aeee16 #7795d910 #b32cdf60)
+(function(){
+  // Quick-suggest pills - fill the search box and submit
+  var qs = document.getElementById('quickSuggest');
+  var findInput = document.getElementById('searchFind');
+  if (qs && findInput) {
+    qs.addEventListener('click', function(e){
+      var a = e.target.closest('a[data-q]');
+      if (!a) return;
+      e.preventDefault();
+      findInput.value = a.getAttribute('data-q') || '';
+      try { handleSearchSubmit(); } catch(_) {}
+      findInput.focus();
+    });
+  }
+  // More-filters toggle
+  var mfBtn = document.getElementById('moreFiltersBtn');
+  var filters = document.getElementById('filters');
+  if (mfBtn && filters) {
+    mfBtn.addEventListener('click', function(){
+      var collapsed = filters.classList.toggle('collapsed') === false ? false : filters.classList.contains('collapsed');
+      // After toggle, state is: collapsed CLASS may have been added back. Read fresh:
+      var nowCollapsed = filters.classList.contains('collapsed');
+      mfBtn.textContent = nowCollapsed ? '+ More filters' : '− Fewer filters';
+      mfBtn.setAttribute('aria-expanded', String(!nowCollapsed));
+    });
+  }
+})();
+// Search submit handler (no-op shim if not provided elsewhere)
+if (typeof handleSearchSubmit !== 'function') {
+  window.handleSearchSubmit = function(){
+    // Future: trigger the live search/filter pipeline. For now, results
+    // render from the existing biz-list which is static during launch.
+    return false;
+  };
+}
 </script>
 </body>
 </html>
