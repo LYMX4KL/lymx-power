@@ -363,8 +363,8 @@ async function save() {
   var emailChangeNotice = '';
   if (newEmail && newEmail.toLowerCase() !== (myUser.email || '').toLowerCase()) {
     try {
-      if (window.LYMX && window.LYMX.client && window.LYMX.client.auth) {
-        var au = await window.LYMX.client.auth.updateUser({ email: newEmail });
+      if (window.LYMX && window.LYMX.sb && window.LYMX.sb.auth) {
+        var au = await window.LYMX.sb.auth.updateUser({ email: newEmail });
         if (au && au.error) {
           emailChangeNotice = ' (email change failed: ' + (au.error.message || 'unknown') + ')';
         } else {
@@ -465,8 +465,8 @@ window.addEventListener('DOMContentLoaded', function () {
     if (a.length < 8) { msg.textContent = 'Password must be at least 8 characters.'; msg.style.color = '#B91C1C'; return; }
     if (a !== b) { msg.textContent = 'Passwords do not match.'; msg.style.color = '#B91C1C'; return; }
     try {
-      if (!window.LYMX || !window.LYMX.client) { msg.textContent = 'Sign in first.'; msg.style.color = '#B91C1C'; return; }
-      var r = await window.LYMX.client.auth.updateUser({ password: a });
+      if (!window.LYMX || !window.LYMX.sb) { msg.textContent = 'Sign in first.'; msg.style.color = '#B91C1C'; return; }
+      var r = await window.LYMX.sb.auth.updateUser({ password: a });
       if (r.error) { msg.textContent = r.error.message; msg.style.color = '#B91C1C'; return; }
       msg.textContent = '✓ Password updated. Use the new one next time you sign in.';
       msg.style.color = '#13a26b';
