@@ -125,6 +125,32 @@ serve(async (req) => {
     }
 
     // ---------------------------------------------------------------------
+    // 2026-05-20 #8ae35834 — Fallback: route reply to whoever last texted them.
+    // When a cold prospect (not in any of our tables) texts back, sender
+    // lookup fails. Find the most recent outbound SMS to this number, and
+    // anchor the conversation to THAT sender's partner row.
+    // ---------------------------------------------------------------------
+    if (!subjectId) {
+        try {
+            const { data: prevOut } = await supabase.from("sms_messages")
+                .select("sender_user_id")
+                .or(`to_number.eq.${from},to_number.eq.${fromClean}`)
+                .eq("direction", "outbound")
+                .order("created_at", { ascending: false })
+                .limit(1).maybeSingle();
+            if (prevOut && prevOut.sender_user_id) {
+                const { data: senderPart } = await supabase.from("partners")
+                    .select("id").eq("user_id", prevOut.sender_user_id).maybeSingle();
+                if (senderPart) {
+                    subjectType = "partner";
+                    subjectId = senderPart.id;
+                    senderType = "inbound_unknown";
+                }
+            }
+        } catch (e) { console.warn("[sms-inbound] prev-outbound lookup failed", e); }
+    }
+
+    // ---------------------------------------------------------------------
     // Find or create conversation (sticky to most recent open thread)
     // ---------------------------------------------------------------------
     let conversationId: string | null = null;
