@@ -456,8 +456,26 @@ function renderHeader() {
     banner.innerHTML = '<strong>✓ Verified.</strong> You can ' + (myRole === 'partner' ? 'receive commission payouts' : 'spend your LYMX at any partner business') + '.';
     banner.style.display = '';
   } else {
+    // 2026-05-20 #2f5bc26b - Rae's "What does this mean?" - the explanation was already inline but easy to miss. Now: clearer line breaks, bulleted what-you-can-do-now / what-changes-after, plus an explicit "What is verification?" tooltip.
     banner.className = 'verification-banner unverified';
-    banner.innerHTML = '<strong>Pending verification.</strong> Your account is active but ' + (myRole === 'partner' ? 'commission payouts' : 'LYMX spending at businesses') + ' is held until LYMX admin reviews. Usually within 24 hrs.';
+    const holdLabel = myRole === 'partner' ? 'commission payouts' : 'LYMX spending at businesses';
+    banner.innerHTML =
+      '<div style="display:flex;gap:10px;align-items:flex-start">'
+      + '<div style="font-size:20px;flex-shrink:0">⏳</div>'
+      + '<div>'
+      +   '<strong style="display:block;margin-bottom:4px">Your account is pending verification</strong>'
+      +   '<div style="font-size:13.5px;line-height:1.5">'
+      +     'A LYMX admin is reviewing your sign-up details (usually within 24 hours). '
+      +     'While we review:'
+      +     '<ul style="margin:6px 0 0;padding-left:18px">'
+      +       '<li>Your account is active — you can browse, message, edit your profile</li>'
+      +       '<li><strong>' + holdLabel + '</strong> is held until we verify</li>'
+      +     '</ul>'
+      +     '<details style="margin-top:8px;font-size:13px"><summary style="cursor:pointer;color:#92400e;font-weight:700">What is verification, and why?</summary>'
+      +     '<div style="margin-top:6px;color:#78350f">LYMX verifies every account before unlocking value transfers (' + holdLabel + ') to prevent fraud, fake signups, and abuse. The review checks your phone number, email, signup source, and IP. Most pass automatically; a small percentage get manual review. If we need anything from you, we email — check your inbox.</div>'
+      +     '</details>'
+      +   '</div>'
+      + '</div></div>';
     banner.style.display = '';
   }
 }
