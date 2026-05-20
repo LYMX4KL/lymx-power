@@ -182,6 +182,17 @@
 
       <!-- Main -->
       <section class="main">
+        <!-- 2026-05-20 #5bc7562d - hide toolbar + table + summary when address book is empty. Show a centered friendly welcome card instead. JS toggles #emptyAddressBook + #contactsToolbar visibility based on allContacts.length. -->
+        <div id="emptyAddressBook" style="display:none;text-align:center;padding:48px 24px;background:#f6f7f9;border-radius:14px;margin-bottom:18px">
+          <div style="font-size:48px;margin-bottom:10px">📇</div>
+          <div style="font-size:18px;font-weight:800;color:#0e1116;margin-bottom:6px">Your address book is empty</div>
+          <div style="font-size:14px;color:#5b6472;max-width:380px;margin:0 auto 16px">Bring your contacts in once with Import, or add them one at a time. Tag them, group them into lists, and send LYMX invites in bulk.</div>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <button onclick="document.getElementById('importBtn').click()" style="padding:10px 18px;border-radius:9px;font-weight:700;font-size:13.5px;background:#0e1116;color:#fff;border:0;cursor:pointer">📥 Import contacts</button>
+            <button onclick="document.getElementById('newContactBtn').click()" style="padding:10px 18px;border-radius:9px;font-weight:700;font-size:13.5px;background:#fff;color:#0e1116;border:1px solid #e6e8ec;cursor:pointer">+ New contact</button>
+          </div>
+        </div>
+        <div id="contactsToolbar">
         <div class="toolbar">
           <input type="search" id="search" placeholder="Search your saved contacts (add some first with Import or + New)" />
           <button class="btn-secondary" id="bulkActionsBtn" disabled>0 selected</button>
@@ -208,6 +219,7 @@
             </tbody>
           </table>
         </div>
+        </div><!-- /contactsToolbar -->
       </section>
     </div>
   </div>
@@ -508,6 +520,14 @@ function renderSidebar() {
 }
 
 function renderTable() {
+  // 2026-05-20 #5bc7562d - when address book is empty, hide the toolbar+table chrome and show a centered welcome card. When there are contacts, reverse.
+  const isEmpty = allContacts.length === 0;
+  const emptyCard = document.getElementById('emptyAddressBook');
+  const toolbar = document.getElementById('contactsToolbar');
+  if (emptyCard) emptyCard.style.display = isEmpty ? 'block' : 'none';
+  if (toolbar)   toolbar.style.display   = isEmpty ? 'none'  : '';
+  if (isEmpty) return; // no need to render rows / summary
+
   const q = document.getElementById('search').value.trim().toLowerCase();
   let filtered = allContacts;
   if (activeFilter === 'invited')   filtered = filtered.filter(c => c.invite_count > 0);

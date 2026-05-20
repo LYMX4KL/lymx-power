@@ -250,10 +250,29 @@ async function loadList() {
   // actually verified. Awaiting-verification tickets are shown as awaiting,
   // not resolved, matching Dave's complaint that resolved count was inflated
   // before he clicked "Yes, it works".
-  document.getElementById('cTotal').textContent    = ALL_ITEMS.length;
-  document.getElementById('cOpen').textContent     = ALL_ITEMS.filter(function(i){ return i.status === 'new' || i.status === 'in_progress'; }).length;
-  document.getElementById('cAwaiting').textContent = ALL_ITEMS.filter(function(i){ return i.awaiting_verification; }).length;
-  document.getElementById('cResolved').textContent = ALL_ITEMS.filter(function(i){ return i.status === 'resolved' && !i.awaiting_verification; }).length;
+  var cTotal = ALL_ITEMS.length;
+  var cOpen  = ALL_ITEMS.filter(function(i){ return i.status === 'new' || i.status === 'in_progress'; }).length;
+  var cAwait = ALL_ITEMS.filter(function(i){ return i.awaiting_verification; }).length;
+  var cResv  = ALL_ITEMS.filter(function(i){ return i.status === 'resolved' && !i.awaiting_verification; }).length;
+  var cBugs  = ALL_ITEMS.filter(function(i){ return i.type === 'bug'; }).length;
+  var cIdeas = ALL_ITEMS.filter(function(i){ return i.type === 'suggestion'; }).length;
+  var cQs    = ALL_ITEMS.filter(function(i){ return i.type === 'question'; }).length;
+  document.getElementById('cTotal').textContent    = cTotal;
+  document.getElementById('cOpen').textContent     = cOpen;
+  document.getElementById('cAwaiting').textContent = cAwait;
+  document.getElementById('cResolved').textContent = cResv;
+
+  // 2026-05-20 #75ed1325 - show ticket counts inside each filter chip
+  var chipCounts = { all: cTotal, open: cOpen, awaiting: cAwait, resolved: cResv, bug: cBugs, suggestion: cIdeas, question: cQs };
+  document.querySelectorAll('#filterChips .chip').forEach(function(chip) {
+    var f = chip.getAttribute('data-f');
+    var n = chipCounts[f];
+    if (typeof n === 'number') {
+      // Strip any existing "(N)" suffix before adding the new one
+      var base = chip.textContent.replace(/\s*\(\d+\)\s*$/, '');
+      chip.textContent = base + ' (' + n + ')';
+    }
+  });
 
   CUR_PAGE = 1;
   renderList();
