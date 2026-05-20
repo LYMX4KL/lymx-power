@@ -312,9 +312,26 @@
 
     let payload;
     if (recipient === "support") {
-      // Thread anchored on me (customer/business/partner), kind=support
-      const subjectType = myCustomerId ? "customer" : (myBusinessId ? "business" : (myPartnerId ? "partner" : "none"));
-      const subjectId = myCustomerId || myBusinessId || myPartnerId || null;
+      // 2026-05-19 #f99eef4c - was: subject_type fell through to "none" + null id
+      // when user had no customer/business/partner row yet. Now: self-heal by
+      // creating a customers row if missing, so the support thread can anchor.
+      let subjectType = myCustomerId ? "customer" : (myBusinessId ? "business" : (myPartnerId ? "partner" : null));
+      let subjectId   = myCustomerId || myBusinessId || myPartnerId || null;
+      if (!subjectType) {
+        try {
+          const { data: created, error: cErr } = await sb.from("customers").upsert(
+            { user_id: session.user.id, email: session.user.email },
+            { onConflict: "user_id" }
+          ).select("id").single();
+          if (cErr) throw cErr;
+          subjectType = "customer";
+          subjectId = created.id;
+          myCustomerId = created.id;
+        } catch (e) {
+          $("newBanner").innerHTML = '<div class="alert err">Could not initialize your account: ' + esc(e.message || 'unknown') + '</div>';
+          return;
+        }
+      }
       payload = { subject_type: subjectType, subject_id: subjectId, kind: "support", title: subject, channel: "in_app", body: bodyText };
     } else {
       // Thread anchored on the picked business

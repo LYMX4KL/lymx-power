@@ -201,7 +201,7 @@
       </div>
     </div>
     <div style="display:flex;gap:8px">
-      <a class="btn btn-ghost" href="biz-brew-and-bean.html" target="_blank">View public listing →</a>
+      <!-- 2026-05-19 #e972b404 - was hardcoded to Brew & Bean. Now: JS resolves to the current business owner's actual slug. --><a class="btn btn-ghost" id="viewPublicListingBtn" href="browse.html" target="_blank">View public listing →</a>
       <a class="btn btn-primary" href="#">Post a promotion</a>
     </div>
   </div>
@@ -819,5 +819,18 @@ window.addEventListener('DOMContentLoaded', async function () {
 </script>
 
 <script src="lymx-role-gate.js" defer></script>
+<script>
+// 2026-05-19 #e972b404 - resolve View Public Listing href to the signed-in owner's business
+(async function fixPublicListing() {
+  if (!window.LYMX || !window.LYMX.sb) { setTimeout(fixPublicListing, 200); return; }
+  try {
+    const { data: { user } } = await window.LYMX.sb.auth.getUser();
+    if (!user) return;
+    const { data: biz } = await window.LYMX.sb.from('businesses').select('slug,display_name').eq('owner_user_id', user.id).limit(1).maybeSingle();
+    const btn = document.getElementById('viewPublicListingBtn');
+    if (btn && biz && biz.slug) btn.href = 'biz-' + encodeURIComponent(biz.slug.toLowerCase()) + '.html';
+  } catch (e) { console.warn('[biz-dashboard] public listing slug resolve failed', e); }
+})();
+</script>
 </body>
 </html>
