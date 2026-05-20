@@ -131,6 +131,35 @@ serve(async (req) => {
     }
 
     // ---------------------------------------------------------------------
+    // STEP 2b — 2026-05-20 #8ae35834 — Resolve TARGET partner from To: address.
+    //   When a prospect (cold lead, not in any of our tables) replies to a
+    //   partner's @getlymx.com address, the EF couldn't figure out where the
+    //   thread belonged — sender lookup fails, conversation got created with
+    //   subject_type='none', partner never sees it in their inbox.
+    //   Fix: look at TO addresses. If any matches a partner_emails.full_email,
+    //   that partner OWNS this thread (subject_type='partner', subject_partner_id).
+    //   The sender stays as 'inbound_unknown' but the conversation is correctly
+    //   anchored.
+    // ---------------------------------------------------------------------
+    let targetPartnerId: string | null = null;
+    if (senderSubjectType === "none" && toRaw) {
+        const toList = toRaw.split(",").map((s: string) => extractAddress(s)).filter(Boolean);
+        if (toList.length) {
+            const { data: pe } = await supabase
+                .from("partner_emails")
+                .select("partner_id, full_email")
+                .in("full_email", toList)
+                .limit(1).maybeSingle();
+            if (pe && pe.partner_id) {
+                targetPartnerId = pe.partner_id;
+                // Anchor the conversation to this partner — sender stays unknown
+                senderSubjectType = "partner";
+                senderSubjectId = pe.partner_id;
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------
     // STEP 3 — Fallback: most-recent-open for this sender, else create new
     // ---------------------------------------------------------------------
     if (!conversationId && senderSubjectId) {
