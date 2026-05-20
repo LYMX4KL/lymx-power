@@ -181,7 +181,23 @@
 
   function renderList(){
     if (convCache.length === 0) {
-      $("convList").innerHTML = '<div class="empty">No messages yet. Click "+ New message" to start.</div>';
+      // 2026-05-20 cluster - Rae 4dabb0c9 (illustration) + 4831a25a (Browse Partners) + b5a0eead (Help Center shortcut)
+      $("convList").innerHTML =
+        '<div class="empty" style="text-align:center;padding:34px 20px">'
+        + '<svg width="84" height="64" viewBox="0 0 84 64" fill="none" style="margin-bottom:10px;opacity:.55" xmlns="http://www.w3.org/2000/svg">'
+        +   '<rect x="1" y="11" width="58" height="40" rx="8" fill="#f6f7f9" stroke="#0a84ff" stroke-width="2"/>'
+        +   '<path d="M5 16 L30 33 L55 16" stroke="#0a84ff" stroke-width="2" fill="none" stroke-linecap="round"/>'
+        +   '<circle cx="68" cy="46" r="14" fill="#fff" stroke="#0a84ff" stroke-width="2"/>'
+        +   '<path d="M62 46 L66 50 L74 42" stroke="#0a84ff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
+        + '</svg>'
+        + '<div style="font-size:15px;font-weight:700;color:#0e1116;margin-bottom:4px">Your conversations live here</div>'
+        + '<div style="font-size:13px;color:#5b6472;margin-bottom:16px;max-width:280px;margin-left:auto;margin-right:auto">Start a chat with a LYMX business, with the LYMX team, or another customer.</div>'
+        + '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">'
+        +   '<button class="btn-cta-primary" onclick="document.getElementById(\'btnNew\')?.click()" style="background:#0e1116;color:#fff;border:0;padding:9px 16px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">+ New message</button>'
+        +   '<a href="browse.html" style="background:#fff;border:1px solid #e6e8ec;color:#0e1116;padding:9px 16px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">Browse partners →</a>'
+        +   '<a href="help-center.html" style="background:#fff;border:1px solid #e6e8ec;color:#0e1116;padding:9px 16px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">Help Center</a>'
+        + '</div>'
+        + '</div>';
       return;
     }
     $("convList").innerHTML = convCache.map(c => `

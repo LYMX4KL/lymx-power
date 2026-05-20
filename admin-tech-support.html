@@ -408,6 +408,13 @@ function openRow(id) {
   document.getElementById('mMeta').innerHTML = `<span class="pill ${TYPE_CLASS[r.type]}">${TYPE_EMOJI[r.type]||''} ${t}</span> &nbsp; <span class="pill role-${r.user_role||'anonymous'}">${ROLE_EMOJI[r.user_role||'anonymous']||''} ${r.user_role||'anonymous'}</span> &nbsp; <span style="color:var(--muted);font-size:12.5px">${new Date(r.created_at).toLocaleString()}</span>`;
   document.getElementById('mWho').textContent = r.user_id ? r.user_id.slice(0, 8) + '…' : '(not signed in)';
   document.getElementById('mEmail').textContent = r.user_email || '—';
+  // 2026-05-20 #c4747f96 - if submitter is a partner, show their display name + partner code + contact_email
+  // so the dashboard doesn't just surface a personal gmail. Fetch async, doesn't block render.
+  if (r.user_role === 'partner' && r.user_id) {
+    loadPartnerIdentity(r.user_id);
+  } else if (r.user_role === 'business' && r.user_id) {
+    loadBusinessIdentity(r.user_id);
+  }
   document.getElementById('mPage').innerHTML = r.page_url ? `<a href="${escapeHtml(r.page_url)}" target="_blank" style="color:var(--accent-2);text-decoration:underline">${escapeHtml(r.page_url)}</a>` : '—';
   document.getElementById('mViewport').textContent = r.viewport || '—';
   document.getElementById('mUA').textContent = r.user_agent || '—';
@@ -419,6 +426,44 @@ function openRow(id) {
   document.getElementById('mAskVerify').checked = false;
   document.getElementById('mBg').classList.add('on');
   loadThread(r.id);
+}
+
+// 2026-05-20 #c4747f96 - surface partner/business identity not just gmail
+async function loadPartnerIdentity(userId) {
+  try {
+    const r = await authedFetch('/rest/v1/partners?user_id=eq.' + userId + '&select=display_name,legal_name,partner_code,contact_email&limit=1');
+    if (!r.ok) return;
+    const rows = await r.json();
+    if (!rows || !rows.length) return;
+    const p = rows[0];
+    const name = p.display_name || p.legal_name || '(unnamed partner)';
+    const code = p.partner_code || '';
+    const contact = p.contact_email || '';
+    const authEmail = (currentRow && currentRow.user_email) || '';
+    const lines = [];
+    lines.push('<div style="font-weight:700;color:#0e1116">' + escapeHtml(name) + (code ? ' <span style="color:var(--muted);font-weight:600">(' + escapeHtml(code) + ')</span>' : '') + '</div>');
+    if (contact) lines.push('<div style="font-size:12.5px;margin-top:2px"><span style="color:var(--muted)">Partner contact:</span> <a href="mailto:' + escapeHtml(contact) + '" style="color:var(--accent-2);text-decoration:underline">' + escapeHtml(contact) + '</a></div>');
+    if (authEmail && authEmail.toLowerCase() !== (contact || '').toLowerCase()) {
+      lines.push('<div style="font-size:12px;margin-top:2px;color:var(--muted)">Login account: ' + escapeHtml(authEmail) + '</div>');
+    }
+    document.getElementById('mEmail').innerHTML = lines.join('');
+  } catch(_) {}
+}
+async function loadBusinessIdentity(userId) {
+  try {
+    const r = await authedFetch('/rest/v1/businesses?owner_user_id=eq.' + userId + '&select=display_name,legal_name,slug&limit=1');
+    if (!r.ok) return;
+    const rows = await r.json();
+    if (!rows || !rows.length) return;
+    const b = rows[0];
+    const name = b.display_name || b.legal_name || '(unnamed business)';
+    const slug = b.slug || '';
+    const authEmail = (currentRow && currentRow.user_email) || '';
+    const lines = [];
+    lines.push('<div style="font-weight:700;color:#0e1116">' + escapeHtml(name) + (slug ? ' <span style="color:var(--muted);font-weight:600">(' + escapeHtml(slug) + ')</span>' : '') + '</div>');
+    if (authEmail) lines.push('<div style="font-size:12px;margin-top:2px;color:var(--muted)">Login account: ' + escapeHtml(authEmail) + '</div>');
+    document.getElementById('mEmail').innerHTML = lines.join('');
+  } catch(_) {}
 }
 
 async function loadThread(feedbackId) {
