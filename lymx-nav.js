@@ -240,13 +240,16 @@
     var rect = anchor.getBoundingClientRect();
     menu.style.top = (rect.bottom + window.scrollY + 6) + 'px';
     menu.style.left = (Math.max(8, rect.right - 200) + window.scrollX) + 'px';
+    // 2026-05-20 #9553efbe (consistent icons) + #ee79d549 (Settings & Privacy entry)
+    // All menu items now have a leading text icon (▦ 📬 👤 ⚙️ 📋 ↩) so none feels random.
     menu.innerHTML =
       '<div style="padding:8px 10px;color:#5b6472;font-size:11.5px;border-bottom:1px solid #f1f3f6;margin-bottom:4px">' + (email.replace(/[<>]/g, '')) + '</div>' +
-      '<a href="' + dest + '" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none" data-i18n="nav.dashboard">Dashboard</a>' +
+      '<a href="' + dest + '" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none" data-i18n="nav.dashboard">▦ Dashboard</a>' +
       '<a href="my-conversations.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none">📬 <span data-i18n="nav.messages">Messages</span> <span id="lymxNavMsgBadge" style="display:none;background:#0a84ff;color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;margin-left:4px"></span></a>' +
-      '<a href="profile.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none" data-i18n="nav.profile">Profile</a>' +
-      '<a href="my-feedback.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none" data-i18n="nav.my_feedback">My feedback</a>' +
-      '<button id="lymxAvatarSignout" type="button" style="display:block;width:100%;text-align:left;padding:8px 10px;border-radius:6px;background:none;border:0;cursor:pointer;color:#B91C1C;font:inherit" data-i18n="nav.sign_out">Sign out</button>';
+      '<a href="profile.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none" data-i18n="nav.profile">👤 Profile</a>' +
+      '<a href="customer-settings.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none">⚙️ Settings &amp; Privacy</a>' +
+      '<a href="my-feedback.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none" data-i18n="nav.my_feedback">📋 My feedback</a>' +
+      '<button id="lymxAvatarSignout" type="button" style="display:block;width:100%;text-align:left;padding:8px 10px;border-radius:6px;background:none;border:0;cursor:pointer;color:#B91C1C;font:inherit" data-i18n="nav.sign_out">↩ Sign out</button>';
     // Fetch unread message count and show badge if > 0
     try {
       var ANON2 = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;

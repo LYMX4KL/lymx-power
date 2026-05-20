@@ -318,10 +318,115 @@
     el.classList.add('on');
   }
 
-  function startExport(){
+  // 2026-05-20 #363ce05e + #3ea4c1d5 + #c656324c - startExport was a mock that only
+  // showed a toast. Now: real client-side export. Fetches the user's data via supabase-js,
+  // builds a file (CSV / JSON / printable HTML for PDF), triggers download.
+  async function startExport(){
     const t = document.getElementById('toast');
+    const sbReady = !!(window.LYMX && window.LYMX.sb);
+    if (!sbReady) { alert('Auth client not ready — refresh the page and try again.'); return; }
+    const sb = window.LYMX.sb;
+    const sess = await window.LYMX.getSession();
+    if (!sess || !sess.user) { alert('You need to be signed in to export your data.'); return; }
+    const userId = sess.user.id;
+
     t.classList.add('on');
+
+    // Fetch user-owned data (RLS limits to current user)
+    let bundle = { exported_at: new Date().toISOString(), user: { id: userId, email: sess.user.email }, sections: {} };
+    try {
+      const [cust, wallets, issuances, transactions, referrals, reviews, feedback] = await Promise.all([
+        sb.from('customers').select('*').eq('user_id', userId).maybeSingle(),
+        sb.from('wallets').select('*').eq('customer_id', userId).limit(500),
+        sb.from('lymx_issuances').select('id,amount_lymx,reason,admin_status,created_at,business_id').eq('recipient_user_id', userId).limit(500),
+        sb.from('transactions').select('id,type,lymx_amount,total_amount_cents,created_at,business_id').eq('customer_id', userId).limit(500),
+        sb.from('referrals').select('id,inviter_user_id,invitee_user_id,status,inviter_bonus_amount,created_at').or('inviter_user_id.eq.' + userId + ',invitee_user_id.eq.' + userId).limit(500),
+        sb.from('reviews').select('id,rating,body,verified_at,created_at,business_id').eq('customer_id', userId).limit(500),
+        sb.from('feedback').select('id,type,priority,subject,message,status,created_at').eq('user_id', userId).limit(500)
+      ]);
+      bundle.sections.customer = cust && cust.data || null;
+      bundle.sections.wallets = (wallets && wallets.data) || [];
+      bundle.sections.lymx_issuances = (issuances && issuances.data) || [];
+      bundle.sections.transactions = (transactions && transactions.data) || [];
+      bundle.sections.referrals = (referrals && referrals.data) || [];
+      bundle.sections.reviews = (reviews && reviews.data) || [];
+      bundle.sections.feedback = (feedback && feedback.data) || [];
+    } catch (e) {
+      console.warn('export fetch error', e);
+      bundle.error = (e && e.message) || String(e);
+    }
+
+    const stamp = new Date().toISOString().slice(0, 10);
+    const filenameBase = 'lymx-my-data-' + stamp;
+
+    if (activeFmt === 'json') {
+      downloadFile(filenameBase + '.json', JSON.stringify(bundle, null, 2), 'application/json');
+    } else if (activeFmt === 'csv') {
+      downloadFile(filenameBase + '.csv', bundleToCsv(bundle), 'text/csv');
+    } else if (activeFmt === 'pdf') {
+      // PDF generation requires a library; for now open a print-friendly view + user uses browser Print > Save as PDF
+      openPrintView(bundle);
+    }
+
     setTimeout(()=>t.classList.remove('on'), 2800);
+  }
+
+  function downloadFile(name, content, mime){
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  }
+
+  function bundleToCsv(bundle){
+    const out = [];
+    out.push('# LYMX data export · ' + bundle.exported_at);
+    out.push('# user_id: ' + bundle.user.id + ', email: ' + bundle.user.email);
+    out.push('');
+    for (const [section, rows] of Object.entries(bundle.sections)) {
+      out.push('## ' + section);
+      const arr = Array.isArray(rows) ? rows : (rows ? [rows] : []);
+      if (arr.length === 0) { out.push('(none)'); out.push(''); continue; }
+      const keys = Object.keys(arr[0]);
+      out.push(keys.join(','));
+      arr.forEach(r => {
+        out.push(keys.map(k => {
+          const v = r[k];
+          if (v == null) return '';
+          const s = typeof v === 'string' ? v : JSON.stringify(v);
+          return '"' + s.replace(/"/g, '""') + '"';
+        }).join(','));
+      });
+      out.push('');
+    }
+    return out.join('\n');
+  }
+
+  function openPrintView(bundle){
+    const w = window.open('', '_blank');
+    if (!w) { alert('Pop-up blocked. Allow pop-ups for getlymx.com to use PDF export.'); return; }
+    const escape = s => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;' }[c]));
+    let html = '<!doctype html><html><head><meta charset="utf-8"><title>LYMX data export</title><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:#0e1116;max-width:800px;margin:24px auto;padding:0 18px}h1{font-size:22px}h2{font-size:16px;margin-top:24px;border-bottom:1px solid #e6e8ec;padding-bottom:6px}table{border-collapse:collapse;width:100%;font-size:12px;margin-top:6px}th,td{border:1px solid #e6e8ec;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f6f7f9}p.meta{font-size:12px;color:#5b6472}.tip{background:#fffbeb;border:1px solid #fde68a;padding:10px 14px;border-radius:8px;font-size:13px;margin:12px 0}</style></head><body>';
+    html += '<h1>LYMX — My Data Export</h1>';
+    html += '<p class="meta">Exported ' + escape(bundle.exported_at) + ' &nbsp;|&nbsp; User: ' + escape(bundle.user.email) + ' (' + escape(bundle.user.id) + ')</p>';
+    html += '<div class="tip">To save as PDF: press <strong>Ctrl+P</strong> (or Cmd+P on Mac) and choose "Save as PDF" as the destination.</div>';
+    for (const [section, rows] of Object.entries(bundle.sections)) {
+      html += '<h2>' + escape(section) + '</h2>';
+      const arr = Array.isArray(rows) ? rows : (rows ? [rows] : []);
+      if (arr.length === 0) { html += '<p>(none)</p>'; continue; }
+      const keys = Object.keys(arr[0]);
+      html += '<table><thead><tr>' + keys.map(k => '<th>' + escape(k) + '</th>').join('') + '</tr></thead><tbody>';
+      arr.forEach(r => {
+        html += '<tr>' + keys.map(k => '<td>' + escape(typeof r[k] === 'string' ? r[k] : JSON.stringify(r[k])) + '</td>').join('') + '</tr>';
+      });
+      html += '</tbody></table>';
+    }
+    html += '</body></html>';
+    w.document.write(html);
+    w.document.close();
+    setTimeout(() => w.print(), 600);
   }
 
   function openDelete(){ document.getElementById('ovr-delete').classList.add('on'); }
