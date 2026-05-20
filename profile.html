@@ -571,6 +571,18 @@ async function uploadAvatar(file) {
       }
     }
     if (saveErr) throw saveErr;
+    // 2026-05-20 #a461daa8 - delete the OLD storage object (if any) so the
+    // bucket doesn't accumulate orphans every time a user re-uploads.
+    var prevUrl = myRow && myRow.avatar_url;
+    if (prevUrl) {
+      var prevPath = avatarUrlToPath(prevUrl);
+      if (prevPath && prevPath !== path) {
+        try {
+          var del = await sb.storage.from('avatars').remove([prevPath]);
+          if (del && del.error) console.warn('[avatar upload] could not remove previous file', del.error);
+        } catch (e) { console.warn('[avatar upload] previous-file delete threw', e); }
+      }
+    }
     if (myRow) myRow.avatar_url = url;
     paintAvatar(url);
     if (status) status.textContent = 'Photo updated.';
@@ -580,12 +592,25 @@ async function uploadAvatar(file) {
   }
 }
 
+// 2026-05-20 #a461daa8 - Parse a Supabase public URL back into its bucket path.
+// Format: https://<project>.supabase.co/storage/v1/object/public/avatars/<path>
+// Also strips any ?t= cache-buster suffix we may have appended.
+function avatarUrlToPath(url) {
+  if (!url) return null;
+  try {
+    var m = String(url).match(/\/storage\/v1\/object\/public\/avatars\/([^?#]+)/i);
+    return m ? decodeURIComponent(m[1]) : null;
+  } catch (e) { console.warn('[avatar] url parse failed', e); return null; }
+}
+
 async function removeAvatar() {
   const sb = window.LYMX && window.LYMX.sb;
   if (!sb || !myUser) return;
   if (!confirm('Remove your profile photo?')) return;
   const status = document.getElementById('avatarStatus');
   try {
+    // Capture old URL BEFORE we null the DB row, so we can clean up storage.
+    var prevUrl = myRow && myRow.avatar_url;
     if (myRole === 'partner' && myRow && myRow.id) {
       const { error } = await sb.from('partners').update({ avatar_url: null }).eq('id', myRow.id);
       if (error) throw error;
@@ -593,8 +618,23 @@ async function removeAvatar() {
       const { error } = await sb.from('customers').update({ avatar_url: null }).eq('id', myRow.id);
       if (error) throw error;
     }
+    // 2026-05-20 #a461daa8 - actually delete the storage object too.
+    if (prevUrl) {
+      var prevPath = avatarUrlToPath(prevUrl);
+      if (prevPath) {
+        try {
+          var del = await sb.storage.from('avatars').remove([prevPath]);
+          if (del && del.error) console.warn('[avatar remove] storage delete error', del.error);
+        } catch (e) { console.warn('[avatar remove] storage delete threw', e); }
+      }
+    }
     if (myRow) myRow.avatar_url = null;
     paintAvatar(null);
+    // 2026-05-20 #a461daa8 - bust the sessionStorage cache in lymx-nav.js so
+    // subsequent paints don't re-show the deleted photo from cache.
+    try {
+      if (myUser && myUser.id) sessionStorage.removeItem('LYMX_avatar_url_' + myUser.id);
+    } catch (e) { console.warn('[avatar remove] sessionStorage purge', e); }
     if (status) status.textContent = 'Photo removed.';
   } catch (e) {
     console.warn('[avatar remove] failed', e);
