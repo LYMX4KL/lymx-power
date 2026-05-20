@@ -317,6 +317,22 @@
     <a class="btn-apply" href="projection.html">Project my 5 →</a>
   </div>
 
+  <!-- 2026-05-20 #8ae35834 — My Activations widget.
+       Shows every business that signed up using THIS partner's referral code.
+       Empty state encourages first activation. Auto-loads on dashboard mount. -->
+  <div class="card" id="myActivationsCard" style="margin:20px 0 0">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:14px;flex-wrap:wrap">
+      <div>
+        <h2 style="margin:0 0 4px;font-size:18px;font-weight:800">My Activations</h2>
+        <p style="margin:0;color:var(--muted);font-size:13.5px">Businesses that signed up using your referral code.</p>
+      </div>
+      <div id="myActivationsCount" style="font-size:13px;color:var(--muted);font-weight:600">Loading…</div>
+    </div>
+    <div id="myActivationsList">
+      <div style="padding:24px;text-align:center;color:var(--muted);font-size:13.5px">Loading…</div>
+    </div>
+  </div>
+
   <!-- Company email + SMTP setup card -->
   <div id="emailSetupCard" style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;margin:20px 0 0;display:none">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:16px">
@@ -585,6 +601,58 @@
     if (emailLink) emailLink.href = 'mailto:?subject=' + encodeURIComponent('Try LYMX with me') + '&body=' + encodeURIComponent('Sign up here and we both get 100 LYMX: ' + shareUrl);
     const smsLink = document.getElementById('repShareSms');
     if (smsLink) smsLink.href = 'sms:?body=' + encodeURIComponent('Join me on LYMX — we both get 100 LYMX when you sign up: ' + shareUrl);
+
+    // 2026-05-20 #8ae35834 — My Activations loader.
+    // Pulls businesses signed_up_by_partner_id = partner.id.
+    try {
+      const r = await LYMX.sb
+        .from('businesses')
+        .select('id, display_name, business_kind, created_at, archived_at, verified_at, application_status')
+        .eq('signed_up_by_partner_id', partner.id)
+        .is('archived_at', null)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      const rows = (r && r.data) || [];
+      const countEl = document.getElementById('myActivationsCount');
+      const listEl  = document.getElementById('myActivationsList');
+      if (countEl) countEl.textContent = rows.length === 0 ? 'No activations yet' : (rows.length + ' total');
+      if (!listEl) return;
+      if (rows.length === 0) {
+        listEl.innerHTML =
+          '<div style="padding:32px 18px;text-align:center;border:2px dashed var(--line);border-radius:11px;background:var(--bg-soft)">' +
+          '<div style="font-size:30px;margin-bottom:8px">\u{1F3AF}</div>' +
+          '<div style="font-weight:800;font-size:15px;margin-bottom:4px">No activations yet — let’s land your first one.</div>' +
+          '<div style="font-size:13px;color:var(--muted);margin-bottom:14px">Send your referral link to a local Business and they’ll be credited to you automatically when they sign up.</div>' +
+          '<a href="#share" style="display:inline-block;padding:9px 18px;background:var(--ink);color:#fff;border-radius:9px;font-weight:700;font-size:13.5px;text-decoration:none">Copy my link →</a>' +
+          ' <a href="partner-resources.html" style="display:inline-block;padding:9px 18px;background:#fff;border:1px solid var(--line);color:var(--ink);border-radius:9px;font-weight:700;font-size:13.5px;text-decoration:none;margin-left:6px">Open pitch toolkit</a>' +
+          '</div>';
+      } else {
+        listEl.innerHTML = rows.map(function (b) {
+          var when = new Date(b.created_at);
+          var ageDays = Math.max(0, Math.floor((Date.now() - when.getTime()) / 86400000));
+          var ageLbl = ageDays === 0 ? 'today' : ageDays === 1 ? 'yesterday' : ageDays + ' days ago';
+          var statusPill = '';
+          if (b.archived_at) statusPill = '<span style="background:#eef0f4;color:#6b7280;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700">Archived</span>';
+          else if (b.verified_at) statusPill = '<span style="background:#e6f5ee;color:#0a6e44;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700">✓ Verified</span>';
+          else if (b.application_status === 'pending') statusPill = '<span style="background:#fff3d4;color:#92400e;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700">Pending review</span>';
+          else statusPill = '<span style="background:#e6f0ff;color:#1e3a8a;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700">Active</span>';
+          var kindLbl = b.business_kind === 'self_employed' ? 'Self-employed' : 'Storefront';
+          var name = (b.display_name || 'Unnamed Business').replace(/[<>]/g,'');
+          return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:#fff">' +
+            '<div style="width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#0a84ff,#13a26b);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">' + name.slice(0,2).toUpperCase() + '</div>' +
+            '<div style="flex:1;min-width:0">' +
+              '<div style="font-weight:700;font-size:14.5px;color:var(--ink);text-overflow:ellipsis;overflow:hidden;white-space:nowrap">' + name + '</div>' +
+              '<div style="font-size:12px;color:var(--muted);margin-top:1px">' + kindLbl + ' · signed up ' + ageLbl + '</div>' +
+            '</div>' +
+            statusPill +
+          '</div>';
+        }).join('');
+      }
+    } catch (e) {
+      console.warn('[rep-dashboard] My Activations load failed', e);
+      var listEl2 = document.getElementById('myActivationsList');
+      if (listEl2) listEl2.innerHTML = '<div style="padding:18px;text-align:center;color:var(--muted);font-size:13px">Could not load activations — refresh to retry.</div>';
+    }
 
     // 2026-05-20 #8ae35834 — new-partner onboarding panel logic.
     try {
