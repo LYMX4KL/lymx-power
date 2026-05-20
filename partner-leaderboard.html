@@ -154,11 +154,12 @@
   </div>
 </div>
 
-<!-- PODIUM — placeholder until 5+ Partners are active -->
-<div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:48px 24px;text-align:center;margin-bottom:18px">
-  <div style="font-size:48px;margin-bottom:8px">🏆</div>
-  <div style="font-weight:800;font-size:18px;margin-bottom:6px">Leaderboard launches with 5+ active Partners</div>
-  <div style="color:var(--muted);font-size:14px;max-width:480px;margin:0 auto">Once five Partners are active in the network, the monthly top-3 podium goes live. Top-3 each month earn 250 LYMX bonus + recognition in the Partner newsletter.</div>
+<!-- 2026-05-20 #8ae35834 — Founding 25 Race podium (replaces the static placeholder) -->
+<div id="f25Podium" style="background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border:1px solid rgba(245,209,114,.3);border-radius:14px;padding:28px 24px;text-align:center;margin-bottom:18px;position:relative;overflow:hidden">
+  <div style="font-size:14px;color:#f5d172;text-transform:uppercase;letter-spacing:.1em;font-weight:800;margin-bottom:6px">★ The Founding 25 Race</div>
+  <div id="f25Status" style="font-weight:800;font-size:20px;margin-bottom:14px;color:#fff">Loading…</div>
+  <div id="f25TopList" style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:6px"></div>
+  <div id="f25NoneYet" style="color:#cbd5e1;font-size:13.5px;display:none">No Partner has hit 5 activations yet — the first one to do it locks Founding rank #1 forever.</div>
 </div>
 
 <!-- LEADERBOARD -->
@@ -179,17 +180,12 @@
         <th>Rank</th>
         <th>Partner</th>
         <th>Tier</th>
-        <th>City</th>
-        <th class="num">Own</th>
-        <th class="num">G1</th>
-        <th class="num">Downline</th>
+        <th class="num">Activations</th>
+        <th>Founding 25 progress</th>
       </tr>
     </thead>
-    <tbody>
-      <tr><td colspan="7" style="padding:40px;text-align:center;color:var(--muted)">
-        <strong style="color:var(--ink);font-size:15px;display:block;margin-bottom:6px">Leaderboard is empty</strong>
-        Ranking begins once 5+ Partners are active in the network.
-      </td></tr>
+    <tbody id="leaderboardBody">
+      <tr><td colspan="5" style="padding:40px;text-align:center;color:var(--muted)">Loading partners…</td></tr>
     </tbody>
   </table>
 
@@ -381,5 +377,123 @@
 <script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
 <script src="lymx-role-gate.js" defer></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script>
+// 2026-05-20 #8ae35834 — Live partner leaderboard loader.
+// Pulls all partners + counts activations (businesses signed_up_by_partner_id)
+// per partner, builds a Founding-25-race podium + ranked table.
+(async function () {
+  if (!window.LYMX_CONFIG || !window.supabase) return;
+  const sb = window.supabase.createClient(window.LYMX_CONFIG.SUPABASE_URL, window.LYMX_CONFIG.SUPABASE_ANON_KEY);
+  try {
+    // 1) Load partners (everyone we can see — RLS may filter)
+    const { data: partners, error: pErr } = await sb
+      .from('partners')
+      .select('id, legal_name, display_name, partner_code, is_founding_25, founding_25_rank, archived_at, avatar_url, country_code')
+      .is('archived_at', null)
+      .limit(200);
+    if (pErr) throw pErr;
+    if (!partners || !partners.length) return;
+    // 2) Load activation counts in one query
+    const ids = partners.map(p => p.id);
+    const { data: bizz } = await sb
+      .from('businesses')
+      .select('signed_up_by_partner_id')
+      .in('signed_up_by_partner_id', ids)
+      .is('archived_at', null);
+    const counts = {};
+    (bizz || []).forEach(b => { counts[b.signed_up_by_partner_id] = (counts[b.signed_up_by_partner_id] || 0) + 1; });
+    // 3) Sort partners by activations DESC then by founding_25_rank ASC
+    const ranked = partners.map(p => Object.assign({}, p, { activations: counts[p.id] || 0 }))
+      .sort((a, b) => {
+        if (b.activations !== a.activations) return b.activations - a.activations;
+        if (a.is_founding_25 && b.is_founding_25) return (a.founding_25_rank || 999) - (b.founding_25_rank || 999);
+        if (a.is_founding_25) return -1;
+        if (b.is_founding_25) return 1;
+        return 0;
+      });
+
+    function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function initialsFor(name) {
+      const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+      if (parts.length) return parts[0].slice(0,2).toUpperCase();
+      return 'P';
+    }
+
+    // 4) Podium: top 3 with activations > 0
+    const podiumEl = document.getElementById('f25TopList');
+    const statusEl = document.getElementById('f25Status');
+    const noneEl = document.getElementById('f25NoneYet');
+    const topActivators = ranked.filter(r => r.activations > 0).slice(0, 3);
+    const foundingCount = ranked.filter(r => r.is_founding_25).length;
+    const remaining = Math.max(0, 25 - foundingCount);
+    if (statusEl) {
+      statusEl.textContent = remaining === 25
+        ? '25 of 25 Founding spots open — the race is wide open.'
+        : remaining === 0
+          ? 'All 25 Founding spots are claimed.'
+          : remaining + ' Founding spots remaining · ' + foundingCount + ' Partners locked in';
+    }
+    if (!topActivators.length) {
+      if (noneEl) noneEl.style.display = '';
+      if (podiumEl) podiumEl.innerHTML = '';
+    } else {
+      if (noneEl) noneEl.style.display = 'none';
+      if (podiumEl) {
+        const medals = ['#f5d172', '#cbd5e1', '#d49a5a'];
+        const ranks = ['1st', '2nd', '3rd'];
+        podiumEl.innerHTML = topActivators.map((p, i) => {
+          const initials = initialsFor(p.display_name || p.legal_name);
+          const avHtml = p.avatar_url
+            ? '<img src="' + esc(p.avatar_url) + '" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">'
+            : esc(initials);
+          const name = (p.display_name || p.legal_name || 'Anonymous').split(/\s+/)[0];
+          return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px">' +
+            '<div style="position:relative;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;overflow:hidden;border:3px solid ' + medals[i] + '">' + avHtml + '</div>' +
+            '<div style="font-size:13px;font-weight:700">' + esc(name) + '</div>' +
+            '<div style="font-size:11px;color:#cbd5e1">' + ranks[i] + ' · ' + p.activations + ' activation' + (p.activations === 1 ? '' : 's') + '</div>' +
+            '</div>';
+        }).join('');
+      }
+    }
+
+    // 5) Table — top 25
+    const body = document.getElementById('leaderboardBody');
+    if (body) {
+      const top25 = ranked.slice(0, 25);
+      if (!top25.length) {
+        body.innerHTML = '<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--muted)">No Partners yet — be the first.</td></tr>';
+      } else {
+        body.innerHTML = top25.map((p, idx) => {
+          const initials = initialsFor(p.display_name || p.legal_name);
+          const name = (p.display_name || p.legal_name || 'Anonymous-Partner');
+          const tier = p.is_founding_25 ? 'Founding 25 · #' + (p.founding_25_rank || '?') : 'Active';
+          const pct = Math.min(100, Math.round((p.activations / 5) * 100));
+          const remainingForFounding = Math.max(0, 5 - p.activations);
+          const progressLabel = p.is_founding_25
+            ? '<span style="color:#86670c;font-weight:700">✓ Locked</span>'
+            : p.activations >= 5
+              ? '<span style="color:#0a6e44;font-weight:700">Eligible — awaiting rank</span>'
+              : remainingForFounding + ' more to lock';
+          return '<tr>' +
+            '<td style="font-weight:800">' + (idx + 1) + '</td>' +
+            '<td><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + esc(initials) + '</div><div><div style="font-weight:700">' + esc(name) + '</div><div style="font-size:11.5px;color:var(--muted);font-family:ui-monospace,Menlo,monospace">' + esc(p.partner_code || '—') + '</div></div></div></td>' +
+            '<td><span style="font-size:12px;font-weight:700;color:' + (p.is_founding_25 ? '#86670c' : 'var(--muted)') + '">' + esc(tier) + '</span></td>' +
+            '<td class="num" style="font-weight:800;font-size:15px">' + p.activations + '</td>' +
+            '<td><div style="display:flex;align-items:center;gap:10px"><div style="width:120px;height:7px;background:var(--bg-soft);border-radius:99px;overflow:hidden;flex-shrink:0"><div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#d4af37,#f5d172)"></div></div><span style="font-size:12px;color:var(--ink-2)">' + progressLabel + '</span></div></td>' +
+            '</tr>';
+        }).join('');
+      }
+    }
+  } catch (e) {
+    console.warn('[partner-leaderboard] load failed', e);
+    const body = document.getElementById('leaderboardBody');
+    if (body) body.innerHTML = '<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--muted)">Could not load — refresh to retry.</td></tr>';
+  }
+})();
+</script>
 </body>
 </html>
