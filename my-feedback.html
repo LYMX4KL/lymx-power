@@ -164,6 +164,22 @@
   </div>
 </main>
 
+<!-- 2026-05-19 #2f77dc20 - Edit ticket modal -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <h2>Edit your message</h2>
+    <p style="margin:6px 0 14px;color:var(--muted);font-size:13.5px">You can edit your ticket as long as the team has not replied yet.</p>
+    <label style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Subject</label>
+    <input id="eSubject" type="text" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;margin-bottom:12px" />
+    <label style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px">Message</label>
+    <textarea id="eMessage" rows="6" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-family:inherit;resize:vertical"></textarea>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="btn" id="eCancel" style="background:#fff;border:1px solid var(--line);color:var(--ink)">Cancel</button>
+      <button class="btn btn-confirm" id="eSave">Save changes</button>
+    </div>
+  </div>
+</div>
+
 <!-- Detail modal -->
 <div class="modal-bg" id="modal">
   <div class="modal">
@@ -331,7 +347,56 @@ function renderList() {
       await reopenTicket(b.dataset.reopen);
     });
   });
+  // 2026-05-19 #2f77dc20 - edit button click delegation
+  document.querySelectorAll('[data-edit]').forEach(function(b) {
+    b.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openEditTicket(b.dataset.edit);
+    });
+  });
 }
+
+// 2026-05-19 #2f77dc20 - Edit ticket flow
+let _editingTicketId = null;
+function openEditTicket(id) {
+  const t = ALL_ITEMS.find(x => x.id === id);
+  if (!t) return;
+  _editingTicketId = id;
+  document.getElementById('eSubject').value = t.subject || '';
+  document.getElementById('eMessage').value = t.message || '';
+  document.getElementById('editModal').classList.add('on');
+}
+document.getElementById('eCancel').addEventListener('click', function() {
+  _editingTicketId = null;
+  document.getElementById('editModal').classList.remove('on');
+});
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target.id === 'editModal') { _editingTicketId = null; e.target.classList.remove('on'); }
+});
+document.getElementById('eSave').addEventListener('click', async function() {
+  if (!_editingTicketId) return;
+  const subject = document.getElementById('eSubject').value.trim();
+  const message = document.getElementById('eMessage').value.trim();
+  if (!message) { alert('Message cannot be empty.'); return; }
+  this.disabled = true;
+  this.textContent = 'Saving...';
+  try {
+    const r = await authedFetch('/rest/v1/feedback?id=eq.' + _editingTicketId, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ subject: subject || null, message })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    document.getElementById('editModal').classList.remove('on');
+    _editingTicketId = null;
+    await loadList();
+  } catch (e) {
+    alert('Could not save: ' + e.message);
+  } finally {
+    this.disabled = false;
+    this.textContent = 'Save changes';
+  }
+});
 
 // 2026-05-19 #a3acf19a — Reopen handler
 async function reopenTicket(id) {

@@ -120,16 +120,19 @@
   <div class="wrap">
     <h1>How can we help?</h1>
     <p class="lede">Search the help center, browse a category, or contact support directly.</p>
-    <div class="search-row">
-      <input id="q" type="text" placeholder="Search for an answer…" />
-      <button onclick="search()">Search</button>
+    <div class="search-row" style="position:relative">
+      <input id="q" type="text" placeholder="Search articles, e.g. &quot;referral bonus&quot;, &quot;QR not scanning&quot;…" autocomplete="off" />
+      <button id="qClear" type="button" aria-label="Clear search" style="position:absolute;right:118px;top:50%;transform:translateY(-50%);background:transparent;border:0;font-size:18px;color:#5b6472;cursor:pointer;padding:4px 8px;display:none">×</button>
+      <button onclick="doSearch()">Search</button>
     </div>
+    <div id="searchStatus" style="max-width:560px;margin:14px auto 0;font-size:13.5px;color:var(--muted);text-align:center;display:none"></div>
     <div class="quick-tags">
-      <a href="#earning">Earning LYMX</a>
-      <a href="#spending">Spending LYMX</a>
-      <a href="#account">Account &amp; wallet</a>
-      <a href="#referrals">Referrals</a>
-      <a href="#troubleshoot">Troubleshooting</a>
+      <a href="#" data-tag="earn">Earning LYMX</a>
+      <a href="#" data-tag="spend">Spending LYMX</a>
+      <a href="#" data-tag="account">Account &amp; wallet</a>
+      <a href="#" data-tag="referral">Referrals</a>
+      <a href="#" data-tag="QR">QR / scanning</a>
+      <a href="#" data-tag="sign up">Sign up</a>
     </div>
   </div>
 </section>
@@ -368,27 +371,97 @@
 <script>
   document.getElementById('yr').textContent = new Date().getFullYear();
 
-  function search(){
-    const q = document.getElementById('q').value.trim().toLowerCase();
-    if (!q) return;
-    // Simple in-page search: highlight matching articles
-    const articles = document.querySelectorAll('.article, .pop, .cat');
-    let found = 0;
-    articles.forEach(a => {
-      const txt = a.textContent.toLowerCase();
-      if (txt.includes(q)) {
-        a.style.outline = '2px solid #f5d172';
-        a.style.background = 'rgba(245,209,114,.08)';
-        if (found === 0) a.scrollIntoView({behavior:'smooth', block:'center'});
-        found += 1;
+  // ─── Help Center live search (#2b5f7224) ─────────────────────────────────
+  // Filters articles/categories/popular cards as the user types.
+  // Hides whole sections that have no matches so the page stays focused.
+  const $q = document.getElementById('q');
+  const $clear = document.getElementById('qClear');
+  const $status = document.getElementById('searchStatus');
+  const ALL_ITEMS = Array.from(document.querySelectorAll('.article, .pop, .cat'));
+  const ALL_SECTIONS = Array.from(document.querySelectorAll('section.sec'));
+
+  // Pre-index searchable text so we don't read DOM on every keystroke
+  ALL_ITEMS.forEach(el => { el.__searchText = el.textContent.toLowerCase(); });
+
+  function clearSearch(){
+    $q.value = '';
+    $clear.style.display = 'none';
+    $status.style.display = 'none';
+    ALL_ITEMS.forEach(el => { el.style.display = ''; el.style.outline = ''; el.style.background = ''; });
+    ALL_SECTIONS.forEach(s => { s.style.display = ''; });
+  }
+
+  function runFilter(q){
+    q = (q || '').trim().toLowerCase();
+    if (!q){ clearSearch(); return; }
+    $clear.style.display = 'block';
+
+    let matchCount = 0;
+    ALL_ITEMS.forEach(el => {
+      if (el.__searchText.includes(q)){
+        el.style.display = '';
+        el.style.outline = '2px solid #f5d172';
+        el.style.background = 'rgba(245,209,114,.08)';
+        matchCount += 1;
       } else {
-        a.style.outline = '';
-        a.style.background = '';
+        el.style.display = 'none';
+        el.style.outline = '';
+        el.style.background = '';
       }
     });
-    if (!found) alert('No results for "' + q + '". Try a different keyword or email support.');
+
+    // Hide whole sections that have no visible items left
+    ALL_SECTIONS.forEach(sec => {
+      const anyVisible = sec.querySelectorAll('.article, .pop, .cat');
+      let visible = false;
+      anyVisible.forEach(el => { if (el.style.display !== 'none') visible = true; });
+      // Always show hero
+      if (sec.classList.contains('hero')) { sec.style.display = ''; return; }
+      sec.style.display = (anyVisible.length === 0 || visible) ? '' : 'none';
+    });
+
+    $status.style.display = 'block';
+    if (matchCount === 0){
+      $status.innerHTML = 'No matches for <strong>"' + q.replace(/[<>]/g,'') + '"</strong>. Try a shorter keyword, or <a href="mailto:hello@getlymx.com" style="color:var(--accent);font-weight:700">email support</a>.';
+    } else {
+      $status.innerHTML = 'Showing <strong>' + matchCount + '</strong> article' + (matchCount === 1 ? '' : 's') + ' matching <strong>"' + q.replace(/[<>]/g,'') + '"</strong>. <a href="#" id="qReset" style="color:var(--accent);font-weight:700">Clear</a>';
+      const $reset = document.getElementById('qReset');
+      if ($reset) $reset.addEventListener('click', e => { e.preventDefault(); clearSearch(); $q.focus(); });
+    }
   }
-  document.getElementById('q').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+
+  // Debounced live filter
+  let _t;
+  $q.addEventListener('input', () => {
+    clearTimeout(_t);
+    _t = setTimeout(() => runFilter($q.value), 120);
+  });
+
+  $q.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); runFilter($q.value); }
+    if (e.key === 'Escape') { clearSearch(); }
+  });
+
+  $clear.addEventListener('click', () => { clearSearch(); $q.focus(); });
+
+  function doSearch(){ runFilter($q.value); }
+
+  // Quick-tag chips trigger filter instead of anchor-jump
+  document.querySelectorAll('.quick-tags a[data-tag]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const tag = a.getAttribute('data-tag') || '';
+      $q.value = tag;
+      runFilter(tag);
+      window.scrollTo({ top: $q.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
+    });
+  });
+
+  // Support ?q=... in URL (deep-linkable searches)
+  try {
+    const urlQ = new URLSearchParams(location.search).get('q');
+    if (urlQ){ $q.value = urlQ; runFilter(urlQ); }
+  } catch(_) {}
 </script>
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>

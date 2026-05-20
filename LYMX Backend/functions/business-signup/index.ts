@@ -397,6 +397,51 @@ serve(async (req) => {
     }
     // ────────────────────────────────────────────────────────────────────────
 
+    // ─── Business welcome email (#b8472a66) ────────────────────────────────
+    // Fire-and-forget; don't block the response on email send.
+    try {
+        const recipientEmail = body.owner_email;
+        const displayName = body.display_name || body.legal_name || 'there';
+        const dashboardUrl = `https://getlymx.com/biz-dashboard.html`;
+        const welcomeHtml = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#0e1116;line-height:1.55">
+  <h2 style="margin:0 0 12px;font-size:22px">Welcome to LYMX, ${escapeHtml(displayName)}!</h2>
+  <p>Thanks for signing up your business. Your application has been received and is being reviewed by our team. We typically approve new businesses within 24 hours.</p>
+  ${welcomeBonus ? `<p style="background:#e6f5ee;border-left:4px solid #13a26b;padding:12px 16px;border-radius:6px"><strong>🎉 ${welcomeBonus.amount_lymx.toLocaleString()} LYMX</strong> welcome bonus credited to your account.</p>` : ''}
+  <h3 style="margin:18px 0 8px;font-size:16px">What happens next:</h3>
+  <ul>
+    <li>Our team verifies your business details (usually within 24 hours)</li>
+    <li>You'll get a second email when your listing goes live on getlymx.com</li>
+    <li>Then you can sign in and start setting up your LYMX issuance settings</li>
+  </ul>
+  <p style="margin-top:20px"><a href="${dashboardUrl}" style="display:inline-block;background:#0e1116;color:#fff;padding:11px 22px;border-radius:9px;text-decoration:none;font-weight:700">Open your business dashboard →</a></p>
+  <p style="margin-top:24px;color:#5b6472;font-size:13.5px">Questions? Reply to this email or use the floating Help & Feedback button on any page on getlymx.com.</p>
+  <p style="margin-top:18px;color:#5b6472;font-size:13.5px">— The LYMX team</p>
+</div>`;
+        const welcomeText = `Welcome to LYMX, ${displayName}!\n\nThanks for signing up your business. Your application is being reviewed - we typically approve new businesses within 24 hours.\n${welcomeBonus ? `\n${welcomeBonus.amount_lymx.toLocaleString()} LYMX welcome bonus credited to your account.\n` : ''}\nWhat happens next:\n- Our team verifies your business details (within 24h)\n- You'll get a second email when your listing goes live\n- Then sign in to set up your issuance settings\n\nDashboard: ${dashboardUrl}\n\nQuestions? Reply or use Help & Feedback on getlymx.com\n\n- The LYMX team`;
+        // Fire the email via send-email EF using service-role key (server-to-server)
+        const sbUrl = Deno.env.get("SUPABASE_URL")!;
+        const sbKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        await fetch(sbUrl + '/functions/v1/send-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + sbKey,
+                'apikey': sbKey,
+            },
+            body: JSON.stringify({
+                channel: 'transactional',
+                recipient_email: recipientEmail,
+                recipient_name: displayName,
+                subject: `Welcome to LYMX, ${displayName} - your application is being reviewed`,
+                body_text: welcomeText,
+                body_html: welcomeHtml,
+                template_key: 'business_welcome',
+            }),
+        });
+    } catch (welcomeEmailErr) {
+        console.warn('Business welcome email send failed (non-fatal):', welcomeEmailErr);
+    }
+
     return jsonResponse({
         user_id: userId,
         business_id: biz.id,
@@ -407,3 +452,7 @@ serve(async (req) => {
         welcome_bonus: welcomeBonus,
     }, 201);
 });
+
+function escapeHtml(s: string): string {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c] as string));
+}
