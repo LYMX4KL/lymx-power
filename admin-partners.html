@@ -342,6 +342,10 @@
       const actionBtn = suspended
         ? '<button class="btn btn-ok" data-act="reactivate" data-id="' + r.id + '">Reactivate</button>'
         : '<button class="btn btn-danger" data-act="suspend" data-id="' + r.id + '">Suspend</button>';
+      // 2026-05-20 #8ae35834 - Re-send welcome email if provisioning failed or partner asks
+      const resendBtn = (r.email_status === 'no_email' || r.email_status === 'failed' || r.email_status === 'pending')
+        ? ' <button class="btn btn-secondary" data-act="resend-welcome" data-id="' + r.id + '" title="Re-run partner-provision-email to retry @getlymx.com setup + welcome email">↻ Resend welcome</button>'
+        : '';
       return '<tr>' +
         '<td><div class="name-cell"><div class="av">' + avInner + '</div><div class="body"><div class="nm">' + escapeHtml(r.legal_name || r.display_name || '—') + '</div><div class="em">' + escapeHtml(r.contact_email || '—') + '</div></div></div></td>' +
         '<td class="num">' + escapeHtml(r.partner_code || '—') + '</td>' +
@@ -349,7 +353,7 @@
         '<td>' + pillFor(r) + (r.full_company_email ? '<div style="font-size:11.5px;color:var(--muted);margin-top:2px;font-family:ui-monospace,Menlo,monospace">' + escapeHtml(r.full_company_email) + '</div>' : '') + '</td>' +
         '<td>' + foundingChip + '</td>' +
         '<td><span class="num">' + escapeHtml(createdLabel) + '</span></td>' +
-        '<td style="text-align:right">' + actionBtn + '</td>' +
+        '<td style="text-align:right">' + actionBtn + resendBtn + '</td>' +
         '</tr>';
     }).join('');
     document.getElementById('listBody').innerHTML = html;
@@ -396,12 +400,32 @@
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => { CUR_SEARCH = e.target.value || ''; render(); }, 150);
   });
+  async function resendWelcome(partnerId) {
+    if (!confirm('Re-run partner-provision-email for this Partner? This retries the @getlymx.com address provisioning and re-sends the welcome email with Gmail Send-mail-as setup instructions.')) return;
+    try {
+      const accessToken = (await sb.auth.getSession()).data.session.access_token;
+      const r = await fetch(cfg.SUPABASE_URL + '/functions/v1/partner-provision-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken, 'apikey': cfg.SUPABASE_ANON_KEY },
+        body: JSON.stringify({ partner_id: partnerId })
+      });
+      const result = await r.json();
+      if (!r.ok) throw new Error(result.error || 'Provision failed');
+      toast('Re-sent. Email status: ' + (result.status || 'check inbox'));
+      await loadPartners();
+    } catch (e) {
+      console.warn('[resend-welcome] failed', e);
+      toast('Failed: ' + (e.message || 'unknown'), 'err');
+    }
+  }
+
   document.getElementById('listBody').addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-act]'); if (!btn) return;
     const act = btn.dataset.act;
     const id  = btn.dataset.id;
     if (act === 'suspend')    suspendPartner(id);
     else if (act === 'reactivate') reactivatePartner(id);
+    else if (act === 'resend-welcome') resendWelcome(id);
   });
 
   // 2026-05-20 #8ae35834 - Run settlement batch.
