@@ -242,14 +242,117 @@
   // Each Partner has their own production (count of Businesses they signed up).
   // Generations track downline Partners, NOT Businesses.
 
-  // Real tree is loaded from Supabase mgc_tree table once the user signs in.
-  // For unauthenticated viewers, show an empty starter tree.
-  const TREE = {
+  // 2026-05-20 #8ae35834 — TREE now hydrated from real Supabase data on load.
+  // Default seed (empty starter) used until the async loader replaces it.
+  let TREE = {
     name: 'You', tier:'Starter', generation:'me',
     production: 0,
     productionIncome: 0,
     children: []
   };
+
+  // Async loader — runs after page paint, then re-renders with real downline.
+  (async function loadRealTree() {
+    try {
+      if (!window.LYMX_CONFIG || !window.supabase) return;
+      const sb = window.supabase.createClient(window.LYMX_CONFIG.SUPABASE_URL, window.LYMX_CONFIG.SUPABASE_ANON_KEY, { auth: { persistSession: true } });
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) return; // not signed in — keep empty starter
+
+      // 1. Load my partner row
+      const { data: me } = await sb.from('partners')
+        .select('id, legal_name, display_name, partner_code, is_founding_25, founding_25_rank, sponsor_partner_id, avatar_url')
+        .eq('user_id', session.user.id).maybeSingle();
+      if (!me) return; // user isn't a partner yet — keep empty starter
+
+      // 2. Count my own activations (businesses signed_up_by_partner_id = me.id)
+      const { count: ownProd } = await sb.from('businesses')
+        .select('id', { count: 'exact', head: true })
+        .eq('signed_up_by_partner_id', me.id)
+        .is('archived_at', null);
+
+      // 3. Load G1: partners I sponsored
+      const { data: g1 } = await sb.from('partners')
+        .select('id, legal_name, display_name, partner_code, avatar_url, is_founding_25, founding_25_rank')
+        .eq('sponsor_partner_id', me.id)
+        .is('archived_at', null);
+      const g1Ids = (g1 || []).map(p => p.id);
+
+      // 4. Load G2 (in one batch via IN clause)
+      let g2 = [];
+      if (g1Ids.length) {
+        const { data: g2rows } = await sb.from('partners')
+          .select('id, legal_name, display_name, partner_code, sponsor_partner_id, avatar_url')
+          .in('sponsor_partner_id', g1Ids)
+          .is('archived_at', null);
+        g2 = g2rows || [];
+      }
+      const g2Ids = g2.map(p => p.id);
+
+      // 5. Load G3 (one batch)
+      let g3 = [];
+      if (g2Ids.length) {
+        const { data: g3rows } = await sb.from('partners')
+          .select('id, legal_name, display_name, partner_code, sponsor_partner_id, avatar_url')
+          .in('sponsor_partner_id', g2Ids)
+          .is('archived_at', null);
+        g3 = g3rows || [];
+      }
+
+      // 6. Production counts for downline — batch query (best-effort; skip if too slow)
+      const allDownIds = (g1 || []).map(p => p.id).concat(g2.map(p => p.id)).concat(g3.map(p => p.id));
+      const prodById = {};
+      if (allDownIds.length) {
+        const { data: bizz } = await sb.from('businesses')
+          .select('signed_up_by_partner_id')
+          .in('signed_up_by_partner_id', allDownIds)
+          .is('archived_at', null);
+        (bizz || []).forEach(b => { prodById[b.signed_up_by_partner_id] = (prodById[b.signed_up_by_partner_id] || 0) + 1; });
+      }
+
+      // 7. Build the TREE object
+      function nameOf(p) {
+        return (p.display_name || p.legal_name || 'Partner').split(/\s+/)[0];
+      }
+      function tierOf(p) {
+        if (p.is_founding_25) return 'Founding #' + (p.founding_25_rank || '?');
+        return 'Active';
+      }
+      function nodeFor(p, gen) {
+        const prod = prodById[p.id] || 0;
+        const productionIncome = prod * 500; // $500 per direct activation
+        const children = (gen === 'g1' ? g2 : gen === 'g2' ? g3 : [])
+          .filter(c => c.sponsor_partner_id === p.id)
+          .map(c => nodeFor(c, gen === 'g1' ? 'g2' : 'g3'));
+        return {
+          name: nameOf(p),
+          tier: tierOf(p),
+          generation: gen,
+          production: prod,
+          productionIncome: productionIncome,
+          partnerId: p.id,
+          partnerCode: p.partner_code,
+          avatarUrl: p.avatar_url,
+          children: children,
+        };
+      }
+
+      TREE = {
+        name: 'You',
+        tier: me.is_founding_25 ? 'Founding #' + (me.founding_25_rank || '?') : 'Active',
+        generation: 'me',
+        production: ownProd || 0,
+        productionIncome: (ownProd || 0) * 500,
+        partnerId: me.id,
+        partnerCode: me.partner_code,
+        avatarUrl: me.avatar_url,
+        children: (g1 || []).map(p => nodeFor(p, 'g1')),
+      };
+
+      // Re-render with the real tree
+      if (typeof renderTree === 'function') renderTree();
+    } catch (e) { console.warn('[partner-tree] real-data hydration failed', e); }
+  })();
 
   const COLOR = {me:'#d4af37', g1:'#13a26b', g2:'#a545ff', g3:'#f0a020'};
   const DARKER = {me:'#a08020', g1:'#0d7d51', g2:'#7426c4', g3:'#d6892a'};
