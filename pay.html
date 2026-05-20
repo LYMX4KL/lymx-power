@@ -198,8 +198,9 @@ async function hydrate(){
     try {
       var sb = (window.LYMX && window.LYMX.sb) || (window.supabase && window.LYMX_CONFIG && window.supabase.createClient(window.LYMX_CONFIG.SUPABASE_URL, window.LYMX_CONFIG.SUPABASE_ANON_KEY));
       if (sb) {
-        var { data, error } = await sb.from('business_partners').select('display_name,business_name,name').eq('slug', slug).maybeSingle();
-        if (data) display.textContent = data.display_name || data.business_name || data.name || slug;
+        // 2026-05-20 audit fix - business_partners has `display_name` and `legal_name` only (no `business_name` or `name`). (Audit Pass 3)
+        var { data, error } = await sb.from('business_partners').select('display_name,legal_name').eq('slug', slug).maybeSingle();
+        if (data) display.textContent = data.display_name || data.legal_name || slug;
         else display.textContent = slug.replace(/-/g,' ').replace(/\b\w/g, function(c){return c.toUpperCase();});
       } else {
         display.textContent = slug.replace(/-/g,' ').replace(/\b\w/g, function(c){return c.toUpperCase();});
@@ -214,10 +215,15 @@ async function hydrate(){
     var sb = window.LYMX && window.LYMX.sb;
     var sess = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
     if (sb && sess && sess.user) {
-      var { data: w } = await sb.from('wallets').select('balance_lymx').eq('customer_id', sess.user.id).maybeSingle();
-      if (w && typeof w.balance_lymx === 'number') {
-        document.getElementById('balanceVal').textContent = Math.round(w.balance_lymx).toLocaleString();
-        document.getElementById('balanceBox').classList.add('show');
+      // 2026-05-20 audit fix - wallets column is `balance` not `balance_lymx`, and `customer_id` references customers.id not auth.users.id. (Audit Pass 3)
+      var { data: cust } = await sb.from('customers').select('id').eq('user_id', sess.user.id).maybeSingle();
+      if (cust && cust.id) {
+        var { data: walletRows } = await sb.from('wallets').select('balance').eq('customer_id', cust.id);
+        if (walletRows && walletRows.length) {
+          var total = walletRows.reduce(function(s,w){ return s + Number(w.balance || 0); }, 0);
+          document.getElementById('balanceVal').textContent = Math.round(total).toLocaleString();
+          document.getElementById('balanceBox').classList.add('show');
+        }
       }
       document.getElementById('signinPrompt').classList.remove('show');
     } else {

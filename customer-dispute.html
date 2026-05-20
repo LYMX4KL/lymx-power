@@ -500,13 +500,14 @@
         const sb = window.LYMX.sb;
         const s = await window.LYMX.getSession();
         const email = (s && s.user && s.user.email) || '';
+        // 2026-05-20 audit fix - feedback.type CHECK constraint only accepts ('bug','suggestion','question','general'). 'dispute' was silently failing every wallet-lock submission. Using 'bug' as the closest semantic match for fraud/account-compromise reports. (Audit Pass 3)
         const { data } = await sb.from('feedback').insert({
           user_email: email,
           user_role: 'customer',
-          type: 'dispute',
+          type: 'bug',
           priority: 'urgent',
           status: 'new',
-          subject: '[Wallet locked] Customer requested wallet lock',
+          subject: '[Wallet lock + dispute] Customer requested wallet lock',
           message: 'Customer triggered "Lock wallet now" from customer-dispute.html. Reason: ' + ((state && state.reason) || 'unknown') + '. Needs immediate review.',
           page_url: location.pathname + location.search
         }).select('id').single();

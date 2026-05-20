@@ -333,19 +333,30 @@
     t.classList.add('on');
 
     // Fetch user-owned data (RLS limits to current user)
+    // 2026-05-20 audit fix - many wrong column refs: transactions had no `customer_id` (uses wallet_id) and no `total_amount_cents` (column is usd_basis); reviews uses `reviewer_user_id` + `business_slug` (no business_id, no customer_id); wallets.customer_id refs customers.id not auth.users.id. (Audit Pass 3)
     let bundle = { exported_at: new Date().toISOString(), user: { id: userId, email: sess.user.email }, sections: {} };
     try {
-      const [cust, wallets, issuances, transactions, referrals, reviews, feedback] = await Promise.all([
-        sb.from('customers').select('*').eq('user_id', userId).maybeSingle(),
-        sb.from('wallets').select('*').eq('customer_id', userId).limit(500),
+      // Resolve customer row + their wallet ids first (chain dependency for transactions)
+      const { data: custRow } = await sb.from('customers').select('*').eq('user_id', userId).maybeSingle();
+      const custId = custRow && custRow.id;
+      let walletRows = [];
+      let walletIds = [];
+      if (custId) {
+        const { data: w } = await sb.from('wallets').select('*').eq('customer_id', custId).limit(500);
+        walletRows = w || [];
+        walletIds = walletRows.map(r => r.id);
+      }
+      const [issuances, transactions, referrals, reviews, feedback] = await Promise.all([
         sb.from('lymx_issuances').select('id,amount_lymx,reason,admin_status,created_at,business_id').eq('recipient_user_id', userId).limit(500),
-        sb.from('transactions').select('id,type,lymx_amount,total_amount_cents,created_at,business_id').eq('customer_id', userId).limit(500),
+        walletIds.length === 0
+          ? Promise.resolve({ data: [] })
+          : sb.from('transactions').select('id,type,lymx_amount,usd_basis,created_at,business_id,wallet_id').in('wallet_id', walletIds).limit(500),
         sb.from('referrals').select('id,inviter_user_id,invitee_user_id,status,inviter_bonus_amount,created_at').or('inviter_user_id.eq.' + userId + ',invitee_user_id.eq.' + userId).limit(500),
-        sb.from('reviews').select('id,rating,body,verified_at,created_at,business_id').eq('customer_id', userId).limit(500),
+        sb.from('reviews').select('id,rating,body,verified_at,created_at,business_slug,business_name').eq('reviewer_user_id', userId).limit(500),
         sb.from('feedback').select('id,type,priority,subject,message,status,created_at').eq('user_id', userId).limit(500)
       ]);
-      bundle.sections.customer = cust && cust.data || null;
-      bundle.sections.wallets = (wallets && wallets.data) || [];
+      bundle.sections.customer = custRow || null;
+      bundle.sections.wallets = walletRows;
       bundle.sections.lymx_issuances = (issuances && issuances.data) || [];
       bundle.sections.transactions = (transactions && transactions.data) || [];
       bundle.sections.referrals = (referrals && referrals.data) || [];

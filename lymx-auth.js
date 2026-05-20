@@ -108,9 +108,10 @@
       if (!user) return { data: [], error: new Error('Not signed in') };
       const { data: customer } = await sb.from('customers').select('id').eq('user_id', user.id).maybeSingle();
       if (!customer) return { data: [], error: null };
+      // 2026-05-20 audit fix - wallets column is `balance`, not `lymx_balance`. Customer dashboard was reading 0 for all balances. (Audit Pass 3)
       return await sb
         .from('wallets')
-        .select('id, business_id, lymx_balance, businesses(display_name, category)')
+        .select('id, business_id, balance, businesses(display_name, category)')
         .eq('customer_id', customer.id);
     },
 
@@ -119,10 +120,14 @@
       if (!user) return { data: [], error: new Error('Not signed in') };
       const { data: customer } = await sb.from('customers').select('id').eq('user_id', user.id).maybeSingle();
       if (!customer) return { data: [], error: null };
+      // 2026-05-20 audit fix - transactions has no `customer_id` (linked via wallet_id) and no `usd_amount` (column is `usd_basis`). (Audit Pass 3)
+      const { data: walletsArr } = await sb.from('wallets').select('id').eq('customer_id', customer.id);
+      const walletIds = (walletsArr || []).map(w => w.id);
+      if (walletIds.length === 0) return { data: [], error: null };
       return await sb
         .from('transactions')
-        .select('id, type, lymx_amount, usd_amount, created_at, business_id, businesses(display_name)')
-        .eq('customer_id', customer.id)
+        .select('id, type, lymx_amount, usd_basis, created_at, business_id, wallet_id, businesses(display_name)')
+        .in('wallet_id', walletIds)
         .order('created_at', { ascending: false })
         .limit(limit || 20);
     },
@@ -178,9 +183,10 @@
     },
 
     async fetchMyBusinessTransactions(businessId, fromDate, limit) {
+      // 2026-05-20 audit fix - transactions has no `usd_amount` (column is `usd_basis`) and no direct `customer_id` (linked via wallet_id → wallets.customer_id). (Audit Pass 3)
       let q = sb
         .from('transactions')
-        .select('id, type, lymx_amount, usd_amount, created_at, customer_id')
+        .select('id, type, lymx_amount, usd_basis, created_at, wallet_id, wallets(customer_id)')
         .eq('business_id', businessId)
         .order('created_at', { ascending: false })
         .limit(limit || 50);

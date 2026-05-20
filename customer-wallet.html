@@ -313,9 +313,19 @@
       const { data: ledger } = await window.LYMX.sb.from('v_my_lymx_balance').select('*').maybeSingle();
       if (ledger) totalLymx += Number(ledger.available_lymx || 0);
     } catch(e){}
+    // 2026-05-20 audit fix - wallets column is `balance` not `lymx_balance`, and `customer_id` references customers.id not auth.users.id - need 2-step lookup. (Audit Pass 3)
+    let myWalletIds = [];
     try {
-      const { data: wallets } = await window.LYMX.sb.from('wallets').select('lymx_balance').eq('customer_id', user.id);
-      if (wallets && wallets.length) wallets.forEach(w => totalLymx += Number(w.lymx_balance || 0));
+      const { data: cust } = await window.LYMX.sb.from('customers').select('id').eq('user_id', user.id).maybeSingle();
+      if (cust && cust.id) {
+        const { data: wallets } = await window.LYMX.sb.from('wallets').select('id, balance').eq('customer_id', cust.id);
+        if (wallets && wallets.length) {
+          wallets.forEach(w => {
+            totalLymx += Number(w.balance || 0);
+            myWalletIds.push(w.id);
+          });
+        }
+      }
     } catch(e){}
 
     const balEl = document.getElementById('bal-display');
@@ -329,11 +339,15 @@
         .select('amount_lymx').eq('recipient_user_id', user.id).gte('created_at', startIso);
       (iss || []).forEach(r => earnedMo += Number(r.amount_lymx || 0));
     } catch (e) {}
-    try {
-      const { data: red } = await window.LYMX.sb.from('customer_redemptions')
-        .select('amount').eq('customer_user_id', user.id).gte('created_at', startIso);
-      (red || []).forEach(r => spentMo += Number(r.amount || 0));
-    } catch (e) {}
+    // 2026-05-20 audit fix - customer_redemptions table doesn't exist; query transactions where type='redemption' (Audit Pass 2)
+    if (myWalletIds.length > 0) {
+      try {
+        const { data: red } = await window.LYMX.sb.from('transactions')
+          .select('lymx_amount').in('wallet_id', myWalletIds).eq('type', 'redemption').gte('created_at', startIso);
+        // Redemption amounts are negative; show as positive "spent" total
+        (red || []).forEach(r => spentMo += Math.abs(Number(r.lymx_amount || 0)));
+      } catch (e) {}
+    }
 
     const rows = document.querySelectorAll('.balance .row');
     if (rows.length >= 2) {
@@ -361,7 +375,8 @@
             const bizName = (t.businesses && t.businesses.display_name) || 'LYMX Business';
             const when = window.LYMX.fmtDate ? window.LYMX.fmtDate(t.created_at) : new Date(t.created_at).toLocaleDateString();
             const lymx = Math.abs(Number(t.lymx_amount || 0)).toLocaleString('en-US');
-            const usd = (t.usd_amount != null && window.LYMX.fmtUSD) ? window.LYMX.fmtUSD(t.usd_amount) + (earn ? ' spent' : ' off') : '';
+            // 2026-05-20 audit fix - column is usd_basis on transactions, not usd_amount (Audit Pass 3)
+            const usd = (t.usd_basis != null && window.LYMX.fmtUSD) ? window.LYMX.fmtUSD(t.usd_basis) + (earn ? ' spent' : ' off') : '';
             const a = document.createElement('a');
             a.className = 'tx';
             a.href = 'transaction-detail.html?id=' + (t.id || '');

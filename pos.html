@@ -615,26 +615,27 @@
       });
     } catch (e) {}
 
-    // Redeemed today
+    // 2026-05-20 audit fix - transactions has no `customer_id` column (linked via wallet_id → wallets.customer_id) and no `usd_amount` column (use `usd_basis`). (Audit Pass 3)
     let redeemedToday = 0, redeemUsd = 0, redeemCustomers = new Set();
     try {
       const { data: txs } = await sb.from('transactions')
-        .select('lymx_amount, usd_amount, customer_id, type')
+        .select('lymx_amount, usd_basis, wallet_id, type, wallets(customer_id)')
         .eq('business_id', biz.id).gte('created_at', dayStartIso)
         .eq('type', 'redemption');
       (txs || []).forEach(t => {
         redeemedToday += Math.abs(Number(t.lymx_amount || 0));
-        redeemUsd += Number(t.usd_amount || 0);
-        if (t.customer_id) redeemCustomers.add(t.customer_id);
+        redeemUsd += Number(t.usd_basis || 0);
+        const c = t.wallets && t.wallets.customer_id;
+        if (c) redeemCustomers.add(c);
       });
     } catch (e) {}
 
-    // Customer revenue today (LYMX-tagged transactions, usd_amount)
+    // Customer revenue today (LYMX-tagged transactions, usd_basis)
     let revToday = 0;
     try {
       const { data: txs } = await sb.from('transactions')
-        .select('usd_amount').eq('business_id', biz.id).gte('created_at', dayStartIso);
-      (txs || []).forEach(t => { revToday += Number(t.usd_amount || 0); });
+        .select('usd_basis').eq('business_id', biz.id).gte('created_at', dayStartIso);
+      (txs || []).forEach(t => { revToday += Number(t.usd_basis || 0); });
     } catch (e) {}
 
     function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
@@ -659,9 +660,10 @@
     // Active promo check — see if there's a promo for this biz that's active right now
     try {
       const nowIso = new Date().toISOString();
-      const { data: promos } = await sb.from('promos')
-        .select('id, title, multiplier, starts_at, ends_at')
-        .eq('business_id', biz.id)
+      // 2026-05-20 audit fix - `promos` table doesn't exist; canonical name is `platform_promos`. Active-promo banner never appeared before this fix. (Audit Pass 2)
+      const { data: promos } = await sb.from('platform_promos')
+        .select('id, promo_key, amount_lymx, starts_at, ends_at')
+        .eq('active', true)
         .lte('starts_at', nowIso).gte('ends_at', nowIso).limit(1);
       if (promos && promos.length) {
         const p = promos[0];
@@ -669,7 +671,8 @@
         const text = document.getElementById('activePromoText');
         if (banner && text) {
           banner.style.display = 'flex';
-          text.innerHTML = '<strong>' + (p.title || 'Active promo') + '</strong>' + (p.multiplier ? ' · ' + p.multiplier + '× rate' : '');
+          // 2026-05-20 audit fix - platform_promos uses promo_key + amount_lymx (no title/multiplier columns). (Audit Pass 2)
+          text.innerHTML = '<strong>' + (p.promo_key || 'Active promo') + '</strong>' + (p.amount_lymx ? ' · ' + p.amount_lymx + ' LYMX bonus' : '');
         }
       }
     } catch (e) {}

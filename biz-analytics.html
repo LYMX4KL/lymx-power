@@ -459,17 +459,20 @@
     const day60 = new Date(); day60.setDate(day60.getDate() - 60);
     const day90 = new Date(); day90.setDate(day90.getDate() - 90);
 
+    // 2026-05-20 audit fix - transactions has no `customer_id` (linked via wallet_id → wallets.customer_id) and no `usd_amount` (column is `usd_basis`). Customer counts + USD totals + LTV all silently zero before this fix. (Audit Pass 3)
+    const SEL = 'id, wallet_id, usd_basis, type, created_at, wallets(customer_id)';
     const { data: tx30 } = await sb.from('transactions')
-      .select('id, customer_id, usd_amount, type, created_at')
+      .select(SEL)
       .eq('business_id', biz.id).gte('created_at', day30.toISOString());
     const { data: tx60 } = await sb.from('transactions')
-      .select('id, customer_id, usd_amount, type, created_at')
+      .select(SEL)
       .eq('business_id', biz.id).gte('created_at', day60.toISOString()).lt('created_at', day30.toISOString());
     const { data: tx90 } = await sb.from('transactions')
-      .select('id, customer_id, usd_amount, type, created_at')
+      .select(SEL)
       .eq('business_id', biz.id).gte('created_at', day90.toISOString());
 
-    function uniqueCustomers(arr) { return new Set((arr || []).map(t => t.customer_id).filter(Boolean)); }
+    function txCust(t) { return t.wallets && t.wallets.customer_id; }
+    function uniqueCustomers(arr) { return new Set((arr || []).map(t => txCust(t)).filter(Boolean)); }
     function fmt(n) { return Number(n || 0).toLocaleString('en-US'); }
     function fmtUsd(n) { return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
     function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
@@ -488,7 +491,7 @@
       : 'Fills in as customers transact');
 
     const byCust = {};
-    (tx30 || []).forEach(t => { if (t.customer_id) byCust[t.customer_id] = (byCust[t.customer_id] || 0) + 1; });
+    (tx30 || []).forEach(t => { const c = txCust(t); if (c) byCust[c] = (byCust[c] || 0) + 1; });
     const repeatCt = Object.values(byCust).filter(n => n >= 2).length;
     const repeatPct = customers30.size > 0 ? Math.round((repeatCt / customers30.size) * 100) : 0;
     setText('statRepeat', customers30.size > 0 ? (repeatPct + '%') : '—');
@@ -496,9 +499,9 @@
       ? (repeatCt + ' returning of ' + customers30.size)
       : 'Share of customers with 2+ visits');
 
-    const charges30 = (tx30 || []).filter(t => Number(t.usd_amount) > 0);
+    const charges30 = (tx30 || []).filter(t => Number(t.usd_basis) > 0);
     const avgTicket = charges30.length > 0
-      ? charges30.reduce((s, t) => s + Number(t.usd_amount || 0), 0) / charges30.length
+      ? charges30.reduce((s, t) => s + Number(t.usd_basis || 0), 0) / charges30.length
       : 0;
     setText('statTicket', avgTicket > 0 ? fmtUsd(avgTicket) : '—');
     setText('statTicketSub', charges30.length > 0
@@ -507,8 +510,9 @@
 
     const ltvByCust = {};
     (tx90 || []).forEach(t => {
-      if (!t.customer_id) return;
-      ltvByCust[t.customer_id] = (ltvByCust[t.customer_id] || 0) + Number(t.usd_amount || 0);
+      const c = txCust(t);
+      if (!c) return;
+      ltvByCust[c] = (ltvByCust[c] || 0) + Number(t.usd_basis || 0);
     });
     const ltvValues = Object.values(ltvByCust).filter(v => v > 0);
     const ltv = ltvValues.length > 0 ? (ltvValues.reduce((a, b) => a + b, 0) / ltvValues.length) : 0;

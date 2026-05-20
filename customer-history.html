@@ -415,16 +415,26 @@
     if (!user) return;
     const sb = window.LYMX.sb;
 
+    // 2026-05-20 audit fix - lymx_issuances column is `business_id` (renamed from source_business_id) + transactions has no `customer_id` column (linked via wallet_id → wallets.customer_id). (Audit Pass 3)
+    const { data: cust } = await sb.from('customers').select('id').eq('user_id', user.id).maybeSingle();
+    const custId = cust && cust.id;
+    let walletIds = [];
+    if (custId) {
+      const { data: walletsArr } = await sb.from('wallets').select('id').eq('customer_id', custId);
+      walletIds = (walletsArr || []).map(w => w.id);
+    }
     const [issRes, txRes] = await Promise.all([
       sb.from('lymx_issuances')
-        .select('amount_lymx, reason, created_at, source_business_id, businesses(display_name, category)')
+        .select('amount_lymx, reason, created_at, business_id, businesses(display_name, category)')
         .eq('recipient_user_id', user.id)
         .order('created_at', { ascending: false }).limit(500),
-      sb.from('transactions')
-        .select('lymx_amount, type, created_at, business_id, businesses(display_name, category)')
-        .eq('customer_id', user.id)
-        .in('type', ['redemption', 'transfer_out', 'transfer_in', 'adjustment'])
-        .order('created_at', { ascending: false }).limit(500)
+      walletIds.length === 0
+        ? Promise.resolve({ data: [] })
+        : sb.from('transactions')
+            .select('lymx_amount, type, created_at, business_id, businesses(display_name, category)')
+            .in('wallet_id', walletIds)
+            .in('type', ['redemption', 'transfer_out', 'transfer_in', 'adjustment'])
+            .order('created_at', { ascending: false }).limit(500)
     ]);
 
     const rows = [];

@@ -190,9 +190,14 @@ async function init(){
   me = user;
   const sb = window.LYMX.sb;
 
-  // Default manager name to current admin
-  const { data: meRow } = await sb.from('staff_profiles').select('full_name').eq('user_id', user.id).maybeSingle();
-  if (meRow?.full_name) $('managerName').value = meRow.full_name;
+  // 2026-05-20 audit fix - staff_profiles has no `full_name` column. Use auth.user.user_metadata for name, falling back to email local-part. (Audit Pass 3)
+  try {
+    const meta = (user && user.user_metadata) || {};
+    const fn = meta.first_name || '';
+    const ln = meta.last_name || '';
+    const full = (fn + ' ' + ln).trim() || meta.full_name || (user.email || '').split('@')[0] || '';
+    if (full) $('managerName').value = full;
+  } catch (e) {}
   $('startDate').value = (() => { const d = new Date(); d.setDate(d.getDate()+14); return d.toISOString().slice(0,10); })();
 
   // Pull current policy

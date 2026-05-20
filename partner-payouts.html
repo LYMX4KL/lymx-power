@@ -415,14 +415,10 @@
                               .reduce((s, x) => s + Number(x.amount || 0), 0);
       heroCells[2].querySelector('.v').textContent = fmtN(lymxEarned);
 
+      // 2026-05-20 audit fix - `partner_payout_methods` table does not exist. The payout method tile silently showed the "ACH ****----" fallback for every partner. Now: explicit "Not connected yet" placeholder + link to add a payout method (queued feature). (Audit Pass 2)
       try {
-        const { data: methods } = await sb.from('partner_payout_methods')
-          .select('bank_name, last4, is_default').eq('partner_id', partnerId).eq('is_default', true).limit(1);
-        if (methods && methods.length) {
-          accountLast4 = methods[0].last4 || '----';
-          heroCells[3].querySelector('.v').innerHTML = (methods[0].bank_name || 'ACH') + ' ****' + accountLast4;
-          heroCells[3].querySelector('.sub').textContent = 'Default account';
-        }
+        heroCells[3].querySelector('.v').innerHTML = '<span style="color:#92400e;font-size:14px">Not connected</span>';
+        heroCells[3].querySelector('.sub').innerHTML = '<a href="profile.html" style="color:#0050c7;font-weight:600">Add payout method →</a>';
       } catch (e) {}
     }
 

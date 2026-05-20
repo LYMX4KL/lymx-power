@@ -577,12 +577,13 @@
 
     // 3) Sum lymx_issuances per business for the current period (last 30 days for now)
     const day30 = new Date(Date.now() - 30*24*60*60*1000).toISOString();
+    // 2026-05-20 audit fix - lymx_issuances column is `business_id` (was renamed from source_business_id; same root cause as migration 063 trigger). Partner commissions were computing as 0. (Audit Pass 3)
     const { data: issRows } = await sb.from('lymx_issuances')
-      .select('source_business_id, amount_lymx').gte('created_at', day30);
+      .select('business_id, amount_lymx').gte('created_at', day30);
     const issuedByBiz = {};
     (issRows || []).forEach(i => {
-      if (!i.source_business_id) return;
-      issuedByBiz[i.source_business_id] = (issuedByBiz[i.source_business_id] || 0) + Number(i.amount_lymx || 0);
+      if (!i.business_id) return;
+      issuedByBiz[i.business_id] = (issuedByBiz[i.business_id] || 0) + Number(i.amount_lymx || 0);
     });
 
     // 4) Walk sponsor chain per partner: chain[0]=direct (themselves), [1]=g1, [2]=g2, [3]=g3

@@ -612,7 +612,8 @@
         const ic = earn ? 'earn' : 'spend';
         const bizName = (t.businesses && t.businesses.display_name) || 'LYMX Business';
         const when = LYMX.fmtDate(t.created_at);
-        const usd = (t.usd_amount != null) ? LYMX.fmtUSD(t.usd_amount) + (earn ? ' spent' : ' off') : '';
+        // 2026-05-20 audit fix - column is usd_basis on transactions, not usd_amount (Audit Pass 3)
+        const usd = (t.usd_basis != null) ? LYMX.fmtUSD(t.usd_basis) + (earn ? ' spent' : ' off') : '';
         const lymx = Math.abs(Number(t.lymx_amount || 0)).toLocaleString('en-US');
         return (
           '<div class="act-row">'
