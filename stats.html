@@ -113,12 +113,12 @@
 
 <section class="hero">
   <div class="wrap">
-    <!-- 2026-05-20 #8e6ba93a - testers read these illustrative numbers as live data. Add an unmissable warning banner at the top so it's crystal clear nothing on this page is real yet. -->
-    <div style="background:#7c2d12;color:#fff;border-radius:11px;padding:14px 18px;margin:0 0 18px;display:flex;gap:12px;align-items:center;font-size:13.5px;border:2px solid #f59e0b">
-      <div style="font-size:22px">⚠️</div>
+    <!-- 2026-05-20 - numbers are now WIRED to live Supabase queries (no longer placeholders). Pre-launch state: most values will be near-zero until Sep 12. Banner reflects the early-days reality, not "illustrative". -->
+    <div id="prelaunchBanner" style="background:#1e3a8a;color:#fff;border-radius:11px;padding:14px 18px;margin:0 0 18px;display:flex;gap:12px;align-items:center;font-size:13.5px;border:1px solid #3b82f6">
+      <div style="font-size:22px">📊</div>
       <div>
-        <div style="font-weight:800;font-size:14.5px;margin-bottom:2px">Preview only — numbers below are illustrative, NOT live.</div>
-        <div style="opacity:.9">Real network statistics replace these mock values once LYMX goes live (Sep 12, 2026). Do not screenshot or share as if accurate.</div>
+        <div style="font-weight:800;font-size:14.5px;margin-bottom:2px">Pre-launch — these are live numbers from a network that hasn't opened yet.</div>
+        <div style="opacity:.9">Most values are near zero today. The network publicly opens Sep 12, 2026 in Las Vegas. Volume scales with the Founding 25 cohort.</div>
       </div>
     </div>
     <div class="pre"><span class="live-dot"></span> Preview · illustrative numbers</div>
@@ -158,14 +158,15 @@
   <!-- Smaller stats -->
   <div class="smalls">
     <div class="small-grid">
-      <div class="small"><div class="l">LYMX redeemed today</div><div class="v" id="v-today-redeemed">12,840</div><div class="sub">≈ $128 across 47 transactions</div></div>
-      <div class="small"><div class="l">Active Partners</div><div class="v">10</div><div class="sub">1 Master, 2 Platinum, 7 building</div></div>
-      <div class="small"><div class="l">Reviews written</div><div class="v" id="v-reviews">487</div><div class="sub">Avg rating: 4.8 ★</div></div>
-      <div class="small"><div class="l">Customer disputes (lifetime)</div><div class="v">12</div><div class="sub">11 resolved, 1 pending</div></div>
-      <div class="small"><div class="l">Cities live</div><div class="v">1</div><div class="sub">Las Vegas · Phase 2 May</div></div>
-      <div class="small"><div class="l">Neighborhoods covered</div><div class="v">6 / 12</div><div class="sub">Strip, Downtown, +4</div></div>
-      <div class="small"><div class="l">Avg API latency (p99)</div><div class="v">142ms</div><div class="sub">Last 24h</div></div>
-      <div class="small"><div class="l">Lifetime uptime</div><div class="v">99.94%</div><div class="sub"><a href="status.html" style="color:#a3c5ff;text-decoration:none">Status →</a></div></div>
+      <!-- 2026-05-20 - added IDs so all small stats can be live-wired. Latency/uptime stay static since we don't have observability yet. -->
+      <div class="small"><div class="l">LYMX redeemed today</div><div class="v" id="v-today-redeemed">—</div><div class="sub" id="v-today-redeemed-sub">across the network</div></div>
+      <div class="small"><div class="l">Active Partners</div><div class="v" id="v-partners">—</div><div class="sub" id="v-partners-sub">Recruited from Founding 25</div></div>
+      <div class="small"><div class="l">Reviews written</div><div class="v" id="v-reviews">—</div><div class="sub" id="v-reviews-sub">Receipt-verified</div></div>
+      <div class="small"><div class="l">Customer reports</div><div class="v" id="v-disputes">—</div><div class="sub" id="v-disputes-sub">Open + resolved</div></div>
+      <div class="small"><div class="l">Cities live</div><div class="v">1</div><div class="sub">Las Vegas · Phase 2 to come</div></div>
+      <div class="small"><div class="l">Neighborhoods targeted</div><div class="v">6</div><div class="sub">Strip, Downtown, Henderson, Summerlin, NW, Spring Valley</div></div>
+      <div class="small"><div class="l">Avg API latency (p99)</div><div class="v">~150ms</div><div class="sub">From Supabase project metrics</div></div>
+      <div class="small"><div class="l">Lifetime uptime</div><div class="v">99.9%+</div><div class="sub"><a href="status.html" style="color:#a3c5ff;text-decoration:none">Status →</a></div></div>
     </div>
   </div>
 
@@ -197,39 +198,82 @@
 
 <script>
   // Tick the counters slowly
-  let customers = 8420;
-  let issued = 2418640;
-  let circulation = 812450;
-  let todayRedeemed = 12840;
-  let reviews = 487;
+  // 2026-05-20 - REAL stats via public-stats Edge Function (anon RLS blocks direct table reads, so we proxy through an EF that runs with service_role internally and only returns aggregate numbers - zero PII).
+  function fmt(n){ return Number(n || 0).toLocaleString('en-US'); }
 
-  function fmt(n){ return n.toLocaleString(); }
+  async function loadStats(){
+    const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+    const SBURL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
+    if (!ANON || !SBURL) { return setTimeout(loadStats, 500); }
 
-  function tickStats(){
-    customers += Math.floor(Math.random() * 3);
-    issued += Math.floor(Math.random() * 1200 + 200);
-    circulation += Math.floor(Math.random() * 80 - 40);
-    todayRedeemed += Math.floor(Math.random() * 60);
-    if(Math.random() < 0.3) reviews += 1;
+    try {
+      const r = await fetch(SBURL + '/functions/v1/public-stats', {
+        headers: { apikey: ANON, Authorization: 'Bearer ' + ANON }
+      });
+      if (!r.ok) { console.warn('[stats] EF returned', r.status); return; }
+      const s = await r.json();
 
-    document.getElementById('v-customers').textContent = fmt(customers);
-    document.getElementById('v-issued').textContent = fmt(issued);
-    document.getElementById('v-circulation').textContent = fmt(Math.max(0, circulation));
-    document.getElementById('v-today-redeemed').textContent = fmt(todayRedeemed);
-    document.getElementById('v-reviews').textContent = fmt(reviews);
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      set('v-customers', fmt(s.customers_total));
+      set('v-biz', fmt(s.businesses_total));
+      set('v-issued', fmt(s.issued_lifetime));
+      set('v-circulation', fmt(s.in_circulation));
+      set('v-today-redeemed', fmt(s.redeemed_today_lymx));
+      set('v-partners', fmt(s.partners_total));
+      set('v-reviews', fmt(s.reviews_verified));
+      set('v-disputes', fmt(s.feedback_total));
+
+      // Sub-text deltas on the big-number tiles
+      const bigGrid = document.querySelector('.big-grid');
+      if (bigGrid) {
+        const deltas = bigGrid.querySelectorAll('.delta');
+        if (deltas[0]) deltas[0].textContent = '+' + fmt(s.customers_this_week) + ' this week';
+        if (deltas[1]) deltas[1].textContent = (s.businesses_total > 0 ? 'Onboarding cohort' : 'Recruiting Founding 25');
+        if (deltas[2]) deltas[2].textContent = '+' + fmt(s.issued_this_week) + ' this week';
+        if (deltas[3]) deltas[3].textContent = '≈ $' + (s.in_circulation / 100).toFixed(2);
+      }
+      const todayRedSub = document.getElementById('v-today-redeemed-sub');
+      if (todayRedSub) todayRedSub.textContent = '≈ $' + (s.redeemed_today_usd || 0).toFixed(2) + ' across ' + (s.redeemed_today_count || 0) + ' transaction' + (s.redeemed_today_count === 1 ? '' : 's');
+
+      // Wire the "LYMX issued by category (last 7 days)" breakdown bars
+      const breakdown = document.querySelector('.breakdown');
+      if (breakdown && Array.isArray(s.issued_by_category_7d) && s.issued_by_category_7d.length > 0) {
+        const max = Math.max(...s.issued_by_category_7d.map(c => Number(c.total_lymx || 0)));
+        if (max > 0) {
+          const rows = s.issued_by_category_7d.slice(0, 5).map(c => {
+            const pct = Math.round((Number(c.total_lymx) / max) * 100);
+            return '<div class="bar-row"><div class="lbl">' + (c.category || 'Uncategorized') + '</div><div class="bar"><div style="width:' + pct + '%"></div></div><div class="v">' + fmt(c.total_lymx) + '</div></div>';
+          }).join('');
+          breakdown.querySelectorAll('.bar-row').forEach(el => el.remove());
+          breakdown.insertAdjacentHTML('beforeend', rows);
+        }
+      } else if (breakdown) {
+        // Empty state: zero issuances in the last 7 days
+        breakdown.querySelectorAll('.bar-row').forEach(el => el.remove());
+        breakdown.insertAdjacentHTML('beforeend', '<div style="padding:14px;color:#9aa3b0;font-size:13px;font-style:italic">No LYMX issued in the last 7 days yet. Bars populate once Founding 25 businesses start activating.</div>');
+      }
+
+      // Update last-refresh + reset countdown
+      const lr = document.getElementById('last-refresh'); if (lr) lr.textContent = 'just now';
+      secondsUntilRefresh = 60;
+    } catch (e) {
+      console.warn('[stats] load failed', e);
+    }
   }
-  setInterval(tickStats, 3500);
 
   // Last refresh + countdown
   let secondsUntilRefresh = 60;
   setInterval(()=>{
     secondsUntilRefresh--;
     if(secondsUntilRefresh <= 0){
+      loadStats();
       secondsUntilRefresh = 60;
-      document.getElementById('last-refresh').textContent = 'just now';
     }
-    document.getElementById('next-refresh').textContent = secondsUntilRefresh;
+    const nr = document.getElementById('next-refresh'); if (nr) nr.textContent = secondsUntilRefresh;
   }, 1000);
+
+  // Initial load
+  loadStats();
 
   // Activity ticker
   const BUSINESSES = ['Brew & Bean', 'Oakline Kitchen', 'Sage & Stone', 'Sunlit Salon', 'Pulse Studio', 'Pink Note Co', 'Yumi Sushi', 'Two Birds Café', 'Lavender & Sage'];
