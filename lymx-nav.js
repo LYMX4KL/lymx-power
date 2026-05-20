@@ -60,28 +60,45 @@
   }
 
   // ---- 1) Redirect signed-in users away from signup / welcome pages -------
+  // 2026-05-20 #8ae35834 — partner-signup.html now routes signed-in
+  // non-partner users to partner-upgrade.html (the additive-role flow)
+  // instead of bouncing them to their dashboard. That fix RESOLVES the
+  // long-standing complaint from Helen + Rachel that "Apply as Partner"
+  // was a dead button for anyone already logged in.
   function redirectIfSignedIn(payload) {
     var path = (location.pathname || '').toLowerCase();
-    // 2026-05-19 RESTORED — earlier I removed partner-signup + biz-signup from
-    // this list (fix #8ae35834). That caused 6 urgent role-corruption tickets
-    // (#02a9c79f #9435ae00 #351f4a8d #f4245e4f #ab7fe332 #c5183ac8): when a
-    // signed-in customer submitted partner-signup the EF attached a partner
-    // row to their existing user_id, giving them BOTH roles + redirecting them
-    // to the wrong dashboard. Re-blocking those pages for signed-in users now.
-    // The proper fix for #8ae35834 is a separate "apply-as-existing-customer"
-    // flow — TODO. Until then, signed-in users hit their own dashboard.
-    var entryPages = [
+    // Partner-signup gets special handling — see below.
+    var nonPartnerEntryPages = [
       '/welcome.html', '/welcome',
       '/customer-signup.html', '/customer-signup',
       '/biz-signup.html', '/biz-signup',
-      '/partner-signup.html', '/partner-signup',
       '/signup.html', '/signup'
     ];
-    var isEntry = entryPages.some(function (p) { return path === p || path.endsWith(p); });
-    if (!isEntry) return;
-    // Always allow when an explicit ?force=1 is on the URL (in case Kenny needs to test the flow)
-    if (/[?&]force=1/.test(location.search)) return;
-    location.replace(routeFor(payload));
+    var partnerEntryPages = ['/partner-signup.html', '/partner-signup'];
+    if (/[?&]force=1/.test(location.search)) return; // explicit override
+
+    // 1a. /partner-signup.html — route signed-in users to upgrade flow,
+    //     UNLESS they're already a partner (then send to their dashboard).
+    if (partnerEntryPages.some(function (p) { return path === p || path.endsWith(p); })) {
+      // Quick check via cached role — full check happens on /partner-upgrade.html itself.
+      var email = (payload && payload.email) || '';
+      var dest = routeFor(payload);
+      // Partners (rep-dashboard route) → straight to their dashboard, no upgrade needed.
+      if (dest === 'rep-dashboard.html' || /partner|lymxpower\.com|getlymx\.com/i.test(email)) {
+        location.replace(dest);
+      } else {
+        // Customers, businesses, anonymous-authed → upgrade page (which gates again).
+        // Preserve any ?ref= sponsor code so it carries through to the upgrade form.
+        var qs = location.search || '';
+        location.replace('/partner-upgrade.html' + qs);
+      }
+      return;
+    }
+
+    // 1b. Other entry pages — original behaviour (bounce to dashboard).
+    if (nonPartnerEntryPages.some(function (p) { return path === p || path.endsWith(p); })) {
+      location.replace(routeFor(payload));
+    }
   }
 
   // ---- 2) Swap guest buttons → "My account" -------------------------------
