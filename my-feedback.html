@@ -192,8 +192,18 @@
     <div class="meta" id="mMeta">—</div>
     <div class="section" id="mOrig">—</div>
     <div id="mThread"></div>
-    <div style="display:flex;justify-content:flex-end;margin-top:14px">
-      <button class="btn" id="mClose" style="background:#fff;border:1px solid var(--line);color:var(--ink)">Close</button>
+    <!-- 2026-05-20 #3fcf1a6e - user-side reply input (Dave's reply-thread feature). Posts via feedback-user-reply EF. Status auto-transitions back to in_progress. -->
+    <div id="mReplyWrap" style="margin-top:14px;display:none;border-top:1px solid var(--line);padding-top:14px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Add a reply</div>
+      <textarea id="mReplyText" rows="4" placeholder="Add more info, ask a follow-up, or reopen this ticket. The LYMX team will be notified." style="width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:9px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff;outline:none;resize:vertical;min-height:80px"></textarea>
+      <div id="mReplyHint" style="font-size:12px;color:var(--muted);margin-top:4px"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px;flex-wrap:wrap">
+      <div id="mReplyBanner" style="display:none;flex:1;padding:8px 12px;border-radius:8px;font-size:13px"></div>
+      <div style="display:flex;gap:8px;margin-left:auto">
+        <button class="btn" id="mClose" style="background:#fff;border:1px solid var(--line);color:var(--ink)">Close</button>
+        <button class="btn btn-confirm" id="mSendReply" style="display:none">Send reply</button>
+      </div>
     </div>
   </div>
 </div>
@@ -474,8 +484,73 @@ async function openDetail(id) {
       '</div>'; }).join('')
     : '<div style="color:var(--muted);font-size:13px;font-style:italic;padding:14px">No replies yet — we\'ll get to it soon.</div>';
 
+  // 2026-05-20 #3fcf1a6e - show reply input UNLESS ticket is closed/spam (terminal states).
+  const canReply = i.status !== 'closed' && i.status !== 'spam';
+  document.getElementById('mReplyWrap').style.display = canReply ? '' : 'none';
+  document.getElementById('mSendReply').style.display = canReply ? '' : 'none';
+  document.getElementById('mReplyText').value = '';
+  document.getElementById('mReplyText').dataset.feedbackId = i.id;
+  document.getElementById('mReplyBanner').style.display = 'none';
+  const hint = document.getElementById('mReplyHint');
+  if (hint) {
+    hint.textContent = i.status === 'resolved'
+      ? 'This ticket is resolved. Sending a reply will reopen it.'
+      : (i.awaiting_verification ? 'A reply here counts as feedback to the team — separate from the Confirm/Still-broken buttons above.' : 'The LYMX team will be notified by email.');
+  }
+
   document.getElementById('modal').classList.add('on');
 }
+
+// 2026-05-20 #3fcf1a6e - send user reply via feedback-user-reply EF
+async function sendUserReply() {
+  const ta = document.getElementById('mReplyText');
+  const id = ta && ta.dataset.feedbackId;
+  const txt = (ta && ta.value || '').trim();
+  const banner = document.getElementById('mReplyBanner');
+  const btn = document.getElementById('mSendReply');
+  function show(msg, ok) {
+    banner.style.display = 'block';
+    banner.style.background = ok ? '#ecfdf5' : '#fee2e2';
+    banner.style.color = ok ? '#065f46' : '#991b1b';
+    banner.style.border = '1px solid ' + (ok ? '#a7f3d0' : '#fecaca');
+    banner.textContent = msg;
+  }
+  if (!id) return;
+  if (txt.length < 5) { show('Type at least a few words before sending.', false); return; }
+  if (txt.length > 5000) { show('Reply too long (max 5000 chars).', false); return; }
+  btn.disabled = true;
+  const origText = btn.textContent;
+  btn.textContent = 'Sending…';
+  try {
+    const s = await window.LYMX.getSession();
+    const r = await fetch(SUPABASE_URL + '/functions/v1/feedback-user-reply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': ANON, 'Authorization': 'Bearer ' + (s && s.access_token || ANON) },
+      body: JSON.stringify({ feedback_id: id, body_text: txt })
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      show('Could not send: ' + (data.error || r.status), false);
+      btn.disabled = false; btn.textContent = origText;
+      return;
+    }
+    show('Reply sent. The LYMX team will respond soon.', true);
+    ta.value = '';
+    // Refresh the thread inline
+    setTimeout(async () => {
+      await openDetail(id);
+      await loadList();
+      btn.disabled = false; btn.textContent = origText;
+    }, 700);
+  } catch (e) {
+    show('Network error: ' + (e.message || e), false);
+    btn.disabled = false; btn.textContent = origText;
+  }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  const sb = document.getElementById('mSendReply');
+  if (sb) sb.addEventListener('click', sendUserReply);
+});
 
 document.getElementById('mClose').addEventListener('click', function(){ document.getElementById('modal').classList.remove('on'); });
 document.getElementById('modal').addEventListener('click', function(e){ if (e.target.id === 'modal') e.target.classList.remove('on'); });
