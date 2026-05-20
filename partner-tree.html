@@ -487,7 +487,7 @@
           lookup = await get('/rest/v1/partners?partner_code=eq.' + encodeURIComponent(cachedCode) + '&select=id,display_name,legal_name,is_founding_25,contact_email,partner_code,sponsor_partner_id&limit=1');
           if (lookup && lookup.length) me = lookup[0];
         }
-      } catch (e) {}
+      } catch (e) { console.warn('[partner-tree.html:L490] silent error', e); }
     }
 
     if (!me) {

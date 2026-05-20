@@ -101,7 +101,7 @@ async function load(){
     const { data: emails } = await sb.rpc('admin_list_user_emails');
     const found = (emails || []).find(e => e.user_id === r.profile_id);
     if (found) subjectName = found.full_name || found.email || subjectName;
-  } catch (e) {}
+  } catch (e) { console.warn('[admin-review.html:L104] silent error', e); }
 
   $('reviewSubtitle').textContent = subjectName + ' · ' + r.period.replace(/_/g,' ') + ' · scheduled ' + ymd(r.scheduled_for);
   $('statusBar').textContent = 'Status: ' + r.status.replace(/_/g,' ');

@@ -135,7 +135,7 @@ async function boot() {
       { headers: { apikey: ANON, Authorization: 'Bearer ' + s.access_token } });
     const rows = await r.json();
     pcode = (rows && rows[0] && rows[0].partner_code) || null;
-  } catch (e) {}
+  } catch (e) { console.warn('[refer.html:L138] silent error', e); }
   const code = pcode || ('U-' + userId.slice(0, 6).toUpperCase());
   const link = 'https://getlymx.com/welcome.html?ref=' + encodeURIComponent(code);
   document.getElementById('pcode').textContent = code;
@@ -179,7 +179,7 @@ async function boot() {
           '</div>';
       }
     }
-  } catch (e) {}
+  } catch (e) { console.warn('[refer.html:L182] silent error', e); }
 }
 boot();
 </script>

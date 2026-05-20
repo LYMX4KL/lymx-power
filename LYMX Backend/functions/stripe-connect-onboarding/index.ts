@@ -58,7 +58,7 @@ async function stripe(path: string, opts: { method: string; body?: Record<string
         body,
     });
     let parsed: any = null;
-    try { parsed = await r.json(); } catch {}
+    try { parsed = await r.json(); } catch (e) { console.warn('[index.ts:L61] silent error', e); }
     return { ok: r.ok, status: r.status, body: parsed };
 }
 
@@ -80,7 +80,7 @@ serve(async (req) => {
     if (!userId) return err("Unauthorized", 401);
 
     let body: { business_id?: string } = {};
-    try { body = await req.json(); } catch {}
+    try { body = await req.json(); } catch (e) { console.warn('[index.ts:L83] silent error', e); }
 
     // Find the business — either explicit business_id (admin path) or owner_user_id
     let biz: any = null;

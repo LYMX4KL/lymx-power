@@ -54,7 +54,7 @@
   function getLocale() {
     try {
       if (window.LymxI18n && window.LymxI18n.getLocale) return window.LymxI18n.getLocale();
-    } catch (_) {}
+    } catch (e) { console.warn('[auto-translate-page.js:L57] silent error', e); }
     try { return localStorage.getItem("lymx_locale") || "en"; } catch (_) { return "en"; }
   }
 
@@ -202,7 +202,7 @@
         // Preserve original leading/trailing whitespace in the node
         var leading = (t.original.match(/^\s*/) || [""])[0];
         var trailing = (t.original.match(/\s*$/) || [""])[0];
-        try { t.node.nodeValue = leading + translated + trailing; } catch (_) {}
+        try { t.node.nodeValue = leading + translated + trailing; } catch (e) { console.warn('[auto-translate-page.js:L205] silent error', e); }
       });
     });
   }

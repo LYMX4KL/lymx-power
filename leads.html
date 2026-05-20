@@ -177,7 +177,7 @@
     try {
       const params = new URLSearchParams(location.search);
       if (params.get('owner') === 'me') $('ownerFilter').value = 'me';
-    } catch(e){}
+    } catch(e) { console.warn('[leads.html:L180] silent error', e); }
 
     await loadAll();
     render();

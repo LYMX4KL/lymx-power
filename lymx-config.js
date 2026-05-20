@@ -162,7 +162,7 @@ window.LYMX_CONFIG = {
 
   // 1. Capture ?ref= from URL.
   var urlRef = null;
-  try { urlRef = new URLSearchParams(location.search).get('ref'); } catch (_) {}
+  try { urlRef = new URLSearchParams(location.search).get('ref'); } catch (e) { console.warn('[lymx-config.js:L165] silent error', e); }
   if (urlRef) writeRef(urlRef);
 
   // 2. If URL has no ref but storage does, replaceState so inline scripts
@@ -176,7 +176,7 @@ window.LYMX_CONFIG = {
           url.searchParams.set('ref', stored);
           history.replaceState(history.state, '', url.toString());
         }
-      } catch (_) {}
+      } catch (e) { console.warn('[lymx-config.js:L179] silent error', e); }
     }
   }
 
@@ -204,7 +204,7 @@ window.LYMX_CONFIG = {
         } else {
           a.setAttribute('href', url.pathname + url.search + url.hash);
         }
-      } catch (_) {}
+      } catch (e) { console.warn('[lymx-config.js:L207] silent error', e); }
     }
   }
   if (document.readyState === 'loading') {

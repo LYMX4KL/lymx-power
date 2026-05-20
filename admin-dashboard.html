@@ -341,7 +341,7 @@
       const s = await window.LYMX.getSession();
       if (s && s.access_token) token = s.access_token;
     }
-  } catch {}
+  } catch (e) { console.warn('[admin-dashboard.html:L344] silent error', e); }
   const h = { 'apikey': ANON, 'Authorization': 'Bearer ' + token };
 
   async function count(path) {
@@ -434,7 +434,7 @@
         const s = await window.LYMX.getSession();
         if (s && s.access_token) token = s.access_token;
       }
-    } catch {}
+    } catch (e) { console.warn('[admin-dashboard.html:L437] silent error', e); }
     const h = { 'apikey': ANON, 'Authorization': 'Bearer ' + token };
 
     // Date windows
@@ -458,7 +458,7 @@
     try {
       const r = await fetch(callsTodayUrl, { headers: h });
       if (r.ok) callsToday = await r.json();
-    } catch (e) {}
+    } catch (e) { console.warn('[admin-dashboard.html:L461] silent error', e); }
     setText('pulseCallsToday', callsToday.length);
 
     // Find next 3 callable calls (starts_at >= now)
@@ -478,7 +478,7 @@
           try {
             const cr = await fetch(SUPA + '/rest/v1/team_calendars?id=in.(' + encodeURIComponent(calIds.join(',')) + ')&select=id,handle,display_name', { headers: h });
             if (cr.ok) cals = await cr.json();
-          } catch (e) {}
+          } catch (e) { console.warn('[admin-dashboard.html:L481] silent error', e); }
         }
         const calOf = id => cals.find(c => c.id === id);
         upcomingListEl.innerHTML = upcomingToday.map(b => {
@@ -502,7 +502,7 @@
     try {
       const r = await fetch(yUrl, { headers: h });
       if (r.ok) yRows = await r.json();
-    } catch (e) {}
+    } catch (e) { console.warn('[admin-dashboard.html:L505] silent error', e); }
     const completedYday = yRows.filter(b => b.status === 'completed').length;
     const noShowYday = yRows.filter(b => b.status === 'no_show').length;
     setText('pulseCompletedYday', completedYday);
@@ -547,7 +547,7 @@
         const s = await window.LYMX.getSession();
         if (s && s.access_token) token = s.access_token;
       }
-    } catch {}
+    } catch (e) { console.warn('[admin-dashboard.html:L550] silent error', e); }
     const headers = { apikey: ANON, Authorization: 'Bearer ' + token };
 
     const r = await fetch(SUPA + '/rest/v1/v_open_fraud_flags?select=id,flag_type,severity,business_name,amount_lymx,summary,created_at&order=severity.asc,created_at.desc&limit=8', { headers });

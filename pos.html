@@ -579,7 +579,7 @@
           .select('business_id, businesses(id, display_name, legal_name, issuance_rate)')
           .eq('user_id', user.id).limit(1);
         if (bp && bp.length && bp[0].businesses) bizArr = [bp[0].businesses];
-      } catch (e) {}
+      } catch (e) { console.warn('[pos.html:L582] silent error', e); }
     }
     if (!bizArr || !bizArr.length) {
       const sub = document.getElementById('bizSubtitle');
@@ -613,7 +613,7 @@
         issuedToday += Number(i.amount_lymx || 0);
         if (i.recipient_user_id) issuedCustomers.add(i.recipient_user_id);
       });
-    } catch (e) {}
+    } catch (e) { console.warn('[pos.html:L616] silent error', e); }
 
     // 2026-05-20 audit fix - transactions has no `customer_id` column (linked via wallet_id → wallets.customer_id) and no `usd_amount` column (use `usd_basis`). (Audit Pass 3)
     let redeemedToday = 0, redeemUsd = 0, redeemCustomers = new Set();
@@ -628,7 +628,7 @@
         const c = t.wallets && t.wallets.customer_id;
         if (c) redeemCustomers.add(c);
       });
-    } catch (e) {}
+    } catch (e) { console.warn('[pos.html:L631] silent error', e); }
 
     // Customer revenue today (LYMX-tagged transactions, usd_basis)
     let revToday = 0;
@@ -636,7 +636,7 @@
       const { data: txs } = await sb.from('transactions')
         .select('usd_basis').eq('business_id', biz.id).gte('created_at', dayStartIso);
       (txs || []).forEach(t => { revToday += Number(t.usd_basis || 0); });
-    } catch (e) {}
+    } catch (e) { console.warn('[pos.html:L639] silent error', e); }
 
     function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
     function fmtN(n) { return Number(n || 0).toLocaleString('en-US'); }
@@ -675,7 +675,7 @@
           text.innerHTML = '<strong>' + (p.promo_key || 'Active promo') + '</strong>' + (p.amount_lymx ? ' · ' + p.amount_lymx + ' LYMX bonus' : '');
         }
       }
-    } catch (e) {}
+    } catch (e) { console.warn('[pos.html:L678] silent error', e); }
 
     // Today date in top right
     const td = document.getElementById('today-date');

@@ -236,7 +236,7 @@ async function load(){
       const found = emails.find(e => e.user_id === profileId);
       if (found) userInfo = found;
     }
-  } catch (e) {}
+  } catch (e) { console.warn('[admin-personnel-file.html:L239] silent error', e); }
 
   renderHeader();
   loadOverview();

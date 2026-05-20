@@ -355,7 +355,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
         inviter_ref: inviterRef || null,
         locale_hint: (function(){
           // Resolve from active LymxI18n locale (if signed-in toggle was used) or browser
-          try { if (window.LymxI18n && window.LymxI18n.getLocale) return window.LymxI18n.getLocale(); } catch(e){}
+          try { if (window.LymxI18n && window.LymxI18n.getLocale) return window.LymxI18n.getLocale(); } catch(e) { console.warn('[welcome.html:L358] silent error', e); }
           var b = (navigator.language || '').toLowerCase();
           if (/^zh.*(hant|tw|hk|mo)/.test(b)) return 'zh-TW';
           if (b.startsWith('zh')) return 'zh-CN';

@@ -504,7 +504,7 @@
     try {
       const { data: custRow } = await LYMX.sb.from('customers').select('display_name').eq('user_id', user.id).maybeSingle();
       displayName = (custRow && custRow.display_name) || '';
-    } catch (e) {}
+    } catch (e) { console.warn('[customer-dashboard.html:L507] silent error', e); }
     const name = displayName
       || (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name))
       || (user.email ? user.email.split('@')[0] : 'there');
@@ -557,7 +557,7 @@
       const { data: prow } = await LYMX.sb.from('partners')
         .select('partner_code').eq('user_id', user.id).maybeSingle();
       if (prow && prow.partner_code) refCode = prow.partner_code;
-    } catch (e) {}
+    } catch (e) { console.warn('[customer-dashboard.html:L560] silent error', e); }
     try {
       const shareUrl = 'https://getlymx.com/welcome.html?ref=' + refCode;
       const shareUrlEl = document.getElementById('refShareUrl');
@@ -660,15 +660,15 @@
       try {
         const r = await fetch(URL + '/rest/v1/lymx_issuances?recipient_user_id=eq.' + userId + '&created_at=gte.' + encodeURIComponent(startIso) + '&select=amount_lymx', { headers });
         if (r.ok) { const rows = await r.json(); earnedMo = rows.reduce((s, x) => s + (Number(x.amount_lymx) || 0), 0); }
-      } catch (e) {}
+      } catch (e) { console.warn('[customer-dashboard.html:L663] silent error', e); }
       try {
         const r = await fetch(URL + '/rest/v1/customer_redemptions?customer_user_id=eq.' + userId + '&created_at=gte.' + encodeURIComponent(startIso) + '&select=amount', { headers });
         if (r.ok) { const rows = await r.json(); spentMo = rows.reduce((s, x) => s + (Number(x.amount) || 0), 0); }
-      } catch (e) {}
+      } catch (e) { console.warn('[customer-dashboard.html:L667] silent error', e); }
       try {
         const r = await fetch(URL + '/rest/v1/customer_redemptions?customer_user_id=eq.' + userId + '&select=id', { headers, method: 'GET' });
         if (r.ok) { const rows = await r.json(); lifetime = rows.length; }
-      } catch (e) {}
+      } catch (e) { console.warn('[customer-dashboard.html:L671] silent error', e); }
       function fmt(n, prefix) {
         if (!n) return '0';
         const s = Math.abs(Math.round(n)).toLocaleString();
@@ -709,7 +709,7 @@ window.addEventListener('DOMContentLoaded', async function () {
         { headers: { apikey: ANON, Authorization: 'Bearer ' + s.access_token } });
       var rows = await r.json();
       pcode = (rows && rows[0] && rows[0].partner_code) || null;
-    } catch (e) {}
+    } catch (e) { console.warn('[customer-dashboard.html:L712] silent error', e); }
     var code = pcode || ('U-' + s.user.id.slice(0, 6).toUpperCase());
     var link = 'https://getlymx.com/welcome.html?ref=' + encodeURIComponent(code);
     var bodyTxt = 'Hey — I am using LYMX. Sign up with my link and we both get 100 LYMX: ' + link;
@@ -829,7 +829,7 @@ window.addEventListener('DOMContentLoaded', async function () {
         }).join('');
       }
     }
-  } catch (e) {}
+  } catch (e) { console.warn('[customer-dashboard.html:L832] silent error', e); }
 
   // Friends Joined counter — count referrals where I'm the inviter
   try {
@@ -844,7 +844,7 @@ window.addEventListener('DOMContentLoaded', async function () {
         }
       });
     }
-  } catch (e) {}
+  } catch (e) { console.warn('[customer-dashboard.html:L847] silent error', e); }
 });
 </script>
 
@@ -870,7 +870,7 @@ window.addEventListener('DOMContentLoaded', async function () {
           var v = window.LymxI18n.t(k);
           if (v && v !== k) return v;
         }
-      } catch(e){}
+      } catch(e) { console.warn('[customer-dashboard.html:L873] silent error', e); }
       return fallback;
     }
     function esc(x){

@@ -69,7 +69,7 @@ async function twilioSend(opts: {
         body: params.toString(),
     });
     let payload: any = null;
-    try { payload = await res.json(); } catch {}
+    try { payload = await res.json(); } catch (e) { console.warn('[index.ts:L72] silent error', e); }
     if (!res.ok) {
         return {
             sid: null,

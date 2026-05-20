@@ -90,7 +90,7 @@ let currentTab = 'upcoming';
 function $(id){return document.getElementById(id);}
 function toast(msg, kind){const t=$('toast');t.textContent=msg;t.className='toast on '+(kind||'');setTimeout(()=>t.className='toast',2800);}
 function esc(s){return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function t(k, fallback){ try { if (window.LymxI18n) { const v = window.LymxI18n.t(k); if (v && v !== k) return v; } } catch(e){} return fallback; }
+function t(k, fallback){ try { if (window.LymxI18n) { const v = window.LymxI18n.t(k); if (v && v !== k) return v; } } catch(e) { console.warn('[my-schedule.html:L93] silent error', e); } return fallback; }
 
 async function authedFetch(path, opts) {
   opts = opts || {};

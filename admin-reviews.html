@@ -129,7 +129,7 @@ window.addEventListener('DOMContentLoaded', async function () {
       document.getElementById('ctPending').textContent = ct.pending || 0;
       document.getElementById('ctVerified').textContent = ct.verified || 0;
       document.getElementById('ctRejected').textContent = ct.rejected || 0;
-    } catch (e) {}
+    } catch (e) { console.warn('[admin-reviews.html:L132] silent error', e); }
   }
 
   async function getSignedUrl(path) {

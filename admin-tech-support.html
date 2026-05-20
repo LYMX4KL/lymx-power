@@ -447,7 +447,7 @@ async function loadPartnerIdentity(userId) {
       lines.push('<div style="font-size:12px;margin-top:2px;color:var(--muted)">Login account: ' + escapeHtml(authEmail) + '</div>');
     }
     document.getElementById('mEmail').innerHTML = lines.join('');
-  } catch(_) {}
+  } catch(e) { console.warn('[admin-tech-support.html:L450] silent error', e); }
 }
 async function loadBusinessIdentity(userId) {
   try {
@@ -463,7 +463,7 @@ async function loadBusinessIdentity(userId) {
     lines.push('<div style="font-weight:700;color:#0e1116">' + escapeHtml(name) + (slug ? ' <span style="color:var(--muted);font-weight:600">(' + escapeHtml(slug) + ')</span>' : '') + '</div>');
     if (authEmail) lines.push('<div style="font-size:12px;margin-top:2px;color:var(--muted)">Login account: ' + escapeHtml(authEmail) + '</div>');
     document.getElementById('mEmail').innerHTML = lines.join('');
-  } catch(_) {}
+  } catch(e) { console.warn('[admin-tech-support.html:L466] silent error', e); }
 }
 
 async function loadThread(feedbackId) {

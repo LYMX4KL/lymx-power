@@ -226,7 +226,7 @@
         var when = new Date(r.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' });
         return '<div style="padding:14px 16px;background:#fff;border:1px solid #e6e8ec;border-radius:9px;margin-bottom:10px"><div style="color:#d4a017;font-size:14px;margin-bottom:6px">' + stars + (r.has_photo ? ' <span style="font-size:11px;color:#0a84ff;background:#EEF6FF;padding:2px 7px;border-radius:999px;margin-left:4px">photo</span>' : '') + '</div><div style="font-size:14px;color:#1a1f27">' + esc(r.body || '').replace(/\n/g, '<br>') + '</div><div style="font-size:11.5px;color:#5b6472;margin-top:6px">' + when + ' · Verified by receipt</div></div>';
       }).join('');
-    } catch (e) {}
+    } catch (e) { console.warn('[lymx-reviews.js:L229] silent error', e); }
   }
 
   // -------- Save Business floating chip --------
@@ -245,7 +245,7 @@
         var rows = r.ok ? await r.json() : [];
         if (Array.isArray(rows) && rows.length) { saveBtn.innerHTML = '<span style="color:#d4a017">★</span><span>Saved</span>'; saveBtn.dataset.saved = '1'; }
         else { saveBtn.innerHTML = '<span>☆</span><span>Save</span>'; saveBtn.dataset.saved = ''; }
-      } catch (e) {}
+      } catch (e) { console.warn('[lymx-reviews.js:L248] silent error', e); }
     }
     refresh();
     saveBtn.addEventListener('click', async function () {

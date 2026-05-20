@@ -77,7 +77,7 @@
         var isAdmin = await aRes.json();
         if (isAdmin === true) { writeCache({ tag: cacheTag, ok: true }); return; }
       }
-    } catch (e) {}
+    } catch (e) { console.warn('[lymx-role-gate.js:L80] silent error', e); }
 
     var ok = false;
 
@@ -98,7 +98,7 @@
           try {
             var rb = await fetch(SUPA + '/rest/v1/business_partners?user_id=eq.' + s.user.id + '&select=business_id&limit=1', { headers: headers });
             if (rb.ok) { var arrb = await rb.json(); ok = arrb.length > 0; }
-          } catch (e) {}
+          } catch (e) { console.warn('[lymx-role-gate.js:L101] silent error', e); }
         }
       } else if (required === 'staff') {
         var r = await fetch(SUPA + '/rest/v1/staff_roles?user_id=eq.' + s.user.id + '&select=user_id&limit=1', { headers: headers });

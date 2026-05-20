@@ -144,7 +144,7 @@ serve(async (req) => {
                 try {
                     const { data: locData } = await supabase.rpc("fn_resolve_recipient_locale", { p_user_id: fb.user_id });
                     if (locData && ["en","es","zh-CN","zh-TW","ko","ja"].includes(locData)) recipientLocale = locData;
-                } catch {}
+                } catch (e) { console.warn('[index.ts:L147] silent error', e); }
             }
             if (recipientLocale !== "en") {
                 try {
@@ -164,7 +164,7 @@ serve(async (req) => {
                     if (translatedSubjectFragment) {
                         translatedSubjectFragment = await tx(translatedSubjectFragment, "email subject fragment");
                     }
-                } catch {}
+                } catch (e) { console.warn('[index.ts:L167] silent error', e); }
             }
 
             const html = wrapEmail({

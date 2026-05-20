@@ -455,7 +455,7 @@ ender();
         .select('id', { count: 'exact', head: true })
         .is('archived_at', null).gte('created_at', day7.toISOString());
       setText('kpiCustomersDelta', (newCt ? '+' + newCt : '0') + ' this week');
-    } catch (e) {}
+    } catch (e) { console.warn('[admin-digest.html:L458] silent error', e); }
 
     // Active Businesses
     try {
@@ -466,7 +466,7 @@ ender();
         .select('id', { count: 'exact', head: true })
         .is('archived_at', null).gte('created_at', day7.toISOString());
       setText('kpiBizDelta', (newCt ? '+' + newCt : '0') + ' this week');
-    } catch (e) {}
+    } catch (e) { console.warn('[admin-digest.html:L469] silent error', e); }
 
     // LYMX issued this week + last week
     try {
@@ -483,7 +483,7 @@ ender();
       } else if (wk > 0) {
         setText('kpiIssuedDelta', 'first week of activity');
       }
-    } catch (e) {}
+    } catch (e) { console.warn('[admin-digest.html:L486] silent error', e); }
 
     // LYMX redeemed this week
     try {
@@ -498,7 +498,7 @@ ender();
         const pct = Math.round(((wk - prev) / prev) * 100);
         setText('kpiRedeemedDelta', (pct >= 0 ? '+' : '') + pct + '% wow');
       }
-    } catch (e) {}
+    } catch (e) { console.warn('[admin-digest.html:L501] silent error', e); }
 
     // Open support tickets
     try {
@@ -506,7 +506,7 @@ ender();
         .select('id', { count: 'exact', head: true }).in('status', ['new','in_progress']);
       setText('kpiTickets', String(count || 0));
       setText('kpiTicketsDelta', count > 0 ? 'need triage' : 'all clear');
-    } catch (e) {}
+    } catch (e) { console.warn('[admin-digest.html:L509] silent error', e); }
 
     // Active Partners
     try {
@@ -517,7 +517,7 @@ ender();
         .select('id', { count: 'exact', head: true })
         .is('archived_at', null).eq('is_founding_25', true);
       setText('kpiPartnersDelta', (foundCt || 0) + ' Founding 25');
-    } catch (e) {}
+    } catch (e) { console.warn('[admin-digest.html:L520] silent error', e); }
   } catch (e) {
     console.warn('[admin-digest] wire failed', e);
   }

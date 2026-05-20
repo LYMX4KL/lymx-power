@@ -450,7 +450,7 @@
       if(state.who==='specific' && !state.partner){ alert('Please pick a Partner from the list, or switch to "Match me with anyone".'); return; }
       // Render calendar lazily on first arrival to step 2
       renderCal();
-      try { document.getElementById('tz-name').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e){}
+      try { document.getElementById('tz-name').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e) { console.warn('[demo.html:L453] silent error', e); }
       setStep(2);
     } else if(n===2){
       // Update summary
@@ -485,7 +485,7 @@
 
   // Initial render so the calendar is ready when user arrives at step 2
   renderCal();
-  try { document.getElementById('tz-name').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e){}
+  try { document.getElementById('tz-name').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e) { console.warn('[demo.html:L488] silent error', e); }
 </script>
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>

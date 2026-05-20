@@ -615,7 +615,7 @@ document.getElementById('iSend').addEventListener('click', async () => {
       body: JSON.stringify({ broadcast_id: bcId }),
     });
     let fnData = null;
-    try { fnData = await fnRes.json(); } catch {}
+    try { fnData = await fnRes.json(); } catch (e) { console.warn('[admin-invite-friends.html:L618] silent error', e); }
     // Bug fix #91 (Kenny 2026-05-14): broadcast-send returns HTTP 200 even when
     // Resend silently fails (e.g. unverified sender domain). Helen's invite
     // logged as "sent" but never arrived. Now we check the actual sent_count /
@@ -840,7 +840,7 @@ async function resendInvite({ email, name, template }) {
     body: JSON.stringify({ broadcast_id: bcId }),
   });
   let fnData = null;
-  try { fnData = await fnRes.json(); } catch {}
+  try { fnData = await fnRes.json(); } catch (e) { console.warn('[admin-invite-friends.html:L843] silent error', e); }
   const trulySent = fnRes.ok && fnData && (fnData.sent_count > 0 || fnData.mode === 'in_app');
   if (!trulySent) {
     const reason = (fnData && fnData.errors && fnData.errors[0]) || (fnData && fnData.error) || 'unknown';

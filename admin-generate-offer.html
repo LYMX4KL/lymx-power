@@ -197,7 +197,7 @@ async function init(){
     const ln = meta.last_name || '';
     const full = (fn + ' ' + ln).trim() || meta.full_name || (user.email || '').split('@')[0] || '';
     if (full) $('managerName').value = full;
-  } catch (e) {}
+  } catch (e) { console.warn('[admin-generate-offer.html:L200] silent error', e); }
   $('startDate').value = (() => { const d = new Date(); d.setDate(d.getDate()+14); return d.toISOString().slice(0,10); })();
 
   // Pull current policy

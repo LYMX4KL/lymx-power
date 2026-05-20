@@ -312,7 +312,7 @@
     try {
       const { data: ledger } = await window.LYMX.sb.from('v_my_lymx_balance').select('*').maybeSingle();
       if (ledger) totalLymx += Number(ledger.available_lymx || 0);
-    } catch(e){}
+    } catch(e) { console.warn('[customer-wallet.html:L315] silent error', e); }
     // 2026-05-20 audit fix - wallets column is `balance` not `lymx_balance`, and `customer_id` references customers.id not auth.users.id - need 2-step lookup. (Audit Pass 3)
     let myWalletIds = [];
     try {
@@ -326,7 +326,7 @@
           });
         }
       }
-    } catch(e){}
+    } catch(e) { console.warn('[customer-wallet.html:L329] silent error', e); }
 
     const balEl = document.getElementById('bal-display');
     if (balEl) balEl.innerHTML = totalLymx.toLocaleString('en-US') + ' <small>LYMX</small>';
@@ -338,7 +338,7 @@
       const { data: iss } = await window.LYMX.sb.from('lymx_issuances')
         .select('amount_lymx').eq('recipient_user_id', user.id).gte('created_at', startIso);
       (iss || []).forEach(r => earnedMo += Number(r.amount_lymx || 0));
-    } catch (e) {}
+    } catch (e) { console.warn('[customer-wallet.html:L341] silent error', e); }
     // 2026-05-20 audit fix - customer_redemptions table doesn't exist; query transactions where type='redemption' (Audit Pass 2)
     if (myWalletIds.length > 0) {
       try {
@@ -346,7 +346,7 @@
           .select('lymx_amount').in('wallet_id', myWalletIds).eq('type', 'redemption').gte('created_at', startIso);
         // Redemption amounts are negative; show as positive "spent" total
         (red || []).forEach(r => spentMo += Math.abs(Number(r.lymx_amount || 0)));
-      } catch (e) {}
+      } catch (e) { console.warn('[customer-wallet.html:L349] silent error', e); }
     }
 
     const rows = document.querySelectorAll('.balance .row');

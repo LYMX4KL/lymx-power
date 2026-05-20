@@ -176,7 +176,7 @@ async function load(){
     const { data: emails } = await sb.rpc('admin_list_user_emails');
     const found = (emails || []).find(e => e.user_id === t.profile_id);
     if (found) staffName = found.full_name || found.email || staffName;
-  } catch (e) {}
+  } catch (e) { console.warn('[admin-termination.html:L179] silent error', e); }
 
   $('termSubtitle').textContent = staffName + ' · last day worked ' + ymd(t.last_day_worked) + ' · ' + t.termination_type;
   $('finalDueLabel').textContent = ymd(t.nv_final_pay_due_by);

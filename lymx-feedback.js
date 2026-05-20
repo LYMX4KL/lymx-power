@@ -57,7 +57,7 @@
         var s = await window.LYMX.getSession();
         if (s && s.access_token) return { token: s.access_token, source: 'lymx-auth' };
       }
-    } catch (e) {}
+    } catch (e) { console.warn('[lymx-feedback.js:L60] silent error', e); }
     // 2) Direct read from supabase-js v2 localStorage key
     try {
       var ref = projectRefFromUrl();
@@ -624,7 +624,7 @@
     try {
       var pb = overlay.querySelector('.pb-path');
       if (pb) pb.textContent = shortPath();
-    } catch (e) {}
+    } catch (e) { console.warn('[lymx-feedback.js:L627] silent error', e); }
     notice(null);
     loadDraft();
     updateWhoLabel();
@@ -717,7 +717,7 @@
         }
       );
       var data = null;
-      try { data = await res.json(); } catch (e) {}
+      try { data = await res.json(); } catch (e) { console.warn('[lymx-feedback.js:L720] silent error', e); }
       if (!res.ok) {
         notice((data && data.error) || ('Submit failed: ' + res.status), 'err');
         sendBtn.disabled = false;

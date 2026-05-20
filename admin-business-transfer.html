@@ -201,12 +201,12 @@ async function loadBizSummary(bizId){
     const { data: iss } = await sb.from('lymx_issuances').select('amount_lymx').eq('source_business_id', bizId);
     const issued = (iss || []).reduce((s, r) => s + Number(r.amount_lymx || 0), 0);
     $('issuedTotal').textContent = fmtN(issued) + ' LYMX';
-  } catch {}
+  } catch (e) { console.warn('[admin-business-transfer.html:L204] silent error', e); }
   try {
     const { data: tx } = await sb.from('transactions').select('lymx_amount').eq('business_id', bizId).eq('type', 'redemption');
     const redeemed = (tx || []).reduce((s, r) => s + Math.abs(Number(r.lymx_amount || 0)), 0);
     $('redeemedTotal').textContent = fmtN(redeemed) + ' LYMX';
-  } catch {}
+  } catch (e) { console.warn('[admin-business-transfer.html:L209] silent error', e); }
 }
 
 async function lookupBuyer(){

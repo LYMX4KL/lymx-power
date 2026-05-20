@@ -788,11 +788,11 @@ document.getElementById('cSave').addEventListener('click', async () => {
       headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
       body: JSON.stringify({ ...payload, owner_id: myUserId, source: 'manual' }),
     });
-    if (r.ok) { try { const arr = await r.json(); contactId = (arr && arr[0] && arr[0].id) || null; } catch(e){} }
+    if (r.ok) { try { const arr = await r.json(); contactId = (arr && arr[0] && arr[0].id) || null; } catch(e) { console.warn('[contacts.html:L791] silent error', e); } }
   }
   if (!r.ok) {
     let detail = '';
-    try { const b = await r.json(); detail = b && (b.message || b.error || b.hint) ? ' - ' + (b.message || b.error || b.hint) : ''; } catch(e) {}
+    try { const b = await r.json(); detail = b && (b.message || b.error || b.hint) ? ' - ' + (b.message || b.error || b.hint) : ''; } catch(e) { console.warn('[contacts.html:L795] silent error', e); }
     alert('Save failed (HTTP ' + r.status + ')' + detail);
     return;
   }
@@ -906,7 +906,7 @@ document.getElementById('inviteSelectedBtn').addEventListener('click', async () 
       const rows = await r.json();
       if (rows && rows[0] && rows[0].partner_code) code = rows[0].partner_code;
     }
-  } catch (e) {}
+  } catch (e) { console.warn('[contacts.html:L909] silent error', e); }
   const link = 'https://getlymx.com/welcome.html?ref=' + encodeURIComponent(code);
   const subj = encodeURIComponent('Join me on LYMX - we both earn 100 LYMX');
   const body = encodeURIComponent('Hey - I am using LYMX (cash-back rewards for local businesses). Sign up with my link and we both get 100 LYMX: ' + link);

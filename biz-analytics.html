@@ -442,7 +442,7 @@
           .select('business_id, businesses(id, display_name, legal_name)')
           .eq('user_id', user.id).limit(1);
         if (bp && bp.length && bp[0].businesses) bizArr = [bp[0].businesses];
-      } catch (e) {}
+      } catch (e) { console.warn('[biz-analytics.html:L445] silent error', e); }
     }
     if (!bizArr || !bizArr.length) {
       const sub = document.getElementById('bizSubtitle');

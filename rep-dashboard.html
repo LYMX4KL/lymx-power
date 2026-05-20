@@ -638,7 +638,7 @@
     try {
       var c = await sb.from("team_calendars").select("id").eq("user_id", userId);
       if (c.data) calIds = c.data.map(x => x.id);
-    } catch (_) {}
+    } catch (e) { console.warn('[rep-dashboard.html:L641] silent error', e); }
 
     // Parallel queries for the three event types
     var pNewLeads = sb.from("leads")

@@ -192,7 +192,7 @@ async function load(){
     const { data: emails } = await sb.rpc('admin_list_user_emails');
     const found = (emails || []).find(e => e.user_id === profileId);
     if (found) name = found.full_name || found.email || name;
-  } catch (e) {}
+  } catch (e) { console.warn('[admin-issue-write-up.html:L195] silent error', e); }
   $('staffNameDisplay').textContent = name;
 }
 

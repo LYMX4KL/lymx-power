@@ -486,7 +486,7 @@ window.addEventListener('DOMContentLoaded', function () {
         if (cat === 'All') u.searchParams.delete('category');
         else u.searchParams.set('category', cat);
         history.replaceState(null, '', u);
-      } catch (e) {}
+      } catch (e) { console.warn('[browse.html:L489] silent error', e); }
       // Filter the biz-cards by data-cat (if present). Cards without
       // data-cat (signup CTAs, placeholders) stay visible only when 'All'.
       document.querySelectorAll('.biz-card').forEach(function (card) {
@@ -511,7 +511,7 @@ window.addEventListener('DOMContentLoaded', function () {
   try {
     const s = await window.LYMX.getSession();
     if (s) document.querySelectorAll('.guest-only').forEach(el => el.classList.add('lymx-signed-in'));
-  } catch (e) {}
+  } catch (e) { console.warn('[browse.html:L514] silent error', e); }
 })();
 </script>
 <script>
@@ -526,7 +526,7 @@ window.addEventListener('DOMContentLoaded', function () {
       if (!a) return;
       e.preventDefault();
       findInput.value = a.getAttribute('data-q') || '';
-      try { handleSearchSubmit(); } catch(_) {}
+      try { handleSearchSubmit(); } catch(e) { console.warn('[browse.html:L529] silent error', e); }
       findInput.focus();
     });
   }
