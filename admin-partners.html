@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — partners list, provisioning status, founding-25 tracking, suspend/reactivate." />
+<title>Partners · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:1100px){.nav-links{display:none}}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .stat .lab{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .stat .v{font-size:26px;font-weight:800;line-height:1.05;margin-top:4px}
+  .stat.danger .v{color:var(--danger)}
+  .stat.warn .v{color:var(--warn)}
+  .stat.ok .v{color:var(--ok)}
+  .stat.gold .v{color:var(--gold)}
+
+  .chips{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .chip{padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink-2);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip:hover:not(.on){background:var(--bg-soft)}
+
+  .search{margin-bottom:14px}
+  .search input{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:14px;background:#fff}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:0;margin-bottom:18px;overflow:hidden}
+  .card-h{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .card-h h2{margin:0;font-size:16px;font-weight:800}
+  .card-h .meta{font-size:13px;color:var(--muted)}
+
+  .tbl-wrap{overflow-x:auto}
+  .tbl{width:100%;border-collapse:collapse;font-size:13.5px;min-width:1000px}
+  .tbl th{text-align:left;background:#f9fafb;padding:11px 14px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line);white-space:nowrap}
+  .tbl td{padding:13px 14px;border-bottom:1px solid #f0f1f4;vertical-align:middle}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl tr:hover td{background:#f9fafb}
+
+  .name-cell{display:flex;align-items:center;gap:10px}
+  .name-cell .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;overflow:hidden;position:relative}
+  .name-cell .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .name-cell .body .nm{font-weight:700;color:var(--ink)}
+  .name-cell .body .em{font-size:12px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+  .pill.active{background:#e6f5ee;color:#0a6e44}
+  .pill.pending{background:#fff3d4;color:#92400e}
+  .pill.failed{background:#fdecec;color:#9b1c1c}
+  .pill.suspended{background:#eef0f4;color:#6b7280}
+  .pill.gold{background:#fdf4d6;color:#86670c}
+  .num{font-variant-numeric:tabular-nums;font-weight:600}
+  .empty{padding:60px 24px;text-align:center;color:var(--muted)}
+  .empty .big{font-size:36px;margin-bottom:6px}
+
+  .btn{padding:7px 12px;border-radius:8px;font-weight:700;font-size:12.5px;border:0;cursor:pointer;font-family:inherit}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-secondary:hover{background:var(--bg-soft)}
+  .btn-danger{background:#fff;border:1px solid #f5b7b7;color:var(--danger)}
+  .btn-danger:hover{background:#fdecec}
+  .btn-ok{background:#fff;border:1px solid #b8e6cc;color:#0a6e44}
+  .btn-ok:hover{background:#e6f5ee}
+
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-weight:700;font-size:13.5px;box-shadow:0 6px 20px rgba(0,0,0,.18);z-index:200;display:none}
+  .toast.on{display:block;animation:slide .25s ease-out}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--danger)}
+  @keyframes slide{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<meta name="theme-color" content="#0a84ff" />
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner wrap">
+    <a href="admin-dashboard.html" class="brand">LYMX <span class="role-tag">Admin</span></a>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Dashboard</a>
+      <a href="admin-businesses.html">Businesses</a>
+      <a href="admin-customers.html">Customers</a>
+      <a href="admin-partners.html" class="on">Partners</a>
+      <a href="admin-tech-support.html">Tech support</a>
+      <a href="admin-health.html">Health</a>
+    </nav>
+    <div class="admin-avatar" id="userInitial">·</div>
+  </div>
+</header>
+
+<main class="wrap page">
+
+  <div class="page-head">
+    <div>
+      <h1>Partners</h1>
+      <p>Approve, suspend, and audit every Partner on the network. New Partners are auto-approved on upgrade — flag here if you need to reverse.</p>
+    </div>
+  </div>
+
+  <!-- Quick stats -->
+  <div class="stats">
+    <div class="stat"><div class="lab">Total partners</div><div class="v" id="statTotal">—</div></div>
+    <div class="stat ok"><div class="lab">Active emails</div><div class="v" id="statActiveEmails">—</div></div>
+    <div class="stat warn"><div class="lab">Pending emails</div><div class="v" id="statPendingEmails">—</div></div>
+    <div class="stat gold"><div class="lab">Founding 25</div><div class="v" id="statFounding">—</div></div>
+    <div class="stat"><div class="lab">Activated 7d</div><div class="v" id="statRecent">—</div></div>
+    <div class="stat danger"><div class="lab">Suspended</div><div class="v" id="statSuspended">—</div></div>
+  </div>
+
+  <!-- Filter chips -->
+  <div class="chips" id="filterChips">
+    <button class="chip on" data-f="all">All</button>
+    <button class="chip" data-f="recent">Recent (last 7 days)</button>
+    <button class="chip" data-f="pending_email">No email yet</button>
+    <button class="chip" data-f="founding">Founding 25</button>
+    <button class="chip" data-f="suspended">Suspended</button>
+  </div>
+
+  <!-- Search -->
+  <div class="search">
+    <input type="search" id="searchBox" placeholder="🔍 Search by name, email, partner code…" autocomplete="off" />
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <div class="card-h">
+      <h2>Partners</h2>
+      <div class="meta" id="resultMeta">Loading…</div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Partner</th>
+            <th>Code</th>
+            <th>Sponsor</th>
+            <th>Email status</th>
+            <th>Founding</th>
+            <th>Joined</th>
+            <th style="text-align:right">Action</th>
+          </tr>
+        </thead>
+        <tbody id="listBody">
+          <tr><td colspan="7" class="empty"><div class="big">⏳</div>Loading partners…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script src="lymx-nav.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script>
+(async function () {
+  const cfg = window.LYMX_CONFIG;
+  const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, { auth: { persistSession: true } });
+  window.LYMX = window.LYMX || {}; window.LYMX.sb = sb;
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
+
+  // Admin gate — only the hardcoded admin UUID or staff_roles.role IN (admin,tech,support) sees this.
+  const ADMIN_UUID = '1405bb50-2c97-48dd-bfa5-31f32320de9b';
+  let isAdmin = session.user.id === ADMIN_UUID;
+  if (!isAdmin) {
+    try {
+      const { data: sr } = await sb.from('staff_roles').select('role').eq('user_id', session.user.id).maybeSingle();
+      if (sr && ['admin','tech','support'].includes(sr.role)) isAdmin = true;
+    } catch (e) { console.warn('[admin-partners] staff_roles lookup', e); }
+  }
+  if (!isAdmin) { location.href = '/not-authorized.html'; return; }
+
+  document.getElementById('userInitial').textContent = (session.user.email || 'A').split(/[\s@]+/)[0].slice(0,2).toUpperCase();
+
+  // ----- State -----
+  let ALL = [];           // all partner rows with joined partner_emails
+  let CUR_FILTER = 'all';
+  let CUR_SEARCH = '';
+
+  // ----- Toast -----
+  function toast(msg, kind) {
+    const t = document.getElementById('toast');
+    t.className = 'toast on ' + (kind || 'ok');
+    t.textContent = msg;
+    setTimeout(() => { t.classList.remove('on'); }, 3000);
+  }
+
+  // ----- Load -----
+  async function loadPartners() {
+    document.getElementById('resultMeta').textContent = 'Loading…';
+    try {
+      const { data: partners, error } = await sb
+        .from('partners')
+        .select('id,user_id,legal_name,display_name,partner_code,contact_email,sponsor_partner_id,is_founding_25,founding_25_rank,signup_fee_waived,monthly_fee_status,archived_at,created_at,avatar_url')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      // Pull partner_emails for status + provisioned_at
+      const ids = (partners || []).map(p => p.id);
+      let emails = [];
+      if (ids.length) {
+        const { data: e } = await sb.from('partner_emails').select('partner_id, status, full_email, provisioned_at, suspended_at').in('partner_id', ids);
+        emails = e || [];
+      }
+      const eByPartner = {};
+      emails.forEach(e => { eByPartner[e.partner_id] = e; });
+      ALL = (partners || []).map(p => {
+        const e = eByPartner[p.id];
+        return Object.assign({}, p, {
+          email_status: e ? e.status : (p.archived_at ? 'archived' : 'no_email'),
+          full_company_email: e ? e.full_email : null,
+          suspended_at: e ? e.suspended_at : null
+        });
+      });
+      renderStats(ALL);
+      render();
+    } catch (e) {
+      console.warn('[admin-partners] load failed', e);
+      document.getElementById('listBody').innerHTML = '<tr><td colspan="7" class="empty"><div class="big">⚠</div>Failed to load: ' + (e.message || 'unknown error') + '</td></tr>';
+      document.getElementById('resultMeta').textContent = '';
+    }
+  }
+
+  function renderStats(rows) {
+    const cutoff7d = Date.now() - 7 * 86400 * 1000;
+    const active = rows.filter(r => r.email_status === 'active').length;
+    const pending = rows.filter(r => r.email_status !== 'active' && !r.suspended_at && !r.archived_at).length;
+    const founding = rows.filter(r => r.is_founding_25).length;
+    const recent = rows.filter(r => new Date(r.created_at).getTime() >= cutoff7d).length;
+    const suspended = rows.filter(r => r.suspended_at || r.archived_at).length;
+    document.getElementById('statTotal').textContent = rows.length;
+    document.getElementById('statActiveEmails').textContent = active;
+    document.getElementById('statPendingEmails').textContent = pending;
+    document.getElementById('statFounding').textContent = founding;
+    document.getElementById('statRecent').textContent = recent;
+    document.getElementById('statSuspended').textContent = suspended;
+  }
+
+  function applyFilter(rows) {
+    const cutoff7d = Date.now() - 7 * 86400 * 1000;
+    let base = rows;
+    if (CUR_FILTER === 'recent')         base = rows.filter(r => new Date(r.created_at).getTime() >= cutoff7d);
+    else if (CUR_FILTER === 'pending_email') base = rows.filter(r => r.email_status !== 'active' && !r.suspended_at && !r.archived_at);
+    else if (CUR_FILTER === 'founding')  base = rows.filter(r => r.is_founding_25);
+    else if (CUR_FILTER === 'suspended') base = rows.filter(r => r.suspended_at || r.archived_at);
+    const q = CUR_SEARCH.trim().toLowerCase();
+    if (!q) return base;
+    return base.filter(r => {
+      return [(r.legal_name||''), (r.display_name||''), (r.contact_email||''), (r.partner_code||''), (r.full_company_email||'')]
+        .join(' ').toLowerCase().includes(q);
+    });
+  }
+
+  function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function initialsFor(name, email) {
+    const src = (name || email || '').trim();
+    const parts = src.split(/[\s@.]+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    if (parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+    return 'P';
+  }
+
+  function pillFor(row) {
+    if (row.suspended_at || row.archived_at) return '<span class="pill suspended">Suspended</span>';
+    if (row.email_status === 'active')       return '<span class="pill active">Active</span>';
+    if (row.email_status === 'no_email')     return '<span class="pill failed">No email</span>';
+    if (row.email_status === 'failed')       return '<span class="pill failed">Failed</span>';
+    return '<span class="pill pending">' + escapeHtml(row.email_status) + '</span>';
+  }
+
+  function render() {
+    const filtered = applyFilter(ALL);
+    document.getElementById('resultMeta').textContent = filtered.length + ' of ' + ALL.length;
+    if (!filtered.length) {
+      document.getElementById('listBody').innerHTML = '<tr><td colspan="7" class="empty"><div class="big">🤝</div>No partners match this filter.</td></tr>';
+      return;
+    }
+    const html = filtered.map(r => {
+      const initials = initialsFor(r.display_name || r.legal_name, r.contact_email);
+      const avInner = r.avatar_url ? '<img src="' + escapeHtml(r.avatar_url) + '" alt="">' : escapeHtml(initials);
+      const sponsorChip = r.sponsor_partner_id ? '<span class="num">' + escapeHtml(r.sponsor_partner_id.slice(0,8)) + '…</span>' : '<span style="color:var(--muted)">—</span>';
+      const foundingChip = r.is_founding_25 ? '<span class="pill gold">★ #' + (r.founding_25_rank || '?') + '</span>' : '<span style="color:var(--muted)">—</span>';
+      const created = new Date(r.created_at);
+      const createdLabel = created.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+      const suspended = r.suspended_at || r.archived_at;
+      const actionBtn = suspended
+        ? '<button class="btn btn-ok" data-act="reactivate" data-id="' + r.id + '">Reactivate</button>'
+        : '<button class="btn btn-danger" data-act="suspend" data-id="' + r.id + '">Suspend</button>';
+      return '<tr>' +
+        '<td><div class="name-cell"><div class="av">' + avInner + '</div><div class="body"><div class="nm">' + escapeHtml(r.legal_name || r.display_name || '—') + '</div><div class="em">' + escapeHtml(r.contact_email || '—') + '</div></div></div></td>' +
+        '<td class="num">' + escapeHtml(r.partner_code || '—') + '</td>' +
+        '<td>' + sponsorChip + '</td>' +
+        '<td>' + pillFor(r) + (r.full_company_email ? '<div style="font-size:11.5px;color:var(--muted);margin-top:2px;font-family:ui-monospace,Menlo,monospace">' + escapeHtml(r.full_company_email) + '</div>' : '') + '</td>' +
+        '<td>' + foundingChip + '</td>' +
+        '<td><span class="num">' + escapeHtml(createdLabel) + '</span></td>' +
+        '<td style="text-align:right">' + actionBtn + '</td>' +
+        '</tr>';
+    }).join('');
+    document.getElementById('listBody').innerHTML = html;
+  }
+
+  // ----- Suspend / Reactivate -----
+  async function suspendPartner(id) {
+    if (!confirm('Suspend this partner? Their @getlymx.com email forwarding stops and they lose Partner Dashboard access. Customer wallet stays intact. Reactivation is one click.')) return;
+    try {
+      const { error } = await sb.from('partners').update({ archived_at: new Date().toISOString() }).eq('id', id);
+      if (error) throw error;
+      try { await sb.from('partner_emails').update({ status: 'suspended', suspended_at: new Date().toISOString() }).eq('partner_id', id); } catch (e) { console.warn('[admin-partners] partner_emails update failed', e); }
+      toast('Suspended.');
+      await loadPartners();
+    } catch (e) {
+      console.warn('[admin-partners] suspend failed', e);
+      toast('Suspend failed: ' + (e.message || 'unknown'), 'err');
+    }
+  }
+
+  async function reactivatePartner(id) {
+    try {
+      const { error } = await sb.from('partners').update({ archived_at: null }).eq('id', id);
+      if (error) throw error;
+      try { await sb.from('partner_emails').update({ status: 'active', suspended_at: null }).eq('partner_id', id); } catch (e) { console.warn('[admin-partners] partner_emails update failed', e); }
+      toast('Reactivated.');
+      await loadPartners();
+    } catch (e) {
+      console.warn('[admin-partners] reactivate failed', e);
+      toast('Reactivate failed: ' + (e.message || 'unknown'), 'err');
+    }
+  }
+
+  // ----- Wire UI -----
+  document.getElementById('filterChips').addEventListener('click', (e) => {
+    const t = e.target.closest('.chip'); if (!t) return;
+    document.querySelectorAll('#filterChips .chip').forEach(c => c.classList.remove('on'));
+    t.classList.add('on');
+    CUR_FILTER = t.dataset.f;
+    render();
+  });
+  let searchTimer = null;
+  document.getElementById('searchBox').addEventListener('input', (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { CUR_SEARCH = e.target.value || ''; render(); }, 150);
+  });
+  document.getElementById('listBody').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-act]'); if (!btn) return;
+    const act = btn.dataset.act;
+    const id  = btn.dataset.id;
+    if (act === 'suspend')    suspendPartner(id);
+    else if (act === 'reactivate') reactivatePartner(id);
+  });
+
+  await loadPartners();
+})();
+</script>
+</body>
+</html>
