@@ -183,6 +183,77 @@
     return 'linear-gradient(135deg,' + pair[0] + ',' + pair[1] + ')';
   }
 
+  // 2026-05-20 #a461daa8 — fetch user's avatar_url and paint <img> atop the
+  // initials on every avatar circle. Cached per-session.
+  async function lookupAvatarUrl(uid) {
+    if (!uid || !window.LYMX_CONFIG) return null;
+    var cfg = window.LYMX_CONFIG;
+    var cacheKey = 'LYMX_avatar_url_' + uid;
+    try {
+      var cached = sessionStorage.getItem(cacheKey);
+      if (cached !== null) return cached || null;
+    } catch (e) { console.warn('[lymx-nav] sessionStorage read', e); }
+    // Get the stored access token (same pattern lymx-sidebar uses)
+    var tok = null;
+    try {
+      var m = cfg.SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/i);
+      var ref = m ? m[1] : null;
+      var raw = ref ? localStorage.getItem('sb-' + ref + '-auth-token') : null;
+      if (raw) {
+        var obj = JSON.parse(raw);
+        tok = (obj && obj.access_token)
+            || (obj && obj.currentSession && obj.currentSession.access_token)
+            || null;
+      }
+    } catch (e) { console.warn('[lymx-nav] token read', e); }
+    if (!tok) return null;
+    async function tryTable(tbl) {
+      try {
+        var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/' + tbl + '?user_id=eq.' + uid + '&select=avatar_url&limit=1', {
+          headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + tok }
+        });
+        if (!r.ok) return null;
+        var rows = await r.json();
+        return (rows && rows[0] && rows[0].avatar_url) || null;
+      } catch (e) { console.warn('[lymx-nav] table read ' + tbl, e); return null; }
+    }
+    var url = await tryTable('customers');
+    if (!url) url = await tryTable('partners');
+    try { sessionStorage.setItem(cacheKey, url || ''); } catch (e) { console.warn('[lymx-nav] sessionStorage write', e); }
+    return url || null;
+  }
+
+  function paintAvatarImage(url) {
+    if (!url) return;
+    var candidates = [
+      '#userInitial', '#userAvatar', '#headerAvatar', '#avatarNav',
+      '#avatar', '#bizAvatar', '#repAvatar',
+      '.user-avatar', '.admin-avatar', '.nav-avatar', '.avatar-nav',
+      '.biz-avatar', '.rep-avatar'
+    ];
+    candidates.forEach(function (sel) {
+      document.querySelectorAll(sel).forEach(function (el) {
+        if (el.dataset.lymxAvImg === '1') return;
+        // Skip if it's the menu-header mini avatar (handled separately)
+        if (el.classList && el.classList.contains('lymx-mini-av-in-menu')) return;
+        el.dataset.lymxAvImg = '1';
+        // Preserve the caret + click handlers; just inject an <img>
+        var existing = el.querySelector('img.lymx-av-img');
+        if (existing) { existing.src = url; return; }
+        var img = document.createElement('img');
+        img.className = 'lymx-av-img';
+        img.src = url;
+        img.alt = '';
+        img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;pointer-events:none';
+        // Hide the text initials behind the image
+        Array.prototype.forEach.call(el.childNodes, function (n) {
+          if (n.nodeType === 3) { n.textContent = ''; }
+        });
+        el.appendChild(img);
+      });
+    });
+  }
+
   function wireAvatar(payload) {
     var email = (payload && payload.email) || '';
     var displayName = (payload && (payload.display_name || payload.name)) || '';
@@ -226,6 +297,11 @@
         });
       });
     });
+    // 2026-05-20 #a461daa8 — async paint photo over initials
+    var uid = (payload && payload.id) || (payload && payload.sub) || null;
+    if (uid) {
+      lookupAvatarUrl(uid).then(paintAvatarImage).catch(function(e){ console.warn('[lymx-nav] avatar lookup', e); });
+    }
   }
 
   function showAvatarMenu(anchor, payload) {

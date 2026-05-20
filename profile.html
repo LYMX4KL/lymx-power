@@ -94,6 +94,23 @@
 
   <div class="verification-banner" id="verifBanner" style="display:none"></div>
 
+  <!-- 2026-05-20 #a461daa8 - Profile photo upload (5 MB, JPG/PNG/WEBP/GIF) -->
+  <div class="card" style="text-align:center;padding:24px 20px">
+    <div style="position:relative;display:inline-block">
+      <div id="avatarRing" style="width:104px;height:104px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:36px;overflow:hidden;border:3px solid #fff;box-shadow:0 6px 20px rgba(14,17,22,.18)">
+        <span id="avatarInitials">·</span>
+        <img id="avatarImg" alt="" style="width:100%;height:100%;object-fit:cover;display:none" />
+      </div>
+      <button type="button" id="avatarUploadBtn" aria-label="Upload profile photo"
+              style="position:absolute;right:-2px;bottom:-2px;width:34px;height:34px;border-radius:50%;border:2px solid #fff;background:#0a84ff;color:#fff;cursor:pointer;font-size:16px;box-shadow:0 3px 10px rgba(10,132,255,.4);display:flex;align-items:center;justify-content:center">📷</button>
+      <input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" />
+    </div>
+    <div style="margin-top:14px;font-size:13px;color:var(--muted)">
+      <span id="avatarStatus">Tap the camera to upload a photo (max 5 MB)</span>
+      <button type="button" id="avatarRemoveBtn" style="display:none;margin-left:12px;background:none;border:0;color:var(--danger,#e0413e);font-weight:700;cursor:pointer;font-size:13px;text-decoration:underline">Remove</button>
+    </div>
+  </div>
+
   <div class="card">
     <h2>About you</h2>
 
@@ -488,6 +505,116 @@ document.getElementById('signOut').addEventListener('click', async (e) => {
   location.href = '/login.html';
 });
 
+// 2026-05-20 #a461daa8 — Profile avatar render + upload + remove.
+// Storage layout: avatars/<user_id>/<timestamp>.<ext>
+// Public reads, owner-only writes (see migration 064).
+function paintAvatar(url) {
+  const img = document.getElementById('avatarImg');
+  const ini = document.getElementById('avatarInitials');
+  const rm  = document.getElementById('avatarRemoveBtn');
+  if (!img || !ini || !rm) return;
+  const fn = (document.getElementById('firstName') || {}).value || '';
+  const ln = (document.getElementById('lastName')  || {}).value || '';
+  const dn = (document.getElementById('displayName') || {}).value || '';
+  const em = (myUser && myUser.email) || '';
+  const parts = (dn || (fn + ' ' + ln) || em).split(/[\s@]+/).filter(Boolean);
+  ini.textContent = (parts.slice(0,2).map(p => (p[0] || '').toUpperCase()).join('')) || '·';
+  if (url) {
+    img.src = url + (url.indexOf('?') === -1 ? '?t=' + Date.now() : '');
+    img.style.display = 'block';
+    ini.style.display = 'none';
+    rm.style.display  = 'inline-block';
+  } else {
+    img.style.display = 'none';
+    ini.style.display = 'inline';
+    rm.style.display  = 'none';
+  }
+}
+
+async function uploadAvatar(file) {
+  if (!file) return;
+  const status = document.getElementById('avatarStatus');
+  if (file.size > 5 * 1024 * 1024) {
+    if (status) status.textContent = 'File too large — max 5 MB.';
+    return;
+  }
+  if (!/^image\/(png|jpe?g|webp|gif)$/i.test(file.type)) {
+    if (status) status.textContent = 'Only PNG, JPG, WEBP, GIF allowed.';
+    return;
+  }
+  const sb = window.LYMX && window.LYMX.sb;
+  if (!sb) { if (status) status.textContent = 'Still loading — try again in a second.'; return; }
+  const uid = myUser && myUser.id;
+  if (!uid) { if (status) status.textContent = 'Sign in first.'; return; }
+  if (status) status.textContent = 'Uploading…';
+  try {
+    const ext = (file.name.match(/\.([a-z0-9]+)$/i) || [, 'jpg'])[1].toLowerCase();
+    const path = uid + '/' + Date.now() + '.' + ext;
+    const { error: upErr } = await sb.storage.from('avatars').upload(path, file, {
+      cacheControl: '3600', upsert: true, contentType: file.type
+    });
+    if (upErr) throw upErr;
+    const { data: pub } = sb.storage.from('avatars').getPublicUrl(path);
+    const url = pub && pub.publicUrl;
+    if (!url) throw new Error('Could not resolve public URL');
+    let saveErr;
+    if (myRole === 'partner' && myRow && myRow.id) {
+      ({ error: saveErr } = await sb.from('partners').update({ avatar_url: url }).eq('id', myRow.id));
+    } else if (myRole === 'customer') {
+      if (myRow && myRow.id) {
+        ({ error: saveErr } = await sb.from('customers').update({ avatar_url: url }).eq('id', myRow.id));
+      } else {
+        ({ error: saveErr } = await sb.from('customers').upsert(
+          { user_id: uid, email: myUser.email, avatar_url: url },
+          { onConflict: 'user_id' }
+        ));
+      }
+    }
+    if (saveErr) throw saveErr;
+    if (myRow) myRow.avatar_url = url;
+    paintAvatar(url);
+    if (status) status.textContent = 'Photo updated.';
+  } catch (e) {
+    console.warn('[avatar upload] failed', e);
+    if (status) status.textContent = 'Upload failed: ' + (e && e.message ? e.message : 'unknown error');
+  }
+}
+
+async function removeAvatar() {
+  const sb = window.LYMX && window.LYMX.sb;
+  if (!sb || !myUser) return;
+  if (!confirm('Remove your profile photo?')) return;
+  const status = document.getElementById('avatarStatus');
+  try {
+    if (myRole === 'partner' && myRow && myRow.id) {
+      const { error } = await sb.from('partners').update({ avatar_url: null }).eq('id', myRow.id);
+      if (error) throw error;
+    } else if (myRole === 'customer' && myRow && myRow.id) {
+      const { error } = await sb.from('customers').update({ avatar_url: null }).eq('id', myRow.id);
+      if (error) throw error;
+    }
+    if (myRow) myRow.avatar_url = null;
+    paintAvatar(null);
+    if (status) status.textContent = 'Photo removed.';
+  } catch (e) {
+    console.warn('[avatar remove] failed', e);
+    if (status) status.textContent = 'Remove failed: ' + (e && e.message ? e.message : 'unknown error');
+  }
+}
+
+(function wireAvatarUi() {
+  const btn = document.getElementById('avatarUploadBtn');
+  const fi  = document.getElementById('avatarFile');
+  const rm  = document.getElementById('avatarRemoveBtn');
+  if (btn && fi) btn.addEventListener('click', function () { fi.click(); });
+  if (fi) fi.addEventListener('change', function (e) {
+    const f = e.target.files && e.target.files[0];
+    if (f) uploadAvatar(f);
+    e.target.value = '';
+  });
+  if (rm) rm.addEventListener('click', removeAvatar);
+})();
+
 (async function init() {
   const s = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
   if (!s) { location.href = '/login.html?next=/profile.html'; return; }
@@ -497,6 +624,7 @@ document.getElementById('signOut').addEventListener('click', async (e) => {
   myRow  = det.row;
   renderHeader();
   fillForm();
+  paintAvatar(myRow && myRow.avatar_url);
 })();
 </script>
 
