@@ -490,8 +490,11 @@ Disclosure: I get paid if you sign up.`
       setTimeout(()=>{ btn.textContent = '📋 Copy caption'; btn.classList.remove('copied'); }, 1800);
     });
   }
+  // 2026-05-20 audit fix - was mock alert. Graphics aren't built yet, so this opens an email request to the LYMX team for the specific asset, with pre-filled subject/body. Real downloads land after the Q3 print-kit batch.
   function downloadGraphic(id){
-    alert('In production: downloads the high-res PNG/JPG. Mock for now.\n\nGraphic: ' + id);
+    const subject = encodeURIComponent('Social kit asset request: ' + id);
+    const body = encodeURIComponent('Hi LYMX team,\n\nPlease send me the high-res file for "' + id + '" from the partner social kit. I\'ll use it for partner outreach.\n\nThanks!');
+    location.href = 'mailto:partners@lymxpower.com?subject=' + subject + '&body=' + body;
   }
   function copyDisclosure(){
     const text = "I'm a LYMX Partner — I get paid if you sign up through my link.";

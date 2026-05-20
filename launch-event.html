@@ -565,8 +565,43 @@
     if (btn) { btn.disabled = false; btn.textContent = 'Confirm my RSVP →'; }
   }
 
+  // 2026-05-20 audit fix - was mock alert. Now: Google → opens calendar.google.com prefilled link; Apple → downloads .ics.
   function addCal(svc){
-    alert((svc==='google'?'Google':'Apple') + ' Calendar invite will be in your confirmation email shortly. (Mock for now)');
+    const title = 'LYMX Las Vegas Public Launch';
+    const desc  = 'Public launch + Launch 25 unveil. Container Park, Downtown Las Vegas.';
+    const loc   = 'Container Park, 707 Fremont St, Las Vegas, NV';
+    // Sat Sep 12 2026 11:00 AM PT - 6:00 PM PT  → UTC 18:00 - Sun 01:00
+    const dtStartUtc = '20260912T180000Z';
+    const dtEndUtc   = '20260913T010000Z';
+    if (svc === 'google') {
+      const url = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+        + '&text=' + encodeURIComponent(title)
+        + '&details=' + encodeURIComponent(desc)
+        + '&location=' + encodeURIComponent(loc)
+        + '&dates=' + dtStartUtc + '/' + dtEndUtc;
+      window.open(url, '_blank');
+    } else {
+      // Apple / generic .ics download
+      const ics = [
+        'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//LYMX//Launch Event//EN','METHOD:PUBLISH',
+        'BEGIN:VEVENT','UID:launch-event-2026-09-12@getlymx.com',
+        'DTSTAMP:20260520T000000Z',
+        'DTSTART:' + dtStartUtc,
+        'DTEND:' + dtEndUtc,
+        'SUMMARY:' + title,
+        'DESCRIPTION:' + desc,
+        'LOCATION:' + loc,
+        'ORGANIZER;CN=LYMX:mailto:hello@getlymx.com',
+        'STATUS:CONFIRMED',
+        'END:VEVENT','END:VCALENDAR'
+      ].join('\r\n');
+      const blob = new Blob([ics], { type: 'text/calendar' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'lymx-launch-2026-09-12.ics';
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+    }
   }
 </script>
 <script src="lymx-config.js"></script>

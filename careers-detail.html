@@ -263,19 +263,21 @@
   <div class="modal">
     <h3>Apply: Senior Product Engineer</h3>
     <p>Just the basics. We follow up within 5 days.</p>
+    <!-- 2026-05-20 audit fix - added IDs so the real submit can read field values. (Was mock alert.) -->
     <div class="field-grid">
-      <div class="field"><label>Your name</label><input type="text" placeholder="Maria Lopez" /></div>
-      <div class="field"><label>Email</label><input type="email" placeholder="you@example.com" /></div>
+      <div class="field"><label>Your name</label><input id="appName" type="text" placeholder="Maria Lopez" /></div>
+      <div class="field"><label>Email</label><input id="appEmail" type="email" placeholder="you@example.com" /></div>
     </div>
     <div class="field-grid">
-      <div class="field"><label>Years experience</label><input type="number" placeholder="6" min="0" /></div>
-      <div class="field"><label>Current location</label><input type="text" placeholder="Las Vegas, NV" /></div>
+      <div class="field"><label>Years experience</label><input id="appYears" type="number" placeholder="6" min="0" /></div>
+      <div class="field"><label>Current location</label><input id="appLoc" type="text" placeholder="Las Vegas, NV" /></div>
     </div>
-    <div class="field"><label>Resume / portfolio link</label><input type="url" placeholder="https://github.com/you or LinkedIn" /></div>
+    <div class="field"><label>Resume / portfolio link</label><input id="appResume" type="url" placeholder="https://github.com/you or LinkedIn" /></div>
     <div class="field">
       <label>Tell us about a thing you shipped that you're proud of (1 paragraph)</label>
-      <textarea rows="4" placeholder="Be specific. What was the problem, what did you ship, what was the impact."></textarea>
+      <textarea id="appPride" rows="4" placeholder="Be specific. What was the problem, what did you ship, what was the impact."></textarea>
     </div>
+    <div id="appBanner" style="display:none;padding:10px 14px;border-radius:8px;margin-top:10px;font-size:13.5px"></div>
     <div class="modal-actions">
       <button class="btn ghost" onclick="document.getElementById('ovr').classList.remove('on')">Cancel</button>
       <button class="btn primary" onclick="submitApp()">Submit application</button>
@@ -288,9 +290,62 @@
 </footer>
 
 <script>
-  function submitApp(){
-    alert('Application received — Kenny will email you within 5 business days. (Mock for now)');
-    document.getElementById('ovr').classList.remove('on');
+  // 2026-05-20 audit fix - was alert() mock. Now actually submits: feedback table row (lands in admin queue) + confirmation email via send-email EF.
+  async function submitApp(){
+    const name = (document.getElementById('appName')?.value || '').trim();
+    const email = (document.getElementById('appEmail')?.value || '').trim();
+    const years = document.getElementById('appYears')?.value || '';
+    const loc = (document.getElementById('appLoc')?.value || '').trim();
+    const resume = (document.getElementById('appResume')?.value || '').trim();
+    const pride = (document.getElementById('appPride')?.value || '').trim();
+    const banner = document.getElementById('appBanner');
+    function show(text, ok) {
+      if (!banner) return;
+      banner.style.display = 'block';
+      banner.style.background = ok ? '#ecfdf5' : '#fee2e2';
+      banner.style.color = ok ? '#065f46' : '#991b1b';
+      banner.style.border = '1px solid ' + (ok ? '#a7f3d0' : '#fecaca');
+      banner.textContent = text;
+    }
+    if (!name || !email || !/@/.test(email) || pride.length < 10) {
+      show('Name, email, and a short paragraph are required.', false);
+      return;
+    }
+    const SB = window.LYMX_CONFIG;
+    if (!SB || !SB.SUPABASE_URL) { show('App not loaded yet, please retry.', false); return; }
+    try {
+      // 1) Log application as feedback row so it lands in admin queue
+      await fetch(SB.SUPABASE_URL + '/rest/v1/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: SB.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SB.SUPABASE_ANON_KEY, Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          type: 'general',
+          priority: 'high',
+          subject: 'Career application: ' + name + ' (' + (document.querySelector('.modal h3')?.textContent || 'role').replace(/^Apply:\s*/i,'') + ')',
+          message: 'Name: ' + name + '\nEmail: ' + email + '\nYears: ' + years + '\nLocation: ' + loc + '\nResume: ' + resume + '\n\nShipped story:\n' + pride,
+          page_url: location.href,
+          user_email: email,
+          user_role: 'anonymous'
+        })
+      });
+      // 2) Confirmation email
+      await fetch(SB.SUPABASE_URL + '/functions/v1/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: SB.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SB.SUPABASE_ANON_KEY },
+        body: JSON.stringify({
+          channel: 'transactional',
+          recipient_email: email,
+          recipient_name: name,
+          subject: 'LYMX - your application is in',
+          body_text: 'Hi ' + name + ',\n\nThanks for applying to LYMX. Kenny reviews every application personally and will email you within 5 business days.\n\n— LYMX Hiring',
+          template_key: 'careers_app_confirm',
+        }),
+      });
+    } catch (e) {
+      console.warn('Career app submit error', e);
+    }
+    show('Application received — Kenny will email you within 5 business days.', true);
+    setTimeout(() => document.getElementById('ovr').classList.remove('on'), 2400);
   }
 </script>
 <script src="lymx-config.js"></script>

@@ -301,8 +301,45 @@
 
   function escapeHTML(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
-  function emailReceipt(){
-    alert('In production: emails the receipt PDF to the customer (uses the email tied to their wallet phone number). Mock for now.');
+  // 2026-05-20 audit fix - was mock alert. Now: prompt for customer email + send the rendered receipt via send-email EF.
+  async function emailReceipt(){
+    const SB = window.LYMX_CONFIG;
+    if (!SB || !SB.SUPABASE_URL) { alert('App not loaded yet, please retry in a moment.'); return; }
+    const email = (prompt('Customer email to send the receipt to:') || '').trim();
+    if (!email || !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)) {
+      if (email) alert('That doesn\'t look like a valid email — try again.');
+      return;
+    }
+    // Capture the current receipt preview HTML
+    const previewEl = document.getElementById('receipt-preview') || document.querySelector('.receipt-preview') || document.body;
+    const receiptHtml = previewEl ? previewEl.innerHTML : '';
+    const bizName = (document.getElementById('biz-name')?.value || 'a LYMX Business').trim();
+    const subject = 'Your LYMX receipt from ' + bizName;
+    const body_html = '<div style="font-family:-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:20px;color:#0e1116">'
+                    + '<h2 style="margin:0 0 12px">Thanks for visiting ' + bizName.replace(/[<>]/g,'') + '</h2>'
+                    + '<p style="color:#5b6472;font-size:14px;margin:0 0 18px">Here\'s a copy of your receipt for your records.</p>'
+                    + '<div style="border:1px solid #e6e8ec;border-radius:11px;padding:16px;background:#fafafa">' + receiptHtml + '</div>'
+                    + '<p style="color:#5b6472;font-size:12.5px;margin-top:18px">Your LYMX balance is available at <a href="https://getlymx.com/customer-wallet.html">getlymx.com/customer-wallet</a>.</p>'
+                    + '</div>';
+    try {
+      const r = await fetch(SB.SUPABASE_URL + '/functions/v1/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: SB.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SB.SUPABASE_ANON_KEY },
+        body: JSON.stringify({
+          channel: 'transactional',
+          recipient_email: email,
+          subject,
+          body_text: 'Thanks for visiting ' + bizName + '. Your LYMX receipt is attached / shown above. View your wallet at https://getlymx.com/customer-wallet.html',
+          body_html,
+          template_key: 'pos_receipt',
+        }),
+      });
+      if (r.ok) alert('Receipt sent to ' + email + '.');
+      else alert('Could not send the receipt — please double-check the address or try again.');
+    } catch (e) {
+      console.warn('Receipt email error', e);
+      alert('Could not send the receipt — please try again.');
+    }
   }
 
   render();

@@ -442,11 +442,50 @@
 
   function openDelete(){ document.getElementById('ovr-delete').classList.add('on'); }
   function closeDelete(){ document.getElementById('ovr-delete').classList.remove('on'); }
-  function confirmDelete(){
+  // 2026-05-20 audit fix - was a mock alert. Now: logs a high-priority deletion request to the feedback queue + sends a confirmation email. Hard-delete is admin-triggered after a 7-day undo window so we never silently wipe data on a misclick. (GDPR/CCPA right-to-delete compliance.)
+  async function confirmDelete(){
     const email = document.getElementById('confirm-email').value.trim();
     if(!email || !/@/.test(email)){ alert('Type your email to confirm.'); return; }
     closeDelete();
-    alert('Deletion request submitted. We\'ll email ' + email + ' with a 7-day undo link. After that, the deletion is permanent.\n\n(Mock for now)');
+    const SB = window.LYMX_CONFIG;
+    const sess = (window.LYMX && window.LYMX.getSession) ? await window.LYMX.getSession() : null;
+    const uid = sess && sess.user && sess.user.id;
+    if (sess && sess.user && sess.user.email && sess.user.email.toLowerCase() !== email.toLowerCase()) {
+      alert('That email doesn\'t match the account you\'re signed in as. Please type the email on file.');
+      return;
+    }
+    try {
+      // Log the deletion request as an URGENT feedback row that lands in admin queue
+      await fetch(SB.SUPABASE_URL + '/rest/v1/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: SB.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + (sess && sess.access_token || SB.SUPABASE_ANON_KEY), Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          type: 'general',
+          priority: 'urgent',
+          subject: '[Account deletion request] ' + email,
+          message: 'User requested account deletion via /data-export.\nuser_id: ' + (uid || 'unknown') + '\nemail: ' + email + '\nRequested at: ' + new Date().toISOString() + '\n\nADMIN: send the 7-day undo email, then schedule hard-delete via admin-tools.',
+          page_url: location.href,
+          user_email: email,
+          user_role: 'customer'
+        })
+      });
+      // Send confirmation email to the user with undo instructions
+      await fetch(SB.SUPABASE_URL + '/functions/v1/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: SB.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SB.SUPABASE_ANON_KEY },
+        body: JSON.stringify({
+          channel: 'transactional',
+          recipient_email: email,
+          subject: 'LYMX account deletion - 7-day undo window',
+          body_text: 'We received your request to permanently delete your LYMX account.\n\nWhat happens next:\n1. Your account stays active for 7 days. Reply to this email any time during those 7 days to cancel the deletion.\n2. After 7 days, your account, wallet balance, transaction history, and referrals are permanently removed. This cannot be undone.\n3. We\'ll send one final confirmation email when the deletion completes.\n\nIf you didn\'t request this deletion, reply IMMEDIATELY - someone may have access to your account that shouldn\'t.\n\n— LYMX team',
+          template_key: 'account_deletion_request',
+        }),
+      });
+      alert('Deletion request submitted. Check ' + email + ' for the 7-day undo link. The LYMX team will process the permanent deletion after the undo window expires.');
+    } catch (e) {
+      console.warn('Deletion request error', e);
+      alert('Could not submit the deletion request. Please email support@getlymx.com directly with your account email and we\'ll process it manually.');
+    }
   }
 </script>
 <script src="lymx-config.js"></script>
