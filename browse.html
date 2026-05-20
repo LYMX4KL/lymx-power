@@ -266,6 +266,58 @@
         </div>
       </a>
 
+      <!-- 2026-05-20 #8ae35834 — Customer-visible upgrade upsell.
+           Hidden by default; lymx-customer-upsell.js (loaded below) reveals
+           it when the visitor is a signed-in customer without a partners row. -->
+      <a class="biz-card" id="customerPartnerUpsell" href="partner-upgrade.html" style="display:none;grid-template-columns:1fr;background:linear-gradient(135deg,#fff8e1,#ffeec4);border:1px solid #f5d172;padding:24px;text-align:center;margin-top:8px;color:#1a1f27">
+        <div class="body" style="align-items:center;text-align:center">
+          <div style="font-size:36px;margin-bottom:6px">🚀</div>
+          <h3 style="font-size:17px;color:#78350f">You're already on LYMX — want to become a Partner too?</h3>
+          <p class="desc" style="-webkit-line-clamp:none;font-size:13.5px;color:#78350f;opacity:.9;max-width:480px;margin:6px auto 12px">Keep your customer wallet AND earn $500 per Business activation + 9% recurring. Two clicks to upgrade — no new account, no password, no waiting on approval.</p>
+          <span style="background:#0e1116;color:#fff;padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;display:inline-block">Become a Partner — keep my wallet →</span>
+        </div>
+      </a>
+      <script>
+      // Reveal the customer upsell card only for signed-in customers (no partners row).
+      (function () {
+        async function checkAndReveal() {
+          try {
+            if (!window.LYMX_CONFIG) return;
+            var ref = (window.LYMX_CONFIG.SUPABASE_URL || '').match(/https:\/\/([^.]+)\.supabase\.co/i);
+            if (!ref) return;
+            var raw = localStorage.getItem('sb-' + ref[1] + '-auth-token');
+            if (!raw) return; // guest — guestPartnerInvite already visible
+            var obj; try { obj = JSON.parse(raw); } catch (e) { return; }
+            var tok = obj && (obj.access_token || (obj.currentSession && obj.currentSession.access_token));
+            if (!tok) return;
+            var parts = tok.split('.'); if (parts.length !== 3) return;
+            var payload = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+            var uid = payload && payload.sub; if (!uid) return;
+            // Email-based heuristic: company-email users are already partners.
+            var email = (payload.email || '').toLowerCase();
+            if (email.endsWith('@lymxpower.com') || email.endsWith('@getlymx.com')) return;
+            // DB-confirmed: is there a partners row?
+            var r = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/rest/v1/partners?user_id=eq.' + uid + '&select=id&limit=1', {
+              headers: { apikey: window.LYMX_CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
+            });
+            if (!r.ok) return;
+            var rows = await r.json();
+            if (rows && rows.length) return; // already a partner — skip
+            // Also hide the guest invite since user is signed in.
+            var guest = document.getElementById('guestPartnerInvite');
+            if (guest) guest.style.display = 'none';
+            var upsell = document.getElementById('customerPartnerUpsell');
+            if (upsell) upsell.style.display = '';
+          } catch (e) { console.warn('[customer-upsell] failed', e); }
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', checkAndReveal);
+        } else {
+          checkAndReveal();
+        }
+      })();
+      </script>
+
     </div>
     <div id="footerCount" style="text-align:center;padding:18px;color:var(--muted);font-size:13px">The map fills up as Founding Businesses come online · check back soon</div>
   </div>

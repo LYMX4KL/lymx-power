@@ -258,6 +258,28 @@
     </div>
   </div>
 
+  <!-- 2026-05-20 #8ae35834 — new-partner first-5-actions panel.
+       Shows only for partners with 0 activations + 0 downline AND created < 30 days ago.
+       Self-hides on subsequent visits once any activation lands. -->
+  <div id="newPartnerOnboarding" style="display:none;background:linear-gradient(135deg,#fff8e1,#ffeec4);border:1px solid #f5d172;border-radius:14px;padding:22px 24px;margin:20px 0">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <span style="font-size:22px">\u{1F389}</span>
+      <h2 style="margin:0;font-size:18px;font-weight:800;color:#78350f">Welcome, Partner. Your first 5 actions:</h2>
+    </div>
+    <p style="margin:0 0 14px;color:#78350f;font-size:13.5px;opacity:.85">Knock these out in the first 48 hours and you're already ahead of 90% of new partners. Each one moves you closer to your $500 activation bonus.</p>
+    <ol id="onboardingSteps" style="margin:0;padding-left:22px;font-size:14px;line-height:1.8;color:#1a1f27">
+      <li><b>Copy your partner link</b> and DM it to 3 friends right now. <a href="#share" style="color:#0050c7;font-weight:700;text-decoration:underline">Jump to share section →</a></li>
+      <li><b>Finish your Gmail Send-mail-as setup</b> so emails you send to prospects come from your @getlymx.com address. <a href="#emailSetupCard" style="color:#0050c7;font-weight:700;text-decoration:underline">Open setup card →</a></li>
+      <li><b>Walk into 1 local Business this week</b> with the pitch deck. <a href="partner-resources.html" style="color:#0050c7;font-weight:700;text-decoration:underline">Download materials →</a></li>
+      <li><b>Book a 30-min 1-on-1</b> with Rachel (partner concierge) to map your local list. <a href="book-onboarding-call.html" style="color:#0050c7;font-weight:700;text-decoration:underline">Pick a time →</a></li>
+      <li><b>Sign your first Business</b> and earn the $500 activation bonus.</li>
+    </ol>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(212,175,55,.4);font-size:12.5px;color:#78350f;opacity:.85">
+      You can dismiss this panel anytime by clicking <a href="#" id="dismissOnboarding" style="color:#0050c7;font-weight:700;text-decoration:underline">here</a>.
+      It auto-hides once you land your first activation.
+    </div>
+  </div>
+
   <!-- Earnings hero -->
   <div class="earn-hero">
     <div class="row1">
@@ -563,6 +585,28 @@
     if (emailLink) emailLink.href = 'mailto:?subject=' + encodeURIComponent('Try LYMX with me') + '&body=' + encodeURIComponent('Sign up here and we both get 100 LYMX: ' + shareUrl);
     const smsLink = document.getElementById('repShareSms');
     if (smsLink) smsLink.href = 'sms:?body=' + encodeURIComponent('Join me on LYMX — we both get 100 LYMX when you sign up: ' + shareUrl);
+
+    // 2026-05-20 #8ae35834 — new-partner onboarding panel logic.
+    try {
+      var dismissed = false;
+      try { dismissed = localStorage.getItem('LYMX_dismiss_new_partner_onboarding_' + partner.id) === '1'; } catch (e) { console.warn('[onboarding] localStorage read', e); }
+      var createdAt = partner.created_at ? new Date(partner.created_at) : null;
+      var ageDays   = createdAt ? Math.floor((Date.now() - createdAt.getTime()) / 86400000) : 0;
+      var hasActivations = (partner.activation_count || partner.downline_count || 0) > 0;
+      if (!dismissed && !hasActivations && ageDays < 30) {
+        var panel = document.getElementById('newPartnerOnboarding');
+        if (panel) panel.style.display = '';
+      }
+      var dismissBtn = document.getElementById('dismissOnboarding');
+      if (dismissBtn) {
+        dismissBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          try { localStorage.setItem('LYMX_dismiss_new_partner_onboarding_' + partner.id, '1'); } catch (ee) { console.warn('[onboarding] localStorage write', ee); }
+          var p = document.getElementById('newPartnerOnboarding');
+          if (p) p.style.display = 'none';
+        });
+      }
+    } catch (e) { console.warn('[onboarding] panel logic failed', e); }
     const twLink = document.getElementById('repShareTwitter');
     if (twLink) twLink.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Earn rewards anywhere on the LYMX network. Sign up free → ' + shareUrl);
 

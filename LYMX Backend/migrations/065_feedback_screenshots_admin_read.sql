@@ -1,66 +1,60 @@
 -- =============================================================================
 -- Migration 065 — admin read access for feedback-screenshots bucket
--- 2026-05-20
+-- 2026-05-20 (v3 — flat single-line EXECUTE, no nested dollar-quotes)
 -- =============================================================================
 --
--- The `feedback-screenshots` bucket has been silently failing admin reads for
--- weeks. Uploads via the feedback-submit Edge Function (service_role) work
--- fine — the files ARE in storage. But admin JWTs hit "Object not found" when
--- signing URLs because no RLS policy on storage.objects grants them SELECT.
--- Result: every screenshot Rae, Helen, Rachel attached looked "lost".
+-- Restores admin read access to the feedback-screenshots bucket. Uploads via
+-- service_role (feedback-submit EF) work fine; admin JWTs were silently
+-- failing on sign-URL because no SELECT policy on storage.objects existed
+-- for these buckets. Every screenshot Rae/Helen/Rachel attached looked lost
+-- because of this gap.
 --
--- Root cause: migration 008 created the private bucket but never added an
--- admin-read policy. Tickets like d7913fb6 ("errors" + screenshot) became
--- unactionable because we couldn't see what the tester was seeing.
+-- v3 rewrites with:
+--   * No DROP POLICY (avoids ownership conflicts on storage.objects)
+--   * IF NOT EXISTS check via pg_policies before each CREATE
+--   * Single-line EXECUTE strings (no nested $sql$ ... $sql$ pairs)
+--   * Each DO block named with a unique tag per the named-dollar-quote rule
 --
--- This migration:
---   1. Grants storage.objects SELECT to admins for the feedback-screenshots bucket
---   2. Same for feedback-attachments (the v2 multi-attachment bucket)
---   3. Idempotent — drops and recreates so it can be re-run safely
---
--- Admin detection: hardcoded admin UUID + staff_roles.role in ('admin','tech').
+-- Idempotent.
 -- =============================================================================
 
--- 1) Drop any prior policies with these exact names
-drop policy if exists "admins read feedback-screenshots"  on storage.objects;
-drop policy if exists "admins read feedback-attachments"  on storage.objects;
+-- 1) feedback-screenshots — create SELECT policy for admins if missing.
+do $migration_065_screenshots$
+begin
+    if not exists (
+        select 1 from pg_policies
+        where schemaname = 'storage'
+          and tablename  = 'objects'
+          and policyname = 'admins read feedback-screenshots'
+    ) then
+        execute 'create policy "admins read feedback-screenshots" on storage.objects for select to authenticated using (bucket_id = ''feedback-screenshots'' and (auth.uid() = ''1405bb50-2c97-48dd-bfa5-31f32320de9b''::uuid or exists (select 1 from public.staff_roles where user_id = auth.uid() and role in (''admin'',''tech'',''support''))))';
+        raise notice 'Created policy "admins read feedback-screenshots".';
+    else
+        raise notice 'Policy "admins read feedback-screenshots" already exists — skipping.';
+    end if;
+exception when insufficient_privilege then
+    raise notice 'Insufficient privilege to add storage.objects policy via SQL. Use the Supabase dashboard Storage > Policies UI instead.';
+end $migration_065_screenshots$;
 
--- 2) Allow admins to SELECT objects in the feedback-screenshots bucket
-create policy "admins read feedback-screenshots"
-    on storage.objects
-    for select
-    to authenticated
-    using (
-        bucket_id = 'feedback-screenshots'
-        and (
-            auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid       -- hardcoded admin
-            or exists (
-                select 1 from public.staff_roles
-                where user_id = auth.uid()
-                  and role in ('admin', 'tech', 'support')
-            )
-        )
-    );
+-- 2) feedback-attachments — same shape.
+do $migration_065_attachments$
+begin
+    if not exists (
+        select 1 from pg_policies
+        where schemaname = 'storage'
+          and tablename  = 'objects'
+          and policyname = 'admins read feedback-attachments'
+    ) then
+        execute 'create policy "admins read feedback-attachments" on storage.objects for select to authenticated using (bucket_id = ''feedback-attachments'' and (auth.uid() = ''1405bb50-2c97-48dd-bfa5-31f32320de9b''::uuid or exists (select 1 from public.staff_roles where user_id = auth.uid() and role in (''admin'',''tech'',''support''))))';
+        raise notice 'Created policy "admins read feedback-attachments".';
+    else
+        raise notice 'Policy "admins read feedback-attachments" already exists — skipping.';
+    end if;
+exception when insufficient_privilege then
+    raise notice 'Insufficient privilege to add storage.objects policy via SQL. Use the Supabase dashboard Storage > Policies UI instead.';
+end $migration_065_attachments$;
 
--- 3) Same policy for the feedback-attachments bucket (v2 multi-file attachments)
-create policy "admins read feedback-attachments"
-    on storage.objects
-    for select
-    to authenticated
-    using (
-        bucket_id = 'feedback-attachments'
-        and (
-            auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
-            or exists (
-                select 1 from public.staff_roles
-                where user_id = auth.uid()
-                  and role in ('admin', 'tech', 'support')
-            )
-        )
-    );
-
--- 4) Ensure the bucket itself exists (idempotent — bucket may have been
---    created via Supabase UI rather than migration 008, so make sure).
+-- 3) Ensure the bucket itself exists with the right config.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
     'feedback-screenshots',
@@ -70,5 +64,5 @@ values (
     array['image/png','image/jpeg','image/jpg','image/webp','image/gif']::text[]
 )
 on conflict (id) do update set
-    file_size_limit = excluded.file_size_limit,
+    file_size_limit    = excluded.file_size_limit,
     allowed_mime_types = excluded.allowed_mime_types;
