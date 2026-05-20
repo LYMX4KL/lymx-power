@@ -543,14 +543,62 @@ window.addEventListener('DOMContentLoaded', function () {
     });
   }
 })();
-// Search submit handler (no-op shim if not provided elsewhere)
-if (typeof handleSearchSubmit !== 'function') {
-  window.handleSearchSubmit = function(){
-    // Future: trigger the live search/filter pipeline. For now, results
-    // render from the existing biz-list which is static during launch.
+// 2026-05-20 #db417db3 - Search was unresponsive (no-op shim). Now: filter
+// any business cards on the page by the Find term + surface a clear status
+// banner when no Founding-25 businesses match yet. Doubles as a soft
+// lead-capture: directs the searcher to set a notification.
+window.handleSearchSubmit = function() {
+  var findEl = document.getElementById('searchFind');
+  var nearEl = document.getElementById('searchNear');
+  var find = (findEl && findEl.value || '').trim();
+  var near = (nearEl && nearEl.value || '').trim() || 'your area';
+
+  // Find or create the status banner near the search hint
+  var status = document.getElementById('searchStatus');
+  if (!status) {
+    status = document.createElement('div');
+    status.id = 'searchStatus';
+    status.style.cssText = 'max-width:680px;margin:10px auto 0;padding:10px 14px;background:#fff;border:1px solid var(--line);border-radius:9px;font-size:13px;color:var(--ink-2);text-align:center;display:none';
+    var hint = document.querySelector('.search-hint');
+    if (hint && hint.parentNode) hint.parentNode.insertBefore(status, hint.nextSibling);
+  }
+
+  if (!find) {
+    status.style.display = 'block';
+    status.innerHTML = 'Type what you\'re looking for in the <strong>Find</strong> box — coffee, salons, EV chargers — then tap Search.';
     return false;
-  };
-}
+  }
+
+  // Filter real business cards (any non-CTA biz-card on the page) by the Find term
+  var allCards = document.querySelectorAll('.biz-card');
+  var visible = 0;
+  allCards.forEach(function(c) {
+    // Skip founding/customer/partner CTA cards (they have specific classes/IDs)
+    if (c.id === 'guestCustomerInvite' || c.id === 'guestPartnerInvite') return;
+    if (c.getAttribute('href') === 'business.html') return; // founding CTA
+    var txt = c.textContent.toLowerCase();
+    var match = txt.indexOf(find.toLowerCase()) !== -1;
+    c.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+
+  status.style.display = 'block';
+  if (visible === 0) {
+    status.innerHTML =
+      'No live <strong>' + find.replace(/[<>]/g,'') + '</strong> in <strong>' + near.replace(/[<>]/g,'') + '</strong> yet — we\'re still onboarding the first 25 Founding Businesses. '
+      + '<a href="customer-signup.html" style="color:var(--accent-2);font-weight:700;text-decoration:underline">Create a free wallet</a> and we\'ll email you the moment one opens here.';
+  } else {
+    status.innerHTML = 'Showing <strong>' + visible + '</strong> result' + (visible === 1 ? '' : 's') + ' for <strong>' + find.replace(/[<>]/g,'') + '</strong> in ' + near.replace(/[<>]/g,'') + '. <a href="#" id="searchClear" style="color:var(--accent-2);font-weight:700">Clear</a>';
+    var clearEl = document.getElementById('searchClear');
+    if (clearEl) clearEl.addEventListener('click', function(e){
+      e.preventDefault();
+      findEl.value = '';
+      allCards.forEach(function(c){ c.style.display = ''; });
+      status.style.display = 'none';
+    });
+  }
+  return false;
+};
 </script>
 </body>
 </html>

@@ -628,7 +628,14 @@
     notice(null);
     loadDraft();
     updateWhoLabel();
-    setTimeout(captureAuto, 250);
+    // 2026-05-20 #22ad49e8 - was: setTimeout(captureAuto, 250) which hid the
+    // overlay via visibility:hidden for ~1-2s while html2canvas ran. To the
+    // user, that looked exactly like "the form disappeared when I clicked
+    // inside it." Drop auto-capture. The user can hit ↻ Recapture or
+    // ✂️ Crop screenshot explicitly if they want a shot. Most reports don't
+    // even need one.
+    var preview = document.getElementById('lymx-fb-shot-preview');
+    if (preview) preview.innerHTML = '<span style="color:#5b6472;font-size:12.5px">No screenshot — tap ↻ Recapture, ✂️ Crop, or 📎 Add file to attach.</span>';
     setTimeout(function () {
       var msg = document.getElementById('lymx-fb-message');
       if (msg && !msg.value) msg.focus();

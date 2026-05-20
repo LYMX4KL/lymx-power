@@ -207,6 +207,11 @@
       }
     } catch (e) {}
     document.body.appendChild(menu);
+    // 2026-05-20 #3cb5968a - rect.right - 200 assumed menu is exactly 200px wide, but min-width:200px lets content push it wider, so the menu would extend past the avatar on the right. Re-measure actual width after insertion and re-anchor so menu's right edge = avatar's right edge precisely.
+    try {
+      var actualW = menu.offsetWidth || 200;
+      menu.style.left = (Math.max(8, rect.right - actualW) + window.scrollX) + 'px';
+    } catch (e) {}
     menu.querySelectorAll('a').forEach(function (a) {
       a.addEventListener('mouseenter', function () { a.style.background = '#eef4ff'; });
       a.addEventListener('mouseleave', function () { a.style.background = ''; });
