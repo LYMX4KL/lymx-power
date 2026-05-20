@@ -292,8 +292,28 @@
       <p class="sub">If a LYMX Partner referred you, paste their referral code so they get credit for the sign-up bonus.</p>
       <div class="field">
         <label>Partner referral code</label>
-        <input class="input" name="partner_referral_code" placeholder="Leave blank if none">
+        <input class="input" name="partner_referral_code" id="partnerReferralCode" placeholder="Leave blank if none">
+        <div id="partnerReferralAttributed" style="display:none;margin-top:8px;font-size:13px;color:#0a6e44;background:#e6f5ee;border:1px solid #b8e6cc;border-radius:8px;padding:8px 12px">
+          ✓ <span id="partnerReferralAttributedText">Credit will go to the Partner who referred you.</span>
+        </div>
       </div>
+      <script>
+        // 2026-05-20 #8ae35834 — auto-fill the partner referral code from the
+        // persisted ?ref= value that lymx-config.js captured. When Helen sends
+        // her prospect /biz-signup.html?ref=P-000123, the prospect sees the
+        // code pre-filled with a green attribution banner so they know who
+        // gets credit.
+        (function () {
+          var ref = (window.LYMX_getRef && window.LYMX_getRef()) || '';
+          if (!ref) return;
+          var input = document.getElementById('partnerReferralCode');
+          var banner = document.getElementById('partnerReferralAttributed');
+          var bannerText = document.getElementById('partnerReferralAttributedText');
+          if (input && !input.value) input.value = ref;
+          if (banner) banner.style.display = '';
+          if (bannerText) bannerText.textContent = '✓ Code ' + ref + ' will be credited as your sponsor. Edit above if it’s wrong.';
+        })();
+      </script>
     </section>
 
     <!-- 6. Terms + submit -->
