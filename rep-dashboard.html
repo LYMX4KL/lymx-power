@@ -312,10 +312,44 @@
     <div class="body">
       <div class="head">Earn your way in. First 25 Partners to hit <span style="color:#f5d172">5 Direct activations</span> get lifetime perks.</div>
       <div class="body-text">1.5× sign-up bonuses (<strong>$750</strong>) on activations beyond your 5th · <strong>+2% override forever</strong> on Direct (11% total) · Lifetime quarterly summit invite · Direct WhatsApp line to founder. Status locks when claimed — earned, not bought.</div>
+      <!-- 2026-05-20 #8ae35834 — Personal progress bar (hidden if already Founding) -->
+      <div id="foundingPersonalProgress" style="display:none;margin-top:14px;padding:14px 16px;background:rgba(255,255,255,.06);border:1px solid rgba(245,209,114,.32);border-radius:11px;position:relative"></div>
+      <!-- 2026-05-20 #8ae35834 — Global spots-remaining live indicator -->
+      <div id="foundingGlobalRemaining" style="margin-top:10px;font-size:12.5px;color:#cbd5e1;position:relative">— spots open globally · loading…</div>
     </div>
     <div class="counter"><strong id="repFoundingRank">— / 25</strong><span id="repFoundingLabel">Partners qualified</span></div>
     <a class="btn-apply" href="projection.html">Project my 5 →</a>
   </div>
+  <script>
+  // 2026-05-20 #8ae35834 — Global Founding 25 spots-remaining live indicator.
+  // Polls the partners table for is_founding_25=true count and updates the
+  // banner so Helen sees the urgency: "23 spots remaining" vs "—".
+  (async function () {
+    try {
+      if (!window.LYMX_CONFIG) return;
+      const r = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/rest/v1/partners?is_founding_25=eq.true&select=id', {
+        headers: { apikey: window.LYMX_CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + window.LYMX_CONFIG.SUPABASE_ANON_KEY, Prefer: 'count=exact' }
+      });
+      let claimed = 0;
+      const range = r.headers.get('content-range');
+      if (range) {
+        const m = range.match(/\/(\d+)$/);
+        if (m) claimed = parseInt(m[1], 10);
+      }
+      const remaining = Math.max(0, 25 - claimed);
+      const el = document.getElementById('foundingGlobalRemaining');
+      if (el) {
+        if (remaining === 0) {
+          el.innerHTML = '<strong style="color:#f5d172">All 25 Founding spots are filled.</strong> Future cohorts may open — stay close to Kenny.';
+        } else if (remaining <= 5) {
+          el.innerHTML = '<strong style="color:#f5d172">Only ' + remaining + ' Founding 25 spots remaining.</strong> ' + claimed + ' Partners have already locked theirs.';
+        } else {
+          el.innerHTML = remaining + ' of 25 Founding spots still open · ' + claimed + ' claimed so far.';
+        }
+      }
+    } catch (e) { console.warn('[founding25-global] poll failed', e); }
+  })();
+  </script>
 
   <!-- 2026-05-20 #8ae35834 — My Activations widget.
        Shows every business that signed up using THIS partner's referral code.
@@ -604,6 +638,7 @@
 
     // 2026-05-20 #8ae35834 — My Activations loader.
     // Pulls businesses signed_up_by_partner_id = partner.id.
+    let myActivationCount = 0;
     try {
       const r = await LYMX.sb
         .from('businesses')
@@ -613,6 +648,35 @@
         .order('created_at', { ascending: false })
         .limit(50);
       const rows = (r && r.data) || [];
+      myActivationCount = rows.length;
+      // 2026-05-20 #8ae35834 — Update Founding 25 progress counter with REAL count
+      // (the existing logic referenced an undefined `activations` variable.)
+      const fr2 = document.getElementById('repFoundingRank');
+      const fl2 = document.getElementById('repFoundingLabel');
+      if (fr2 && fl2 && !partner.is_founding_25) {
+        fr2.textContent = myActivationCount + ' / 5';
+        fl2.textContent = myActivationCount >= 5
+          ? 'Eligible — admin will lock you in shortly'
+          : (5 - myActivationCount) + ' more to lock Founding 25';
+      }
+      // Render the Founding 25 personal progress widget
+      try {
+        const fp = document.getElementById('foundingPersonalProgress');
+        if (fp && !partner.is_founding_25) {
+          const pct = Math.min(100, Math.round((myActivationCount / 5) * 100));
+          const remaining = Math.max(0, 5 - myActivationCount);
+          const motivational = remaining === 0
+            ? "You've hit 5. Admin is locking your Founding 25 rank — keep the activations coming, every one beyond 5 pays $750 instead of $500."
+            : remaining === 1
+              ? 'One more activation locks your Founding 25 rank forever.'
+              : remaining + ' more activations and you lock Founding 25 — lifetime $750 sign-ups, +2% override on Direct, summit invite.';
+          fp.innerHTML =
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><strong style="font-size:14.5px">Your Founding 25 progress</strong><span style="font-family:ui-monospace,Menlo,monospace;font-weight:700;font-size:13.5px">' + myActivationCount + ' / 5</span></div>' +
+            '<div style="width:100%;height:9px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden"><div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#d4af37,#f5d172);transition:width .35s"></div></div>' +
+            '<div style="margin-top:8px;font-size:12.5px;color:#cbd5e1">' + motivational + '</div>';
+          fp.style.display = '';
+        }
+      } catch (e) { console.warn('[founding25-progress] paint failed', e); }
       const countEl = document.getElementById('myActivationsCount');
       const listEl  = document.getElementById('myActivationsList');
       if (countEl) countEl.textContent = rows.length === 0 ? 'No activations yet' : (rows.length + ' total');
