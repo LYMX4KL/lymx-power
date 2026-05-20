@@ -717,7 +717,10 @@ document.getElementById('cCancel').addEventListener('click', () => document.getE
 document.getElementById('contactModal').addEventListener('click', e => { if (e.target.id === 'contactModal') e.target.classList.remove('on'); });
 
 document.getElementById('cSave').addEventListener('click', async () => {
-  // Read selected tags/lists from the multi-selects (Bug fix #d8c9a9fb)
+  // 2026-05-19 #f5cba502 - was: sent tags + lists arrays in the main contacts
+  // INSERT/PATCH which returned 400 ("column contacts.tags does not exist").
+  // Now: strip them, write the contact first, then sync tag/list links into
+  // junction tables (contact_tags / contact_list_members) separately.
   const pickedTags  = Array.from(document.getElementById('cTags').selectedOptions).map(o => o.value).filter(Boolean);
   const pickedLists = Array.from(document.getElementById('cLists').selectedOptions).map(o => o.value).filter(Boolean);
   const payload = {
@@ -727,16 +730,12 @@ document.getElementById('cSave').addEventListener('click', async () => {
     phone:      document.getElementById('cPhone').value.trim() || null,
     company:    document.getElementById('cCompany').value.trim() || null,
     job_title:  document.getElementById('cJob').value.trim() || null,
-    notes:      document.getElementById('cNotes').value.trim() || null,
-    tags:       pickedTags,
-    lists:      pickedLists,
+    notes:      document.getElementById('cNotes').value.trim() || null
   };
   if (!/[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(payload.email)) { alert('Email is required.'); return; }
   let r;
+  let contactId = editingId;
   if (editingId) {
-    // PATCH with return=minimal so PostgREST does not try to SELECT the row
-    // back (which can fail when the row's RLS permits UPDATE but the view
-    // hasn't refreshed yet). Fixes feedback #4e45b65f.
     r = await authedFetch(`/rest/v1/contacts?id=eq.${editingId}`, {
       method: 'PATCH',
       headers: { 'Prefer': 'return=minimal' },
@@ -745,15 +744,30 @@ document.getElementById('cSave').addEventListener('click', async () => {
   } else {
     r = await authedFetch('/rest/v1/contacts', {
       method: 'POST',
-      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
       body: JSON.stringify({ ...payload, owner_id: myUserId, source: 'manual' }),
     });
+    if (r.ok) { try { const arr = await r.json(); contactId = (arr && arr[0] && arr[0].id) || null; } catch(e){} }
   }
   if (!r.ok) {
     let detail = '';
-    try { const b = await r.json(); detail = b && (b.message || b.error || b.hint) ? ' — ' + (b.message || b.error || b.hint) : ''; } catch(e) {}
+    try { const b = await r.json(); detail = b && (b.message || b.error || b.hint) ? ' - ' + (b.message || b.error || b.hint) : ''; } catch(e) {}
     alert('Save failed (HTTP ' + r.status + ')' + detail);
     return;
+  }
+  if (contactId) {
+    try {
+      if (editingId) await authedFetch(`/rest/v1/contact_tags?contact_id=eq.${contactId}`, { method: 'DELETE' });
+      if (pickedTags.length) {
+        const tagRows = pickedTags.map(name => { const t = allTags.find(x => x.name === name); return t ? { contact_id: contactId, tag_id: t.id } : null; }).filter(Boolean);
+        if (tagRows.length) await authedFetch('/rest/v1/contact_tags', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(tagRows) });
+      }
+      if (editingId) await authedFetch(`/rest/v1/contact_list_members?contact_id=eq.${contactId}`, { method: 'DELETE' });
+      if (pickedLists.length) {
+        const listRows = pickedLists.map(name => { const l = allLists.find(x => x.name === name); return l ? { list_id: l.id, contact_id: contactId } : null; }).filter(Boolean);
+        if (listRows.length) await authedFetch('/rest/v1/contact_list_members', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(listRows) });
+      }
+    } catch (e) { console.warn('[contacts] tag/list sync failed', e); }
   }
   document.getElementById('contactModal').classList.remove('on');
   await loadAll();
@@ -837,12 +851,25 @@ document.getElementById('bkApply').addEventListener('click', async () => {
   await loadAll();
 });
 
-// ---- Invite selected -> jump to invite page with email list passed via sessionStorage ----
-document.getElementById('inviteSelectedBtn').addEventListener('click', () => {
-  const emails = allContacts.filter(c => selectedIds.has(c.id)).map(c => c.email);
+// ---- Invite selected ----
+// 2026-05-19 #5bc0898b - was: jumped to admin-invite-friends.html which is
+// role-gated to admin (so customers got bounced to their dashboard). Now: opens
+// the user's email client with the chosen contacts as BCC + the referral link.
+document.getElementById('inviteSelectedBtn').addEventListener('click', async () => {
+  const emails = allContacts.filter(c => selectedIds.has(c.id)).map(c => c.email).filter(Boolean);
   if (!emails.length) return;
-  sessionStorage.setItem('lymx_invite_preselected', JSON.stringify(emails));
-  window.location.href = 'admin-invite-friends.html?from=contacts';
+  let code = 'U-' + (myUserId || '').slice(0, 6).toUpperCase();
+  try {
+    const r = await authedFetch('/rest/v1/partners?user_id=eq.' + myUserId + '&select=partner_code');
+    if (r.ok) {
+      const rows = await r.json();
+      if (rows && rows[0] && rows[0].partner_code) code = rows[0].partner_code;
+    }
+  } catch (e) {}
+  const link = 'https://getlymx.com/welcome.html?ref=' + encodeURIComponent(code);
+  const subj = encodeURIComponent('Join me on LYMX - we both earn 100 LYMX');
+  const body = encodeURIComponent('Hey - I am using LYMX (cash-back rewards for local businesses). Sign up with my link and we both get 100 LYMX: ' + link);
+  window.location.href = 'mailto:?bcc=' + encodeURIComponent(emails.join(',')) + '&subject=' + subj + '&body=' + body;
 });
 
 // ---- Boot ----

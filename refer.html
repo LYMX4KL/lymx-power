@@ -89,16 +89,29 @@
 
   <div class="card">
     <h2 style="margin-bottom:6px">Track your invites</h2>
-    <p style="margin:0;color:var(--muted);font-size:14px">See who signed up + how much LYMX you have earned in your <a href="customer-dashboard.html" style="color:var(--accent-2);font-weight:600">Dashboard</a> or the <a href="admin-invite-friends.html" style="color:var(--accent-2);font-weight:600">Invite Friends</a> tool.</p>
+    <p style="margin:0;color:var(--muted);font-size:14px">Your live referral progress is below. For the full breakdown, open your <a href="customer-dashboard.html" style="color:var(--accent-2);font-weight:600">Dashboard</a>.</p>
+    <!-- 2026-05-19 #c08116d9 — JS populates this on boot -->
+    <div id="refStats"></div>
   </div>
 </main>
 
 <script src="lymx-config.js"></script>
 <script src="lymx-auth.js"></script>
 <script>
-(async function () {
-  // Wait for session
-  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(arguments.callee, 100); return; }
+// 2026-05-19 #565d5693 #fdd74b28 #f285cf0f #d9289bb3 — was: top-level async IIFE
+// with setTimeout(arguments.callee, 100) which is forbidden in async functions
+// (silent TypeError → script halts → "Loading…" stays forever → copy+share
+// buttons never wire). Now: named retry loop with explicit await polling.
+async function boot() {
+  // Poll for LYMX config + session (max 30 tries × 100 ms = 3 s)
+  for (let i = 0; i < 30; i++) {
+    if (window.LYMX && window.LYMX.getSession) break;
+    await new Promise(r => setTimeout(r, 100));
+  }
+  if (!window.LYMX || !window.LYMX.getSession) {
+    document.getElementById('pcode').textContent = 'Sign in to see your code';
+    return;
+  }
   const s = await window.LYMX.getSession();
   if (!s) { location.href = 'login.html?return=refer.html'; return; }
   const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
@@ -112,23 +125,46 @@
     const rows = await r.json();
     pcode = (rows && rows[0] && rows[0].partner_code) || null;
   } catch (e) {}
-  // Use partner_code if available, else fall back to short uid
   const code = pcode || ('U-' + userId.slice(0, 6).toUpperCase());
   const link = 'https://getlymx.com/welcome.html?ref=' + encodeURIComponent(code);
   document.getElementById('pcode').textContent = code;
   document.getElementById('refLink').value = link;
   // Wire share buttons
   const subject = encodeURIComponent('Join me on LYMX');
-  const bodyTxt = encodeURIComponent('Hey — I am using LYMX (cash-back rewards for local businesses). Sign up with my link and we both get 100 LYMX: ' + link);
+  const bodyTxt = encodeURIComponent('Hey - I am using LYMX (cash-back rewards for local businesses). Sign up with my link and we both get 100 LYMX: ' + link);
   document.getElementById('emailShare').href = 'mailto:?subject=' + subject + '&body=' + bodyTxt;
   document.getElementById('smsShare').href   = 'sms:?body=' + bodyTxt;
   document.getElementById('xShare').href     = 'https://twitter.com/intent/tweet?text=' + bodyTxt;
   document.getElementById('fbShare').href    = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(link);
   document.getElementById('copyBtn').addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(link); document.getElementById('copyBtn').textContent = '✓ Copied'; }
+    try { await navigator.clipboard.writeText(link); document.getElementById('copyBtn').textContent = '✓ Copied'; setTimeout(() => { document.getElementById('copyBtn').textContent = '📋 Copy'; }, 1500); }
     catch (e) { document.getElementById('refLink').select(); document.execCommand('copy'); }
   });
-})();
+
+  // 2026-05-19 #c08116d9 — recruited friends count inline
+  try {
+    const r2 = await fetch(URL + '/rest/v1/referrals?inviter_user_id=eq.' + userId + '&select=id,status,inviter_bonus_amount', {
+      headers: { apikey: ANON, Authorization: 'Bearer ' + s.access_token }
+    });
+    if (r2.ok) {
+      const refs = await r2.json();
+      const joined  = refs.filter(r => r.status === 'credited').length;
+      const pending = refs.filter(r => r.status === 'pending').length;
+      const earned  = refs.filter(r => r.status === 'credited').reduce((sum, r) => sum + Number(r.inviter_bonus_amount || 0), 0);
+      const statsEl = document.getElementById('refStats');
+      if (statsEl) {
+        statsEl.innerHTML = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px">' +
+          '<div style="background:#f6f7f9;padding:12px;border-radius:9px;text-align:center"><div style="font-size:22px;font-weight:800;color:#13a26b">' + joined + '</div><div style="font-size:11px;color:#5b6472;text-transform:uppercase;letter-spacing:.05em;font-weight:700">Friends joined</div></div>' +
+          '<div style="background:#f6f7f9;padding:12px;border-radius:9px;text-align:center"><div style="font-size:22px;font-weight:800;color:#0a84ff">' + earned + '</div><div style="font-size:11px;color:#5b6472;text-transform:uppercase;letter-spacing:.05em;font-weight:700">LYMX earned</div></div>' +
+          '<div style="background:#f6f7f9;padding:12px;border-radius:9px;text-align:center"><div style="font-size:22px;font-weight:800;color:#f0a020">' + pending + '</div><div style="font-size:11px;color:#5b6472;text-transform:uppercase;letter-spacing:.05em;font-weight:700">Pending</div></div>' +
+          '</div>';
+      }
+    }
+  } catch (e) {}
+}
+boot();
 </script>
+<!-- 2026-05-19 #fd58af45 — lymx-nav.js auto-swaps guest Sign-In/Up buttons to "My account" when logged in -->
+<script src="lymx-nav.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body></html>
