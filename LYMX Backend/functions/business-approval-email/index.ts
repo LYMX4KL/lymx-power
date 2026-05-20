@@ -157,7 +157,7 @@ serve(async (req) => {
     // Load the business + owner email
     const { data: biz, error: bErr } = await supabase
         .from("businesses")
-        .select("id, slug, display_name, legal_name, contact_email, owner_user_id")
+        .select("id, slug, display_name, legal_name, contact_email, owner_user_id, signed_up_by_partner_id")
         .eq("id", body.business_id)
         .maybeSingle();
     if (bErr || !biz) return errorResponse("Business not found", 404);
@@ -241,6 +241,46 @@ serve(async (req) => {
         provider_msg_id: sent.id,
         sent_at: new Date().toISOString(),
     }).then(() => {}, () => {});
+
+    // 2026-05-20 #8ae35834 - When admin APPROVES a partner-referred business,
+    // notify the sponsor partner that their $500 just went live. Non-blocking;
+    // failure does NOT roll back the business-owner email.
+    if (body.status === "approved" && biz.signed_up_by_partner_id) {
+        try {
+            const { data: sponsor } = await supabase
+                .from("partners")
+                .select("legal_name, display_name, contact_email, partner_code")
+                .eq("id", biz.signed_up_by_partner_id)
+                .maybeSingle();
+            if (sponsor && sponsor.contact_email) {
+                const firstName = (sponsor.display_name || sponsor.legal_name || "Partner").split(/\s+/)[0];
+                const bizLabel = biz.display_name || biz.legal_name || "your referred Business";
+                const subj = "$500 just landed - " + bizLabel + " is approved";
+                const bodyText = "Hi " + firstName + ",\n\n" +
+                    bizLabel + " is now LIVE on LYMX, and your $500 activation bonus has been posted to your commission ledger.\n\n" +
+                    "You can see the activation on your Partner Dashboard:\n" +
+                    "https://getlymx.com/rep-dashboard.html#myActivationsCard\n\n" +
+                    "That's your first (or next) Founding 25 credit - keep them coming. Your local list is the asset; every Business you bring on compounds the network density Businesses care about.\n\n" +
+                    "- The LYMX team";
+                await fetch(Deno.env.get("SUPABASE_URL") + "/functions/v1/send-email", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": "Bearer " + Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        recipient_email: sponsor.contact_email,
+                        subject: subj,
+                        body_text: bodyText,
+                        kind: "partner_activation_approved",
+                        channel: "transactional",
+                    }),
+                });
+            }
+        } catch (sponsorErr) {
+            console.warn("Sponsor approval notification failed (non-fatal):", (sponsorErr as Error).message);
+        }
+    }
 
     return json({ success: true, sent_to: toEmail, subject: composed.subject });
 });
