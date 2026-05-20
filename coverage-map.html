@@ -167,12 +167,12 @@
 
 <section class="head">
   <div class="wrap">
-    <!-- 2026-05-20 #f70d6cb9 - same illustrative-vs-live issue as #8e6ba93a (stats). Add an unmissable warning so testers don't read the "13 live / 12 open" copy as real network data. -->
-    <div style="background:#7c2d12;color:#fff;border-radius:11px;padding:14px 18px;margin:0 0 18px;display:flex;gap:12px;align-items:center;font-size:13.5px;border:2px solid #f59e0b">
-      <div style="font-size:22px">⚠️</div>
+    <!-- 2026-05-20 - top stats strip + category chips now LIVE-WIRED via public-stats EF. Neighborhood-level map zones stay illustrative until businesses provide location data at onboarding. -->
+    <div style="background:#1e3a8a;color:#fff;border-radius:11px;padding:14px 18px;margin:0 0 18px;display:flex;gap:12px;align-items:center;font-size:13.5px;border:1px solid #3b82f6">
+      <div style="font-size:22px">📍</div>
       <div>
-        <div style="font-weight:800;font-size:14.5px;margin-bottom:2px">Preview only — coverage data below is illustrative.</div>
-        <div style="opacity:.9">The Launch 25 cohort is still being recruited. The "13 live / 12 spots open" figures shown here are the projected end-state at launch, not the live count today. Real coverage replaces these on Sep 12, 2026.</div>
+        <div style="font-weight:800;font-size:14.5px;margin-bottom:2px">Stats are live · neighborhood map is illustrative until onboarding</div>
+        <div style="opacity:.9">The top tiles + category counts pull real numbers from our database. The neighborhood-level zones below show the planned rollout — actual per-zone counts populate as Founding 25 businesses onboard (we collect location at signup).</div>
       </div>
     </div>
     <span class="pre">Las Vegas · Q3 2026 launch</span>
@@ -182,12 +182,12 @@
 </section>
 
 <div class="wrap">
-  <!-- Stats strip -->
+  <!-- Stats strip (2026-05-20 - now live-wired via public-stats EF) -->
   <div class="stats">
-    <div class="stat"><div class="l">Active Businesses</div><div class="v green">13</div><div class="sub">+3 this week</div></div>
-    <div class="stat"><div class="l">Launch 25 spots open</div><div class="v gold">12</div><div class="sub">Closing fast</div></div>
-    <div class="stat"><div class="l">Neighborhoods covered</div><div class="v">6</div><div class="sub">Of 12 in roadmap</div></div>
-    <div class="stat"><div class="l">LYMX customers in city</div><div class="v">8,420</div><div class="sub">Weekly active</div></div>
+    <div class="stat"><div class="l">Active Businesses</div><div class="v green" id="cov-biz-total">—</div><div class="sub" id="cov-biz-sub">Founding 25 cohort</div></div>
+    <div class="stat"><div class="l">Launch 25 spots open</div><div class="v gold" id="cov-biz-open">—</div><div class="sub">Recruiting now</div></div>
+    <div class="stat"><div class="l">Neighborhoods targeted</div><div class="v">6</div><div class="sub">Strip / Downtown / Henderson / Summerlin / NW / Spring Valley</div></div>
+    <div class="stat"><div class="l">LYMX customers</div><div class="v" id="cov-cust-total">—</div><div class="sub" id="cov-cust-sub">Pre-launch signups</div></div>
   </div>
 
   <!-- Filter chips -->
@@ -322,6 +322,34 @@
 </footer>
 
 <script>
+  // 2026-05-20 - Live-wire top stats strip + chip counts via public-stats EF (neighborhood map zones stay illustrative until location data ships)
+  (async function loadCoverageStats(){
+    const SB = window.LYMX_CONFIG;
+    if (!SB || !SB.SUPABASE_URL) { return setTimeout(loadCoverageStats, 500); }
+    try {
+      const r = await fetch(SB.SUPABASE_URL + '/functions/v1/public-stats', { headers: { apikey: SB.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SB.SUPABASE_ANON_KEY } });
+      if (!r.ok) return;
+      const s = await r.json();
+      function fmt(n) { return Number(n || 0).toLocaleString('en-US'); }
+      function set(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+      // Top tiles
+      set('cov-biz-total', fmt(s.businesses_total));
+      set('cov-biz-open', fmt(s.launch25_spots_open));
+      set('cov-cust-total', fmt(s.customers_total));
+      set('cov-biz-sub', s.businesses_total === 0 ? 'Recruiting Founding 25' : 'Founding 25 cohort');
+      set('cov-cust-sub', '+' + fmt(s.customers_this_week) + ' this week');
+      // Category chip counts (real numbers from real businesses)
+      const bc = s.businesses_by_category || {};
+      set('ct-all', fmt(s.businesses_total));
+      set('ct-dining', fmt(bc.dining || 0));
+      set('ct-retail', fmt(bc.retail || 0));
+      set('ct-services', fmt(bc.services || (bc['home services'] || 0) + (bc['beauty & spa'] || 0)));
+      set('ct-fitness', fmt(bc.fitness || 0));
+    } catch (e) {
+      console.warn('[coverage-map] stats load failed', e);
+    }
+  })();
+
   // Zone data — abstract rect coordinates on the SVG canvas
   const ZONES = [
     {id:'strip',     name:'The Strip',          x:300, y:80,  w:160, h:120, count:5, dining:2, retail:1, services:1, fitness:1, tier:'live',   businesses:['Brew & Bean (café)','Oakline Kitchen (restaurant)','Sunlit Salon Studio (salon)','Pink Note Co (retail)','Pulse Studio (gym)']},
@@ -387,20 +415,7 @@
       </div>`;
     }).join('');
 
-    // Update chip counts
-    const totals = {all:0,dining:0,retail:0,services:0,fitness:0};
-    ZONES.forEach(z=>{
-      totals.all += z.count;
-      totals.dining += z.dining;
-      totals.retail += z.retail;
-      totals.services += z.services;
-      totals.fitness += z.fitness;
-    });
-    document.getElementById('ct-all').textContent = totals.all;
-    document.getElementById('ct-dining').textContent = totals.dining;
-    document.getElementById('ct-retail').textContent = totals.retail;
-    document.getElementById('ct-services').textContent = totals.services;
-    document.getElementById('ct-fitness').textContent = totals.fitness;
+    // 2026-05-20 - chip counts are now sourced from public-stats EF (live numbers). Removed the ZONES-totals overwrite that would clobber the live counts with illustrative aggregates.
   }
 
   function openZone(id){

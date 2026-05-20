@@ -43,33 +43,35 @@ serve(async (req) => {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
     try {
-        // Run all queries in parallel
+        // 2026-05-20 audit fix - "in_circulation" was incorrectly reading wallets.balance, but per migration 013 the SOURCE OF TRUTH for LYMX balance is the lymx_issuances ledger (the wallets table is only for per-business post-transaction balances, not signup/referral bonuses). Now: in_circulation = lifetime issued (auto/approved only) - lifetime redeemed. Pre-launch this is honest and goes to zero only when LYMX is fully spent.
         const [
             custTotal, custWeek, bizTotal, partnersTotal,
-            issAll, issWeek, walletsAll, txToday,
+            issAuto, issWeek, txAllRedemptions, txToday,
             reviewsVerified, feedbackTotal,
-            issByCategoryRaw
+            issByCategoryRaw, bizByCategoryRaw
         ] = await Promise.all([
             sb.from("customers").select("id", { count: "exact", head: true }),
             sb.from("customers").select("id", { count: "exact", head: true }).gte("created_at", weekStart),
             sb.from("businesses").select("id", { count: "exact", head: true }),
             sb.from("partners").select("id", { count: "exact", head: true }),
-            sb.from("lymx_issuances").select("amount_lymx").limit(50000),
-            sb.from("lymx_issuances").select("amount_lymx").gte("created_at", weekStart).limit(50000),
-            sb.from("wallets").select("balance").limit(50000),
+            sb.from("lymx_issuances").select("amount_lymx").in("admin_status", ["auto", "approved"]).limit(50000),
+            sb.from("lymx_issuances").select("amount_lymx").in("admin_status", ["auto", "approved"]).gte("created_at", weekStart).limit(50000),
+            sb.from("transactions").select("lymx_amount").eq("type", "redemption").limit(50000),
             sb.from("transactions").select("lymx_amount, usd_basis").eq("type", "redemption").gte("created_at", todayStart).limit(50000),
             sb.from("reviews").select("id", { count: "exact", head: true }).not("verified_at", "is", null),
             sb.from("feedback").select("id", { count: "exact", head: true }),
-            sb.from("lymx_issuances").select("amount_lymx, business_id, businesses(category)").gte("created_at", sevenDaysAgo).limit(50000)
+            sb.from("lymx_issuances").select("amount_lymx, business_id, businesses(category)").gte("created_at", sevenDaysAgo).limit(50000),
+            sb.from("businesses").select("id, category, display_name")
         ]);
 
-        const issuedLifetime = (issAll.data || []).reduce((s, r) => s + Number(r.amount_lymx || 0), 0);
-        const issuedWeek     = (issWeek.data || []).reduce((s, r) => s + Number(r.amount_lymx || 0), 0);
-        const inCirculation  = (walletsAll.data || []).reduce((s, w) => s + Number(w.balance || 0), 0);
-        const todayLymx      = (txToday.data || []).reduce((s, t) => s + Math.abs(Number(t.lymx_amount || 0)), 0);
-        const todayUsd       = (txToday.data || []).reduce((s, t) => s + Math.abs(Number(t.usd_basis || 0)), 0);
+        const issuedLifetime  = (issAuto.data || []).reduce((s, r) => s + Number(r.amount_lymx || 0), 0);
+        const issuedWeek      = (issWeek.data || []).reduce((s, r) => s + Number(r.amount_lymx || 0), 0);
+        const redeemedLifetime = (txAllRedemptions.data || []).reduce((s, t) => s + Math.abs(Number(t.lymx_amount || 0)), 0);
+        const inCirculation   = Math.max(0, issuedLifetime - redeemedLifetime);
+        const todayLymx       = (txToday.data || []).reduce((s, t) => s + Math.abs(Number(t.lymx_amount || 0)), 0);
+        const todayUsd        = (txToday.data || []).reduce((s, t) => s + Math.abs(Number(t.usd_basis || 0)), 0);
 
-        // Category breakdown
+        // 7-day issuance breakdown by category
         const byCategory: Record<string, number> = {};
         (issByCategoryRaw.data || []).forEach((r: any) => {
             const cat = (r.businesses && r.businesses.category) || "Uncategorized";
@@ -79,13 +81,26 @@ serve(async (req) => {
             .sort((a, b) => Number(b[1]) - Number(a[1]))
             .map(([category, total_lymx]) => ({ category, total_lymx }));
 
+        // Coverage-map - businesses grouped by category
+        const businessesByCategory: Record<string, number> = {};
+        (bizByCategoryRaw.data || []).forEach((b: any) => {
+            const cat = String(b.category || "Uncategorized").toLowerCase();
+            businessesByCategory[cat] = (businessesByCategory[cat] || 0) + 1;
+        });
+
+        // Launch 25 progress
+        const launch25Cap = 25;
+        const launch25SpotsOpen = Math.max(0, launch25Cap - (bizTotal.count || 0));
+
         const payload = {
             customers_total: custTotal.count || 0,
             customers_this_week: custWeek.count || 0,
             businesses_total: bizTotal.count || 0,
+            launch25_spots_open: launch25SpotsOpen,
             partners_total: partnersTotal.count || 0,
             issued_lifetime: issuedLifetime,
             issued_this_week: issuedWeek,
+            redeemed_lifetime: redeemedLifetime,
             in_circulation: inCirculation,
             in_circulation_usd_cents: inCirculation, // 1 LYMX = $0.01 so cents == LYMX
             redeemed_today_lymx: todayLymx,
@@ -94,6 +109,8 @@ serve(async (req) => {
             reviews_verified: reviewsVerified.count || 0,
             feedback_total: feedbackTotal.count || 0,
             issued_by_category_7d,
+            businesses_by_category: businessesByCategory,
+            businesses_list: (bizByCategoryRaw.data || []).map((b: any) => ({ id: b.id, category: b.category, display_name: b.display_name })),
             generated_at: new Date().toISOString(),
         };
 
