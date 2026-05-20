@@ -122,7 +122,15 @@
     const list = currentTab === 'upcoming' ? upcoming : past;
 
     if (!list.length) {
-      $('rows').innerHTML = `<div class="empty">${currentTab === 'upcoming' ? t('mybk.no_upcoming','No upcoming calls. Book one with someone from the LYMX team.') : t('mybk.no_past','No past calls yet.')}</div>`;
+      // 2026-05-20 #c429b5a0 - inline CTA so users don't have to hunt the nav for the booking page
+      const emptyMsg = currentTab === 'upcoming'
+        ? t('mybk.no_upcoming','No upcoming calls. Book one with someone from the LYMX team.')
+        : t('mybk.no_past','No past calls yet.');
+      const showCta = currentTab === 'upcoming';
+      $('rows').innerHTML = '<div class="empty" style="text-align:center;padding:30px 18px">'
+        + '<div style="margin-bottom:14px">' + emptyMsg + '</div>'
+        + (showCta ? '<a href="book-onboarding-call.html" style="display:inline-block;background:#0e1116;color:#fff;padding:11px 22px;border-radius:9px;font-weight:700;font-size:14px;text-decoration:none">Book a call now →</a>' : '')
+        + '</div>';
       return;
     }
 

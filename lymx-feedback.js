@@ -366,11 +366,24 @@
         overlay.style.display = 'flex';
         document.removeEventListener('keydown', onEsc);
         if (canceled || !rect || rect.w < 6 || rect.h < 6) return;
-        var dpr = baseCanvas.width / document.documentElement.clientWidth;
-        var sx = Math.max(0, Math.floor(rect.x * dpr));
-        var sy = Math.max(0, Math.floor(rect.y * dpr));
+        // 2026-05-20 #c40f06e2 - was missing scroll offset. The picker uses
+        // viewport-relative clientX/clientY but baseCanvas covers the full
+        // document.body (from y=0 at the top of the page). When the user has
+        // scrolled down, the crop captured the wrong (higher) region. Add
+        // window.scrollX/scrollY so we sample the correct pixels on baseCanvas.
+        var scrollX = window.scrollX || window.pageXOffset || 0;
+        var scrollY = window.scrollY || window.pageYOffset || 0;
+        // Use canvas-to-viewport ratio: baseCanvas was rendered at devicePixelRatio
+        // but constrained to documentElement.clientWidth in CSS px.
+        var dpr = baseCanvas.width / document.documentElement.scrollWidth;
+        if (!isFinite(dpr) || dpr <= 0) dpr = baseCanvas.width / document.documentElement.clientWidth;
+        var sx = Math.max(0, Math.floor((rect.x + scrollX) * dpr));
+        var sy = Math.max(0, Math.floor((rect.y + scrollY) * dpr));
         var sw = Math.floor(rect.w * dpr);
         var sh = Math.floor(rect.h * dpr);
+        // Clamp to baseCanvas bounds so drawImage doesn't sample outside
+        if (sx + sw > baseCanvas.width)  sw = baseCanvas.width  - sx;
+        if (sy + sh > baseCanvas.height) sh = baseCanvas.height - sy;
         var out = document.createElement('canvas');
         out.width = sw; out.height = sh;
         out.getContext('2d').drawImage(baseCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
