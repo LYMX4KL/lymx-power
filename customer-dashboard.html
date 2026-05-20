@@ -207,7 +207,7 @@
       <a href="contacts.html">Contacts</a>
       <a href="browse.html">Browse</a>
       <a href="index.html#how">How it works</a>
-      <a href="app.html">Get the app</a>
+      <a href="app.html" id="navGetApp">Get the app</a>
     </nav>
     <div class="nav-cta">
       <a class="btn btn-ghost btn-sm" href="support.html">Help</a>
@@ -241,9 +241,21 @@
           <div class="stat"><div class="v" id="statLifetime">—</div><div class="k">Lifetime visits</div></div>
         </div>
         <div class="actions">
+          <!-- 2026-05-19 #1339a282 + #d220c320 -->
           <a class="btn-w solid" href="browse.html">Spend my LYMX →</a>
-          <a class="btn-w" href="app.html">Get the app</a>
+          <a class="btn-w" id="getAppCta" href="app.html">Get the app</a>
         </div>
+        <script>
+          (function(){
+            var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+                          || window.navigator.standalone === true
+                          || document.referrer.startsWith('android-app://');
+            if (standalone) {
+              var a = document.getElementById('getAppCta'); if (a) a.style.display = 'none';
+              var b = document.getElementById('navGetApp'); if (b) b.style.display = 'none';
+            }
+          })();
+        </script>
       </div>
 
       <!-- Pending reviews -->
@@ -425,7 +437,8 @@
       <div class="card">
         <div class="card-h">
           <h2>Saved places</h2>
-          <span class="count" id="savedCount">— saved</span>
+          <!-- 2026-05-19 #6e53b800 — See all link -->
+          <a href="my-saved-places.html" class="more">See all →</a>
         </div>
         <div class="saved-list">
           <!-- 2026-05-19 #2bd15a05 — was: 4 hard-coded items with href="#" for 3 of them.
@@ -484,9 +497,18 @@
     if (!user) return; // requireAuth redirected
 
     // 2) Set name + avatar from auth metadata
-    const name = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || user.email || 'there';
-    const firstName = name.split(' ')[0];
-    const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'U';
+    // 2026-05-19 #043b71d3 — never show the raw email. Try customers.display_name first,
+    // then auth metadata, then the local part of the email.
+    let displayName = '';
+    try {
+      const { data: custRow } = await LYMX.sb.from('customers').select('display_name').eq('user_id', user.id).maybeSingle();
+      displayName = (custRow && custRow.display_name) || '';
+    } catch (e) {}
+    const name = displayName
+      || (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name))
+      || (user.email ? user.email.split('@')[0] : 'there');
+    const firstName = name.split(/[\s.]+/)[0];
+    const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || (name[0] || 'U').toUpperCase();
     document.getElementById('welcomeHeading').textContent = 'Welcome back, ' + firstName + ' 👋';
     const av = document.getElementById('avatarNav');
     if (av) { av.textContent = initials; av.title = name; }
@@ -515,7 +537,7 @@
 
     if (totalLymx === 0 && !ledger) {
       balLymx.textContent = '0 LYMX';
-      balUsd.textContent = 'Sign up via a LYMX Business invite for a welcome bonus, or earn on your first purchase.';
+      balUsd.textContent = 'Sign up via a LYMX business invite for a welcome bonus, or earn on your first purchase.';
     } else {
       balLymx.textContent = LYMX.fmtLYMX(totalLymx);
       const usd = (totalLymx / 100).toFixed(2);
@@ -578,7 +600,7 @@
     if (tErr) {
       console.error('[LYMX] fetchMyTransactions', tErr);
     } else if (!txs || txs.length === 0) {
-      list.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:14px">No activity yet. Earn LYMX at your first visit to a LYMX Business.</div>';
+      list.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:14px">No activity yet. Earn LYMX at your first visit to a LYMX business.</div>';
     } else {
       list.innerHTML = txs.map(function (t) {
         const earn = (t.type === 'issuance' || t.type === 'transfer_in');
@@ -721,7 +743,7 @@ window.addEventListener('DOMContentLoaded', function () {
   window.__lymxClearPlaceholders = true;
   // Offers Nearby — clear placeholder businesses (Bug fix 2026-05-16 #79c360b6, #0c2264f3)
   var offersGrid = document.querySelector('.offers-grid');
-  if (offersGrid) offersGrid.innerHTML = '<div style="grid-column:1/-1;padding:24px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">📍</div>No offers near you yet. As LYMX Businesses launch in your area, their offers will appear here. <a href="browse.html" style="color:#0050c7;font-weight:600;text-decoration:none">Browse the network →</a></div>';
+  if (offersGrid) offersGrid.innerHTML = '<div style="grid-column:1/-1;padding:24px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">📍</div>No offers near you yet. As LYMX businesses launch in your area, their offers will appear here. <a href="browse.html" style="color:#0050c7;font-weight:600;text-decoration:none">Browse the network →</a></div>';
   // My recent reviews — also clear placeholder reviews
   var myReviews = document.querySelector('.my-reviews');
   if (myReviews) myReviews.innerHTML = '<div style="padding:24px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">⭐</div>No reviews yet. After a visit, write one and earn 100 LYMX per review.</div>';
@@ -732,7 +754,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
   // Pending reviews list
   var pending = document.querySelector('.pending-list');
-  if (pending) pending.innerHTML = '<div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">⏳</div>No visits waiting to review yet. Visit a LYMX Business and your pending reviews will show up here.</div>';
+  if (pending) pending.innerHTML = '<div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">⏳</div>No visits waiting to review yet. Visit a LYMX business and your pending reviews will show up here.</div>';
   // Recent activity list
   var activity = document.getElementById('activityList');
   if (activity) activity.innerHTML = '<div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">📊</div>No activity yet. Your LYMX earnings, redemptions, and reviews will appear here.</div>';
@@ -764,31 +786,29 @@ window.addEventListener('DOMContentLoaded', async function () {
   var userId = session.user.id;
   var headers = { apikey: ANON, Authorization: 'Bearer ' + session.access_token };
 
-  // Saved Places — wire the .saved-list container to real saved_businesses rows.
-  // Replaces hard-coded placeholders (Brew & Bean / Oakline / Avery / EverGrid)
-  // that were the actual user-facing bug in #14c10478.
+  // Saved Places — 2026-05-19 #42b1c20a — fix: previous select asked for non-existent column
+  // saved_businesses.business_category which 400'd and left the loading state stuck.
+  // Now: select only real columns AND show empty state if fetch errors.
+  var listEl = document.querySelector('.saved-list');
+  var countEl = (listEl && listEl.parentElement) ? listEl.parentElement.querySelector('.count') : null;
+  var savedRows = null;
   try {
-    var r = await fetch(URL + '/rest/v1/saved_businesses?user_id=eq.' + userId + '&select=business_slug,business_name,business_emoji,business_category,saved_at&order=saved_at.desc&limit=8', { headers: headers });
-    if (r.ok) {
-      var saved = await r.json();
-      var listEl = document.querySelector('.saved-list');
-      // Find the "8 saved" count badge in the card head
-      var countEl = (listEl && listEl.parentElement) ? listEl.parentElement.querySelector('.count') : null;
-      if (countEl) countEl.textContent = saved.length + ' saved';
-      if (listEl) {
-        if (saved.length) {
-          listEl.innerHTML = saved.map(function (s) {
-            var safeName = (s.business_name || '').replace(/[<>]/g, '');
-            var safeCat  = (s.business_category || 'Saved').replace(/[<>]/g, '');
-            var href = 'biz-' + encodeURIComponent((s.business_slug || '').toLowerCase()) + '.html';
-            return '<a class="saved-item" href="' + href + '"><div class="ic">' + (s.business_emoji || '⭐') + '</div><div style="flex:1"><div class="name">' + safeName + '</div><div class="miles">' + safeCat + '</div></div></a>';
-          }).join('');
-        } else {
-          listEl.innerHTML = '<div style="padding:18px;text-align:center;color:#5b6472;font-size:13.5px"><div style="font-size:24px;margin-bottom:6px">📍</div>No saved places yet.<br><a href="browse.html" style="color:#0050c7;font-weight:600;text-decoration:none">Browse businesses →</a></div>';
-        }
-      }
+    var r = await fetch(URL + '/rest/v1/saved_businesses?user_id=eq.' + userId + '&select=business_slug,business_name,business_emoji,saved_at&order=saved_at.desc&limit=8', { headers: headers });
+    if (r.ok) savedRows = await r.json();
+  } catch (e) { console.warn('saved_businesses fetch failed', e); }
+  if (!savedRows) savedRows = [];
+  if (countEl) countEl.textContent = savedRows.length + ' saved';
+  if (listEl) {
+    if (savedRows.length) {
+      listEl.innerHTML = savedRows.map(function (s) {
+        var safeName = (s.business_name || '').replace(/[<>]/g, '');
+        var href = 'biz-' + encodeURIComponent((s.business_slug || '').toLowerCase()) + '.html';
+        return '<a class="saved-item" href="' + href + '"><div class="ic">' + (s.business_emoji || '⭐') + '</div><div style="flex:1"><div class="name">' + safeName + '</div><div class="miles">Saved</div></div></a>';
+      }).join('');
+    } else {
+      listEl.innerHTML = '<div style="padding:18px;text-align:center;color:#5b6472;font-size:13.5px"><div style="font-size:24px;margin-bottom:6px">📍</div>No saved places yet.<br><a href="browse.html" style="color:#0050c7;font-weight:600;text-decoration:none">Browse businesses →</a></div>';
     }
-  } catch (e) {}
+  }
 
   // My Recent Reviews — replace empty state with real reviews
   try {
