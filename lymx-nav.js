@@ -62,13 +62,19 @@
   // ---- 1) Redirect signed-in users away from signup / welcome pages -------
   function redirectIfSignedIn(payload) {
     var path = (location.pathname || '').toLowerCase();
-    // 2026-05-19 #8ae35834 — partner-signup is an APPLICATION form, not a
-    // new-account form. Signed-in customers SHOULD reach it (they apply as
-    // themselves, the form auto-uses their identity via ?ref=). Same for
-    // biz-signup. Only redirect away from pure new-account flows.
+    // 2026-05-19 RESTORED — earlier I removed partner-signup + biz-signup from
+    // this list (fix #8ae35834). That caused 6 urgent role-corruption tickets
+    // (#02a9c79f #9435ae00 #351f4a8d #f4245e4f #ab7fe332 #c5183ac8): when a
+    // signed-in customer submitted partner-signup the EF attached a partner
+    // row to their existing user_id, giving them BOTH roles + redirecting them
+    // to the wrong dashboard. Re-blocking those pages for signed-in users now.
+    // The proper fix for #8ae35834 is a separate "apply-as-existing-customer"
+    // flow — TODO. Until then, signed-in users hit their own dashboard.
     var entryPages = [
       '/welcome.html', '/welcome',
       '/customer-signup.html', '/customer-signup',
+      '/biz-signup.html', '/biz-signup',
+      '/partner-signup.html', '/partner-signup',
       '/signup.html', '/signup'
     ];
     var isEntry = entryPages.some(function (p) { return path === p || path.endsWith(p); });
