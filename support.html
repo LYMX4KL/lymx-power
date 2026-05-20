@@ -136,7 +136,8 @@
 <section class="hero" style="border-top:0">
   <div class="wrap">
     <h1>How can we help?</h1>
-    <p>Quick FAQ below · <a href="help-center.html" style="color:var(--accent-2);font-weight:700">full Help Center</a> · <a href="feedback.html" style="color:var(--accent-2);font-weight:700">leave feedback</a></p>
+    <!-- 2026-05-20 #0a9dc1f0 - 3 feedback entry points were redundant. Removed inline "leave feedback" link; the floating Help & Feedback button on the bottom-right is the canonical entry for feedback site-wide. -->
+    <p>Quick FAQ below · <a href="help-center.html" style="color:var(--accent-2);font-weight:700">full Help Center</a></p>
     <form class="search-help" onsubmit="event.preventDefault();location.href='help-center.html'">
       <input type="text" placeholder="Search help articles…" />
       <button type="submit">Search</button>
@@ -265,11 +266,12 @@
       <p style="margin:0;color:var(--muted)">Reach out — we're a small team, and humans answer.</p>
     </div>
     <div class="contact-grid">
+      <!-- 2026-05-20 #191bba72 - "Open chat →" was href="#" which scrolled to top. Now opens the floating Help & Feedback widget. -->
       <div class="channel">
         <div class="ic">💬</div>
         <h3>Live chat</h3>
         <p>Mon–Fri 8 AM – 6 PM PT. Average response under 4 minutes for paying customers and businesses.</p>
-        <a href="#">Open chat →</a>
+        <a href="#" id="openChatLink">Open chat →</a>
       </div>
       <div class="channel">
         <div class="ic">📧</div>
@@ -277,11 +279,12 @@
         <p>For anything that needs more space or attached files. We aim to respond within 24 hours on weekdays.</p>
         <a href="mailto:support@getlymx.com">support@getlymx.com</a>
       </div>
+      <!-- 2026-05-20 #478fe4d0 - "Book a call →" was mailto:; now goes to /book-onboarding-call.html scheduler -->
       <div class="channel">
         <div class="ic">📞</div>
         <h3>Call sales</h3>
         <p>For business owners considering Enterprise. Schedule a 15-minute call with our partner team.</p>
-        <a href="mailto:hello@getlymx.com">Book a call →</a>
+        <a href="book-onboarding-call.html">Book a call →</a>
       </div>
     </div>
 
@@ -384,6 +387,27 @@ window.addEventListener('DOMContentLoaded', function () {
     } catch (e) {
       if (btn) { btn.disabled = false; btn.textContent = 'Send'; }
       alert('Network error. Please email kenny@lymxpower.com directly.');
+    }
+  });
+});
+</script>
+<!-- 2026-05-20 #191bba72 - wire the "Open chat →" link to the floating Help & Feedback widget. -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var openChatLink = document.getElementById('openChatLink');
+  if (!openChatLink) return;
+  openChatLink.addEventListener('click', function (e) {
+    e.preventDefault();
+    var fb = document.getElementById('lymx-fb-btn');
+    if (fb) {
+      fb.click();
+    } else {
+      // Widget not loaded yet — wait a beat and retry once
+      setTimeout(function () {
+        var fb2 = document.getElementById('lymx-fb-btn');
+        if (fb2) fb2.click();
+        else location.href = 'mailto:support@getlymx.com';
+      }, 400);
     }
   });
 });

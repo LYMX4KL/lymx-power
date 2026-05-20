@@ -567,13 +567,15 @@
         copyBtn.textContent = 'Copied!';
         setTimeout(function () { copyBtn.textContent = 'Copy link'; }, 1500);
       });
+      // 2026-05-20 #ceb9ca5d - SMS recipient was seeing "From: <email>" header (OS-level, can't change) + a body that didn't open with the sender's name. Made the body lead with the sender's first name so it reads personal even when the OS shows an email header.
       const subject = encodeURIComponent('Join me on LYMX — we both earn 100 LYMX');
-      const body    = encodeURIComponent('Hey — I\'ve been using LYMX (one rewards balance you can earn + spend across local businesses). If you sign up through my link we BOTH earn 100 LYMX:\n\n' + shareUrl + '\n\n— ' + firstName);
+      const smsBody = encodeURIComponent('Hey, it\'s ' + firstName + '. I\'ve been using LYMX (rewards you can earn + spend across local businesses). Sign up through my link and we BOTH earn 100 LYMX:\n\n' + shareUrl);
+      const emailBody = encodeURIComponent('Hey,\n\nIt\'s ' + firstName + '. I\'ve been using LYMX (one rewards balance you can earn + spend across local businesses). Sign up through my link and we BOTH earn 100 LYMX:\n\n' + shareUrl + '\n\n— ' + firstName);
       const emailEl = document.getElementById('refShareEmail');
       const smsEl   = document.getElementById('refShareSms');
       const twEl    = document.getElementById('refShareTw');
-      if (emailEl) emailEl.href = 'mailto:?subject=' + subject + '&body=' + body;
-      if (smsEl)   smsEl.href   = 'sms:?body=' + body;
+      if (emailEl) emailEl.href = 'mailto:?subject=' + subject + '&body=' + emailBody;
+      if (smsEl)   smsEl.href   = 'sms:?body=' + smsBody;
       if (twEl)    twEl.href    = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Join me on LYMX — we both earn 100 LYMX 🎁 ' + shareUrl);
 
       // Pull referral stats from the referrals table

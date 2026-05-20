@@ -81,6 +81,16 @@
       <h1>📬 My Messages</h1>
       <div class="sub">All your conversations with LYMX support and partner businesses, in one place.</div>
       <button class="btn-new" id="newBtn">+ New message</button>
+      <!-- 2026-05-20 #4fd6b011 - search + filter for conversations as the list grows. -->
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+        <input id="convSearch" type="search" placeholder="Search conversations…" style="width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font-size:13.5px;font-family:inherit;background:#fff" />
+        <div id="convFilters" style="display:flex;gap:6px;flex-wrap:wrap;font-size:12px">
+          <button type="button" class="conv-filter on" data-conv-filter="all" style="padding:5px 11px;border:1px solid var(--line);border-radius:99px;background:#0e1116;color:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px">All</button>
+          <button type="button" class="conv-filter" data-conv-filter="support" style="padding:5px 11px;border:1px solid var(--line);border-radius:99px;background:#fff;color:#0e1116;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px">💬 Support</button>
+          <button type="button" class="conv-filter" data-conv-filter="business" style="padding:5px 11px;border:1px solid var(--line);border-radius:99px;background:#fff;color:#0e1116;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px">🏪 Businesses</button>
+          <button type="button" class="conv-filter" data-conv-filter="unread" style="padding:5px 11px;border:1px solid var(--line);border-radius:99px;background:#fff;color:#0e1116;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px">● Unread</button>
+        </div>
+      </div>
     </div>
     <div id="convList"></div>
   </section>
@@ -179,6 +189,39 @@
     renderList();
   }
 
+  // 2026-05-20 #4fd6b011 - search + filter the cached conversations list before rendering.
+  let _convQuery = '';
+  let _convFilter = 'all';
+  function filterConvList(list) {
+    let out = list;
+    if (_convFilter === 'support') out = out.filter(c => (c.kind || '').toLowerCase().includes('support'));
+    else if (_convFilter === 'business') out = out.filter(c => (c.kind || '').toLowerCase().includes('business'));
+    else if (_convFilter === 'unread') out = out.filter(c => (c.unread_count_subject || 0) > 0);
+    if (_convQuery) {
+      const q = _convQuery.toLowerCase();
+      out = out.filter(c =>
+        ((c.title || '') + ' ' + (c.last_message_preview || '') + ' ' + (c.kind || '')).toLowerCase().includes(q)
+      );
+    }
+    return out;
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    const cs = document.getElementById('convSearch');
+    if (cs) cs.addEventListener('input', function (e) { _convQuery = e.target.value || ''; renderList(); });
+    document.querySelectorAll('.conv-filter').forEach(b => {
+      b.addEventListener('click', function () {
+        _convFilter = b.getAttribute('data-conv-filter') || 'all';
+        document.querySelectorAll('.conv-filter').forEach(x => {
+          const on = x.getAttribute('data-conv-filter') === _convFilter;
+          x.style.background = on ? '#0e1116' : '#fff';
+          x.style.color = on ? '#fff' : '#0e1116';
+          x.classList.toggle('on', on);
+        });
+        renderList();
+      });
+    });
+  });
+
   function renderList(){
     if (convCache.length === 0) {
       // 2026-05-20 cluster - Rae 4dabb0c9 (illustration) + 4831a25a (Browse Partners) + b5a0eead (Help Center shortcut)
@@ -200,7 +243,14 @@
         + '</div>';
       return;
     }
-    $("convList").innerHTML = convCache.map(c => `
+    const _filtered = filterConvList(convCache);
+    if (_filtered.length === 0) {
+      $("convList").innerHTML = '<div style="padding:24px;text-align:center;color:#5b6472;font-size:13.5px">No conversations match your search/filter. <a href="#" id="clearConvFilter" style="color:#0050c7;font-weight:700">Clear</a></div>';
+      const cf = document.getElementById('clearConvFilter');
+      if (cf) cf.addEventListener('click', function(e){ e.preventDefault(); _convQuery=''; _convFilter='all'; const cs=document.getElementById('convSearch'); if(cs) cs.value=''; document.querySelectorAll('.conv-filter').forEach(x=>{ const on=x.getAttribute('data-conv-filter')==='all'; x.style.background=on?'#0e1116':'#fff'; x.style.color=on?'#fff':'#0e1116'; }); renderList(); });
+      return;
+    }
+    $("convList").innerHTML = _filtered.map(c => `
       <div class="conv-item ${c.id===activeConvId?'active':''} ${c.unread_count_subject>0?'unread':''}" data-id="${c.id}">
         <div class="top">
           <span class="title">${esc(c.title || c.kind)}</span>
