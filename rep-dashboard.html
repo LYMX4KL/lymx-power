@@ -286,7 +286,7 @@
       <div>
         <div class="lab">This month earnings</div>
         <div class="big" id="repEarningsMonth">$0.00<small id="repLymxBalance"></small></div>
-        <div class="sub">Activate your first Business to start earning</div>
+        <div class="sub" id="repEarningsSub"><span id="repPendingHeroAmt">$0.00</span> pending in your next payout · <a href="partner-payouts.html" style="color:#f5d172;font-weight:700;text-decoration:underline">view ledger →</a></div>
       </div>
       <div class="mini">
         <span class="lab">Active tree</span>
@@ -614,6 +614,14 @@
       const pendingAmt = sum(pendingComms);
       const nextEl = document.getElementById('repNextPayoutAmt');
       if (nextEl) nextEl.textContent = fmtUsd(pendingAmt);
+      // 2026-05-20 #8ae35834 — Mirror pending amount in the hero so Helen sees it at-a-glance
+      const heroPendingEl = document.getElementById('repPendingHeroAmt');
+      if (heroPendingEl) heroPendingEl.textContent = fmtUsd(pendingAmt);
+      // If nothing pending AND nothing this month, restore the original encouragement
+      const subEl = document.getElementById('repEarningsSub');
+      if (subEl && pendingAmt === 0 && monthAmt === 0) {
+        subEl.innerHTML = 'Activate your first Business to start earning · <a href="partner-resources.html" style="color:#f5d172;font-weight:700;text-decoration:underline">open the pitch toolkit</a>';
+      }
 
       // Commission breakdown — replace the empty state if we have any
       if (thisMonth.length) {
