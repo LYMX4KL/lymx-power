@@ -140,14 +140,56 @@
   }
 
   // ---- 3) Wire empty avatar circles in nav --------------------------------
+  // 2026-05-20 #55d7abe7 - was inconsistent: each page had its own gradient
+  // CSS for .user-avatar / .avatar-nav, and initials computation varied
+  // (some pages: "DB", lymx-nav default: just "D" from email[0]). Now: ALWAYS
+  // compute proper 2-letter initials from display_name/email and ALWAYS set a
+  // deterministic gradient from a stable palette indexed by the user's id/email
+  // hash. Result: every page shows the same color + same initials for the
+  // same user.
+  function computeInitials(name, email) {
+    var src = (name || '').trim();
+    if (src) {
+      var parts = src.split(/[\s.]+/).filter(Boolean);
+      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+      if (parts.length === 1 && parts[0].length >= 2) return parts[0].slice(0, 2).toUpperCase();
+      if (parts.length === 1) return parts[0][0].toUpperCase();
+    }
+    var e = (email || '').trim();
+    if (e) {
+      // Take chars before @, split on . or _ to handle first.last or first_last
+      var local = e.split('@')[0];
+      var lparts = local.split(/[._-]+/).filter(Boolean);
+      if (lparts.length >= 2) return (lparts[0][0] + lparts[1][0]).toUpperCase();
+      if (local.length >= 2) return local.slice(0, 2).toUpperCase();
+      return local[0].toUpperCase();
+    }
+    return 'L';
+  }
+  function avatarGradient(seedStr) {
+    var palette = [
+      ['#0a84ff','#0050c7'], // blue
+      ['#6366f1','#4338ca'], // indigo
+      ['#8b5cf6','#6d28d9'], // violet
+      ['#ec4899','#be185d'], // pink
+      ['#f59e0b','#b45309'], // amber
+      ['#13a26b','#047857'], // emerald
+      ['#0891b2','#0e7490'], // cyan
+      ['#ef4444','#991b1b']  // red
+    ];
+    var h = 0, s = String(seedStr || 'lymx');
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+    var pair = palette[Math.abs(h) % palette.length];
+    return 'linear-gradient(135deg,' + pair[0] + ',' + pair[1] + ')';
+  }
+
   function wireAvatar(payload) {
     var email = (payload && payload.email) || '';
-    var initial = (email[0] || 'L').toUpperCase();
+    var displayName = (payload && (payload.display_name || payload.name)) || '';
+    var seedId = (payload && payload.id) || email || 'lymx';
+    var initials = computeInitials(displayName, email);
+    var bg = avatarGradient(seedId);
     var routes = { route: routeFor(payload) };
-    // Common avatar containers — id-based first, then class-based.
-    // Nav-area only patterns; deliberately skips list-item avatars
-    // (mention-avatar, host-avatar, qc-avatar, w-avatar) so they remain
-    // clickable for their own item-level handlers.
     var candidates = [
       '#userInitial', '#userAvatar', '#headerAvatar', '#avatarNav',
       '#avatar', '#bizAvatar', '#repAvatar',
@@ -158,7 +200,11 @@
       document.querySelectorAll(sel).forEach(function (el) {
         if (el.dataset.lymxWired === '1') return;
         el.dataset.lymxWired = '1';
-        if (!el.textContent.trim()) el.textContent = initial;
+        // Always force consistent initials + gradient regardless of what the
+        // page tried to set. Override inline.
+        el.textContent = initials;
+        el.style.background = bg;
+        el.style.color = '#fff';
         el.style.cursor = 'pointer';
         el.title = email || 'Account';
         el.addEventListener('click', function (e) {

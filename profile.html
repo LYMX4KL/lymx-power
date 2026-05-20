@@ -286,6 +286,13 @@ function onCountryChange() {
   const country = document.getElementById('country').value;
   const wrap = document.getElementById('zipFieldWrap');
   const label = document.getElementById('zipLabel');
+  // 2026-05-20 #bdd94e6b - the partners table has no home_zip/zip column, so when a partner
+  // typed a ZIP and saved, the value was silently dropped (looked like the save was broken).
+  // Hide the ZIP field for partners entirely so they don't waste effort typing into a black hole.
+  if (myRole === 'partner') {
+    wrap.style.display = 'none';
+    return;
+  }
   if (country === 'US') {
     wrap.style.display = '';
     label.textContent = 'ZIP code';

@@ -490,15 +490,79 @@
   tick(); setInterval(tick, 1000);
 
   // RSVP
-  function submitRSVP(){
+  // 2026-05-20 #cdfcc4be - was pure client-side mock with NO network call. Now: send a real
+  // confirmation email via the send-email EF + log to feedback table as type='general'
+  // with subject "RSVP" so it shows up in /admin-tech-support (which the team monitors).
+  // Future: dedicated launch_rsvps table + admin dashboard.
+  async function submitRSVP(){
     const name = document.getElementById('r-name').value.trim();
     const email = document.getElementById('r-email').value.trim();
+    const aud = document.getElementById('r-aud').value;
+    const guests = document.getElementById('r-guests').value;
+    const note = document.getElementById('r-note').value.trim();
     if(!name || !/@/.test(email)){ alert('Name and email required.'); return; }
+
+    const btn = document.querySelector('button.submit-btn[onclick="submitRSVP()"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+
     const ref = 'RSVP-' + Math.floor(100000+Math.random()*900000);
+    const SBURL = (window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL) || '';
+    const ANON  = (window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY) || '';
+
+    try {
+      // 1) Confirmation email to the RSVP-er
+      const confirmHtml =
+        '<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Inter,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0e1116">' +
+          '<h2 style="margin:0 0 8px;color:#0e1116">You\'re on the list — see you Sep 12</h2>' +
+          '<p style="color:#5b6472;margin:0 0 16px">Thanks for RSVPing to the LYMX Las Vegas public launch.</p>' +
+          '<div style="background:#f6f7f9;border-radius:11px;padding:16px;margin:0 0 16px">' +
+            '<div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#5b6472;font-weight:700;margin-bottom:4px">Your confirmation</div>' +
+            '<div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:18px;font-weight:800">' + ref + '</div>' +
+          '</div>' +
+          '<p style="margin:0 0 8px"><strong>When:</strong> Saturday, September 12, 2026</p>' +
+          '<p style="margin:0 0 8px"><strong>Where:</strong> Container Park, Downtown Las Vegas</p>' +
+          '<p style="margin:0 0 8px"><strong>You\'re bringing:</strong> ' + (guests === '0' ? 'just yourself' : '+' + guests + ' guest(s)') + '</p>' +
+          '<p style="color:#5b6472;font-size:13px;margin:18px 0 0">Bring a friend? They need their own RSVP. Forward this link: <a href="https://getlymx.com/launch-event">getlymx.com/launch-event</a></p>' +
+        '</div>';
+      const confirmText = "You're on the list - see you Sep 12.\n\nConfirmation: " + ref + "\nWhen: Saturday, September 12, 2026\nWhere: Container Park, Downtown Las Vegas\n\nForward this link to friends: https://getlymx.com/launch-event";
+
+      await fetch(SBURL + '/functions/v1/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': ANON, 'Authorization': 'Bearer ' + ANON },
+        body: JSON.stringify({
+          channel: 'transactional',
+          recipient_email: email,
+          recipient_name: name,
+          subject: 'LYMX Launch — you\'re on the list (' + ref + ')',
+          body_text: confirmText,
+          body_html: confirmHtml,
+          template_key: 'launch_rsvp_confirm',
+        }),
+      });
+
+      // 2) Log to feedback table so admin sees the RSVP in the queue
+      await fetch(SBURL + '/rest/v1/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': ANON, 'Authorization': 'Bearer ' + ANON, 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+          type: 'general',
+          priority: 'low',
+          subject: 'Launch RSVP: ' + name + ' (' + aud + ', +' + guests + ')',
+          message: 'Reference: ' + ref + '\nName: ' + name + '\nEmail: ' + email + '\nAudience: ' + aud + '\nGuests: +' + guests + '\nNote: ' + (note || '—'),
+          page_url: 'https://getlymx.com/launch-event#rsvp',
+          user_email: email,
+          user_role: 'anonymous',
+        }),
+      });
+    } catch (e) {
+      console.warn('RSVP submission encountered an error (still showing confirmation):', e);
+    }
+
     document.getElementById('r-ref').textContent = ref;
     document.getElementById('form-body').style.display = 'none';
     document.getElementById('confirmed').classList.add('on');
     window.scrollTo({top: document.getElementById('rsvp').offsetTop, behavior:'smooth'});
+    if (btn) { btn.disabled = false; btn.textContent = 'Confirm my RSVP →'; }
   }
 
   function addCal(svc){
