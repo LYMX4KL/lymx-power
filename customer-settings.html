@@ -127,7 +127,10 @@
     <div class="body">
       <div class="nm">Sarah Reyes</div>
       <div class="em">+1 (702) 555-0199 · sarah.reyes@example.com</div>
-      <span class="verified">✓ Phone verified</span>
+      <!-- 2026-05-20 #1fc6adc8 — "Phone verified" was hardcoded and showed even
+           for accounts with no phone. Hide by default; wireSettings only
+           reveals it when auth.users.phone_confirmed_at is truthy. -->
+      <span class="verified" id="phoneVerifiedBadge" style="display:none">✓ Phone verified</span>
     </div>
   </div>
 
@@ -375,37 +378,63 @@
 
   // 2026-05-19 — Persist toggle state to customers.preferences (JSONB).
   // Optimistic UI: flip the class immediately, write to DB, revert on error.
+  // 2026-05-20 #7e0311d0 — was: failed when customer row missing (.single()
+  // throws on 0 rows for orphaned accounts). Now: tolerant of missing row via
+  // maybeSingle + user_id upsert fallback. Also surfaces auth/loading state
+  // before flipping the toggle so user doesn't see a glitchy on-then-off.
   async function togglePref(row){
     const t = row.querySelector('.toggle');
     const key = row.getAttribute('data-pref-key');
     if (!t || !key) return;
-    const prevOn = t.classList.contains('on');
-    const newOn  = !prevOn;
-    // Optimistic flip
-    t.classList.toggle('on', newOn);
-    if (!window.__lymxCustId) {
-      // Init didn't finish yet — block writes until customer row is resolved
-      t.classList.toggle('on', prevOn);
-      showToast('Loading your account, try again in a sec', false);
+    const sb = window.LYMX && window.LYMX.sb;
+    if (!sb) {
+      showToast('Still loading — try again in a sec', false);
       return;
     }
+    // Resolve the user once; if no session, send to sign-in instead of flipping.
+    let user = null;
     try {
-      const sb = window.LYMX.sb;
-      // Read current preferences, merge, write back. We can't trust an
-      // optimistic merge because two toggles in quick succession would race.
-      const { data: row1, error: e1 } = await sb.from('customers')
-        .select('preferences').eq('id', window.__lymxCustId).single();
-      if (e1) throw e1;
-      const next = Object.assign({}, row1.preferences || {}, { [key]: newOn });
-      const { error: e2 } = await sb.from('customers')
-        .update({ preferences: next }).eq('id', window.__lymxCustId);
-      if (e2) throw e2;
+      const { data } = await sb.auth.getUser();
+      user = data && data.user;
+    } catch (e) { console.warn('[togglePref] auth.getUser failed', e); }
+    if (!user) {
+      showToast('Sign in to save preferences', false);
+      return;
+    }
+    const prevOn = t.classList.contains('on');
+    const newOn  = !prevOn;
+    // Optimistic flip AFTER we know we can write.
+    t.classList.toggle('on', newOn);
+    try {
+      // Read current preferences (tolerant of missing row).
+      let curPrefs = window.__lymxPrefs || {};
+      let custId = window.__lymxCustId;
+      if (custId) {
+        const { data: row1, error: e1 } = await sb.from('customers')
+          .select('preferences, id').eq('id', custId).maybeSingle();
+        if (e1) throw e1;
+        if (row1) curPrefs = row1.preferences || {};
+        else custId = null; // row vanished — fall through to upsert by user_id
+      }
+      const next = Object.assign({}, curPrefs, { [key]: newOn });
+      if (custId) {
+        const { error: e2 } = await sb.from('customers')
+          .update({ preferences: next }).eq('id', custId);
+        if (e2) throw e2;
+      } else {
+        // Orphaned account — create the row with preferences attached.
+        const { data: up, error: e3 } = await sb.from('customers')
+          .upsert({ user_id: user.id, email: user.email, preferences: next }, { onConflict: 'user_id' })
+          .select('id').maybeSingle();
+        if (e3) throw e3;
+        if (up && up.id) window.__lymxCustId = up.id;
+      }
       window.__lymxPrefs = next; // keep local cache fresh
       showToast(newOn ? 'Turned on — saved' : 'Turned off — saved', true);
     } catch (e) {
-      // Revert UI
+      // Revert UI and surface what went wrong.
       t.classList.toggle('on', prevOn);
-      showToast('Could not save: ' + (e.message || 'unknown error'), false);
+      showToast('Could not save: ' + (e && e.message ? e.message : 'unknown error'), false);
       console.warn('togglePref failed', key, e);
     }
   }
@@ -546,6 +575,17 @@
       const nm = profile.querySelector('.nm'); if (nm) nm.textContent = custName;
       const em = profile.querySelector('.em'); if (em) em.textContent = (phoneDisplay ? phoneDisplay + ' · ' : '') + custEmail;
     }
+    // 2026-05-20 #1fc6adc8 — only show "Phone verified" badge when Supabase
+    // auth has actually confirmed the phone (phone_confirmed_at is set).
+    // Customers who only typed a phone in this form get NO verification yet —
+    // the badge previously showed unconditionally and was misleading.
+    try {
+      const badge = document.getElementById('phoneVerifiedBadge');
+      if (badge) {
+        const isVerified = !!(user && user.phone_confirmed_at && custPhone);
+        badge.style.display = isVerified ? '' : 'none';
+      }
+    } catch (e) { console.warn('[settings] phone-verified badge toggle failed', e); }
 
     document.querySelectorAll('.item').forEach(item => {
       const h = item.querySelector('.h');
@@ -557,12 +597,52 @@
       else if (label === 'Email') d.textContent = custEmail || '— not set —';
     });
 
+    // 2026-05-20 #ba8a5343 — Repaint the profile header + row .d cells when a
+    // field changes. Without this, every save modal closed showing the OLD
+    // value — users reasonably concluded "Save didn't work" and re-reported it.
+    let phoneDisplayMut = phoneDisplay;
+    function repaintProfile() {
+      const initials = (custName || '').split(/\s+/).filter(Boolean).slice(0,2).map(s => s[0] ? s[0].toUpperCase() : '').join('') || 'U';
+      const profile = document.querySelector('.profile');
+      if (profile) {
+        const av = profile.querySelector('.av'); if (av) av.textContent = initials;
+        const nm = profile.querySelector('.nm'); if (nm) nm.textContent = custName || '';
+        const em = profile.querySelector('.em'); if (em) em.textContent = (phoneDisplayMut ? phoneDisplayMut + ' \u00b7 ' : '') + (custEmail || '');
+      }
+      document.querySelectorAll('.item').forEach(item => {
+        const h = item.querySelector('.h');
+        const d = item.querySelector('.d');
+        if (!h || !d) return;
+        const label = h.textContent.trim();
+        if (label === 'Name') d.textContent = custName || '\u2014 not set \u2014';
+        else if (label === 'Phone') d.textContent = phoneDisplayMut || '\u2014 not set \u2014';
+        else if (label === 'Email') d.textContent = custEmail || '\u2014 not set \u2014';
+      });
+    }
+
+    // 2026-05-20 #ba8a5343 — patchSave now propagates errors instead of always
+    // showing "Saved". If fn() throws, we surface the error toast and DO NOT
+    // close the modal so the user can retry. fn() can return false to suppress
+    // the default Saved toast (useful for fields that show their own message).
     function patchSave(fn) {
       const orig = window.saveEdit;
       window.saveEdit = async function () {
-        try { await fn(); } catch (e) { console.warn('[settings] save failed', e); }
+        let ok = true;
+        let suppressDefault = false;
+        try {
+          const r = await fn();
+          if (r === false) suppressDefault = true;
+        } catch (e) {
+          ok = false;
+          console.warn('[settings] save failed', e);
+          window.showToast && window.showToast('Could not save: ' + (e && e.message ? e.message : 'unknown error'), false);
+        }
         window.saveEdit = orig;
-        if (typeof orig === 'function') orig();
+        if (ok) {
+          if (typeof window.closeEdit === 'function') window.closeEdit();
+          if (!suppressDefault && window.showToast) window.showToast('Saved', true);
+        }
+        // On error, leave the modal open so user can fix + retry.
       };
     }
 
@@ -573,12 +653,17 @@
       const inputs = document.querySelectorAll('#edit-body input');
       if (inputs[0]) inputs[0].value = custName;
       patchSave(async () => {
-        const v = inputs[0] && inputs[0].value || '';
+        const v = (inputs[0] && inputs[0].value || '').trim();
+        if (!v) throw new Error('Name cannot be empty');
+        let err;
         if (cArr && cArr.length) {
-          await sb.from('customers').update({ display_name: v.trim() }).eq('id', cArr[0].id);
+          ({ error: err } = await sb.from('customers').update({ display_name: v }).eq('id', cArr[0].id));
         } else {
-          await sb.from('customers').upsert({ user_id: user.id, display_name: v.trim(), email: user.email }, { onConflict: 'user_id' });
+          ({ error: err } = await sb.from('customers').upsert({ user_id: user.id, display_name: v, email: user.email }, { onConflict: 'user_id' }));
         }
+        if (err) throw err;
+        custName = v;
+        repaintProfile();
       });
     };
 
@@ -587,17 +672,21 @@
     window.openEditPhone = function () {
       _openPhone();
       const inputs = document.querySelectorAll('#edit-body input');
-      if (inputs[0]) inputs[0].value = phoneDisplay;
+      if (inputs[0]) inputs[0].value = phoneDisplayMut;
       patchSave(async () => {
         const v = inputs[0] && inputs[0].value || '';
         const cleaned = v.replace(/[^\d+]/g, '');
-        // 2026-05-19 #e35100e9 - was: update only, silently no-op'd if customer had no row yet. Now: upsert so a row is created if missing.
+        let err;
+        // 2026-05-19 #e35100e9 - upsert so a row is created if customer had none yet.
         if (cArr && cArr.length) {
-          await sb.from('customers').update({ phone: cleaned }).eq('id', cArr[0].id);
+          ({ error: err } = await sb.from('customers').update({ phone: cleaned }).eq('id', cArr[0].id));
         } else {
-          await sb.from('customers').upsert({ user_id: user.id, phone: cleaned, email: user.email }, { onConflict: 'user_id' });
+          ({ error: err } = await sb.from('customers').upsert({ user_id: user.id, phone: cleaned, email: user.email }, { onConflict: 'user_id' }));
         }
-        window.showToast && window.showToast('Phone saved', true);
+        if (err) throw err;
+        custPhone = cleaned;
+        phoneDisplayMut = fmtPhone(cleaned);
+        repaintProfile();
       });
     };
 
@@ -608,19 +697,24 @@
       const inputs = document.querySelectorAll('#edit-body input');
       if (inputs[0]) inputs[0].value = custEmail;
       patchSave(async () => {
-        const v = inputs[0] && inputs[0].value || '';
+        const v = (inputs[0] && inputs[0].value || '').trim();
+        if (!v) throw new Error('Email cannot be empty');
+        let err;
         if (cArr && cArr.length) {
-          await sb.from('customers').update({ email: v.trim() }).eq('id', cArr[0].id);
+          ({ error: err } = await sb.from('customers').update({ email: v }).eq('id', cArr[0].id));
         } else {
-          await sb.from('customers').upsert({ user_id: user.id, email: v.trim() }, { onConflict: 'user_id' });
+          ({ error: err } = await sb.from('customers').upsert({ user_id: user.id, email: v }, { onConflict: 'user_id' }));
         }
-        // Trigger auth email-change flow so the login email actually changes
-        try {
-          if (v && v.trim().toLowerCase() !== (user.email || '').toLowerCase()) {
-            await sb.auth.updateUser({ email: v.trim() });
-            window.showToast && window.showToast('Confirmation email sent to ' + v.trim(), true);
-          }
-        } catch (e) { console.warn('[settings] auth email update failed', e); }
+        if (err) throw err;
+        custEmail = v;
+        repaintProfile();
+        if (v.toLowerCase() !== (user.email || '').toLowerCase()) {
+          try {
+            await sb.auth.updateUser({ email: v });
+            window.showToast && window.showToast('Confirmation email sent to ' + v, true);
+            return false;
+          } catch (e) { console.warn('[settings] auth email update failed', e); }
+        }
       });
     };
 

@@ -160,6 +160,12 @@
       <button class="chip" data-f="question">🆘 Questions</button>
     </div>
 
+    <!-- 2026-05-20 #2086f0ba Keyword search across subject + body + admin notes -->
+    <div style="margin:8px 0 14px;position:relative">
+      <input id="searchBox" type="search" placeholder="🔍 Search your tickets…" autocomplete="off"
+             style="width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:14px;background:var(--bg)" />
+    </div>
+
     <div id="list">
       <div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div>
     </div>
@@ -288,12 +294,32 @@ async function loadList() {
   renderList();
 }
 
+// 2026-05-20 #2086f0ba — keyword search state.
+var SEARCH_Q = '';
+function applySearch(items) {
+  var q = (SEARCH_Q || '').trim().toLowerCase();
+  if (!q) return items;
+  return items.filter(function (i) {
+    var hay = (
+      (i.subject || '') + ' ' +
+      (i.body || '') + ' ' +
+      (i.admin_notes || '') + ' ' +
+      (i.short_code || '') + ' ' +
+      (i.type || '') + ' ' +
+      (i.status || '')
+    ).toLowerCase();
+    return hay.indexOf(q) !== -1;
+  });
+}
+
 function applyFilter(items) {
-  if (CUR_FILTER === 'all')      return items;
-  if (CUR_FILTER === 'open')     return items.filter(function(i){ return i.status === 'new' || i.status === 'in_progress'; });
-  if (CUR_FILTER === 'awaiting') return items.filter(function(i){ return i.awaiting_verification; });
-  if (CUR_FILTER === 'resolved') return items.filter(function(i){ return i.status === 'resolved' && !i.awaiting_verification; });
-  return items.filter(function(i){ return i.type === CUR_FILTER; });
+  var base;
+  if (CUR_FILTER === 'all')           base = items;
+  else if (CUR_FILTER === 'open')     base = items.filter(function(i){ return i.status === 'new' || i.status === 'in_progress'; });
+  else if (CUR_FILTER === 'awaiting') base = items.filter(function(i){ return i.awaiting_verification; });
+  else if (CUR_FILTER === 'resolved') base = items.filter(function(i){ return i.status === 'resolved' && !i.awaiting_verification; });
+  else                                base = items.filter(function(i){ return i.type === CUR_FILTER; });
+  return applySearch(base);
 }
 
 function renderList() {
@@ -580,6 +606,21 @@ document.getElementById('showMore').addEventListener('click', function() {
   CUR_PAGE++;
   renderList();
 });
+
+// 2026-05-20 #2086f0ba — keyword search, debounced 150ms
+(function () {
+  var box = document.getElementById('searchBox');
+  if (!box) return;
+  var timer = null;
+  box.addEventListener('input', function () {
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      SEARCH_Q = box.value || '';
+      CUR_PAGE = 1;
+      renderList();
+    }, 150);
+  });
+})();
 
 // 2026-05-19 #df147545 — FAB bridge to existing site-wide feedback widget
 document.getElementById('newFeedbackFab').addEventListener('click', function() {

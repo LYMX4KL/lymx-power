@@ -279,6 +279,57 @@
     location.href = '/login.html';
   }
 
+  // 2026-05-20 #4aa8c795 — Some users are BOTH customer + staff (e.g. a
+  // Customer who got hired by a Business as part-time staff). The role
+  // detector is path-based: on customer-* pages it routes them to the
+  // customer menu which has no Clock In. Fix: if the signed-in user has any
+  // hr_employees row, append a "My Work" team section (Clock In + My
+  // Schedule + My Time-off) regardless of the path-detected role.
+  async function maybeInjectStaffSection(asideEl) {
+    if (!asideEl) return;
+    try {
+      var cfg = window.LYMX_CONFIG;
+      var tok = readStoredToken();
+      if (!cfg || !tok) return;
+      var payload = decodeJwt(tok);
+      var uid = payload && payload.sub;
+      if (!uid) return;
+      var cacheKey = 'LYMX_is_staff_' + uid;
+      var cached = null;
+      try { cached = sessionStorage.getItem(cacheKey); } catch (e) { console.warn('[sidebar] sessionStorage read', e); }
+      if (cached === 'no') return;
+      if (cached !== 'yes') {
+        var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/hr_employees?user_id=eq.' + uid + '&select=id&limit=1', {
+          headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + tok }
+        });
+        if (!r.ok) { try { sessionStorage.setItem(cacheKey, 'no'); } catch (e) { console.warn('[sidebar] sessionStorage write', e); } return; }
+        var rows = await r.json();
+        var ans = (rows && rows.length) ? 'yes' : 'no';
+        try { sessionStorage.setItem(cacheKey, ans); } catch (e) { console.warn('[sidebar] sessionStorage write', e); }
+        if (ans === 'no') return;
+      }
+      if (asideEl.querySelector('a[href="staff-clock-in.html"]')) return;
+      var here = (location.pathname.split('/').pop() || '').toLowerCase();
+      function aHTML(href, icon, label) {
+        var active = href.toLowerCase() === here ? ' active' : '';
+        return '<a class="' + active.trim() + '" href="' + href + '"><span class="lymx-sb-icon">' + icon + '</span><span>' + label + '</span></a>';
+      }
+      var insertHTML =
+        '<h3>My Work</h3>' +
+        aHTML('staff-clock-in.html', '⏱', 'Clock In') +
+        aHTML('my-schedule.html', '\u{1F4C5}', 'My Schedule') +
+        aHTML('my-time-off.html', '\u{1F334}', 'My Time-off');
+      var signout = asideEl.querySelector('#lymx-sb-signout');
+      if (signout) {
+        var wrap = document.createElement('div');
+        wrap.innerHTML = insertHTML;
+        while (wrap.firstChild) asideEl.insertBefore(wrap.firstChild, signout);
+      } else {
+        asideEl.insertAdjacentHTML('beforeend', insertHTML);
+      }
+    } catch (e) { console.warn('[sidebar] staff-section inject failed', e); }
+  }
+
   function mount() {
     if (!document.body) return setTimeout(mount, 50);
     if (document.querySelector('.lymx-sb')) return;
@@ -292,6 +343,9 @@
 
     var sout = document.getElementById('lymx-sb-signout');
     if (sout) sout.addEventListener('click', doSignout);
+
+    // 2026-05-20 #4aa8c795 — async append "My Work" section for staff users.
+    maybeInjectStaffSection(sidebar);
   }
 
   window.LymxSidebar = {
