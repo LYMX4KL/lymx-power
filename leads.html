@@ -332,9 +332,21 @@
       <div class="drawer-actions">
         <button class="btn primary" id="drawerSave">${t("leads.save", "Save")}</button>
         <a class="btn" href="admin-compose-email.html?to=${encodeURIComponent(lead.email)}&name=${encodeURIComponent(lead.full_name||'')}">${t("leads.email_btn", "✉️ Email")}</a>
-        ${lead.conversation_id ? `<a class="btn" href="admin-conversations.html#${lead.conversation_id}">${t("leads.open_thread", "💬 Open thread")}</a>` : ''}
-        <a class="btn" href="/c/kenny?prefill=${encodeURIComponent(lead.email)}" target="_blank">${t("leads.book_call", "📅 Book call")}</a>
+        ${lead.phone ? `<button class="btn" id="drawerSmsBtn" type="button">\u{1F4F1} SMS</button>` : ''}
+        ${lead.conversation_id ? `<a class="btn" href="admin-conversations.html#${lead.conversation_id}">${t("leads.open_thread", "\u{1F4AC} Open thread")}</a>` : ''}
+        <a class="btn" href="/c/kenny?prefill=${encodeURIComponent(lead.email)}" target="_blank">${t("leads.book_call", "\u{1F4C5} Book call")}</a>
       </div>
+      ${lead.phone ? `
+      <div id="drawerSmsBox" style="display:none;margin-top:12px;padding:14px;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:6px">SMS \u00b7 to ${esc(lead.phone)}</div>
+        <textarea id="drawerSmsBody" style="width:100%;min-height:80px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;resize:vertical" placeholder="Hi ${esc((lead.full_name||'').split(/\s+/)[0] || 'there')} \u2014 Helen from LYMX. Got 5 min tomorrow at 2pm to walk you through how this works for ${esc(lead.company || 'your business')}? Reply YES or pick another time."></textarea>
+        <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+          <button class="btn primary" id="drawerSmsSend" type="button">Send SMS</button>
+          <button class="btn" id="drawerSmsCancel" type="button">Cancel</button>
+          <span style="font-size:12px;color:var(--muted)" id="drawerSmsCount">0 / 160</span>
+        </div>
+        <div id="drawerSmsBanner" style="margin-top:8px"></div>
+      </div>` : ''}
 
       ${leadBookings.length ? `
         <div class="drawer-row" style="margin-top:18px">
@@ -369,6 +381,63 @@
         `).join('') : `<div style="color:var(--muted);font-size:13px">${t('leads.no_messages', 'No messages yet.')}</div>`}
       </div>
     `;
+
+    // 2026-05-20 #8ae35834 - SMS prospect wiring.
+    (function wireSms() {
+      var btn = document.getElementById('drawerSmsBtn');
+      var box = document.getElementById('drawerSmsBox');
+      var body = document.getElementById('drawerSmsBody');
+      var send = document.getElementById('drawerSmsSend');
+      var cancel = document.getElementById('drawerSmsCancel');
+      var counter = document.getElementById('drawerSmsCount');
+      var banner = document.getElementById('drawerSmsBanner');
+      if (!btn || !box) return;
+      btn.addEventListener('click', function () {
+        box.style.display = (box.style.display === 'none' || !box.style.display) ? 'block' : 'none';
+        if (box.style.display === 'block' && body) body.focus();
+      });
+      if (cancel) cancel.addEventListener('click', function () { box.style.display = 'none'; });
+      if (body && counter) {
+        body.addEventListener('input', function () {
+          var n = body.value.length;
+          counter.textContent = n + ' / 160' + (n > 160 ? ' (' + Math.ceil(n/160) + ' segments)' : '');
+          counter.style.color = n > 320 ? '#dc2626' : 'var(--muted)';
+        });
+      }
+      if (send) send.addEventListener('click', async function () {
+        var text = (body && body.value || '').trim();
+        if (!text) { banner.innerHTML = '<div style="color:#dc2626;font-size:13px">Type a message first.</div>'; return; }
+        var phone = lead.phone || '';
+        if (!phone) { banner.innerHTML = '<div style="color:#dc2626;font-size:13px">No phone on file.</div>'; return; }
+        // Normalize phone: keep digits + leading +
+        var normalized = phone.replace(/[^\d+]/g, '');
+        if (!normalized.startsWith('+')) normalized = '+1' + normalized; // assume US if no country code
+        send.disabled = true; send.textContent = 'Sending...';
+        try {
+          var session = (await sb.auth.getSession()).data.session;
+          var r = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/functions/v1/sms-send', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + session.access_token,
+              'apikey': window.LYMX_CONFIG.SUPABASE_ANON_KEY,
+            },
+            body: JSON.stringify({ to: normalized, body: text }),
+          });
+          var result = await r.json();
+          if (!r.ok) throw new Error(result.error || 'Send failed');
+          banner.innerHTML = '<div style="color:#0a6e44;font-size:13px;font-weight:700">Sent! Twilio SID ' + (result.sid || '—') + '</div>';
+          if (body) body.value = '';
+          // Mark the lead as contacted so the stage indicator updates
+          await sb.from('leads').update({ last_contacted_at: new Date().toISOString() }).eq('id', lead.id);
+        } catch (e) {
+          console.warn('[leads sms] failed', e);
+          banner.innerHTML = '<div style="color:#dc2626;font-size:13px">Could not send: ' + (e.message || 'unknown error') + '</div>';
+        } finally {
+          send.disabled = false; send.textContent = 'Send SMS';
+        }
+      });
+    })();
 
     $('drawerSave').addEventListener('click', async () => {
       const patch = {
