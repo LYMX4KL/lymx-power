@@ -152,7 +152,20 @@
       <input id="phone" type="tel" required autocomplete="tel" placeholder="(702) 555-0100" pattern="^[\d\s+()\-]{7,20}$" />
 
       <label for="password">Choose a password</label>
-      <input id="password" type="password" required minlength="8" autocomplete="new-password" />
+      <!-- 2026-05-19 #68fa5d98 - eye toggle so users can verify they typed their password correctly -->
+      <div style="position:relative">
+        <input id="password" type="password" required minlength="8" autocomplete="new-password" style="padding-right:42px" />
+        <button type="button" id="pwToggle" aria-label="Show password" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;font-size:18px;padding:4px">👁️</button>
+      </div>
+      <script>
+        document.getElementById('pwToggle').addEventListener('click', function(){
+          var el = document.getElementById('password');
+          var hidden = el.type === 'password';
+          el.type = hidden ? 'text' : 'password';
+          this.textContent = hidden ? '🙈' : '👁️';
+          this.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
+        });
+      </script>
 
       <button class="btn-submit" id="submitBtn">Create account &amp; claim my LYMX</button>
 

@@ -163,8 +163,9 @@
   var btn = document.createElement('button');
   btn.id = 'lymx-fb-btn';
   btn.type = 'button';
-  btn.setAttribute('aria-label', 'Send feedback');
-  btn.innerHTML = '<span aria-hidden="true">💬</span> Send Feedback';
+  btn.setAttribute('aria-label', 'Help and Feedback');
+  btn.innerHTML = '<span aria-hidden="true">💬</span> Help & Feedback';
+  btn.title = 'Send feedback or get help from the LYMX team';
 
   var overlay = document.createElement('div');
   overlay.id = 'lymx-fb-overlay';
@@ -172,7 +173,7 @@
   overlay.setAttribute('aria-modal', 'true');
   overlay.innerHTML =
       '<div id="lymx-fb-modal">'
-    + '<div class="hd"><div><h2>Send Feedback</h2><p class="sub">We read every one.</p><p class="who" id="lymx-fb-who">Checking who you\'re signed in as…</p></div>'
+    + '<div class="hd"><div><h2>Help &amp; Feedback</h2><p class="sub">Question, bug, idea - we read every one and reply by email.</p><p class="who" id="lymx-fb-who">Checking who you\'re signed in as…</p></div>'
     + '<button class="x" type="button" aria-label="Close" data-fb-close>×</button></div>'
     + '<div class="body">'
     + '<div class="page-badge"><span>📍</span><div style="flex:1"><div style="font-weight:700;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase">Reporting from</div><div class="pb-path">' + shortPath() + '</div></div></div>'
