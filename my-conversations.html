@@ -290,8 +290,10 @@
     $("threadBody").innerHTML = msgs.map(m => {
       const mine = m.sender_user_id === me.id;
       const who = mine ? "You" : (m.sender_name_snapshot || m.sender_type || "LYMX team");
+      // 2026-05-20 #a461daa8 - tag with sender uid so we can paint photos over initials.
+      const uid = m.sender_user_id || '';
       return `<div class="msg ${mine?'mine':''}" data-msg-id="${m.id}" data-msg-source-locale="${m.source_locale||''}">
-        <div class="av">${initials(who)}</div>
+        <div class="av" ${uid ? `data-lymx-avatar-uid="${uid}"` : ''}>${initials(who)}</div>
         <div class="bubble">
           <div class="who">${esc(who)}</div>
           <div class="body" data-orig-body>${esc(m.body||"")}</div>
@@ -301,6 +303,28 @@
     }).join("");
     $("threadBody").scrollTop = $("threadBody").scrollHeight;
     $("threadBody").querySelectorAll('.translate-btn').forEach(btn => btn.addEventListener('click', () => onTranslateClick(btn)));
+    paintChatAvatars();
+  }
+
+  // 2026-05-20 #a461daa8 - Look up avatars for every unique sender in the
+  // visible thread and paint each .av element. Cached per-session via lymx-nav.js.
+  async function paintChatAvatars() {
+    if (!window.LYMX || !window.LYMX.lookupAvatarUrl || !window.LYMX.paintAvatarOn) return;
+    try {
+      const elsByUid = new Map();
+      document.querySelectorAll('#threadBody .av[data-lymx-avatar-uid]').forEach(el => {
+        const uid = el.getAttribute('data-lymx-avatar-uid');
+        if (!uid) return;
+        if (!elsByUid.has(uid)) elsByUid.set(uid, []);
+        elsByUid.get(uid).push(el);
+      });
+      for (const [uid, els] of elsByUid.entries()) {
+        try {
+          const url = await window.LYMX.lookupAvatarUrl(uid);
+          if (url) els.forEach(el => window.LYMX.paintAvatarOn(el, url));
+        } catch (e) { console.warn('[chat-avatars] lookup failed', uid, e); }
+      }
+    } catch (e) { console.warn('[chat-avatars] paint failed', e); }
   }
 
   async function onTranslateClick(btn){

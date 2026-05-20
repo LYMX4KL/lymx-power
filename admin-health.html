@@ -278,7 +278,10 @@
       { name: 'No issuances stuck pending > 7d', fn: async () => { const cutoff = new Date(Date.now() - 7*86400000).toISOString(); const r = await sb.from('lymx_issuances').select('id', { count: 'exact', head: true }).eq('admin_status', 'pending_review').lt('created_at', cutoff); return r.count === 0; } },
       { name: 'No customers without auth row (last 24h)', fn: async () => { const r = await sb.from('customers').select('id', { count: 'exact', head: true }).is('user_id', null).gte('created_at', day24h()); return r.count === 0; } },
       { name: 'No referrals stuck pending > 30d', fn: async () => { const cutoff = new Date(Date.now() - 30*86400000).toISOString(); const r = await sb.from('referrals').select('id', { count: 'exact', head: true }).eq('status', 'pending').lt('created_at', cutoff); return r.count === 0; } },
-      { name: 'public-stats EF returns valid shape', fn: async () => { try { const r = await fetch(SB.SUPABASE_URL + '/functions/v1/public-stats', { headers: { apikey: SB.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SB.SUPABASE_ANON_KEY } }); const d = await r.json(); return typeof d.issued_lifetime === 'number' && typeof d.customers_total === 'number'; } catch { return false; } } }
+      { name: 'public-stats EF returns valid shape', fn: async () => { try { const r = await fetch(SB.SUPABASE_URL + '/functions/v1/public-stats', { headers: { apikey: SB.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SB.SUPABASE_ANON_KEY } }); const d = await r.json(); return typeof d.issued_lifetime === 'number' && typeof d.customers_total === 'number'; } catch { return false; } } },
+      // 2026-05-20 #a461daa8 - verify avatar feature is wired
+      { name: 'customers.avatar_url column exists', fn: async () => { const r = await sb.from('customers').select('avatar_url').limit(1); return !r.error; } },
+      { name: 'avatars Storage bucket reachable', fn: async () => { try { const r = await fetch(SB.SUPABASE_URL + '/storage/v1/bucket/avatars', { headers: { apikey: SB.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SB.SUPABASE_ANON_KEY } }); return r.ok; } catch { return false; } } }
     ];
     let okCount = 0;
     for (const c of checks) {
