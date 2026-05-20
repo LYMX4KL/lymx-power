@@ -359,6 +359,51 @@ serve(async (req) => {
         if (commErr) {
             console.error("Partner commission log failed:", commErr);
         }
+
+        // 2026-05-20 #8ae35834 — Notify the sponsor partner via email so they
+        // know their referral converted. Non-blocking: failure here does NOT
+        // roll back the business signup. Helen/Rachel get an immediate ding
+        // in their inbox the moment a prospect signs up using their code.
+        try {
+            const { data: sponsor } = await supabase
+                .from("partners")
+                .select("legal_name, display_name, contact_email, partner_code")
+                .eq("id", signedUpByPartnerId)
+                .maybeSingle();
+            if (sponsor && sponsor.contact_email) {
+                const firstName = (sponsor.display_name || sponsor.legal_name || "Partner").split(/\s+/)[0];
+                const bizName = body.display_name || body.legal_name || "a Business";
+                const subj = `🎉 ${bizName} just signed up using your referral code`;
+                const bodyText = `Hi ${firstName},
+
+Quick news — ${bizName} just submitted their LYMX Business signup using your referral code (${sponsor.partner_code || ""}).
+
+That means a $500 activation bonus is pending verification on your account. As soon as admin approves their application, the bonus posts to your commission ledger.
+
+You can see this activation on your Partner Dashboard:
+https://getlymx.com/rep-dashboard.html#myActivationsCard
+
+If they back out before verification you won't see the bonus — but most Businesses that submit the form complete the process. Keep the momentum going.
+
+— The LYMX team`;
+                await fetch(Deno.env.get("SUPABASE_URL") + "/functions/v1/send-email", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": "Bearer " + Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        recipient_email: sponsor.contact_email,
+                        subject: subj,
+                        body_text: bodyText,
+                        kind: "partner_referral_activation",
+                        channel: "transactional",
+                    }),
+                });
+            }
+        } catch (notifyErr) {
+            console.warn("Partner referral notification failed (non-fatal):", (notifyErr as Error).message);
+        }
     }
 
     // ─── New-Business welcome bonus (10,000 LYMX, configurable) ─────────────

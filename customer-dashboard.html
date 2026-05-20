@@ -258,6 +258,49 @@
         </script>
       </div>
 
+      <!-- 2026-05-20 #8ae35834 — Customer-to-Partner upgrade upsell.
+           Hidden by default; inline JS reveals only for signed-in customers
+           without a partners row. Same pattern as browse.html. -->
+      <a id="customerDashUpsell" href="partner-upgrade.html" style="display:none;text-decoration:none;color:inherit;margin-bottom:16px">
+        <div class="card" style="background:linear-gradient(135deg,#fff8e1,#ffeec4);border:1px solid #f5d172;padding:20px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+          <div style="font-size:36px;flex-shrink:0">\u{1F680}</div>
+          <div style="flex:1;min-width:220px">
+            <h3 style="margin:0 0 4px;font-size:16px;font-weight:800;color:#78350f">Earn $500 per local Business you bring on</h3>
+            <p style="margin:0;font-size:13.5px;color:#78350f;opacity:.9;line-height:1.5">Keep your customer wallet AND earn 9% recurring on every Business you sign up. Two clicks to upgrade — no new account, your existing balance stays.</p>
+          </div>
+          <span style="background:#0e1116;color:#fff;padding:10px 18px;border-radius:9px;font-weight:700;font-size:13.5px;white-space:nowrap;flex-shrink:0">Become a Partner →</span>
+        </div>
+      </a>
+      <script>
+      // Reveal the upsell only for signed-in customers without a partners row.
+      (async function () {
+        try {
+          if (!window.LYMX_CONFIG) return;
+          var m = (window.LYMX_CONFIG.SUPABASE_URL || '').match(/https:\/\/([^.]+)\.supabase\.co/i);
+          if (!m) return;
+          var raw = localStorage.getItem('sb-' + m[1] + '-auth-token');
+          if (!raw) return;
+          var obj; try { obj = JSON.parse(raw); } catch (e) { return; }
+          var tok = obj && (obj.access_token || (obj.currentSession && obj.currentSession.access_token));
+          if (!tok) return;
+          var parts = tok.split('.'); if (parts.length !== 3) return;
+          var payload = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+          var uid = payload && payload.sub; if (!uid) return;
+          // Company-email users are already partners — skip
+          var email = (payload.email || '').toLowerCase();
+          if (email.endsWith('@lymxpower.com') || email.endsWith('@getlymx.com')) return;
+          var r = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/rest/v1/partners?user_id=eq.' + uid + '&select=id&limit=1', {
+            headers: { apikey: window.LYMX_CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
+          });
+          if (!r.ok) return;
+          var rows = await r.json();
+          if (rows && rows.length) return; // already a partner — skip
+          var card = document.getElementById('customerDashUpsell');
+          if (card) card.style.display = 'block';
+        } catch (e) { console.warn('[dash-upsell] failed', e); }
+      })();
+      </script>
+
       <!-- Pending reviews -->
       <div class="card">
         <div class="card-h">
