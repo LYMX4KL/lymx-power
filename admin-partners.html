@@ -117,6 +117,9 @@
       <h1>Partners</h1>
       <p>Approve, suspend, and audit every Partner on the network. New Partners are auto-approved on upgrade — flag here if you need to reverse.</p>
     </div>
+    <div>
+      <button id="runSettlementBtn" class="btn" style="background:var(--ink);color:#fff;border:0;padding:9px 16px;border-radius:9px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit">💰 Run settlement (all partners)</button>
+    </div>
   </div>
 
   <!-- Quick stats -->
@@ -375,6 +378,35 @@
     const id  = btn.dataset.id;
     if (act === 'suspend')    suspendPartner(id);
     else if (act === 'reactivate') reactivatePartner(id);
+  });
+
+  // 2026-05-20 #8ae35834 - Run settlement button.
+  document.getElementById('runSettlementBtn').addEventListener('click', async () => {
+    if (!confirm('Run a settlement batch for ALL partners with unsettled commissions?\n\nThis bundles every pending commission into a settlements row marked status="pending" - admin still needs to mark each one paid before payment actually flows. Each partner gets a "your payout is queued" email.')) return;
+    const btn = document.getElementById('runSettlementBtn');
+    btn.disabled = true; btn.textContent = 'Running...';
+    try {
+      const r = await fetch(cfg.SUPABASE_URL + '/functions/v1/partner-settlement-run', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + (await sb.auth.getSession()).data.session.access_token,
+          'apikey': cfg.SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({})
+      });
+      const result = await r.json();
+      if (!r.ok) throw new Error(result.error || 'Run failed');
+      const runs = result.runs || [];
+      const totalAmt = (result.total_amount_queued || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      toast('Queued ' + runs.length + ' settlements totaling $' + totalAmt + '.');
+      await loadPartners();
+    } catch (e) {
+      console.warn('[admin-partners] settlement run failed', e);
+      toast('Failed: ' + (e.message || 'unknown'), 'err');
+    } finally {
+      btn.disabled = false; btn.textContent = '💰 Run settlement (all partners)';
+    }
   });
 
   await loadPartners();
