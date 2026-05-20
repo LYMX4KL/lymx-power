@@ -206,7 +206,20 @@
         el.style.background = bg;
         el.style.color = '#fff';
         el.style.cursor = 'pointer';
-        el.title = email || 'Account';
+        el.style.position = el.style.position || 'relative';
+        el.title = (email ? email + ' — ' : '') + 'Profile, settings, sign out';
+        el.setAttribute('aria-label', 'Account menu');
+        el.setAttribute('aria-haspopup', 'menu');
+        el.setAttribute('role', 'button');
+        // 2026-05-20 #98ffcf81 + #524e01c9 - avatar didn't look clickable on mobile (no hover state). Add a small dropdown caret badge bottom-right of the circle so it's visually obvious this is a menu trigger that opens Profile / Messages / Sign out.
+        if (!el.querySelector('.lymx-av-caret')) {
+          var caret = document.createElement('span');
+          caret.className = 'lymx-av-caret';
+          caret.textContent = '▾';
+          caret.setAttribute('aria-hidden', 'true');
+          caret.style.cssText = 'position:absolute;bottom:-2px;right:-2px;width:14px;height:14px;background:#fff;color:#0e1116;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;line-height:1;box-shadow:0 0 0 1.5px rgba(14,17,22,.18);pointer-events:none';
+          el.appendChild(caret);
+        }
         el.addEventListener('click', function (e) {
           e.preventDefault(); e.stopPropagation();
           showAvatarMenu(el, payload);
