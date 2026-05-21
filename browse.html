@@ -236,15 +236,16 @@
     <div class="biz-list" id="bizList">
 
       <!-- Founding launch — be the first Business -->
+      <!-- 2026-05-21 #581061d3 fix: previously had a nested <a href="login.html"> INSIDE this outer <a class="biz-card">. HTML5 parser doesn't allow nested anchors and auto-closes the outer one, producing an empty dashed-blue ghost anchor that Rae rightly flagged as unlabeled. Moved the "Already a Founding 25 candidate?" line OUTSIDE the biz-card as a sibling, so the founding CTA renders as one clean clickable card. -->
       <a class="biz-card" href="business.html" style="grid-template-columns:1fr;background:linear-gradient(135deg,#fff,#f6f7f9);border:2px dashed var(--accent);padding:28px;text-align:center">
         <div class="body" style="align-items:center;text-align:center">
           <div style="font-size:48px;margin-bottom:8px">🏪</div>
           <h3 style="font-size:20px;color:var(--accent-2)">Be a Founding LYMX Business</h3>
           <p class="desc" style="-webkit-line-clamp:none;font-size:14px;color:var(--ink-2);max-width:480px;margin:8px auto 14px">LYMX is launching with a hand-picked first 25 Businesses. 3 months free, $850 setup, $199/mo after — and a permanent feature spot on the homepage and this map.</p>
           <span style="background:var(--ink);color:#fff;padding:11px 22px;border-radius:9px;font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:8px">Sign up your business →</span>
-          <div style="margin-top:12px;font-size:12.5px;color:var(--muted)">Already a Founding 25 candidate? <a href="login.html" style="color:var(--accent-2);font-weight:700">Sign in</a></div>
         </div>
       </a>
+      <div style="margin-top:-2px;margin-bottom:14px;text-align:center;font-size:12.5px;color:var(--muted)">Already a Founding 25 candidate? <a href="login.html" style="color:var(--accent-2);font-weight:700">Sign in</a></div>
 
       <!-- Customer signup invite -->
       <a class="biz-card guest-only" id="guestCustomerInvite" href="customer-signup.html" style="grid-template-columns:1fr;background:#fff;border:1px solid var(--line);padding:24px;text-align:center;margin-top:8px">
