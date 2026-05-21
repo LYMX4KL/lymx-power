@@ -1,4 +1,4 @@
--- Migration 066 — team_calendars INSERT policy for authenticated users
+-- Migration 066 â team_calendars INSERT policy for authenticated users
 --
 -- Bug #4c53cd0c (filed 2026-05-20 by Dave): clicking "Create my calendar"
 -- on /team-calendar.html fails with:

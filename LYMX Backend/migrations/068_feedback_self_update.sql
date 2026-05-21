@@ -1,4 +1,4 @@
--- Migration 068 — feedback self-update RLS for owner
+-- Migration 068 â feedback self-update RLS for owner
 --
 -- Bugs #2f77dc20 + #63f2961b (filed 2026-05-20 by Dave): "Feedback List Does
 -- Not Have Edit Option" / "Feedback System Does Not Allow Users to Resolve

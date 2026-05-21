@@ -116,6 +116,7 @@ serve(async (req) => {
     if (asks_verification) {
         fbUpdate.verification_token = token;
         fbUpdate.awaiting_verification = true;
+        fbUpdate.verification_token_used_at = null;  // 2026-05-21: clear stale used_at so the NEW token isn't pre-rejected with 410 by feedback-verify
     }
     if (set_status) fbUpdate.status = set_status;
     if (Object.keys(fbUpdate).length) {
