@@ -119,17 +119,53 @@
       const user = await this.getUser();
       if (!user) return { data: [], error: new Error('Not signed in') };
       const { data: customer } = await sb.from('customers').select('id').eq('user_id', user.id).maybeSingle();
-      if (!customer) return { data: [], error: null };
-      // 2026-05-20 audit fix - transactions has no `customer_id` (linked via wallet_id) and no `usd_amount` (column is `usd_basis`). (Audit Pass 3)
-      const { data: walletsArr } = await sb.from('wallets').select('id').eq('customer_id', customer.id);
-      const walletIds = (walletsArr || []).map(w => w.id);
-      if (walletIds.length === 0) return { data: [], error: null };
-      return await sb
-        .from('transactions')
-        .select('id, type, lymx_amount, usd_basis, created_at, business_id, wallet_id, businesses(display_name)')
-        .in('wallet_id', walletIds)
-        .order('created_at', { ascending: false })
-        .limit(limit || 20);
+      // 2026-05-20 #a8fc64af - was wallet-only; missed platform-issued LYMX
+      // (welcome bonuses, promo bonuses) which live in lymx_issuances keyed
+      // by recipient_user_id. Now merge both sources into a unified activity feed.
+      const promises = [];
+      // Wallet-linked transactions (per-business issuances + redemptions + transfers)
+      if (customer) {
+        const { data: walletsArr } = await sb.from('wallets').select('id').eq('customer_id', customer.id);
+        const walletIds = (walletsArr || []).map(w => w.id);
+        if (walletIds.length > 0) {
+          promises.push(
+            sb.from('transactions')
+              .select('id, type, lymx_amount, usd_basis, created_at, business_id, wallet_id, businesses(display_name)')
+              .in('wallet_id', walletIds)
+              .order('created_at', { ascending: false })
+              .limit(limit || 20)
+              .then(r => (r.data || []).map(t => ({
+                source: 'transaction',
+                id: t.id, type: t.type, lymx_amount: t.lymx_amount, usd_basis: t.usd_basis,
+                created_at: t.created_at, business_id: t.business_id, businesses: t.businesses,
+              })))
+              .catch(() => [])
+          );
+        }
+      }
+      // Platform-issued LYMX (welcome bonus, promos, referral pair)
+      promises.push(
+        sb.from('lymx_issuances')
+          .select('id, amount_lymx, reason, created_at, business_id, businesses(display_name)')
+          .eq('recipient_user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(limit || 20)
+          .then(r => (r.data || []).map(i => ({
+            source: 'issuance',
+            id: i.id,
+            type: 'issuance',
+            lymx_amount: Number(i.amount_lymx || 0),
+            usd_basis: null,
+            created_at: i.created_at,
+            business_id: i.business_id,
+            businesses: i.businesses,
+            reason: i.reason,
+          })))
+          .catch(() => [])
+      );
+      const both = await Promise.all(promises);
+      const merged = [].concat(...both).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, limit || 20);
+      return { data: merged, error: null };
     },
 
     // ---------- Business data ----------
