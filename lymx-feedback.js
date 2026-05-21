@@ -311,24 +311,28 @@
   function captureAuto() {
     var status = document.getElementById('lymx-fb-shot-status');
     if (status) status.textContent = 'Capturing page…';
+    // 2026-05-21 #440f1159 — use html2canvas ignoreElements option to skip the
+    // feedback overlay during capture instead of hiding it. Pre-fix, hiding
+    // the overlay made the form look like it had disappeared (see #22ad49e8).
+    // ignoreElements keeps the modal fully visible to the user; html2canvas
+    // simply omits any node inside `overlay` from the rendered canvas.
     return loadH2C().then(function (html2canvas) {
-      overlay.style.visibility = 'hidden';
-      return new Promise(function (r) { setTimeout(r, 80); }).then(function () {
-        return html2canvas(document.body, {
-          useCORS: true, logging: false,
-          scale: Math.min(1, window.devicePixelRatio || 1),
-          windowWidth: document.documentElement.clientWidth,
-          windowHeight: document.documentElement.clientHeight
-        });
+      return html2canvas(document.body, {
+        useCORS: true, logging: false,
+        scale: Math.min(1, window.devicePixelRatio || 1),
+        windowWidth: document.documentElement.clientWidth,
+        windowHeight: document.documentElement.clientHeight,
+        ignoreElements: function (el) {
+          // Skip the feedback overlay itself and anything inside it.
+          return el === overlay || (overlay.contains && overlay.contains(el));
+        }
       });
     }).then(function (canvas) {
-      overlay.style.visibility = 'visible';
       return new Promise(function (res) { canvas.toBlob(res, 'image/png', 0.9); });
     }).then(function (blob) {
       shotBlob = blob; shotKind = 'auto';
       renderShotPreview('Auto-captured');
     }).catch(function (e) {
-      overlay.style.visibility = 'visible';
       console.warn('[LYMX feedback] auto-capture failed', e);
       var preview = document.getElementById('lymx-fb-shot-preview');
       if (preview) preview.innerHTML = '<span style="color:#B91C1C;font-size:12.5px">Auto-capture failed — try ✂️ Crop screenshot or 📎 Add file.</span>';
@@ -635,14 +639,14 @@
     notice(null);
     loadDraft();
     updateWhoLabel();
-    // 2026-05-20 #22ad49e8 - was: setTimeout(captureAuto, 250) which hid the
-    // overlay via visibility:hidden for ~1-2s while html2canvas ran. To the
-    // user, that looked exactly like "the form disappeared when I clicked
-    // inside it." Drop auto-capture. The user can hit ↻ Recapture or
-    // ✂️ Crop screenshot explicitly if they want a shot. Most reports don't
-    // even need one.
+    // 2026-05-21 #440f1159 — re-enable auto-capture on modal open. The prior
+    // bug (#22ad49e8 — form looked like it disappeared) was caused by hiding
+    // the overlay during capture. captureAuto() now uses html2canvas's
+    // ignoreElements option to omit the overlay from the canvas without
+    // hiding it visually, so the user keeps seeing the modal the whole time.
     var preview = document.getElementById('lymx-fb-shot-preview');
-    if (preview) preview.innerHTML = '<span style="color:#5b6472;font-size:12.5px">No screenshot — tap ↻ Recapture, ✂️ Crop, or 📎 Add file to attach.</span>';
+    if (preview) preview.innerHTML = '<span style="color:#5b6472;font-size:12.5px">Capturing page screenshot…</span>';
+    setTimeout(function () { captureAuto(); }, 100);
     setTimeout(function () {
       var msg = document.getElementById('lymx-fb-message');
       if (msg && !msg.value) msg.focus();

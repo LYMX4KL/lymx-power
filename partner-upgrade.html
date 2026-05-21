@@ -150,9 +150,12 @@
     </label>
   </div>
 
+  <!-- 2026-05-20 #9335dafd — Dave reported "no submit button". Cause: the
+       button was disabled by default until all 4 acknowledgements checked,
+       and the disabled styling made it look like decorative text. Added
+       explicit hint above it + a clearer enabled/disabled distinction. -->
+  <div id="submitHint" style="text-align:center;margin-bottom:10px;font-size:13px;color:#92400e;font-weight:700">↑ Check all 4 boxes above to enable the activation button.</div>
   <button class="btn-primary" id="submitBtn" disabled>Confirm — activate my Partner account</button>
-  <!-- 2026-05-20 #9335dafd - inline hint so the disabled button doesn't read as missing -->
-  <div id="submitHint" style="text-align:center;color:var(--muted);font-size:13px;margin-top:10px">Check all four acknowledgements above to enable this button.</div>
 
   <div class="what-next">
     <b>What happens after you click:</b>
@@ -217,11 +220,12 @@
   // Enable button only when all 4 agreement boxes are checked
   const boxes = ['agComp', 'agPyramid', 'ag1099', 'agTos'].map(id => document.getElementById(id));
   const submit = document.getElementById('submitBtn');
+  const submitHint = document.getElementById('submitHint');
   function syncSubmit() {
-    const enabled = boxes.every(b => b && b.checked);
-    submit.disabled = !enabled;
-    const hint = document.getElementById('submitHint');
-    if (hint) hint.style.display = enabled ? 'none' : 'block';
+    const allChecked = boxes.every(b => b && b.checked);
+    submit.disabled = !allChecked;
+    // 2026-05-20 #9335dafd — hide the "check boxes above" hint once they're all checked
+    if (submitHint) submitHint.style.display = allChecked ? 'none' : '';
   }
   boxes.forEach(b => b && b.addEventListener('change', syncSubmit));
 

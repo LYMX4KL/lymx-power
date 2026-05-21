@@ -225,6 +225,7 @@
   function renderList(){
     if (convCache.length === 0) {
       // 2026-05-20 cluster - Rae 4dabb0c9 (illustration) + 4831a25a (Browse Partners) + b5a0eead (Help Center shortcut)
+      // 2026-05-21 #ec4cbc53 — empty-state CTA onclick used getElementById('btnNew') (camelCase typo) — the real button id is 'newBtn'. The optional-chain ?.click() silently no-op'd. Fixed to match real id, dropped the ?. so any future typo blows up loudly.
       $("convList").innerHTML =
         '<div class="empty" style="text-align:center;padding:34px 20px">'
         + '<svg width="84" height="64" viewBox="0 0 84 64" fill="none" style="margin-bottom:10px;opacity:.55" xmlns="http://www.w3.org/2000/svg">'
@@ -236,7 +237,7 @@
         + '<div style="font-size:15px;font-weight:700;color:#0e1116;margin-bottom:4px">Your conversations live here</div>'
         + '<div style="font-size:13px;color:#5b6472;margin-bottom:16px;max-width:280px;margin-left:auto;margin-right:auto">Start a chat with a LYMX business, with the LYMX team, or another customer.</div>'
         + '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">'
-        +   '<button class="btn-cta-primary" onclick="document.getElementById(\'btnNew\')?.click()" style="background:#0e1116;color:#fff;border:0;padding:9px 16px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">+ New message</button>'
+        +   '<button class="btn-cta-primary" onclick="document.getElementById(\'newBtn\').click()" style="background:#0e1116;color:#fff;border:0;padding:9px 16px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">+ New message</button>'
         +   '<a href="browse.html" style="background:#fff;border:1px solid #e6e8ec;color:#0e1116;padding:9px 16px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">Browse partners →</a>'
         +   '<a href="help-center.html" style="background:#fff;border:1px solid #e6e8ec;color:#0e1116;padding:9px 16px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">Help Center</a>'
         + '</div>'

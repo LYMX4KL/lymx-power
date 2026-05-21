@@ -566,17 +566,34 @@ async function uploadAvatar(file) {
     const { data: pub } = sb.storage.from('avatars').getPublicUrl(path);
     const url = pub && pub.publicUrl;
     if (!url) throw new Error('Could not resolve public URL');
+    // 2026-05-21 #aebedf90 — write the new avatar_url to EVERY table that has
+    // a row for this user_id (partners + customers). Pre-fix, we only wrote to
+    // the table matching myRole. A customer who uploaded an avatar, then later
+    // upgraded to partner, ended up with customers.avatar_url set but
+    // partners.avatar_url null — so the avatar "disappeared" once
+    // detectRole() returned 'partner' on subsequent loads. Now: blanket
+    // multi-table save keeps every existing row in sync.
     let saveErr;
-    if (myRole === 'partner' && myRow && myRow.id) {
-      ({ error: saveErr } = await sb.from('partners').update({ avatar_url: url }).eq('id', myRow.id));
-    } else if (myRole === 'customer') {
-      if (myRow && myRow.id) {
-        ({ error: saveErr } = await sb.from('customers').update({ avatar_url: url }).eq('id', myRow.id));
+    // Always update partners row if it exists for this user
+    {
+      const { data: pRow } = await sb.from('partners').select('id').eq('user_id', uid).maybeSingle();
+      if (pRow && pRow.id) {
+        const { error } = await sb.from('partners').update({ avatar_url: url }).eq('id', pRow.id);
+        if (error) saveErr = error;
+      }
+    }
+    // Always update customers row if it exists for this user; upsert if missing
+    {
+      const { data: cRow } = await sb.from('customers').select('id').eq('user_id', uid).maybeSingle();
+      if (cRow && cRow.id) {
+        const { error } = await sb.from('customers').update({ avatar_url: url }).eq('id', cRow.id);
+        if (error) saveErr = error;
       } else {
-        ({ error: saveErr } = await sb.from('customers').upsert(
+        const { error } = await sb.from('customers').upsert(
           { user_id: uid, email: myUser.email, avatar_url: url },
           { onConflict: 'user_id' }
-        ));
+        );
+        if (error) saveErr = error;
       }
     }
     if (saveErr) throw saveErr;
@@ -628,12 +645,21 @@ async function removeAvatar() {
   try {
     // Capture old URL BEFORE we null the DB row, so we can clean up storage.
     var prevUrl = myRow && myRow.avatar_url;
-    if (myRole === 'partner' && myRow && myRow.id) {
-      const { error } = await sb.from('partners').update({ avatar_url: null }).eq('id', myRow.id);
-      if (error) throw error;
-    } else if (myRole === 'customer' && myRow && myRow.id) {
-      const { error } = await sb.from('customers').update({ avatar_url: null }).eq('id', myRow.id);
-      if (error) throw error;
+    // 2026-05-21 #aebedf90 — mirror upload-side multi-table write: null the
+    // avatar_url in every table that has a row for this user_id, so removal
+    // is consistent regardless of myRole.
+    const uid = myUser && myUser.id;
+    if (uid) {
+      const { data: pRow } = await sb.from('partners').select('id').eq('user_id', uid).maybeSingle();
+      if (pRow && pRow.id) {
+        const { error } = await sb.from('partners').update({ avatar_url: null }).eq('id', pRow.id);
+        if (error) throw error;
+      }
+      const { data: cRow } = await sb.from('customers').select('id').eq('user_id', uid).maybeSingle();
+      if (cRow && cRow.id) {
+        const { error } = await sb.from('customers').update({ avatar_url: null }).eq('id', cRow.id);
+        if (error) throw error;
+      }
     }
     // 2026-05-20 #a461daa8 - actually delete the storage object too.
     if (prevUrl) {

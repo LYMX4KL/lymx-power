@@ -143,7 +143,7 @@
     <div><div class="v" id="statPartners">0</div><div class="l">Active Partners</div></div>
     <div><div class="v gold" id="statFounding">0</div><div class="l">Founding 25 Partners qualified</div></div>
     <div><div class="v" id="statBusinesses">0</div><div class="l">Businesses brought in</div></div>
-    <div><div class="v" id="statCities">0</div><div class="l">Cities represented</div></div>
+    <div><div class="v" id="statCities">0</div><div class="l">Countries represented</div></div>
   </div>
 </section>
 
@@ -254,6 +254,13 @@
 <script src="lymx-config.js"></script>
 <script>
 // 2026-05-19 #ecf2cca6 - live partner stats
+// 2026-05-21 #ecf2cca6 - fixed three column-name drifts that made every stat
+// silently fail and the page display zeros:
+//   * partners.city -> doesn't exist; partners has country_code only
+//   * partners.is_founding -> is_founding_25
+//   * businesses.status -> approval_status=eq.approved
+// Also relabelled "Cities represented" -> "Countries represented" because
+// city data is not in the schema yet (would need a migration).
 (async function loadStats() {
   if (!window.LYMX_CONFIG) return;
   const URL = window.LYMX_CONFIG.SUPABASE_URL;
@@ -261,27 +268,31 @@
   const headers = { apikey: ANON, Authorization: 'Bearer ' + ANON, 'Prefer': 'count=exact' };
   try {
     // Active partners
-    const pr = await fetch(URL + '/rest/v1/partners?select=id,city&archived_at=is.null', { headers });
+    const pr = await fetch(URL + '/rest/v1/partners?select=id,country_code&archived_at=is.null', { headers });
     const partners = pr.ok ? await pr.json() : [];
     document.getElementById('statPartners').textContent = partners.length;
-    // Distinct cities
-    const cities = new Set(partners.map(p => (p.city || '').trim()).filter(Boolean));
-    document.getElementById('statCities').textContent = cities.size;
+    // Distinct countries (was distinct cities, but city column doesn't exist)
+    const countries = new Set(partners.map(p => (p.country_code || '').trim()).filter(Boolean));
+    document.getElementById('statCities').textContent = countries.size;
     // Founding 25
-    const fr = await fetch(URL + '/rest/v1/partners?select=id&is_founding=eq.true&archived_at=is.null', { headers });
+    const fr = await fetch(URL + '/rest/v1/partners?select=id&is_founding_25=eq.true&archived_at=is.null', { headers });
     if (fr.ok) {
       const founding = await fr.json();
       document.getElementById('statFounding').textContent = founding.length;
       const ctFounding = document.getElementById('ct-founding');
       if (ctFounding) ctFounding.textContent = founding.length;
+    } else {
+      console.warn('[partners] founding fetch failed', fr.status);
     }
     const ctAll = document.getElementById('ct-all');
     if (ctAll) ctAll.textContent = partners.length;
-    // Businesses brought in
-    const br = await fetch(URL + '/rest/v1/businesses?select=id&status=eq.active', { headers });
+    // Businesses brought in (approved + not archived)
+    const br = await fetch(URL + '/rest/v1/businesses?select=id&approval_status=eq.approved&archived_at=is.null', { headers });
     if (br.ok) {
       const biz = await br.json();
       document.getElementById('statBusinesses').textContent = biz.length;
+    } else {
+      console.warn('[partners] businesses fetch failed', br.status);
     }
   } catch (e) { console.warn('[partners] stats fetch failed', e); }
 })();

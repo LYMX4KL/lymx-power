@@ -63,7 +63,7 @@
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { partnerWelcomeEmail } from "../_shared/email/templates/partner-welcome.ts";
+import { partnerWelcomeEmail } from "./partner-welcome.ts";
 
 // --- CORS + response helpers -----------------------------------------------
 const corsHeaders = {
@@ -233,7 +233,15 @@ serve(async (req) => {
         return errorResponse("Missing Authorization header", 401);
     }
     const token = authHeader.replace("Bearer ", "");
-    if (getJwtRole(token) !== "service_role") {
+    // 2026-05-21 #d516e0bf — accept BOTH the legacy JWT-format service-role token
+    // (role claim = "service_role") AND the new sb_secret_* opaque format (direct
+    // match against SUPABASE_SERVICE_ROLE_KEY). Pre-fix, only the JWT path worked, so
+    // every internal call from partner-upgrade silently 403'd and partner_emails
+    // never got inserted. See feedback_supabase_new_key_format_jwt.md memo.
+    const _serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    const _isLegacyJwt = getJwtRole(token) === "service_role";
+    const _isNewSecret = !!token && token === _serviceKey;
+    if (!_isLegacyJwt && !_isNewSecret) {
         return errorResponse(
             "Forbidden: partner-provision-email is service-role only",
             403

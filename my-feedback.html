@@ -262,6 +262,44 @@ async function loadList() {
   }
   ALL_ITEMS = await r.json();
 
+  // 2026-05-21 #cdd88fdf — for items in awaiting_verification state, also
+  // fetch the submitter's LAST verification response (if any) so the card
+  // can show "you said: still broken — admin re-asked" instead of just
+  // "awaiting your verify" which hides the user's prior action.
+  try {
+    const needLookup = ALL_ITEMS.filter(function(i){ return i.awaiting_verification && i.verification_token; }).map(function(i){ return i.id; });
+    if (needLookup.length) {
+      const rr = await authedFetch(
+        '/rest/v1/feedback_replies' +
+        '?select=feedback_id,verification_status,created_at,body_text' +
+        '&kind=eq.submitter_response' +
+        '&feedback_id=in.(' + needLookup.join(',') + ')' +
+        '&order=created_at.desc'
+      );
+      if (rr.ok) {
+        const allResp = await rr.json();
+        const byFb = {};
+        for (const r of allResp) {
+          if (!byFb[r.feedback_id]) byFb[r.feedback_id] = r;  // first = latest (desc)
+        }
+        for (const it of ALL_ITEMS) {
+          const prev = byFb[it.id];
+          if (prev) {
+            // Map both new format (verification_status) and old format (body_text starts with ✓ / ✗)
+            const body = (prev.body_text || '').trim();
+            let kind = prev.verification_status || null;
+            if (!kind) {
+              if (body.startsWith('✓') || body.toLowerCase().startsWith('confirmed')) kind = 'confirmed';
+              else if (body.startsWith('✗') || body.toLowerCase().startsWith('still broken')) kind = 'still_broken';
+            }
+            it._last_submitter_kind = kind;
+            it._last_submitter_at = prev.created_at;
+          }
+        }
+      }
+    }
+  } catch (e) { console.warn('[my-feedback] prev-response enrich failed', e); }
+
   // 2026-05-19 #59ddaeec — "Resolved" only counts tickets the user has
   // actually verified. Awaiting-verification tickets are shown as awaiting,
   // not resolved, matching Dave's complaint that resolved count was inflated
@@ -341,7 +379,21 @@ function renderList() {
     const adminReply = i.last_admin_reply_text;
     const awaiting = i.awaiting_verification && i.verification_token;
     const displayStatus = awaiting ? 'awaiting' : i.status;
-    const displayStatusLabel = awaiting ? 'awaiting your verify' : i.status.replace('_', ' ');
+    // 2026-05-21 #cdd88fdf — if user already responded, show that history
+    // alongside the "verify again" state, so it's clear the system DID
+    // capture their previous click and the admin re-asked.
+    let displayStatusLabel;
+    if (awaiting) {
+      if (i._last_submitter_kind === 'still_broken') {
+        displayStatusLabel = 'verify again (you said: still broken)';
+      } else if (i._last_submitter_kind === 'confirmed') {
+        displayStatusLabel = 'verify again (you said: works)';
+      } else {
+        displayStatusLabel = 'awaiting your verify';
+      }
+    } else {
+      displayStatusLabel = i.status.replace('_', ' ');
+    }
     const showReopen = i.status === 'resolved' && !awaiting;
 
     let html = '<div class="fb-item ' + (awaiting ? 'awaiting' : '') + '" data-id="' + i.id + '">';
@@ -646,12 +698,25 @@ document.getElementById('showMore').addEventListener('click', function() {
   });
 })();
 
-// 2026-05-19 #df147545 — FAB bridge to existing site-wide feedback widget
+// 2026-05-19 #df147545 — FAB bridge to existing site-wide feedback widget.
+// 2026-05-21 #b137f1ac — selectors fixed. lymx-feedback.js creates the widget
+// button with id="lymx-fb-btn" (NOT id="lymx-feedback-btn", NOT class
+// .lymx-fb-btn). Previous selectors all missed the actual element, so the
+// FAB always alerted "Widget did not load, please refresh." Now we match
+// the real id and also wait briefly + retry if the widget hasn't booted yet.
 document.getElementById('newFeedbackFab').addEventListener('click', function() {
-  const widgetBtn = document.getElementById('lymx-feedback-btn') ||
-                    document.querySelector('[data-lymx-feedback-btn], .lymx-fb-btn');
-  if (widgetBtn) widgetBtn.click();
-  else alert('Send-feedback widget did not load. Refresh and try again.');
+  function findBtn() {
+    return document.getElementById('lymx-fb-btn')
+        || document.querySelector('#lymx-fb-btn, [data-lymx-feedback-btn]');
+  }
+  let widgetBtn = findBtn();
+  if (widgetBtn) { widgetBtn.click(); return; }
+  // Widget script may still be loading (defer). Retry once after 200ms.
+  setTimeout(function () {
+    const b = findBtn();
+    if (b) b.click();
+    else alert('Send-feedback widget did not load. Refresh and try again.');
+  }, 250);
 });
 
 // Boot
