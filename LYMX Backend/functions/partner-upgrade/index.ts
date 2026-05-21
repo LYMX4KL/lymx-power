@@ -247,13 +247,13 @@ serve(async (req) => {
         }, { onConflict: "user_id" });
     } catch (e) { console.warn("staff_roles upsert failed (non-fatal):", (e as Error).message); }
 
-    // 10. Referral 100+100 — credit the sponsor + new partner pair
+    // 10. Referral 100+100 - credit the sponsor + new partner pair + notify sponsor
     let referralResult: unknown = null;
     if (sponsorPartnerId && sponsorPartnerId !== LAUNCH_SPONSOR_PARTNER_ID) {
         try {
             const { data: sponsorRow } = await supabase
                 .from("partners")
-                .select("user_id")
+                .select("id, user_id, legal_name, display_name, contact_email")
                 .eq("id", sponsorPartnerId)
                 .maybeSingle();
             if (sponsorRow && sponsorRow.user_id && sponsorRow.user_id !== userId) {
@@ -267,6 +267,34 @@ serve(async (req) => {
                 });
                 if (refErr) console.warn("credit_referral_pair failed:", refErr.message);
                 else referralResult = refResult;
+
+                // 2026-05-20 #8ae35834 - Notify sponsor that a new partner joined under them.
+                if (sponsorRow.contact_email) {
+                    try {
+                        const sponsorFirstName = (sponsorRow.display_name || sponsorRow.legal_name || "Partner").split(/\s+/)[0];
+                        const newPartnerName = fullName || (userEmail ? userEmail.split("@")[0] : "a new Partner");
+                        const subj = "New Partner just joined under you - " + newPartnerName;
+                        const bodyText = "Hi " + sponsorFirstName + ",\n\n"
+                            + newPartnerName + " just activated as a Partner using your referral code (" + (partnerData.partner_code || sponsorRow.id) + ").\n\n"
+                            + "They are now in your downline. 100 LYMX credited to you, 100 LYMX to them as the welcome-pair bonus.\n\n"
+                            + "Open your tree to see them:\nhttps://getlymx.com/partner-tree.html\n\n"
+                            + "Every Business they sign up under their code generates an override commission for you (3% Direct override).\n\n"
+                            + "- The LYMX team";
+                        await fetch(SUPA + "/functions/v1/send-email", {
+                            method: "POST",
+                            headers: { "Authorization": internalAuth, "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                recipient_email: sponsorRow.contact_email,
+                                subject: subj,
+                                body_text: bodyText,
+                                kind: "partner_downline_joined",
+                                channel: "transactional",
+                            }),
+                        });
+                    } catch (notifyErr) {
+                        console.warn("Sponsor notification failed (non-fatal):", (notifyErr as Error).message);
+                    }
+                }
             }
         } catch (e) { console.warn("Referral pair credit error:", (e as Error).message); }
     }

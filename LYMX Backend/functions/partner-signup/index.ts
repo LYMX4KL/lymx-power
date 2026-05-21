@@ -284,13 +284,13 @@ serve(async (req) => {
         console.warn("staff_roles upsert failed (non-fatal):", e.message);
     }
 
-    // ── Step 6b: Referral 100+100 — if sponsored, credit BOTH partners ──
+    // -- Step 6b: Referral 100+100 - if sponsored, credit BOTH partners + notify --
     let referralResult = null;
     if (sponsorPartnerId) {
         try {
             const { data: sponsorRow } = await supabase
                 .from("partners")
-                .select("user_id")
+                .select("id, user_id, legal_name, display_name, contact_email")
                 .eq("id", sponsorPartnerId)
                 .maybeSingle();
             if (sponsorRow && sponsorRow.user_id && sponsorRow.user_id !== userId) {
@@ -304,6 +304,37 @@ serve(async (req) => {
                 });
                 if (refErr) console.warn("credit_referral_pair failed:", refErr.message);
                 else referralResult = refResult;
+
+                // 2026-05-20 #8ae35834 - Notify sponsor that a new Partner joined under them.
+                if (sponsorRow.contact_email) {
+                    try {
+                        const sponsorFirstName = (sponsorRow.display_name || sponsorRow.legal_name || "Partner").split(/\s+/)[0];
+                        const newPartnerName = fullName || "a new Partner";
+                        const subj = "New Partner just joined under you - " + newPartnerName;
+                        const bodyText = "Hi " + sponsorFirstName + ",\n\n"
+                            + newPartnerName + " just signed up as a Partner using your referral code (" + (partnerData.partner_code || sponsorRow.id) + ").\n\n"
+                            + "They are now in your downline. 100 LYMX credited to you, 100 LYMX to them as the welcome-pair bonus.\n\n"
+                            + "Open your tree to see them:\nhttps://getlymx.com/partner-tree.html\n\n"
+                            + "Every Business they sign up under their code generates an override commission for you (3% Direct override).\n\n"
+                            + "- The LYMX team";
+                        await fetch(Deno.env.get("SUPABASE_URL") + "/functions/v1/send-email", {
+                            method: "POST",
+                            headers: {
+                                "Authorization": "Bearer " + Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                recipient_email: sponsorRow.contact_email,
+                                subject: subj,
+                                body_text: bodyText,
+                                kind: "partner_downline_joined",
+                                channel: "transactional",
+                            }),
+                        });
+                    } catch (notifyErr) {
+                        console.warn("Sponsor notification failed (non-fatal):", notifyErr.message);
+                    }
+                }
             }
         } catch (e) { console.warn("Referral pair credit error:", e.message); }
     }
