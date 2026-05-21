@@ -62,8 +62,11 @@
 
   /* Page */
   .page{padding:32px 0 64px}
-  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+  /* 2026-05-21 #4e62be7c fix: add breathing room between sticky nav and "Welcome back" headline. */
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-top:28px;margin-bottom:24px;flex-wrap:wrap}
   .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  /* 2026-05-21 #17ec1753 fix: 👋 emoji renders ~0.1em above baseline in most fonts, nudge it down to align with the name. */
+  .wave-emoji{display:inline-block;vertical-align:-0.08em;line-height:1}
   .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
 
   /* Layout */
@@ -220,7 +223,7 @@
 <div class="wrap page">
   <div class="page-head">
     <div>
-      <h1 id="welcomeHeading">Welcome back 👋</h1>
+      <h1 id="welcomeHeading">Welcome back <span class="wave-emoji">👋</span></h1>
       <p>Your LYMX summary, recent activity, and what's next on the network.</p>
     </div>
     <a class="btn btn-ghost" href="browse.html">Find new partners →</a>
@@ -558,7 +561,7 @@
 
 <footer>
   <div class="wrap">
-    <div>© <span id="yr"></span> LYMX · <a href="index.html" style="color:var(--accent-2)">Home</a> · <a href="support.html" style="color:var(--accent-2)">Support</a> · <a href="privacy.html" style="color:var(--accent-2)">Privacy</a></div>
+    <div>© <span id="yr"></span> LYMX · <a href="index.html" style="color:var(--accent-2)">Home</a> · <a href="support.html" style="color:var(--accent-2)">Support</a> · <a href="#" style="color:var(--accent-2)">Privacy</a></div>
     <div class="disc">LYMX is a promotional credit unit used exclusively within the Enterprise ecosystem. LYMX is not cash, not cryptocurrency, and not a stored monetary balance. Redemption value and acceptance are governed by Enterprise participation rules.</div>
   </div>
 </footer>
@@ -597,9 +600,18 @@
     const name = realName || (user.email ? user.email.split('@')[0] : 'there');
     const firstName = realName ? realName.split(/[\s.]+/)[0] : '';
     const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || (name[0] || 'U').toUpperCase();
-    document.getElementById('welcomeHeading').textContent = firstName
-      ? ('Welcome back, ' + firstName + ' 👋')
-      : 'Welcome back! 👋';
+    // 2026-05-21 #17ec1753 — build via DOM so the wave-emoji span renders as an
+    // element (not text). textContent escapes HTML, so the previous innerHTML-style
+    // string literal would have shown the tag verbatim.
+    (function(){
+      var wh = document.getElementById('welcomeHeading');
+      while (wh.firstChild) wh.removeChild(wh.firstChild);
+      wh.appendChild(document.createTextNode(firstName ? ('Welcome back, ' + firstName + ' ') : 'Welcome back! '));
+      var wave = document.createElement('span');
+      wave.className = 'wave-emoji';
+      wave.textContent = '👋';
+      wh.appendChild(wave);
+    })();
     const av = document.getElementById('avatarNav');
     if (av) { av.textContent = initials; av.title = name; }
 
@@ -900,7 +912,7 @@ window.addEventListener('DOMContentLoaded', async function () {
         return '<a class="saved-item" href="' + href + '"><div class="ic">' + (s.business_emoji || '⭐') + '</div><div style="flex:1"><div class="name">' + safeName + '</div><div class="miles">Saved</div></div></a>';
       }).join('');
     } else {
-      listEl.innerHTML = '<div style="padding:24px 14px;text-align:center;color:#5b6472;font-size:13.5px;line-height:1.55"><div style="font-size:28px;margin-bottom:8px;line-height:1">📍</div><div style="margin-bottom:6px">No saved places yet.</div><a href="browse.html" style="color:#0050c7;font-weight:600;text-decoration:none">Browse businesses →</a></div>';
+      listEl.innerHTML = '<div style="padding:18px;text-align:center;color:#5b6472;font-size:13.5px"><div style="font-size:24px;margin-bottom:6px">📍</div>No saved places yet.<br><a href="browse.html" style="color:#0050c7;font-weight:600;text-decoration:none">Browse businesses →</a></div>';
     }
   }
 
