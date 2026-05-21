@@ -128,10 +128,11 @@
       { href: 'prospects.html',          icon: '\u{1F3AF}', label: 'My Prospects' },
       { href: 'team-calendar.html',      icon: '\u{1F4C5}', label: 'My Calendar' },
       { href: 'my-bookings.html',        icon: '\u{1F4DD}', label: 'My bookings' },
-      { section: 'Team' },
-      { href: 'staff-clock-in.html',     icon: '⏱',    label: 'Clock In' },
-      { href: 'my-schedule.html',        icon: '\u{1F4C5}', label: 'My Schedule' },
-      { href: 'my-time-off.html',        icon: '\u{1F334}', label: 'My Time-off' },
+      // 2026-05-20 #dd9468cc - Removed static Team section (Clock In, My Schedule,
+      // My Time-off) from partner menu. These are STAFF-only pages and were
+      // showing for every partner, causing 'This page isn't for you' rejections.
+      // maybeInjectStaffSection() below auto-appends them ONLY for users who have
+      // an hr_employees row (i.e. partners who are ALSO hired as staff).
       { section: 'Account' },
       { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
