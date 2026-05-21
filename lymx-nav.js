@@ -578,6 +578,10 @@
     var drawerLinks = drawer.querySelector('#lymxNavDrawerLinks');
     if (navLinks) {
       navLinks.querySelectorAll('a').forEach(function (a) {
+        // 2026-05-21 #92d9a328 fix: skip cloning links that swapGuestButtons already hid
+        // (e.g. "Sign in", "Sign up", "Join LYMX" for logged-in users). Without this skip,
+        // the mobile drawer leaks guest links to authenticated users — exactly Rae's bug.
+        if (a.style.display === 'none' || getComputedStyle(a).display === 'none') return;
         var clone = document.createElement('a');
         clone.href = a.href;
         clone.textContent = a.textContent;
@@ -595,6 +599,9 @@
     var drawerCta = drawer.querySelector('.drawer-cta');
     if (navCta) {
       navCta.querySelectorAll('a').forEach(function (a) {
+        // 2026-05-21 #92d9a328 fix: same as above for the drawer CTA section.
+        // Skip links the swap logic already hid so the drawer respects auth state.
+        if (a.style.display === 'none' || getComputedStyle(a).display === 'none') return;
         var clone = document.createElement('a');
         clone.href = a.href;
         clone.textContent = a.textContent;
