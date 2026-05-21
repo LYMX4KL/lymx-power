@@ -56,6 +56,19 @@
   .hero .ctas{display:flex;gap:12px;flex-wrap:wrap}
 
   /* Stats strip */
+  .live-counter{margin:24px 0 22px;padding:22px 24px;background:linear-gradient(135deg,#fffbe6,#fff4cf);border:1.5px solid #f5d172;border-radius:14px;box-shadow:0 6px 22px rgba(212,175,55,.15)}
+  .live-counter .lc-eyebrow{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:#a07005;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .live-counter .lc-dot{width:9px;height:9px;border-radius:50%;background:#13a26b;animation:lcPulse 1.8s ease-in-out infinite;box-shadow:0 0 0 0 rgba(19,162,107,.45)}
+  @keyframes lcPulse{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(19,162,107,.45)}50%{opacity:.55;transform:scale(.92);box-shadow:0 0 0 6px rgba(19,162,107,0)}}
+  .live-counter .lc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+  @media(max-width:760px){.live-counter .lc-grid{grid-template-columns:1fr;gap:10px}}
+  .live-counter .lc-card{background:#fff;border-radius:11px;padding:14px 16px;border:1px solid rgba(245,209,114,.55);text-align:left}
+  .live-counter .lc-card-primary{background:linear-gradient(135deg,#fff,#fffbeb);border-color:#f5d172;border-width:2px}
+  .live-counter .lc-num{font-size:28px;font-weight:800;letter-spacing:-.01em;color:#0e1116;line-height:1}
+  .live-counter .lc-card-primary .lc-num{color:#a07005;font-size:30px}
+  .live-counter .lc-lab{font-size:12px;color:#5b6472;font-weight:600;margin-top:5px;line-height:1.35}
+  .live-counter .lc-hook{font-size:14.5px;color:#1a1f27;line-height:1.55;font-weight:500;border-top:1px solid rgba(245,209,114,.6);padding-top:14px}
+  .live-counter .lc-hook strong{color:#0e1116}
   .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:48px;padding-top:32px;border-top:1px solid var(--line)}
   @media(max-width:780px){.stats-strip{grid-template-columns:repeat(2,1fr)}}
   .stat-num{font-size:32px;font-weight:800;letter-spacing:-.01em;color:var(--ink)}
@@ -241,6 +254,30 @@
     <div class="ctas">
       <a class="btn btn-primary btn-lg" href="biz-signup.html">Start in 5 minutes →</a>
       <a class="btn btn-ghost btn-lg" href="#economics">See the economics</a>
+    </div>
+
+    <!-- 2026-05-21 — live network counter pitch (Kenny):
+         "How would you like to promote your business in front of N customers who
+         have LYMX rewards ready to spend, and we pay you when they redeem?"
+         Numbers pulled from /functions/v1/public-stats on page load. Refreshes every 60s.
+    -->
+    <div id="lymxLiveCounter" class="live-counter" aria-live="polite">
+      <div class="lc-eyebrow"><span class="lc-dot"></span> Live · LYMX network right now</div>
+      <div class="lc-grid">
+        <div class="lc-card">
+          <div class="lc-num" data-stat="customers_total">—</div>
+          <div class="lc-lab">customers earning LYMX</div>
+        </div>
+        <div class="lc-card lc-card-primary">
+          <div class="lc-num" data-stat="in_circulation">— LYMX</div>
+          <div class="lc-lab">in customer wallets, waiting to redeem</div>
+        </div>
+        <div class="lc-card">
+          <div class="lc-num" data-stat="in_circulation_usd">—</div>
+          <div class="lc-lab">≈ USD value walking through your door</div>
+        </div>
+      </div>
+      <div class="lc-hook">When they redeem at <em>your</em> business, <strong>LYMX pays you cash for the redemption.</strong> You don't eat the discount — we do. That's the deal.</div>
     </div>
 
     <div class="stats-strip">
@@ -640,5 +677,45 @@
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
+<script>
+// 2026-05-21 — live counter on /business.html hero. Pulls from public-stats EF.
+(async function lymxLiveCounter(){
+  // Wait briefly for lymx-config to load (it's a deferred script)
+  for (var i = 0; i < 30; i++) {
+    if (window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL) break;
+    await new Promise(r => setTimeout(r, 100));
+  }
+  if (!window.LYMX_CONFIG || !window.LYMX_CONFIG.SUPABASE_URL) return;
+
+  var fmt = function(n) { return Number(n || 0).toLocaleString('en-US'); };
+  var fmtUsd = function(cents) { return '$' + Math.round((cents || 0) / 100).toLocaleString('en-US'); };
+  var setStat = function(key, val) {
+    var el = document.querySelector('[data-stat="' + key + '"]');
+    if (el) el.textContent = val;
+  };
+
+  async function load() {
+    try {
+      var r = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/functions/v1/public-stats', {
+        headers: {
+          apikey: window.LYMX_CONFIG.SUPABASE_ANON_KEY,
+          Authorization: 'Bearer ' + window.LYMX_CONFIG.SUPABASE_ANON_KEY
+        }
+      });
+      if (!r.ok) return;
+      var s = await r.json();
+      setStat('customers_total', fmt(s.customers_total));
+      setStat('in_circulation', fmt(s.in_circulation) + ' LYMX');
+      setStat('in_circulation_usd', fmtUsd(s.in_circulation_usd_cents));
+    } catch (e) {
+      console.warn('[business.html live-counter] failed', e && e.message);
+    }
+  }
+
+  load();
+  // Refresh every 60s while the tab is open + visible
+  setInterval(function () { if (!document.hidden) load(); }, 60000);
+})();
+</script>
 </body>
 </html>

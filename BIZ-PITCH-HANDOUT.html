@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LYMX for Business — 1-page handout</title>
+<style>
+  /* === Print-first layout: targets 1× US Letter (8.5" × 11") =================== */
+  @page { size: letter; margin: 0.45in; }
+
+  :root{
+    --ink:#0e1116; --ink-2:#1a1f27; --muted:#5b6472; --line:#e6e8ec;
+    --accent:#0a84ff; --accent-2:#0050c7; --ok:#13a26b; --gold:#d4af37;
+  }
+  *{ box-sizing:border-box; }
+  html, body { margin:0; padding:0; background:#f6f7f9; }
+  body {
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    color:var(--ink); line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+
+  /* Screen frame so it looks like a sheet of paper */
+  .sheet {
+    width: 7.6in; min-height: 10.1in; margin: 24px auto; padding: 0.5in 0.55in;
+    background:#fff; box-shadow: 0 12px 40px rgba(14,17,22,.10);
+    border:1px solid var(--line);
+    display:flex; flex-direction:column;
+  }
+  @media print {
+    body { background:#fff; }
+    .sheet { width:auto; min-height:auto; margin:0; padding:0; box-shadow:none; border:0; }
+    .no-print { display:none !important; }
+  }
+
+  /* ===== Top banner ===== */
+  .banner {
+    display:flex; align-items:center; justify-content:space-between;
+    padding-bottom:14px; border-bottom:2px solid var(--ink);
+  }
+  .banner .brand {
+    font-weight:900; font-size:24px; letter-spacing:-.01em; color:var(--ink);
+    display:flex; align-items:center; gap:8px;
+  }
+  .banner .brand .mark {
+    display:inline-block; width:26px; height:26px;
+    background:
+      linear-gradient(to right, var(--ink) 50%, transparent 50%) top left / 50% 50% no-repeat,
+      linear-gradient(to right, transparent 50%, var(--ink) 50%) top right / 50% 50% no-repeat,
+      linear-gradient(to right, transparent 50%, var(--ink) 50%) bottom left / 50% 50% no-repeat,
+      linear-gradient(to right, var(--ink) 50%, transparent 50%) bottom right / 50% 50% no-repeat;
+  }
+  .banner .tag {
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800;
+    background:#fff4cf; color:#a07005; padding:6px 11px; border-radius:999px;
+    border:1.5px solid var(--gold);
+  }
+
+  /* ===== Hero ===== */
+  .hero {
+    margin-top:18px;
+  }
+  .hero h1 {
+    margin:0; font-size:30px; font-weight:900; line-height:1.15; letter-spacing:-.015em;
+  }
+  .hero h1 .yellow {
+    background:linear-gradient(180deg, transparent 55%, #fff4cf 55%);
+    padding:0 3px;
+  }
+  .hero p {
+    margin:12px 0 0; color:var(--ink-2); font-size:14.5px; line-height:1.55;
+    max-width:6.5in;
+  }
+
+  /* ===== The deal — 3 columns ===== */
+  .deal {
+    display:grid; grid-template-columns: repeat(3, 1fr); gap:12px;
+    margin-top:18px;
+  }
+  .deal .card {
+    background:#fff; border:1.5px solid var(--line); border-radius:10px;
+    padding:14px 14px 12px;
+  }
+  .deal .card .label {
+    font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; font-weight:800;
+    color:var(--muted); margin-bottom:6px;
+  }
+  .deal .card .value {
+    font-size:22px; font-weight:900; letter-spacing:-.01em; line-height:1;
+    color:var(--ink);
+  }
+  .deal .card .sub {
+    font-size:12px; color:var(--muted); margin-top:5px; line-height:1.4;
+  }
+  .deal .card.gold {
+    background:#fffbe6; border-color:var(--gold);
+  }
+  .deal .card.gold .value { color:#a07005; }
+  .deal .card.green { background:#eaf8f1; border-color:var(--ok); }
+  .deal .card.green .value { color:var(--ok); }
+
+  /* ===== How it works — 3 numbered steps ===== */
+  .how {
+    margin-top:20px;
+    background:#f6f7f9; border-radius:12px; padding:16px 18px;
+    border:1px solid var(--line);
+  }
+  .how h2 {
+    margin:0 0 12px; font-size:15px; font-weight:800; color:var(--ink);
+    letter-spacing:.01em;
+  }
+  .how ol {
+    list-style:none; padding:0; margin:0;
+    display:grid; grid-template-columns: repeat(3, 1fr); gap:12px;
+  }
+  .how li {
+    display:flex; gap:10px; align-items:flex-start;
+    background:#fff; padding:12px 12px 11px; border-radius:9px;
+    border:1px solid var(--line);
+  }
+  .how .num {
+    background:var(--ink); color:#fff; width:24px; height:24px; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:900; flex-shrink:0;
+  }
+  .how .body h3 { margin:0 0 3px; font-size:13.5px; font-weight:800; }
+  .how .body p { margin:0; font-size:12px; color:var(--muted); line-height:1.45; }
+
+  /* ===== Founding deal callout ===== */
+  .callout {
+    margin-top:18px; padding:16px 18px;
+    background:linear-gradient(135deg, #0e1116, #1a1f27); color:#fff;
+    border-radius:12px;
+  }
+  .callout .h {
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800;
+    color:#f5d172; margin-bottom:6px;
+  }
+  .callout .main {
+    font-size:16.5px; font-weight:700; line-height:1.5;
+  }
+  .callout .main strong { color:#f5d172; }
+
+  /* ===== Footer — signup + QR + partner contact ===== */
+  .foot {
+    margin-top:auto; padding-top:18px;
+    border-top:2px solid var(--ink);
+    display:grid; grid-template-columns: 1fr 1.6fr 1fr; gap:18px; align-items:center;
+  }
+  .foot .signup .lab { font-size:11px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; color:var(--muted); margin-bottom:4px; }
+  .foot .signup .url { font-size:16px; font-weight:900; color:var(--ink); }
+  .foot .signup .time { font-size:12px; color:var(--muted); margin-top:4px; }
+  .foot .partner {
+    text-align:center; font-size:12px; color:var(--muted); line-height:1.55;
+  }
+  .foot .partner strong { color:var(--ink); font-size:14.5px; display:block; margin-bottom:3px; }
+  .foot .qr { display:flex; justify-content:flex-end; }
+  .foot .qr img, .foot .qr svg {
+    width:1.05in; height:1.05in; border:1.5px solid var(--ink); border-radius:6px; padding:6px; background:#fff;
+  }
+  .foot .qr-cap { font-size:10.5px; color:var(--muted); margin-top:4px; text-align:center; }
+
+  .legal { margin-top:10px; font-size:9.5px; color:var(--muted); text-align:center; line-height:1.45; }
+
+  /* On-screen print button */
+  .print-btn {
+    position:fixed; bottom:24px; right:24px; z-index:100;
+    background:var(--ink); color:#fff; border:0; padding:12px 20px;
+    font-size:14px; font-weight:700; border-radius:10px; cursor:pointer;
+    box-shadow:0 8px 24px rgba(14,17,22,.18);
+    font-family:inherit;
+  }
+  .print-btn:hover { background:#000; }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+  <!-- Banner -->
+  <div class="banner">
+    <div class="brand"><span class="mark" aria-hidden="true"></span> LYMX</div>
+    <div class="tag">Founding 25 · For Business</div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>We pay <em>you</em> to accept our customers. <span class="yellow">Not the other way around.</span></h1>
+    <p>
+      LYMX is a shared-value loyalty network for independent businesses. Customers earn LYMX
+      at one business in our network and spend at another. <strong>When they redeem at your store,
+      LYMX pays you cash for the redemption.</strong> You don't eat the discount — we do. That's the deal.
+    </p>
+  </div>
+
+  <!-- 3 deal cards -->
+  <div class="deal">
+    <div class="card gold">
+      <div class="label">You pay</div>
+      <div class="value">$0 ads</div>
+      <div class="sub">No customer-acquisition cost. No upfront marketing spend.</div>
+    </div>
+    <div class="card">
+      <div class="label">Setup</div>
+      <div class="value">$850</div>
+      <div class="sub">One-time. Includes permanent feature spot on the LYMX map.</div>
+    </div>
+    <div class="card green">
+      <div class="label">Then</div>
+      <div class="value">$199/mo</div>
+      <div class="sub">First 3 months free. 3,000 orders/month included.</div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="how">
+    <h2>How it works</h2>
+    <ol>
+      <li>
+        <span class="num">1</span>
+        <div class="body">
+          <h3>Customers earn LYMX</h3>
+          <p>Every qualifying purchase at any LYMX Business issues LYMX automatically.</p>
+        </div>
+      </li>
+      <li>
+        <span class="num">2</span>
+        <div class="body">
+          <h3>They redeem at your store</h3>
+          <p>They scan, you discount their bill, LYMX pays you the redemption amount in cash.</p>
+        </div>
+      </li>
+      <li>
+        <span class="num">3</span>
+        <div class="body">
+          <h3>You keep the customer</h3>
+          <p>They become a regular. The next purchase issues fresh LYMX, the cycle compounds.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <!-- Founding callout -->
+  <div class="callout">
+    <div class="h">★ Founding 25 deal — limited to first 25 Businesses</div>
+    <div class="main">
+      <strong>3 months free.</strong> <strong>Permanent homepage feature.</strong>
+      <strong>Email blast to every LYMX customer in your area at launch.</strong>
+      Get in before slot #25 closes — once we open to general signup, the deal disappears.
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="foot">
+    <div class="signup">
+      <div class="lab">Sign up</div>
+      <div class="url">getlymx.com/business</div>
+      <div class="time">5-minute setup</div>
+    </div>
+    <div class="partner">
+      <strong>Your LYMX Partner</strong>
+      Name: ________________________<br/>
+      Phone: ______________________<br/>
+      Email: _______________________
+    </div>
+    <div>
+      <div class="qr">
+        <!-- QR to https://getlymx.com/business via Google Charts (legacy but reliable) -->
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fgetlymx.com%2Fbusiness" alt="QR code to getlymx.com/business" />
+      </div>
+      <div class="qr-cap">Scan to start</div>
+    </div>
+  </div>
+
+  <div class="legal">
+    LYMX rewards are issued and redeemed only within the LYMX Business network. Founding-25 terms locked at signup; subject to change for general signups. © LYMX Power.
+  </div>
+
+</div>
+
+<button class="print-btn no-print" onclick="window.print()">🖨 Print this handout</button>
+
+</body>
+</html>
