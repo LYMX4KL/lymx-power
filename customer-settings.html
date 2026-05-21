@@ -476,7 +476,28 @@
   }
 
   function signOut(){
-    if (confirm('Sign out of LYMX?')) location.href = 'index.html';
+    if (!confirm('Sign out of LYMX?')) return;
+    // 2026-05-20 #144a79a3 — was just navigating; now actually clears the
+    // Supabase session before redirecting, otherwise user "signs out" but is
+    // still signed in on the next page.
+    (async function () {
+      try {
+        if (window.LYMX && window.LYMX.client && window.LYMX.client.auth) {
+          await window.LYMX.client.auth.signOut();
+        } else if (window.LYMX && window.LYMX.sb) {
+          await window.LYMX.sb.auth.signOut();
+        } else if (window.supabase && window.LYMX_CONFIG) {
+          var sb = window.supabase.createClient(window.LYMX_CONFIG.SUPABASE_URL, window.LYMX_CONFIG.SUPABASE_ANON_KEY);
+          await sb.auth.signOut();
+        }
+      } catch (e) { console.warn('[signOut] failed', e); }
+      // Belt-and-suspenders: also clear the token directly from localStorage
+      try {
+        var m = (window.LYMX_CONFIG.SUPABASE_URL || '').match(/https:\/\/([^.]+)\.supabase\.co/i);
+        if (m) localStorage.removeItem('sb-' + m[1] + '-auth-token');
+      } catch (e) { console.warn('[signOut] token purge', e); }
+      location.href = '/login.html';
+    })();
   }
 
   function openDelete(){ document.getElementById('delete-modal').classList.add('on'); }

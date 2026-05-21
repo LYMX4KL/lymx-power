@@ -594,6 +594,14 @@ async function uploadAvatar(file) {
     }
     if (myRow) myRow.avatar_url = url;
     paintAvatar(url);
+    // 2026-05-20 #27ca3ff2 — purge the lymx-nav.js sessionStorage cache so the
+    // sidebar avatar / top-right chip update on the NEXT page navigation
+    // without waiting for session end.
+    try {
+      if (myUser && myUser.id) {
+        sessionStorage.setItem('LYMX_avatar_url_' + myUser.id, url);
+      }
+    } catch (e) { console.warn('[avatar upload] cache update', e); }
     if (status) status.textContent = 'Photo updated.';
   } catch (e) {
     console.warn('[avatar upload] failed', e);

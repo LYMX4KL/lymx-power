@@ -119,11 +119,31 @@ async function boot() {
     if (window.LYMX && window.LYMX.getSession) break;
     await new Promise(r => setTimeout(r, 100));
   }
-  if (!window.LYMX || !window.LYMX.getSession) {
-    document.getElementById('pcode').textContent = 'Sign in to see your code';
-    return;
-  }
-  const s = await window.LYMX.getSession();
+  // 2026-05-20 #020d3eb7 — fall back to localStorage token if LYMX helper
+  // never loaded (e.g. cdn hiccup). Don't show "Sign in to see your code"
+  // for users who ARE signed in just because the helper is slow.
+  let s = null;
+  try {
+    if (window.LYMX && window.LYMX.getSession) {
+      s = await window.LYMX.getSession();
+    } else if (window.LYMX_CONFIG) {
+      var m = (window.LYMX_CONFIG.SUPABASE_URL || '').match(/https:\/\/([^.]+)\.supabase\.co/i);
+      if (m) {
+        var raw = localStorage.getItem('sb-' + m[1] + '-auth-token');
+        if (raw) {
+          var obj = JSON.parse(raw);
+          var tok = obj.access_token || (obj.currentSession && obj.currentSession.access_token);
+          if (tok) {
+            var parts = tok.split('.');
+            if (parts.length === 3) {
+              var payload = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+              if (payload.sub) s = { user: { id: payload.sub, email: payload.email }, access_token: tok };
+            }
+          }
+        }
+      }
+    }
+  } catch (e) { console.warn('[refer] session lookup', e); }
   if (!s) { location.href = 'login.html?return=refer.html'; return; }
   const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
   const URL  = window.LYMX_CONFIG.SUPABASE_URL;
