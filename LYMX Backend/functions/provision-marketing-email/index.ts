@@ -37,9 +37,29 @@ function genLocalPart(legalName) {
     return (first + "." + last).replace(/\.+/g, ".");
 }
 
+// 2026-05-20 #8ae35834 — same role-decode helper as partner-provision-email.
+function getJwtRole(jwt) {
+    try {
+        const parts = jwt.split(".");
+        if (parts.length !== 3) return null;
+        const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+        return payload.role || null;
+    } catch { return null; }
+}
+
 serve(async (req) => {
     if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
     if (req.method !== "POST") return errorResponse("Method not allowed", 405);
+
+    // 2026-05-20 #8ae35834 — service-role only. Previously this EF accepted
+    // any anonymous caller; an attacker could spam partner-email provisioning
+    // for any partner_id they guessed. Now mirrors partner-provision-email auth.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) return errorResponse("Missing Authorization header", 401);
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    if (getJwtRole(token) !== "service_role") {
+        return errorResponse("Forbidden: provision-marketing-email is service-role only", 403);
+    }
 
     let body;
     try { body = await req.json(); } catch { return errorResponse("Invalid JSON", 400); }
