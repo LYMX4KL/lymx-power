@@ -457,6 +457,19 @@
     });
   });
 
+  // 2026-05-21 #94c970a3 fix: clicking a category card while a search is active was confusing —
+  // the anchor jump landed in a near-empty section because the search filter was still on,
+  // making it look like the section "didn't open" (Rae saw "7 articles" on the card but only
+  // 1-2 visible after the jump). Clear the search first, then let the browser's normal
+  // anchor scroll show the full section.
+  document.querySelectorAll('a.cat[href*="#"]').forEach(a => {
+    a.addEventListener('click', () => {
+      if ($q && $q.value && $q.value.trim()) {
+        clearSearch();
+      }
+    });
+  });
+
   // Support ?q=... in URL (deep-linkable searches)
   try {
     const urlQ = new URLSearchParams(location.search).get('q');
