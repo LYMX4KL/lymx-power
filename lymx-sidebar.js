@@ -230,7 +230,6 @@
       // muted line below. Partner code chip stays underneath as before.
       html += '<div class="who-mini" id="lymxWhoMini">'
             + '<b id="lymxWhoMiniName">' + initialName + '</b>'
-            + '<div id="lymxWhoMiniEmail" style="font-size:11px;color:#5b6472;margin-bottom:4px;word-break:break-all">' + safe + '</div>'
             + '<span class="role-tag">' + role + '</span>'
             + '<div id="lymxWhoMiniCode" style="display:none;margin-top:6px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#0050c7;cursor:pointer" title="Click to copy your referral code"></div>'
             + '</div>';
