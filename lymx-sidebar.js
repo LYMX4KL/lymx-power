@@ -216,8 +216,22 @@
     var email = (payload && payload.email) || '';
     if (email) {
       var safe = email.replace(/[<>]/g, '');
-      // 2026-05-20 #631935ae - holds a slot for partner_code; loader below fills it
-      html += '<div class="who-mini" id="lymxWhoMini"><b>' + safe + '</b><span class="role-tag">' + role + '</span>'
+      // Try to derive a sensible initial display name from JWT user_metadata so the
+      // sidebar header reads as the account owner, not their email. loadPartnerCode
+      // below overrides with the canonical display_name from partners/customers tables.
+      var metaName = '';
+      try {
+        var meta = (payload && payload.user_metadata) || {};
+        metaName = meta.full_name || meta.name || '';
+      } catch (e) { console.warn('[sidebar] metadata read', e); }
+      var initialName = metaName || safe.split('@')[0];
+      // 2026-05-21 #b2458da0 - was showing email as the bold field. Now shows
+      // display_name (or username portion as fallback). Email demoted to a small
+      // muted line below. Partner code chip stays underneath as before.
+      html += '<div class="who-mini" id="lymxWhoMini">'
+            + '<b id="lymxWhoMiniName">' + initialName + '</b>'
+            + '<div id="lymxWhoMiniEmail" style="font-size:11px;color:#5b6472;margin-bottom:4px;word-break:break-all">' + safe + '</div>'
+            + '<span class="role-tag">' + role + '</span>'
             + '<div id="lymxWhoMiniCode" style="display:none;margin-top:6px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#0050c7;cursor:pointer" title="Click to copy your referral code"></div>'
             + '</div>';
     }
@@ -374,6 +388,25 @@
           if (!code) { try { sessionStorage.setItem(cacheKey, '__none__'); } catch (e) {} return; }
           try { sessionStorage.setItem(cacheKey, code); } catch (e) {}
         }
+        // 2026-05-21 #b2458da0 - also paint the canonical display_name in the bold slot
+        try {
+          var nameEl = document.getElementById('lymxWhoMiniName');
+          if (nameEl) {
+            var pr = await fetch(cfg.SUPABASE_URL + '/rest/v1/partners?user_id=eq.' + uid + '&select=display_name,legal_name&limit=1', { headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + tok } });
+            if (pr.ok) {
+              var prows = await pr.json();
+              var nm = (prows && prows[0]) ? (prows[0].display_name || prows[0].legal_name) : null;
+              if (!nm) {
+                var cr = await fetch(cfg.SUPABASE_URL + '/rest/v1/customers?user_id=eq.' + uid + '&select=display_name&limit=1', { headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + tok } });
+                if (cr.ok) {
+                  var crows = await cr.json();
+                  nm = (crows && crows[0] && crows[0].display_name) || null;
+                }
+              }
+              if (nm) nameEl.textContent = nm;
+            }
+          }
+        } catch (e) { console.warn('[sidebar] display_name load', e); }
         var el = document.getElementById('lymxWhoMiniCode');
         if (!el) return;
         el.textContent = code + ' • copy';
