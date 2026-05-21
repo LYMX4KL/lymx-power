@@ -557,7 +557,14 @@
 
   function attach() {
     if (!document.body) return setTimeout(attach, 50);
-    document.body.appendChild(btn);
+    // 2026-05-20 #ad824441 - don't show the floating Help & Feedback button on pages
+    // that already have a feedback FAB of their own (my-feedback, contacts, etc.)
+    // and on pages that opt out via <body data-no-fb-btn>. Eliminates the overlap.
+    var path = (location.pathname || '').toLowerCase();
+    var SUPPRESS_ON = ['/my-feedback.html', '/my-feedback'];
+    var bodyOptOut = document.body.getAttribute('data-no-fb-btn') === 'true';
+    var suppressed = bodyOptOut || SUPPRESS_ON.some(function (p) { return path === p || path.endsWith(p); });
+    if (!suppressed) document.body.appendChild(btn);
     document.body.appendChild(overlay);
 
     btn.addEventListener('click', open);

@@ -643,8 +643,9 @@
       document.getElementById('repLifetime').textContent = '$0.00';
     }
 
-    // Wire the share link to the partner's actual ref ID
-    const shareUrl = 'https://getlymx.com/welcome.html?ref=' + partner.id;
+    // 2026-05-20 #6c8a4610 - was using raw partner.id UUID; switched to friendly partner_code (e.g. P-000123), falling back to partner.id only if code missing. welcome.html accepts both formats.
+    const refCode = partner.partner_code || partner.id;
+    const shareUrl = 'https://getlymx.com/welcome.html?ref=' + encodeURIComponent(refCode);
     const shareEl = document.getElementById('repShareLinkText');
     if (shareEl) shareEl.textContent = shareUrl;
     const copyBtn = document.getElementById('repShareLinkCopy');

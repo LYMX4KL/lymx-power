@@ -151,6 +151,8 @@
   </div>
 
   <button class="btn-primary" id="submitBtn" disabled>Confirm — activate my Partner account</button>
+  <!-- 2026-05-20 #9335dafd - inline hint so the disabled button doesn't read as missing -->
+  <div id="submitHint" style="text-align:center;color:var(--muted);font-size:13px;margin-top:10px">Check all four acknowledgements above to enable this button.</div>
 
   <div class="what-next">
     <b>What happens after you click:</b>
@@ -216,7 +218,10 @@
   const boxes = ['agComp', 'agPyramid', 'ag1099', 'agTos'].map(id => document.getElementById(id));
   const submit = document.getElementById('submitBtn');
   function syncSubmit() {
-    submit.disabled = !boxes.every(b => b && b.checked);
+    const enabled = boxes.every(b => b && b.checked);
+    submit.disabled = !enabled;
+    const hint = document.getElementById('submitHint');
+    if (hint) hint.style.display = enabled ? 'none' : 'block';
   }
   boxes.forEach(b => b && b.addEventListener('change', syncSubmit));
 

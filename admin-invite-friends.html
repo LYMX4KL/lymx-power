@@ -276,8 +276,8 @@ Takes 4 minutes. Once you're in, I'll do a 15-min walkthrough of the dashboard +
 
 Want me to grab one of the 25 spots for you?
 
-— Kenny
-kenny.lin@getlymx.com`
+— {SENDER_NAME}
+{SENDER_EMAIL}`
   },
   customer: {
     subject: 'Free LYMX rewards card — earn at any local Business',
@@ -293,8 +293,8 @@ Here's the link to sign up (free, takes 60 seconds):
 
 Once you sign up, your wallet is yours — we never expire your rewards, never sell your data, and you can cash out anytime.
 
-— Kenny
-kenny.lin@getlymx.com`
+— {SENDER_NAME}
+{SENDER_EMAIL}`
   },
   business: {
     subject: 'LYMX Founding Business spot for {NAME}? (closes at 25)',
@@ -318,8 +318,8 @@ Direct invite link (pre-fills me as your sponsoring Partner):
 
 Worth a 15-min call to see if it's a fit?
 
-— Kenny
-kenny.lin@getlymx.com`
+— {SENDER_NAME}
+{SENDER_EMAIL}`
   }
 };
 
@@ -490,8 +490,19 @@ document.querySelectorAll('.tmpl').forEach(t => {
 
 function applyTemplate() {
   const tmpl = TEMPLATES[pickedTmpl];
-  document.getElementById('iSubject').value = tmpl.subject.replace(/\{NAME\}/g, 'there').replace(/\{REF\}/g, myRefId || 'YOUR_REF_ID');
-  document.getElementById('iBody').value    = tmpl.body.replace(/\{NAME\}/g, '{NAME}').replace(/\{REF\}/g, myRefId || 'YOUR_REF_ID');
+  // 2026-05-20 #71f920c3 - preview the signature with the actual signed-in user.
+  let previewName = 'me';
+  let previewEmail = '';
+  try {
+    if (window.LYMX && window.LYMX.user) {
+      const u = window.LYMX.user;
+      const meta = u.user_metadata || {};
+      previewName = meta.full_name || meta.name || (u.email || '').split('@')[0] || previewName;
+      previewEmail = u.email || '';
+    }
+  } catch (e) { console.warn('[invite] preview sender failed', e); }
+  document.getElementById('iSubject').value = tmpl.subject.replace(/\{NAME\}/g, 'there').replace(/\{REF\}/g, myRefId || 'YOUR_REF_ID').replace(/\{SENDER_NAME\}/g, previewName).replace(/\{SENDER_EMAIL\}/g, previewEmail);
+  document.getElementById('iBody').value    = tmpl.body.replace(/\{NAME\}/g, '{NAME}').replace(/\{REF\}/g, myRefId || 'YOUR_REF_ID').replace(/\{SENDER_NAME\}/g, previewName).replace(/\{SENDER_EMAIL\}/g, previewEmail);
 }
 
 // -------- File upload + drag --------
@@ -588,10 +599,23 @@ document.getElementById('iSend').addEventListener('click', async () => {
   let sent = 0, failed = 0;
   const errors = [];
 
+  // 2026-05-20 #71f920c3 - resolve the signed-in sender's name + email so the
+  // invite signature reads as them, not as a hardcoded "Kenny".
+  let senderName = 'LYMX team';
+  let senderEmail = 'hello@getlymx.com';
+  try {
+    if (window.LYMX && window.LYMX.user) {
+      const u = window.LYMX.user;
+      const meta = u.user_metadata || {};
+      senderName = meta.full_name || meta.name || (u.email || '').split('@')[0] || senderName;
+      senderEmail = u.email || senderEmail;
+    }
+  } catch (e) { console.warn('[invite] sender resolve failed', e); }
+
   for (const p of valid) {
     const firstName = (p.name || p.email.split('@')[0]).split(' ')[0];
-    const personalSubject = subjT.replace(/\{NAME\}/g, firstName);
-    const personalBody    = bodyT.replace(/\{NAME\}/g, firstName);
+    const personalSubject = subjT.replace(/\{NAME\}/g, firstName).replace(/\{SENDER_NAME\}/g, senderName).replace(/\{SENDER_EMAIL\}/g, senderEmail);
+    const personalBody    = bodyT.replace(/\{NAME\}/g, firstName).replace(/\{SENDER_NAME\}/g, senderName).replace(/\{SENDER_EMAIL\}/g, senderEmail);
 
     // Create a small broadcast for this single recipient
     const bcRes = await authedFetch('/rest/v1/broadcasts', {

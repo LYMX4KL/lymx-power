@@ -377,6 +377,13 @@ function renderList() {
       html +=   '<button class="btn-reopen" data-reopen="' + i.id + '">↩ Reopen ticket</button>';
       html += '</div>';
     }
+    // 2026-05-20 #2f77dc20 + #63f2961b - Edit + Mark Resolved on open tickets
+    if (i.status === 'new' || i.status === 'in_progress') {
+      html += '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px">';
+      html +=   '<button class="btn-reopen" data-edit="' + i.id + '">✎ Edit</button>';
+      html +=   '<button class="btn-reopen" data-self-resolve="' + i.id + '">✓ Mark resolved</button>';
+      html += '</div>';
+    }
     html += '</div>';
     return html;
   }).join('');
@@ -413,6 +420,22 @@ function renderList() {
     b.addEventListener('click', function(e) {
       e.stopPropagation();
       openEditTicket(b.dataset.edit);
+    });
+  });
+  // 2026-05-20 #63f2961b - user self-resolve own ticket
+  document.querySelectorAll('[data-self-resolve]').forEach(function(b) {
+    b.addEventListener('click', async function(e) {
+      e.stopPropagation();
+      if (!confirm('Mark this ticket as resolved? (You can reopen it later if needed.)')) return;
+      try {
+        const r = await authedFetch('/rest/v1/feedback?id=eq.' + b.dataset.selfResolve, {
+          method: 'PATCH',
+          headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ status: 'resolved', resolved_at: new Date().toISOString() })
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        await loadList();
+      } catch (e) { alert('Could not mark resolved: ' + e.message); }
     });
   });
 }

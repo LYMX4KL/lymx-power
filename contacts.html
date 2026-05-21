@@ -798,10 +798,11 @@ document.getElementById('cSave').addEventListener('click', async () => {
   }
   if (contactId) {
     try {
-      if (editingId) await authedFetch(`/rest/v1/contact_tags?contact_id=eq.${contactId}`, { method: 'DELETE' });
+      // 2026-05-20 #b58e5124 - was hitting contact_tags (the tag dictionary). Junction is contact_tag_links.
+      if (editingId) await authedFetch(`/rest/v1/contact_tag_links?contact_id=eq.${contactId}`, { method: 'DELETE' });
       if (pickedTags.length) {
         const tagRows = pickedTags.map(name => { const t = allTags.find(x => x.name === name); return t ? { contact_id: contactId, tag_id: t.id } : null; }).filter(Boolean);
-        if (tagRows.length) await authedFetch('/rest/v1/contact_tags', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(tagRows) });
+        if (tagRows.length) await authedFetch('/rest/v1/contact_tag_links', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(tagRows) });
       }
       if (editingId) await authedFetch(`/rest/v1/contact_list_members?contact_id=eq.${contactId}`, { method: 'DELETE' });
       if (pickedLists.length) {
