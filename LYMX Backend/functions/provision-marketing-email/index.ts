@@ -47,6 +47,16 @@ function getJwtRole(jwt) {
     } catch { return null; }
 }
 
+// 2026-05-21 — extract JWT sub (user_id) for admin-staff auth path.
+function getJwtSub(jwt) {
+    try {
+        const parts = jwt.split(".");
+        if (parts.length !== 3) return null;
+        const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+        return payload.sub || null;
+    } catch { return null; }
+}
+
 serve(async (req) => {
     if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
     if (req.method !== "POST") return errorResponse("Method not allowed", 405);
@@ -57,16 +67,38 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return errorResponse("Missing Authorization header", 401);
     const token = authHeader.replace(/^Bearer\s+/i, "");
-    // 2026-05-21 #d516e0bf — accept BOTH the legacy JWT-format service-role token
-    // (role claim = "service_role") AND the new sb_secret_* opaque format (direct
-    // match against SUPABASE_SERVICE_ROLE_KEY). Pre-fix, only the JWT path worked, so
-    // every internal call from partner-upgrade silently 403'd and partner_emails
-    // never got inserted. See feedback_supabase_new_key_format_jwt.md memo.
+    // 2026-05-21 #d516e0bf v2 (root-cause widen) - accept THREE auth modes:
+    //   1. Legacy JWT-format service-role token (role claim = "service_role")
+    //   2. New sb_secret_* opaque format (direct match against SUPABASE_SERVICE_ROLE_KEY)
+    //   3. Admin staff JWT (user_id in staff_roles with role in admin/tech/support).
+    //      Pre-fix: admin-partners.html "Resend welcome" button always 403'd because
+    //      the admin JWT is neither service_role nor matches the secret. Now any
+    //      admin can re-trigger provisioning from the dashboard UI, which is what
+    //      "Resend welcome" was designed for.
     const _serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
     const _isLegacyJwt = getJwtRole(token) === "service_role";
     const _isNewSecret = !!token && token === _serviceKey;
+    let _isAdminStaff = false;
     if (!_isLegacyJwt && !_isNewSecret) {
-        return errorResponse("Forbidden: provision-marketing-email is service-role only", 403);
+        const _sub = getJwtSub(token);
+        if (_sub) {
+            try {
+                const _adminClient = createClient(
+                    Deno.env.get("SUPABASE_URL"),
+                    _serviceKey,
+                    { auth: { persistSession: false } }
+                );
+                const { data: _staffRow } = await _adminClient
+                    .from("staff_roles")
+                    .select("role")
+                    .eq("user_id", _sub)
+                    .maybeSingle();
+                _isAdminStaff = !!_staffRow && ["admin","tech","support"].includes(_staffRow.role);
+            } catch (e) { console.warn("[provision-marketing-email] staff_roles lookup", e); }
+        }
+    }
+    if (!_isLegacyJwt && !_isNewSecret && !_isAdminStaff) {
+        return errorResponse("Forbidden: provision-marketing-email requires service-role or admin staff JWT", 403);
     }
 
     let body;
