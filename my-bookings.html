@@ -89,7 +89,9 @@
   async function init(){
     const { data: { user } } = await sb.auth.getUser();
     if (!user) {
-      $('rows').innerHTML = `<div class="empty">${t('mybk.signin_required','Please sign in to see your bookings.')} <a href="/login.html?next=/my-bookings.html" style="color:var(--accent)">${t('mybk.sign_in','Sign in')}</a></div>`;
+      // 2026-05-20 #1a2771e4 — was showing soft empty-state for unauth users
+      // (Dave flagged: "Page accessible without authentication"). Now hard-redirect.
+      location.replace('/login.html?next=/my-bookings.html');
       return;
     }
     myEmail = (user.email || '').toLowerCase().trim();

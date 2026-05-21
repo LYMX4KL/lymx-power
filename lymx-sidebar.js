@@ -215,7 +215,10 @@
     var email = (payload && payload.email) || '';
     if (email) {
       var safe = email.replace(/[<>]/g, '');
-      html += '<div class="who-mini"><b>' + safe + '</b><span class="role-tag">' + role + '</span></div>';
+      // 2026-05-20 #631935ae - holds a slot for partner_code; loader below fills it
+      html += '<div class="who-mini" id="lymxWhoMini"><b>' + safe + '</b><span class="role-tag">' + role + '</span>'
+            + '<div id="lymxWhoMiniCode" style="display:none;margin-top:6px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#0050c7;cursor:pointer" title="Click to copy your referral code"></div>'
+            + '</div>';
     }
 
     // i18n key maps: label/section text → translation key (so the i18n engine can swap them)
@@ -345,8 +348,45 @@
     var sout = document.getElementById('lymx-sb-signout');
     if (sout) sout.addEventListener('click', doSignout);
 
-    // 2026-05-20 #4aa8c795 — async append "My Work" section for staff users.
+    // 2026-05-20 #4aa8c795 - async append "My Work" section for staff users.
     maybeInjectStaffSection(sidebar);
+    // 2026-05-20 #631935ae - hydrate the partner_code chip in who-mini header.
+    (async function loadPartnerCode() {
+      try {
+        var cfg = window.LYMX_CONFIG;
+        var tok = readStoredToken();
+        if (!cfg || !tok) return;
+        var payload = decodeJwt(tok);
+        var uid = payload && payload.sub; if (!uid) return;
+        var cacheKey = 'LYMX_partner_code_' + uid;
+        var cached = null;
+        try { cached = sessionStorage.getItem(cacheKey); } catch (e) { console.warn('[sidebar] partner_code cache read', e); }
+        if (cached === '__none__') return;
+        var code = cached;
+        if (!code) {
+          var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/partners?user_id=eq.' + uid + '&select=partner_code&limit=1', {
+            headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + tok }
+          });
+          if (!r.ok) { try { sessionStorage.setItem(cacheKey, '__none__'); } catch (e) {} return; }
+          var rows = await r.json();
+          code = (rows && rows[0] && rows[0].partner_code) || null;
+          if (!code) { try { sessionStorage.setItem(cacheKey, '__none__'); } catch (e) {} return; }
+          try { sessionStorage.setItem(cacheKey, code); } catch (e) {}
+        }
+        var el = document.getElementById('lymxWhoMiniCode');
+        if (!el) return;
+        el.textContent = code + ' • copy';
+        el.style.display = 'block';
+        el.addEventListener('click', function () {
+          try {
+            navigator.clipboard.writeText(code);
+            var orig = el.textContent;
+            el.textContent = 'copied!';
+            setTimeout(function () { el.textContent = orig; }, 1200);
+          } catch (e) { console.warn('[sidebar] copy failed', e); }
+        });
+      } catch (e) { console.warn('[sidebar] partner_code loader', e); }
+    })();
   }
 
   window.LymxSidebar = {
