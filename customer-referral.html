@@ -347,25 +347,6 @@
   // legacy var kept for any older references; recomputed on each access via getter
   const msg = lymxMsg();
 
-  // 2026-05-20 #ca6d5755 - load the real referral code into #codeText on page load.
-  // Pattern: partners.partner_code, else U-<first-6-of-uid> fallback. Mirrors customer-settings.
-  (async function wireRealRefCode(){
-    try {
-      if (!window.LYMX_CONFIG || typeof window.supabase === 'undefined') return;
-      const sb = window.supabase.createClient(window.LYMX_CONFIG.SUPABASE_URL, window.LYMX_CONFIG.SUPABASE_ANON_KEY, { auth:{ persistSession:true } });
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) return;
-      let code = null;
-      try {
-        const { data: prow } = await sb.from('partners').select('partner_code').eq('user_id', user.id).maybeSingle();
-        code = (prow && prow.partner_code) || null;
-      } catch(e) { console.warn('[customer-referral] partners lookup failed', e); }
-      if (!code) code = 'U-' + user.id.slice(0, 6).toUpperCase();
-      const el = document.getElementById('codeText');
-      if (el) el.textContent = code;
-    } catch(e) { console.warn('[customer-referral] wireRealRefCode failed', e); }
-  })();
-
   function shareSMS(){
     location.href = `sms:?body=${encodeURIComponent(lymxMsg())}`;
   }
@@ -385,6 +366,28 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script>
+  // 2026-05-20 #ca6d5755 - load the real referral code into #codeText on page load.
+  // Pattern: partners.partner_code, else U-<first-6-of-uid> fallback. Mirrors customer-settings.
+  (async function wireRealRefCode(){
+    try {
+      if (!window.LYMX_CONFIG || typeof window.supabase === 'undefined') return;
+      const sb = window.supabase.createClient(window.LYMX_CONFIG.SUPABASE_URL, window.LYMX_CONFIG.SUPABASE_ANON_KEY, { auth:{ persistSession:true } });
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+      let code = null;
+      try {
+        const { data: prow } = await sb.from('partners').select('partner_code').eq('user_id', user.id).maybeSingle();
+        code = (prow && prow.partner_code) || null;
+      } catch(e) { console.warn('[customer-referral] partners lookup failed', e); }
+      if (!code) code = 'U-' + user.id.slice(0, 6).toUpperCase();
+      const el = document.getElementById('codeText');
+      if (el) el.textContent = code;
+    } catch(e) { console.warn('[customer-referral] wireRealRefCode failed', e); }
+  })();
+
+
+</script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>

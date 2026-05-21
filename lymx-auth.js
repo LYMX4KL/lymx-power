@@ -191,7 +191,7 @@
       if (!user) return { data: null, error: new Error('Not signed in') };
       return await sb
         .from('partners')
-        .select('id, legal_name, display_name, contact_email, contact_phone, is_founding_25, founding_25_rank, qualifying_credits, signup_fee_paid, signup_fee_waived, monthly_fee_status, sponsor_partner_id')
+        .select('id, partner_code, legal_name, display_name, contact_email, contact_phone, is_founding_25, founding_25_rank, qualifying_credits, signup_fee_paid, signup_fee_waived, monthly_fee_status, sponsor_partner_id, avatar_url')
         .eq('user_id', user.id)
         .maybeSingle();
     },
