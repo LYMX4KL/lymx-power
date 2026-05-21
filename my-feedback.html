@@ -138,7 +138,7 @@
 <main class="page">
   <div class="wrap">
     <div class="page-head">
-      <h1>💬 My Feedback</h1>
+      <h1>My Feedback</h1>
       <p>Every bug, suggestion, or question you've sent us — plus the team's replies.</p>
     </div>
 
@@ -349,7 +349,8 @@ function renderList() {
     html +=     '<div class="subj">' + escapeHtml(subject) + '</div>';
     html +=     '<div class="meta">';
     html +=       '<span class="ticket-no" data-copy="#' + i.id.slice(0,8) + '" title="Click to copy ticket number">#' + i.id.slice(0,8) + '</span>';
-    html +=       '<span class="pill ' + i.type + '">' + (TYPE_EMOJI[i.type] || '') + ' ' + t + '</span> ';
+    // 2026-05-20 #c003b59c - removed emoji prefix from type pill; color encoding via .pill class is enough
+    html +=       '<span class="pill ' + i.type + '">' + t + '</span> ';
     html +=       '<span class="pill status-' + displayStatus + '">' + displayStatusLabel + '</span>';
     html +=       ' · ' + fmtAgo(i.created_at);
     html +=     '</div>';
