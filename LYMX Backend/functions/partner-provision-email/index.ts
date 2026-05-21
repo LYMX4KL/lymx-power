@@ -51,7 +51,8 @@
 //   SUPABASE_URL
 //   SUPABASE_SERVICE_ROLE_KEY
 //   CF_ZONE_ID_LYMX           — Cloudflare zone ID for getlymx.com
-//   CF_API_TOKEN_LYMX         — Cloudflare API token (Email Routing Rules + Zone DNS)
+//   CF_ACCOUNT_ID_LYMX        — Cloudflare account ID (needed for destination-address API)
+//   CF_API_TOKEN_LYMX         — Cloudflare API token (Email Routing Rules + Email Addresses + Zone DNS)
 //   SES_REGION                — e.g. "us-east-1"
 //   SES_SMTP_USERNAME         — derived from IAM access key (per AWS docs)
 //   SES_SMTP_PASSWORD         — derived from IAM secret + region (per AWS docs)
@@ -152,6 +153,75 @@ async function findFreeLocalPart(
         suffix++;
     }
     throw new Error(`No free local_part found near "${base}" after 100 tries`);
+}
+
+/**
+ * Ensure a Cloudflare Email Routing DESTINATION ADDRESS exists for the given
+ * email and is verified. Cloudflare requires every forwarding rule's "to"
+ * value to first be a verified destination address.
+ *
+ * Returns:
+ *   { verified: true }   - destination is already verified, routing rules can be created
+ *   { verified: false, pending: true, sent: true } - we just registered the
+ *       address, Cloudflare sent a verification email to that address; the
+ *       user must click the link before forwarding can work
+ *   { verified: false, pending: true, sent: false } - destination already
+ *       registered but still unverified (verification email previously sent;
+ *       no new email triggered this call)
+ *
+ * Idempotent: calling it for an already-registered address is safe.
+ */
+async function ensureCloudflareDestination(args: {
+    accountId: string;
+    apiToken: string;
+    email: string;
+}): Promise<{ verified: boolean; pending: boolean; sent: boolean; message: string }> {
+    const listUrl = `https://api.cloudflare.com/client/v4/accounts/${args.accountId}/email/routing/addresses?per_page=100`;
+    // Look up first; if it already exists (any state) return its verified status without re-triggering.
+    const listResp = await fetch(listUrl, {
+        method: "GET",
+        headers: { "Authorization": `Bearer ${args.apiToken}` },
+    });
+    const listJson = await listResp.json();
+    if (!listResp.ok || !listJson.success) {
+        const errs = listJson.errors?.map((e: { message: string }) => e.message).join("; ") ?? listResp.statusText;
+        throw new Error(`Cloudflare list-destinations API ${listResp.status}: ${errs}`);
+    }
+    const existing = (listJson.result as Array<{ email: string; verified: string | null }> | undefined)?.find(
+        (r) => r.email?.toLowerCase() === args.email.toLowerCase()
+    );
+    if (existing) {
+        const isVerified = !!existing.verified;
+        return {
+            verified: isVerified,
+            pending: !isVerified,
+            sent: false,
+            message: isVerified
+                ? "Destination already verified."
+                : `Destination already registered but still pending verification. Ask ${args.email} to click the verify link in the email Cloudflare previously sent.`,
+        };
+    }
+    // Not yet registered: register it. Cloudflare sends a verification email automatically.
+    const addUrl = `https://api.cloudflare.com/client/v4/accounts/${args.accountId}/email/routing/addresses`;
+    const addResp = await fetch(addUrl, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${args.apiToken}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: args.email }),
+    });
+    const addJson = await addResp.json();
+    if (!addResp.ok || !addJson.success) {
+        const errs = addJson.errors?.map((e: { message: string }) => e.message).join("; ") ?? addResp.statusText;
+        throw new Error(`Cloudflare add-destination API ${addResp.status}: ${errs}`);
+    }
+    return {
+        verified: false,
+        pending: true,
+        sent: true,
+        message: `Cloudflare sent a verification email to ${args.email}. They must click the link in that email to complete @getlymx.com setup.`,
+    };
 }
 
 /**
@@ -298,6 +368,7 @@ serve(async (req) => {
         "SUPABASE_URL",
         "SUPABASE_SERVICE_ROLE_KEY",
         "CF_ZONE_ID_LYMX",
+        "CF_ACCOUNT_ID_LYMX",
         "CF_API_TOKEN_LYMX",
         "SES_SMTP_USERNAME",
         "SES_SMTP_PASSWORD",
@@ -419,7 +490,50 @@ serve(async (req) => {
         .eq("id", row.id);
 
     // =========================================================================
-    // STEP 4: Cloudflare — create the forwarding route
+    // STEP 4a: Cloudflare — ensure the destination address (partner's real
+    // email) is registered AND verified. If not, Cloudflare sends a
+    // verification email; we surface that state to the caller so the dashboard
+    // can show "check inbox to complete setup". The forwarding rule can't be
+    // created until the destination is verified, so we return early.
+    //
+    // The "Resend welcome" admin button + the partner's own dashboard retry
+    // both call this EF again — when the partner has verified their email,
+    // the next call will pass this check and proceed to STEP 4b.
+    // =========================================================================
+    let destStatus: { verified: boolean; pending: boolean; sent: boolean; message: string };
+    try {
+        destStatus = await ensureCloudflareDestination({
+            accountId: env("CF_ACCOUNT_ID_LYMX")!,
+            apiToken: env("CF_API_TOKEN_LYMX")!,
+            email: partner.contact_email,
+        });
+    } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        return await fail(502, `Cloudflare destination check failed: ${msg}`);
+    }
+
+    if (!destStatus.verified) {
+        // Stash the state on the partner_emails row so the dashboard can read it.
+        await supabase
+            .from("partner_emails")
+            .update({
+                status: "pending",
+                last_error: destStatus.message,
+            })
+            .eq("id", row.id);
+        return jsonResponse({
+            success: false,
+            pending_verification: true,
+            partner_email_id: row.id,
+            full_email: row.full_email,
+            destination: partner.contact_email,
+            verification_email_sent: destStatus.sent,
+            message: destStatus.message,
+        }, 202);  // 202 Accepted — request is valid but waiting on the partner's action
+    }
+
+    // =========================================================================
+    // STEP 4b: Cloudflare — create the forwarding route (destination is verified)
     // =========================================================================
     let cloudflareRouteId: string;
     try {

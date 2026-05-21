@@ -173,18 +173,79 @@ serve(async (req) => {
         });
     }
 
-    // STEP 5: Create Cloudflare email-routing rule on lymxpower.com zone
+    // STEP 5a: Cloudflare config
     const CF_TOKEN = Deno.env.get("CF_API_TOKEN_LYMXPOWER") || Deno.env.get("CF_API_TOKEN_LYMX");
-    const CF_ZONE  = Deno.env.get("CF_ZONE_ID_LYMXPOWER");
+    const CF_ZONE    = Deno.env.get("CF_ZONE_ID_LYMXPOWER");
+    const CF_ACCOUNT = Deno.env.get("CF_ACCOUNT_ID_LYMXPOWER") || Deno.env.get("CF_ACCOUNT_ID_LYMX");
 
-    if (!CF_TOKEN || !CF_ZONE) {
+    if (!CF_TOKEN || !CF_ZONE || !CF_ACCOUNT) {
         await supabase.from("partner_emails").update({
             secondary_status: "failed",
-            secondary_last_error: "Missing CF_API_TOKEN_LYMXPOWER or CF_ZONE_ID_LYMXPOWER env var",
+            secondary_last_error: "Missing CF_API_TOKEN_LYMXPOWER, CF_ZONE_ID_LYMXPOWER, or CF_ACCOUNT_ID_LYMXPOWER env var",
         }).eq("partner_id", partner.id);
-        return errorResponse("Cloudflare config missing for lymxpower.com — set CF_ZONE_ID_LYMXPOWER + CF_API_TOKEN_LYMXPOWER in Edge Function secrets", 500);
+        return errorResponse("Cloudflare config missing for lymxpower.com - set CF_ZONE_ID_LYMXPOWER + CF_ACCOUNT_ID_LYMXPOWER + CF_API_TOKEN_LYMXPOWER in Edge Function secrets", 500);
     }
 
+    // STEP 5b: Ensure destination address (partner's real email) is registered+verified.
+    // Same root-cause pattern as partner-provision-email: Cloudflare routing
+    // rules require their `to` value to be a verified destination, otherwise
+    // they fail with "Destination address is not verified". We register the
+    // destination (Cloudflare auto-sends verification email) and return early
+    // with pending_verification status if not yet verified. Resend Welcome
+    // retries safely - this whole function is idempotent.
+    try {
+        const listResp = await fetch(
+            "https://api.cloudflare.com/client/v4/accounts/" + CF_ACCOUNT + "/email/routing/addresses?per_page=100",
+            { headers: { "Authorization": "Bearer " + CF_TOKEN } }
+        );
+        const listJson = await listResp.json();
+        if (!listResp.ok || !listJson.success) {
+            throw new Error("Cloudflare list-destinations failed: " + listResp.status);
+        }
+        const existing = listJson.result?.find((r) => r.email?.toLowerCase() === partner.contact_email.toLowerCase());
+        let verified = !!existing?.verified;
+        let pending_msg = "";
+        if (!existing) {
+            const addResp = await fetch(
+                "https://api.cloudflare.com/client/v4/accounts/" + CF_ACCOUNT + "/email/routing/addresses",
+                {
+                    method: "POST",
+                    headers: { "Authorization": "Bearer " + CF_TOKEN, "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: partner.contact_email }),
+                }
+            );
+            const addJson = await addResp.json();
+            if (!addResp.ok || !addJson.success) {
+                throw new Error("Cloudflare add-destination failed: " + addResp.status);
+            }
+            pending_msg = "Cloudflare sent a verification email to " + partner.contact_email + ". They must click the link to complete @lymxpower.com setup.";
+            verified = false;
+        } else if (!verified) {
+            pending_msg = "Destination " + partner.contact_email + " is registered but still pending verification. Ask them to click the Cloudflare verify link in their inbox.";
+        }
+        if (!verified) {
+            await supabase.from("partner_emails").update({
+                secondary_status: "pending",
+                secondary_last_error: pending_msg,
+            }).eq("partner_id", partner.id);
+            return json({
+                success: false,
+                pending_verification: true,
+                domain: "lymxpower.com",
+                destination: partner.contact_email,
+                message: pending_msg,
+            }, 202);
+        }
+    } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        await supabase.from("partner_emails").update({
+            secondary_status: "failed",
+            secondary_last_error: msg,
+        }).eq("partner_id", partner.id);
+        return errorResponse("Cloudflare destination check failed: " + msg, 502);
+    }
+
+    // STEP 5c: Create the routing rule (destination is verified)
     const cfRes = await fetch("https://api.cloudflare.com/client/v4/zones/" + CF_ZONE + "/email/routing/rules", {
         method: "POST",
         headers: { "Authorization": "Bearer " + CF_TOKEN, "Content-Type": "application/json" },
