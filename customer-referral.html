@@ -149,9 +149,10 @@
   </div>
 
   <!-- 2026-05-20 #a8a50030 - whole box copies on tap, raw URL removed (was visual clutter under the bold code) -->
+  <!-- 2026-05-21 #ca6d5755 root-cause fix: was hardcoded "SARAH-7K9F". Now populated by JS from partners.partner_code (P-XXXXXX) or U-XXXXXX user fallback. -->
   <div class="code-box" id="codeBox" role="button" tabindex="0" aria-label="Tap to copy your referral code">
     <div class="lab">Your referral code</div>
-    <div class="code" id="codeText">SARAH-7K9F</div>
+    <div class="code" id="codeText">Loading…</div>
     <div class="hint">Tap anywhere in this box to copy</div>
     <div class="toast">Copied!</div>
   </div>
@@ -180,17 +181,18 @@
     </button>
   </div>
 
+  <!-- 2026-05-21 #8154e15e root-cause fix: was hardcoded 7/3/600. Now populated by JS from public.referrals. -->
   <div class="stats">
     <div class="st-card">
-      <div class="v">7</div>
+      <div class="v" id="statInvited">—</div>
       <div class="l">Friends invited</div>
     </div>
     <div class="st-card">
-      <div class="v green">3</div>
+      <div class="v green" id="statJoined">—</div>
       <div class="l">Joined &amp; transacted</div>
     </div>
     <div class="st-card">
-      <div class="v gold">600</div>
+      <div class="v gold" id="statEarned">—</div>
       <div class="l">LYMX earned</div>
     </div>
   </div>
@@ -220,67 +222,14 @@
     </div>
   </div>
 
+  <!-- 2026-05-21 #8154e15e root-cause fix: was hardcoded Emma/Daniel/Rachel/Jamie/Sam/Maya/Tess. Now JS populates from public.referrals (RLS: inviter sees own downline only). -->
   <div class="section">
     <div class="sec-h">
       <h3>Your referrals</h3>
-      <div class="ct">7 total</div>
+      <div class="ct" id="refTotalCount">—</div>
     </div>
-
-    <div class="ref">
-      <div class="av">EM</div>
-      <div class="body">
-        <div class="n">Emma Marsh</div>
-        <div class="d">Joined Apr 26 · spent at Brew &amp; Bean</div>
-      </div>
-      <div class="v earned">+200 LYMX</div>
-    </div>
-    <div class="ref">
-      <div class="av">DK</div>
-      <div class="body">
-        <div class="n">Daniel Kim</div>
-        <div class="d">Joined Apr 22 · spent at Oakline Kitchen</div>
-      </div>
-      <div class="v earned">+200 LYMX</div>
-    </div>
-    <div class="ref">
-      <div class="av">RC</div>
-      <div class="body">
-        <div class="n">Rachel Cho</div>
-        <div class="d">Joined Apr 14 · spent at Sun Market</div>
-      </div>
-      <div class="v earned">+200 LYMX</div>
-    </div>
-    <div class="ref">
-      <div class="av pending">JO</div>
-      <div class="body">
-        <div class="n">Jamie Ortiz</div>
-        <div class="d">Joined Apr 24 · Waiting for first purchase</div>
-      </div>
-      <div class="v pending">Pending</div>
-    </div>
-    <div class="ref">
-      <div class="av pending">SF</div>
-      <div class="body">
-        <div class="n">Sam Fox</div>
-        <div class="d">Joined Apr 23 · Waiting for first purchase</div>
-      </div>
-      <div class="v pending">Pending</div>
-    </div>
-    <div class="ref">
-      <div class="av invite-sent">MN</div>
-      <div class="body">
-        <div class="n">Maya Nash</div>
-        <div class="d">Invited Apr 20 · hasn't joined yet</div>
-      </div>
-      <div class="v invite-sent">Invite sent</div>
-    </div>
-    <div class="ref">
-      <div class="av expired">TJ</div>
-      <div class="body">
-        <div class="n">Tess Jordan</div>
-        <div class="d">Invited Mar 12 · invite expired</div>
-      </div>
-      <div class="v expired">Expired</div>
+    <div id="refList">
+      <div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:13.5px">Loading…</div>
     </div>
   </div>
 
@@ -298,6 +247,9 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
 <script>
   function showToast(msg, success){
     const t = document.getElementById('toast');
@@ -306,8 +258,23 @@
     setTimeout(()=> t.classList.remove('on'), 2000);
   }
 
+  // 2026-05-21 #ca6d5755 + #8154e15e root-cause fix:
+  // everything that previously read SARAH-7K9F or hardcoded stats/referrals
+  // now reads window._referralCode / window._referralUrl / window._referralMsg
+  // which the init() block populates from the signed-in user's record.
+  window._referralCode = null;
+  window._referralUrl  = null;
+  window._referralMsg  = null;
+
+  function currentReferralUrl(){
+    return window._referralUrl || 'https://getlymx.com/welcome.html';
+  }
+  function currentReferralMsg(){
+    return window._referralMsg || "I've been using LYMX — check it out at https://getlymx.com";
+  }
+
   function copyLink(){
-    const url = 'https://getlymx.com/join?ref=SARAH-7K9F';
+    const url = currentReferralUrl();
     navigator.clipboard?.writeText(url).then(
       ()=> showToast('Link copied!', true),
       ()=> showToast('Tap to copy: ' + url)
@@ -320,8 +287,8 @@
     if (!box) return;
     function copyCodeBox(){
       var code = (document.getElementById('codeText')?.textContent || '').trim();
-      if (!code) return;
-      var url = 'https://getlymx.com/join?ref=' + code;
+      if (!code || code === 'Loading…' || code === '—') return;
+      var url = 'https://getlymx.com/welcome.html?ref=' + encodeURIComponent(code);
       var doFlash = function(){
         box.classList.add('copied');
         setTimeout(function(){ box.classList.remove('copied'); }, 1100);
@@ -338,27 +305,131 @@
     });
   })();
 
-  const msg = "I've been earning LYMX at local Las Vegas spots — coffee, dinner, errands, all of it. Use my link to get 100 LYMX free: https://getlymx.com/join?ref=SARAH-7K9F";
-
   function shareSMS(){
-    location.href = `sms:?body=${encodeURIComponent(msg)}`;
+    location.href = 'sms:?body=' + encodeURIComponent(currentReferralMsg());
   }
   function shareEmail(){
-    location.href = `mailto:?subject=Try LYMX with me&body=${encodeURIComponent(msg)}`;
+    location.href = 'mailto:?subject=' + encodeURIComponent('Try LYMX with me') + '&body=' + encodeURIComponent(currentReferralMsg());
   }
   function shareSocial(platform){
-    if (platform === 'whatsapp') location.href = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    if (platform === 'whatsapp') location.href = 'https://wa.me/?text=' + encodeURIComponent(currentReferralMsg());
   }
   function shareNative(){
     if (navigator.share){
-      navigator.share({title:'Try LYMX', text:msg, url:'https://getlymx.com/join?ref=SARAH-7K9F'}).catch(()=>{});
+      navigator.share({ title: 'Try LYMX', text: currentReferralMsg(), url: currentReferralUrl() }).catch(()=>{});
     } else {
       copyLink();
     }
   }
+
+  // 2026-05-21 #ca6d5755 + #8154e15e — load real referral code + stats + downline list
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c]; }); }
+  function initials(name){ var src = (name || '').trim(); if (!src) return '·'; return src.split(/\s+/).filter(Boolean).slice(0,2).map(function(s){ return (s[0]||'').toUpperCase(); }).join('') || '·'; }
+  function fmtDate(iso){ try { return new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric' }); } catch(e) { return ''; } }
+
+  async function loadReferralPage(){
+    if (!window.LYMX || !window.LYMX.getSession || !window.LYMX_CONFIG) return;
+    var s; try { s = await window.LYMX.getSession(); } catch(e) { return; }
+    if (!s) {
+      document.getElementById('codeText').textContent = 'Sign in to get your code';
+      document.getElementById('refList').innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:13.5px">Sign in to see your referrals.</div>';
+      ['statInvited','statJoined','statEarned'].forEach(function(id){ var el = document.getElementById(id); if (el) el.textContent = '\u2014'; });
+      document.getElementById('refTotalCount').textContent = '';
+      return;
+    }
+
+    var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+    var SUPA = window.LYMX_CONFIG.SUPABASE_URL;
+    var headers = { apikey: ANON, Authorization: 'Bearer ' + s.access_token };
+
+    // 1. Resolve referral code — partner_code if partner, else U-XXXXXX
+    var pcode = null;
+    try {
+      var r = await fetch(SUPA + '/rest/v1/partners?user_id=eq.' + s.user.id + '&select=partner_code&limit=1', { headers: headers });
+      if (r.ok) { var rows = await r.json(); pcode = rows && rows[0] && rows[0].partner_code || null; }
+    } catch (e) { console.warn('[customer-referral.html] partner_code lookup failed', e); }
+    var code = pcode || ('U-' + s.user.id.slice(0, 6).toUpperCase());
+    window._referralCode = code;
+    window._referralUrl  = 'https://getlymx.com/welcome.html?ref=' + encodeURIComponent(code);
+    window._referralMsg  = "I've been earning LYMX at local Las Vegas spots \u2014 coffee, dinner, errands, all of it. Use my link to get 100 LYMX free: " + window._referralUrl;
+    document.getElementById('codeText').textContent = code;
+
+    // 2. Load downline + compute stats
+    try {
+      var rr = await fetch(SUPA + '/rest/v1/referrals?inviter_user_id=eq.' + s.user.id + '&select=id,invitee_user_id,invite_method,status,inviter_bonus_amount,created_at&order=created_at.desc', { headers: headers });
+      if (!rr.ok) throw new Error('referrals fetch HTTP ' + rr.status);
+      var refs = await rr.json();
+      if (!Array.isArray(refs)) refs = [];
+
+      var totalInvited = refs.length;
+      var totalJoined  = refs.filter(function(x){ return x.status === 'credited'; }).length;
+      var totalEarned  = refs.reduce(function(sum, x){ return sum + ((x.status === 'credited' ? x.inviter_bonus_amount : 0) || 0); }, 0);
+
+      document.getElementById('statInvited').textContent = totalInvited;
+      document.getElementById('statJoined').textContent  = totalJoined;
+      document.getElementById('statEarned').textContent  = totalEarned;
+      document.getElementById('refTotalCount').textContent = totalInvited + ' total';
+
+      if (!refs.length) {
+        document.getElementById('refList').innerHTML = '<div style="padding:28px 16px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.6"><div style="font-size:28px;margin-bottom:8px">\ud83c\udf81</div>No referrals yet.<br>Share your code <strong>' + esc(code) + '</strong> with a friend \u2014 you both win when they make their first purchase.</div>';
+        return;
+      }
+
+      // 3. Resolve invitee display names from customers
+      var inviteeIds = refs.map(function(x){ return x.invitee_user_id; }).filter(Boolean);
+      var nameMap = {};
+      if (inviteeIds.length) {
+        try {
+          var cr = await fetch(SUPA + '/rest/v1/customers?user_id=in.(' + inviteeIds.join(',') + ')&select=user_id,display_name', { headers: headers });
+          if (cr.ok) {
+            var crows = await cr.json();
+            (crows || []).forEach(function(c){ nameMap[c.user_id] = c.display_name || ''; });
+          }
+        } catch(_){ /* name lookup is best-effort */ }
+      }
+
+      var html = refs.map(function(x){
+        var nm   = nameMap[x.invitee_user_id] || 'Friend';
+        var ini  = initials(nm);
+        var when = fmtDate(x.created_at);
+        if (x.status === 'credited') {
+          return '<div class="ref">' +
+            '<div class="av">' + esc(ini) + '</div>' +
+            '<div class="body"><div class="n">' + esc(nm) + '</div>' +
+              '<div class="d">Joined ' + esc(when) + ' \u00b7 made first purchase</div></div>' +
+            '<div class="v earned">+' + (x.inviter_bonus_amount || 0) + ' LYMX</div>' +
+            '</div>';
+        }
+        if (x.status === 'pending') {
+          return '<div class="ref">' +
+            '<div class="av pending">' + esc(ini) + '</div>' +
+            '<div class="body"><div class="n">' + esc(nm) + '</div>' +
+              '<div class="d">Joined ' + esc(when) + ' \u00b7 waiting for first purchase</div></div>' +
+            '<div class="v pending">Pending</div>' +
+            '</div>';
+        }
+        return '<div class="ref">' +
+          '<div class="av expired">' + esc(ini) + '</div>' +
+          '<div class="body"><div class="n">' + esc(nm) + '</div>' +
+            '<div class="d">Joined ' + esc(when) + ' \u00b7 ' + esc(x.status) + '</div></div>' +
+          '<div class="v expired">' + esc(x.status) + '</div>' +
+          '</div>';
+      }).join('');
+      document.getElementById('refList').innerHTML = html;
+    } catch (e) {
+      console.warn('[customer-referral.html] referrals load failed', e);
+      document.getElementById('refList').innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:13.5px">Could not load referrals right now. Refresh to try again.</div>';
+      document.getElementById('refTotalCount').textContent = '';
+      ['statInvited','statJoined','statEarned'].forEach(function(id){ var el = document.getElementById(id); if (el) el.textContent = '0'; });
+    }
+  }
+
+  loadReferralPage();
 </script>
-<script src="lymx-config.js"></script>
-<script src="lymx-feedback.js" defer></script>
+
 <script src="lymx-app.js" defer></script>
+<script src="lymx-nav.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-i18n.js" defer></script>
 </body>
 </html>
