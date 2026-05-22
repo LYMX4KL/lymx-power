@@ -222,17 +222,39 @@
     if (!window.LYMX) return;
     const session = await LYMX.getSession();
     if (session) {
-      const role = await LYMX.getRole();
       const next = new URLSearchParams(window.location.search).get('next');
-      const dest = next || destForRole(role);
+      const dest = next || await getLoginDest();
       window.location.replace(dest);
     }
   })();
 
-  function destForRole(role) {
-    if (role === 'business') return 'biz-dashboard.html';
-    if (role === 'partner') return 'rep-dashboard.html';
-    return 'customer-dashboard.html';
+  // 2026-05-22 #02a9c79f — root-cause fix: previously called LYMX.getRole()
+  // which checks tables in order businesses > partners > customers and returns
+  // the first match. A customer who later upgrades to partner (additive role)
+  // therefore returned 'partner' and was routed to rep-dashboard on every
+  // sign-in, even though the customer-dashboard is the expected default for
+  // a customer signing in. The customer-dashboard already shows a yellow
+  // "PARTNER MODE AVAILABLE - Open Partner Dashboard" banner for dual-role
+  // users so the partner workspace is one click away. Now we explicitly
+  // prefer customer-dashboard when both rows exist.
+  async function getLoginDest() {
+    try {
+      const user = await LYMX.getUser();
+      if (!user) return 'customer-dashboard.html';
+      const sb = LYMX.sb;
+      const [biz, cust, partner] = await Promise.all([
+        sb.from('businesses').select('id').eq('user_id', user.id).maybeSingle(),
+        sb.from('customers').select('id').eq('user_id', user.id).maybeSingle(),
+        sb.from('partners').select('id').eq('user_id', user.id).maybeSingle()
+      ]);
+      if (biz.data)     return 'biz-dashboard.html';
+      if (cust.data)    return 'customer-dashboard.html';   // customer or customer+partner dual-role
+      if (partner.data) return 'rep-dashboard.html';        // partner-only (no customers row)
+      return 'customer-dashboard.html';
+    } catch (e) {
+      console.warn('[login] getLoginDest failed, defaulting to customer-dashboard', e);
+      return 'customer-dashboard.html';
+    }
   }
 
   // ---------- Show / hide password ----------
@@ -294,9 +316,8 @@
     }
 
     showNotice('signinNotice', 'Signed in. Redirecting…', 'ok');
-    const role = await LYMX.getRole();
     const next = new URLSearchParams(window.location.search).get('next');
-    const dest = next || destForRole(role);
+    const dest = next || await getLoginDest();
     setTimeout(() => window.location.replace(dest), 400);
     return false;
   }
