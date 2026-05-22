@@ -154,15 +154,33 @@
         if (!file) return;
         if (file.size > 6 * 1024 * 1024) { us.textContent = 'File is too large (>6 MB). Please pick a smaller photo.'; return; }
         us.textContent = 'Uploading…';
+        // 2026-05-21 #243abe59 root-cause fix: receipt upload was returning HTTP 400.
+        // Two issues stacked:
+        // 1. encodeURIComponent on the full path turned the "/" folder separator into
+        //    %2F. Supabase Storage's REST upload endpoint expects literal "/" between
+        //    folder + filename, not %2F. Now: encode each segment independently and
+        //    rejoin with "/".
+        // 2. file.type can be empty on some mobile cameras / older browsers, which
+        //    sets Content-Type to "" and triggers a 400 at the storage gateway. Now:
+        //    fall back to image/jpeg when file.type is empty.
+        // Plus: capture the response body on failure so future 400s aren't opaque.
         var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-        var path = session.user.id + '/' + (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2))) + '.' + ext;
+        var uid = session.user.id;
+        var key = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2))) + '.' + ext;
+        var path = uid + '/' + key;
+        var pathForUrl = encodeURIComponent(uid) + '/' + encodeURIComponent(key);
+        var contentType = file.type || 'image/jpeg';
         try {
-          var up = await fetch(URL + '/storage/v1/object/review-receipts/' + encodeURIComponent(path), {
+          var up = await fetch(URL + '/storage/v1/object/review-receipts/' + pathForUrl, {
             method: 'POST',
-            headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': file.type, 'x-upsert': 'false' },
+            headers: { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': contentType, 'x-upsert': 'false' },
             body: file
           });
-          if (!up.ok) throw new Error('upload http ' + up.status);
+          if (!up.ok) {
+            var errBody = '';
+            try { errBody = (await up.text()).slice(0, 160); } catch (_) {}
+            throw new Error('upload HTTP ' + up.status + (errBody ? ' — ' + errBody : ''));
+          }
           state.receiptImageUrl = path;
           state.verifiedTxId = null;
           showVerified('Receipt uploaded — pending admin verification');

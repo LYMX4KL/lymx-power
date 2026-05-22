@@ -441,7 +441,11 @@
       var name = (card.querySelector('h3').textContent || '').toLowerCase();
       var meta = (card.querySelector('.meta').textContent || '').toLowerCase();
       var desc = (card.querySelector('.desc').textContent || '').toLowerCase();
-      var hay = name + ' ' + meta + ' ' + desc;
+      // 2026-05-21 #bb4ec6ce — include the card's href slug in the haystack so a
+      // search for the URL prefix (e.g. "biz" or "biz-brew") also matches.
+      // Testers expected slug-based search to work since biz-* pages are public URLs.
+      var slug = (card.getAttribute('href') || '').toLowerCase();
+      var hay = name + ' ' + meta + ' ' + desc + ' ' + slug;
 
       var matchCat   = (cat === 'All') || (cardCat.toLowerCase() === cat.toLowerCase());
       var matchPrice = !price || (cardPrice === price);

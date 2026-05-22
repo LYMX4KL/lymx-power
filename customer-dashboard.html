@@ -908,7 +908,13 @@ window.addEventListener('DOMContentLoaded', async function () {
     if (savedRows.length) {
       listEl.innerHTML = savedRows.map(function (s) {
         var safeName = (s.business_name || '').replace(/[<>]/g, '');
-        var href = 'biz-' + encodeURIComponent((s.business_slug || '').toLowerCase()) + '.html';
+        // 2026-05-21 #02b8d3ba root-cause fix: was double-prefixing slug.
+        // saved_businesses.business_slug already contains a leading "biz-"
+        // (it was captured from the page's data-biz-slug which includes the prefix).
+        // Strip any leading "biz-" before re-prepending — matches the pattern in
+        // my-saved-places.html line 93. Eliminates the /biz-biz-{name}.html 404.
+        var rawSlug = (s.business_slug || '').toLowerCase().replace(/^biz-/, '');
+        var href = 'biz-' + encodeURIComponent(rawSlug) + '.html';
         return '<a class="saved-item" href="' + href + '"><div class="ic">' + (s.business_emoji || '⭐') + '</div><div style="flex:1"><div class="name">' + safeName + '</div><div class="miles">Saved</div></div></a>';
       }).join('');
     } else {

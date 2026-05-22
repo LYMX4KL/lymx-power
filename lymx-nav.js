@@ -68,10 +68,15 @@
   function redirectIfSignedIn(payload) {
     var path = (location.pathname || '').toLowerCase();
     // Partner-signup gets special handling — see below.
+    // 2026-05-21 #96814d84 - removed /biz-signup from the auto-bounce list.
+    // biz-signup is the form a SIGNED-IN customer fills out to APPLY to become
+    // a Business — not a "create a new account" page. Bouncing customers to
+    // customer-dashboard prevented the entire customer-to-business pipeline.
+    // The same shape that #8ae35834 fixed for partner-signup last week. The
+    // biz-signup page itself handles the "you already own a business" case.
     var nonPartnerEntryPages = [
       '/welcome.html', '/welcome',
       '/customer-signup.html', '/customer-signup',
-      '/biz-signup.html', '/biz-signup',
       '/signup.html', '/signup'
     ];
     var partnerEntryPages = ['/partner-signup.html', '/partner-signup'];
