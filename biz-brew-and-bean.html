@@ -71,7 +71,7 @@
   .photos .ph.p3{background:linear-gradient(135deg,#fff4d6,#fbe4a8)}
   .photos .ph.p4{background:linear-gradient(135deg,#f0e5d2,#d6b67a)}
   .photos .ph.p5{background:linear-gradient(135deg,#e6d5c0,#bf9970);position:relative;cursor:pointer}
-  .photos .ph.p5::after{content:"+12 more";position:absolute;bottom:12px;right:12px;background:rgba(14,17,22,.78);color:#fff;font-size:13px;padding:6px 12px;border-radius:999px;font-weight:600}
+  /* 2026-05-21 #17f58a84 root-cause fix: removed hardcoded ::after "+12 more" badge. The page has 5 photos, not 17. If we add real photos to a gallery later, render the +N badge from JS based on actual count. */
   @media(max-width:780px){.photos{grid-template-columns:1fr 1fr;grid-template-rows:200px 100px;height:auto}.photos .ph.main{grid-row:span 2}.photos .ph.p4,.photos .ph.p5{display:none}}
 
   /* Title */

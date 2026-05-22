@@ -561,7 +561,8 @@
 
 <footer>
   <div class="wrap">
-    <div>© <span id="yr"></span> LYMX · <a href="index.html" style="color:var(--accent-2)">Home</a> · <a href="support.html" style="color:var(--accent-2)">Support</a> · <a href="#" style="color:var(--accent-2)">Privacy</a></div>
+    <!-- 2026-05-21 #91995db1 root-cause fix: Privacy href was just "#" — points to /privacy.html now (file already on disk). -->
+    <div>© <span id="yr"></span> LYMX · <a href="index.html" style="color:var(--accent-2)">Home</a> · <a href="support.html" style="color:var(--accent-2)">Support</a> · <a href="privacy.html" style="color:var(--accent-2)">Privacy</a></div>
     <div class="disc">LYMX is a promotional credit unit used exclusively within the Enterprise ecosystem. LYMX is not cash, not cryptocurrency, and not a stored monetary balance. Redemption value and acceptance are governed by Enterprise participation rules.</div>
   </div>
 </footer>
@@ -918,7 +919,8 @@ window.addEventListener('DOMContentLoaded', async function () {
         return '<a class="saved-item" href="' + href + '"><div class="ic">' + (s.business_emoji || '⭐') + '</div><div style="flex:1"><div class="name">' + safeName + '</div><div class="miles">Saved</div></div></a>';
       }).join('');
     } else {
-      listEl.innerHTML = '<div style="padding:18px;text-align:center;color:#5b6472;font-size:13.5px"><div style="font-size:24px;margin-bottom:6px">📍</div>No saved places yet.<br><a href="browse.html" style="color:#0050c7;font-weight:600;text-decoration:none">Browse businesses →</a></div>';
+      // 2026-05-21 #6611291d root-cause fix: .saved-list is display:grid grid-template-columns:1fr 1fr, so a single empty-state child rendered in the LEFT column only (looked left-aligned). Span both columns with grid-column:1/-1 so it centers cleanly across the section.
+      listEl.innerHTML = '<div style="grid-column:1/-1;padding:18px;text-align:center;color:#5b6472;font-size:13.5px"><div style="font-size:24px;margin-bottom:6px">📍</div>No saved places yet.<br><a href="browse.html" style="color:#0050c7;font-weight:600;text-decoration:none">Browse businesses →</a></div>';
     }
   }
 
