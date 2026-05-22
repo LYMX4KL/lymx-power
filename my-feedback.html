@@ -215,7 +215,7 @@
 </div>
 
 <!-- 2026-05-19 #df147545 Floating Action Button — bridges to existing site-wide feedback widget -->
-<button class="fab" id="newFeedbackFab" aria-label="Send feedback" title="Send feedback">＋</button>
+<!-- 2026-05-21 #0446f5e3 — removed per-page + FAB; site-wide "💬 Help & Feedback" widget handles new-feedback on this page too. -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
@@ -704,7 +704,8 @@ document.getElementById('showMore').addEventListener('click', function() {
 // .lymx-fb-btn). Previous selectors all missed the actual element, so the
 // FAB always alerted "Widget did not load, please refresh." Now we match
 // the real id and also wait briefly + retry if the widget hasn't booted yet.
-document.getElementById('newFeedbackFab').addEventListener('click', function() {
+var _legacyFab = document.getElementById('newFeedbackFab');
+if (_legacyFab) _legacyFab.addEventListener('click', function() {
   function findBtn() {
     return document.getElementById('lymx-fb-btn')
         || document.querySelector('#lymx-fb-btn, [data-lymx-feedback-btn]');

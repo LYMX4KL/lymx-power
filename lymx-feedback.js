@@ -565,7 +565,10 @@
     // that already have a feedback FAB of their own (my-feedback, contacts, etc.)
     // and on pages that opt out via <body data-no-fb-btn>. Eliminates the overlap.
     var path = (location.pathname || '').toLowerCase();
-    var SUPPRESS_ON = ['/my-feedback.html', '/my-feedback'];
+    // 2026-05-21 #0446f5e3 — was suppressing on /my-feedback.html because that page
+    // had its own + FAB; now widget shows everywhere for UX consistency and the
+    // per-page FAB on /my-feedback.html has been removed (eliminates duplicate).
+    var SUPPRESS_ON = [];
     var bodyOptOut = document.body.getAttribute('data-no-fb-btn') === 'true';
     var suppressed = bodyOptOut || SUPPRESS_ON.some(function (p) { return path === p || path.endsWith(p); });
     if (!suppressed) document.body.appendChild(btn);

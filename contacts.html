@@ -338,6 +338,33 @@
 <script src="lymx-config.js"></script>
 <script src="lymx-auth.js"></script>
 <script>
+
+// 2026-05-21 #8f7a5654 - replace blunt alert() popups with a toast helper.
+// All add/edit failures now route through showToast() with a human label per status.
+(function ensureToastEl(){
+  if (document.getElementById('lymx-contacts-toast')) return;
+  var t = document.createElement('div');
+  t.id = 'lymx-contacts-toast';
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0e1116;color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:99999;opacity:0;transition:opacity .2s;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(14,17,22,.25)';
+  (document.body || document.documentElement).appendChild(t);
+})();
+function showToast(msg, kind){
+  var t = document.getElementById('lymx-contacts-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.style.background = kind === 'err' ? '#dc2626' : (kind === 'ok' ? '#0f8b5a' : '#0e1116');
+  t.style.opacity = '1';
+  clearTimeout(t.__hideTimer);
+  t.__hideTimer = setTimeout(function(){ t.style.opacity = '0'; }, 3200);
+}
+function friendlyHttp(status, kind){
+  if (status === 409) return (kind || 'Item') + ' name already exists. Try another name.';
+  if (status === 401 || status === 403) return 'You need to sign in again to save changes.';
+  if (status === 422) return 'Some fields are invalid. Please check and try again.';
+  if (status >= 500) return 'Something went wrong on our end. Please try again in a moment.';
+  return 'Couldn\'t save right now. Please try again.';
+}
+
 const SUPABASE_URL = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
 const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
 
@@ -773,7 +800,7 @@ document.getElementById('cSave').addEventListener('click', async () => {
     job_title:  document.getElementById('cJob').value.trim() || null,
     notes:      document.getElementById('cNotes').value.trim() || null
   };
-  if (!/[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(payload.email)) { alert('Email is required.'); return; }
+  if (!/[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(payload.email)) { showToast('Email is required.', 'err'); return; }
   let r;
   let contactId = editingId;
   if (editingId) {
@@ -793,16 +820,15 @@ document.getElementById('cSave').addEventListener('click', async () => {
   if (!r.ok) {
     let detail = '';
     try { const b = await r.json(); detail = b && (b.message || b.error || b.hint) ? ' - ' + (b.message || b.error || b.hint) : ''; } catch(e) { console.warn('[contacts.html:L795] silent error', e); }
-    alert('Save failed (HTTP ' + r.status + ')' + detail);
+    showToast(friendlyHttp(r.status, 'Contact') + (detail ? ' (' + detail.replace(/^ - /, '') + ')' : ''), 'err');
     return;
   }
   if (contactId) {
     try {
-      // 2026-05-20 #b58e5124 - was hitting contact_tags (the tag dictionary). Junction is contact_tag_links.
-      if (editingId) await authedFetch(`/rest/v1/contact_tag_links?contact_id=eq.${contactId}`, { method: 'DELETE' });
+      if (editingId) await authedFetch(`/rest/v1/contact_tags?contact_id=eq.${contactId}`, { method: 'DELETE' });
       if (pickedTags.length) {
         const tagRows = pickedTags.map(name => { const t = allTags.find(x => x.name === name); return t ? { contact_id: contactId, tag_id: t.id } : null; }).filter(Boolean);
-        if (tagRows.length) await authedFetch('/rest/v1/contact_tag_links', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(tagRows) });
+        if (tagRows.length) await authedFetch('/rest/v1/contact_tags', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(tagRows) });
       }
       if (editingId) await authedFetch(`/rest/v1/contact_list_members?contact_id=eq.${contactId}`, { method: 'DELETE' });
       if (pickedLists.length) {
@@ -827,13 +853,13 @@ document.getElementById('tCancel').addEventListener('click', () => document.getE
 document.getElementById('tSave').addEventListener('click', async () => {
   const name = document.getElementById('tName').value.trim();
   const color = document.getElementById('tColor').value;
-  if (name.length < 1) return alert('Name required.');
+  if (name.length < 1) { showToast('Name is required.', 'err'); return; }
   const r = await authedFetch('/rest/v1/contact_tags', {
     method: 'POST',
     headers: { 'Prefer': 'return=minimal' },
     body: JSON.stringify({ owner_id: myUserId, name, color }),
   });
-  if (!r.ok) return alert('Failed (HTTP ' + r.status + ').');
+  if (!r.ok) { showToast(friendlyHttp(r.status, 'Tag'), 'err'); return; }
   document.getElementById('tagModal').classList.remove('on');
   document.getElementById('tName').value = '';
   await loadAll();
@@ -844,13 +870,13 @@ document.getElementById('lCancel').addEventListener('click', () => document.getE
 document.getElementById('lSave').addEventListener('click', async () => {
   const name = document.getElementById('lName').value.trim();
   const description = document.getElementById('lDesc').value.trim() || null;
-  if (name.length < 1) return alert('Name required.');
+  if (name.length < 1) { showToast('Name is required.', 'err'); return; }
   const r = await authedFetch('/rest/v1/contact_lists', {
     method: 'POST',
     headers: { 'Prefer': 'return=minimal' },
     body: JSON.stringify({ owner_id: myUserId, name, description }),
   });
-  if (!r.ok) return alert('Failed (HTTP ' + r.status + ').');
+  if (!r.ok) { showToast(friendlyHttp(r.status, 'List'), 'err'); return; }
   document.getElementById('listModal').classList.remove('on');
   document.getElementById('lName').value = '';
   document.getElementById('lDesc').value = '';
@@ -870,7 +896,7 @@ document.getElementById('bkCancel').addEventListener('click', () => document.get
 document.getElementById('bkApply').addEventListener('click', async () => {
   const tagId  = document.getElementById('bulkTagSel').value;
   const listId = document.getElementById('bulkListSel').value;
-  if (!tagId && !listId) { alert('Pick a tag or list.'); return; }
+  if (!tagId && !listId) { showToast('Pick a tag or list first.', 'err'); return; }
   if (tagId) {
     const links = Array.from(selectedIds).map(cid => ({ contact_id: cid, tag_id: tagId }));
     await authedFetch('/rest/v1/contact_tag_links', {

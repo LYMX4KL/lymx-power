@@ -316,14 +316,22 @@
         el.setAttribute('aria-label', 'Account menu');
         el.setAttribute('aria-haspopup', 'menu');
         el.setAttribute('role', 'button');
-        // 2026-05-20 #98ffcf81 + #524e01c9 - avatar didn't look clickable on mobile (no hover state). Add a small dropdown caret badge bottom-right of the circle so it's visually obvious this is a menu trigger that opens Profile / Messages / Sign out.
-        if (!el.querySelector('.lymx-av-caret')) {
-          var caret = document.createElement('span');
-          caret.className = 'lymx-av-caret';
-          caret.textContent = '▾';
-          caret.setAttribute('aria-hidden', 'true');
-          caret.style.cssText = 'position:absolute;bottom:-2px;right:-2px;width:14px;height:14px;background:#fff;color:#0e1116;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;line-height:1;box-shadow:0 0 0 1.5px rgba(14,17,22,.18);pointer-events:none';
-          el.appendChild(caret);
+        // 2026-05-20 #98ffcf81 + #524e01c9 - avatar didn't look clickable on mobile.
+        // 2026-05-21 #1b2e1ac9 - rolled back the caret badge: testers reported it as
+        // "an arrow icon overlapping the profile picture" — cluttered. Instead, use a
+        // hover/focus ring to signal clickability without painting a glyph on top of
+        // the initials. Removes a stray child span; avatar text reads cleanly as just
+        // the initials.
+        var prevCaret = el.querySelector('.lymx-av-caret');
+        if (prevCaret) prevCaret.remove();
+        if (!el.dataset.lymxAvHoverWired) {
+          el.dataset.lymxAvHoverWired = '1';
+          el.style.transition = (el.style.transition ? el.style.transition + ', ' : '') + 'box-shadow .15s, transform .15s';
+          el.addEventListener('mouseenter', function () { el.style.boxShadow = '0 0 0 3px rgba(10,132,255,.22)'; });
+          el.addEventListener('mouseleave', function () { el.style.boxShadow = ''; });
+          el.addEventListener('focus',      function () { el.style.boxShadow = '0 0 0 3px rgba(10,132,255,.35)'; });
+          el.addEventListener('blur',       function () { el.style.boxShadow = ''; });
+          el.setAttribute('tabindex', el.getAttribute('tabindex') || '0');
         }
         el.addEventListener('click', function (e) {
           e.preventDefault(); e.stopPropagation();
