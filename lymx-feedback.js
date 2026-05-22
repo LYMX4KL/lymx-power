@@ -571,7 +571,17 @@
     var SUPPRESS_ON = [];
     var bodyOptOut = document.body.getAttribute('data-no-fb-btn') === 'true';
     var suppressed = bodyOptOut || SUPPRESS_ON.some(function (p) { return path === p || path.endsWith(p); });
-    if (!suppressed) document.body.appendChild(btn);
+    if (!suppressed) {
+      document.body.appendChild(btn);
+      // 2026-05-21 #c99c8462 root-cause fix: the floating pill was overlapping the
+      // last paragraph / bottom icons on long pages. Reserve scroll room so the
+      // page content can always be fully scrolled past the widget. 80px on desktop,
+      // 96px on narrow screens (the pill is positioned 12px from bottom there).
+      var bp = window.matchMedia && window.matchMedia('(max-width:520px)').matches ? '96px' : '80px';
+      // Don't override an already-set bottom padding (some pages set their own).
+      var existing = parseInt(getComputedStyle(document.body).paddingBottom, 10) || 0;
+      if (existing < 80) document.body.style.paddingBottom = bp;
+    }
     document.body.appendChild(overlay);
 
     btn.addEventListener('click', open);
