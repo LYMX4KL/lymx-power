@@ -464,19 +464,33 @@
       payload = { subject_type: "business", subject_id: bizId, kind: "general", title: subject, channel: "in_app", body: bodyText };
     }
 
+    // 2026-05-21 #f99eef4c root-cause-fix part 2: never let a 500/empty
+    // response silently "do nothing" — always show *something* in the banner
+    // so the user knows the click registered. Pairs with migration 071.
+    $("newSubmit").disabled = true;
+    const _origSubmitText = $("newSubmit").textContent;
+    $("newSubmit").textContent = "Sending…";
     try {
       const r = await fetch(SUPABASE_URL+"/functions/v1/conversation-send-message", {
         method:"POST",
         headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+session.access_token, "apikey":SUPABASE_ANON },
         body: JSON.stringify(payload),
       });
-      const j = await r.json();
-      if (!j.ok) throw new Error(j.error);
+      let j = {};
+      try { j = await r.json(); } catch(_) { /* non-JSON response — keep j={} */ }
+      if (!r.ok || !j.ok) {
+        const msg = j.error || ("Send failed (HTTP " + r.status + "). Please try again or refresh the page.");
+        throw new Error(msg);
+      }
       closeNewModal();
       await loadConversations();
       await openConv(j.conversation_id);
     } catch(e) {
-      $("newBanner").innerHTML = '<div class="alert err">'+esc(e.message)+'</div>';
+      const msg = (e && e.message) ? e.message : "Send failed — please refresh and try again.";
+      $("newBanner").innerHTML = '<div class="alert err">'+esc(msg)+'</div>';
+    } finally {
+      $("newSubmit").disabled = false;
+      $("newSubmit").textContent = _origSubmitText;
     }
   }
 
