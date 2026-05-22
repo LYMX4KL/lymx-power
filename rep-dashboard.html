@@ -263,7 +263,7 @@
        Self-hides on subsequent visits once any activation lands. -->
   <div id="newPartnerOnboarding" style="display:none;background:linear-gradient(135deg,#fff8e1,#ffeec4);border:1px solid #f5d172;border-radius:14px;padding:22px 24px;margin:20px 0">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-      <span style="font-size:22px">\u{1F389}</span>
+      <span style="font-size:22px">🎉</span>
       <h2 style="margin:0;font-size:18px;font-weight:800;color:#78350f">Welcome, Partner. Your first 5 actions:</h2>
     </div>
     <p style="margin:0 0 14px;color:#78350f;font-size:13.5px;opacity:.85">Knock these out in the first 48 hours and you're already ahead of 90% of new partners. Each one moves you closer to your $500 activation bonus.</p>
@@ -643,9 +643,8 @@
       document.getElementById('repLifetime').textContent = '$0.00';
     }
 
-    // 2026-05-20 #6c8a4610 - was using raw partner.id UUID; switched to friendly partner_code (e.g. P-000123), falling back to partner.id only if code missing. welcome.html accepts both formats.
-    const refCode = partner.partner_code || partner.id;
-    const shareUrl = 'https://getlymx.com/welcome.html?ref=' + encodeURIComponent(refCode);
+    // Wire the share link to the partner's actual ref ID
+    const shareUrl = 'https://getlymx.com/welcome.html?ref=' + partner.id;
     const shareEl = document.getElementById('repShareLinkText');
     if (shareEl) shareEl.textContent = shareUrl;
     const copyBtn = document.getElementById('repShareLinkCopy');
