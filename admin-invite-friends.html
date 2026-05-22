@@ -248,6 +248,7 @@ const ANON = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
 
 let myUserId = null;
 let myEmail  = null;
+let mySenderName = null;  // 2026-05-21 #71f920c3 — populated from partners.display_name or email-prefix; used to substitute {SENDER_NAME} in invite templates so they don't always sign 'Kenny'.
 let myRefId  = null;       // Kenny's partner ID — auto-pulled
 let pickedTmpl = 'partner';
 let parsedEmails = [];     // [{ email, name, dup, valid }]
@@ -490,12 +491,22 @@ document.querySelectorAll('.tmpl').forEach(t => {
 
 function applyTemplate() {
   const tmpl = TEMPLATES[pickedTmpl];
-  // 2026-05-20 #71f920c3 - preview the signature with the actual signed-in user
-  // (cached in window.__lymxSenderName during init).
-  const previewName = window.__lymxSenderName || 'me';
-  const previewEmail = window.__lymxSenderEmail || '';
-  document.getElementById('iSubject').value = tmpl.subject.replace(/\{NAME\}/g, 'there').replace(/\{REF\}/g, myRefId || 'YOUR_REF_ID').replace(/\{SENDER_NAME\}/g, previewName).replace(/\{SENDER_EMAIL\}/g, previewEmail);
-  document.getElementById('iBody').value    = tmpl.body.replace(/\{NAME\}/g, '{NAME}').replace(/\{REF\}/g, myRefId || 'YOUR_REF_ID').replace(/\{SENDER_NAME\}/g, previewName).replace(/\{SENDER_EMAIL\}/g, previewEmail);
+  // 2026-05-21 #71f920c3 root-cause fix: substitute the SENDER's identity placeholders
+  // so the invite letter signs the actual inviter (Helen / Dave / Rachel) instead of
+  // hardcoded "Kenny / kenny.lin@getlymx.com". {NAME} stays unsubstituted in body
+  // (per-recipient loop substitutes that at send time).
+  const sName = mySenderName || (myEmail ? myEmail.split('@')[0] : 'A LYMX partner');
+  const sMail = myEmail || 'team@getlymx.com';
+  document.getElementById('iSubject').value = tmpl.subject
+      .replace(/\{NAME\}/g, 'there')
+      .replace(/\{REF\}/g, myRefId || 'YOUR_REF_ID')
+      .replace(/\{SENDER_NAME\}/g, sName)
+      .replace(/\{SENDER_EMAIL\}/g, sMail);
+  document.getElementById('iBody').value = tmpl.body
+      .replace(/\{NAME\}/g, '{NAME}')
+      .replace(/\{REF\}/g, myRefId || 'YOUR_REF_ID')
+      .replace(/\{SENDER_NAME\}/g, sName)
+      .replace(/\{SENDER_EMAIL\}/g, sMail);
 }
 
 // -------- File upload + drag --------
@@ -592,14 +603,10 @@ document.getElementById('iSend').addEventListener('click', async () => {
   let sent = 0, failed = 0;
   const errors = [];
 
-  // 2026-05-20 #71f920c3 - use the cached sender identity from init time
-  const senderName = window.__lymxSenderName || 'LYMX team';
-  const senderEmail = window.__lymxSenderEmail || 'hello@getlymx.com';
-
   for (const p of valid) {
     const firstName = (p.name || p.email.split('@')[0]).split(' ')[0];
-    const personalSubject = subjT.replace(/\{NAME\}/g, firstName).replace(/\{SENDER_NAME\}/g, senderName).replace(/\{SENDER_EMAIL\}/g, senderEmail);
-    const personalBody    = bodyT.replace(/\{NAME\}/g, firstName).replace(/\{SENDER_NAME\}/g, senderName).replace(/\{SENDER_EMAIL\}/g, senderEmail);
+    const personalSubject = subjT.replace(/\{NAME\}/g, firstName);
+    const personalBody    = bodyT.replace(/\{NAME\}/g, firstName);
 
     // Create a small broadcast for this single recipient
     const bcRes = await authedFetch('/rest/v1/broadcasts', {
@@ -826,7 +833,9 @@ async function resendInvite({ email, name, template }) {
       : 'You got a LYMX invite';
   const refLink = `https://getlymx.com/welcome.html?ref=${myRefId}&utm_source=resend`;
   const greet = name ? `Hey ${name.split(' ')[0]} —` : 'Hey —';
-  const body = `${greet}\n\nResending my LYMX invite — your direct link below auto-fills me as your sponsor.\n\n${refLink}\n\n— ${myEmail || 'Kenny'}`;
+  // 2026-05-21 #71f920c3 — sign with the actual sender's name, not hardcoded "Kenny".
+  const sigName = mySenderName || (myEmail ? myEmail.split('@')[0] : 'A LYMX partner');
+  const body = `${greet}\n\nResending my LYMX invite — your direct link below auto-fills me as your sponsor.\n\n${refLink}\n\n— ${sigName}${myEmail ? '\n' + myEmail : ''}`;
   const bcRes = await authedFetch('/rest/v1/broadcasts', {
     method: 'POST',
     headers: { 'Prefer': 'return=representation' },
@@ -870,13 +879,23 @@ async function resendInvite({ email, name, template }) {
   }
   myUserId = s.user.id;
   myEmail  = s.user.email;
-  // 2026-05-20 #71f920c3 - cache the user's display name so applyTemplate previews use it
-  window.__lymxSenderName = (s.user.user_metadata && (s.user.user_metadata.full_name || s.user.user_metadata.name)) || (s.user.email || '').split('@')[0] || 'me';
-  window.__lymxSenderEmail = s.user.email || '';
+  // 2026-05-21 #71f920c3 — resolve sender's display name from partners → customers → email-prefix
+  try {
+    const dpRes = await authedFetch('/rest/v1/partners?user_id=eq.' + myUserId + '&select=display_name&limit=1');
+    if (dpRes && dpRes.ok) {
+      const ps = await dpRes.json();
+      if (ps && ps.length && ps[0].display_name) mySenderName = ps[0].display_name;
+    }
+    if (!mySenderName) {
+      const dcRes = await authedFetch('/rest/v1/customers?user_id=eq.' + myUserId + '&select=display_name&limit=1');
+      if (dcRes && dcRes.ok) {
+        const cs = await dcRes.json();
+        if (cs && cs.length && cs[0].display_name) mySenderName = cs[0].display_name;
+      }
+    }
+  } catch (e) { console.warn('[admin-invite-friends] sender name lookup failed', e); }
+  if (!mySenderName && myEmail) mySenderName = myEmail.split('@')[0];
   document.getElementById('userInitial').textContent = (myEmail || 'L')[0].toUpperCase();
-  // Re-paint the template body now that we have the sender identity (the
-  // first applyTemplate ran on click before the session resolved).
-  try { applyTemplate(); } catch (e) {}
 
   // If user came from contacts.html with selected emails, pre-fill them.
   // Fix #aa42f2ae: form was rebuilt to use a picker+pills UI; the old
