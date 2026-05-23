@@ -733,113 +733,39 @@ async function removeAvatar() {
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
 <script>
-// Change Password section v3 — pw-lockout-fix 2026-05-23
-// Root-cause fix for the lockout pattern that hit Kenny on 2026-05-22:
-//   1. Add a CURRENT PASSWORD gate so an accidental click can't replace the
-//      password (re-auth must succeed first).
-//   2. After updateUser succeeds, IMMEDIATELY test the new password via a
-//      signInWithPassword on a fresh client. If that fails (e.g. provider
-//      trimmed the new pw, or Supabase silently rejected it), the user is
-//      warned BEFORE their existing session goes away.
-//   3. On full success: sign out and bounce to /login.html with a banner
-//      message. Forcing the new-password re-login proves end-to-end that
-//      the new credential works.
-// History: v1 had no current-pw gate and showed a green toast even on no-op
-// failures; that's how Kenny got locked out.
+// Change Password section (Bug fix 2026-05-15 #05203381)
 window.addEventListener('DOMContentLoaded', function () {
+  // Inject the section after the "About you" card or near the end of main
   var main = document.querySelector('main') || document.body;
   var card = document.createElement('section');
   card.style.cssText = 'background:#fff;border:1px solid var(--line, #e6e8ec);border-radius:14px;padding:24px 28px;margin:18px 0;max-width:720px';
-  var ipStyle = 'width:100%;padding:11px 14px;border:1px solid #e6e8ec;border-radius:10px;font-size:15px;box-sizing:border-box';
-  var lbStyle = 'display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#5b6472;margin:14px 0 6px';
   card.innerHTML = ''
     + '<h2 style="margin:0 0 14px;font-size:18px">Change password</h2>'
-    + '<p style="margin:0 0 12px;font-size:13.5px;color:#5b6472">We confirm your current password first so an accidental change can\'t lock you out, and we test the new one before signing you out.</p>'
-    + '<label style="' + lbStyle.replace('margin:14px','margin:8px') + '">Current password</label>'
-    + '<input id="curPw" type="password" autocomplete="current-password" style="' + ipStyle + '" />'
-    + '<label style="' + lbStyle + '">New password (8+ characters)</label>'
-    + '<input id="newPw1" type="password" autocomplete="new-password" minlength="8" style="' + ipStyle + '" />'
-    + '<label style="' + lbStyle + '">Confirm new password</label>'
-    + '<input id="newPw2" type="password" autocomplete="new-password" minlength="8" style="' + ipStyle + '" />'
+    + '<label style="display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#5b6472;margin:8px 0 6px">New password (8+ characters)</label>'
+    + '<input id="newPw1" type="password" autocomplete="new-password" minlength="8" style="width:100%;padding:11px 14px;border:1px solid #e6e8ec;border-radius:10px;font-size:15px;box-sizing:border-box" />'
+    + '<label style="display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#5b6472;margin:14px 0 6px">Confirm new password</label>'
+    + '<input id="newPw2" type="password" autocomplete="new-password" minlength="8" style="width:100%;padding:11px 14px;border:1px solid #e6e8ec;border-radius:10px;font-size:15px;box-sizing:border-box" />'
     + '<button id="changePwBtn" type="button" style="margin-top:14px;padding:10px 18px;border-radius:9px;background:#0e1116;color:#fff;font-weight:700;font-size:14px;border:0;cursor:pointer">Update password</button>'
-    + '<div id="pwMsg" style="margin-top:10px;font-size:13.5px;line-height:1.5"></div>';
+    + '<div id="pwMsg" style="margin-top:10px;font-size:13.5px"></div>';
   main.appendChild(card);
-
-  var btn = document.getElementById('changePwBtn');
-  var msg = document.getElementById('pwMsg');
-  function showErr(s) { msg.textContent = s; msg.style.color = '#B91C1C'; }
-  function showOk(s)  { msg.textContent = s; msg.style.color = '#13a26b'; }
-
-  btn.addEventListener('click', async function () {
-    var cur = document.getElementById('curPw').value;
-    var a   = document.getElementById('newPw1').value;
-    var b   = document.getElementById('newPw2').value;
-
-    if (!cur) return showErr('Enter your current password.');
-    if (a.length < 8) return showErr('New password must be at least 8 characters.');
-    if (a !== b) return showErr('New passwords do not match.');
-    if (a === cur) return showErr('New password must be different from current.');
-
-    if (!window.LYMX || !window.LYMX.sb) return showErr('Sign in first.');
-    var sb = window.LYMX.sb;
-    var sess = await sb.auth.getSession();
-    var userEmail = sess && sess.data && sess.data.session && sess.data.session.user && sess.data.session.user.email;
-    if (!userEmail) return showErr('Could not read your current account. Refresh and try again.');
-
-    btn.disabled = true;
-    var origLabel = btn.textContent;
-    btn.textContent = 'Verifying current password...';
-    msg.textContent = '';
-
-    // Step 1 — verify current password by signing in with it.
-    //          If this fails, we do NOT touch the password.
-    var verify;
+  document.getElementById('changePwBtn').addEventListener('click', async function () {
+    var a = document.getElementById('newPw1').value;
+    var b = document.getElementById('newPw2').value;
+    var msg = document.getElementById('pwMsg');
+    if (a.length < 8) { msg.textContent = 'Password must be at least 8 characters.'; msg.style.color = '#B91C1C'; return; }
+    if (a !== b) { msg.textContent = 'Passwords do not match.'; msg.style.color = '#B91C1C'; return; }
     try {
-      verify = await sb.auth.signInWithPassword({ email: userEmail, password: cur });
+      if (!window.LYMX || !window.LYMX.sb) { msg.textContent = 'Sign in first.'; msg.style.color = '#B91C1C'; return; }
+      var r = await window.LYMX.sb.auth.updateUser({ password: a });
+      if (r.error) { msg.textContent = r.error.message; msg.style.color = '#B91C1C'; return; }
+      msg.textContent = '✓ Password updated. Use the new one next time you sign in.';
+      msg.style.color = '#13a26b';
+      document.getElementById('newPw1').value = '';
+      document.getElementById('newPw2').value = '';
     } catch (e) {
-      btn.disabled = false; btn.textContent = origLabel;
-      return showErr('Could not verify current password: ' + (e.message || e));
+      msg.textContent = 'Could not update: ' + (e.message || e);
+      msg.style.color = '#B91C1C';
     }
-    if (verify.error) {
-      btn.disabled = false; btn.textContent = origLabel;
-      return showErr('Current password is incorrect.');
-    }
-
-    // Step 2 — update password.
-    btn.textContent = 'Updating...';
-    var upd;
-    try {
-      upd = await sb.auth.updateUser({ password: a });
-    } catch (e) {
-      btn.disabled = false; btn.textContent = origLabel;
-      return showErr('Update failed: ' + (e.message || e));
-    }
-    if (upd.error) {
-      btn.disabled = false; btn.textContent = origLabel;
-      return showErr('Update failed: ' + upd.error.message);
-    }
-
-    // Step 3 — prove the new password works END-TO-END before we sign out.
-    //          We use the LYMX-wide signOut + a fresh signInWithPassword.
-    btn.textContent = 'Testing new password...';
-    var test;
-    try {
-      test = await sb.auth.signInWithPassword({ email: userEmail, password: a });
-    } catch (e) {
-      btn.disabled = false; btn.textContent = origLabel;
-      return showErr('Password was updated but a follow-up test failed: ' + (e.message || e) + '. Please reach out to support before signing out.');
-    }
-    if (test.error) {
-      btn.disabled = false; btn.textContent = origLabel;
-      return showErr('Password was updated but cannot sign in with the new value: ' + test.error.message + '. Please reach out to support before signing out.');
-    }
-
-    // Step 4 — success. Force a clean re-login with the new password.
-    showOk('✓ Password updated and verified. Signing you out so you can sign back in with the new password...');
-    setTimeout(async function () {
-      try { await sb.auth.signOut(); } catch (e) {}
-      location.href = '/login.html?msg=password-changed';
-    }, 1400);
   });
 });
 </script>
