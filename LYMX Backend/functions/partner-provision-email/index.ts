@@ -82,6 +82,10 @@ const errorResponse = (message: string, status = 400) =>
 
 interface ProvisionBody {
     partner_id: string;
+    // 2026-05-22 — set true to re-send the welcome email even if status is
+    // already "active". Used by admin-partners "Resend welcome" button and
+    // the reconciliation backfill flow.
+    force_welcome?: boolean;
 }
 
 // =============================================================================
@@ -325,7 +329,7 @@ serve(async (req) => {
     //      the admin JWT is neither service_role nor matches the secret. Now any
     //      admin can re-trigger provisioning from the dashboard UI, which is what
     //      "Resend welcome" was designed for.
-    const _serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    const _serviceKey = Deno.env.get("SERVICE_ROLE_KEY") || "";
     const _isLegacyJwt = getJwtRole(token) === "service_role";
     const _isNewSecret = !!token && token === _serviceKey;
     let _isAdminStaff = false;
@@ -366,7 +370,7 @@ serve(async (req) => {
     const env = (k: string) => Deno.env.get(k);
     const required = [
         "SUPABASE_URL",
-        "SUPABASE_SERVICE_ROLE_KEY",
+        "SERVICE_ROLE_KEY",
         "CF_ZONE_ID_LYMX",
         "CF_ACCOUNT_ID_LYMX",
         "CF_API_TOKEN_LYMX",
@@ -423,6 +427,95 @@ serve(async (req) => {
         .eq("partner_id", partner.id)
         .maybeSingle();
     if (existing && existing.status === "active") {
+        // 2026-05-22 — if caller passed force_welcome:true (admin "Resend
+        // welcome" button or partner-welcome reconciliation), re-render the
+        // template and re-send through Resend without re-provisioning the
+        // Cloudflare route / SES identity. This is the ONLY path that exists
+        // today for getting a duplicate welcome letter to a partner who
+        // didn't receive (or lost) the first one — DO NOT remove without
+        // adding a replacement.
+        if (body.force_welcome) {
+            const referralCode = (partner.display_name ?? partner.legal_name)
+                .replace(/[^a-zA-Z]/g, "")
+                .toUpperCase()
+                .slice(0, 8) || "PARTNER";
+            const fullSmtpUsername = env("SES_SMTP_USERNAME") ?? "";
+            const fullSmtpPassword = env("SES_SMTP_PASSWORD") ?? "";
+            const { subject, html, text } = partnerWelcomeEmail({
+                fullName: partner.display_name ?? partner.legal_name,
+                referralCode,
+                siteUrl,
+                companyEmail: existing.full_email,
+                smtpHost,
+                smtpUsername: fullSmtpUsername,
+                smtpPassword: fullSmtpPassword,
+                foundingTwentyFive: partner.is_founding_25 === true,
+            });
+            let sendId: string | null = null;
+            let resendId: string | null = null;
+            let sendErr: string | null = null;
+            // INSERT email_sends row FIRST so we have an audit trail even if Resend errors.
+            try {
+                const { data: sRow } = await supabase
+                    .from("email_sends")
+                    .insert({
+                        sender_user_id: null,
+                        from_address: fromAddress.replace(/^.*<|>.*$/g, "") || "hello@getlymx.com",
+                        reply_to: "hello@getlymx.com",
+                        to_address: partner.contact_email,
+                        subject,
+                        template_key: "partner_welcome",
+                        send_status: "queued",
+                    })
+                    .select("id")
+                    .single();
+                sendId = sRow?.id ?? null;
+            } catch (e) {
+                console.warn("email_sends pre-insert failed (audit trail will be partial):", (e as Error).message);
+            }
+            try {
+                resendId = await sendViaResend({
+                    apiKey: env("RESEND_API_KEY")!,
+                    from: fromAddress,
+                    to: partner.contact_email,
+                    subject,
+                    html,
+                    text,
+                });
+            } catch (e) {
+                sendErr = e instanceof Error ? e.message : String(e);
+            }
+            // Update email_sends + partner_emails based on outcome
+            if (sendId) {
+                if (sendErr) {
+                    await supabase.from("email_sends").update({ send_status: "failed", error_message: sendErr }).eq("id", sendId);
+                } else {
+                    await supabase.from("email_sends").update({ send_status: "sent", sent_at: new Date().toISOString(), resend_message_id: resendId }).eq("id", sendId);
+                }
+            }
+            if (sendErr) {
+                await supabase.from("partner_emails").update({ last_error: `Forced resend failed: ${sendErr}` }).eq("id", existing.id);
+                return jsonResponse({
+                    success: false,
+                    partner_email_id: existing.id,
+                    full_email: existing.full_email,
+                    status: "active",
+                    note: "Forced resend attempted but send failed",
+                    send_id: sendId,
+                    error: sendErr,
+                }, 502);
+            }
+            await supabase.from("partner_emails").update({ onboarding_email_sent_at: new Date().toISOString(), last_error: null }).eq("id", existing.id);
+            return jsonResponse({
+                success: true,
+                partner_email_id: existing.id,
+                full_email: existing.full_email,
+                status: "active",
+                note: "Welcome email re-sent via force_welcome path",
+                send_id: sendId,
+                resend_message_id: resendId,
+            });
+        }
         return jsonResponse({
             success: true,
             partner_email_id: existing.id,
@@ -593,8 +686,30 @@ serve(async (req) => {
         foundingTwentyFive: partner.is_founding_25 === true,
     });
 
+    // 2026-05-22 — pre-insert email_sends row for audit trail so partner
+    // welcome sends are visible in admin-emails.html like every other send.
+    let auditSendId: string | null = null;
     try {
-        await sendViaResend({
+        const { data: sRow } = await supabase
+            .from("email_sends")
+            .insert({
+                sender_user_id: null,
+                from_address: fromAddress.replace(/^.*<|>.*$/g, "") || "hello@getlymx.com",
+                reply_to: "hello@getlymx.com",
+                to_address: partner.contact_email,
+                subject,
+                template_key: "partner_welcome",
+                send_status: "queued",
+            })
+            .select("id")
+            .single();
+        auditSendId = sRow?.id ?? null;
+    } catch (e) {
+        console.warn("audit pre-insert failed:", (e as Error).message);
+    }
+    let auditResendId: string | null = null;
+    try {
+        auditResendId = await sendViaResend({
             apiKey: env("RESEND_API_KEY")!,
             from: fromAddress,
             to: partner.contact_email,
@@ -602,6 +717,11 @@ serve(async (req) => {
             html,
             text,
         });
+        if (auditSendId) {
+            await supabase.from("email_sends")
+                .update({ send_status: "sent", sent_at: new Date().toISOString(), resend_message_id: auditResendId })
+                .eq("id", auditSendId);
+        }
     } catch (e) {
         // Email send failed but provisioning succeeded. Don't fail the request —
         // a reconciliation job can retry the email. Mark the row so we can find it.
@@ -610,6 +730,11 @@ serve(async (req) => {
             .from("partner_emails")
             .update({ last_error: `Onboarding email failed: ${msg}` })
             .eq("id", row.id);
+        if (auditSendId) {
+            await supabase.from("email_sends")
+                .update({ send_status: "failed", error_message: msg })
+                .eq("id", auditSendId);
+        }
         return jsonResponse({
             success: true,
             partner_email_id: row.id,

@@ -446,19 +446,11 @@ async function save() {
 }
 
 function renderHeader() {
-  // 2026-05-23 #profile-race-fix - every element below may not yet exist when
-  // this runs (lymx-nav.js injects some asynchronously). Without these null
-  // guards, ONE missing element threw and killed init() before fillForm() and
-  // paintAvatar() could run, leaving the form blank and the avatar invisible
-  // for every user. Root cause, not symptom.
-  const initial = ((myUser && myUser.email || 'L')[0] || 'L').toUpperCase();
-  const ui = document.getElementById('userInitial');
-  if (ui) ui.textContent = initial;
+  const init = ((myUser.email || 'L')[0] || 'L').toUpperCase();
+  document.getElementById('userInitial').textContent = init;
   const pill = document.getElementById('rolePill');
-  if (pill) {
-    pill.textContent = myRole;
-    pill.className = 'role-pill ' + myRole;
-  }
+  pill.textContent = myRole;
+  pill.className = 'role-pill ' + myRole;
 
   // 2026-05-20 #97508680 - show calendar setup card for partners + businesses
   const calCard = document.getElementById('calendarSetupCard');
@@ -467,15 +459,12 @@ function renderHeader() {
   const dashHref = myRole === 'partner' ? '/rep-dashboard.html'
                  : myRole === 'business' ? '/biz-dashboard.html'
                  : '/customer-dashboard.html';
-  const dl1 = document.getElementById('dashLink');
-  if (dl1) dl1.href = dashHref;
-  const dl2 = document.getElementById('dashLink2');
-  if (dl2) dl2.href = dashHref;
+  document.getElementById('dashLink').href = dashHref;
+  document.getElementById('dashLink2').href = dashHref;
 
   // Verification banner
   const verified = myRow && myRow.verified_at;
   const banner = document.getElementById('verifBanner');
-  if (!banner) return; // 2026-05-23 #profile-race-fix - banner not yet injected
   if (myRole === 'business') {
     // Businesses go through their own intake flow; don't show banner
     banner.style.display = 'none';
@@ -716,17 +705,9 @@ async function removeAvatar() {
   const det = await detectRole();
   myRole = det.role;
   myRow  = det.row;
-  // 2026-05-23 #profile-race-fix - wrap each step independently so a crash in
-  // one (e.g. renderHeader hitting a not-yet-injected nav element) does not
-  // block the next. Previously a single TypeError here left the form blank
-  // and the avatar invisible for every user.
-  try { renderHeader(); } catch (e) { console.warn('[init] renderHeader threw', e); }
-  try { fillForm(); }     catch (e) { console.warn('[init] fillForm threw', e); }
-  try { paintAvatar(myRow && myRow.avatar_url); } catch (e) { console.warn('[init] paintAvatar threw', e); }
-  // Re-render header once lymx-nav.js finishes injecting the header chrome.
-  const rerun = () => { try { renderHeader(); } catch (e) {} };
-  document.addEventListener('lymx-nav-ready', rerun, { once: true });
-  setTimeout(rerun, 500);
+  renderHeader();
+  fillForm();
+  paintAvatar(myRow && myRow.avatar_url);
 })();
 </script>
 
