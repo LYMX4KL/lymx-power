@@ -177,7 +177,11 @@
       if (!user) return { data: null, error: new Error('Not signed in') };
       return await sb
         .from('businesses')
-        .select('id, display_name, legal_name, category, issuance_rate, contact_email')
+        // 2026-05-24 audit fix: select the slug + auxiliary fields biz-dashboard
+        // reads (slug is needed to rewrite the static brew-and-bean storefront
+        // links to the owner's actual welcome.html?biz=<slug> page; the other
+        // columns are read for the header subtitle, tagline, and emoji).
+        .select('id, display_name, legal_name, category, issuance_rate, contact_email, slug, created_at, business_kind, approval_status, address_line1, tagline, description, emoji')
         .eq('user_id', user.id)
         .maybeSingle();
     },
