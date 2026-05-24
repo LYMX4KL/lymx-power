@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX share hub — pre-written social, SMS, and email posts you can share. Every link carries your referral code so signups credit you." />
+<title>Share hub · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--err:#c0392b;--gold:#d4af37;--shadow:0 8px 24px rgba(14,17,22,.08)}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1100px;margin:0 auto;padding:24px 22px 64px}
+
+  .page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin:18px 0 6px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head .sub{color:var(--muted);font-size:14.5px;margin-top:4px;max-width:680px}
+  .ref-card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px 14px;font-size:13.5px;color:var(--muted)}
+  .ref-card b{color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:20px 0 18px;overflow-x:auto}
+  .tab{padding:11px 16px;font-weight:700;font-size:14px;color:var(--muted);cursor:pointer;background:transparent;border:0;border-bottom:2px solid transparent;font-family:inherit;white-space:nowrap}
+  .tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+
+  .filters{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+  .chip{padding:6px 12px;border:1px solid var(--line);border-radius:99px;font-size:12.5px;font-weight:700;color:var(--muted);background:#fff;cursor:pointer;font-family:inherit}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+  .post{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+  .post .pillrow{display:flex;flex-wrap:wrap;gap:6px}
+  .post .pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .post .pill.customer{background:#e6eefc;color:#0050c7}
+  .post .pill.partner{background:#fef3c7;color:#92400e}
+  .post .pill.business{background:#e6f5ee;color:#0a6e44}
+  .post .pill.kind{background:#f1f3f6;color:var(--ink-2)}
+  .post .title{font-weight:800;font-size:15.5px;line-height:1.35}
+  .post .body{font-size:13.5px;color:var(--ink-2);white-space:pre-wrap}
+  .post .body.long{font-size:13px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;margin-top:4px;display:none}
+  .post .body.long.on{display:block}
+  .post .more{font-size:12.5px;color:var(--accent);cursor:pointer;background:transparent;border:0;padding:0;font-family:inherit;text-align:left;font-weight:700}
+  .post .actions{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 14px;border-radius:9px;font-weight:700;font-size:13px;border:1px solid transparent;cursor:pointer;font-family:inherit;text-decoration:none}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-ghost{background:#fff;border-color:var(--line);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--ink-2)}
+  .btn-accent{background:var(--accent);color:#fff}
+  .btn-accent:hover{background:var(--accent-2)}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0e1116;color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:600;opacity:0;transition:opacity .2s;z-index:99999;max-width:90vw;text-align:center}
+  .toast.on{opacity:1}
+  .toast.ok{background:#0f8b5a}
+  .toast.err{background:#dc2626}
+
+  .empty{padding:48px 20px;text-align:center;color:var(--muted);font-size:14px;background:#fff;border-radius:14px;border:1px dashed var(--line)}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<meta name="theme-color" content="#0a84ff" />
+</head>
+<body>
+
+<div class="wrap">
+  <div class="page-head">
+    <div>
+      <h1>Share hub</h1>
+      <div class="sub">Pre-written posts you can drop straight into Instagram, X, Facebook, WhatsApp, SMS, or email. Every link carries <strong>your</strong> referral code — anyone who signs up through your post becomes your downstream customer, partner, or business. Customers can refer friends too; if a friend later upgrades to a partner or signs a business, the credit still flows back to the customer who first shared.</div>
+    </div>
+    <div class="ref-card">Your ref code: <b id="refCode">…</b></div>
+  </div>
+
+  <div class="tabs" id="audTabs">
+    <button type="button" class="tab" data-aud="customer">For customers</button>
+    <button type="button" class="tab" data-aud="partner">For partners</button>
+    <button type="button" class="tab" data-aud="business">For businesses</button>
+  </div>
+
+  <div class="filters" id="kindFilters">
+    <button type="button" class="chip on" data-kind="all">All formats</button>
+    <button type="button" class="chip" data-kind="social_short">Social post</button>
+    <button type="button" class="chip" data-kind="social_long">Long-form social</button>
+    <button type="button" class="chip" data-kind="sms">SMS</button>
+    <button type="button" class="chip" data-kind="email_subject_body">Email</button>
+  </div>
+
+  <div id="postsGrid" class="grid"><div class="empty">Loading posts…</div></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script src="lymx-nav.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script>
+(async function init() {
+  const sb = window.LYMX.sb;
+  const $ = id => document.getElementById(id);
+  function esc(s){ return String(s == null ? '' : s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+  function toast(msg, kind){ const t = $('toast'); t.textContent = msg; t.className = 'toast on ' + (kind || ''); setTimeout(() => t.className='toast', 2400); }
+
+  // Resolve the signed-in user's ref code.
+  // - Partner code (P-NNNNNN) if they are a partner — highest attribution value.
+  // - Customer short_id (U-XXXXXX) if customer-only — still credits them as
+  //   the originating lead; if their referral later upgrades to partner, the
+  //   chain rolls them up as the upline.
+  const user = await window.LYMX.getUser();
+  let refCode = null;
+  let myRole  = 'customer';
+  if (user) {
+    const { data: p } = await sb.from('partners').select('partner_code').eq('user_id', user.id).maybeSingle();
+    if (p && p.partner_code) { refCode = p.partner_code; myRole = 'partner'; }
+    if (!refCode) {
+      const { data: cust } = await sb.from('customers').select('short_id').eq('user_id', user.id).maybeSingle();
+      if (cust && cust.short_id) refCode = cust.short_id;
+    }
+    if (!refCode) refCode = 'U-' + user.id.slice(0, 6).toUpperCase();
+    const { data: biz } = await sb.from('businesses').select('id').eq('owner_user_id', user.id).limit(1).maybeSingle();
+    if (biz) myRole = 'business';
+  } else {
+    refCode = 'guest';
+    myRole = 'customer';
+  }
+  $('refCode').textContent = refCode;
+
+  function setActiveTab(aud) {
+    document.querySelectorAll('#audTabs .tab').forEach(t => t.classList.toggle('on', t.getAttribute('data-aud') === aud));
+    state.audience = aud;
+    render();
+  }
+  function setActiveKind(kind) {
+    document.querySelectorAll('#kindFilters .chip').forEach(c => c.classList.toggle('on', c.getAttribute('data-kind') === kind));
+    state.kind = kind;
+    render();
+  }
+  document.querySelectorAll('#audTabs .tab').forEach(t => t.addEventListener('click', () => setActiveTab(t.getAttribute('data-aud'))));
+  document.querySelectorAll('#kindFilters .chip').forEach(c => c.addEventListener('click', () => setActiveKind(c.getAttribute('data-kind'))));
+
+  const state = { audience: myRole, kind: 'all', posts: [] };
+  setActiveTab(myRole === 'partner' || myRole === 'business' ? myRole : 'customer');
+
+  const r = await sb.from('marketing_posts')
+    .select('id, audience, kind, pain_point, title, body_short, body_long, cta_label, cta_url_template, order_index')
+    .eq('published', true)
+    .order('audience').order('order_index');
+  if (r.error) {
+    $('postsGrid').innerHTML = '<div class="empty">Could not load content: ' + esc(r.error.message) + '</div>';
+    return;
+  }
+  state.posts = r.data || [];
+  render();
+
+  function render() {
+    const grid = $('postsGrid');
+    const filtered = state.posts.filter(p =>
+      (state.audience === 'all' || p.audience === state.audience) &&
+      (state.kind === 'all' || p.kind === state.kind)
+    );
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="empty">No posts match this filter yet. Check back soon — we add new ones weekly.</div>';
+      return;
+    }
+
+    const KIND_LABEL = { social_short:'Social', social_long:'Long-form', sms:'SMS', email_subject_body:'Email', caption:'Caption', story:'Story' };
+
+    grid.innerHTML = filtered.map(p => {
+      const sub = (s) => (s || '').replace(/\{REF\}/g, refCode);
+      const url       = sub(p.cta_url_template);
+      const shortBody = sub(p.body_short);
+      const longBody  = sub(p.body_long || '');
+      return (
+        '<div class="post" data-url="' + esc(url) + '" data-short="' + esc(shortBody) + '">' +
+        '  <div class="pillrow">' +
+        '    <span class="pill ' + esc(p.audience) + '">' + esc(p.audience) + '</span>' +
+        '    <span class="pill kind">' + esc(KIND_LABEL[p.kind] || p.kind) + '</span>' +
+        (p.pain_point ? '    <span class="pill kind">' + esc(p.pain_point.replace(/_/g,' ')) + '</span>' : '') +
+        '  </div>' +
+        '  <div class="title">' + esc(p.title) + '</div>' +
+        '  <div class="body">' + esc(shortBody) + '</div>' +
+        (longBody ? '  <button type="button" class="more" data-more>Show context →</button><div class="body long">' + esc(longBody) + '</div>' : '') +
+        '  <div class="actions">' +
+        '    <button type="button" class="btn btn-primary" data-copy>Copy text</button>' +
+        '    <button type="button" class="btn btn-ghost"   data-share>Share…</button>' +
+        '    <a class="btn btn-accent" href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(p.cta_label) + ' →</a>' +
+        '  </div>' +
+        '</div>'
+      );
+    }).join('');
+
+    grid.querySelectorAll('[data-more]').forEach(b => b.addEventListener('click', e => {
+      const card = e.currentTarget.closest('.post');
+      const longEl = card.querySelector('.body.long');
+      if (longEl) longEl.classList.toggle('on');
+      e.currentTarget.textContent = longEl.classList.contains('on') ? '← Hide context' : 'Show context →';
+    }));
+    grid.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async e => {
+      const card = e.currentTarget.closest('.post');
+      const text = card.getAttribute('data-short');
+      try { await navigator.clipboard.writeText(text); toast('Copied. Paste into your social / SMS / email.', 'ok'); }
+      catch (err) { toast('Copy failed — long-press the text to copy manually.', 'err'); }
+    }));
+    grid.querySelectorAll('[data-share]').forEach(b => b.addEventListener('click', async e => {
+      const card = e.currentTarget.closest('.post');
+      const text = card.getAttribute('data-short');
+      const url  = card.getAttribute('data-url');
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: 'LYMX', text: text, url: url });
+        } else {
+          await navigator.clipboard.writeText(text);
+          toast('Copied (native share unsupported on this browser).', 'ok');
+        }
+      } catch (err) { /* user cancelled — ignore */ }
+    }));
+  }
+})();
+</script>
+</body>
+</html>

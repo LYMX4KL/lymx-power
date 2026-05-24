@@ -197,6 +197,7 @@
       { href: 'browse.html',             icon: '\u{1F50D}', label: 'Browse Businesses' },
       { section: 'Network' },
       { href: 'refer.html',              icon: '\u{1F4E8}', label: 'Refer Friends' },
+      { href: 'share-hub.html',          icon: '\u{1F4E3}', label: 'Share hub' },
       { href: 'my-bookings.html',        icon: '\u{1F4C5}', label: 'My bookings' },
       { href: 'my-reviews.html',         icon: '⭐',    label: 'My Reviews' },
       { href: 'my-saved-places.html',   icon: '\u{1F4CC}', label: 'Saved Places' },
@@ -215,6 +216,7 @@
       { section: 'Operations' },
       { href: 'biz-staff-roles.html',    icon: '\u{1FAAA}', label: 'Staff' },
       { href: 'biz-promo-planner.html',  icon: '\u{1F381}', label: 'Promo Planner' },
+      { href: 'share-hub.html',          icon: '\u{1F4E3}', label: 'Share hub' },
       { href: 'biz-cashflow.html',       icon: '\u{1F4B5}', label: 'Cashflow' },
       { href: 'biz-payouts.html',        icon: '\u{1F3E6}', label: 'Payouts (Stripe)' },
       { href: 'biz-pos-comparison.html', icon: '\u{1F50C}', label: 'POS / Integrations' },
@@ -247,6 +249,7 @@
       // Added explicit "Refer a Friend" → refer.html mirroring the customer menu.
       { href: 'refer.html',              icon: '\u{1F381}', label: 'Refer a Friend' },
       { href: 'admin-invite-friends.html', icon: '\u{1F4E8}', label: 'Invite Friends' },
+      { href: 'share-hub.html',            icon: '\u{1F4E3}', label: 'Share hub' },
       { href: 'contacts.html',           icon: '\u{1F4C7}', label: 'Contacts' },
       { href: 'my-feedback.html',        icon: '\u{1F4DD}', label: 'My Feedback' }
     ],
@@ -354,7 +357,7 @@
     };
     var LABEL_KEY = {
       'Dashboard':'sidebar.dashboard','My LYMX Wallet':'sidebar.wallet','Send LYMX':'sidebar.send_lymx',
-      'Browse Businesses':'sidebar.browse_businesses','Refer Friends':'sidebar.refer_friends',
+      'Browse Businesses':'sidebar.browse_businesses','Refer Friends':'sidebar.refer_friends','Share hub':'sidebar.share_hub',
       'My Reviews':'sidebar.my_reviews','Saved Places':'sidebar.saved_places','Donate LYMX':'sidebar.donate_lymx',
       'Messages':'sidebar.messages','Profile':'sidebar.profile','Contacts':'sidebar.contacts',
       'My Feedback':'sidebar.my_feedback','Analytics':'sidebar.analytics','My Customers':'sidebar.my_customers',
