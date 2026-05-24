@@ -136,8 +136,8 @@
         <h2 id="signinHeading">Welcome back</h2>
         <p class="sub">Sign in with the email you used to create your LYMX account.</p>
 
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+        <label for="email">Email, phone, or company email</label>
+        <input type="text" id="email" name="email" placeholder="you@example.com, +14155551234, or you@getlymx.com" required autocomplete="username" inputmode="email" />
 
         <label for="password">Password</label>
         <div style="position:relative">
@@ -293,20 +293,45 @@
   }
 
   // ---------- Sign in ----------
+  // 2026-05-23 — multi-identifier login (migration 073 + resolve-login-identifier EF):
+  // Users can type their phone, personal email, OR company @getlymx.com email.
+  // We resolve to the canonical auth email FIRST, then call signInWithPassword.
+  // If resolution fails we fall back to passing the raw input straight to signIn —
+  // that preserves the current behavior for any account that hasn't been backfilled.
+  async function resolveLoginIdentifier(raw) {
+    try {
+      const res = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/functions/v1/resolve-login-identifier', {
+        method: 'POST',
+        headers: { apikey: window.LYMX_CONFIG.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: raw })
+      });
+      if (!res.ok) return null;
+      const j = await res.json();
+      if (j && j.found && j.primary_email) return j.primary_email;
+      return null;
+    } catch (e) {
+      console.warn('resolve-login-identifier failed:', e);
+      return null;
+    }
+  }
   async function handleSignIn(e) {
     e.preventDefault();
     if (!window.LYMX) {
       showNotice('signinNotice', 'Auth client failed to load. Refresh the page.', 'err');
       return false;
     }
-    const email = document.getElementById('email').value.trim();
+    const raw = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     const btn = document.getElementById('signinBtn');
     btn.disabled = true;
     btn.textContent = 'Signing in…';
     hideNotice('signinNotice');
 
-    const { data, error } = await LYMX.signIn(email, password);
+    // Try to resolve phone / personal / company email to the underlying auth email.
+    const resolved = await resolveLoginIdentifier(raw);
+    const signInEmail = resolved || raw;
+
+    const { data, error } = await LYMX.signIn(signInEmail, password);
     btn.disabled = false;
     btn.textContent = 'Sign in';
 
@@ -381,22 +406,43 @@
 <script src="lymx-feedback.js" defer></script>
 <script>
 window.forgotPassword = async function () {
-  // (Bug fix 2026-05-15 #f269964b) Trigger Supabase password reset email.
-  const email = (document.getElementById('email')||{}).value || prompt('Email address for password reset:');
-  if (!email) return false;
-  if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(email)) { alert('Please enter a valid email address.'); return false; }
+  // 2026-05-23 - root-cause fix for gate-keeping bug. Two changes:
+  // 1. Accept ANY identifier (phone, personal email, company @getlymx.com) - call
+  //    resolve-login-identifier first to get the underlying auth email.
+  // 2. /recover is then called with the resolved primary email, which after
+  //    migration 073 is always a real personal inbox (no Cloudflare forwarding
+  //    in the path). Email arrives reliably via Resend SMTP.
+  const raw = ((document.getElementById('email')||{}).value || '').trim()
+            || (prompt('Email, phone, or company email for password reset:') || '').trim();
+  if (!raw) return false;
+  const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  const URL  = window.LYMX_CONFIG.SUPABASE_URL;
+  let recoverEmail = raw;
   try {
-    const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
-    const URL  = window.LYMX_CONFIG.SUPABASE_URL;
+    const resolveRes = await fetch(URL + '/functions/v1/resolve-login-identifier', {
+      method: 'POST',
+      headers: { apikey: ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier: raw })
+    });
+    if (resolveRes.ok) {
+      const j = await resolveRes.json();
+      if (j && j.found && j.primary_email) recoverEmail = j.primary_email;
+    }
+  } catch (e) { console.warn('resolve-login-identifier failed; falling back to raw input', e); }
+  if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(recoverEmail)) {
+    alert('We could not find an account with that identifier. Double-check your email or phone.');
+    return false;
+  }
+  try {
     const res = await fetch(URL + '/auth/v1/recover', {
       method: 'POST',
       headers: { apikey: ANON, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email: recoverEmail })
     });
     if (res.ok) {
-      alert('If that email is registered, a password reset link has been sent. Check your inbox.');
+      alert('If that account exists, a password reset link has been sent to your registered email. Check your inbox (and spam).');
     } else {
-      alert('Could not send reset link. Try again or contact support.');
+      alert('Could not send reset link. Try again in a minute or contact support.');
     }
   } catch (e) {
     alert('Network error. Try again.');

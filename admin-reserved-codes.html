@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reserved Partner Codes · LYMX Admin</title>
+<link rel="stylesheet" href="lymx.css" />
+<style>
+  body { background:#f6f7f9; }
+  .wrap { max-width: 1100px; margin: 32px auto; padding: 0 16px; }
+  h1 { margin: 0 0 4px; }
+  .sub { color:#555; margin-bottom: 24px; }
+  .tier-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; margin-bottom:24px; }
+  .tier-card { background:#fff; border-radius:12px; padding:16px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+  .tier-card h3 { margin:0 0 6px; font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:#666; }
+  .code-pills { display:flex; flex-wrap:wrap; gap:6px; }
+  .pill { display:inline-block; padding:5px 10px; border-radius:999px; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s; user-select:none; }
+  .pill.free { background:#dcfce7; color:#166534; }
+  .pill.free:hover { background:#16a34a; color:#fff; }
+  .pill.taken { background:#e5e7eb; color:#777; cursor:default; text-decoration:line-through; }
+  .pill.selected { outline:2px solid #0050c7; outline-offset:2px; }
+  .assign-panel { background:#fff; border-radius:12px; padding:18px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+  input[type=text] { padding:8px 12px; border:1px solid #ddd; border-radius:8px; font-family:inherit; font-size:14px; width:340px; max-width:100%; }
+  button { padding:9px 18px; border:0; border-radius:8px; background:#0050c7; color:#fff; font-weight:600; cursor:pointer; font-family:inherit; }
+  button:disabled { opacity:.4; cursor:default; }
+  .help { font-size:13px; color:#666; margin-top:8px; }
+  .notice { margin: 12px 0; padding: 10px 14px; border-radius:8px; font-size:13px; }
+  .notice.ok { background:#dcfce7; color:#166534; }
+  .notice.err { background:#fee2e2; color:#991b1b; }
+  .tier-platinum h3 { color:#7c3aed; }
+  .tier-gold h3 { color:#a16207; }
+  .tier-silver h3 { color:#525252; }
+  .tier-standard h3 { color:#0050c7; }
+</style>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script src="lymx-nav.js" defer></script>
+
+<div class="wrap">
+  <h1>Reserved Partner Codes</h1>
+  <p class="sub">
+    Premium repeat-digit codes set aside as rewards for top-producing partners.
+    Click any green pill to select it, paste the partner's UUID or referral
+    code below, then click <strong>Assign</strong> to swap their existing code
+    for the reserved one.
+  </p>
+
+  <div id="topNotice"></div>
+
+  <div class="tier-grid" id="tierGrid">
+    <div class="tier-card"><h3>Loading…</h3></div>
+  </div>
+
+  <div class="assign-panel">
+    <h3 style="margin:0 0 8px">Assign selected code</h3>
+    <div>Selected code: <strong id="selectedCode">none</strong></div>
+    <div style="margin-top:10px">
+      <label>Partner (UUID, or existing code like P-000123):</label><br>
+      <input type="text" id="partnerInput" placeholder="paste a partner UUID or P-NNNNNN" autocomplete="off" />
+      <button id="assignBtn" disabled>Assign</button>
+    </div>
+    <div class="help">
+      To find a partner UUID, open admin-partners.html, click their row, and
+      copy the id from the URL or detail panel. You can also paste their
+      current P-NNNNNN code and we'll look up the UUID for you.
+    </div>
+    <div id="assignNotice"></div>
+  </div>
+</div>
+
+<script>
+(async function init() {
+  if (!window.LYMX) {
+    document.getElementById('topNotice').innerHTML = '<div class="notice err">Auth client failed to load.</div>';
+    return;
+  }
+  const session = await LYMX.getSession();
+  if (!session) {
+    location.href = 'login.html?next=' + encodeURIComponent(location.pathname);
+    return;
+  }
+  const sb = LYMX.sb;
+
+  // Permission: admin only
+  const { data: meRole } = await sb.from('staff_roles').select('role,is_cfo').eq('user_id', session.user.id).maybeSingle();
+  const isAdmin = meRole && (meRole.role === 'admin' || meRole.is_cfo === true);
+  if (!isAdmin) {
+    document.getElementById('topNotice').innerHTML = '<div class="notice err">Admin access required.</div>';
+    document.getElementById('tierGrid').innerHTML = '';
+    return;
+  }
+
+  // Load reserved codes
+  const { data: codes, error } = await sb
+    .from('reserved_partner_codes')
+    .select('code, tier, digit_repeat, repeated_digit, assigned_to_partner_id')
+    .order('digit_repeat', { ascending: true })
+    .order('repeated_digit', { ascending: true });
+
+  if (error) {
+    document.getElementById('topNotice').innerHTML = '<div class="notice err">Could not load reserved codes: ' + (error.message||'') + '</div>';
+    return;
+  }
+
+  // Group by tier
+  const tiers = ['platinum','gold','silver','standard'];
+  const tierLabel = {
+    platinum: 'Platinum — 6 repeated digits (111111 / 222222 / …)',
+    gold:     'Gold — 5 repeated digits (11111 / 22222 / …)',
+    silver:   'Silver — 4 repeated digits (1111 / 2222 / …)',
+    standard: 'Standard — 2 or 3 repeated digits (11 / 22 / 111 / 222 / …)',
+  };
+  const grid = document.getElementById('tierGrid');
+  grid.innerHTML = '';
+  let selectedCode = null;
+
+  for (const t of tiers) {
+    const tierCodes = codes.filter(c => c.tier === t);
+    if (!tierCodes.length) continue;
+    const card = document.createElement('div');
+    card.className = 'tier-card tier-' + t;
+    card.innerHTML = '<h3>' + tierLabel[t] + '</h3><div class="code-pills"></div>';
+    const pillBox = card.querySelector('.code-pills');
+    for (const c of tierCodes) {
+      const pill = document.createElement('span');
+      pill.className = 'pill ' + (c.assigned_to_partner_id ? 'taken' : 'free');
+      pill.textContent = c.code;
+      pill.dataset.code = c.code;
+      if (!c.assigned_to_partner_id) {
+        pill.addEventListener('click', () => {
+          document.querySelectorAll('.pill.selected').forEach(p => p.classList.remove('selected'));
+          pill.classList.add('selected');
+          selectedCode = c.code;
+          document.getElementById('selectedCode').textContent = c.code;
+          document.getElementById('assignBtn').disabled = false;
+        });
+      }
+      pillBox.appendChild(pill);
+    }
+    grid.appendChild(card);
+  }
+
+  // Assign handler
+  document.getElementById('assignBtn').addEventListener('click', async () => {
+    if (!selectedCode) return;
+    const raw = document.getElementById('partnerInput').value.trim();
+    const noticeEl = document.getElementById('assignNotice');
+    noticeEl.innerHTML = '';
+    if (!raw) { noticeEl.innerHTML = '<div class="notice err">Paste a partner UUID or P-NNNNNN code.</div>'; return; }
+    let partnerId = raw;
+    // If they pasted P-NNNNNN, look up the UUID
+    if (/^P-\d{6}$/i.test(raw)) {
+      const { data: row, error: lkErr } = await sb.from('partners').select('id').eq('partner_code', raw.toUpperCase()).maybeSingle();
+      if (lkErr || !row) { noticeEl.innerHTML = '<div class="notice err">No partner with code ' + raw + '.</div>'; return; }
+      partnerId = row.id;
+    }
+    // Call the RPC
+    const { data: result, error: rpcErr } = await sb.rpc('claim_reserved_partner_code', {
+      p_partner_id: partnerId,
+      p_code: selectedCode,
+    });
+    if (rpcErr) { noticeEl.innerHTML = '<div class="notice err">RPC error: ' + rpcErr.message + '</div>'; return; }
+    const r = Array.isArray(result) && result.length ? result[0] : null;
+    if (r && r.success) {
+      noticeEl.innerHTML = '<div class="notice ok">✓ ' + (r.message||'Assigned') + '</div>';
+      // Refresh the page after a short delay so the new state shows
+      setTimeout(() => location.reload(), 1200);
+    } else {
+      noticeEl.innerHTML = '<div class="notice err">' + (r?.message || 'Assign failed') + '</div>';
+    }
+  });
+})();
+</script>
+</body>
+</html>

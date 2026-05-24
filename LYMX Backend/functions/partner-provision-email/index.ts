@@ -605,41 +605,46 @@ serve(async (req) => {
         return await fail(502, `Cloudflare destination check failed: ${msg}`);
     }
 
-    if (!destStatus.verified) {
-        // Stash the state on the partner_emails row so the dashboard can read it.
-        await supabase
-            .from("partner_emails")
-            .update({
-                status: "pending",
-                last_error: destStatus.message,
-            })
-            .eq("id", row.id);
-        return jsonResponse({
-            success: false,
-            pending_verification: true,
-            partner_email_id: row.id,
-            full_email: row.full_email,
-            destination: partner.contact_email,
-            verification_email_sent: destStatus.sent,
-            message: destStatus.message,
-        }, 202);  // 202 Accepted — request is valid but waiting on the partner's action
-    }
+    // 2026-05-23 — root-cause fix for Helen-style stuck-pending bug.
+    // OLD behavior: if Cloudflare destination is unverified, return 202 and
+    // NEVER send the welcome email. Result: 6 of 7 partners (Helen included)
+    // never received any onboarding info because they didn't click the
+    // Cloudflare verification link from a sender they didn't recognize.
+    // NEW behavior: Cloudflare verification is best-effort. Welcome email
+    // is sent unconditionally (Resend → partner.contact_email, which is
+    // their personal inbox and always works). The welcome explains that
+    // a separate Cloudflare verification email is coming for the @getlymx.com
+    // address. Forwarding gets set up later once they click it.
+    const cloudflarePending = !destStatus.verified;
 
     // =========================================================================
-    // STEP 4b: Cloudflare — create the forwarding route (destination is verified)
+    // STEP 4b: Cloudflare — create the forwarding route (only if dest verified)
     // =========================================================================
-    let cloudflareRouteId: string;
-    try {
-        cloudflareRouteId = await createCloudflareRoute({
-            zoneId: env("CF_ZONE_ID_LYMX")!,
-            apiToken: env("CF_API_TOKEN_LYMX")!,
-            fullEmail: row.full_email,
-            forwardTo: partner.contact_email,
-            name: `Forward ${row.local_part} (partner ${partner.id.slice(0, 8)})`,
-        });
-    } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        return await fail(502, `Cloudflare route create failed: ${msg}`);
+    let cloudflareRouteId: string | null = null;
+    if (!cloudflarePending) {
+        try {
+            cloudflareRouteId = await createCloudflareRoute({
+                zoneId: env("CF_ZONE_ID_LYMX")!,
+                apiToken: env("CF_API_TOKEN_LYMX")!,
+                fullEmail: row.full_email,
+                forwardTo: partner.contact_email,
+                name: `Forward ${row.local_part} (partner ${partner.id.slice(0, 8)})`,
+            });
+        } catch (e) {
+            // Don't block welcome on route create failure — log and continue.
+            const msg = e instanceof Error ? e.message : String(e);
+            console.warn(`[partner-provision-email] Cloudflare route create failed (continuing): ${msg}`);
+            await supabase
+                .from("partner_emails")
+                .update({ last_error: `Cloudflare route create failed: ${msg}` })
+                .eq("id", row.id);
+        }
+    } else {
+        console.log(`[partner-provision-email] Cloudflare destination ${partner.contact_email} not yet verified — welcome will explain verification step`);
+        await supabase
+            .from("partner_emails")
+            .update({ last_error: destStatus.message })
+            .eq("id", row.id);
     }
 
     // =========================================================================
@@ -648,11 +653,16 @@ serve(async (req) => {
     const smtpUsername = env("SES_SMTP_USERNAME")!;
     const smtpPassword = env("SES_SMTP_PASSWORD")!;
 
+    // 2026-05-23 — handle null cloudflareRouteId when Cloudflare verification
+    // is still pending. The partner row still goes 'active' so the welcome
+    // can fire — but cloudflare_route_id is left null and forward_pending is
+    // flagged so admin / reconciliation jobs can finish the route once the
+    // partner clicks the Cloudflare verification link.
     const { error: uErr } = await supabase
         .from("partner_emails")
         .update({
-            cloudflare_route_id: cloudflareRouteId,
-            ses_identity_verified: true,    // domain-level verification covers all *@getlymx.com
+            cloudflare_route_id: cloudflareRouteId, // may be null when pending
+            ses_identity_verified: true,
             smtp_username: smtpUsername,
             smtp_password: smtpPassword,
             status: "active",
@@ -723,7 +733,7 @@ serve(async (req) => {
                 .eq("id", auditSendId);
         }
     } catch (e) {
-        // Email send failed but provisioning succeeded. Don't fail the request —
+        // Email send failed but provisioning succeeded. Don't fail the request -
         // a reconciliation job can retry the email. Mark the row so we can find it.
         const msg = e instanceof Error ? e.message : String(e);
         await supabase
@@ -740,6 +750,7 @@ serve(async (req) => {
             partner_email_id: row.id,
             full_email: row.full_email,
             status: "active",
+            cloudflare_pending: cloudflarePending,
             warning: `Email send failed: ${msg}. Provisioning is complete; retry email separately.`,
         });
     }
@@ -754,5 +765,9 @@ serve(async (req) => {
         partner_email_id: row.id,
         full_email: row.full_email,
         status: "active",
+        cloudflare_pending: cloudflarePending,
+        cloudflare_note: cloudflarePending
+            ? "Welcome email sent. Cloudflare destination verification still pending; @getlymx.com forwarding will activate once partner clicks the Cloudflare verification email."
+            : "Welcome sent and Cloudflare forwarding active.",
     });
 });

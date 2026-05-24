@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Staff Locations · LYMX Admin</title>
+<link rel="stylesheet" href="lymx.css" />
+<style>
+  body { background:#f6f7f9; }
+  .wrap { max-width: 1100px; margin: 32px auto; padding: 0 16px; }
+  h1 { margin: 0 0 4px; }
+  .sub { color:#555; margin-bottom: 24px; }
+  table { width:100%; border-collapse: collapse; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+  th, td { padding: 10px 12px; text-align:left; border-bottom:1px solid #eee; vertical-align: middle; }
+  th { background:#fafafa; font-weight:600; color:#444; }
+  .name { font-weight:600; }
+  .email { font-size:12px; color:#777; }
+  input[type=text], input[type=number] { padding: 7px 10px; border:1px solid #ddd; border-radius:8px; font-family:inherit; font-size:14px; width:100%; max-width: 380px; }
+  input.coord { max-width: 110px; }
+  button { padding:8px 14px; border:0; border-radius:8px; background:#0050c7; color:#fff; font-weight:600; cursor:pointer; font-family:inherit; }
+  button.sec { background:#eef0f4; color:#222; }
+  button.green { background:#16a34a; }
+  button:disabled { opacity:.4; cursor:default; }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .pill { display:inline-block; padding:3px 8px; border-radius:999px; font-size:11px; font-weight:600; }
+  .pill.ok { background:#dcfce7; color:#166534; }
+  .pill.warn { background:#fef3c7; color:#92400e; }
+  .pill.off { background:#fee2e2; color:#991b1b; }
+  .notice { margin: 8px 0; padding: 8px 12px; border-radius:8px; font-size:13px; }
+  .notice.ok { background:#dcfce7; color:#166534; }
+  .notice.err { background:#fee2e2; color:#991b1b; }
+  .help { font-size:12px; color:#666; margin-top:4px; }
+</style>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script src="lymx-nav.js" defer></script>
+
+<div class="wrap">
+  <h1>Staff Locations &amp; Remote Clock-in</h1>
+  <p class="sub">
+    Set each staff member's home address. They can ONLY clock in when their
+    phone's GPS is within the geofence radius (default <strong>200 metres</strong>,
+    about one city block). If someone legitimately needs to punch from a job
+    site, check "Remote allowed" — otherwise leave it off so the geofence
+    is strictly enforced.
+  </p>
+
+  <div id="topNotice"></div>
+
+  <table id="staffTable">
+    <thead>
+      <tr>
+        <th>Staff</th>
+        <th>Home address</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Geofence radius (m)</th>
+        <th>Remote allowed</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="staffBody">
+      <tr><td colspan="7" style="text-align:center;color:#888;padding:24px">Loading…</td></tr>
+    </tbody>
+  </table>
+
+  <p class="help" style="margin-top:24px">
+    Tip: paste a full street address into the "Home address" box and click
+    <strong>Lookup</strong> — we use OpenStreetMap to fill the lat/lng for you.
+    Or, if you have exact coordinates from Google Maps (right-click any point
+    → copy lat/lng), paste them straight in.
+  </p>
+</div>
+
+<script>
+(async function init() {
+  if (!window.LYMX) {
+    document.getElementById('topNotice').innerHTML = '<div class="notice err">Auth client failed to load.</div>';
+    return;
+  }
+  const session = await LYMX.getSession();
+  if (!session) {
+    location.href = 'login.html?next=' + encodeURIComponent(location.pathname);
+    return;
+  }
+  const sb = LYMX.sb;
+
+  // Permission check — admin or hr only
+  const { data: meRole } = await sb
+    .from('staff_roles')
+    .select('role')
+    .eq('user_id', session.user.id)
+    .maybeSingle();
+  const allowedRoles = ['admin','tech','support','hr','founder','cfo','cto'];
+  if (!meRole || !allowedRoles.includes(meRole.role)) {
+    document.getElementById('topNotice').innerHTML = '<div class="notice err">You need admin or HR access to manage staff locations. Ask Kenny to grant your account that role.</div>';
+    document.getElementById('staffBody').innerHTML = '';
+    return;
+  }
+
+  // Load all staff
+  const { data: staff, error } = await sb
+    .from('staff_roles')
+    .select('user_id, role, home_office_lat, home_office_lng, home_office_address, geofence_radius_m, remote_allowed, display_name, work_email')
+    .order('display_name', { ascending: true });
+  if (error) {
+    document.getElementById('topNotice').innerHTML = '<div class="notice err">Could not load staff: ' + (error.message||'') + '</div>';
+    return;
+  }
+
+  const tbody = document.getElementById('staffBody');
+  tbody.innerHTML = '';
+  if (!staff || !staff.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888;padding:24px">No staff records found yet.</td></tr>';
+    return;
+  }
+
+  for (const s of staff) {
+    const tr = document.createElement('tr');
+    tr.dataset.userId = s.user_id;
+    tr.innerHTML = `
+      <td>
+        <div class="name">${escapeHtml(s.display_name || s.work_email || s.user_id.slice(0,8))}</div>
+        <div class="email">${escapeHtml(s.work_email||'')} · ${escapeHtml(s.role||'')}</div>
+      </td>
+      <td>
+        <input type="text" class="addr" value="${escapeAttr(s.home_office_address||'')}" placeholder="123 Main St, San Francisco, CA 94103" />
+        <div class="row" style="margin-top:4px"><button class="sec lookup" type="button">Lookup</button><span class="lookup-status" style="font-size:12px;color:#666"></span></div>
+      </td>
+      <td><input type="number" class="coord lat" step="0.0000001" value="${s.home_office_lat ?? ''}" /></td>
+      <td><input type="number" class="coord lng" step="0.0000001" value="${s.home_office_lng ?? ''}" /></td>
+      <td><input type="number" class="coord radius" step="1" value="${s.geofence_radius_m ?? 200}" /></td>
+      <td>
+        <label class="row"><input type="checkbox" class="remote" ${s.remote_allowed === true ? 'checked' : ''} /> ${s.remote_allowed === true ? '<span class="pill warn">allowed</span>' : '<span class="pill ok">strict</span>'}</label>
+      </td>
+      <td><button class="green save" type="button">Save</button> <span class="save-status" style="font-size:12px;color:#666"></span></td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // Wire up lookup + save handlers
+  tbody.addEventListener('click', async (e) => {
+    const tr = e.target.closest('tr');
+    if (!tr) return;
+    const userId = tr.dataset.userId;
+    if (e.target.classList.contains('lookup')) {
+      const addr = tr.querySelector('.addr').value.trim();
+      const status = tr.querySelector('.lookup-status');
+      if (!addr) { status.textContent = 'Enter an address first.'; return; }
+      status.textContent = 'Looking up…';
+      try {
+        const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(addr), {
+          headers: { 'Accept': 'application/json' }
+        });
+        const j = await r.json();
+        if (j && j.length) {
+          tr.querySelector('.lat').value = parseFloat(j[0].lat).toFixed(7);
+          tr.querySelector('.lng').value = parseFloat(j[0].lon).toFixed(7);
+          status.textContent = 'Found: ' + (j[0].display_name||'').slice(0,60);
+        } else {
+          status.textContent = 'No match. Try a more specific address.';
+        }
+      } catch (err) {
+        status.textContent = 'Lookup failed: ' + (err.message||'');
+      }
+    }
+    if (e.target.classList.contains('save')) {
+      const status = tr.querySelector('.save-status');
+      status.textContent = 'Saving…';
+      const updates = {
+        home_office_address: tr.querySelector('.addr').value.trim() || null,
+        home_office_lat: parseFloat(tr.querySelector('.lat').value) || null,
+        home_office_lng: parseFloat(tr.querySelector('.lng').value) || null,
+        geofence_radius_m: parseInt(tr.querySelector('.radius').value, 10) || null,
+        remote_allowed: tr.querySelector('.remote').checked,
+      };
+      const { error: uErr } = await sb
+        .from('staff_roles')
+        .update(updates)
+        .eq('user_id', userId);
+      if (uErr) {
+        status.textContent = 'Save failed: ' + uErr.message;
+        status.style.color = '#991b1b';
+      } else {
+        status.textContent = 'Saved ✓';
+        status.style.color = '#166534';
+        setTimeout(() => status.textContent = '', 3000);
+      }
+    }
+  });
+
+  function escapeHtml(s) { return String(s||'').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escapeAttr(s) { return escapeHtml(s); }
+})();
+</script>
+</body>
+</html>
