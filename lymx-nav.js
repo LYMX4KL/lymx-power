@@ -566,14 +566,16 @@
         + '@media (max-width:880px){#lymxHamburger{display:flex}}'
         + '#lymxNavOverlay{display:none;position:fixed;inset:0;background:rgba(14,17,22,.4);z-index:99988}'
         + '#lymxNavOverlay.open{display:block}'
-        + '#lymxNavDrawer{position:fixed;top:0;right:0;height:100%;width:78%;max-width:320px;background:#fff;z-index:99989;transform:translateX(100%);transition:transform .22s ease;display:flex;flex-direction:column;padding:18px 18px 24px;box-shadow:-8px 0 24px rgba(14,17,22,.18)}'
+        + '#lymxNavDrawer{position:fixed;top:0;right:0;height:100%;height:100dvh;width:78%;max-width:320px;background:#fff;z-index:99989;transform:translateX(100%);transition:transform .22s ease;display:flex;flex-direction:column;padding:18px 18px 24px;box-shadow:-8px 0 24px rgba(14,17,22,.18)}'
         + '#lymxNavDrawer.open{transform:translateX(0)}'
-        + '#lymxNavDrawer .drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #e6e8ec}'
+        + '#lymxNavDrawer .drawer-head{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #e6e8ec}'
         + '#lymxNavDrawer .drawer-head .ttl{font-weight:800;font-size:18px;color:#0e1116}'
         + '#lymxNavDrawer .drawer-close{background:transparent;border:0;cursor:pointer;padding:6px;font-size:24px;line-height:1;color:#5b6472;font-family:inherit}'
+        // 2026-05-24 #5a88247a — root-cause fix: make inner nav list scrollable. Was clipping bottom items on signed-in mobile (Sign out, Reviews, etc.) because outer drawer was the only flex column and the nav itself had no overflow rule.
+        + '#lymxNavDrawer #lymxNavDrawerLinks{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;margin-right:-6px;padding-right:6px}'
         + '#lymxNavDrawer a{display:block;padding:13px 12px;color:#0e1116;text-decoration:none;font-weight:600;font-size:15.5px;border-radius:8px;margin-bottom:4px}'
         + '#lymxNavDrawer a:hover,#lymxNavDrawer a:focus{background:#f6f7f9}'
-        + '#lymxNavDrawer .drawer-cta{margin-top:auto;padding-top:18px;border-top:1px solid #e6e8ec}'
+        + '#lymxNavDrawer .drawer-cta{flex:0 0 auto;margin-top:auto;padding-top:18px;border-top:1px solid #e6e8ec}'
         + '#lymxNavDrawer .drawer-cta a{background:#0e1116;color:#fff;text-align:center;font-weight:700;margin-top:4px}';
       document.head.appendChild(s);
     }
