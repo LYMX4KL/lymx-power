@@ -696,6 +696,96 @@
     });
   }
 
+  // ---- 6) Universal "Back" chip ------------------------------------------
+  // 2026-05-24 T-7E63CE -- Kenny: "Can't go back to previous page or dashboard"
+  // on admin-business-applications.html. Root-cause fix: every deep page across
+  // the site needs a back affordance, not just the one Kenny noticed. Floating
+  // chip top-left mirrors the sign-in chip (top-right) pattern. Same z-layer
+  // as the mobile drawer overlay (99989) so it sits below the sign-in chip
+  // (99990) but above page content.
+  //
+  // Behavior:
+  //   - Click -> history.back() if we came from within getlymx.com, otherwise
+  //     fall back to the role-appropriate dashboard. Never leaves the site.
+  //   - Hidden on top-level/landing pages where "back" is meaningless
+  //     (home, login, signup, dashboards, welcome flow). The chip is meant
+  //     for deep pages, not landings.
+  //   - Auto-positions to avoid the 240px-wide sidebar on desktop signed-in
+  //     pages; collapses to a small top-left placement on mobile (<880px)
+  //     where the sidebar is hidden behind the hamburger drawer.
+  function isDeepPage() {
+    var path = (location.pathname || '/').toLowerCase().replace(/\/+$/, '');
+    if (path === '' || path === '/index.html') path = '/';
+    var roots = [
+      '/', '/home.html', '/index.html',
+      '/login.html', '/customer-signup.html', '/biz-signup.html',
+      '/partner-signup.html', '/welcome.html',
+      '/customer-dashboard.html', '/biz-dashboard.html',
+      '/partner-dashboard.html', '/admin-dashboard.html',
+      '/rep-dashboard.html', '/marketing-dashboard.html',
+      '/hr-dashboard.html'
+    ];
+    if (/verify-fix|recovery|reset|forgot|magic-link/i.test(path)) return false;
+    return roots.indexOf(path) === -1;
+  }
+
+  function fallbackDashboardForRole(payload) {
+    // Mirrors routeFor()'s decision tree so the fallback is consistent with
+    // the rest of the nav (sign-in redirect, swap-guest-buttons, avatar menu).
+    if (!payload) return 'home.html';
+    if (payload.sub === '1405bb50-2c97-48dd-bfa5-31f32320de9b') return 'admin-dashboard.html';
+    var em = (payload.email || '').toLowerCase();
+    if (em.endsWith('@lymxpower.com') || em.endsWith('@getlymx.com')) return 'rep-dashboard.html';
+    var role = (payload.user_metadata && payload.user_metadata.role)
+            || (payload.app_metadata && payload.app_metadata.role)
+            || payload.role || '';
+    switch (String(role).toLowerCase()) {
+      case 'admin':     return 'admin-dashboard.html';
+      case 'partner':   return 'rep-dashboard.html';
+      case 'business':  return 'biz-dashboard.html';
+      case 'marketing': return 'marketing-dashboard.html';
+      case 'rep':       return 'rep-dashboard.html';
+      case 'hr':        return 'hr-dashboard.html';
+      case 'customer':  return 'customer-dashboard.html';
+      default:          return 'customer-dashboard.html';
+    }
+  }
+
+  function injectBackChip(payload) {
+    if (!isDeepPage()) return;
+    if (document.getElementById('lymxBackChip')) return;
+    if (!document.getElementById('lymxBackChipStyle')) {
+      var s = document.createElement('style');
+      s.id = 'lymxBackChipStyle';
+      s.textContent = ''
+        + '#lymxBackChip{position:fixed;top:14px;left:260px;z-index:99989;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;color:#0e1116;border:1px solid #e6e8ec;border-radius:999px;font-weight:700;font-size:13.5px;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;box-shadow:0 4px 12px rgba(14,17,22,.10);cursor:pointer;line-height:1}'
+        + '#lymxBackChip:hover{background:#f6f7f9;border-color:#d1d5db}'
+        + '#lymxBackChip .arr{font-size:15px;line-height:1;margin-top:-1px}'
+        + '@media (max-width:880px){#lymxBackChip{left:14px;top:60px}}'
+        + 'body:not([data-role-required]):not([data-lymx-sidebar="force"]) #lymxBackChip{left:14px}'
+        + '@media print{#lymxBackChip{display:none}}';
+      document.head.appendChild(s);
+    }
+    var chip = document.createElement('a');
+    chip.id = 'lymxBackChip';
+    chip.href = '#';
+    chip.setAttribute('role', 'button');
+    chip.setAttribute('aria-label', 'Back to previous page');
+    chip.innerHTML = '<span class="arr" aria-hidden="true">&larr;</span><span data-i18n="nav.back">Back</span>';
+    chip.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      var ref = document.referrer || '';
+      var sameOrigin = ref && ref.indexOf(location.origin) === 0;
+      if (sameOrigin && window.history.length > 1) {
+        window.history.back();
+      } else {
+        location.href = fallbackDashboardForRole(payload);
+      }
+    });
+    document.body.appendChild(chip);
+  }
+
+
   // ---- Auth payload helper -------------------------------------------------
   function getAuthPayload() {
     return decode(readToken());
@@ -711,6 +801,7 @@
       if (!payload) {
         injectSignInChip();
         injectMobileHamburger();
+        injectBackChip(null);
         return;
       }
       redirectIfSignedIn(payload);
@@ -718,6 +809,7 @@
       wireAvatar(payload);
       enforceAdminGuard(payload);
       injectMobileHamburger();
+      injectBackChip(payload);
       hideGetAppInPwa();
     });
   }
