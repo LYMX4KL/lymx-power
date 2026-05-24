@@ -341,11 +341,44 @@
       // 2026-05-21 #b2458da0 - was showing email as the bold field. Now shows
       // display_name (or username portion as fallback). Email demoted to a small
       // muted line below. Partner code chip stays underneath as before.
-      html += '<div class="who-mini" id="lymxWhoMini">'
-            + '<b id="lymxWhoMiniName">' + initialName + '</b>'
-            + '<span class="role-tag">' + role + '</span>'
+      // 2026-05-24 T-DE7213 -- mini-avatar in sidebar header for a more
+      // organized profile section. Avatar is painted async by
+      // window.LYMX.paintAvatarOn (lymx-nav.js).
+      var seedId = (payload && (payload.sub || payload.id)) || email || 'lymx';
+      var initials2 = '';
+      try {
+        var nmSrc = (metaName || initialName || '').trim();
+        if (nmSrc) {
+          var ps = nmSrc.split(/[\\s.]+/).filter(Boolean);
+          if (ps.length >= 2) initials2 = (ps[0][0] + ps[1][0]).toUpperCase();
+          else if (ps.length === 1) initials2 = ps[0].slice(0,2).toUpperCase();
+        }
+        if (!initials2) initials2 = safe.charAt(0).toUpperCase() + (safe.split('@')[0].charAt(1) || '').toUpperCase();
+      } catch (e) { initials2 = (safe[0] || 'L').toUpperCase(); }
+      // Deterministic gradient from a stable palette indexed by seedId hash
+      var palette2 = [['#0a84ff','#0050c7'],['#6366f1','#4338ca'],['#8b5cf6','#6d28d9'],['#ec4899','#be185d'],['#f59e0b','#b45309'],['#13a26b','#047857'],['#0891b2','#0e7490'],['#ef4444','#991b1b']];
+      var hh = 0; for (var ii = 0; ii < seedId.length; ii++) hh = (hh * 31 + seedId.charCodeAt(ii)) | 0;
+      var gp = palette2[Math.abs(hh) % palette2.length];
+      var grad2 = 'linear-gradient(135deg,' + gp[0] + ',' + gp[1] + ')';
+      html += '<div class="who-mini" id="lymxWhoMini" style="display:flex;align-items:flex-start;gap:10px">'
+            + '<div id="lymxWhoMiniAvatar" style="width:38px;height:38px;border-radius:50%;background:' + grad2 + ';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;position:relative;overflow:hidden">' + initials2 + '</div>'
+            + '<div style="min-width:0;flex:1">'
+            + '<b id="lymxWhoMiniName" style="display:block;line-height:1.2">' + initialName + '</b>'
+            + '<span class="role-tag" style="margin-top:3px;display:inline-block">' + role + '</span>'
             + '<div id="lymxWhoMiniCode" style="display:none;margin-top:6px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#0050c7;cursor:pointer" title="Click to copy your referral code"></div>'
+            + '</div>'
             + '</div>';
+      // Paint photo over the initials when lymx-nav.js exposes the helper
+      try {
+        setTimeout(function(){
+          var el = document.getElementById('lymxWhoMiniAvatar');
+          if (!el) return;
+          if (window.LYMX && window.LYMX.lookupAvatarUrl && window.LYMX.paintAvatarOn) {
+            var uid = (payload && (payload.sub || payload.id));
+            if (uid) window.LYMX.lookupAvatarUrl(uid).then(function(url){ if (url) window.LYMX.paintAvatarOn(el, url); });
+          }
+        }, 600);
+      } catch (e) { console.warn('[sidebar] mini avatar paint', e); }
     }
 
     // i18n key maps: label/section text → translation key (so the i18n engine can swap them)

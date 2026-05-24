@@ -42,6 +42,11 @@
   .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
   .lightbox.open{display:flex}
   .lightbox img{max-width:90vw;max-height:90vh;border-radius:8px}
+
+  /* Cluster D 2026-05-24 T-72E31C — reviewer avatar in card header */
+  .card .top{align-items:center}
+  .card .biz-row{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+  .review-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;position:relative;overflow:hidden}
 </style>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
@@ -133,7 +138,7 @@ window.addEventListener('DOMContentLoaded', async function () {
     }
     var card = document.createElement('div');
     card.className = 'card';
-    card.innerHTML = '<div class="top"><div><div class="biz">' + thumbHtml + '<a href="' + esc(bizUrl) + '" style="color:#0e1116;text-decoration:none">' + esc(r.business_name) + '</a></div><div class="when">' + fmtWhen(r.created_at) + '</div></div>' + statusBadge + '</div>'
+    card.innerHTML = '<div class="top"><div class="biz-row">' + '<div class="review-avatar" data-lymx-review-av="1">' + (window.__lymxInitials || '·') + '</div>' + '<div style="min-width:0;flex:1"><div class="biz">' + thumbHtml + '<a href="' + esc(bizUrl) + '" style="color:#0e1116;text-decoration:none">' + esc(r.business_name) + '</a>' + '</div><div class="when">' + fmtWhen(r.created_at) + '</div></div>' + '</div>' + statusBadge + '</div>'
       + '<div class="stars">' + stars + '</div>'
       + '<div class="body">' + esc(r.body || '').replace(/\n/g, '<br>') + '</div>'
       + extra;
@@ -188,6 +193,60 @@ window.addEventListener('DOMContentLoaded', async function () {
 
   document.getElementById('lightbox').addEventListener('click', function () { this.classList.remove('open'); });
 });
+
+  // 2026-05-24 T-72E31C — paint the reviewer's photo over the initials.
+  // Helpers come from lymx-nav.js (project_lymx_avatars.md).
+  async function paintReviewAvatars() {
+    try {
+      var sess = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
+      if (!sess || !sess.user) return;
+      var u = sess.user;
+      var em = (u.email || '').trim();
+      var meta = u.user_metadata || {};
+      var nm = (meta.full_name || meta.name || '').trim();
+      // Compute 2-letter initials -- same algorithm as lymx-nav.computeInitials
+      function ini(name, email) {
+        var s = (name || '').trim();
+        if (s) {
+          var parts = s.split(/[\s.]+/).filter(Boolean);
+          if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+          if (parts.length === 1 && parts[0].length >= 2) return parts[0].slice(0,2).toUpperCase();
+          if (parts.length === 1) return parts[0][0].toUpperCase();
+        }
+        var e = (email || '').trim();
+        if (e) {
+          var local = e.split('@')[0];
+          var lp = local.split(/[._-]+/).filter(Boolean);
+          if (lp.length >= 2) return (lp[0][0] + lp[1][0]).toUpperCase();
+          if (local.length >= 2) return local.slice(0,2).toUpperCase();
+          return local[0].toUpperCase();
+        }
+        return 'L';
+      }
+      window.__lymxInitials = ini(nm, em);
+      // Backfill any cards that have already rendered
+      document.querySelectorAll('.review-avatar[data-lymx-review-av="1"]').forEach(function(el){
+        if (!el.textContent.trim()) el.textContent = window.__lymxInitials;
+      });
+      // Now paint the actual photo over the initials
+      if (window.LYMX && window.LYMX.lookupAvatarUrl && window.LYMX.paintAvatarOn) {
+        var url = await window.LYMX.lookupAvatarUrl(u.id);
+        if (url) {
+          document.querySelectorAll('.review-avatar[data-lymx-review-av="1"]').forEach(function(el){
+            window.LYMX.paintAvatarOn(el, url);
+          });
+        }
+      }
+    } catch (e) { console.warn('[my-reviews] avatar paint', e); }
+  }
+  // Run once on load + every time render() finishes by hooking into the
+  // existing loadReviews flow via setTimeout (cheap, idempotent).
+  document.addEventListener('DOMContentLoaded', function(){
+    paintReviewAvatars();
+    // Re-run after the initial fetch settles (loadReviews is async)
+    setTimeout(paintReviewAvatars, 800);
+    setTimeout(paintReviewAvatars, 2500);
+  });
 </script>
 
 </body>
