@@ -505,7 +505,8 @@
           <a class="ch" id="repShareEmail" href="#">📧 Email</a>
           <a class="ch" id="repShareSms" href="#">📱 Text</a>
           <a class="ch" id="repShareTwitter" href="#" target="_blank">🐦 Post</a>
-          <a class="ch" href="admin-invite-friends.html">📲 Invite tool</a>
+          <!-- 2026-05-24 #60378b9a — root-cause: was admin-invite-friends.html which lymx-nav.js enforceAdminGuard bounces non-admins back to customer-dashboard. share-hub.html is the universal partner-safe equivalent shipped 2026-05-24. -->
+          <a class="ch" href="share-hub.html">📲 Invite tool</a>
         </div>
       </div>
 
@@ -577,8 +578,36 @@
     const av = document.getElementById('repAvatar');
     if (av) {
       const initials = fullName.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'P';
-      av.textContent = initials;
+      // 2026-05-24 #38d2f693 - root-cause fix: previously `av.textContent = initials`
+      // wiped any <img> child that lymx-nav.js's paintAvatarImage had appended,
+      // while the lymxAvImg='1' flag stayed set so paint never retried. Result:
+      // partner photo silently vanished from the navbar.
+      // (1) Put initials in a dedicated <span> so they coexist with img siblings.
+      // (2) Self-paint from partner.avatar_url (already in scope) instead of
+      //     depending on lymx-nav.js's async DB lookup that races with this code.
+      let initialsNode = av.querySelector('.rep-avatar-initials');
+      if (!initialsNode) {
+        initialsNode = document.createElement('span');
+        initialsNode.className = 'rep-avatar-initials';
+        initialsNode.style.position = 'relative';
+        initialsNode.style.zIndex = '1';
+        av.insertBefore(initialsNode, av.firstChild);
+      }
+      initialsNode.textContent = initials;
       av.title = fullName;
+      if (partner.avatar_url) {
+        av.dataset.lymxAvImg = ''; // reset flag so paintAvatarOn proceeds
+        if (window.LYMX && window.LYMX.paintAvatarOn) {
+          window.LYMX.paintAvatarOn(av, partner.avatar_url);
+        } else {
+          const img = document.createElement('img');
+          img.className = 'lymx-av-img';
+          img.src = partner.avatar_url;
+          img.alt = '';
+          img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;pointer-events:none;z-index:2';
+          av.appendChild(img);
+        }
+      }
     }
 
     // Earnings + balance — wired to partner_commissions + settlements
@@ -858,6 +887,11 @@
       setTimeout(load, 250);
       return;
     }
+    // 2026-05-24 #40a28497 - root-cause fix: original had `} catch (e)` at the
+    // bottom with no matching `try {`, so the whole inline <script> failed to
+    // parse with SyntaxError and Recent Activity never even ran. Wrap load()'s
+    // body in try so the existing catch matches.
+    try {
     var sb = window.LYMX.sb;
     var userId = window.LYMX.user.id;
     var weekAgo = new Date(Date.now() - 7 * 86400 * 1000).toISOString();
@@ -926,6 +960,11 @@
   } catch (e) {
     console.warn('[rep-dashboard] activity widget failed', e);
   }
+  }
+  // 2026-05-24 #40a28497 - second root-cause: load() was defined but never
+  // invoked. Kick it now; the function self-defers via setTimeout(load, 250)
+  // until window.LYMX.sb + .user are ready.
+  load();
 })();
 </script>
 <script src="lymx-feedback.js" defer></script>

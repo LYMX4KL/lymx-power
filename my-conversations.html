@@ -424,7 +424,8 @@
     clearTimeout(_bizSearchTimer);
     if (!q || q.length < 2) { $("newBizSuggestions").style.display="none"; return; }
     _bizSearchTimer = setTimeout(async () => {
-      const { data } = await sb.from("businesses").select("id, display_name, legal_name").or(`display_name.ilike.%${q}%,legal_name.ilike.%${q}%`).limit(8);
+      // 2026-05-24 #627c3f4e - root-cause: businesses table RLS denies non-owner non-admin SELECT, so Dave got 0 results. Use v_businesses_directory view (migration 081) which exposes safe columns of non-archived businesses to all authenticated users.
+      const { data } = await sb.from("v_businesses_directory").select("id, display_name, legal_name").or(`display_name.ilike.%${q}%,legal_name.ilike.%${q}%`).limit(8);
       const wrap = $("newBizSuggestions");
       if (!data || data.length===0) {
         wrap.innerHTML='<div style="padding:10px 12px;color:var(--muted);font-size:13px;text-align:center">No matches — try a different keyword</div>';

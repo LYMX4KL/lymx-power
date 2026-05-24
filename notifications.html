@@ -335,7 +335,16 @@
 
     const feed = document.getElementById('feed');
     if (feed && notifications.length === 0) {
-      feed.innerHTML = '<div class="empty"><div class="ic">📭</div>No notifications yet. Earn, spend, or invite a friend and updates will show up here.</div>';
+      // 2026-05-24 #f45a94ab (Rae) - empty-state with actionable shortcuts so users don't have to navigate to find Invite/Browse. Primary CTA = share-hub (universal across roles). Secondary CTA = browse rewards.
+      feed.innerHTML = '<div class="empty">'
+        + '<div class="ic">📭</div>'
+        + '<div style="font-weight:700;color:#1a1f27;font-size:15.5px;margin-bottom:6px">No notifications yet</div>'
+        + '<div style="font-size:13.5px;line-height:1.5;color:#5b6472;margin-bottom:18px;max-width:320px;margin-left:auto;margin-right:auto">Earn, spend, or invite a friend and updates will show up here.</div>'
+        + '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'
+        +   '<a href="share-hub.html" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:9px;font-weight:700;font-size:13.5px;background:#0e1116;color:#fff;text-decoration:none">📤 Invite a friend</a>'
+        +   '<a href="browse.html" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:9px;font-weight:700;font-size:13.5px;background:#f6f7f9;color:#0e1116;text-decoration:none;border:1px solid #e6e8ec">🔎 Browse rewards</a>'
+        + '</div>'
+        + '</div>';
     }
   } catch (e) {
     console.warn('[notifications] load failed', e);
