@@ -484,7 +484,13 @@
     var path = (location.pathname || '').toLowerCase();
     if (/welcome\.html$|^\/welcome$|biz-signup/.test(path)) return;
 
-    var brands = document.querySelectorAll('header a.brand, header .brand, header.nav a.brand, .nav-inner a.brand');
+    // 2026-05-24 — extended selector to cover .logo (used by trust-and-safety,
+    // founder-blog, cooperative-charter, etc.) so the canonical 4-block mark
+    // gets injected there too, closing Cluster E "uses different logo" tickets.
+    var brands = document.querySelectorAll(
+      'header a.brand, header .brand, header.nav a.brand, .nav-inner a.brand,' +
+      'header a.logo, header .logo, nav a.logo, nav .logo, .nav-inner a.logo, .nav-inner .logo'
+    );
     if (!brands.length) return;
 
     // Canonical mark: inline SVG so it scales crisply at any size.

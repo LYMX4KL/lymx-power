@@ -137,9 +137,9 @@
   </div>
 
   <div class="top">
-    <a class="back" href="customer-wallet.html">‹</a>
+    <a class='back' href='/customer-wallet'>‹</a>
     <h1>Refer a friend</h1>
-    <a href="leaderboard.html" style="margin-left:auto;font-size:13px;font-weight:700;color:var(--accent-2);text-decoration:none">🏆 Leaderboard</a>
+    <a href='/leaderboard' style='margin-left:auto;font-size:13px;font-weight:700;color:var(--accent-2);text-decoration:none'>🏆 Leaderboard</a>
   </div>
 
   <div class="hero">
@@ -198,7 +198,7 @@
   </div>
 
   <div class="how">
-    <h3>How it works <a href="referral-mechanics.html" style="font-size:12px;color:var(--accent);font-weight:700;margin-left:10px">Read the full guide →</a></h3>
+    <h3>How it works <a href='/referral-mechanics' style='font-size:12px;color:var(--accent);font-weight:700;margin-left:10px'>Read the full guide →</a></h3>
     <div class="how-step">
       <div class="num">1</div>
       <div class="body">
@@ -238,10 +238,10 @@
   </div>
 
   <nav class="botnav">
-    <a href="customer-wallet.html"><span class="b">⬢</span>Wallet</a>
-    <a href="browse.html"><span class="b">⌕</span>Discover</a>
-    <a href="customer-referral.html" class="on"><span class="b">🎁</span>Refer</a>
-    <a href="notifications.html"><span class="b">🔔</span>Inbox</a>
+    <a href='/customer-wallet'><span class="b">⬢</span>Wallet</a>
+    <a href='/browse'><span class="b">⌕</span>Discover</a>
+    <a class='on' href='/customer-referral'><span class="b">🎁</span>Refer</a>
+    <a href='/notifications'><span class="b">🔔</span>Inbox</a>
   </nav>
 </div>
 
@@ -375,28 +375,42 @@
         return;
       }
 
-      // 3. Resolve invitee display names from customers
+      // 3. Resolve invitee display names from customers.
+      //    2026-05-24 — Cluster H fix: don't fall back to literal "Friend"
+      //    (was leaking on EVERY referral whose customers.display_name was
+      //    blank, which is the default state after signup). Use email-prefix
+      //    as a friendlier fallback so the inviter can tell referrals apart.
       var inviteeIds = refs.map(function(x){ return x.invitee_user_id; }).filter(Boolean);
       var nameMap = {};
       if (inviteeIds.length) {
         try {
-          var cr = await fetch(SUPA + '/rest/v1/customers?user_id=in.(' + inviteeIds.join(',') + ')&select=user_id,display_name', { headers: headers });
+          var cr = await fetch(SUPA + '/rest/v1/customers?user_id=in.(' + inviteeIds.join(',') + ')&select=user_id,display_name,email', { headers: headers });
           if (cr.ok) {
             var crows = await cr.json();
-            (crows || []).forEach(function(c){ nameMap[c.user_id] = c.display_name || ''; });
+            (crows || []).forEach(function(c){
+              var nm = c.display_name && c.display_name.trim();
+              if (!nm && c.email) {
+                var prefix = c.email.split('@')[0] || '';
+                nm = prefix.replace(/[._-]+/g, ' ').replace(/\b([a-z])/g, function(_, m){ return m.toUpperCase(); });
+              }
+              if (nm) nameMap[c.user_id] = nm;
+            });
           }
         } catch(_){ /* name lookup is best-effort */ }
       }
 
       var html = refs.map(function(x){
-        var nm   = nameMap[x.invitee_user_id] || 'Friend';
+        var nm   = nameMap[x.invitee_user_id] || 'Pending member';
         var ini  = initials(nm);
         var when = fmtDate(x.created_at);
         if (x.status === 'credited') {
+          // 2026-05-24 — was "made first purchase" for every credited row,
+          // but on LYMX the inviter bonus credits at signup (per the
+          // 100/100 referral architecture). Keep the copy honest.
           return '<div class="ref">' +
             '<div class="av">' + esc(ini) + '</div>' +
             '<div class="body"><div class="n">' + esc(nm) + '</div>' +
-              '<div class="d">Joined ' + esc(when) + ' \u00b7 made first purchase</div></div>' +
+              '<div class="d">Joined ' + esc(when) + ' · signup bonus credited</div></div>' +
             '<div class="v earned">+' + (x.inviter_bonus_amount || 0) + ' LYMX</div>' +
             '</div>';
         }
@@ -404,7 +418,7 @@
           return '<div class="ref">' +
             '<div class="av pending">' + esc(ini) + '</div>' +
             '<div class="body"><div class="n">' + esc(nm) + '</div>' +
-              '<div class="d">Joined ' + esc(when) + ' \u00b7 waiting for first purchase</div></div>' +
+              '<div class="d">Joined ' + esc(when) + ' · waiting for signup completion</div></div>' +
             '<div class="v pending">Pending</div>' +
             '</div>';
         }
