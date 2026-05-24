@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX business profile — edit your legal & tax info, upload documents, and review every email/SMS sent on your account." />
+<title>Business profile · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--err:#c0392b;--gold:#d4af37;--shadow:0 8px 24px rgba(14,17,22,.08)}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:900px;margin:0 auto;padding:24px 22px 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin:18px 0 24px;flex-wrap:wrap}
+  .page-head h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.01em}
+  .page-head .sub{color:var(--muted);font-size:14px;margin-top:4px}
+  .approval-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:99px;font-weight:700;font-size:12px}
+  .approval-pill.approved{background:#e6f5ee;color:#0a6e44;border:1px solid #b8e6cc}
+  .approval-pill.pending{background:#fef9e6;color:#92400e;border:1px solid #fbe6a8}
+  .approval-pill.rejected{background:#fdecea;color:#7d2014;border:1px solid #fbd5d0}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 22px 18px;margin-bottom:18px;box-shadow:var(--shadow)}
+  .card h2{margin:0 0 6px;font-size:17px;font-weight:800}
+  .card .sub{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:600px){.row-2{grid-template-columns:1fr}}
+  .field{margin:0 0 12px}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+  .input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:14.5px;background:#fff;color:var(--ink)}
+  .input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  .helper{margin-top:4px;color:var(--muted);font-size:12.5px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:9px;font-weight:700;font-size:14px;border:1px solid transparent;cursor:pointer;font-family:inherit}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-ghost{background:#fff;border-color:var(--line);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--ink-2)}
+  .btn-sm{padding:6px 12px;font-size:13px}
+
+  /* Hours grid */
+  .hrs-grid{display:grid;grid-template-columns:64px 1fr 1fr 92px;gap:8px 12px;align-items:center;font-size:14px}
+  .hrs-grid label.day{font-weight:700}
+
+  /* Docs */
+  .doc-list{display:flex;flex-direction:column;gap:8px}
+  .doc-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:9px;background:#fafbfc}
+  .doc-row .doc-name{font-weight:700;font-size:13.5px}
+  .doc-row .doc-meta{font-size:12px;color:var(--muted);margin-top:2px}
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .badge.verified{background:#e6f5ee;color:#0a6e44}
+  .badge.unverified{background:#fef9e6;color:#92400e}
+  .badge.rejected{background:#fdecea;color:#7d2014}
+  .doc-upload-form{padding:14px;background:var(--bg-soft);border:1px dashed var(--line);border-radius:10px;margin-top:14px}
+
+  /* Comms */
+  .comm-row{display:grid;grid-template-columns:60px 1fr auto;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line)}
+  .comm-row:last-child{border-bottom:0}
+  .comm-channel{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding-top:2px}
+  .comm-channel.email{color:var(--accent-2)}
+  .comm-channel.sms{color:#7d2014}
+  .comm-subject{font-weight:700;font-size:13.5px}
+  .comm-meta{font-size:12px;color:var(--muted);margin-top:2px}
+  .comm-when{font-size:12px;color:var(--muted);white-space:nowrap}
+
+  /* Tabs */
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+  .tab{padding:11px 16px;font-weight:700;font-size:14px;color:var(--muted);cursor:pointer;background:transparent;border:0;border-bottom:2px solid transparent;font-family:inherit;white-space:nowrap}
+  .tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+  .tab-panel{display:none}
+  .tab-panel.on{display:block}
+
+  .save-row{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0e1116;color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:600;opacity:0;transition:opacity .2s;z-index:99999;max-width:90vw;text-align:center}
+  .toast.on{opacity:1}
+  .toast.err{background:#dc2626}
+  .toast.ok{background:#0f8b5a}
+
+  .empty{padding:32px 18px;text-align:center;color:var(--muted);font-size:14px}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<meta name="theme-color" content="#0a84ff" />
+</head>
+<body data-role-required="business">
+
+<div class="wrap">
+  <div class="page-head">
+    <div>
+      <h1 id="bizName">Business profile</h1>
+      <div class="sub" id="bizSubtitle">Loading…</div>
+    </div>
+    <div><span id="approvalPill" class="approval-pill pending">pending</span></div>
+  </div>
+
+  <div class="tabs">
+    <button type="button" class="tab on" data-tab="info">Profile info</button>
+    <button type="button" class="tab" data-tab="hours">Hours</button>
+    <button type="button" class="tab" data-tab="docs">Documents</button>
+    <button type="button" class="tab" data-tab="comms">Communications</button>
+  </div>
+
+  <!-- TAB: Profile info -->
+  <section class="tab-panel on" id="tab-info">
+    <div class="card">
+      <h2>Business identity</h2>
+      <div class="sub">Edit your display name, tagline, and contact info. Hit Save when done.</div>
+      <div class="row-2">
+        <div class="field"><label>Display name</label><input class="input" id="f_display_name"></div>
+        <div class="field"><label>Legal name</label><input class="input" id="f_legal_name"></div>
+      </div>
+      <div class="field"><label>Tagline</label><input class="input" id="f_tagline" maxlength="160" placeholder="Short one-liner customers see on your storefront"></div>
+      <div class="field"><label>Description</label><textarea class="input" id="f_description" rows="3"></textarea></div>
+      <div class="row-2">
+        <div class="field"><label>Category</label><input class="input" id="f_category"></div>
+        <div class="field"><label>Emoji (storefront icon)</label><input class="input" id="f_emoji" maxlength="4" placeholder="🏪"></div>
+      </div>
+      <div class="row-2">
+        <div class="field"><label>Contact email</label><input class="input" id="f_contact_email" type="email"></div>
+        <div class="field"><label>Contact phone</label><input class="input" id="f_contact_phone" type="tel"></div>
+      </div>
+      <div class="field"><label>Address (line 1)</label><input class="input" id="f_address_line1"></div>
+      <div class="field"><label>Website</label><input class="input" id="f_website" type="url" placeholder="https://..."></div>
+    </div>
+
+    <div class="card">
+      <h2>Legal &amp; tax</h2>
+      <div class="sub">Visible only to you and the LYMX approval team. Required for approval.</div>
+      <div class="row-2">
+        <div class="field">
+          <label>Entity type</label>
+          <select class="input" id="f_entity_type">
+            <option value="">Select…</option>
+            <option value="sole_proprietorship">Sole proprietorship</option>
+            <option value="llc">LLC</option>
+            <option value="corporation">Corporation (C-Corp)</option>
+            <option value="s_corporation">S-Corporation</option>
+            <option value="partnership">Partnership</option>
+            <option value="nonprofit">Nonprofit</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field"><label>State of incorporation</label><input class="input" id="f_incorporation_state" maxlength="2" style="text-transform:uppercase"></div>
+      </div>
+      <div class="row-2">
+        <div class="field"><label>EIN</label><input class="input" id="f_ein" placeholder="12-3456789"><div class="helper">Format NN-NNNNNNN. Leave blank if you do not have one yet.</div></div>
+        <div class="field"><label>Business license number</label><input class="input" id="f_business_license_number"></div>
+      </div>
+      <div class="row-2">
+        <div class="field"><label>Year founded</label><input class="input" id="f_year_founded" type="number" min="1700" max="2030"></div>
+        <div class="field">
+          <label>Team size</label>
+          <select class="input" id="f_employee_count_range">
+            <option value="">Select…</option>
+            <option value="1">Just me</option>
+            <option value="2-5">2–5</option>
+            <option value="6-10">6–10</option>
+            <option value="11-25">11–25</option>
+            <option value="26-50">26–50</option>
+            <option value="51-100">51–100</option>
+            <option value="100+">100+</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Rewards rate</h2>
+      <div class="sub">How many LYMX you issue per $1 a customer spends. Standard is 5.</div>
+      <div class="row-2">
+        <div class="field"><label>LYMX per $1</label><input class="input" id="f_issuance_rate" type="number" step="0.5" min="0"></div>
+      </div>
+      <div class="helper" style="margin-top:8px;padding:10px 12px;background:#fef9e6;border-radius:8px;color:#7d2014;font-size:13px">
+        <strong>Reminder:</strong> You may <strong>not</strong> issue LYMX in exchange for a customer writing you a review. LYMX itself credits the customer a separate review bonus from the platform. Issuing biz-funded LYMX as a "review payment" is a violation of the Trust &amp; Safety policy.
+      </div>
+    </div>
+
+    <div class="save-row">
+      <button type="button" class="btn btn-ghost" id="btnReload">Reload from server</button>
+      <button type="button" class="btn btn-primary" id="btnSaveInfo">Save changes</button>
+    </div>
+  </section>
+
+  <!-- TAB: Hours -->
+  <section class="tab-panel" id="tab-hours">
+    <div class="card">
+      <h2>Operating hours</h2>
+      <div class="sub">Used on your public storefront page so customers know when you are open.</div>
+      <div class="hrs-grid" id="hrsGrid"></div>
+      <div class="save-row">
+        <button type="button" class="btn btn-primary" id="btnSaveHours">Save hours</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB: Documents -->
+  <section class="tab-panel" id="tab-docs">
+    <div class="card">
+      <h2>Documents on file</h2>
+      <div class="sub">Upload your license, EIN letter, articles of incorporation, etc. The approval team reviews each upload and marks it verified.</div>
+      <div class="doc-list" id="docList"><div class="empty">Loading documents…</div></div>
+
+      <div class="doc-upload-form">
+        <div class="row-2">
+          <div class="field">
+            <label>Document type</label>
+            <select class="input" id="up_doc_type">
+              <option value="business_license">Business license</option>
+              <option value="ein_letter">EIN letter (IRS Form CP 575)</option>
+              <option value="articles_of_incorporation">Articles of incorporation</option>
+              <option value="operating_agreement">Operating agreement</option>
+              <option value="dba_certificate">DBA certificate</option>
+              <option value="sales_tax_permit">Sales tax permit</option>
+              <option value="insurance_certificate">Insurance certificate</option>
+              <option value="food_service_permit">Food service permit</option>
+              <option value="health_permit">Health permit</option>
+              <option value="liquor_license">Liquor license</option>
+              <option value="professional_license">Professional license</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Choose file (PDF, JPG, PNG up to 10 MB)</label>
+            <input class="input" id="up_file" type="file" accept="application/pdf,image/jpeg,image/png">
+          </div>
+        </div>
+        <div class="field"><label>Notes (optional)</label><input class="input" id="up_notes" placeholder="e.g. issued 2024, expires 2026"></div>
+        <div class="save-row" style="margin-top:6px">
+          <button type="button" class="btn btn-primary" id="btnUpload">Upload</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB: Communications -->
+  <section class="tab-panel" id="tab-comms">
+    <div class="card">
+      <h2>Communications log</h2>
+      <div class="sub">Every email and SMS sent to or from this business account. Useful for audit, dispute resolution, and onboarding history.</div>
+      <div id="commsList"><div class="empty">Loading…</div></div>
+    </div>
+  </section>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script src="lymx-role-gate.js" defer></script>
+<script src="lymx-nav.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script>
+(async function init() {
+  const SUPABASE_URL = window.LYMX_CONFIG.SUPABASE_URL;
+  const ANON         = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  const sb = window.LYMX.sb;
+
+  // Helpers
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  function toast(msg, kind) {
+    const t = $('toast'); t.textContent = msg; t.className = 'toast on ' + (kind || '');
+    setTimeout(() => t.className = 'toast', 3200);
+  }
+  async function authedFetch(path, opts) {
+    opts = opts || {};
+    const session = await window.LYMX.getSession();
+    const tok = (session && session.access_token) || ANON;
+    return fetch(SUPABASE_URL + path, {
+      ...opts,
+      headers: { apikey: ANON, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+    });
+  }
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('on'));
+    btn.classList.add('on');
+    const target = btn.getAttribute('data-tab');
+    $('tab-' + target).classList.add('on');
+    if (target === 'docs')  loadDocs();
+    if (target === 'comms') loadComms();
+  }));
+
+  // Auth + load biz
+  const user = await window.LYMX.requireAuth();
+  if (!user) return;
+
+  let myBiz = null;
+
+  async function loadBiz() {
+    const { data, error } = await sb
+      .from('businesses')
+      .select('id, display_name, legal_name, slug, category, contact_email, contact_phone, address_line1, tagline, description, emoji, website, ein, business_license_number, incorporation_state, entity_type, year_founded, employee_count_range, operating_hours, issuance_rate, approval_status, created_at')
+      .eq('owner_user_id', user.id)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) {
+      $('bizSubtitle').textContent = 'No business linked to this account. Sign up a business first.';
+      return;
+    }
+    myBiz = data;
+    $('bizName').textContent     = data.display_name || data.legal_name || 'Your business';
+    const created = data.created_at ? new Date(data.created_at).toLocaleDateString([], {month:'short',year:'numeric'}) : '';
+    $('bizSubtitle').textContent = (data.category || 'Business') + (created ? ' · joined ' + created : '');
+
+    const pill = $('approvalPill');
+    const status = (data.approval_status || 'pending').toLowerCase();
+    pill.className = 'approval-pill ' + status;
+    pill.textContent = status;
+
+    // Fill form
+    $('f_display_name').value             = data.display_name             || '';
+    $('f_legal_name').value               = data.legal_name               || '';
+    $('f_tagline').value                  = data.tagline                  || '';
+    $('f_description').value              = data.description              || '';
+    $('f_category').value                 = data.category                 || '';
+    $('f_emoji').value                    = data.emoji                    || '';
+    $('f_contact_email').value            = data.contact_email            || '';
+    $('f_contact_phone').value            = data.contact_phone            || '';
+    $('f_address_line1').value            = data.address_line1            || '';
+    $('f_website').value                  = data.website                  || '';
+    $('f_entity_type').value              = data.entity_type              || '';
+    $('f_incorporation_state').value      = data.incorporation_state      || '';
+    $('f_ein').value                      = data.ein                      || '';
+    $('f_business_license_number').value  = data.business_license_number  || '';
+    $('f_year_founded').value             = data.year_founded             || '';
+    $('f_employee_count_range').value     = data.employee_count_range     || '';
+    $('f_issuance_rate').value            = data.issuance_rate            != null ? data.issuance_rate : '';
+
+    buildHoursGrid(data.operating_hours || {});
+  }
+
+  function buildHoursGrid(hours) {
+    const grid = $('hrsGrid'); grid.innerHTML = '';
+    const days = [['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
+    days.forEach(([k, label]) => {
+      const d = hours[k] || { open:'09:00', close:'17:00', closed:false };
+      grid.insertAdjacentHTML('beforeend',
+        '<label class="day">' + label + '</label>' +
+        '<input class="input" type="time" data-hrs="' + k + '_open"  value="' + esc(d.open  || '') + '">' +
+        '<input class="input" type="time" data-hrs="' + k + '_close" value="' + esc(d.close || '') + '">' +
+        '<label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" data-hrs="' + k + '_closed" ' + (d.closed ? 'checked' : '') + '> Closed</label>'
+      );
+    });
+  }
+
+  function readHours() {
+    const out = {};
+    ['mon','tue','wed','thu','fri','sat','sun'].forEach(k => {
+      out[k] = {
+        open:  (document.querySelector('[data-hrs="' + k + '_open"]')  || {}).value || null,
+        close: (document.querySelector('[data-hrs="' + k + '_close"]') || {}).value || null,
+        closed: !!(document.querySelector('[data-hrs="' + k + '_closed"]') || {}).checked,
+      };
+    });
+    return out;
+  }
+
+  // Save info
+  $('btnSaveInfo').addEventListener('click', async () => {
+    if (!myBiz) return;
+    const ein = $('f_ein').value.trim();
+    if (ein && !/^\d{2}-\d{7}$/.test(ein)) { toast('EIN must look like NN-NNNNNNN', 'err'); return; }
+    const website = $('f_website').value.trim();
+    if (website && !/^https?:\/\//i.test(website)) { toast('Website must start with http:// or https://', 'err'); return; }
+    const patch = {
+      display_name:             $('f_display_name').value.trim() || null,
+      legal_name:               $('f_legal_name').value.trim()   || null,
+      tagline:                  $('f_tagline').value.trim()      || null,
+      description:              $('f_description').value.trim()  || null,
+      category:                 $('f_category').value.trim()     || null,
+      emoji:                    $('f_emoji').value.trim()        || null,
+      contact_email:            $('f_contact_email').value.trim()|| null,
+      contact_phone:            $('f_contact_phone').value.trim()|| null,
+      address_line1:            $('f_address_line1').value.trim()|| null,
+      website:                  website || null,
+      entity_type:              $('f_entity_type').value || null,
+      incorporation_state:      $('f_incorporation_state').value.trim().toUpperCase() || null,
+      ein:                      ein || null,
+      business_license_number:  $('f_business_license_number').value.trim() || null,
+      year_founded:             $('f_year_founded').value ? Number($('f_year_founded').value) : null,
+      employee_count_range:     $('f_employee_count_range').value || null,
+      issuance_rate:            $('f_issuance_rate').value ? Number($('f_issuance_rate').value) : null,
+    };
+    const r = await sb.from('businesses').update(patch).eq('id', myBiz.id);
+    if (r.error) { toast('Save failed: ' + r.error.message.slice(0, 120), 'err'); return; }
+    toast('Saved.', 'ok');
+    loadBiz();
+  });
+
+  // Save hours
+  $('btnSaveHours').addEventListener('click', async () => {
+    if (!myBiz) return;
+    const r = await sb.from('businesses').update({ operating_hours: readHours() }).eq('id', myBiz.id);
+    if (r.error) { toast('Save failed: ' + r.error.message.slice(0, 120), 'err'); return; }
+    toast('Hours saved.', 'ok');
+  });
+
+  $('btnReload').addEventListener('click', loadBiz);
+
+  // --- DOCS ---
+  async function loadDocs() {
+    if (!myBiz) return;
+    const r = await sb
+      .from('business_documents')
+      .select('id, doc_type, file_path, file_name, file_size_bytes, mime_type, uploaded_at, verified, verified_at, rejection_reason, notes, superseded_by_id')
+      .eq('business_id', myBiz.id)
+      .is('superseded_by_id', null)
+      .order('uploaded_at', { ascending: false });
+    const list = $('docList');
+    if (r.error) { list.innerHTML = '<div class="empty">Could not load: ' + esc(r.error.message) + '</div>'; return; }
+    if (!r.data || !r.data.length) { list.innerHTML = '<div class="empty">No documents on file yet. Upload your business license below to start.</div>'; return; }
+    const labels = {
+      business_license:'Business license', ein_letter:'EIN letter', articles_of_incorporation:'Articles of incorporation',
+      operating_agreement:'Operating agreement', dba_certificate:'DBA certificate', sales_tax_permit:'Sales tax permit',
+      insurance_certificate:'Insurance certificate', food_service_permit:'Food service permit', health_permit:'Health permit',
+      liquor_license:'Liquor license', professional_license:'Professional license', other:'Other'
+    };
+    list.innerHTML = r.data.map(d => {
+      const label = labels[d.doc_type] || d.doc_type;
+      const when = new Date(d.uploaded_at).toLocaleString();
+      const sizeKb = d.file_size_bytes ? Math.round(d.file_size_bytes/1024) + ' KB' : '';
+      const badge = d.verified
+        ? '<span class="badge verified">✓ Verified</span>'
+        : (d.rejection_reason ? '<span class="badge rejected">✗ Rejected</span>' : '<span class="badge unverified">Pending review</span>');
+      return '<div class="doc-row">' +
+        '<div><div class="doc-name">' + esc(label) + '</div>' +
+        '<div class="doc-meta">' + esc(d.file_name || d.file_path) + (sizeKb ? ' · ' + sizeKb : '') + ' · uploaded ' + esc(when) +
+          (d.rejection_reason ? '<br><span style="color:#7d2014">Rejection reason: ' + esc(d.rejection_reason) + '</span>' : '') +
+          (d.notes ? '<br><span style="color:#5b6472">Note: ' + esc(d.notes) + '</span>' : '') +
+        '</div></div>' +
+        '<div>' + badge + '</div>' +
+        '<div><button class="btn btn-ghost btn-sm" data-dl="' + esc(d.file_path) + '">Download</button></div>' +
+      '</div>';
+    }).join('');
+    list.querySelectorAll('[data-dl]').forEach(b => b.addEventListener('click', async (e) => {
+      const path = e.currentTarget.getAttribute('data-dl');
+      const { data, error } = await sb.storage.from('business-documents').createSignedUrl(path, 60);
+      if (error || !data) { toast('Could not generate download link', 'err'); return; }
+      window.open(data.signedUrl, '_blank');
+    }));
+  }
+
+  $('btnUpload').addEventListener('click', async () => {
+    if (!myBiz) return;
+    const file = $('up_file').files[0];
+    const docType = $('up_doc_type').value;
+    if (!file) { toast('Pick a file first', 'err'); return; }
+    if (file.size > 10 * 1024 * 1024) { toast('Max 10 MB per file', 'err'); return; }
+    const allowed = ['application/pdf', 'image/jpeg', 'image/png'];
+    if (!allowed.includes(file.type)) { toast('Only PDF / JPG / PNG accepted', 'err'); return; }
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
+    const path = myBiz.id + '/' + docType + '/' + Date.now() + '_' + safeName;
+    const up = await sb.storage.from('business-documents').upload(path, file, { contentType: file.type, upsert: false });
+    if (up.error) { toast('Upload failed: ' + up.error.message.slice(0, 120), 'err'); return; }
+    const ins = await sb.from('business_documents').insert({
+      business_id:         myBiz.id,
+      doc_type:            docType,
+      file_path:           path,
+      file_name:           file.name,
+      file_size_bytes:     file.size,
+      mime_type:           file.type,
+      uploaded_by_user_id: user.id,
+      notes:               $('up_notes').value.trim() || null,
+    });
+    if (ins.error) { toast('Record save failed: ' + ins.error.message.slice(0, 120), 'err'); return; }
+    $('up_file').value = '';
+    $('up_notes').value = '';
+    toast('Uploaded. The team will review and verify shortly.', 'ok');
+    loadDocs();
+  });
+
+  // --- COMMS ---
+  async function loadComms() {
+    if (!myBiz) return;
+    const list = $('commsList');
+    const r = await sb.from('v_business_communications')
+      .select('channel,id,kind,recipient,sender,subject,body_preview,send_status,occurred_at')
+      .eq('business_id', myBiz.id)
+      .order('occurred_at', { ascending: false })
+      .limit(200);
+    if (r.error) { list.innerHTML = '<div class="empty">Could not load: ' + esc(r.error.message) + '</div>'; return; }
+    if (!r.data || !r.data.length) { list.innerHTML = '<div class="empty">No emails or SMS messages on file for this business yet.</div>'; return; }
+    list.innerHTML = r.data.map(c => {
+      const channelCls = c.channel || '';
+      const when = c.occurred_at ? new Date(c.occurred_at).toLocaleString() : '';
+      const subj = c.channel === 'email' ? (c.subject || c.kind || '(no subject)') : (c.body_preview || c.kind || '');
+      const meta = (c.channel === 'email')
+        ? ('to ' + esc(c.recipient || '?') + ' · ' + esc(c.send_status || ''))
+        : ((c.kind && c.kind.indexOf('inbound') >= 0 ? 'from ' : 'to ') + esc(c.recipient || c.sender || '?') + ' · ' + esc(c.send_status || ''));
+      return '<div class="comm-row">' +
+        '<div class="comm-channel ' + channelCls + '">' + esc(c.channel) + '</div>' +
+        '<div><div class="comm-subject">' + esc(subj) + '</div><div class="comm-meta">' + meta + '</div></div>' +
+        '<div class="comm-when">' + esc(when) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  await loadBiz();
+})();
+</script>
+</body>
+</html>

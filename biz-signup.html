@@ -236,6 +236,67 @@
       </div>
     </section>
 
+    <!-- 3b. Legal & Tax (helps us approve faster) -->
+    <section class="card">
+      <h2>Legal &amp; tax info</h2>
+      <p class="sub">Required for any business issuing rewards. All fields are encrypted at rest and only visible to you + the LYMX approval team. We do <strong>not</strong> collect bank account or routing numbers — payouts route through Stripe Connect after approval.</p>
+      <div class="row-2">
+        <div class="field">
+          <label>Entity type</label>
+          <select class="input" name="entity_type">
+            <option value="">Select…</option>
+            <option value="sole_proprietorship">Sole proprietorship</option>
+            <option value="llc">LLC</option>
+            <option value="corporation">Corporation (C-Corp)</option>
+            <option value="s_corporation">S-Corporation</option>
+            <option value="partnership">Partnership</option>
+            <option value="nonprofit">Nonprofit</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>State of incorporation</label>
+          <input class="input" name="incorporation_state" maxlength="2" placeholder="NV" style="text-transform:uppercase">
+          <div class="helper">2-letter state code. Leave blank for sole proprietorship.</div>
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>EIN (federal tax ID)</label>
+          <input class="input" name="ein" placeholder="12-3456789" pattern="^\d{2}-\d{7}$">
+          <div class="helper">Format: NN-NNNNNNN. Sole proprietors without an EIN can leave blank — we will <strong>never</strong> ask for an SSN.</div>
+        </div>
+        <div class="field">
+          <label>Business license number</label>
+          <input class="input" name="business_license_number" placeholder="e.g. NV-BUS-12345">
+          <div class="helper">Your state or city business license. You'll upload a scan after signup.</div>
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Year founded</label>
+          <input class="input" name="year_founded" type="number" min="1700" max="2030" placeholder="2018">
+        </div>
+        <div class="field">
+          <label>Team size</label>
+          <select class="input" name="employee_count_range">
+            <option value="">Select…</option>
+            <option value="1">Just me</option>
+            <option value="2-5">2–5</option>
+            <option value="6-10">6–10</option>
+            <option value="11-25">11–25</option>
+            <option value="26-50">26–50</option>
+            <option value="51-100">51–100</option>
+            <option value="100+">100+</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Website</label>
+        <input class="input" name="website" type="url" placeholder="https://yourbusiness.com">
+      </div>
+    </section>
+
     <!-- 4a. Storefront fields -->
     <section class="card if-storefront">
       <h2>Storefront location</h2>
@@ -284,6 +345,16 @@
         <!-- one service row inserted by JS on load -->
       </div>
       <button type="button" class="add-svc" id="add-service">+ Add another service</button>
+    </section>
+
+    <!-- 4c. Operating hours -->
+    <section class="card">
+      <h2>Operating hours</h2>
+      <p class="sub">Tell customers when you're open. Toggle Closed for any day you don't operate.</p>
+      <div id="hours-grid" style="display:grid;grid-template-columns:80px 1fr 1fr 90px;gap:8px 12px;align-items:center;font-size:14px">
+        <!-- Filled in by JS on load -->
+      </div>
+      <div class="helper" style="margin-top:10px">You can edit these later from your business profile.</div>
     </section>
 
     <!-- 5. Referral -->
@@ -408,6 +479,36 @@ document.getElementById('add-service').addEventListener('click', () => {
   servicesEl.appendChild(svcRowTemplate(servicesEl.children.length));
 });
 
+// Operating hours grid ────────────────────────────────────────────────────
+(function buildHoursGrid(){
+  const grid = document.getElementById('hours-grid');
+  if (!grid) return;
+  const days = [
+    ['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],
+    ['fri','Fri'],['sat','Sat'],['sun','Sun']
+  ];
+  // Default: Mon-Fri 9am-5pm, Sat 10am-3pm, Sun closed.
+  const defaults = {
+    mon:{open:'09:00',close:'17:00',closed:false},
+    tue:{open:'09:00',close:'17:00',closed:false},
+    wed:{open:'09:00',close:'17:00',closed:false},
+    thu:{open:'09:00',close:'17:00',closed:false},
+    fri:{open:'09:00',close:'17:00',closed:false},
+    sat:{open:'10:00',close:'15:00',closed:false},
+    sun:{open:'10:00',close:'15:00',closed:true}
+  };
+  days.forEach(([k,label]) => {
+    const d = defaults[k];
+    grid.insertAdjacentHTML('beforeend',
+      '<div style="font-weight:700">'+label+'</div>' +
+      '<input type="time" name="hrs_'+k+'_open"  value="'+d.open+'"  class="input">' +
+      '<input type="time" name="hrs_'+k+'_close" value="'+d.close+'" class="input">' +
+      '<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">' +
+      '<input type="checkbox" name="hrs_'+k+'_closed" '+(d.closed?'checked':'')+'> Closed</label>'
+    );
+  });
+})();
+
 // Status helper ───────────────────────────────────────────────────────────
 const statusEl = document.getElementById('status');
 function showStatus(msg, type){
@@ -420,8 +521,20 @@ function clearStatus(){ statusEl.className = 'status'; statusEl.textContent = ''
 function buildPayload(form){
   const fd = new FormData(form);
   const kind = fd.get('kind');
+  // Operating hours payload (one row per weekday with open/close/closed flag)
+  const hours = {};
+  ['mon','tue','wed','thu','fri','sat','sun'].forEach(k => {
+    hours[k] = {
+      open:  (fd.get('hrs_'+k+'_open')  || '').trim() || null,
+      close: (fd.get('hrs_'+k+'_close') || '').trim() || null,
+      closed: !!fd.get('hrs_'+k+'_closed'),
+    };
+  });
+
+  const ein = (fd.get('ein') || '').trim() || null;
   const common = {
     kind,
+    owner_name:     (fd.get('owner_name')     || '').trim() || null,
     owner_email:    (fd.get('owner_email')    || '').trim(),
     owner_password: (fd.get('owner_password') || ''),
     legal_name:     (fd.get('legal_name')     || '').trim(),
@@ -429,7 +542,18 @@ function buildPayload(form){
     category:       (fd.get('category')       || '').trim() || null,
     contact_email:  (fd.get('contact_email')  || '').trim(),
     contact_phone:  (fd.get('contact_phone')  || '').trim() || null,
-    partner_referral_code: (fd.get('partner_referral_code') || '').trim() || undefined
+    partner_referral_code: (fd.get('partner_referral_code') || '').trim() || undefined,
+    // 2026-05-24 audit additions — legal/tax + ops
+    intake: {
+      entity_type:             (fd.get('entity_type')             || '').trim() || null,
+      incorporation_state:     (fd.get('incorporation_state')     || '').trim().toUpperCase() || null,
+      ein:                     ein,
+      business_license_number: (fd.get('business_license_number') || '').trim() || null,
+      year_founded:            (fd.get('year_founded') ? Number(fd.get('year_founded')) : null),
+      employee_count_range:    (fd.get('employee_count_range')    || '').trim() || null,
+      website:                 (fd.get('website')                 || '').trim() || null,
+      operating_hours:         hours,
+    },
   };
   if (kind === 'storefront'){
     return {
@@ -465,6 +589,19 @@ function validatePayload(p){
   if (!p.legal_name)    return 'Legal business name is required.';
   if (!p.display_name)  return 'Display name is required.';
   if (!p.contact_email) return 'Business contact email is required.';
+  if (p.intake && p.intake.ein && !/^\d{2}-\d{7}$/.test(p.intake.ein)) {
+    return 'EIN must be in the format NN-NNNNNNN (or leave blank if you do not have one yet).';
+  }
+  if (p.intake && p.intake.website && !/^https?:\/\//i.test(p.intake.website)) {
+    return 'Website must start with http:// or https://.';
+  }
+  if (p.intake && p.intake.year_founded != null) {
+    const y = Number(p.intake.year_founded);
+    const nextYear = new Date().getFullYear() + 1;
+    if (!Number.isFinite(y) || y < 1700 || y > nextYear) {
+      return 'Year founded looks off — should be between 1700 and ' + nextYear + '.';
+    }
+  }
   if (p.kind === 'storefront'){
     if (!p.location.name) return 'Location name is required.';
   } else if (p.kind === 'self_employed'){
