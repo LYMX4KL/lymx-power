@@ -69,18 +69,124 @@
     return !!readStoredToken();
   }
 
-  function detectRole() {
-    var override = document.body && document.body.getAttribute('data-lymx-role');
-    if (override) return override;
-    var tok = readStoredToken();
-    var payload = decodeJwt(tok);
-    if (payload && payload.sub === '1405bb50-2c97-48dd-bfa5-31f32320de9b') return 'admin';
+  // 2026-05-24 — true root-cause fix for Cluster A bugs (8+ tickets):
+  //   "Profile / Calendar / Leads / Contacts / Messages / Feedback pages
+  //    change sidebar role from Partner to Customer".
+  //
+  // Previous behaviour was 100% URL-path-based: pages that don't contain
+  // "partner-" / "rep-" / "biz-" / "customer-" / "admin-" in their path
+  // (e.g. profile.html, team-calendar.html, leads.html, contacts.html,
+  // my-conversations.html, my-feedback.html, my-bookings.html,
+  // my-reviews.html, my-saved-places.html, prospects.html, refer.html)
+  // defaulted to 'customer' — so a logged-in partner saw the customer
+  // sidebar on every shared page no matter how they got there.
+  //
+  // Root cause: role detection should NOT depend on URL paths. The user's
+  // actual roles come from the database (staff_roles, partners, businesses,
+  // customers). Path-based detection is fine for a fast first paint, but
+  // the DB-resolved role is the source of truth and persists across tabs
+  // and reloads.
+  //
+  // Resolution order (highest privilege first):
+  //   1. body[data-lymx-role] override (per-page intentional)
+  //   2. URL path heuristic (used as a "mode toggle": on customer-* pages
+  //      a multi-role user sees customer sidebar; on rep-* they see partner)
+  //   3. JWT-cached DB role (sessionStorage, set by the async resolver)
+  //   4. lymx_active_role legacy cache (last role-specific page in tab)
+  //   5. body[data-role] legacy attr / 'customer' final fallback
+  //
+  // The async confirmRoleFromDb() in mount() updates the lymx_db_role
+  // cache on every mount and refreshes the sidebar if the first paint
+  // was wrong.
+  function _stashActiveRole(role) {
+    try { sessionStorage.setItem('lymx_active_role', role); } catch (e) {}
+  }
+  function _readActiveRole() {
+    try { return sessionStorage.getItem('lymx_active_role'); } catch (e) { return null; }
+  }
+  function _stashDbRole(role) {
+    try { sessionStorage.setItem('lymx_db_role', role); } catch (e) {}
+  }
+  function _readDbRole() {
+    try { return sessionStorage.getItem('lymx_db_role'); } catch (e) { return null; }
+  }
+
+  // Path heuristic — returns role only if path disambiguates, else null.
+  function _rolePathOnly() {
     var path = (location.pathname || '').toLowerCase();
     if (/\/admin-/.test(path) || /admin-dashboard\.html$/.test(path)) return 'admin';
     if (/\/biz-/.test(path) || /biz-dashboard\.html$/.test(path)) return 'business';
     if (/\/(rep-|partner-)/.test(path) || /rep-dashboard\.html$/.test(path)) return 'partner';
     if (/customer-/.test(path) || /\/wallet\.html$/.test(path)) return 'customer';
+    return null;
+  }
+
+  function detectRole() {
+    var override = document.body && document.body.getAttribute('data-lymx-role');
+    if (override) { _stashActiveRole(override); return override; }
+    var tok = readStoredToken();
+    var payload = decodeJwt(tok);
+    if (payload && payload.sub === '1405bb50-2c97-48dd-bfa5-31f32320de9b') {
+      _stashActiveRole('admin'); _stashDbRole('admin'); return 'admin';
+    }
+    // Unambiguous path wins (mode toggle for multi-role users).
+    var pathRole = _rolePathOnly();
+    if (pathRole) { _stashActiveRole(pathRole); return pathRole; }
+    // Shared page: prefer DB-cached role, then legacy active-mode cache.
+    var dbCached = _readDbRole();
+    if (dbCached) return dbCached;
+    var cached = _readActiveRole();
+    if (cached) return cached;
     return (document.body && document.body.getAttribute('data-role')) || 'customer';
+  }
+
+  // Async — confirm role from the DB. Highest-privilege wins:
+  // admin > partner > business > customer. Updates the lymx_db_role
+  // cache and triggers a sidebar refresh if the first paint disagreed.
+  async function resolveRoleFromDb() {
+    try {
+      var cfg = window.LYMX_CONFIG;
+      var tok = readStoredToken();
+      if (!cfg || !tok) return null;
+      var payload = decodeJwt(tok);
+      var uid = payload && payload.sub;
+      if (!uid) return null;
+
+      try {
+        var sr = await fetch(cfg.SUPABASE_URL + '/rest/v1/staff_roles?user_id=eq.' + uid + '&select=role&limit=5', {
+          headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
+        });
+        if (sr.ok) {
+          var sroles = await sr.json();
+          if (Array.isArray(sroles) && sroles.length) return 'admin';
+        }
+      } catch (e) { console.warn('[sidebar] staff_roles probe', e); }
+
+      try {
+        var pr = await fetch(cfg.SUPABASE_URL + '/rest/v1/partners?user_id=eq.' + uid + '&select=id&limit=1', {
+          headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
+        });
+        if (pr.ok) {
+          var prows = await pr.json();
+          if (Array.isArray(prows) && prows.length) return 'partner';
+        }
+      } catch (e) { console.warn('[sidebar] partners probe', e); }
+
+      try {
+        var br = await fetch(cfg.SUPABASE_URL + '/rest/v1/businesses?owner_user_id=eq.' + uid + '&select=id&limit=1', {
+          headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
+        });
+        if (br.ok) {
+          var brows = await br.json();
+          if (Array.isArray(brows) && brows.length) return 'business';
+        }
+      } catch (e) { console.warn('[sidebar] businesses probe', e); }
+
+      return 'customer';
+    } catch (e) {
+      console.warn('[sidebar] resolveRoleFromDb', e);
+      return null;
+    }
   }
 
   var MENUS = {
@@ -365,6 +471,25 @@
 
     var sout = document.getElementById('lymx-sb-signout');
     if (sout) sout.addEventListener('click', doSignout);
+
+    // 2026-05-24 — async DB role confirmation. If the first paint chose the
+    // wrong role (e.g. landed on /profile.html with empty sessionStorage and
+    // we guessed 'customer' but the user is a partner), this refreshes the
+    // sidebar with the correct role and stashes the answer for instant
+    // correct first paint on subsequent navigations within the session.
+    (async function confirmRoleFromDb() {
+      try {
+        var dbRole = await resolveRoleFromDb();
+        if (!dbRole) return;
+        _stashDbRole(dbRole);
+        // Path-disambiguated pages keep their chosen mode; don't override.
+        var pathRole = _rolePathOnly();
+        if (pathRole) return;
+        if (dbRole !== role && window.LymxSidebar && typeof window.LymxSidebar.refresh === 'function') {
+          window.LymxSidebar.refresh();
+        }
+      } catch (e) { console.warn('[sidebar] confirmRoleFromDb', e); }
+    })();
 
     // 2026-05-20 #4aa8c795 - async append "My Work" section for staff users.
     maybeInjectStaffSection(sidebar);
