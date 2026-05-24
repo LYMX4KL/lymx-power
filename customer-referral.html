@@ -181,6 +181,38 @@
     </button>
   </div>
 
+
+  <!-- 2026-05-24 T-09D49C — per-role referral links (Customer / Partner / Business).
+       Each link routes to the right signup flow with ?ref=<your code> appended,
+       so referrals land in the right onboarding regardless of account type. -->
+  <div class="role-refs" style="margin:18px 22px 0;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:11px">
+    <div style="font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:8px">Send a specific signup link</div>
+    <div class="role-ref-row" data-role="customer" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;background:var(--bg)">
+      <div style="font-size:20px;flex-shrink:0">👤</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13.5px;color:var(--ink)">Customer signup</div>
+        <div class="role-ref-url" style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="roleRefUrlCustomer">Loading…</div>
+      </div>
+      <button class="role-ref-copy" data-target="customer" style="padding:6px 12px;background:var(--ink);color:#fff;border:0;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0">Copy</button>
+    </div>
+    <div class="role-ref-row" data-role="partner" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;background:var(--bg)">
+      <div style="font-size:20px;flex-shrink:0">🤝</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13.5px;color:var(--ink)">Partner signup <span style="font-size:10.5px;color:var(--ok);font-weight:800;letter-spacing:.04em">EARN $750 + 11%</span></div>
+        <div class="role-ref-url" style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="roleRefUrlPartner">Loading…</div>
+      </div>
+      <button class="role-ref-copy" data-target="partner" style="padding:6px 12px;background:var(--ink);color:#fff;border:0;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0">Copy</button>
+    </div>
+    <div class="role-ref-row" data-role="business" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)">
+      <div style="font-size:20px;flex-shrink:0">🏪</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13.5px;color:var(--ink)">Business signup <span style="font-size:10.5px;color:var(--accent-2);font-weight:800;letter-spacing:.04em">FOUNDING 25</span></div>
+        <div class="role-ref-url" style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="roleRefUrlBusiness">Loading…</div>
+      </div>
+      <button class="role-ref-copy" data-target="business" style="padding:6px 12px;background:var(--ink);color:#fff;border:0;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0">Copy</button>
+    </div>
+  </div>
+
   <!-- 2026-05-21 #8154e15e root-cause fix: was hardcoded 7/3/600. Now populated by JS from public.referrals. -->
   <div class="stats">
     <div class="st-card">
@@ -444,6 +476,49 @@
 <script src="lymx-app.js" defer></script>
 <script src="lymx-nav.js" defer></script>
 <script src="lymx-feedback.js" defer></script>
-<script src="lymx-i18n.js" defer></script>
+<script src="lymx-i18n.js" defer>
+  // 2026-05-24 T-09D49C — wire the per-role referral cards. Reads
+  // window._referralCode (set by loadReferralPage) and stamps ?ref=<code>
+  // onto each role-specific signup URL. Copy button uses navigator.clipboard
+  // with a transient "Copied" flash on the row.
+  function refreshRoleRefLinks() {
+    var code = window._referralCode;
+    if (!code) return;
+    var enc = encodeURIComponent(code);
+    var map = {
+      customer: 'https://getlymx.com/welcome.html?ref=' + enc,
+      partner:  'https://getlymx.com/partner-signup.html?ref=' + enc,
+      business: 'https://getlymx.com/biz-signup.html?ref=' + enc
+    };
+    var ids = { customer: 'roleRefUrlCustomer', partner: 'roleRefUrlPartner', business: 'roleRefUrlBusiness' };
+    Object.keys(ids).forEach(function (k) {
+      var el = document.getElementById(ids[k]);
+      if (el) el.textContent = map[k];
+    });
+    window._roleRefUrls = map;
+  }
+  // Wire the copy buttons once on load
+  document.addEventListener('DOMContentLoaded', function () {
+    refreshRoleRefLinks();
+    document.querySelectorAll('.role-ref-copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var k = btn.dataset.target;
+        var url = (window._roleRefUrls || {})[k];
+        if (!url) { showToast('Sign in first to load your referral code'); return; }
+        var done = function () {
+          var orig = btn.textContent;
+          btn.textContent = 'Copied!';
+          btn.style.background = 'var(--ok)';
+          setTimeout(function () { btn.textContent = orig; btn.style.background = ''; }, 1400);
+        };
+        if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, done);
+        else done();
+      });
+    });
+    // Re-run after loadReferralPage settles (it's async)
+    setTimeout(refreshRoleRefLinks, 700);
+    setTimeout(refreshRoleRefLinks, 2200);
+  });
+</script>
 </body>
 </html>
