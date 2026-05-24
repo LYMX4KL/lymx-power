@@ -105,6 +105,15 @@
   .ticket-no{display:inline-block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;background:#f6f7f9;border:1px solid #e6e8ec;color:#5b6472;padding:1px 7px;border-radius:6px;letter-spacing:.04em;font-weight:600;margin-right:6px;cursor:pointer;transition:.12s}
   .ticket-no:hover{background:#fff;border-color:#0a84ff;color:#0a84ff}
   .ticket-no.copied{background:#0a84ff;color:#fff;border-color:#0a84ff}
+
+  /* 2026-05-24 T-D5F734 — mobile: stack modal action buttons full-width at
+     the bottom so the Cancel target isn't tucked in a corner. Standard Apple
+     / Android mobile-form pattern. */
+  @media (max-width: 520px) {
+    .modal .actions { display: flex; flex-direction: column-reverse; gap: 8px; }
+    .modal .actions button,
+    .modal .actions .btn { width: 100%; padding: 13px 16px; font-size: 15px; }
+  }
 </style>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
