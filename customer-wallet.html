@@ -83,7 +83,12 @@
   .tx .v.earn{color:var(--ok)}
 
   /* Discover row */
-  .discover{display:flex;gap:10px;overflow-x:auto;padding:0 22px;margin-bottom:14px}
+  /* 2026-05-24 — Cluster M fix: discover row was technically scrollable
+     but on touch devices the lack of momentum scrolling + no scroll snap
+     made it feel "stuck". Adding -webkit-overflow-scrolling, scroll-snap,
+     and explicit touch-action so swiping horizontally just works. */
+  .discover{display:flex;gap:10px;overflow-x:auto;padding:0 22px;margin-bottom:14px;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;touch-action:pan-x;scrollbar-width:thin}
+  .discover .biz-card{scroll-snap-align:start}
   .discover::-webkit-scrollbar{display:none}
   .biz-card{flex-shrink:0;width:144px;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer}
   .biz-card .img{height:80px;background:linear-gradient(135deg,#0a84ff,#0050c7);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:22px}
@@ -129,7 +134,7 @@
 
   <div class="top">
     <div class="greeting">Welcome back<strong>Sarah</strong></div>
-    <a href="customer-settings.html" class="avatar" style="text-decoration:none" title="Settings">SR</a>
+    <a class='avatar' href='/customer-settings' style='text-decoration:none' title='Settings'>SR</a>
   </div>
 
   <div class="balance">
@@ -150,12 +155,12 @@
       <div class="ic">⬚</div>
       <div class="label">Pay with QR</div>
     </div>
-    <a class="act" href="browse.html" style="display:block">
+    <a class='act' href='/browse' style='display:block'>
       <div class="ic">⌕</div>
       <div class="label">Find a Business</div>
     </a>
     <!-- 2026-05-20 #ffb48af1 - was a 3rd "Activity" entry. Replaced with "Refer & earn" so the action row has 3 distinct entry points (Show QR, Find biz, Refer). Recent activity below covers history. -->
-    <a class="act" href="customer-referral.html" style="display:block">
+    <a class='act' href='/customer-referral' style='display:block'>
       <div class="ic">🎁</div>
       <div class="label">Refer &amp; earn</div>
     </a>
@@ -164,29 +169,29 @@
   <div class="section">
     <div class="sec-h">
       <h3>Recent activity</h3>
-      <a href="customer-history.html">See full history →</a>
+      <a href='/customer-history'>See full history →</a>
     </div>
-    <a class="tx" href="transaction-detail.html" style="text-decoration:none;color:inherit;cursor:pointer">
+    <a class='tx' href='/transaction-detail' style='text-decoration:none;color:inherit;cursor:pointer'>
       <div class="ic earn">+</div>
       <div class="who"><div class="n">Brew &amp; Bean Coffee</div><div class="d">Today · 8:14 AM · Latte + scone</div></div>
       <div class="v earn">+1,200 LYMX</div>
     </a>
-    <a class="tx" href="transaction-detail.html" style="text-decoration:none;color:inherit;cursor:pointer">
+    <a class='tx' href='/transaction-detail' style='text-decoration:none;color:inherit;cursor:pointer'>
       <div class="ic spend">−</div>
       <div class="who"><div class="n">Oakline Kitchen</div><div class="d">Yesterday · 7:42 PM · Dinner</div></div>
       <div class="v">−1,800 LYMX</div>
     </a>
-    <a class="tx" href="transaction-detail.html" style="text-decoration:none;color:inherit;cursor:pointer">
+    <a class='tx' href='/transaction-detail' style='text-decoration:none;color:inherit;cursor:pointer'>
       <div class="ic earn">+</div>
       <div class="who"><div class="n">Sun Market &amp; Deli</div><div class="d">Apr 24 · Groceries</div></div>
       <div class="v earn">+640 LYMX</div>
     </a>
-    <a class="tx" href="transaction-detail.html" style="text-decoration:none;color:inherit;cursor:pointer">
+    <a class='tx' href='/transaction-detail' style='text-decoration:none;color:inherit;cursor:pointer'>
       <div class="ic spend">−</div>
       <div class="who"><div class="n">Brew &amp; Bean Coffee</div><div class="d">Apr 23 · Cold brew flight</div></div>
       <div class="v">−800 LYMX</div>
     </a>
-    <a class="tx" href="transaction-detail.html" style="text-decoration:none;color:inherit;cursor:pointer">
+    <a class='tx' href='/transaction-detail' style='text-decoration:none;color:inherit;cursor:pointer'>
       <div class="ic earn">+</div>
       <div class="who"><div class="n">Field &amp; Bloom Florals</div><div class="d">Apr 22 · Bouquet</div></div>
       <div class="v earn">+1,000 LYMX</div>
@@ -197,16 +202,16 @@
   <div class="section" style="padding-right:0">
     <div class="sec-h" style="padding-right:22px">
       <h3>Earn at these</h3>
-      <a href="browse.html" style="padding-right:0">Browse</a>
+      <a href='/browse' style='padding-right:0'>Browse</a>
     </div>
     <div style="padding:0 22px;font-size:11.5px;color:var(--muted);margin:-2px 0 10px">Earn rates below show how much LYMX you receive per $1 you spend. 100 LYMX = $1 of redemption at any LYMX business.</div>
   </div>
   <div class="discover">
-    <a href="biz-brew-and-bean.html" class="biz-card">
+    <a class='biz-card' href='/biz-brew-and-bean'>
       <div class="img bb">B&amp;B</div>
       <div class="body"><div class="n">Brew &amp; Bean</div><div class="d">Coffee · 0.2 mi</div><div class="r" title="Spend $1, get 5 LYMX back (5% effective rewards rate)">Earn 5 LYMX per $1</div></div>
     </a>
-    <a href="biz-oakline-kitchen.html" class="biz-card">
+    <a class='biz-card' href='/biz-oakline-kitchen'>
       <div class="img ok">OK</div>
       <div class="body"><div class="n">Oakline Kitchen</div><div class="d">Restaurant · 0.4 mi</div><div class="r" title="Spend $1, get 3 LYMX back (3% effective rewards rate)">Earn 3 LYMX per $1</div></div>
     </a>
@@ -226,10 +231,10 @@
   </div>
 
   <nav class="botnav">
-    <a href="customer-wallet.html" class="on"><span class="b">⬢</span>Wallet</a>
-    <a href="browse.html"><span class="b">⌕</span>Discover</a>
-    <a href="customer-referral.html"><span class="b">🎁</span>Refer</a>
-    <a href="notifications.html"><span class="b">🔔</span>Inbox</a>
+    <a class='on' href='/customer-wallet'><span class="b">⬢</span>Wallet</a>
+    <a href='/browse'><span class="b">⌕</span>Discover</a>
+    <a href='/customer-referral'><span class="b">🎁</span>Refer</a>
+    <a href='/notifications'><span class="b">🔔</span>Inbox</a>
   </nav>
 </div>
 

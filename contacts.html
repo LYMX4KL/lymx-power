@@ -357,7 +357,23 @@ function showToast(msg, kind){
   clearTimeout(t.__hideTimer);
   t.__hideTimer = setTimeout(function(){ t.style.opacity = '0'; }, 3200);
 }
-function friendlyHttp(status, kind){
+function friendlyHttp(status, kind, raw){
+  // 2026-05-24 Cluster D fix — map common PostgREST/Postgres error text to
+  // human copy so the toast never leaks "duplicate key value violates
+  // unique constraint contacts_email_key" style strings.
+  var d = (raw || '').toString().toLowerCase();
+  if (d.indexOf('contacts_email_key') >= 0 || (d.indexOf('duplicate key') >= 0 && d.indexOf('email') >= 0)) {
+    return 'You already have a contact with that email. Open the existing contact to edit it.';
+  }
+  if (d.indexOf('duplicate key') >= 0 && d.indexOf('phone') >= 0) {
+    return 'You already have a contact with that phone number.';
+  }
+  if (d.indexOf('row-level security') >= 0 || d.indexOf('permission denied') >= 0) {
+    return 'You do not have permission to save this. If you just changed roles, try signing out and back in.';
+  }
+  if (d.indexOf('violates check constraint') >= 0) {
+    return 'One of the fields contains a value we cannot accept. Please double-check and try again.';
+  }
   if (status === 409) return (kind || 'Item') + ' name already exists. Try another name.';
   if (status === 401 || status === 403) return 'You need to sign in again to save changes.';
   if (status === 422) return 'Some fields are invalid. Please check and try again.';
@@ -818,9 +834,14 @@ document.getElementById('cSave').addEventListener('click', async () => {
     if (r.ok) { try { const arr = await r.json(); contactId = (arr && arr[0] && arr[0].id) || null; } catch(e) { console.warn('[contacts.html:L791] silent error', e); } }
   }
   if (!r.ok) {
-    let detail = '';
-    try { const b = await r.json(); detail = b && (b.message || b.error || b.hint) ? ' - ' + (b.message || b.error || b.hint) : ''; } catch(e) { console.warn('[contacts.html:L795] silent error', e); }
-    showToast(friendlyHttp(r.status, 'Contact') + (detail ? ' (' + detail.replace(/^ - /, '') + ')' : ''), 'err');
+    let rawDetail = '';
+    try { const b = await r.json(); rawDetail = b && (b.message || b.error || b.hint) || ''; } catch(e) { console.warn('[contacts] error body parse', e); }
+    // 2026-05-24 Cluster D fix: feed the raw PostgREST message into
+    // friendlyHttp() so it gets mapped to human copy. We do NOT show the
+    // raw string to the user any more — leaking "duplicate key value
+    // violates unique constraint contacts_email_key" was exactly the bug.
+    showToast(friendlyHttp(r.status, 'Contact', rawDetail), 'err');
+    if (rawDetail) console.warn('[contacts] save failed:', rawDetail);
     return;
   }
   if (contactId) {
