@@ -118,6 +118,26 @@
   .status-msg.ok{background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44}
   .status-msg.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
   .status-msg.info{background:#e6eefc;border:1px solid #b3c7ed;color:#1d4ed8}
+
+  /* Cluster A 2026-05-24 — Contacts page polish */
+  /* T-CD2527 SOON corner badge for coming-soon source cards */
+  .src-card{position:relative}
+  .src-card.coming::after{content:'SOON';position:absolute;top:8px;right:8px;background:var(--ink);color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 7px;border-radius:999px;opacity:.85}
+  /* T-68ECDF stronger interactive state for ACTIVE src-cards (not coming) */
+  .src-card:not(.coming){cursor:pointer;transition:transform .12s ease,border-color .12s ease,background .12s ease,box-shadow .12s ease}
+  .src-card:not(.coming):hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(10,132,255,.12)}
+  /* T-871CC7 forward-arrow indicator on hovered + selected active cards */
+  .src-card:not(.coming) .arr-hint{margin-left:auto;font-size:18px;color:var(--accent);opacity:0;transform:translateX(-4px);transition:opacity .12s ease,transform .12s ease}
+  .src-card:not(.coming):hover .arr-hint,.src-card.on .arr-hint{opacity:1;transform:translateX(0)}
+  /* T-6C342B helper link under the upload zone */
+  .csv-helper{margin-top:8px;font-size:12.5px;color:var(--muted);text-align:center}
+  .csv-helper a{color:var(--accent-2);text-decoration:underline;cursor:pointer}
+  .csv-helper a:hover{color:var(--ink)}
+  /* T-D8C1B1 consistent outline icon system for sidebar filters */
+  .icn{width:16px;height:16px;flex-shrink:0;color:currentColor}
+  .side-item.active .icn{color:#fff}
+  /* T-5B57C9 collapsed-tags "+N more" pill */
+  .tag-more{display:inline-block;background:#f6f7f9;border:1px dashed #c7d2e0;color:var(--muted);padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;margin:1px 2px;cursor:help}
 </style>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
@@ -150,7 +170,7 @@
         <h1>📇 Contacts</h1>
         <p>Your private address book. Import once, organize with tags and lists, send invites in bulk.</p>
       </div>
-      <div style="display:flex;gap:10px">
+      <div id="pageHeadActions" style="display:flex;gap:10px">
         <!-- 2026-05-20 #00ef9d2d - Rae's UX feedback: Import should be co-equal with + New contact, not visually subordinate. For an empty address book, Import is usually the FIRST action. Swapped styles so both are dark pills; Import even slightly weighted to come first. -->
         <button class="btn-primary" id="importBtn" style="padding:10px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;background:var(--ink);color:#fff">📥 Import contacts</button>
         <button class="btn-primary" id="newContactBtn" style="padding:10px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;background:var(--ink);color:#fff">+ New contact</button>
@@ -162,15 +182,16 @@
       <aside class="side">
         <h3>Filter</h3>
         <div class="side-item active" data-filter="all">
-          <span>👥</span> All contacts <span class="ct" id="ctAll">0</span>
+          <span><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M2 21v-1a6 6 0 0 1 12 0v1"/><circle cx="17" cy="7" r="3"/><path d="M14.5 10.5A6 6 0 0 1 22 16v1"/></svg></span> All contacts <span class="ct" id="ctAll">0</span>
         </div>
         <div class="side-item" data-filter="invited">
-          <span>📤</span> Already invited <span class="ct" id="ctInvited">0</span>
+          <span><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></span> Already invited <span class="ct" id="ctInvited">0</span>
         </div>
         <div class="side-item" data-filter="signed_up">
-          <span>✅</span> Signed up <span class="ct" id="ctSignedUp">0</span>
+          <span><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg></span> Signed up <span class="ct" id="ctSignedUp">0</span>
         </div>
 
+        <div id="tagsListsSection">
         <h3>Tags</h3>
         <div id="tagList"><div style="font-size:12px;color:var(--muted);padding:6px 10px">No tags yet</div></div>
         <button class="add-btn" id="addTagBtn">+ New tag</button>
@@ -178,6 +199,7 @@
         <h3>Lists</h3>
         <div id="listList"><div style="font-size:12px;color:var(--muted);padding:6px 10px">No lists yet</div></div>
         <button class="add-btn" id="addListBtn">+ New list</button>
+        </div>
       </aside>
 
       <!-- Main -->
@@ -232,10 +254,10 @@
     <div class="meta">Choose where your contacts live. We'll import + de-dupe automatically.</div>
 
     <div class="source-grid">
-      <div class="src-card" data-source="csv"><div class="ic">📄</div><div><div class="h">Upload CSV</div><div class="d">Google / Outlook / Apple export</div></div></div>
-      <div class="src-card" data-source="paste"><div class="ic">📋</div><div><div class="h">Paste emails</div><div class="d">Comma- or line-separated</div></div></div>
-      <div class="src-card coming" data-source="google" title="Coming soon"><div class="ic">🇬</div><div><div class="h">Google Contacts</div><div class="d">Live sync — coming soon</div></div></div>
-      <div class="src-card coming" data-source="outlook" title="Coming soon"><div class="ic">📧</div><div><div class="h">Outlook</div><div class="d">Live sync — coming soon</div></div></div>
+      <div class="src-card" data-source="csv"><div class="ic">📄</div><div><div class="h">Upload CSV</div><div class="d">Google / Outlook / Apple export</div></div><span class="arr-hint" aria-hidden="true">→</span></div>
+      <div class="src-card" data-source="paste"><div class="ic">📋</div><div><div class="h">Paste emails</div><div class="d">Comma- or line-separated</div></div><span class="arr-hint" aria-hidden="true">→</span></div>
+      <div class="src-card coming" data-source="google" title="Coming soon — paste emails or upload a CSV in the meantime"><div class="ic">🇬</div><div><div class="h">Google Contacts</div><div class="d">Live sync — coming soon</div></div></div>
+      <div class="src-card coming" data-source="outlook" title="Coming soon — paste emails or upload a CSV in the meantime"><div class="ic">📧</div><div><div class="h">Outlook</div><div class="d">Live sync — coming soon</div></div></div>
     </div>
 
     <div id="importBody" style="display:none;margin-top:18px">
@@ -245,6 +267,7 @@
         <div class="sub">Auto-detects Google / Outlook / Apple format</div>
         <input type="file" id="csvFile" accept=".csv,text/csv" />
       </label>
+      <div class="csv-helper" id="csvHelper" style="display:none">Not sure what format? <a id="downloadSampleCsv">Download a sample CSV</a> to see the expected columns.</div>
       <div id="pasteWrap" style="display:none">
         <label for="pasteEmails">Paste emails</label>
         <textarea id="pasteEmails" placeholder="alice@example.com, bob@example.com&#10;Carol Smith <carol@example.com>" style="min-height:140px"></textarea>
@@ -407,6 +430,21 @@ async function authedFetch(path, opts = {}) {
   });
 }
 
+
+// 2026-05-24 T-5B57C9 — collapse tags column to first 3 + "+N more" pill
+// when there are more than 3 tags. Tooltip shows the remaining tag names so
+// no information is hidden — just visually summarized for table readability.
+function renderTagsCell(tags) {
+  if (!tags.length) return '<span style="color:var(--muted)">—</span>';
+  const shown = tags.slice(0, 3);
+  const overflow = tags.slice(3);
+  let html = shown.map(t => `<span class="tag-chip">${escapeHtml(t)}</span>`).join('');
+  if (overflow.length) {
+    const tip = overflow.map(escapeHtml).join(', ').replace(/"/g, '&quot;');
+    html += `<span class="tag-more" title="${tip}">+${overflow.length} more</span>`;
+  }
+  return html;
+}
 function escapeHtml(s) {
   return (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
@@ -563,12 +601,39 @@ function renderSidebar() {
 }
 
 function renderTable() {
-  // 2026-05-20 #5bc7562d - when address book is empty, hide the toolbar+table chrome and show a centered welcome card. When there are contacts, reverse.
+  // 2026-05-20 #5bc7562d + 2026-05-24 Cluster A (T-1FCBE3 / T-AD4C46 / T-1B452F / T-75FD94)
+  // When the address book is empty:
+  //   - show the centered welcome card (existing behavior)
+  //   - HIDE the duplicate top-of-page Import/New-contact buttons (T-1FCBE3)
+  //   - KEEP the toolbar visible but disable its inputs so users see the
+  //     search bar shape they'll get once they import (T-AD4C46)
+  //   - HIDE the Tags + Lists sidebar sections so they don't dangle
+  //     useless creation buttons before any contacts exist (T-1B452F + T-75FD94)
+  // When there are contacts, restore everything to the active state.
   const isEmpty = allContacts.length === 0;
   const emptyCard = document.getElementById('emptyAddressBook');
   const toolbar = document.getElementById('contactsToolbar');
-  if (emptyCard) emptyCard.style.display = isEmpty ? 'block' : 'none';
-  if (toolbar)   toolbar.style.display   = isEmpty ? 'none'  : '';
+  const pageHeadActions = document.getElementById('pageHeadActions');
+  const tagsListsSection = document.getElementById('tagsListsSection');
+  if (emptyCard)        emptyCard.style.display        = isEmpty ? 'block' : 'none';
+  if (pageHeadActions)  pageHeadActions.style.display  = isEmpty ? 'none'  : 'flex';
+  if (tagsListsSection) tagsListsSection.style.display = isEmpty ? 'none'  : 'block';
+  // Toolbar stays visible — just disable its controls when empty (T-AD4C46)
+  if (toolbar) {
+    toolbar.style.display = '';
+    const srch = document.getElementById('search');
+    const bulk = document.getElementById('bulkActionsBtn');
+    const invs = document.getElementById('inviteSelectedBtn');
+    if (srch) {
+      srch.disabled = isEmpty;
+      srch.placeholder = isEmpty
+        ? 'Search contacts (add some first with Import or + New)'
+        : 'Search your saved contacts';
+      srch.style.opacity = isEmpty ? '.6' : '';
+    }
+    if (bulk) bulk.disabled = isEmpty || bulk.disabled;
+    if (invs) invs.disabled = isEmpty || invs.disabled;
+  }
   if (isEmpty) return; // no need to render rows / summary
 
   const q = document.getElementById('search').value.trim().toLowerCase();
@@ -615,7 +680,7 @@ function renderTable() {
       </td>
       <td>${escapeHtml(c.email)}</td>
       <td>${escapeHtml(c.company || '—')}</td>
-      <td>${(c.tags || []).map(t => `<span class="tag-chip">${escapeHtml(t)}</span>`).join('') || '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${renderTagsCell(c.tags || [])}</td>
       <td>${(c.lists || []).map(l => `<span class="list-chip">${escapeHtml(l)}</span>`).join('') || '<span style="color:var(--muted)">—</span>'}</td>
       <td><span class="src-pill">${c.source || 'manual'}</span></td>
       <td><button class="btn-secondary" data-edit="${c.id}" style="padding:5px 11px;border-radius:6px;border:1px solid var(--line);cursor:pointer;background:#fff;font-size:12px">Edit</button></td>
@@ -687,6 +752,9 @@ document.querySelectorAll('.src-card').forEach(card => {
     document.getElementById('uploadZone').style.display = src === 'csv' ? 'block' : 'none';
     document.getElementById('pasteWrap').style.display  = src === 'paste' ? 'block' : 'none';
     document.getElementById('importDo').style.display   = 'inline-block';
+    // 2026-05-24 T-6C342B — show "Download sample CSV" helper only with the CSV path
+    const csvHelp = document.getElementById('csvHelper');
+    if (csvHelp) csvHelp.style.display = src === 'csv' ? 'block' : 'none';
     pendingImport = [];
     setStatus('importStatus', null);
   });
@@ -700,6 +768,23 @@ uploadZone.addEventListener('drop', e => {
   uploadZone.classList.remove('drag');
   const f = e.dataTransfer.files[0];
   if (f) handleCSVFile(f);
+});
+// 2026-05-24 T-6C342B — generate + download an example CSV so users can
+// see exactly which columns we expect. Mirrors a minimal Google Contacts shape.
+document.getElementById('downloadSampleCsv').addEventListener('click', e => {
+  e.preventDefault();
+  const rows = [
+    ['Name', 'Given Name', 'Family Name', 'E-mail 1 - Value', 'Phone 1 - Value', 'Organization 1 - Name', 'Organization 1 - Title'],
+    ['Alex Chen',  'Alex',  'Chen',  'alex@example.com',  '702-555-0142', 'Brew & Bean',     'Owner'],
+    ['Maria Lopez','Maria', 'Lopez', 'maria@example.com', '702-555-0188', 'Oakline Kitchen', 'Manager'],
+    ['Jonathan Reyes', 'Jonathan', 'Reyes', 'jonathan@example.com', '', '', '']
+  ];
+  const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+  const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'lymx-contacts-sample.csv'; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 250);
 });
 document.getElementById('csvFile').addEventListener('change', e => {
   if (e.target.files[0]) handleCSVFile(e.target.files[0]);
