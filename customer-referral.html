@@ -497,10 +497,17 @@
     });
     window._roleRefUrls = map;
   }
-  // Wire the copy buttons once on load
-  document.addEventListener('DOMContentLoaded', function () {
+  // 2026-05-24 T-09D49C race fix — script loads deferred AFTER
+  // DOMContentLoaded already fired, so the addEventListener('DOMContentLoaded')
+  // never triggered. Run synchronously now if the DOM is already complete,
+  // otherwise wait once for DCL. Also expose refreshRoleRefLinks on window
+  // so loadReferralPage can poke it directly when _referralCode lands.
+  window.refreshRoleRefLinks = refreshRoleRefLinks;
+  function wireRoleRefCards() {
     refreshRoleRefLinks();
     document.querySelectorAll('.role-ref-copy').forEach(function (btn) {
+      if (btn.dataset.lymxRoleCopyWired === '1') return;
+      btn.dataset.lymxRoleCopyWired = '1';
       btn.addEventListener('click', function () {
         var k = btn.dataset.target;
         var url = (window._roleRefUrls || {})[k];
@@ -515,10 +522,15 @@
         else done();
       });
     });
-    // Re-run after loadReferralPage settles (it's async)
+    // Re-run after loadReferralPage settles (it's async, populates _referralCode)
     setTimeout(refreshRoleRefLinks, 700);
     setTimeout(refreshRoleRefLinks, 2200);
-  });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wireRoleRefCards);
+  } else {
+    wireRoleRefCards();
+  }
 </script>
 </body>
 </html>
