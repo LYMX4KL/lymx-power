@@ -167,16 +167,33 @@ window.LYMX_CONFIG = {
 
   // 2. If URL has no ref but storage does, replaceState so inline scripts
   //    that read params.get('ref') still find it.
+  //
+  // 2026-05-24 — narrowed to signup-style pages only (root-cause fix for
+  //   "Referral ID Remains in URL After User Logs Out"). The previous
+  //   behaviour rewrote EVERY page's URL when a stored ref existed, which
+  //   meant the home page kept showing ?ref=P-000100 after sign-out — the
+  //   attribution lived in localStorage from an earlier visit, and this
+  //   block re-stamped it back into the visible URL on every navigation.
+  //   The attribution itself is correct to keep (so a customer who came in
+  //   via Partner X still attributes to Partner X when they finally sign
+  //   up), but the URL pollution was the bug. We now only stamp the URL on
+  //   pages whose inline scripts genuinely read ?ref= from the URL — the
+  //   four signup / onboarding entry points. Everywhere else the ref stays
+  //   in localStorage and is read via LYMX_getRef().
   if (!urlRef) {
-    var stored = readStoredRef();
-    if (stored) {
-      try {
-        var url = new URL(location.href);
-        if (!url.searchParams.has('ref')) {
-          url.searchParams.set('ref', stored);
-          history.replaceState(history.state, '', url.toString());
-        }
-      } catch (e) { console.warn('[lymx-config.js:L179] silent error', e); }
+    var pathLow = (location.pathname || '').toLowerCase();
+    var REF_URL_PAGES = /\/(customer-signup|partner-signup|biz-signup|signup|welcome)\.html$|^\/(customer-signup|partner-signup|biz-signup|signup|welcome)$/;
+    if (REF_URL_PAGES.test(pathLow)) {
+      var stored = readStoredRef();
+      if (stored) {
+        try {
+          var url = new URL(location.href);
+          if (!url.searchParams.has('ref')) {
+            url.searchParams.set('ref', stored);
+            history.replaceState(history.state, '', url.toString());
+          }
+        } catch (e) { console.warn('[lymx-config.js:L179] silent error', e); }
+      }
     }
   }
 

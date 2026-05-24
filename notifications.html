@@ -93,15 +93,10 @@
 <body>
 
 <div class="device">
-  <div class="status-bar">
-    <span>9:41</span>
-    <div class="icons"><span>●●●</span><span>5G</span><span>100%</span></div>
-  </div>
-
   <div class="top">
     <a class="back" href="customer-wallet.html">‹</a>
     <h1>Notifications</h1>
-    <button class="mark" onclick="markAllRead()">Mark all read</button>
+    <button class="mark" id="markAllReadBtn" onclick="markAllRead()">Mark all read</button>
   </div>
 
   <div class="filter-row" id="filter-row">
@@ -189,7 +184,33 @@
 
     // Counts
     document.getElementById('ct-all').textContent = notifications.length;
-    document.getElementById('ct-unread').textContent = notifications.filter(n => n.unread).length;
+    const unreadCount = notifications.filter(n => n.unread).length;
+    document.getElementById('ct-unread').textContent = unreadCount;
+
+    // 2026-05-24 — Disable "Mark all read" when there's nothing unread.
+    const markBtn = document.getElementById('markAllReadBtn');
+    if (markBtn) {
+      const disable = unreadCount === 0;
+      markBtn.disabled = disable;
+      markBtn.style.opacity = disable ? '0.4' : '';
+      markBtn.style.cursor = disable ? 'default' : 'pointer';
+      markBtn.setAttribute('aria-disabled', disable ? 'true' : 'false');
+    }
+
+    // 2026-05-24 — Disable filter chips whose category has 0 items (other
+    // than the 'all' / 'unread' counters which we always show).
+    const typeCounts = notifications.reduce((acc, n) => { acc[n.type] = (acc[n.type] || 0) + 1; return acc; }, {});
+    document.querySelectorAll('.chip').forEach(chip => {
+      const f = chip.getAttribute('data-f');
+      if (f === 'all' || f === 'unread') return;
+      const map = { earn: 'earn', spend: 'spend', promo: 'promo', referral: 'referral', system: 'system' };
+      const key = map[f] || f;
+      const empty = !typeCounts[key];
+      chip.disabled = empty;
+      chip.style.opacity = empty ? '0.35' : '';
+      chip.style.cursor = empty ? 'default' : 'pointer';
+      chip.setAttribute('aria-disabled', empty ? 'true' : 'false');
+    });
   }
 
   function iconFor(type){
@@ -215,24 +236,11 @@
 
   render();
 </script>
+
 <script src="lymx-config.js"></script>
-<script src="lymx-feedback.js" defer></script>
-</body>
-</html>
-  }
-
-  function markAllRead(){
-    notifications.forEach(n => { n.unread = false; });
-    render();
-  }
-
-  render();
-</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="lymx-config.js"></script>
 <script src="lymx-auth.js"></script>
 <script>
-// Load real notifications by deriving from issuances + transactions + referrals.
 (async function loadNotificationsFromDb(){
   try {
     if (!window.LYMX || !window.LYMX.requireAuth) return;
@@ -335,15 +343,7 @@
 })();
 </script>
 <script src="lymx-feedback.js" defer></script>
-<script src="lymx-sidebar.js" defer></script>
-<script src="lymx-app.js" defer></script>
-</body>
-</html>
-    console.warn('[notifications] load failed', e);
-  }
-})();
-</script>
-<script src="lymx-feedback.js" defer></script>
+<script src="lymx-nav.js" defer></script>
 <script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>
