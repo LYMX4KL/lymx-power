@@ -426,14 +426,24 @@ serve(async (req) => {
         .select("id, full_email, status")
         .eq("partner_id", partner.id)
         .maybeSingle();
+    // 2026-05-23 v2 — force_welcome now works regardless of partner_emails
+    // status (active OR pending OR provisioning). Previously force_welcome
+    // only ran on status='active' rows — Helen's row was stuck at 'pending'
+    // because Cloudflare verification failed at signup, so the admin Resend
+    // button just kicked her back into the full provisioning flow (which
+    // failed again on the same Cloudflare step). Now force_welcome takes a
+    // direct path: re-render template, send via Resend, mark row 'active'.
+    if (existing && body.force_welcome) {
+        // Promote pending → active so subsequent calls behave normally
+        if (existing.status !== "active") {
+            await supabase
+                .from("partner_emails")
+                .update({ status: "active", provisioned_at: new Date().toISOString(), last_error: null })
+                .eq("id", existing.id);
+            existing.status = "active";
+        }
+    }
     if (existing && existing.status === "active") {
-        // 2026-05-22 — if caller passed force_welcome:true (admin "Resend
-        // welcome" button or partner-welcome reconciliation), re-render the
-        // template and re-send through Resend without re-provisioning the
-        // Cloudflare route / SES identity. This is the ONLY path that exists
-        // today for getting a duplicate welcome letter to a partner who
-        // didn't receive (or lost) the first one — DO NOT remove without
-        // adding a replacement.
         if (body.force_welcome) {
             const referralCode = (partner.display_name ?? partner.legal_name)
                 .replace(/[^a-zA-Z]/g, "")
@@ -593,6 +603,13 @@ serve(async (req) => {
     // both call this EF again — when the partner has verified their email,
     // the next call will pass this check and proceed to STEP 4b.
     // =========================================================================
+    // 2026-05-23 v2 — Cloudflare API call itself is now also non-blocking.
+    // If CF_API_TOKEN_LYMX is invalid/expired (returns 400 Authentication
+    // failed), or the network call throws, we log, set destStatus.verified
+    // to false, and let the rest of the flow continue — the welcome email
+    // still sends to the partner's personal inbox via Resend. The partner's
+    // @getlymx.com forwarding will be set up later when a fresh token is
+    // available; admin can re-run partner-provision-email at that point.
     let destStatus: { verified: boolean; pending: boolean; sent: boolean; message: string };
     try {
         destStatus = await ensureCloudflareDestination({
@@ -602,7 +619,12 @@ serve(async (req) => {
         });
     } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        return await fail(502, `Cloudflare destination check failed: ${msg}`);
+        console.warn(`[partner-provision-email] Cloudflare API call failed (continuing — welcome will still send): ${msg}`);
+        destStatus = { verified: false, pending: true, sent: false, message: `Cloudflare API error: ${msg}` };
+        await supabase
+            .from("partner_emails")
+            .update({ last_error: destStatus.message })
+            .eq("id", row.id);
     }
 
     // 2026-05-23 — root-cause fix for Helen-style stuck-pending bug.

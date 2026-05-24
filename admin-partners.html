@@ -233,11 +233,22 @@
   let CUR_SEARCH = '';
 
   // ----- Toast -----
+  // 2026-05-23 - Kenny request: error toasts must STAY until dismissed,
+  // so testers can read the message and screenshot/forward it as a bug
+  // report. OK/success toasts still auto-dismiss after 3s.
   function toast(msg, kind) {
     const t = document.getElementById('toast');
     t.className = 'toast on ' + (kind || 'ok');
-    t.textContent = msg;
-    setTimeout(() => { t.classList.remove('on'); }, 3000);
+    // Add a dismiss X for error toasts so users can close them manually
+    if (kind === 'err') {
+      t.innerHTML = '<span style="margin-right:12px">' + String(msg).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])) + '</span>'
+                  + '<button type="button" onclick="document.getElementById(\'toast\').classList.remove(\'on\')" '
+                  + 'style="background:transparent;border:0;color:inherit;font-size:18px;cursor:pointer;font-weight:700;padding:0 4px">×</button>';
+      // No auto-dismiss for errors — Kenny wants testers to be able to read + report them
+    } else {
+      t.textContent = msg;
+      setTimeout(() => { t.classList.remove('on'); }, 3000);
+    }
   }
 
   // ----- Load -----
@@ -404,10 +415,14 @@
     if (!confirm('Re-run partner-provision-email for this Partner? This retries the @getlymx.com address provisioning and re-sends the welcome email with Gmail Send-mail-as setup instructions.')) return;
     try {
       const accessToken = (await sb.auth.getSession()).data.session.access_token;
+      // 2026-05-23 - send force_welcome:true so the EF takes the direct
+      // resend path instead of re-running the full provisioning flow (which
+      // was failing on the Cloudflare destination check and silently killing
+      // the welcome email).
       const r = await fetch(cfg.SUPABASE_URL + '/functions/v1/partner-provision-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken, 'apikey': cfg.SUPABASE_ANON_KEY },
-        body: JSON.stringify({ partner_id: partnerId })
+        body: JSON.stringify({ partner_id: partnerId, force_welcome: true })
       });
       const result = await r.json();
       if (!r.ok) throw new Error(result.error || 'Provision failed');
