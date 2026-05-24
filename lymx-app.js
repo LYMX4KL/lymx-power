@@ -42,9 +42,6 @@
 
   // -----------------------------------------------------------------
   // Inject PWA / mobile-icon meta tags if the page doesn't already have them.
-  // This ensures every page works for "Add to Home Screen" on iPhone & Android
-  // using the proper LYMX brand mark, even if a page's <head> was authored
-  // before PWA support existed.
   // -----------------------------------------------------------------
   function ensureTag(selector, build) {
     if (document.head.querySelector(selector)) return;
@@ -52,21 +49,18 @@
     document.head.appendChild(el);
   }
   function injectPwaTags() {
-    // viewport (safety net — every page should already have one)
     ensureTag('meta[name="viewport"]', function () {
       var m = document.createElement('meta');
       m.name = 'viewport';
       m.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover';
       return m;
     });
-    // theme color (Chrome address-bar color on mobile)
     ensureTag('meta[name="theme-color"]', function () {
       var m = document.createElement('meta');
       m.name = 'theme-color';
       m.content = '#0a84ff';
       return m;
     });
-    // iOS web app meta
     ensureTag('meta[name="apple-mobile-web-app-capable"]', function () {
       var m = document.createElement('meta');
       m.name = 'apple-mobile-web-app-capable';
@@ -91,7 +85,6 @@
       m.content = 'yes';
       return m;
     });
-    // apple-touch-icon (180x180) — what iPhone uses for Home Screen icon
     ensureTag('link[rel="apple-touch-icon"]', function () {
       var l = document.createElement('link');
       l.rel = 'apple-touch-icon';
@@ -99,14 +92,12 @@
       l.href = 'apple-touch-icon.png';
       return l;
     });
-    // PWA manifest — Android / Chrome
     ensureTag('link[rel="manifest"]', function () {
       var l = document.createElement('link');
       l.rel = 'manifest';
       l.href = 'manifest.webmanifest';
       return l;
     });
-    // Larger icon links for browsers that prefer them
     ensureTag('link[rel="icon"][sizes="192x192"]', function () {
       var l = document.createElement('link');
       l.rel = 'icon';
@@ -125,7 +116,6 @@
     });
   }
 
-  // Run injection as early as possible (synchronously now, before child scripts load).
   try { injectPwaTags(); } catch (e) { console.warn('[lymx-app] PWA inject failed:', e); }
 
   (async function bootstrap() {
@@ -139,10 +129,12 @@
       if (!window.LYMX || !window.LYMX.getSession) {
         await loadScript('lymx-auth.js');
       }
-      // Nav helper runs early so signup redirects happen before the user can interact.
       await loadScript('lymx-nav.js');
       await loadScript('lymx-sidebar.js');
       await loadScript('lymx-feedback.js');
+      // 2026-05-24 T-6ABF51 / T-B78E5A — biz profile Save + Share wiring.
+      // No-ops on non-biz pages (internal isBizProfilePage gate).
+      await loadScript('lymx-biz-actions.js');
       // i18n loads last so it can translate whatever nav/sidebar/feedback injected.
       await loadScript('lymx-i18n.js');
     } catch (e) {
