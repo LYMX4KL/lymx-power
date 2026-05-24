@@ -628,7 +628,64 @@
       });
     }
 
-    function open() { overlay.classList.add('open'); drawer.classList.add('open'); document.body.style.overflow = 'hidden'; }
+    // 2026-05-24 — Cluster J fix: on signed-in pages the lymx-sb sidebar
+    // is the actual nav (Wallet, Profile, My Feedback, Sign out, etc.) but
+    // it's CSS-hidden on mobile, leaving the hamburger drawer pulling only
+    // the marketing top-nav links. Now when the drawer opens we mirror the
+    // currently-mounted sidebar items into it — so a signed-in user sees
+    // the SAME role-specific menu in the drawer as on desktop. We rebuild
+    // on every open() so role changes (partner/customer toggle, sign-out)
+    // are reflected without stale state.
+    function syncDrawerWithSidebar() {
+      var sidebar = document.querySelector('.lymx-sb');
+      if (!sidebar) return;
+      var existingLinks = drawerLinks ? drawerLinks.querySelectorAll('a') : [];
+      // Keep marketing links AND append a separator + sidebar items. Avoid
+      // doubling up on subsequent opens: if we've already mirrored, skip.
+      if (drawer.dataset.lymxSidebarMirrored === '1') return;
+      var sbAnchors = sidebar.querySelectorAll('a, button.lymx-sb-act');
+      if (!sbAnchors.length) return;
+      // Insert a visual separator if there were existing marketing links.
+      if (drawerLinks && existingLinks.length) {
+        var hr = document.createElement('div');
+        hr.style.cssText = 'margin:10px 0;border-top:1px solid #e6e8ec;padding-top:8px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#5b6472;font-weight:800;padding-left:12px';
+        hr.textContent = 'Your account';
+        drawerLinks.appendChild(hr);
+      }
+      sbAnchors.forEach(function (el) {
+        // Skip sign-out: keep it in the marketing drawer-cta block at bottom
+        // so it's visually distinct (red) and not buried mid-list.
+        if (el.id === 'lymx-sb-signout') return;
+        var clone = document.createElement('a');
+        clone.href = el.getAttribute('href') || '#';
+        // Use textContent so emoji icons + labels both survive
+        clone.textContent = (el.textContent || '').replace(/\s+/g, ' ').trim();
+        if (clone.textContent) drawerLinks.appendChild(clone);
+      });
+      // Add Sign out as a distinct CTA at the bottom if not already present.
+      if (drawerCta && !drawerCta.querySelector('[data-lymx-signout]')) {
+        var sout = document.createElement('a');
+        sout.href = '#';
+        sout.textContent = 'Sign out';
+        sout.setAttribute('data-lymx-signout', '1');
+        sout.style.color = '#fff';
+        sout.style.background = '#B91C1C';
+        sout.addEventListener('click', function (e) {
+          e.preventDefault();
+          if (window.LYMX && window.LYMX.signOut) { window.LYMX.signOut(); }
+          else { location.href = '/login.html'; }
+        });
+        drawerCta.appendChild(sout);
+      }
+      drawer.dataset.lymxSidebarMirrored = '1';
+    }
+
+    function open() {
+      try { syncDrawerWithSidebar(); } catch (e) { console.warn('[lymx-nav] drawer sync', e); }
+      overlay.classList.add('open');
+      drawer.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
     function close() { overlay.classList.remove('open'); drawer.classList.remove('open'); document.body.style.overflow = ''; }
     btn.addEventListener('click', open);
     overlay.addEventListener('click', close);

@@ -124,12 +124,12 @@
   <div class="wrap nav-inner">
     <a href="/" class="brand">LYMX</a>
     <nav class="nav-links">
-      <a href="customer-dashboard.html">My Wallet</a>
-      <a href="my-feedback.html" class="on">My Feedback</a>
-      <a href="contacts.html">Contacts</a>
-      <a href="browse.html">Browse</a>
+      <a href='/customer-dashboard'>My Wallet</a>
+      <a class='on' href='/my-feedback'>My Feedback</a>
+      <a href='/contacts'>Contacts</a>
+      <a href='/browse'>Browse</a>
       <!-- 2026-05-19 #b52162b6 Help link -->
-      <a href="support.html">Help</a>
+      <a href='/support'>Help</a>
     </nav>
     <div class="avatar-nav" id="userInitial">·</div>
   </div>
@@ -198,6 +198,17 @@
     <div class="meta" id="mMeta">—</div>
     <div class="section" id="mOrig">—</div>
     <div id="mThread"></div>
+    <!-- 2026-05-24 Cluster N: verify actions inside the detail modal so users
+         can confirm / push back without leaving the page. Mirrors the buttons
+         already shown on the list cards. -->
+    <div id="mVerifyWrap" class="verify-banner" style="display:none;margin-top:14px">
+      <div class="h">⚠️ Did the fix work?</div>
+      <div>The LYMX team thinks they fixed this. Tap a button below to confirm or tell us it&apos;s still broken.</div>
+      <div class="actions">
+        <button class="btn btn-confirm" id="mVerifyYes">✓ Yes, it works</button>
+        <button class="btn btn-still" id="mVerifyStill">✗ Still broken</button>
+      </div>
+    </div>
     <!-- 2026-05-20 #3fcf1a6e - user-side reply input (Dave's reply-thread feature). Posts via feedback-user-reply EF. Status auto-transitions back to in_progress. -->
     <div id="mReplyWrap" style="margin-top:14px;display:none;border-top:1px solid var(--line);padding-top:14px">
       <div style="font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Add a reply</div>
@@ -206,6 +217,9 @@
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px;flex-wrap:wrap">
       <div id="mReplyBanner" style="display:none;flex:1;padding:8px 12px;border-radius:8px;font-size:13px"></div>
+      <div style="margin-right:auto">
+        <button class="btn" id="mDelete" style="display:none;background:#fff;border:1px solid #fecaca;color:#b91c1c">🗑 Delete</button>
+      </div>
       <div style="display:flex;gap:8px;margin-left:auto">
         <button class="btn" id="mClose" style="background:#fff;border:1px solid var(--line);color:var(--ink)">Close</button>
         <button class="btn btn-confirm" id="mSendReply" style="display:none">Send reply</button>
@@ -600,6 +614,45 @@ async function openDetail(id) {
       : (i.awaiting_verification ? 'A reply here counts as feedback to the team — separate from the Confirm/Still-broken buttons above.' : 'The LYMX team will be notified by email.');
   }
 
+  // 2026-05-24 Cluster N — verify actions + delete inside the modal.
+  var vWrap = document.getElementById('mVerifyWrap');
+  if (vWrap) {
+    var awaiting = i.awaiting_verification && i.verification_token;
+    vWrap.style.display = awaiting ? 'block' : 'none';
+    if (awaiting) {
+      var yes = document.getElementById('mVerifyYes');
+      var no  = document.getElementById('mVerifyStill');
+      if (yes) yes.onclick = function(){ verifyFix(i.id, i.verification_token, 'confirm'); };
+      if (no)  no.onclick  = function(){ verifyFix(i.id, i.verification_token, 'still'); };
+    }
+  }
+  var del = document.getElementById('mDelete');
+  if (del) {
+    // Allow self-delete ONLY before the team has replied. After a reply
+    // exists, the ticket is part of a thread — use Mark resolved / Close
+    // instead so the reply history is preserved.
+    var hasAdminReply = replies.some(function(r){ return r.kind === 'admin_response'; });
+    var canDelete = !hasAdminReply && (i.status === 'new' || i.status === 'in_progress');
+    del.style.display = canDelete ? '' : 'none';
+    del.onclick = async function(){
+      if (!confirm('Delete this ticket? This cannot be undone.')) return;
+      del.disabled = true; del.textContent = 'Deleting…';
+      try {
+        var s = await window.LYMX.getSession();
+        var r = await fetch(SUPABASE_URL + '/rest/v1/feedback?id=eq.' + i.id, {
+          method: 'DELETE',
+          headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + (s && s.access_token || ANON) }
+        });
+        if (!r.ok) {
+          // RLS may block; fall back to soft-delete via status=spam if you'd prefer in future.
+          alert('Could not delete. The team may have already touched this ticket.');
+          del.disabled = false; del.textContent = '🗑 Delete'; return;
+        }
+        document.getElementById('modal').classList.remove('on');
+        await loadList();
+      } catch (e) { alert('Delete failed: ' + (e.message || e)); del.disabled = false; del.textContent = '🗑 Delete'; }
+    };
+  }
   document.getElementById('modal').classList.add('on');
 }
 
