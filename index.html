@@ -337,6 +337,75 @@
         window.location = 'browse.html' + (qs.length ? '?' + qs.join('&') : '');
         return false;
       }
+
+      // 2026-05-25 #29e7a7ab — type-ahead page jumper for the hero search input.
+      // Reporter said the homepage was hard to navigate because the existing search
+      // only finds businesses, not site pages. As the user types, we surface any
+      // matching SITE PAGE (Wallet, Browse, Partners, Calendar, etc.) directly under
+      // the input so they can jump in one click. Submit still goes to /browse for
+      // business search; this is purely an additive helper.
+      (function () {
+        var PAGES = [
+          { name: 'Browse Businesses',    desc: 'See LYMX partner businesses on a map',     href: '/browse',                  kw: 'browse map businesses partners' },
+          { name: 'Wallet',               desc: 'View your LYMX balance and history',       href: '/wallet.html',             kw: 'wallet balance lymx earn redeem' },
+          { name: 'Your Dashboard',       desc: 'Customer home — pending reviews, activity', href: '/customer-dashboard.html', kw: 'dashboard home account' },
+          { name: 'My Reviews',           desc: 'Reviews you have written',                  href: '/my-reviews.html',         kw: 'reviews ratings stars' },
+          { name: 'Refer a Friend',       desc: 'Send a referral, earn 100 LYMX each',       href: '/refer.html',              kw: 'refer friend invite share link' },
+          { name: 'Contacts',             desc: 'Your private address book',                 href: '/contacts.html',           kw: 'contacts address book email' },
+          { name: 'Messages',             desc: 'Conversations with businesses + admin',     href: '/my-conversations.html',   kw: 'messages chat email sms inbox' },
+          { name: 'Profile',              desc: 'Edit your name, photo, language',           href: '/profile.html',            kw: 'profile account settings password avatar' },
+          { name: 'My Calendar',          desc: 'Set weekly availability for bookings',      href: '/team-calendar.html',      kw: 'calendar availability bookings' },
+          { name: 'My Bookings',          desc: 'Upcoming + past bookings',                  href: '/my-bookings.html',        kw: 'bookings meetings calls' },
+          { name: 'Become a Partner',     desc: 'Earn 750 dollars per business activation',  href: '/partner-signup.html',     kw: 'partner signup earn affiliate' },
+          { name: 'For Business',         desc: 'LYMX for business owners',                  href: '/business.html',           kw: 'business biz owner signup' },
+          { name: 'Partners',             desc: 'The LYMX Partner program overview',         href: '/partners.html',           kw: 'partner program 750 founding' },
+          { name: 'Sales Toolkit',        desc: 'Pitch decks + scripts (partner)',           href: '/partner-resources.html',  kw: 'sales toolkit pitch deck materials' },
+          { name: 'Sign in',              desc: 'Log into your LYMX account',                href: '/login.html',              kw: 'login sign in account' },
+          { name: 'How it Works',         desc: 'Earn + redeem in plain English',            href: '/how-it-works.html',       kw: 'how works learn explain' },
+          { name: 'Pricing',              desc: 'Plans for businesses + partners',           href: '/pricing.html',            kw: 'pricing cost plan fees' },
+          { name: 'Support',              desc: 'Help articles + contact us',                href: '/support.html',            kw: 'support help contact ticket' },
+          { name: 'Send Feedback',        desc: 'Report a bug or suggest a feature',         href: '/my-feedback.html',        kw: 'feedback bug report suggest' },
+          { name: 'About LYMX',           desc: 'What LYMX is + the team behind it',         href: '/about.html',              kw: 'about company team mission' }
+        ];
+
+        var input = document.getElementById('heroFind');
+        if (!input) return;
+        var form  = document.getElementById('heroSearchForm');
+        if (!form) return;
+
+        var box = document.createElement('div');
+        box.id = 'heroPageSuggest';
+        box.style.cssText = 'display:none;position:absolute;left:0;right:0;top:calc(100%+8px);background:#fff;border:1px solid #e6e8ec;border-radius:12px;box-shadow:0 12px 30px rgba(14,17,22,.10);padding:6px;z-index:30;max-height:340px;overflow-y:auto';
+        // Make the form a positioning context so the dropdown anchors to it
+        form.style.position = 'relative';
+        form.appendChild(box);
+
+        function render(q) {
+          var query = q.trim().toLowerCase();
+          if (!query) { box.style.display = 'none'; box.innerHTML = ''; return; }
+          var matches = PAGES.filter(function (p) {
+            return (p.name + ' ' + p.kw + ' ' + p.desc).toLowerCase().indexOf(query) !== -1;
+          }).slice(0, 6);
+          if (!matches.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+          box.innerHTML = '<div style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#5b6472;font-weight:700;padding:8px 12px 6px">Jump to a page</div>'
+            + matches.map(function (p) {
+              return '<a href="' + p.href + '" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 12px;border-radius:9px;color:#0e1116;text-decoration:none;font-size:13.5px"><div><div style="font-weight:700">' + p.name + '</div><div style="font-size:12px;color:#5b6472">' + p.desc + '</div></div><span style="font-size:14px;color:#0a84ff">→</span></a>';
+            }).join('')
+            + '<div style="border-top:1px solid #f0f1f4;margin-top:4px;padding:6px 12px 4px;font-size:11.5px;color:#5b6472;font-style:italic">Looking for a business instead? Press Enter to search /browse.</div>';
+          // Inject hover highlight via inline event handlers (no extra CSS file)
+          Array.prototype.forEach.call(box.querySelectorAll('a'), function (a) {
+            a.addEventListener('mouseenter', function () { a.style.background = '#f6f7f9'; });
+            a.addEventListener('mouseleave', function () { a.style.background = ''; });
+          });
+          box.style.display = 'block';
+        }
+
+        input.addEventListener('input', function () { render(input.value); });
+        input.addEventListener('focus', function () { render(input.value); });
+        document.addEventListener('click', function (e) {
+          if (!box.contains(e.target) && e.target !== input) box.style.display = 'none';
+        });
+      })();
     </script>
 
     <div class="quick">
@@ -374,13 +443,6 @@
       <a class="cat" href="browse.html?category=Pets"><span class="emoji">🐾</span><div class="n">Pets</div><div class="s">Groom · Supply</div></a>
       <!-- 2026-05-20 #9e5de0e0 - was "More / Everything else" which read as a black box. Replaced with concrete category. -->
       <a class="cat" href="browse.html"><span class="emoji">🔎</span><div class="n">All categories</div><div class="s">Browse the full network</div></a>
-    </div>
-
-    <!-- 2026-05-20 #fa972f45 - clear CTA below the categories grid so the next step is obvious -->
-    <div style="margin-top:28px;text-align:center">
-      <div style="font-size:15px;color:var(--ink-2);margin-bottom:14px">Free to join. Earn LYMX at any business above, spend anywhere else in the network.</div>
-      <a href="customer-signup.html" class="btn btn-primary" style="display:inline-block;padding:14px 28px;font-size:15.5px">Sign up free →</a>
-      <div style="margin-top:10px;font-size:12.5px;color:var(--muted)">No credit card. Takes 60 seconds.</div>
     </div>
   </div>
 </section>

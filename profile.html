@@ -111,6 +111,31 @@
     </div>
   </div>
 
+  <!-- 2026-05-25 #1665820a — crop + reposition modal. Opens after a file is picked
+       so users can drag-pan and zoom into the part of the photo they want as their
+       avatar before it uploads. The cropped result is rendered to a 400x400 canvas
+       and uploaded as a JPEG so the bucket only ever holds the user's chosen frame.
+       Previously the upload happened immediately and relied on object-fit:cover to
+       center-crop, which gave no control over which part of the photo showed. -->
+  <div id="avatarCropModal" style="display:none;position:fixed;inset:0;z-index:99995;background:rgba(14,17,22,.6);align-items:center;justify-content:center;padding:18px">
+    <div style="background:#fff;border-radius:14px;max-width:380px;width:100%;padding:20px;box-shadow:0 14px 40px rgba(14,17,22,.25)">
+      <h3 style="margin:0 0 6px;font-size:17px;font-weight:800">Position your photo</h3>
+      <div style="margin:0 0 14px;font-size:13px;color:#5b6472">Drag to move, slide to zoom, then Save.</div>
+      <div id="avatarCropStage" style="position:relative;width:280px;height:280px;margin:0 auto 14px;border-radius:50%;overflow:hidden;background:#0e1116;cursor:grab;user-select:none;touch-action:none">
+        <img id="avatarCropImg" alt="" style="position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;max-width:none" />
+        <div style="position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 9999px rgba(255,255,255,.0);pointer-events:none"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <span style="font-size:12px;color:#5b6472;width:42px">Zoom</span>
+        <input type="range" id="avatarCropZoom" min="1" max="4" step="0.01" value="1" style="flex:1" />
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button type="button" id="avatarCropCancel" style="padding:9px 16px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid #e6e8ec;background:#fff;color:#0e1116;cursor:pointer">Cancel</button>
+        <button type="button" id="avatarCropSave" style="padding:9px 16px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;background:#0e1116;color:#fff;cursor:pointer">Save photo</button>
+      </div>
+    </div>
+  </div>
+
   <div class="card">
     <h2>About you</h2>
 
@@ -696,6 +721,143 @@ async function removeAvatar() {
   }
 }
 
+// 2026-05-25 #1665820a — open a crop modal first; only upload after the user
+// confirms the framing they want. Renders the cropped result to a 400x400 canvas
+// before passing the Blob to uploadAvatar() so the existing upload pipeline doesn't
+// need to change.
+function openAvatarCrop(file) {
+  const status = document.getElementById('avatarStatus');
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { if (status) status.textContent = 'File too large — max 5 MB.'; return; }
+  if (!/^image\/(png|jpe?g|webp|gif)$/i.test(file.type)) { if (status) status.textContent = 'Only PNG, JPG, WEBP, GIF allowed.'; return; }
+
+  const modal = document.getElementById('avatarCropModal');
+  const stage = document.getElementById('avatarCropStage');
+  const img   = document.getElementById('avatarCropImg');
+  const zoom  = document.getElementById('avatarCropZoom');
+  const cancel= document.getElementById('avatarCropCancel');
+  const save  = document.getElementById('avatarCropSave');
+  if (!modal || !stage || !img || !zoom) { if (status) status.textContent = 'Crop UI not available — uploading without crop.'; uploadAvatar(file); return; }
+
+  modal.style.display = 'flex';
+  zoom.value = '1';
+  let state = { x: 0, y: 0, scale: 1, dragging: false, dragStartX: 0, dragStartY: 0, imgW: 0, imgH: 0 };
+  const STAGE = 280;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    img.onload = () => {
+      // Fit-to-stage: scale the image so its shorter side fills the stage exactly
+      state.imgW = img.naturalWidth;
+      state.imgH = img.naturalHeight;
+      const fit = Math.max(STAGE / state.imgW, STAGE / state.imgH);
+      img.style.width = state.imgW + 'px';
+      img.style.height = state.imgH + 'px';
+      // Set the slider min to "fit" so users can't zoom out past covering the circle
+      zoom.min = fit.toFixed(3);
+      zoom.max = (fit * 4).toFixed(3);
+      zoom.step = (fit / 100).toFixed(4);
+      zoom.value = fit.toFixed(3);
+      state.scale = fit;
+      // Center
+      state.x = (STAGE - state.imgW * fit) / 2;
+      state.y = (STAGE - state.imgH * fit) / 2;
+      apply();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+
+  function clampPan() {
+    // Ensure the visible image always covers the 280×280 stage at the current scale
+    const w = state.imgW * state.scale;
+    const h = state.imgH * state.scale;
+    const minX = STAGE - w;
+    const minY = STAGE - h;
+    const maxX = 0;
+    const maxY = 0;
+    state.x = Math.max(minX, Math.min(maxX, state.x));
+    state.y = Math.max(minY, Math.min(maxY, state.y));
+  }
+  function apply() {
+    clampPan();
+    img.style.transform = 'translate(' + state.x + 'px,' + state.y + 'px) scale(' + state.scale + ')';
+  }
+
+  function onDown(e) {
+    state.dragging = true;
+    const p = e.touches ? e.touches[0] : e;
+    state.dragStartX = p.clientX - state.x;
+    state.dragStartY = p.clientY - state.y;
+    stage.style.cursor = 'grabbing';
+  }
+  function onMove(e) {
+    if (!state.dragging) return;
+    if (e.cancelable) e.preventDefault();
+    const p = e.touches ? e.touches[0] : e;
+    state.x = p.clientX - state.dragStartX;
+    state.y = p.clientY - state.dragStartY;
+    apply();
+  }
+  function onUp() { state.dragging = false; stage.style.cursor = 'grab'; }
+
+  stage.addEventListener('mousedown', onDown);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+  stage.addEventListener('touchstart', onDown, { passive: true });
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('touchend', onUp);
+
+  zoom.oninput = () => {
+    // Zoom toward the center of the stage so the focal point stays put
+    const oldScale = state.scale;
+    const newScale = parseFloat(zoom.value);
+    if (!newScale) return;
+    const cx = STAGE / 2, cy = STAGE / 2;
+    const ix = (cx - state.x) / oldScale;
+    const iy = (cy - state.y) / oldScale;
+    state.scale = newScale;
+    state.x = cx - ix * newScale;
+    state.y = cy - iy * newScale;
+    apply();
+  };
+
+  function cleanup() {
+    modal.style.display = 'none';
+    stage.removeEventListener('mousedown', onDown);
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+    stage.removeEventListener('touchstart', onDown);
+    window.removeEventListener('touchmove', onMove);
+    window.removeEventListener('touchend', onUp);
+    zoom.oninput = null;
+  }
+  cancel.onclick = cleanup;
+  save.onclick = () => {
+    // Render the visible 280×280 crop to a 400×400 canvas (sharper than 280)
+    const out = 400;
+    const c = document.createElement('canvas');
+    c.width = out; c.height = out;
+    const ctx = c.getContext('2d');
+    // Source rect in image-pixel space:
+    //   image origin in stage space is (state.x, state.y), drawn at state.scale
+    //   so the stage's (0..STAGE) maps to image pixels ( -state.x/scale .. (STAGE-state.x)/scale )
+    const srcX = -state.x / state.scale;
+    const srcY = -state.y / state.scale;
+    const srcW = STAGE / state.scale;
+    const srcH = STAGE / state.scale;
+    ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, out, out);
+    c.toBlob((blob) => {
+      if (!blob) { document.getElementById('avatarStatus').textContent = 'Crop failed — try again.'; return; }
+      // Wrap as File so uploadAvatar's existing type+size checks work cleanly
+      const filename = (file.name || 'avatar').replace(/\.[^.]+$/, '') + '.jpg';
+      const cropped = new File([blob], filename, { type: 'image/jpeg' });
+      cleanup();
+      uploadAvatar(cropped);
+    }, 'image/jpeg', 0.9);
+  };
+}
+
 (function wireAvatarUi() {
   const btn = document.getElementById('avatarUploadBtn');
   const fi  = document.getElementById('avatarFile');
@@ -703,7 +865,7 @@ async function removeAvatar() {
   if (btn && fi) btn.addEventListener('click', function () { fi.click(); });
   if (fi) fi.addEventListener('change', function (e) {
     const f = e.target.files && e.target.files[0];
-    if (f) uploadAvatar(f);
+    if (f) openAvatarCrop(f); // 2026-05-25 #1665820a — was uploadAvatar(f) directly
     e.target.value = '';
   });
   if (rm) rm.addEventListener('click', removeAvatar);
