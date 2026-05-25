@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — send a welcome-to-staff onboarding email." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Send HR launch email · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:920px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .page{padding:28px 0 80px}
+  .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 18px;color:var(--muted);font-size:14.5px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+  .row{margin-bottom:13px}
+  .row label{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:5px}
+  .row input,.row textarea,.row select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:7px;font-size:14px;font-family:inherit;color:var(--ink)}
+  .row textarea{min-height:280px;resize:vertical;font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:1.55}
+  .row .hint{font-size:12px;color:var(--muted);margin-top:4px}
+  .btn{appearance:none;border:0;border-radius:8px;padding:10px 16px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-primary{background:var(--ok);color:#fff}
+  .btn-outline{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:700px){.grid{grid-template-columns:1fr}}
+  .banner{padding:11px 14px;border-radius:8px;margin-bottom:14px;font-size:14px}
+  .banner.ok{background:#dff8ec;color:#0c6940}
+  .banner.err{background:#fde8e6;color:#7a1a17}
+  .preview{background:#f6f7f9;border:1px dashed var(--line);padding:14px;border-radius:8px;font-size:13.5px;white-space:pre-wrap;color:var(--ink-2)}
+  .templates{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .tplbtn{background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer}
+  .tplbtn:hover{border-color:var(--accent);color:var(--accent)}
+</style>
+</head>
+<body>
+<script src="lymx-config.js"></script>
+<script src="lymx-app.js"></script>
+<script src="lymx-nav.js" defer></script>
+
+<main class="wrap page">
+  <div class="page-head">
+    <h1>Send HR launch email</h1>
+    <p>Onboarding email sent when you finish a new staff member's profile. Picks up their name + first-paycheck info + login URL. Sent via the standard send-email Edge Function (Resend).</p>
+  </div>
+
+  <div id="bannerArea"></div>
+
+  <div class="card">
+    <div class="grid">
+      <div class="row">
+        <label>Staff member</label>
+        <select id="staffSelect"><option value="">-- pick a staff member --</option></select>
+        <div class="hint">Reads from staff_profiles.</div>
+      </div>
+      <div class="row">
+        <label>Recipient email (override)</label>
+        <input type="email" id="overrideEmail" placeholder="defaults to their account email" />
+      </div>
+    </div>
+
+    <div class="row">
+      <label>Subject</label>
+      <input type="text" id="subject" value="Welcome to LYMX staff" />
+    </div>
+
+    <div class="templates">
+      <button type="button" class="tplbtn" onclick="loadTpl('welcome')">Welcome (default)</button>
+      <button type="button" class="tplbtn" onclick="loadTpl('payroll')">First payroll explainer</button>
+      <button type="button" class="tplbtn" onclick="loadTpl('clockin')">Clock-in setup</button>
+    </div>
+
+    <div class="row">
+      <label>Body (plain text — {{name}}, {{first_name}}, {{email}}, {{title}}, {{login_url}} substituted)</label>
+      <textarea id="bodyText"></textarea>
+      <div class="hint">Variables substituted server-side from staff_profiles + auth.users + LYMX config.</div>
+    </div>
+
+    <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="previewIt()">Preview substituted</button>
+      <button class="btn btn-primary" id="sendBtn" onclick="sendIt()">Send email</button>
+    </div>
+  </div>
+
+  <div class="card" id="previewCard" style="display:none">
+    <strong>Preview</strong>
+    <div class="preview" id="previewBody"></div>
+  </div>
+</main>
+
+<script src="lymx-sidebar.js" defer></script>
+<script>
+const TPLS = {
+  welcome: `Hi {{first_name}},
+
+Welcome to LYMX as a {{title}}. Here's what you need to know in the first 24 hours:
+
+1. Sign in: {{login_url}}
+   Same account you've been using. Your sidebar will now show a "My Work" section with Clock In, My Schedule, My Time-off.
+
+2. Set up your clock-in:
+   - If you work from one place every day, submit your home address at {{login_url}}staff-clock-in-anchor.html
+   - For one-off days (working from a different place), use staff-clock-in-permission-request.html
+
+3. Your personnel file is at my-personnel-file.html — your offer letter, I-9, W-4, direct deposit form, and signed handbook live there.
+
+4. First payroll runs the 1st-15th and 16th-end-of-month. We'll send a reminder a day before lock.
+
+If anything looks off, reply to this email or message Helen.
+
+— Helen, HR
+LYMX Power`,
+  payroll: `Hi {{first_name}},
+
+Quick note on how LYMX payroll works:
+
+• Pay periods: 1st-15th + 16th-end-of-month
+• Clock In/Out daily — the system computes regular vs OT hours automatically (>40hr/week = OT)
+• Lunch: 30+ minute breaks are deducted; shorter "snack" breaks are paid
+• Locked timesheet ~3 days after period close; ACH/Gusto run within 5 business days
+• Your hourly rate, classification (W-2 / 1099 / contractor) and payment method live on your personnel file
+
+Questions? Reply here.
+
+— Helen, HR`,
+  clockin: `Hi {{first_name}},
+
+Quick guide for clock-in:
+
+DAILY:
+  1. Open getlymx.com/staff-clock-in.html
+  2. Tap "Clock In" — your phone GPS verifies you're at an approved location
+  3. Tap "Lunch" to start your break, "Back from lunch" to resume
+  4. Tap "Clock Out" at end of day
+
+ANYTHING WEIRD:
+  • GPS keeps failing → ping Helen — she'll widen your geofence
+  • Working from a different place that day → submit a single-day exception (linked from your dashboard)
+  • Forgot to clock in/out → ping Helen, she can edit your day
+
+Your default location is set. Add additional places at my-clock-in-anchor.html.
+
+— Helen, HR`
+};
+
+(async function init(){
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(init,100); return; }
+  const session = await window.LYMX.getSession();
+  if (!session) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
+  loadTpl('welcome');
+  await loadStaff();
+})();
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+function banner(t, m) {
+  $('bannerArea').innerHTML = '<div class="banner ' + t + '">' + esc(m) + '</div>';
+  if (t === 'ok') setTimeout(() => $('bannerArea').innerHTML = '', 4000);
+}
+function loadTpl(k) { $('bodyText').value = TPLS[k] || ''; }
+
+let _staffMap = {};
+
+async function loadStaff() {
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/staff_profiles?select=user_id,title,classification&limit=200', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer '+tok }
+  });
+  if (!r.ok) return;
+  const staff = await r.json();
+  if (!staff.length) return;
+  const uids = staff.map(s => s.user_id);
+  const pR = await fetch(cfg.SUPABASE_URL + '/rest/v1/partners?user_id=in.(' + uids.join(',') + ')&select=user_id,legal_name,display_name,contact_email', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer '+tok }
+  });
+  const partners = pR.ok ? await pR.json() : [];
+  partners.forEach(p => _staffMap[p.user_id] = { name: p.legal_name, displayName: p.display_name, email: p.contact_email });
+  staff.forEach(s => {
+    if (!_staffMap[s.user_id]) _staffMap[s.user_id] = { name: '(no partner row)', email: '' };
+    _staffMap[s.user_id].title = s.title;
+    _staffMap[s.user_id].classification = s.classification;
+  });
+  $('staffSelect').innerHTML = '<option value="">-- pick a staff member --</option>' +
+    Object.entries(_staffMap).map(([uid, s]) =>
+      '<option value="' + uid + '">' + esc(s.name) + (s.title ? ' — ' + esc(s.title) : '') + '</option>'
+    ).join('');
+}
+
+function substitute(text, uid) {
+  const s = _staffMap[uid] || {};
+  const cfg = window.LYMX_CONFIG;
+  const SITE = 'https://getlymx.com/';
+  const fullName = s.name || '';
+  const firstName = (s.displayName || fullName).split(/\s+/)[0] || 'there';
+  return text
+    .replace(/\{\{name\}\}/g, fullName)
+    .replace(/\{\{first_name\}\}/g, firstName)
+    .replace(/\{\{email\}\}/g, s.email || '')
+    .replace(/\{\{title\}\}/g, s.title || 'staff member')
+    .replace(/\{\{login_url\}\}/g, SITE);
+}
+
+function previewIt() {
+  const uid = $('staffSelect').value;
+  if (!uid) { banner('err','Pick a staff member first to preview.'); return; }
+  $('previewBody').textContent = substitute($('bodyText').value, uid);
+  $('previewCard').style.display = 'block';
+}
+
+async function sendIt() {
+  const uid = $('staffSelect').value;
+  if (!uid) { banner('err','Pick a staff member.'); return; }
+  const s = _staffMap[uid];
+  const to = ($('overrideEmail').value || s.email || '').trim();
+  if (!to) { banner('err','No recipient email (set one as override).'); return; }
+  const subject = $('subject').value.trim();
+  if (!subject) { banner('err','Subject required.'); return; }
+  const body = substitute($('bodyText').value, uid);
+  if (!body || body.length < 30) { banner('err','Body too short.'); return; }
+  if (!confirm('Send to ' + to + '?')) return;
+
+  const btn = $('sendBtn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/functions/v1/send-email', {
+    method:'POST',
+    headers:{ apikey: cfg.SUPABASE_ANON_KEY, Authorization:'Bearer '+tok, 'Content-Type':'application/json' },
+    body: JSON.stringify({
+      recipient_email: to,
+      subject,
+      body_text: body,
+      kind: 'hr_launch_welcome',
+      channel: 'transactional'
+    })
+  });
+  if (!r.ok) {
+    banner('err','Send failed: ' + (await r.text()).slice(0,200));
+    btn.disabled = false; btn.textContent = 'Send email';
+    return;
+  }
+  banner('ok','Sent to ' + to);
+  btn.textContent = 'Sent';
+}
+</script>
+</body>
+</html>

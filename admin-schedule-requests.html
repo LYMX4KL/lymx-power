@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — propose weekly schedules to staff and track acceptance." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Schedule weeks · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .page{padding:28px 0 80px}
+  .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 18px;color:var(--muted);font-size:14.5px}
+  .controls{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .controls label{font-size:13px;font-weight:700;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+  .controls input,.controls select{padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:14px}
+  .btn{appearance:none;border:0;border-radius:8px;padding:9px 16px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-outline{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  table.weeks{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14px}
+  table.weeks th,table.weeks td{padding:11px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  table.weeks th{background:#f6f7f9;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+  table.weeks tr:last-child td{border-bottom:0}
+  .pill{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+  .pill.draft{background:#eef0f3;color:var(--muted)}
+  .pill.proposed{background:#fff3d8;color:#7a4a08}
+  .pill.accepted{background:#dff8ec;color:#0c6940}
+  .pill.declined{background:#fde8e6;color:#7a1a17}
+  .empty{padding:30px 16px;text-align:center;color:var(--muted)}
+  .banner{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13.5px}
+  .banner.ok{background:#dff8ec;color:#0c6940}
+  .banner.err{background:#fde8e6;color:#7a1a17}
+</style>
+</head>
+<body>
+<script src="lymx-config.js"></script>
+<script src="lymx-app.js"></script>
+<script src="lymx-nav.js" defer></script>
+
+<main class="wrap page">
+  <div class="page-head">
+    <h1>Schedule weeks</h1>
+    <p>Propose a week of shifts to each staff member. They get an email + dashboard prompt to accept or decline. Once accepted, the shifts lock in.</p>
+  </div>
+
+  <div id="bannerArea"></div>
+
+  <div class="controls">
+    <label>Week starting (Monday):
+      <input type="date" id="weekStart" />
+    </label>
+    <label>Staff member:
+      <select id="staffSelect"><option value="">-- pick a staff member --</option></select>
+    </label>
+    <button class="btn btn-primary" id="proposeBtn">Propose week</button>
+    <button class="btn btn-outline" id="reloadBtn">Reload</button>
+  </div>
+
+  <table class="weeks">
+    <thead>
+      <tr>
+        <th>Staff</th>
+        <th>Week of</th>
+        <th>Status</th>
+        <th>Proposed</th>
+        <th>Decided</th>
+        <th>Decline reason</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody id="wBody"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+  </table>
+</main>
+
+<script src="lymx-sidebar.js" defer></script>
+<script>
+(async function init(){
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(init,100); return; }
+  const session = await window.LYMX.getSession();
+  if (!session) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
+  setDefaultMonday();
+  await loadStaffList();
+  await loadWeeks();
+  document.getElementById('proposeBtn').addEventListener('click', onPropose);
+  document.getElementById('reloadBtn').addEventListener('click', loadWeeks);
+})();
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+function banner(t, m) {
+  $('bannerArea').innerHTML = '<div class="banner ' + t + '">' + esc(m) + '</div>';
+  if (t === 'ok') setTimeout(() => $('bannerArea').innerHTML = '', 4000);
+}
+function setDefaultMonday() {
+  const d = new Date();
+  const day = d.getDay(); // 0 Sun .. 6 Sat
+  const diffToMon = (day === 0) ? 1 : (8 - day); // next Monday
+  d.setDate(d.getDate() + diffToMon);
+  $('weekStart').value = d.toISOString().slice(0,10);
+}
+
+async function loadStaffList() {
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/staff_profiles?select=user_id,title&limit=200', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer '+tok }
+  });
+  if (!r.ok) return;
+  const staff = await r.json();
+  // Fetch partner names for those UIDs
+  if (!staff.length) return;
+  const uids = staff.map(s => s.user_id);
+  const pR = await fetch(cfg.SUPABASE_URL + '/rest/v1/partners?user_id=in.(' + uids.join(',') + ')&select=user_id,legal_name,partner_code', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer '+tok }
+  });
+  const partners = pR.ok ? await pR.json() : [];
+  const nameMap = {};
+  partners.forEach(p => nameMap[p.user_id] = (p.legal_name || p.partner_code));
+  $('staffSelect').innerHTML = '<option value="">-- pick a staff member --</option>' +
+    staff.map(s => '<option value="' + s.user_id + '">' + esc(nameMap[s.user_id] || s.user_id.slice(0,8)) + (s.title ? ' (' + esc(s.title) + ')' : '') + '</option>').join('');
+}
+
+async function loadWeeks() {
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/schedule_weeks?select=*&order=week_start_date.desc&limit=100', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer '+tok }
+  });
+  if (!r.ok) { $('wBody').innerHTML = '<tr><td colspan="7" class="empty">Load failed — make sure migration 084 ran.</td></tr>'; return; }
+  const weeks = await r.json();
+  if (!weeks.length) { $('wBody').innerHTML = '<tr><td colspan="7" class="empty">No schedule weeks proposed yet.</td></tr>'; return; }
+  // Resolve names
+  const uids = Array.from(new Set(weeks.map(w => w.user_id)));
+  const pR = await fetch(cfg.SUPABASE_URL + '/rest/v1/partners?user_id=in.(' + uids.join(',') + ')&select=user_id,legal_name', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer '+tok }
+  });
+  const partners = pR.ok ? await pR.json() : [];
+  const nameMap = {}; partners.forEach(p => nameMap[p.user_id] = p.legal_name);
+  $('wBody').innerHTML = weeks.map(w =>
+    '<tr>' +
+      '<td>' + esc(nameMap[w.user_id] || w.user_id.slice(0,8)) + '</td>' +
+      '<td>' + w.week_start_date + '</td>' +
+      '<td><span class="pill ' + esc(w.status) + '">' + esc(w.status) + '</span></td>' +
+      '<td>' + (w.proposed_at ? new Date(w.proposed_at).toLocaleDateString() : '-') + '</td>' +
+      '<td>' + (w.accepted_at ? new Date(w.accepted_at).toLocaleDateString() + ' (accepted)' :
+               w.declined_at ? new Date(w.declined_at).toLocaleDateString() + ' (declined)' : '-') + '</td>' +
+      '<td>' + esc(w.declined_reason || '') + '</td>' +
+      '<td>' + esc((w.notes || '').slice(0,80)) + '</td>' +
+    '</tr>'
+  ).join('');
+}
+
+async function onPropose() {
+  const userId = $('staffSelect').value;
+  const weekStart = $('weekStart').value;
+  if (!userId || !weekStart) { banner('err','Pick staff + week'); return; }
+  // Sanity: must be Monday
+  if (new Date(weekStart).getUTCDay() !== 1) {
+    if (!confirm('Week start is not a Monday. Proceed anyway?')) return;
+  }
+  const notes = prompt('Optional note for the staff member (e.g. "Standard week" / "Adjusted for Memorial Day"):', '') || null;
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/schedule_weeks', {
+    method: 'POST',
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer '+tok, 'Content-Type':'application/json', Prefer:'return=representation' },
+    body: JSON.stringify({
+      user_id: userId,
+      week_start_date: weekStart,
+      status: 'proposed',
+      proposed_at: new Date().toISOString(),
+      proposed_by: session.user.id,
+      notes
+    })
+  });
+  if (!r.ok) { banner('err','Propose failed: ' + (await r.text()).slice(0,160)); return; }
+  banner('ok','Week proposed. Use admin-schedule.html to add the shifts.');
+  await loadWeeks();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX staff — manage your clock-in anchor locations (places you can punch in/out from)." />
+<meta name="robots" content="noindex,nofollow" />
+<title>My clock-in locations · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:820px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:24px 20px 80px}
+  .hero{background:linear-gradient(135deg,#13a26b,#0c6940);color:#fff;padding:22px 24px;border-radius:14px;margin-bottom:18px}
+  .hero h1{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .hero p{margin:0;opacity:.93;font-size:14.5px;line-height:1.55}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+  .loc-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .loc-row:last-child{border-bottom:0}
+  .loc-row .label{font-weight:700;font-size:14.5px;color:var(--ink)}
+  .loc-row .addr{color:var(--muted);font-size:13px;margin-top:2px}
+  .loc-row .coords{color:var(--muted);font-size:12px;margin-top:2px;font-family:ui-monospace,Menlo,monospace}
+  .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .btn{appearance:none;border:0;border-radius:7px;padding:7px 13px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-outline{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn-danger{background:#fff;color:var(--danger);border:1px solid var(--danger)}
+  .pill-active{background:#dff8ec;color:#0c6940;padding:2px 7px;border-radius:5px;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+  .pill-inactive{background:#eef0f3;color:var(--muted);padding:2px 7px;border-radius:5px;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+  .add-form{margin-top:14px;padding:14px;background:#f6f7f9;border-radius:10px;display:none}
+  .add-form.show{display:block}
+  .add-form .row{margin-bottom:10px}
+  .add-form label{display:block;font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+  .add-form input,.add-form textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:7px;font-size:14px;font-family:inherit}
+  .add-form .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  @media(max-width:600px){.add-form .grid{grid-template-columns:1fr 1fr}}
+  .add-form .hint{font-size:11px;color:var(--muted);margin-top:3px}
+  .banner{padding:11px 14px;border-radius:8px;margin-bottom:14px;font-size:14px}
+  .banner.ok{background:#dff8ec;color:#0c6940}
+  .banner.err{background:#fde8e6;color:#7a1a17}
+  .empty{padding:24px 16px;text-align:center;color:var(--muted);font-size:14px}
+  .geo-help{background:#e6f0ff;border-left:4px solid var(--accent);padding:10px 14px;border-radius:0 8px 8px 0;color:#0a3a8a;font-size:12.5px;margin-bottom:14px;line-height:1.5}
+</style>
+</head>
+<body>
+<script src="lymx-config.js"></script>
+<script src="lymx-app.js"></script>
+<script src="lymx-nav.js" defer></script>
+
+<main class="wrap">
+  <div class="hero">
+    <h1>My clock-in locations</h1>
+    <p>These are the places you're allowed to clock in/out from. HR creates the main ones (office, your permanent WFH address). You can add additional one-off places that HR pre-approved you for.</p>
+  </div>
+
+  <div id="bannerArea"></div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h3 style="margin:0;font-size:15px;font-weight:800">Your locations</h3>
+      <button class="btn btn-primary" onclick="toggleAdd()">+ Add location</button>
+    </div>
+    <div id="locList"><div class="empty">Loading…</div></div>
+
+    <div class="add-form" id="addForm">
+      <div class="row">
+        <label>Label (so you can tell them apart)</label>
+        <input type="text" id="lab_label" placeholder="e.g. Home, Office, Coffee shop on Spring Mountain" />
+      </div>
+      <div class="row">
+        <label>Street address</label>
+        <input type="text" id="lab_address" placeholder="e.g. 4567 Pine St, Las Vegas, NV 89101" />
+      </div>
+      <div class="grid">
+        <div>
+          <label>Lat</label>
+          <input type="text" id="lab_lat" placeholder="36.1699" />
+        </div>
+        <div>
+          <label>Lng</label>
+          <input type="text" id="lab_lng" placeholder="-115.1398" />
+        </div>
+        <div>
+          <label>Radius (m)</label>
+          <input type="number" id="lab_radius" value="200" min="25" max="5000" />
+        </div>
+      </div>
+      <div class="geo-help">Lat/lng come from Google Maps: right-click the location → first menu item is the coordinates. Or click "Use my current GPS" below.</div>
+      <div class="actions">
+        <button class="btn btn-outline" onclick="useCurrentGps()">Use my current GPS</button>
+        <button class="btn btn-primary" onclick="addLocation()">Save location</button>
+        <button class="btn btn-outline" onclick="toggleAdd()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background:#f6f7f9">
+    <strong>Working from somewhere not on your list?</strong>
+    <p style="margin:6px 0 10px;font-size:13px;color:var(--muted)">
+      For a one-off day: <a href="staff-clock-in-permission-request.html" style="color:var(--accent);text-decoration:underline">request a single-day exception</a>.<br>
+      To make a new place your permanent WFH spot: <a href="staff-clock-in-anchor.html" style="color:var(--accent);text-decoration:underline">submit it as a remote work address</a>. HR has to approve those.
+    </p>
+  </div>
+</main>
+
+<script src="lymx-sidebar.js" defer></script>
+<script>
+let _locations = [];
+
+(async function init() {
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(init,100); return; }
+  const session = await window.LYMX.getSession();
+  if (!session) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
+  await loadLocations();
+})();
+
+const esc = (s) => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+function banner(t, m) {
+  document.getElementById('bannerArea').innerHTML = '<div class="banner ' + t + '">' + esc(m) + '</div>';
+  if (t === 'ok') setTimeout(() => document.getElementById('bannerArea').innerHTML = '', 4000);
+}
+function toggleAdd() { document.getElementById('addForm').classList.toggle('show'); }
+
+async function loadLocations() {
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/clock_in_locations?user_id=eq.' + session.user.id +
+    '&order=is_active.desc,created_at.desc' +
+    '&select=id,label,address,lat,lng,radius_m,is_active,notes,created_at', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
+  });
+  if (!r.ok) { document.getElementById('locList').innerHTML = '<div class="empty">Could not load.</div>'; return; }
+  _locations = await r.json();
+  paintList();
+}
+
+function paintList() {
+  if (!_locations.length) {
+    document.getElementById('locList').innerHTML = '<div class="empty">No locations yet. Click "Add location" to add one.</div>';
+    return;
+  }
+  document.getElementById('locList').innerHTML = _locations.map(l =>
+    '<div class="loc-row">' +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="label">' + esc(l.label) +
+          ' ' + (l.is_active ? '<span class="pill-active">active</span>' : '<span class="pill-inactive">inactive</span>') +
+        '</div>' +
+        (l.address ? '<div class="addr">' + esc(l.address) + '</div>' : '') +
+        '<div class="coords">' + l.lat + ', ' + l.lng + ' · ' + l.radius_m + 'm geofence</div>' +
+        (l.notes ? '<div class="addr" style="font-style:italic">' + esc(l.notes) + '</div>' : '') +
+        '<div class="actions">' +
+          (l.is_active
+            ? '<button class="btn btn-outline" onclick="toggleActive(\'' + l.id + '\', false)">Deactivate</button>'
+            : '<button class="btn btn-outline" onclick="toggleActive(\'' + l.id + '\', true)">Reactivate</button>') +
+          '<button class="btn btn-danger" onclick="removeLoc(\'' + l.id + '\')">Remove</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>'
+  ).join('');
+}
+
+async function addLocation() {
+  const label = document.getElementById('lab_label').value.trim();
+  const address = document.getElementById('lab_address').value.trim();
+  const lat = parseFloat(document.getElementById('lab_lat').value);
+  const lng = parseFloat(document.getElementById('lab_lng').value);
+  const radius = parseInt(document.getElementById('lab_radius').value, 10) || 200;
+  if (!label) return banner('err','Label required.');
+  if (isNaN(lat) || isNaN(lng)) return banner('err','Lat + lng required.');
+  if (radius < 25 || radius > 5000) return banner('err','Radius must be 25-5000m.');
+
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/clock_in_locations', {
+    method:'POST',
+    headers:{ apikey: cfg.SUPABASE_ANON_KEY, Authorization:'Bearer '+tok, 'Content-Type':'application/json' },
+    body: JSON.stringify({
+      user_id: session.user.id, label, address, lat, lng, radius_m: radius,
+      is_active: true, created_by: session.user.id
+    })
+  });
+  if (!r.ok) { banner('err','Save failed: ' + await r.text()); return; }
+  ['lab_label','lab_address','lab_lat','lab_lng'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('lab_radius').value = '200';
+  toggleAdd();
+  banner('ok','Saved.');
+  await loadLocations();
+}
+
+async function toggleActive(id, makeActive) {
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/clock_in_locations?id=eq.' + id, {
+    method:'PATCH',
+    headers:{ apikey: cfg.SUPABASE_ANON_KEY, Authorization:'Bearer '+tok, 'Content-Type':'application/json' },
+    body: JSON.stringify({ is_active: makeActive })
+  });
+  if (!r.ok) { banner('err','Update failed'); return; }
+  banner('ok', makeActive ? 'Reactivated.' : 'Deactivated.');
+  await loadLocations();
+}
+
+async function removeLoc(id) {
+  if (!confirm('Remove this location? You can re-add it later if needed.')) return;
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/clock_in_locations?id=eq.' + id, {
+    method:'DELETE',
+    headers:{ apikey: cfg.SUPABASE_ANON_KEY, Authorization:'Bearer '+tok }
+  });
+  if (!r.ok) { banner('err','Delete failed'); return; }
+  banner('ok','Removed.');
+  await loadLocations();
+}
+
+function useCurrentGps() {
+  if (!navigator.geolocation) { banner('err','GPS not available in this browser.'); return; }
+  banner('ok','Getting GPS… please allow location access.');
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      document.getElementById('lab_lat').value = pos.coords.latitude.toFixed(7);
+      document.getElementById('lab_lng').value = pos.coords.longitude.toFixed(7);
+      banner('ok','GPS captured (accuracy ' + Math.round(pos.coords.accuracy) + 'm). Save when ready.');
+    },
+    (err) => banner('err','GPS error: ' + err.message),
+    { enableHighAccuracy: true, timeout: 12000 }
+  );
+}
+</script>
+</body>
+</html>

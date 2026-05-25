@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — counter-offer queue: review offers staff have countered, decide accept/decline/withdraw." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Counter-offer queue · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:1080px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .page{padding:28px 0 80px}
+  .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 18px;color:var(--muted);font-size:14.5px}
+  table.offers{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14px}
+  table.offers th,table.offers td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  table.offers th{background:#f6f7f9;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+  table.offers tr:last-child td{border-bottom:0}
+  .pill{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+  .pill.draft{background:#eef0f3;color:var(--muted)}
+  .pill.sent{background:#e6f0ff;color:#0a3a8a}
+  .pill.countered{background:#fff3d8;color:#7a4a08}
+  .pill.accepted{background:#dff8ec;color:#0c6940}
+  .pill.declined{background:#fde8e6;color:#7a1a17}
+  .pill.withdrawn{background:#eef0f3;color:var(--muted)}
+  .pill.expired{background:#eef0f3;color:var(--muted)}
+  .empty{text-align:center;padding:40px 16px;color:var(--muted)}
+  .actions{display:flex;gap:5px;flex-wrap:wrap}
+  .btn{appearance:none;border:0;border-radius:6px;padding:5px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-outline{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn-success{background:var(--ok);color:#fff}
+  .btn-danger{background:var(--danger);color:#fff}
+  .banner{padding:11px 14px;border-radius:8px;margin-bottom:14px;font-size:14px}
+  .banner.ok{background:#dff8ec;color:#0c6940}
+  .banner.err{background:#fde8e6;color:#7a1a17}
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .tab{padding:7px 13px;background:#fff;border:1px solid var(--line);border-radius:7px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink-2)}
+  .tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .tab .c{background:rgba(255,255,255,.18);padding:1px 6px;border-radius:8px;margin-left:5px;font-size:11px}
+  .tab:not(.active) .c{background:#eef0f3;color:var(--muted)}
+  .salary{font-variant-numeric:tabular-nums;font-weight:700}
+</style>
+</head>
+<body>
+<script src="lymx-config.js"></script>
+<script src="lymx-app.js"></script>
+<script src="lymx-nav.js" defer></script>
+
+<main class="wrap page">
+  <div class="page-head">
+    <h1>Counter-offer queue</h1>
+    <p>Job offers you've sent. Filter by status — focus on "countered" to review what candidates pushed back on. Use <a href="admin-generate-offer.html" style="color:var(--accent);text-decoration:underline">Generate offer</a> to draft a new one.</p>
+  </div>
+
+  <div id="bannerArea"></div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <table class="offers">
+    <thead>
+      <tr>
+        <th>Candidate</th>
+        <th>Position</th>
+        <th>Original</th>
+        <th>Counter</th>
+        <th>Status</th>
+        <th>Sent</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="oBody"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+  </table>
+</main>
+
+<script src="lymx-sidebar.js" defer></script>
+<script>
+const TABS = [
+  { key:'countered', label:'Countered' },
+  { key:'sent',      label:'Sent · waiting' },
+  { key:'accepted',  label:'Accepted' },
+  { key:'declined',  label:'Declined / withdrawn' },
+  { key:'all',       label:'All' }
+];
+let _activeTab = 'countered';
+let _offers = [];
+
+(async function init(){
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(init,100); return; }
+  const session = await window.LYMX.getSession();
+  if (!session) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
+  await load();
+})();
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtUsd = (cents) => cents == null ? '-' : '$' + (Number(cents)/100).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+function banner(t, m) {
+  $('bannerArea').innerHTML = '<div class="banner ' + t + '">' + esc(m) + '</div>';
+  if (t === 'ok') setTimeout(() => $('bannerArea').innerHTML = '', 4000);
+}
+
+async function load() {
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL +
+    '/rest/v1/offers?select=*&order=sent_at.desc.nullslast,created_at.desc&limit=200', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer '+tok }
+  });
+  if (!r.ok) { $('oBody').innerHTML = '<tr><td colspan="7" class="empty">Load failed.</td></tr>'; return; }
+  _offers = await r.json();
+  paintTabs();
+  paintList();
+}
+
+function paintTabs() {
+  const counts = { countered:0, sent:0, accepted:0, declined:0, all:_offers.length };
+  _offers.forEach(o => {
+    const s = (o.status || '').toLowerCase();
+    if (s === 'countered') counts.countered += 1;
+    else if (s === 'sent' || s === 'draft') counts.sent += 1;
+    else if (s === 'accepted') counts.accepted += 1;
+    else if (s === 'declined' || s === 'withdrawn' || s === 'expired') counts.declined += 1;
+  });
+  $('tabs').innerHTML = TABS.map(t =>
+    '<button class="tab ' + (t.key === _activeTab ? 'active' : '') + '" data-tab="' + t.key + '">' +
+      esc(t.label) + '<span class="c">' + counts[t.key] + '</span>' +
+    '</button>'
+  ).join('');
+  $('tabs').querySelectorAll('.tab').forEach(b =>
+    b.addEventListener('click', () => { _activeTab = b.dataset.tab; paintTabs(); paintList(); })
+  );
+}
+
+function paintList() {
+  let rows = _offers;
+  if (_activeTab === 'countered') rows = rows.filter(o => (o.status || '').toLowerCase() === 'countered');
+  else if (_activeTab === 'sent') rows = rows.filter(o => ['sent','draft'].includes((o.status || '').toLowerCase()));
+  else if (_activeTab === 'accepted') rows = rows.filter(o => (o.status || '').toLowerCase() === 'accepted');
+  else if (_activeTab === 'declined') rows = rows.filter(o => ['declined','withdrawn','expired'].includes((o.status || '').toLowerCase()));
+
+  if (!rows.length) { $('oBody').innerHTML = '<tr><td colspan="7" class="empty">No offers in this tab.</td></tr>'; return; }
+  $('oBody').innerHTML = rows.map(o => {
+    const s = (o.status || 'draft').toLowerCase();
+    const original = o.offer_pay_rate_cents != null ? fmtUsd(o.offer_pay_rate_cents) + (o.offer_pay_period ? '/' + o.offer_pay_period : '') : '-';
+    const counter = o.counter_pay_rate_cents != null ? '<span class="salary">' + fmtUsd(o.counter_pay_rate_cents) + (o.counter_pay_period ? '/' + o.counter_pay_period : '') + '</span>' :
+                    (s === 'countered' ? '<em style="color:var(--warn)">(non-pay change)</em>' : '-');
+    let acts = '';
+    if (s === 'countered') {
+      acts = '<button class="btn btn-success" onclick="setStatus(\'' + o.id + '\',\'accepted\')">Accept counter</button>' +
+             '<button class="btn btn-outline" onclick="setStatus(\'' + o.id + '\',\'sent\')">Send revised</button>' +
+             '<button class="btn btn-danger" onclick="setStatus(\'' + o.id + '\',\'withdrawn\')">Withdraw</button>';
+    } else if (s === 'sent' || s === 'draft') {
+      acts = '<button class="btn btn-danger" onclick="setStatus(\'' + o.id + '\',\'withdrawn\')">Withdraw</button>';
+    }
+    return '<tr>' +
+      '<td>' + esc(o.candidate_name || '?') + '<br><span style="font-size:12px;color:var(--muted)">' + esc(o.candidate_email || '') + '</span></td>' +
+      '<td>' + esc(o.position_title || '-') + '</td>' +
+      '<td class="salary">' + original + '</td>' +
+      '<td>' + counter + (o.counter_notes ? '<br><span style="font-size:12px;color:var(--muted);font-style:italic">"' + esc(o.counter_notes.slice(0,90)) + '"</span>' : '') + '</td>' +
+      '<td><span class="pill ' + esc(s) + '">' + esc(s) + '</span></td>' +
+      '<td>' + (o.sent_at ? new Date(o.sent_at).toLocaleDateString() : (o.created_at ? new Date(o.created_at).toLocaleDateString() + ' (draft)' : '-')) + '</td>' +
+      '<td><div class="actions">' + acts + '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+async function setStatus(id, newStatus) {
+  if (!confirm('Set offer to "' + newStatus + '"?')) return;
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const patch = { status: newStatus };
+  if (newStatus === 'accepted') patch.accepted_at = new Date().toISOString();
+  if (newStatus === 'withdrawn') patch.withdrawn_at = new Date().toISOString();
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/offers?id=eq.' + id, {
+    method:'PATCH',
+    headers:{ apikey: cfg.SUPABASE_ANON_KEY, Authorization:'Bearer '+tok, 'Content-Type':'application/json' },
+    body: JSON.stringify(patch)
+  });
+  if (!r.ok) { banner('err','Update failed: ' + (await r.text()).slice(0,160)); return; }
+  banner('ok','Updated.');
+  await load();
+}
+</script>
+</body>
+</html>

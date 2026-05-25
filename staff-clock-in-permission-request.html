@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX staff — request a single-day exception to clock in from a non-standard location." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Single-day clock-in exception · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:720px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:24px 20px 80px}
+  .hero{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;padding:22px 24px;border-radius:14px;margin-bottom:18px}
+  .hero h1{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .hero p{margin:0;opacity:.93;font-size:14.5px;line-height:1.55}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+  .row{margin-bottom:14px}
+  .row label{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:5px}
+  .row input,.row textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;color:var(--ink)}
+  .row textarea{min-height:80px;resize:vertical}
+  .row .hint{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
+  .btn{appearance:none;border:0;border-radius:10px;padding:12px 22px;font-size:15px;font-weight:800;cursor:pointer;background:var(--ink);color:#fff}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .banner{padding:11px 14px;border-radius:8px;margin-bottom:14px;font-size:14px}
+  .banner.error{background:#fde8e6;color:#7a1a17}
+  .banner.success{background:#dff8ec;color:#0c6940}
+  .banner.info{background:#e6f0ff;color:#0a3a8a}
+  .recent{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+  .recent h3{margin:0 0 8px;font-size:14px;font-weight:800;color:var(--ink-2)}
+  .recent .item{padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .recent .item:last-child{border-bottom:0}
+  .pill{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+  .pill.pending{background:#fff3d8;color:#7a4a08}
+  .pill.approved{background:#dff8ec;color:#0c6940}
+  .pill.denied{background:#fde8e6;color:#7a1a17}
+  .pill.expired{background:#eef0f3;color:var(--muted)}
+</style>
+</head>
+<body>
+<script src="lymx-config.js"></script>
+<script src="lymx-app.js"></script>
+<script src="lymx-nav.js" defer></script>
+
+<main class="wrap">
+  <div class="hero">
+    <h1>Single-day clock-in exception</h1>
+    <p>Need to clock in from somewhere not on your usual list (plumber visit at home, working from a coffee shop, traveling)? Submit a one-day request here. For permanent WFH, use <a href="staff-clock-in-anchor.html" style="color:#fff;text-decoration:underline">Remote work address</a> instead.</p>
+  </div>
+
+  <div id="banner"></div>
+
+  <div class="card">
+    <div class="row">
+      <label>Date you need this for</label>
+      <input type="date" id="req_date" />
+      <div class="hint">Must be today or a future date.</div>
+    </div>
+    <div class="row">
+      <label>Address you'll be clocking in from</label>
+      <input type="text" id="req_address" placeholder="e.g. 4567 Pine St, Las Vegas, NV 89101" />
+      <div class="hint">HR will set a 100m geofence around this address for the day.</div>
+    </div>
+    <div class="row">
+      <label>Reason</label>
+      <textarea id="req_reason" placeholder="e.g. Home for a plumber visit; on-site at Cherokee property; traveling Tuesday."></textarea>
+    </div>
+    <button class="btn" id="submitBtn" onclick="submitRequest()">Submit for HR review</button>
+  </div>
+
+  <div class="recent" id="recentBox" style="display:none">
+    <h3>Your recent single-day requests</h3>
+    <div id="recentList"></div>
+  </div>
+</main>
+
+<script src="lymx-sidebar.js" defer></script>
+<script>
+(async function init(){
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(init,100); return; }
+  const session = await window.LYMX.getSession();
+  if (!session) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
+  document.getElementById('req_date').min = new Date().toISOString().slice(0,10);
+  document.getElementById('req_date').value = new Date().toISOString().slice(0,10);
+  await loadRecent();
+})();
+
+const esc = (s) => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+function banner(k, m) {
+  document.getElementById('banner').innerHTML = '<div class="banner ' + k + '">' + esc(m) + '</div>';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+async function loadRecent() {
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/clock_in_permissions?user_id=eq.' + session.user.id +
+    '&kind=eq.single_day&order=requested_at.desc&limit=5' +
+    '&select=request_date,request_address,status,review_notes,reviewed_at', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
+  });
+  if (!r.ok) return;
+  const rows = await r.json();
+  if (!rows.length) return;
+  document.getElementById('recentBox').style.display = 'block';
+  document.getElementById('recentList').innerHTML = rows.map(rec =>
+    '<div class="item">' +
+      '<span class="pill ' + esc(rec.status) + '">' + esc(rec.status) + '</span> ' +
+      '<strong>' + esc(rec.request_date) + '</strong> · ' +
+      esc((rec.request_address || '').slice(0,60)) +
+      (rec.status === 'denied' && rec.review_notes
+        ? '<div style="color:var(--muted);font-size:12px;margin-top:3px">HR note: ' + esc(rec.review_notes) + '</div>'
+        : '') +
+    '</div>'
+  ).join('');
+}
+
+window.submitRequest = async () => {
+  const btn = document.getElementById('submitBtn');
+  const reqDate = document.getElementById('req_date').value;
+  const reqAddress = document.getElementById('req_address').value.trim();
+  const reqReason = document.getElementById('req_reason').value.trim();
+  if (!reqDate) return banner('error', 'Pick a date.');
+  if (!reqAddress || reqAddress.length < 8) return banner('error', 'Address required (street + city + state).');
+  if (!reqReason || reqReason.length < 5) return banner('error', 'Briefly explain why you need this exception.');
+
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const email = session.user.email || '';
+  const userName = (session.user.user_metadata && (session.user.user_metadata.full_name || session.user.user_metadata.name)) || email.split('@')[0] || '';
+
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/clock_in_permissions', {
+    method:'POST',
+    headers:{ apikey: cfg.SUPABASE_ANON_KEY, Authorization:'Bearer '+tok, 'Content-Type':'application/json' },
+    body: JSON.stringify({
+      user_id: session.user.id,
+      user_name_snapshot: userName,
+      user_email_snapshot: email,
+      user_role_snapshot: sessionStorage.getItem('lymx_db_role') || 'staff',
+      kind: 'single_day',
+      request_date: reqDate,
+      request_address: reqAddress,
+      request_reason: reqReason,
+      status: 'pending'
+    })
+  });
+  if (!r.ok) {
+    banner('error', 'Submit failed: ' + (await r.text()).slice(0,200));
+    btn.disabled = false; btn.textContent = 'Submit for HR review';
+    return;
+  }
+  banner('success', 'Submitted. HR will email you when reviewed (usually same day).');
+  btn.textContent = 'Submitted';
+  setTimeout(() => location.reload(), 1800);
+};
+</script>
+</body>
+</html>

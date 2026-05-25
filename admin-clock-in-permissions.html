@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — review and approve staff clock-in permission requests (remote / WFH addresses)." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Clock-in permissions · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .page{padding:28px 0 80px}
+  .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 18px;color:var(--muted);font-size:14.5px}
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .tab{padding:8px 14px;background:#fff;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:700;color:var(--ink-2);transition:all .15s}
+  .tab:hover{border-color:var(--accent);color:var(--accent)}
+  .tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .tab .count{display:inline-block;background:rgba(255,255,255,.18);padding:1px 7px;border-radius:9px;margin-left:6px;font-size:11px;font-variant-numeric:tabular-nums}
+  .tab:not(.active) .count{background:#eef0f3;color:var(--muted)}
+  .row{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;padding:14px 16px;transition:box-shadow .15s}
+  .row.pending  {border-left:4px solid var(--warn)}
+  .row.approved {border-left:4px solid var(--ok)}
+  .row.denied   {border-left:4px solid var(--danger)}
+  .row.expired,.row.revoked{border-left:4px solid #9ca3af;opacity:.7}
+  .row .top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+  .row .who{font-weight:800;font-size:15px;color:var(--ink)}
+  .row .meta{font-size:12px;color:var(--muted);margin-top:2px}
+  .row .address{font-weight:700;color:var(--accent);margin:7px 0 4px;font-size:14px}
+  .row .reason{background:#f6f7f9;border-left:3px solid var(--line);padding:8px 10px;border-radius:0 6px 6px 0;font-size:13.5px;color:var(--ink-2);margin-top:6px}
+  .row .review{margin-top:8px;padding:9px 11px;background:#eef6ff;border-radius:6px;font-size:13px;color:#0a3a8a}
+  .approve-form{margin-top:12px;padding:12px;background:#dff8ec;border:1px dashed #84e0a8;border-radius:8px;display:none}
+  .row.show-approve .approve-form{display:block}
+  .approve-form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+  @media(max-width:700px){.approve-form-grid{grid-template-columns:1fr 1fr}}
+  .approve-form label{display:block;font-size:11px;font-weight:700;color:#0c6940;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
+  .approve-form input,.approve-form select,.approve-form textarea{padding:7px 9px;border:1px solid #84e0a8;border-radius:6px;font-size:13px;width:100%;font-family:inherit;background:#fff}
+  .approve-form textarea{min-height:50px;resize:vertical;grid-column:1/-1}
+  .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .btn{appearance:none;border:0;border-radius:7px;padding:7px 13px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .12s}
+  .btn-approve{background:var(--ok);color:#fff}
+  .btn-deny{background:var(--danger);color:#fff}
+  .btn-revoke{background:#fff;color:var(--danger);border:1px solid var(--danger)}
+  .btn-cancel{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn-show-form{background:var(--ok);color:#fff}
+  .empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+  .banner{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13.5px}
+  .banner.ok{background:#dff8ec;color:#0c6940}
+  .banner.err{background:#fde8e6;color:#7a1a17}
+  .help{background:#e6f0ff;border-left:4px solid var(--accent);padding:10px 14px;border-radius:0 8px 8px 0;color:#0a3a8a;font-size:13px;margin-bottom:14px;line-height:1.55}
+  .pill-kind{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-left:6px;vertical-align:1px}
+  .pill-kind.ongoing{background:#e6f0ff;color:#0a3a8a}
+  .pill-kind.single_day{background:#fff3d8;color:#7a4a08}
+</style>
+</head>
+<body>
+<script src="lymx-config.js"></script>
+<script src="lymx-app.js"></script>
+<script src="lymx-nav.js" defer></script>
+
+<main class="wrap page">
+  <div class="page-head">
+    <h1>Clock-in permissions</h1>
+    <p>Review staff requests to clock in from somewhere other than the office. Approve sets a granted geofence; deny leaves a note explaining why.</p>
+  </div>
+
+  <div class="help">
+    <strong>How this works:</strong> staff submit requests from <em>Staff → Remote work address</em> (ongoing) or <em>Single-day exception</em> (one-off). Approving sets lat/lng/radius for their clock-in geofence + a valid window. Staff are emailed automatically.
+  </div>
+
+  <div id="bannerArea"></div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div id="list"></div>
+</main>
+
+<script src="lymx-sidebar.js" defer></script>
+
+<script>
+const TABS = [
+  { key:'pending',  label:'Pending review' },
+  { key:'approved', label:'Active grants' },
+  { key:'denied',   label:'Denied' },
+  { key:'expired',  label:'Expired / revoked' }
+];
+let _activeTab = 'pending';
+let _rows = [];
+
+(async function init(){
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(init,100); return; }
+  const session = await window.LYMX.getSession();
+  if (!session) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
+  await reload();
+})();
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+function banner(t, m, autoclose) {
+  $('bannerArea').innerHTML = '<div class="banner ' + t + '">' + esc(m) + '</div>';
+  if (autoclose !== false && t === 'ok') setTimeout(() => $('bannerArea').innerHTML = '', 4000);
+}
+
+async function reload() {
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL +
+    '/rest/v1/clock_in_permissions?select=*&order=requested_at.desc&limit=400', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
+  });
+  if (!r.ok) { banner('err','Load failed: '+r.status,false); return; }
+  _rows = await r.json();
+  // Auto-expire past-due grants client-side display (server cron will eventually flip)
+  const now = Date.now();
+  _rows.forEach(r => {
+    if (r.status === 'approved' && r.valid_until && new Date(r.valid_until).getTime() < now) {
+      r._display_status = 'expired';
+    } else {
+      r._display_status = r.status;
+    }
+  });
+  paintTabs();
+  paintList();
+}
+
+function paintTabs() {
+  const counts = {};
+  TABS.forEach(t => counts[t.key] = 0);
+  _rows.forEach(r => {
+    const s = r._display_status;
+    if (s === 'expired' || s === 'revoked') counts.expired += 1;
+    else if (counts[s] !== undefined) counts[s] += 1;
+  });
+  $('tabs').innerHTML = TABS.map(t =>
+    '<button class="tab ' + (t.key === _activeTab ? 'active' : '') + '" data-tab="' + t.key + '">' +
+      esc(t.label) +
+      '<span class="count">' + counts[t.key] + '</span>' +
+    '</button>'
+  ).join('');
+  $('tabs').querySelectorAll('.tab').forEach(b => {
+    b.addEventListener('click', () => { _activeTab = b.dataset.tab; paintTabs(); paintList(); });
+  });
+}
+
+function paintList() {
+  const filtered = _rows.filter(r => {
+    const s = r._display_status;
+    if (_activeTab === 'expired') return s === 'expired' || s === 'revoked';
+    return s === _activeTab;
+  });
+  if (!filtered.length) {
+    $('list').innerHTML = '<div class="empty">No ' + esc(_activeTab) + ' permissions.</div>';
+    return;
+  }
+  $('list').innerHTML = filtered.map(r => renderRow(r)).join('');
+  // Wire up buttons after render
+  $('list').querySelectorAll('[data-act]').forEach(btn => {
+    btn.addEventListener('click', () => onAction(btn.dataset.act, btn.dataset.id));
+  });
+}
+
+function renderRow(r) {
+  const ds = r._display_status;
+  const validUntil = r.valid_until ? new Date(r.valid_until).toLocaleDateString() : '(no expiry)';
+  const reviewLine = (r.reviewed_at)
+    ? '<div class="review">Reviewed ' + new Date(r.reviewed_at).toLocaleString() +
+      ' by ' + esc(r.reviewed_by_name || '(unknown)') +
+      (r.review_notes ? ' — <em>' + esc(r.review_notes) + '</em>' : '') +
+      (ds === 'approved' && r.geofence_lat ? '. Geofence ' + r.geofence_radius_m + 'm @ ' + r.geofence_lat + ',' + r.geofence_lng + '. Valid until ' + validUntil : '') +
+      '</div>'
+    : '';
+  const approveBlock =
+    '<div class="approve-form">' +
+      '<div class="approve-form-grid">' +
+        '<div><label>Geofence lat</label><input type="text" id="lat_' + r.id + '" placeholder="36.1699"></div>' +
+        '<div><label>Geofence lng</label><input type="text" id="lng_' + r.id + '" placeholder="-115.1398"></div>' +
+        '<div><label>Radius (m)</label><input type="number" id="rad_' + r.id + '" value="100" min="25" max="5000"></div>' +
+        '<div><label>Valid from</label><input type="datetime-local" id="vfrom_' + r.id + '"></div>' +
+        '<div><label>Valid until (blank = no expiry)</label><input type="datetime-local" id="vuntil_' + r.id + '"></div>' +
+        '<div><label>Kind</label><select id="kind_' + r.id + '"><option value="single_day"' + (r.kind==='single_day'?' selected':'') + '>Single day</option><option value="ongoing"' + (r.kind==='ongoing'?' selected':'') + '>Ongoing</option></select></div>' +
+        '<div style="grid-column:1/-1"><label>Optional notes back to staff</label><textarea id="notes_' + r.id + '" placeholder="e.g. Approved through end of month; we will re-evaluate."></textarea></div>' +
+      '</div>' +
+      '<div class="actions">' +
+        '<button class="btn btn-approve" data-act="confirm-approve" data-id="' + r.id + '">Confirm approval + email staff</button>' +
+        '<button class="btn btn-cancel" data-act="cancel-approve" data-id="' + r.id + '">Cancel</button>' +
+      '</div>' +
+    '</div>';
+
+  let actions = '';
+  if (ds === 'pending') {
+    actions =
+      '<div class="actions">' +
+        '<button class="btn btn-show-form" data-act="show-approve" data-id="' + r.id + '">Approve…</button>' +
+        '<button class="btn btn-deny" data-act="deny" data-id="' + r.id + '">Deny</button>' +
+      '</div>';
+  } else if (ds === 'approved') {
+    actions =
+      '<div class="actions">' +
+        '<button class="btn btn-revoke" data-act="revoke" data-id="' + r.id + '">Revoke grant</button>' +
+      '</div>';
+  }
+
+  return '<div class="row ' + esc(ds) + '" id="row_' + r.id + '">' +
+    '<div class="top">' +
+      '<div>' +
+        '<div class="who">' + esc(r.user_name_snapshot || r.user_email_snapshot || '(unknown user)') +
+          '<span class="pill-kind ' + esc(r.kind) + '">' + esc(r.kind === 'ongoing' ? 'ongoing WFH' : 'single day') + '</span>' +
+        '</div>' +
+        '<div class="meta">' + esc(r.user_email_snapshot || '') +
+          ' · submitted ' + new Date(r.requested_at).toLocaleString() +
+          (r.request_date ? ' · target date ' + r.request_date : '') +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="address">' + esc(r.request_address) + '</div>' +
+    '<div class="reason"><strong>Reason:</strong> ' + esc(r.request_reason) + '</div>' +
+    reviewLine +
+    actions +
+    approveBlock +
+  '</div>';
+}
+
+async function onAction(act, id) {
+  const row = _rows.find(r => r.id === id);
+  if (!row) return;
+  if (act === 'show-approve') {
+    document.getElementById('row_' + id).classList.add('show-approve');
+    return;
+  }
+  if (act === 'cancel-approve') {
+    document.getElementById('row_' + id).classList.remove('show-approve');
+    return;
+  }
+
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const reviewerName = (session.user.user_metadata && (session.user.user_metadata.full_name || session.user.user_metadata.name))
+    || (session.user.email || '').split('@')[0] || 'HR';
+
+  if (act === 'confirm-approve') {
+    const lat = parseFloat(document.getElementById('lat_' + id).value);
+    const lng = parseFloat(document.getElementById('lng_' + id).value);
+    const rad = parseInt(document.getElementById('rad_' + id).value, 10);
+    const vfrom = document.getElementById('vfrom_' + id).value || null;
+    const vuntil = document.getElementById('vuntil_' + id).value || null;
+    const kind = document.getElementById('kind_' + id).value;
+    const notes = document.getElementById('notes_' + id).value || null;
+    if (isNaN(lat) || isNaN(lng) || isNaN(rad)) { banner('err','Lat / lng / radius required',false); return; }
+    if (rad < 25 || rad > 5000) { banner('err','Radius must be 25-5000m',false); return; }
+    const patch = {
+      status: 'approved', kind,
+      reviewed_by_id: session.user.id, reviewed_by_name: reviewerName,
+      reviewed_at: new Date().toISOString(),
+      review_notes: notes,
+      geofence_lat: lat, geofence_lng: lng, geofence_radius_m: rad,
+      valid_from: vfrom ? new Date(vfrom).toISOString() : new Date().toISOString(),
+      valid_until: vuntil ? new Date(vuntil).toISOString() : null
+    };
+    await patchRow(id, patch);
+    banner('ok','Approved + saved geofence.');
+    await reload();
+    return;
+  }
+  if (act === 'deny') {
+    const note = prompt('Optional note for the staff member (why was it denied?):', '');
+    await patchRow(id, {
+      status: 'denied',
+      reviewed_by_id: session.user.id, reviewed_by_name: reviewerName,
+      reviewed_at: new Date().toISOString(),
+      review_notes: note || null
+    });
+    banner('ok','Denied.');
+    await reload();
+    return;
+  }
+  if (act === 'revoke') {
+    if (!confirm('Revoke this active grant? Staff will lose remote clock-in access immediately.')) return;
+    const note = prompt('Reason for revoking (shown to staff):', '');
+    await patchRow(id, {
+      status: 'revoked',
+      reviewed_by_id: session.user.id, reviewed_by_name: reviewerName,
+      reviewed_at: new Date().toISOString(),
+      review_notes: note || null,
+      valid_until: new Date().toISOString()
+    });
+    banner('ok','Revoked.');
+    await reload();
+    return;
+  }
+}
+
+async function patchRow(id, patch) {
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/clock_in_permissions?id=eq.' + id, {
+    method: 'PATCH',
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch)
+  });
+  if (!r.ok) banner('err','Save failed: ' + await r.text(), false);
+}
+</script>
+</body>
+</html>
