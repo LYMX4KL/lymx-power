@@ -488,7 +488,12 @@
         // keyed on user_id). The 404 fell into the !r.ok branch, cached 'no',
         // and silently hid Clock In/My Schedule/My Time-off for every staff +
         // partner user. Fix: query the right table.
-        var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/staff_profiles?user_id=eq.' + uid + '&select=user_id&limit=1', {
+        // 2026-05-25 — Clock In is for on-payroll staff only (Kenny's rule:
+        // all staff are partners, but partners are not auto-paid staff). The
+        // gate must filter is_on_payroll=true so a partners-row alone doesn't
+        // unlock Clock In. Helen (HR/CFO/Owner) gets it, Dave/Rachel (partners-
+        // only) don't.
+        var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/staff_profiles?user_id=eq.' + uid + '&is_on_payroll=eq.true&select=user_id&limit=1', {
           headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + tok }
         });
         if (!r.ok) { try { sessionStorage.setItem(cacheKey, 'no'); } catch (e) { console.warn('[sidebar] sessionStorage write', e); } return; }
