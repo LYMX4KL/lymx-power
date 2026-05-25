@@ -603,7 +603,19 @@
   applyFilters();
 </script>
 <script src="cookie-consent.js" defer></script>
+<!-- 2026-05-25 root-cause fix for ticket "Create Account": browse.html loaded
+     only lymx-config + lymx-app, so the inline "hide guest CTAs if signed in"
+     script at L641-651 had only ~3s of polling for window.LYMX.getSession.
+     The lazy chain through lymx-app.js (load supabase-js → config → auth →
+     nav → sidebar → ...) frequently exceeded that on mobile, so signed-in
+     users saw the guest-only CTAs. Clicking "Create Free Wallet Now"
+     navigated to /customer-signup.html which then correctly detected the
+     session and redirected to dashboard — making Rae think the button was
+     a routing bug. Direct-loading supabase-js + lymx-auth.js ensures the
+     session check resolves before the polling loop runs. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
 
