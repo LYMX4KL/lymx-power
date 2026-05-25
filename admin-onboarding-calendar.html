@@ -146,7 +146,7 @@
   let host = hosts.find(h => h.user_id === session.user.id) || hosts[0];
 
   if (!host) {
-    document.getElementById('hostStatus').innerHTML = 'You are not set up as an onboarding host yet. Admin can add you to onboarding_hosts.';
+    document.getElementById('hostStatus').innerHTML = '<span id="hostStatusMsg">You are not set up as an onboarding host yet.</span> <button type="button" id="becomeHostBtn" style="padding:6px 12px;border-radius:7px;border:0;background:#0e1116;color:#fff;font-weight:700;font-size:12px;cursor:pointer;margin-left:8px">Become a host</button>';
     return;
   }
   document.getElementById('hostStatus').textContent = host.display_name + ' · ' + host.slot_minutes + '-min slots · ' + host.timezone;
@@ -321,6 +321,40 @@
   paintAvailability();
   refresh();
 })();
+
+
+// 2026-05-25 — self-enroll as onboarding host (was a SQL-only step before)
+document.addEventListener('click', async function (e) {
+  if (e.target.id !== 'becomeHostBtn') return;
+  e.preventDefault();
+  const btn = e.target;
+  const status = document.getElementById('hostStatusMsg');
+  btn.disabled = true; btn.textContent = 'Enrolling…';
+  try {
+    const sb = window.LYMX.sb;
+    const user = await window.LYMX.getUser();
+    if (!user) { btn.textContent = 'Not signed in'; return; }
+    // Look up display_name from staff_profiles if available, else user metadata
+    let displayName = (user.user_metadata && user.user_metadata.full_name) || user.email.split('@')[0];
+    try {
+      const sp = await sb.from('staff_profiles').select('title').eq('user_id', user.id).maybeSingle();
+      if (sp.data && sp.data.title) displayName = sp.data.title;
+    } catch (e2) { console.warn('[onboarding-host] staff_profiles lookup', e2); }
+    const ins = await sb.from('onboarding_hosts').insert({
+      user_id: user.id,
+      display_name: displayName,
+      email: user.email,
+      active: true
+    });
+    if (ins.error) throw ins.error;
+    if (status) status.textContent = '✓ Enrolled as a host. Refreshing…';
+    setTimeout(() => location.reload(), 800);
+  } catch (e) {
+    console.warn('[onboarding-host] self-enroll failed', e);
+    btn.disabled = false; btn.textContent = 'Become a host';
+    if (status) status.textContent = 'Could not enroll: ' + (e.message || e);
+  }
+});
 </script>
 
 <script src="lymx-role-gate.js" defer></script>

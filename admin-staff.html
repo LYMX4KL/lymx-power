@@ -176,8 +176,20 @@ async function loadStaff() {
   }
   const staff = await r.json();
 
-  // Look up emails via admin API… but that's service-role only. Fall back to user_id display.
-  // (Future: add an RPC that joins to auth.users for admin)
+  // 2026-05-25: now using admin_list_user_emails RPC so the table shows real emails
+  // instead of truncated UUIDs.
+  let emailMap = {};
+  try {
+    const er = await authedFetch('/rest/v1/rpc/admin_list_user_emails', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}'
+    });
+    if (er.ok) {
+      const rows = await er.json();
+      (rows || []).forEach(u => { if (u.user_id) emailMap[u.user_id] = u.email; });
+    }
+  } catch (e) { console.warn('[admin-staff] email lookup failed', e); }
 
   // Stats
   const counts = {};
@@ -194,7 +206,7 @@ async function loadStaff() {
   }
 
   document.getElementById('rows').innerHTML = staff.map(s => '<tr>' +
-    '<td style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px">' + s.user_id.slice(0,8) + '… ' + (s.notes ? '<div style="font-family:inherit;font-size:12px;color:var(--muted);margin-top:2px">' + escapeHtml(s.notes) + '</div>' : '') + '</td>' +
+    '<td><div style="font-weight:600;font-size:13px">' + escapeHtml(emailMap[s.user_id] || (s.user_id.slice(0,8) + '… (no email)')) + '</div>' + (s.notes ? '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + escapeHtml(s.notes) + '</div>' : '') + '</td>' +
     '<td><span class="pill ' + s.role + '">' + s.role + '</span></td>' +
     '<td style="font-size:12px;color:var(--muted)">' + new Date(s.granted_at).toLocaleDateString() + '</td>' +
     '<td style="text-align:right">' +
@@ -231,26 +243,46 @@ async function editStaff(userId, currentRole) {
 document.getElementById('addStaffBtn').addEventListener('click', () => document.getElementById('addModal').classList.add('on'));
 document.getElementById('aCancel').addEventListener('click', () => document.getElementById('addModal').classList.remove('on'));
 
+// 2026-05-25 root-cause fix: previously this handler punted to a confirm()+prompt()
+// chain that demanded the admin paste a UUID from the Supabase Auth dashboard
+// (Helen would never have access to that). Now we call admin_list_user_emails
+// (RPC defined in migration 060) which returns every auth.users row visible to
+// admin, and resolve email → user_id client-side.
+async function lookupUserIdByEmail(emailLower) {
+  const r = await authedFetch('/rest/v1/rpc/admin_list_user_emails', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}'
+  });
+  if (!r.ok) {
+    setStatus('Could not look up users (admin_list_user_emails: HTTP ' + r.status + ')', 'err');
+    return null;
+  }
+  const rows = await r.json();
+  const hit = (rows || []).find(u => (u.email || '').toLowerCase() === emailLower);
+  return hit ? hit.user_id : null;
+}
+
 document.getElementById('aSave').addEventListener('click', async () => {
-  const email = document.getElementById('aEmail').value.trim().toLowerCase();
+  const emailRaw = document.getElementById('aEmail').value.trim();
+  const email = emailRaw.toLowerCase();
   const role  = document.getElementById('aRole').value;
   const notes = document.getElementById('aNotes').value.trim() || null;
   if (!email) return alert('Email required');
 
-  // Look up user_id by email — needs an admin RPC, simulate by asking Kenny to find it
-  // Quick path: use Supabase's GoTrue admin via the admin REST helper, but that's service-role only.
-  // Workaround: tell user to enter user_id directly for now.
-  // For v1, accept either email OR uuid; if email, try to find via auth.admin (won't work from client)
+  setStatus('Looking up account…', 'ok');
 
-  // We'll use a temporary path: tell user to copy the user_id from Supabase auth dashboard
+  // Accept either a raw UUID (legacy / power-user path) or a real email.
   const isUuid = /^[0-9a-f-]{36}$/.test(email);
-  if (!isUuid) {
-    if (!confirm('Adding staff by email requires looking up their user_id in Supabase. Paste the user_id from the Supabase Auth dashboard for ' + email + '. (Click OK to enter user_id.)')) return;
-    const uid = prompt('Paste the user_id (UUID) for ' + email + ':');
-    if (!uid || !/^[0-9a-f-]{36}$/.test(uid)) { setStatus('Invalid user_id', 'err'); return; }
-    return saveStaff(uid, role, notes, email);
+  if (isUuid) {
+    return saveStaff(email, role, notes);
   }
-  saveStaff(email, role, notes);
+  const uid = await lookupUserIdByEmail(email);
+  if (!uid) {
+    setStatus('No LYMX account found for ' + emailRaw + '. Ask them to sign up at getlymx.com/login.html first, then retry.', 'err');
+    return;
+  }
+  saveStaff(uid, role, notes, emailRaw);
 });
 
 async function saveStaff(userId, role, notes, emailHint) {
