@@ -236,6 +236,11 @@
       { href: 'partner-leaderboard.html', icon: '\u{1F3C6}', label: 'Leaderboard' },
       { href: 'partner-payouts.html',    icon: '\u{1F4B8}', label: 'Payouts' },
       { href: 'prospects.html',          icon: '\u{1F3AF}', label: 'My Prospects' },
+      // 2026-05-25 #6df906ba — partners had no direct sidebar entry to the
+      // Sales Toolkit (the page reachable from the "Open pitch toolkit" empty-
+      // state button on rep-dashboard). Discoverability fix: one-click from any
+      // page. Same destination, just no longer buried behind a conditional empty state.
+      { href: 'partner-resources.html',  icon: '\u{1F4BC}', label: 'Sales Toolkit' },
       { href: 'team-calendar.html',      icon: '\u{1F4C5}', label: 'My Calendar' },
       { href: 'my-bookings.html',        icon: '\u{1F4DD}', label: 'My bookings' },
       // 2026-05-20 #dd9468cc - Removed static Team section (Clock In, My Schedule,
