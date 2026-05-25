@@ -328,6 +328,13 @@
   document.getElementById('yr').textContent = new Date().getFullYear();
   document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'});
 </script>
+<!-- 2026-05-25 root-cause fix: supabase-js CDN must load before lymx-auth.js,
+     otherwise lymx-auth.js errors at line 19 with "supabase-js not loaded"
+     and the dashboard widgets (feedback inbox, pipeline pulse, KPIs) all
+     fall back to anon-key REST calls that fail RLS — surfaces as the
+     "Could not load feedback inbox" banner. Other working admin pages
+     (admin-tech-support.html etc.) have this script tag in the same position. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
 <script src="lymx-auth.js"></script>
 <script>
