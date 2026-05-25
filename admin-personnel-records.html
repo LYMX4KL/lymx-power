@@ -111,6 +111,9 @@
       </div>
     </div>
 
+    <div id="emailLookupBanner" style="display:none;background:#fef3c7;border:1px solid #f5d77a;color:#92400e;padding:11px 14px;border-radius:9px;font-size:13.5px;margin-bottom:14px"></div>
+    <div id="hrCountsBanner" style="display:none;background:#fef3c7;border:1px solid #f5d77a;color:#92400e;padding:11px 14px;border-radius:9px;font-size:13.5px;margin-bottom:14px"></div>
+
     <div class="stats">
       <div class="stat-card"><div class="lab">Active</div><div class="v ok" id="ct-active">—</div></div>
       <div class="stat-card"><div class="lab">On payroll</div><div class="v" id="ct-payroll">—</div></div>
@@ -181,15 +184,24 @@ async function load(){
     ...(roles || []).map(r => r.user_id)
   ]);
 
-  // Pull email + display_name from auth.users via admin RPC — we don't have it;
-  // fall back to using user_id and showing it as initials. (A SECURITY DEFINER
-  // view `v_admin_user_emails` would be the right long-term fix.)
-  // For now, try to get email from auth via a helper.
+  // 2026-05-25 root-cause hardening: this used to swallow errors silently with
+  // "helper may not exist yet". The helper ships in migration 060 — if it errors
+  // now it's a real bug (RLS denial, signature change, etc.) that we must surface,
+  // not hide. Pattern: log with file:line tag + show a visible banner so Helen
+  // doesn't see blank email cells and assume it's normal.
   let userInfo = {};
   try {
-    const { data: emails } = await sb.rpc('admin_list_user_emails');
+    const { data: emails, error } = await sb.rpc('admin_list_user_emails');
+    if (error) throw error;
     if (emails) emails.forEach(e => { userInfo[e.user_id] = e; });
-  } catch (e) { /* helper may not exist yet */ }
+  } catch (e) {
+    console.warn('[admin-personnel-records.html:L189] admin_list_user_emails RPC failed:', e);
+    const banner = document.getElementById('emailLookupBanner');
+    if (banner) {
+      banner.textContent = 'Heads up — could not fetch staff emails (admin_list_user_emails RPC failed: ' + (e.message || e) + '). Rows below will show user IDs instead of emails.';
+      banner.style.display = 'block';
+    }
+  }
 
   allStaff = Array.from(userIds).map(uid => {
     const p = profileMap[uid] || {};
@@ -225,17 +237,34 @@ async function load(){
   $('ct-payroll').textContent = onPay;
   $('ct-leave').textContent = onLeave;
 
-  // Open write-ups + pending reviews + outstanding property counts
+  // 2026-05-25 root-cause hardening: the three HR tables shipped in migrations
+  // 057-059, so a failure here is real (probably an RLS policy or column drift
+  // we shipped this morning). Surface the actual error instead of leaving the
+  // three count cards blank — that's what was making Helen wonder whether the
+  // page was working at all.
   try {
-    const [{ count: wuC }, { count: prC }, { count: opC }] = await Promise.all([
+    const [wu, pr, op] = await Promise.all([
       sb.from('personnel_write_ups').select('id', { count: 'exact', head: true }).in('status', ['issued','acknowledged']),
       sb.from('performance_reviews').select('id', { count: 'exact', head: true }).in('status', ['scheduled','self_pending','manager_pending']),
       sb.from('outstanding_property_queue').select('id', { count: 'exact', head: true })
     ]);
-    $('ct-writeups').textContent = wuC ?? 0;
-    $('ct-reviews').textContent = prC ?? 0;
-    $('ct-outstanding').textContent = opC ?? 0;
-  } catch (e) { /* tables may not exist yet — skip */ }
+    if (wu.error) throw new Error('personnel_write_ups: ' + wu.error.message);
+    if (pr.error) throw new Error('performance_reviews: ' + pr.error.message);
+    if (op.error) throw new Error('outstanding_property_queue: ' + op.error.message);
+    $('ct-writeups').textContent = wu.count ?? 0;
+    $('ct-reviews').textContent = pr.count ?? 0;
+    $('ct-outstanding').textContent = op.count ?? 0;
+  } catch (e) {
+    console.warn('[admin-personnel-records.html:L233] HR counts load failed:', e);
+    $('ct-writeups').textContent = '!';
+    $('ct-reviews').textContent = '!';
+    $('ct-outstanding').textContent = '!';
+    const banner = document.getElementById('hrCountsBanner');
+    if (banner) {
+      banner.textContent = 'HR counts unavailable — ' + (e.message || e) + ' (see console for details).';
+      banner.style.display = 'block';
+    }
+  }
 
   render();
 }
@@ -286,7 +315,7 @@ function render(){
       const avatarClass = s.employment_status === 'terminated' ? 'avatar terminated' :
                           (s.role === 'admin' || s.is_cfo) ? 'avatar admin' : 'avatar';
       return '<tr>' +
-        '<td><div class="name-cell">' +
+          '<td><div class="name-cell">' +
           '<div class="' + avatarClass + '">' + esc(initials(s.full_name, s.email)) + '</div>' +
           '<div>' +
             '<div class="name">' + esc(s.full_name || s.email || s.user_id.slice(0,8)) + '</div>' +

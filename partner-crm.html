@@ -156,6 +156,14 @@
 
   footer{padding:36px 0 32px;color:var(--muted);font-size:13px;text-align:center}
   footer .disc{max-width:780px;margin:8px auto 0;font-size:11.5px;line-height:1.55}
+  .status-pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700;background:#eef0f4;color:#5b6472}
+  .status-pill.stage-new{background:#eef4ff;color:#0050c7}
+  .status-pill.stage-contacted{background:#fff3d4;color:#92400e}
+  .status-pill.stage-qualified{background:#fff3d4;color:#92400e}
+  .status-pill.stage-demoed{background:rgba(212,175,55,.18);color:#8a6a14}
+  .status-pill.stage-proposal{background:#eef5ff;color:#0050c7}
+  .status-pill.stage-won{background:#e6f5ee;color:#0a6e44}
+  .status-pill.stage-lost{background:#fdecec;color:#9b1c1c}
 </style>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
@@ -169,7 +177,7 @@
 <meta name="apple-mobile-web-app-title" content="LYMX" />
 <meta name="mobile-web-app-capable" content="yes" />
 </head>
-<body>
+<body data-role-required="partner">
 
 <header class="nav">
   <div class="wrap nav-inner">
@@ -319,66 +327,286 @@
   </div>
 </footer>
 
-<script>
-  document.getElementById('yr').textContent=new Date().getFullYear();
-
-  // Toggle add form
-  const addForm = document.getElementById('add-form');
-  document.getElementById('btn-add').addEventListener('click', () => addForm.classList.toggle('shown'));
-  document.getElementById('btn-cancel').addEventListener('click', () => addForm.classList.remove('shown'));
-  document.getElementById('btn-save').addEventListener('click', () => {
-    alert('In production this would save the prospect and update your tree. For now: form submitted with status = ' + document.getElementById('np-status').value);
-    addForm.classList.remove('shown');
-  });
-
-  // Filters
-  document.querySelectorAll('.filter').forEach(f => {
-    f.addEventListener('click', () => {
-      document.querySelectorAll('.filter').forEach(x => x.classList.remove('on'));
-      f.classList.add('on');
-      const filter = f.dataset.filter;
-      document.querySelectorAll('table.crm tr.row').forEach(r => {
-        if (filter === 'all' || r.dataset.status === filter) {
-          r.style.display = '';
-        } else {
-          r.style.display = 'none';
-          // Also hide its detail row if showing
-          const next = r.nextElementSibling;
-          if (next && next.classList.contains('detail')) next.classList.remove('shown');
-        }
-      });
-    });
-  });
-
-  // Search
-  document.getElementById('search').addEventListener('input', e => {
-    const q = e.target.value.toLowerCase().trim();
-    document.querySelectorAll('table.crm tr.row').forEach(r => {
-      const text = r.textContent.toLowerCase();
-      r.style.display = (q === '' || text.includes(q)) ? '' : 'none';
-    });
-  });
-
-  // Row expand
-  document.querySelectorAll('table.crm tr.row').forEach(r => {
-    r.addEventListener('click', e => {
-      if (e.target.closest('button')) return; // ignore action button clicks
-      const next = r.nextElementSibling;
-      if (next && next.classList.contains('detail')) {
-        const wasShown = next.classList.contains('shown');
-        // Close all
-        document.querySelectorAll('table.crm tr.detail').forEach(d => d.classList.remove('shown'));
-        document.querySelectorAll('table.crm tr.row').forEach(rr => rr.classList.remove('expanded'));
-        if (!wasShown) {
-          next.classList.add('shown');
-          r.classList.add('expanded');
-        }
-      }
-    });
-  });
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// 2026-05-25 root-cause fix for ticket "Adding Prospect Does Not Create Entry in
+// Partner CRM Table": the page used to be a client-side mock that alerted
+// "in production this would save the prospect" but never wrote to the DB and
+// never loaded existing rows. Now wired end-to-end against public.leads with
+// the partner as owner_user_id. Migration 089 adds the INSERT/UPDATE policies
+// that this code relies on.
+
+document.getElementById('yr').textContent = new Date().getFullYear();
+
+const addForm  = document.getElementById('add-form');
+const tbody    = document.getElementById('crmTbody');
+const tbl      = document.getElementById('crm-tbl');
+const filtersEl= document.querySelectorAll('.filter');
+const searchEl = document.getElementById('search');
+
+// ---------------- Map UI options to lead_stage / lead_source enum values ---
+// (Migration 040 defined the enums; we keep this mapping client-side so the
+// form copy stays user-friendly while the DB stores the canonical enum.)
+const STATUS_TO_STAGE = { cold: 'new', warm: 'contacted', demo: 'demoed', trial: 'proposal' };
+const STAGE_TO_LABEL  = { new: 'Cold', contacted: 'Warmed', qualified: 'Warmed', demoed: 'Demo scheduled', proposal: 'In trial', won: 'Activated', lost: 'Lost', nurture: 'Nurture' };
+const SOURCE_LABEL_TO_ENUM = {
+  'Cold outreach': 'other',
+  'Referral':      'referral',
+  'Inbound':       'website',
+  'Event / road show': 'other',
+  'Social':        'other'
+};
+
+let allLeads = [];
+let currentFilter = 'all';
+let currentQ = '';
+let me = null;
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtDate(d){ if (!d) return '—'; try { return new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}); } catch(e){ return d; } }
+
+function setBanner(msg, kind){
+  let b = $('crmBanner');
+  if (!b){
+    b = document.createElement('div');
+    b.id = 'crmBanner';
+    b.style.cssText = 'padding:11px 14px;border-radius:9px;font-size:13.5px;margin:0 0 14px';
+    tbl.parentNode.insertBefore(b, tbl);
+  }
+  if (!msg){ b.style.display = 'none'; return; }
+  b.style.display = 'block';
+  if (kind === 'ok'){
+    b.style.background = '#e6f5ee'; b.style.border = '1px solid #a8d8c0'; b.style.color = '#0a6e44';
+  } else {
+    b.style.background = '#fdecec'; b.style.border = '1px solid #f5b7b7'; b.style.color = '#9b1c1c';
+  }
+  b.textContent = msg;
+  if (kind === 'ok') setTimeout(() => { b.style.display = 'none'; }, 4000);
+}
+
+async function loadLeads(){
+  if (!window.LYMX || !window.LYMX.sb){ setBanner('Loading… (Supabase client not ready)', 'err'); return; }
+  me = await window.LYMX.getUser();
+  if (!me){ setBanner('Please sign in to see your prospects.', 'err'); return; }
+  const { data, error } = await window.LYMX.sb
+    .from('leads')
+    .select('id, full_name, email, phone, company, role_title, source, source_detail, stage, notes, next_action, next_action_due, last_contacted_at, won_at, lost_at, created_at, updated_at')
+    .eq('owner_user_id', me.id)
+    .order('updated_at', { ascending: false });
+  if (error){
+    console.warn('[partner-crm:loadLeads] failed:', error);
+    setBanner('Could not load prospects: ' + (error.message || error) + ' (see console).', 'err');
+    return;
+  }
+  allLeads = data || [];
+  render();
+  updateStats();
+  updateFilterCounts();
+}
+
+function visibleLeads(){
+  return allLeads.filter(L => {
+    if (currentFilter !== 'all'){
+      const wantedStages = ({
+        cold: ['new'],
+        warm: ['contacted','qualified'],
+        demo: ['demoed'],
+        trial: ['proposal'],
+        activated: ['won']
+      })[currentFilter] || [];
+      if (!wantedStages.includes(L.stage)) return false;
+    }
+    if (currentQ){
+      const hay = ((L.full_name||'') + ' ' + (L.company||'') + ' ' + (L.email||'') + ' ' + (L.notes||'') + ' ' + (L.next_action||'')).toLowerCase();
+      if (!hay.includes(currentQ)) return false;
+    }
+    return true;
+  });
+}
+
+function render(){
+  const items = visibleLeads();
+  if (!items.length){
+    tbody.innerHTML = ''
+      + '<tr><td colspan="6" style="padding:48px 24px;text-align:center;color:var(--muted)">'
+      +   '<div style="font-size:36px;margin-bottom:8px">📋</div>'
+      +   '<strong style="color:var(--ink);font-size:15px;display:block;margin-bottom:4px">'
+      +     (allLeads.length ? 'No prospects match this filter.' : 'No prospects yet')
+      +   '</strong>'
+      +   (allLeads.length ? 'Clear the filter or search to see your full pipeline.' :
+                            'Click <strong>+ Add prospect</strong> above to start tracking your pipeline.<br>Prospects are private to your account.')
+      + '</td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.map(L => ''
+    + '<tr class="row" data-id="' + esc(L.id) + '" data-status="' + esc(L.stage) + '">'
+    +   '<td><div style="font-weight:700">' + esc(L.full_name || '(no name)') + '</div>'
+    +     (L.company ? '<div style="font-size:12px;color:var(--muted)">' + esc(L.company) + '</div>' : '')
+    +   '</td>'
+    +   '<td><span class="status-pill stage-' + esc(L.stage) + '">' + esc(STAGE_TO_LABEL[L.stage] || L.stage) + '</span></td>'
+    +   '<td>' + esc(L.source_detail || L.source || '—') + '</td>'
+    +   '<td>' + fmtDate(L.last_contacted_at || L.created_at) + '</td>'
+    +   '<td>' + esc(L.next_action || '—') + '</td>'
+    +   '<td class="num"><button class="btn btn-ghost" data-edit="' + esc(L.id) + '">Edit</button></td>'
+    + '</tr>'
+  ).join('');
+}
+
+function updateStats(){
+  const stats = document.querySelectorAll('.stat .num');
+  if (stats.length >= 1) stats[0].textContent = allLeads.length;
+  // Active in pipeline = not won/lost
+  const active = allLeads.filter(L => !['won','lost'].includes(L.stage)).length;
+  if (stats.length >= 2) stats[1].textContent = active;
+  // Conversion rate = won / total if total >= 5
+  if (stats.length >= 3){
+    if (allLeads.length >= 5){
+      const won = allLeads.filter(L => L.stage === 'won').length;
+      stats[2].textContent = Math.round((won / allLeads.length) * 100) + '%';
+    } else {
+      stats[2].textContent = '—';
+    }
+  }
+}
+
+function updateFilterCounts(){
+  filtersEl.forEach(f => {
+    const filter = f.dataset.filter;
+    let n = 0;
+    if (filter === 'all') n = allLeads.length;
+    else if (filter === 'cold')      n = allLeads.filter(L => L.stage === 'new').length;
+    else if (filter === 'warm')      n = allLeads.filter(L => ['contacted','qualified'].includes(L.stage)).length;
+    else if (filter === 'demo')      n = allLeads.filter(L => L.stage === 'demoed').length;
+    else if (filter === 'trial')     n = allLeads.filter(L => L.stage === 'proposal').length;
+    else if (filter === 'activated') n = allLeads.filter(L => L.stage === 'won').length;
+    const counter = f.querySelector('span');
+    if (counter) counter.textContent = n;
+  });
+}
+
+// ---------- Save flow ----------
+async function saveProspect(){
+  if (!me){ setBanner('Not signed in — please refresh and try again.', 'err'); return; }
+
+  const name   = ($('np-name').value    || '').trim();
+  const biz    = ($('np-biz').value     || '').trim();
+  const cat    = ($('np-cat').value     || '').trim();
+  const srcLbl = ($('np-src').value     || '').trim();
+  const contact= ($('np-contact').value || '').trim();
+  const statusUi=($('np-status').value  || 'cold').trim();
+  const next   = ($('np-next').value    || '').trim();
+
+  if (!name){ setBanner('Owner name is required.', 'err'); return; }
+
+  // Parse contact into either email or phone (best-effort split)
+  let email = null, phone = null;
+  if (contact){
+    if (/@/.test(contact) && /\./.test(contact.split('@').pop())) email = contact.toLowerCase();
+    else phone = contact;
+  }
+  // Email is required by the leads table NOT NULL constraint.
+  // If the partner didn't enter one, synthesize a placeholder that's unique
+  // to this owner so the UNIQUE(email) constraint doesn't false-collide across partners.
+  if (!email){
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'prospect';
+    email = slug + '+' + me.id.slice(0,8) + '@noemail.lymx.local';
+  }
+
+  const stage  = STATUS_TO_STAGE[statusUi] || 'new';
+  const srcEnum = SOURCE_LABEL_TO_ENUM[srcLbl] || 'other';
+
+  const saveBtn = $('btn-save');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving…';
+  setBanner(null);
+
+  try {
+    const { data, error } = await window.LYMX.sb
+      .from('leads')
+      .insert({
+        full_name: name,
+        email: email,
+        phone: phone,
+        company: biz || null,
+        source: srcEnum,
+        source_detail: [srcLbl, cat].filter(Boolean).join(' · '),
+        stage: stage,
+        owner_user_id: me.id,
+        next_action: next || null,
+        last_contacted_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error){
+      // Friendly handling for the UNIQUE(email) collision
+      if (/duplicate key|unique/i.test(error.message)){
+        setBanner('A prospect with that email already exists in the system. Try a different email, or edit the existing entry.', 'err');
+      } else if (/row-level security|RLS|permission|denied/i.test(error.message)){
+        setBanner('Could not save: permission denied (RLS). If you just signed up, sign out and back in. Otherwise ping the admin.', 'err');
+      } else {
+        setBanner('Could not save prospect: ' + error.message, 'err');
+      }
+      console.warn('[partner-crm:save] insert failed:', error);
+      return;
+    }
+
+    allLeads.unshift(data);
+    render();
+    updateStats();
+    updateFilterCounts();
+    setBanner('✓ Prospect saved.', 'ok');
+    addForm.classList.remove('shown');
+
+    // Reset form
+    ['np-name','np-biz','np-contact','np-next'].forEach(id => { const el = $(id); if (el) el.value = ''; });
+    $('np-status').value = 'cold';
+  } catch (e) {
+    setBanner('Save crashed: ' + (e.message || e), 'err');
+    console.warn('[partner-crm:save] crashed:', e);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save prospect';
+  }
+}
+
+// ---------- Wire up form, filters, search ----------
+$('btn-add').addEventListener('click', () => addForm.classList.toggle('shown'));
+$('btn-cancel').addEventListener('click', () => addForm.classList.remove('shown'));
+$('btn-save').addEventListener('click', saveProspect);
+
+filtersEl.forEach(f => {
+  f.addEventListener('click', () => {
+    filtersEl.forEach(x => x.classList.remove('on'));
+    f.classList.add('on');
+    currentFilter = f.dataset.filter;
+    render();
+  });
+});
+
+searchEl.addEventListener('input', e => {
+  currentQ = e.target.value.toLowerCase().trim();
+  render();
+});
+
+// Wait for window.LYMX (lymx-auth.js needs to init Supabase client)
+(async function boot(){
+  for (let i = 0; i < 50; i++){
+    if (window.LYMX && window.LYMX.sb && window.LYMX.getUser) break;
+    await new Promise(r => setTimeout(r, 100));
+  }
+  if (!window.LYMX || !window.LYMX.sb){
+    setBanner('Could not initialize the LYMX client. Try refreshing.', 'err');
+    return;
+  }
+  loadLeads();
+})();
+</script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
 </body>
 </html>
