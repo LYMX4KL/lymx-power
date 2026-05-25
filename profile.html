@@ -750,20 +750,41 @@ window.addEventListener('DOMContentLoaded', function () {
   var main = document.querySelector('main') || document.body;
   var card = document.createElement('section');
   card.style.cssText = 'background:#fff;border:1px solid var(--line, #e6e8ec);border-radius:14px;padding:24px 28px;margin:18px 0;max-width:720px';
-  var ipStyle = 'width:100%;padding:11px 14px;border:1px solid #e6e8ec;border-radius:10px;font-size:15px;box-sizing:border-box';
+  // 2026-05-25 #4de79b6c — eye toggle on every password field to prevent typos
+  var ipStyle = 'width:100%;padding:11px 44px 11px 14px;border:1px solid #e6e8ec;border-radius:10px;font-size:15px;box-sizing:border-box';
   var lbStyle = 'display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#5b6472;margin:14px 0 6px';
+  var wrapStyle = 'position:relative';
+  var eyeStyle = 'position:absolute;top:50%;right:8px;transform:translateY(-50%);background:transparent;border:0;cursor:pointer;font-size:18px;line-height:1;padding:6px 8px;color:#5b6472;border-radius:6px';
+  function pwField(id, ac) {
+    return '<div style="' + wrapStyle + '">'
+         + '<input id="' + id + '" type="password" autocomplete="' + ac + '" minlength="8" style="' + ipStyle + '" />'
+         + '<button type="button" class="pw-eye" data-for="' + id + '" aria-label="Show password" title="Show password" style="' + eyeStyle + '">\u{1F441}</button>'
+         + '</div>';
+  }
   card.innerHTML = ''
     + '<h2 style="margin:0 0 14px;font-size:18px">Change password</h2>'
     + '<p style="margin:0 0 12px;font-size:13.5px;color:#5b6472">We confirm your current password first so an accidental change can\'t lock you out, and we test the new one before signing you out.</p>'
     + '<label style="' + lbStyle.replace('margin:14px','margin:8px') + '">Current password</label>'
-    + '<input id="curPw" type="password" autocomplete="current-password" style="' + ipStyle + '" />'
+    + pwField('curPw', 'current-password')
     + '<label style="' + lbStyle + '">New password (8+ characters)</label>'
-    + '<input id="newPw1" type="password" autocomplete="new-password" minlength="8" style="' + ipStyle + '" />'
+    + pwField('newPw1', 'new-password')
     + '<label style="' + lbStyle + '">Confirm new password</label>'
-    + '<input id="newPw2" type="password" autocomplete="new-password" minlength="8" style="' + ipStyle + '" />'
+    + pwField('newPw2', 'new-password')
     + '<button id="changePwBtn" type="button" style="margin-top:14px;padding:10px 18px;border-radius:9px;background:#0e1116;color:#fff;font-weight:700;font-size:14px;border:0;cursor:pointer">Update password</button>'
     + '<div id="pwMsg" style="margin-top:10px;font-size:13.5px;line-height:1.5"></div>';
   main.appendChild(card);
+  // Wire eye toggles AFTER inserting into DOM so the buttons can be queried.
+  card.querySelectorAll('.pw-eye').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var ip = document.getElementById(btn.getAttribute('data-for'));
+      if (!ip) return;
+      var showing = ip.type === 'text';
+      ip.type = showing ? 'password' : 'text';
+      btn.textContent = showing ? '\u{1F441}' : '\u{1F576}';
+      btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+      btn.setAttribute('title', showing ? 'Show password' : 'Hide password');
+    });
+  });
 
   var btn = document.getElementById('changePwBtn');
   var msg = document.getElementById('pwMsg');
