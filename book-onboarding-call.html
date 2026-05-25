@@ -118,7 +118,6 @@
           <input type="text" id="fBiz" autocomplete="organization" placeholder="If you're calling about a specific business" />
         </div>
         <script>
-          // Relabel for partners — they don't have a Business name to give
           if (new URLSearchParams(location.search).get('for') === 'partner') {
             var lbl = document.getElementById('fBizLabel');
             var inp = document.getElementById('fBiz');
@@ -161,10 +160,19 @@
   const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
   const URL  = window.LYMX_CONFIG.SUPABASE_URL;
 
-  // Load the active host (first one for now; multi-host UI is future work)
+  // 2026-05-25 #5ee82939 — also clear the "Loading…" placeholder and surface
+  // the underlying error in console when the load fails, so the page doesn't
+  // appear permanently stuck on the host name line. Migration 034 creates
+  // onboarding_hosts; if it hasn't been applied, the table 404s and the page
+  // used to look frozen.
   const hostResp = await fetch(URL + '/rest/v1/onboarding_hosts?select=*&active=eq.true&limit=1', { headers: { apikey: ANON } });
   const hosts = await hostResp.json();
   if (!Array.isArray(hosts) || !hosts.length) {
+    if (!Array.isArray(hosts)) {
+      console.warn('[book-onboarding-call] onboarding_hosts load failed:', hosts);
+    }
+    const nm = document.getElementById('hostName'); if (nm) nm.textContent = 'Booking not set up yet';
+    const sub = document.getElementById('hostSub'); if (sub) sub.textContent = '';
     document.getElementById('bookingArea').innerHTML = '<div class="empty">No onboarding hosts are available right now. Email <a href="mailto:hello@getlymx.com">hello@getlymx.com</a> and we\'ll set one up.</div>';
     return;
   }
@@ -179,7 +187,6 @@
     n.style.display = 'block';
   }
 
-  // Load availability windows
   const avResp = await fetch(URL + '/rest/v1/onboarding_availability?host_id=eq.' + host.id + '&select=day_of_week,start_minute,end_minute', { headers: { apikey: ANON } });
   const windows = await avResp.json();
   if (!Array.isArray(windows) || !windows.length) {
@@ -187,15 +194,13 @@
     return;
   }
 
-  // Load existing confirmed bookings (next 14 days) to know what's taken
   const now = new Date();
-  const horizonStart = new Date(Date.now() + 60*60*1000); // start 1 hour from now
+  const horizonStart = new Date(Date.now() + 60*60*1000);
   const horizonEnd   = new Date(Date.now() + 14*24*60*60*1000);
   const bkResp = await fetch(URL + '/rest/v1/onboarding_bookings?host_id=eq.' + host.id + '&status=eq.confirmed&starts_at=gte.' + horizonStart.toISOString() + '&starts_at=lte.' + horizonEnd.toISOString() + '&select=starts_at', { headers: { apikey: ANON } });
   const booked = await bkResp.json();
   const bookedSet = new Set((Array.isArray(booked) ? booked : []).map(b => new Date(b.starts_at).getTime()));
 
-  // Generate the next 14 days
   const days = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -213,7 +218,6 @@
   function paintDays() {
     dayTabs.innerHTML = '';
     days.forEach((d, idx) => {
-      // Does this day have any availability? (in host's local tz, but we approximate with browser tz here for v1)
       const dow = d.getDay();
       const hasWin = windows.some(w => w.day_of_week === dow);
       if (!hasWin) return;
@@ -225,7 +229,6 @@
       dayTabs.appendChild(btn);
     });
     if (selectedDayIdx === -1 && dayTabs.children.length > 0) {
-      // Auto-select first available day
       const firstBtn = dayTabs.children[0];
       firstBtn.click();
     }
@@ -331,14 +334,14 @@
       const rows = await res.json();
       const booking = rows[0];
 
-      // Build ICS file in-memory + offer download
       const ics = buildICS(host, booking, selectedSlot);
       const blob = new Blob([ics], { type: 'text/calendar' });
       document.getElementById('icsBtn').href = window.URL.createObjectURL(blob);
 
       document.getElementById('detailsArea').style.display = 'none';
       const slotStr = selectedSlot.start.toLocaleString([], { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-      document.getElementById('successDetail').textContent = 'See you on ' + slotStr + '. ' + host.display_name + ' will ema      document.getElementById('successArea').style.display = 'block';
+      document.getElementById('successDetail').textContent = 'See you on ' + slotStr + '. ' + host.display_name + ' will email you the meeting link before the call.';
+      document.getElementById('successArea').style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
       alert(e.message);
