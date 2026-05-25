@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX staff — set your permanent remote work address." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Remote work address · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:760px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:24px 20px 80px}
+
+  .hero{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;padding:22px 24px;border-radius:14px;margin-bottom:18px}
+  .hero h1{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .hero p{margin:0;opacity:.93;font-size:14.5px;line-height:1.55}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+  .row{margin-bottom:14px}
+  .row label{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:5px}
+  .row input,.row textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;color:var(--ink)}
+  .row textarea{min-height:88px;resize:vertical}
+  .row .hint{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
+
+  .btn{appearance:none;border:0;border-radius:10px;padding:12px 22px;font-size:15px;font-weight:800;cursor:pointer;background:var(--ink);color:#fff;transition:opacity .15s}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}
+
+  .banner{padding:11px 14px;border-radius:8px;margin-bottom:14px;font-size:14px}
+  .banner.error{background:#fde8e6;color:#7a1a17}
+  .banner.success{background:#dff8ec;color:#0c6940}
+  .banner.info{background:#e6f0ff;color:#0a3a8a}
+
+  .existing-card{background:#dff8ec;border:1px solid #84e0a8;padding:14px 16px;border-radius:10px;margin-bottom:14px;color:#0c6940;font-size:14px}
+  .existing-card strong{color:#0e1116}
+  .pending-card{background:#fff3d8;border:1px solid #f0c878;padding:14px 16px;border-radius:10px;margin-bottom:14px;color:#7a4a08;font-size:14px}
+  .denied-card{background:#fde8e6;border:1px solid #f08a82;padding:14px 16px;border-radius:10px;margin-bottom:14px;color:#7a1a17;font-size:14px}
+
+  .help-list{margin:8px 0 0;padding-left:20px;font-size:13px;color:var(--muted);line-height:1.6}
+  .help-list li{margin-bottom:4px}
+</style>
+</head>
+<body>
+
+<script src="lymx-config.js"></script>
+<script src="lymx-app.js"></script>
+<script src="lymx-nav.js" defer></script>
+
+<main class="wrap">
+
+  <div class="hero">
+    <h1>Remote work address</h1>
+    <p>If you work remotely full-time (not just an occasional WFH day), submit your home work address here. HR will set up an ongoing geofence so you can clock in / out from your home every day. <strong>You only need to do this once.</strong></p>
+  </div>
+
+  <div id="banner"></div>
+  <div id="existing"></div>
+
+  <div class="card">
+    <div class="row">
+      <label>Home work address (where you work from every day)</label>
+      <input type="text" id="address" placeholder="e.g. 4567 Pine St, Las Vegas, NV 89101" />
+      <div class="hint">HR will geocode this address and set a 100m geofence by default. They may contact you to confirm.</div>
+    </div>
+
+    <div class="row">
+      <label>Your typical work hours</label>
+      <input type="text" id="hours" placeholder="e.g. 8:00 AM – 5:00 PM PT, Monday–Friday" />
+      <div class="hint">Helps HR understand when to expect your daily clock-ins.</div>
+    </div>
+
+    <div class="row">
+      <label>Anything HR should know? (timezone, special days, etc.)</label>
+      <textarea id="notes" placeholder="e.g. I'm in Pacific time. I'm in the office every other Friday for team meetings — I'll clock in from there those days."></textarea>
+    </div>
+
+    <button class="btn" id="submitBtn" onclick="submitRequest()">Submit for HR review</button>
+  </div>
+
+  <div class="card">
+    <strong>How this works</strong>
+    <ul class="help-list">
+      <li>You submit your home address. HR reviews + sets a geofence radius.</li>
+      <li>Once approved, you can clock in / out from your home daily.</li>
+      <li>If you're working from a different location (one-off), use the <a href="staff-clock-in-permission-request.html" style="color:var(--accent);text-decoration:underline">single-day exception</a> form instead.</li>
+      <li>If you move, just submit a new address — HR will replace the old one.</li>
+    </ul>
+  </div>
+
+</main>
+
+<script>
+(async function init() {
+  if (!window.LYMX || !window.LYMX.getSession) {
+    setTimeout(init, 100); return;
+  }
+  const session = await window.LYMX.getSession();
+  if (!session) {
+    location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
+    return;
+  }
+  window._lymxUser = session.user;
+  await checkExisting();
+})();
+
+const esc = (s) => String(s||'').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+function banner(kind, msg) {
+  document.getElementById('banner').innerHTML =
+    '<div class="banner ' + kind + '">' + esc(msg) + '</div>';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function checkExisting() {
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const uid = session.user.id;
+  const r = await fetch(cfg.SUPABASE_URL +
+    '/rest/v1/clock_in_permissions?user_id=eq.' + uid +
+    '&kind=eq.ongoing&order=requested_at.desc&limit=1' +
+    '&select=id,status,request_address,valid_until,reviewed_at,review_notes', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
+  });
+  if (!r.ok) return;
+  const rows = await r.json();
+  if (!rows || !rows.length) return;
+  const rec = rows[0];
+  const box = document.getElementById('existing');
+
+  if (rec.status === 'approved') {
+    box.innerHTML =
+      '<div class="existing-card">' +
+        '<strong>You already have an active remote work address on file:</strong><br>' +
+        esc(rec.request_address) +
+        '<div style="font-size:12px;color:var(--muted);margin-top:6px">Approved ' +
+          (rec.reviewed_at ? new Date(rec.reviewed_at).toLocaleDateString() : 'recently') +
+        '. To change it, submit a new request below — HR will replace the old one.</div>' +
+      '</div>';
+  } else if (rec.status === 'pending') {
+    box.innerHTML =
+      '<div class="pending-card">' +
+        '<strong>You have a pending remote-address request:</strong><br>' +
+        esc(rec.request_address) +
+        '<div style="font-size:12px;margin-top:6px">Waiting for HR to review. Please don\'t resubmit while pending.</div>' +
+      '</div>';
+  } else if (rec.status === 'denied') {
+    box.innerHTML =
+      '<div class="denied-card">' +
+        '<strong>Your last remote-address request was denied:</strong><br>' +
+        esc(rec.request_address) +
+        (rec.review_notes ? '<div style="margin-top:6px"><em>HR note:</em> ' + esc(rec.review_notes) + '</div>' : '') +
+        '<div style="font-size:12px;margin-top:6px">You can submit a revised request below.</div>' +
+      '</div>';
+  }
+}
+
+window.submitRequest = async () => {
+  const btn = document.getElementById('submitBtn');
+  const address = document.getElementById('address').value.trim();
+  const hours   = document.getElementById('hours').value.trim();
+  const notes   = document.getElementById('notes').value.trim();
+
+  if (!address || address.length < 8) {
+    return banner('error', 'Working address required (street + city + state).');
+  }
+
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const uid = session.user.id;
+  const email = session.user.email || '';
+
+  const reason = 'Permanent remote staff intake. Typical hours: ' +
+    (hours || 'not specified') +
+    (notes ? '. ' + notes : '');
+
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  // Resolve user display name + role for snapshot fields
+  let userName = '', userRole = '';
+  try {
+    const meta = session.user.user_metadata || {};
+    userName = meta.full_name || meta.name || (email.split('@')[0] || '');
+    const cached = sessionStorage.getItem('lymx_db_role');
+    userRole = cached || 'staff';
+  } catch (e) { /* non-fatal */ }
+
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/clock_in_permissions', {
+    method: 'POST',
+    headers: {
+      apikey: cfg.SUPABASE_ANON_KEY,
+      Authorization: 'Bearer ' + tok,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation'
+    },
+    body: JSON.stringify({
+      user_id: uid,
+      user_name_snapshot: userName,
+      user_email_snapshot: email,
+      user_role_snapshot: userRole,
+      kind: 'ongoing',
+      request_date: null,
+      request_address: address,
+      request_reason: reason,
+      status: 'pending'
+    })
+  });
+
+  if (!r.ok) {
+    const errTxt = await r.text();
+    banner('error', 'Submit failed: ' + errTxt.slice(0, 200));
+    btn.disabled = false;
+    btn.textContent = 'Submit for HR review';
+    return;
+  }
+
+  banner('success', 'Submitted. HR will set up your ongoing geofence and email you when approved. After that you can clock in / out from your home daily.');
+  btn.textContent = 'Submitted';
+  // Repaint the existing-status card
+  setTimeout(checkExisting, 400);
+};
+</script>
+
+<script src="lymx-sidebar.js" defer></script>
+</body>
+</html>

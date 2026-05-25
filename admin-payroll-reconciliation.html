@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — payroll reconciliation. Compute per-staff payroll from internal timesheets, export CSV, lock + mark paid." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Payroll reconciliation · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--maxw:1280px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  .page{padding:28px 0 80px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:14px;margin-bottom:18px}
+  .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:14.5px}
+
+  .controls{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .controls label{font-size:13px;font-weight:700;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+  .controls input,.controls select{padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:14px;color:var(--ink)}
+
+  .btn{appearance:none;border:0;border-radius:8px;padding:9px 16px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .12s}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover:not(:disabled){background:var(--ink-2)}
+  .btn-outline{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn-outline:hover:not(:disabled){background:#f1f3f6}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-success{background:var(--ok);color:#fff}
+  .btn-warn{background:var(--warn);color:#fff}
+
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+  @media (max-width:900px){.summary{grid-template-columns:repeat(2,1fr)}}
+  .tile{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .tile .label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+  .tile .value{font-size:24px;font-weight:800;color:var(--ink);margin-top:4px;line-height:1.1;font-variant-numeric:tabular-nums}
+  .tile.green .value{color:var(--ok)}
+  .tile.warn .value{color:var(--warn)}
+  .tile.danger .value{color:var(--danger)}
+
+  .period-status{margin-bottom:16px;padding:12px 16px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .period-status.open{background:#dff8ec;color:#0c6940;border:1px solid #84e0a8}
+  .period-status.locked{background:#fff3d8;color:#7a4a08;border:1px solid #f0c878}
+  .period-status.paid{background:#e6f0ff;color:#0a3a8a;border:1px solid #84acff}
+
+  table.recon{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14px}
+  table.recon th,table.recon td{padding:11px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  table.recon th{background:#f6f7f9;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+  table.recon tr:last-child td{border-bottom:0}
+  table.recon .num{text-align:right;font-variant-numeric:tabular-nums}
+  table.recon tr.totals{background:#f1f3f6;font-weight:800}
+  table.recon tr.totals td{border-bottom:0}
+
+  .name-cell{font-weight:700}
+  .name-cell .role{display:block;font-weight:500;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+  .banner{padding:11px 14px;border-radius:8px;margin-bottom:14px;font-size:14px}
+  .banner.ok{background:#dff8ec;color:#0c6940}
+  .banner.err{background:#fde8e6;color:#7a1a17}
+  .banner.info{background:#e6f0ff;color:#0a3a8a}
+
+  .empty-msg{color:var(--muted);text-align:center;padding:32px 16px;font-size:14px}
+
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .pill.ok{background:#dff8ec;color:#0c6940}
+  .pill.warn{background:#fff3d8;color:#7a4a08}
+  .pill.miss{background:#fde8e6;color:#7a1a17}
+  .pill.grey{background:#eef0f3;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<script src="lymx-config.js"></script>
+<script src="lymx-app.js"></script>
+<script src="lymx-nav.js" defer></script>
+
+<main class="wrap page">
+  <div class="page-head">
+    <div>
+      <h1>Payroll reconciliation</h1>
+      <p>Aggregates approved timesheet lines into per-staff pay. Pick a pay period, review hours, export to CSV for ACH/Gusto, then lock + mark paid.</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn btn-outline" href="admin-timesheets.html">Timesheets →</a>
+      <a class="btn btn-outline" href="admin-personnel-records.html">Personnel →</a>
+    </div>
+  </div>
+
+  <div id="bannerArea"></div>
+
+  <div class="controls">
+    <label>Pay period:
+      <select id="periodSelect" style="min-width:240px">
+        <option value="">-- pick or create --</option>
+      </select>
+    </label>
+    <button class="btn btn-outline" id="newPeriodBtn">+ New period</button>
+    <button class="btn btn-primary" id="loadBtn">Load</button>
+    <button class="btn btn-outline" id="exportCsvBtn" disabled>Export CSV</button>
+    <span style="flex:1"></span>
+    <button class="btn btn-warn"   id="lockBtn"   disabled>Lock period</button>
+    <button class="btn btn-success" id="paidBtn" disabled>Mark paid out</button>
+  </div>
+
+  <div id="periodStatus"></div>
+
+  <div class="summary" id="summary"></div>
+
+  <table class="recon">
+    <thead>
+      <tr>
+        <th>Staff</th>
+        <th class="num">Days worked</th>
+        <th class="num">Reg hrs</th>
+        <th class="num">OT hrs</th>
+        <th class="num">Missed lunch</th>
+        <th class="num">Rate $/hr</th>
+        <th class="num">Reg pay</th>
+        <th class="num">OT pay</th>
+        <th class="num">Gross</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="reconBody">
+      <tr><td colspan="10" class="empty-msg">Pick a pay period above to compute payroll.</td></tr>
+    </tbody>
+  </table>
+</main>
+
+<script src="lymx-sidebar.js" defer></script>
+
+<script>
+(async function init() {
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(init, 100); return; }
+  const session = await window.LYMX.getSession();
+  if (!session) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
+  await loadPeriods();
+  document.getElementById('newPeriodBtn').addEventListener('click', onNewPeriod);
+  document.getElementById('loadBtn').addEventListener('click', onLoad);
+  document.getElementById('exportCsvBtn').addEventListener('click', onExportCsv);
+  document.getElementById('lockBtn').addEventListener('click', onLockPeriod);
+  document.getElementById('paidBtn').addEventListener('click', onMarkPaid);
+})();
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtUsd = (cents) => '$' + (Number(cents || 0)/100).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+const fmtUsdNum = (n) => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+const fmtHrs = (mins) => (Number(mins || 0)/60).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+
+function banner(t, m, autoclose) {
+  $('bannerArea').innerHTML = '<div class="banner ' + t + '">' + esc(m) + '</div>';
+  if (autoclose !== false && t === 'ok') setTimeout(() => $('bannerArea').innerHTML = '', 4500);
+}
+
+let _currentPeriod = null;
+let _currentRows = [];
+
+async function loadPeriods() {
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL +
+    '/rest/v1/timesheet_periods?select=id,period_start,period_end,label,locked,paid_out,payroll_run_total_cents' +
+    '&order=period_start.desc&limit=24', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
+  });
+  if (!r.ok) {
+    banner('err', 'Could not load periods: ' + r.status + ' — make sure migration 084 ran.', false);
+    return;
+  }
+  const periods = await r.json();
+  const sel = $('periodSelect');
+  sel.innerHTML = '<option value="">-- pick or create --</option>' +
+    periods.map(p => {
+      const label = (p.label ? p.label + ' · ' : '') + p.period_start + ' → ' + p.period_end +
+        (p.paid_out ? ' (paid)' : (p.locked ? ' (locked)' : ' (open)'));
+      return '<option value="' + p.id + '">' + esc(label) + '</option>';
+    }).join('');
+}
+
+async function onNewPeriod() {
+  const today = new Date();
+  const dd = today.getDate();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  let start, end, label;
+  if (dd <= 15) {
+    start = yyyy + '-' + mm + '-01';
+    end = yyyy + '-' + mm + '-15';
+    label = today.toLocaleString('en-US',{month:'long'}) + ' 1-15, ' + yyyy;
+  } else {
+    start = yyyy + '-' + mm + '-16';
+    const lastDay = new Date(yyyy, today.getMonth() + 1, 0).getDate();
+    end = yyyy + '-' + mm + '-' + String(lastDay).padStart(2, '0');
+    label = today.toLocaleString('en-US',{month:'long'}) + ' 16-' + lastDay + ', ' + yyyy;
+  }
+  const userStart = prompt('Period start (YYYY-MM-DD):', start);
+  if (!userStart) return;
+  const userEnd = prompt('Period end (YYYY-MM-DD):', end);
+  if (!userEnd) return;
+  const userLabel = prompt('Optional label:', label) || '';
+
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/timesheet_periods', {
+    method: 'POST',
+    headers: {
+      apikey: cfg.SUPABASE_ANON_KEY,
+      Authorization: 'Bearer ' + tok,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation'
+    },
+    body: JSON.stringify({
+      period_start: userStart,
+      period_end: userEnd,
+      label: userLabel
+    })
+  });
+  if (!r.ok) { banner('err', 'Create failed: ' + await r.text(), false); return; }
+  banner('ok', 'Period created.');
+  await loadPeriods();
+  const created = (await r.json())[0];
+  $('periodSelect').value = created.id;
+  await onLoad();
+}
+
+async function onLoad() {
+  const pid = $('periodSelect').value;
+  if (!pid) { banner('err', 'Pick a period first.', false); return; }
+  banner('info', 'Computing payroll…', false);
+
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+
+  // 1. Read the period meta
+  const pR = await fetch(cfg.SUPABASE_URL + '/rest/v1/timesheet_periods?id=eq.' + pid +
+    '&select=id,period_start,period_end,label,locked,paid_out,payroll_run_total_cents,payroll_notes,locked_by_name,paid_out_by_name,locked_at,paid_out_at', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
+  });
+  if (!pR.ok) { banner('err', 'Load period failed: ' + pR.status, false); return; }
+  const periods = await pR.json();
+  if (!periods.length) { banner('err', 'Period not found.', false); return; }
+  _currentPeriod = periods[0];
+
+  // 2. Pull timesheet_lines in date range
+  const tlR = await fetch(cfg.SUPABASE_URL +
+    '/rest/v1/timesheet_lines?work_date=gte.' + _currentPeriod.period_start +
+    '&work_date=lte.' + _currentPeriod.period_end +
+    '&select=user_id,user_name_snapshot,work_date,final_regular_minutes,final_ot_minutes,missed_lunch_flag,hourly_rate_usd,estimated_regular_pay_usd,estimated_ot_pay_usd,estimated_gross_usd,approved_at,locked', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
+  });
+  if (!tlR.ok) { banner('err', 'Load timesheet lines failed: ' + tlR.status, false); return; }
+  const lines = await tlR.json();
+
+  // 3. Pull staff_profiles for everyone with lines (for rate fallback)
+  const uids = Array.from(new Set(lines.map(l => l.user_id)));
+  let staffMap = {};
+  if (uids.length) {
+    const spR = await fetch(cfg.SUPABASE_URL +
+      '/rest/v1/staff_profiles?user_id=in.(' + uids.join(',') + ')' +
+      '&select=user_id,title,classification,is_on_payroll,pay_rate_cents,pay_period', {
+      headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
+    });
+    if (spR.ok) {
+      (await spR.json()).forEach(sp => { staffMap[sp.user_id] = sp; });
+    }
+  }
+
+  // 4. Aggregate per staff
+  const byStaff = {};
+  lines.forEach(l => {
+    const k = l.user_id;
+    if (!byStaff[k]) {
+      const sp = staffMap[k] || {};
+      const fallbackRate = (sp.pay_rate_cents && sp.pay_period === 'hour')
+        ? sp.pay_rate_cents / 100
+        : 0;
+      byStaff[k] = {
+        user_id: k,
+        name: l.user_name_snapshot || '(unknown)',
+        title: sp.title || '',
+        classification: sp.classification || '',
+        is_on_payroll: !!sp.is_on_payroll,
+        days: 0,
+        reg_mins: 0,
+        ot_mins: 0,
+        missed_lunch_count: 0,
+        rate_usd: Number(l.hourly_rate_usd || fallbackRate || 0),
+        reg_pay_usd: 0,
+        ot_pay_usd: 0,
+        gross_usd: 0,
+        unapproved_count: 0
+      };
+    }
+    const b = byStaff[k];
+    b.days += 1;
+    b.reg_mins += Number(l.final_regular_minutes || 0);
+    b.ot_mins  += Number(l.final_ot_minutes || 0);
+    if (l.missed_lunch_flag) b.missed_lunch_count += 1;
+    b.reg_pay_usd += Number(l.estimated_regular_pay_usd || 0);
+    b.ot_pay_usd  += Number(l.estimated_ot_pay_usd || 0);
+    b.gross_usd   += Number(l.estimated_gross_usd || 0);
+    if (!l.approved_at) b.unapproved_count += 1;
+  });
+
+  _currentRows = Object.values(byStaff).sort((a,b) => (b.gross_usd - a.gross_usd) || a.name.localeCompare(b.name));
+
+  paintPeriodStatus();
+  paintSummary();
+  paintTable();
+
+  $('exportCsvBtn').disabled = _currentRows.length === 0;
+  $('lockBtn').disabled = !!_currentPeriod.locked;
+  $('paidBtn').disabled = !_currentPeriod.locked || !!_currentPeriod.paid_out;
+  banner('ok', 'Loaded ' + _currentRows.length + ' staff · ' + lines.length + ' timesheet lines.');
+}
+
+function paintPeriodStatus() {
+  const p = _currentPeriod;
+  if (!p) { $('periodStatus').innerHTML = ''; return; }
+  let kind = 'open', msg;
+  if (p.paid_out) {
+    kind = 'paid';
+    msg = '<span><strong>Paid out</strong> by ' + esc(p.paid_out_by_name || '(unknown)') +
+      ' on ' + new Date(p.paid_out_at).toLocaleString() +
+      ' · run total ' + fmtUsd(p.payroll_run_total_cents) + '</span>';
+  } else if (p.locked) {
+    kind = 'locked';
+    msg = '<span><strong>Locked</strong> by ' + esc(p.locked_by_name || '(unknown)') +
+      ' on ' + new Date(p.locked_at).toLocaleString() +
+      ' — no further edits to timesheet lines for this period. Ready to mark paid.</span>';
+  } else {
+    msg = '<span><strong>Open</strong> — timesheet lines can still be edited. Lock the period once all hours are approved.</span>';
+  }
+  $('periodStatus').innerHTML = '<div class="period-status ' + kind + '">' + msg + '</div>';
+}
+
+function paintSummary() {
+  const totals = _currentRows.reduce((acc, r) => {
+    acc.staff += 1;
+    acc.reg_mins += r.reg_mins;
+    acc.ot_mins += r.ot_mins;
+    acc.gross += r.gross_usd;
+    if (r.unapproved_count) acc.unapproved += r.unapproved_count;
+    if (!r.is_on_payroll) acc.off_payroll += 1;
+    return acc;
+  }, { staff:0, reg_mins:0, ot_mins:0, gross:0, unapproved:0, off_payroll:0 });
+
+  const tiles = [
+    { label: 'Staff with hours', value: totals.staff, klass: '' },
+    { label: 'Regular hrs', value: fmtHrs(totals.reg_mins), klass: '' },
+    { label: 'Overtime hrs', value: fmtHrs(totals.ot_mins), klass: totals.ot_mins > 0 ? 'warn' : '' },
+    { label: 'Gross payroll', value: fmtUsdNum(totals.gross), klass: 'green' }
+  ];
+  if (totals.unapproved > 0) tiles.push({ label: 'Unapproved lines', value: totals.unapproved, klass: 'danger' });
+  if (totals.off_payroll > 0) tiles.push({ label: 'Not on payroll', value: totals.off_payroll, klass: 'warn' });
+
+  $('summary').innerHTML = tiles.map(t =>
+    '<div class="tile ' + t.klass + '">' +
+      '<div class="label">' + esc(t.label) + '</div>' +
+      '<div class="value">' + esc(String(t.value)) + '</div>' +
+    '</div>'
+  ).join('');
+}
+
+function paintTable() {
+  if (!_currentRows.length) {
+    $('reconBody').innerHTML = '<tr><td colspan="10" class="empty-msg">No timesheet lines found for this period. Approve some lines on the Timesheets page first.</td></tr>';
+    return;
+  }
+  const grandReg = _currentRows.reduce((s,r) => s + r.reg_pay_usd, 0);
+  const grandOt  = _currentRows.reduce((s,r) => s + r.ot_pay_usd, 0);
+  const grandGross = _currentRows.reduce((s,r) => s + r.gross_usd, 0);
+
+  $('reconBody').innerHTML = _currentRows.map(r => {
+    let statusPill = '<span class="pill ok">OK</span>';
+    if (!r.is_on_payroll) statusPill = '<span class="pill warn">Off payroll</span>';
+    else if (r.unapproved_count > 0) statusPill = '<span class="pill miss">' + r.unapproved_count + ' unapproved</span>';
+    return '<tr>' +
+      '<td class="name-cell">' + esc(r.name) + '<span class="role">' +
+        esc([r.classification, r.title].filter(Boolean).join(' · ') || 'no profile') +
+      '</span></td>' +
+      '<td class="num">' + r.days + '</td>' +
+      '<td class="num">' + fmtHrs(r.reg_mins) + '</td>' +
+      '<td class="num">' + fmtHrs(r.ot_mins) + '</td>' +
+      '<td class="num">' + (r.missed_lunch_count || '') + '</td>' +
+      '<td class="num">' + (r.rate_usd ? fmtUsdNum(r.rate_usd) : '-') + '</td>' +
+      '<td class="num">' + fmtUsdNum(r.reg_pay_usd) + '</td>' +
+      '<td class="num">' + fmtUsdNum(r.ot_pay_usd) + '</td>' +
+      '<td class="num"><strong>' + fmtUsdNum(r.gross_usd) + '</strong></td>' +
+      '<td>' + statusPill + '</td>' +
+    '</tr>';
+  }).join('') +
+    '<tr class="totals"><td colspan="6">Total</td>' +
+    '<td class="num">' + fmtUsdNum(grandReg) + '</td>' +
+    '<td class="num">' + fmtUsdNum(grandOt) + '</td>' +
+    '<td class="num">' + fmtUsdNum(grandGross) + '</td>' +
+    '<td></td></tr>';
+}
+
+function onExportCsv() {
+  if (!_currentRows.length) return;
+  const header = ['name','classification','title','days','regular_hours','overtime_hours','missed_lunches','rate_usd_hr','regular_pay_usd','overtime_pay_usd','gross_usd','on_payroll'];
+  const rows = _currentRows.map(r => [
+    r.name, r.classification, r.title, r.days,
+    (r.reg_mins/60).toFixed(2), (r.ot_mins/60).toFixed(2),
+    r.missed_lunch_count, r.rate_usd.toFixed(2),
+    r.reg_pay_usd.toFixed(2), r.ot_pay_usd.toFixed(2), r.gross_usd.toFixed(2),
+    r.is_on_payroll ? 'yes' : 'no'
+  ]);
+  const csv = [header.join(','), ...rows.map(r => r.map(cell => {
+    const s = String(cell == null ? '' : cell);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }).join(','))].join('\n');
+  const fname = 'lymx-payroll-' +
+    (_currentPeriod.period_start || 'period') + '_' +
+    (_currentPeriod.period_end || '') + '.csv';
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fname;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function onLockPeriod() {
+  if (!_currentPeriod || _currentPeriod.locked) return;
+  if (!confirm('Lock this period? No more timesheet edits can be made for ' +
+    _currentPeriod.period_start + ' through ' + _currentPeriod.period_end + ' once locked.')) return;
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const lockerName = (session.user.user_metadata && (session.user.user_metadata.full_name || session.user.user_metadata.name))
+    || (session.user.email || '').split('@')[0] || 'HR';
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/timesheet_periods?id=eq.' + _currentPeriod.id, {
+    method: 'PATCH',
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+    body: JSON.stringify({
+      locked: true,
+      locked_by_id: session.user.id,
+      locked_by_name: lockerName,
+      locked_at: new Date().toISOString()
+    })
+  });
+  if (!r.ok) { banner('err', 'Lock failed: ' + await r.text(), false); return; }
+  banner('ok', 'Period locked.');
+  await onLoad();
+}
+
+async function onMarkPaid() {
+  if (!_currentPeriod || !_currentPeriod.locked || _currentPeriod.paid_out) return;
+  const totalCents = Math.round(_currentRows.reduce((s,r) => s + r.gross_usd, 0) * 100);
+  if (!confirm('Mark this period as PAID OUT? Total run: ' + fmtUsd(totalCents) +
+    '. This is the final step — recorded as the payroll-run total for audit.')) return;
+  const notes = prompt('Optional payroll-run notes (e.g. "Gusto run #12345"):', '') || null;
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const payerName = (session.user.user_metadata && (session.user.user_metadata.full_name || session.user.user_metadata.name))
+    || (session.user.email || '').split('@')[0] || 'HR';
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/timesheet_periods?id=eq.' + _currentPeriod.id, {
+    method: 'PATCH',
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+    body: JSON.stringify({
+      paid_out: true,
+      paid_out_by_id: session.user.id,
+      paid_out_by_name: payerName,
+      paid_out_at: new Date().toISOString(),
+      payroll_run_total_cents: totalCents,
+      payroll_notes: notes
+    })
+  });
+  if (!r.ok) { banner('err', 'Mark paid failed: ' + await r.text(), false); return; }
+  banner('ok', 'Period marked paid out. Total: ' + fmtUsd(totalCents));
+  await onLoad();
+}
+</script>
+</body>
+</html>
