@@ -193,6 +193,56 @@
       <div id="terminationBody"><div class="empty">Loading…</div></div>
     </div>
   </div>
+
+<!-- 2026-05-25 Manage Staff modal — added to wire the previously-dead manageBtn. -->
+<div class="modal-bg" id="manageModalBg" style="display:none;position:fixed;inset:0;background:rgba(14,17,22,.55);z-index:99;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto">
+  <div class="modal" style="background:#fff;border-radius:14px;max-width:520px;width:100%;padding:24px 28px">
+    <h3 style="margin:0 0 6px;font-size:19px;font-weight:800">Manage staff record</h3>
+    <p style="margin:0 0 14px;color:#5b6472;font-size:13.5px">Updates the staff_profiles row directly. Required before clock-in becomes available for this person.</p>
+
+    <label style="display:flex;align-items:center;gap:10px;margin:12px 0;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;cursor:pointer">
+      <input type="checkbox" id="mngOnPayroll" />
+      <div>
+        <div style="font-weight:700;font-size:13.5px">On payroll</div>
+        <div style="font-size:12px;color:#5b6472">Unlocks the "My Work" sidebar (Clock In, My Schedule, My Time-off) when they sign in.</div>
+      </div>
+    </label>
+
+    <label style="display:flex;align-items:center;gap:10px;margin:12px 0;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;cursor:pointer">
+      <input type="checkbox" id="mngClockExempt" />
+      <div>
+        <div style="font-weight:700;font-size:13.5px">Clock-in exempt (salaried)</div>
+        <div style="font-size:12px;color:#5b6472">Sidebar still shows the section but no clock punches required. Use for salaried roles.</div>
+      </div>
+    </label>
+
+    <label style="display:block;font-size:11px;font-weight:700;color:#5b6472;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px">Classification</label>
+    <select id="mngClassification" style="width:100%;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;font:inherit;font-size:14px">
+      <option value="">(unset)</option>
+      <option value="w2_full_time">W-2 full-time</option>
+      <option value="w2_part_time">W-2 part-time</option>
+      <option value="1099_contractor">1099 contractor</option>
+      <option value="intern">Intern</option>
+      <option value="volunteer">Volunteer</option>
+    </select>
+
+    <label style="display:block;font-size:11px;font-weight:700;color:#5b6472;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px">Employment status</label>
+    <select id="mngStatus" style="width:100%;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;font:inherit;font-size:14px">
+      <option value="active">Active</option>
+      <option value="on_leave">On leave</option>
+      <option value="suspended">Suspended</option>
+      <option value="terminated">Terminated</option>
+    </select>
+
+    <div id="mngStatusMsg" style="display:none;padding:11px 14px;border-radius:8px;font-size:14px;margin-top:14px"></div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
+      <button class="btn btn-secondary" id="mngCancel" style="padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;background:#fff;border:1px solid #e6e8ec;color:#0e1116;cursor:pointer">Cancel</button>
+      <button class="btn btn-primary" id="mngSave" style="padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;background:#0e1116;color:#fff;border:0;cursor:pointer">Save</button>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <div class="toast" id="toast"></div>
@@ -586,6 +636,87 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
 }));
 
 load();
+
+
+// ---- 2026-05-25 Manage staff modal (was previously a dead button) -------
+async function openManageModal(){
+  // Re-fetch latest staff_profiles row so toggles reflect current state
+  const sb = window.LYMX.sb;
+  const { data: latest } = await sb
+    .from('staff_profiles')
+    .select('is_on_payroll, clock_in_exempt, classification, employment_status')
+    .eq('user_id', profileId)
+    .maybeSingle();
+  const cur = latest || staff || {};
+  document.getElementById('mngOnPayroll').checked = !!cur.is_on_payroll;
+  document.getElementById('mngClockExempt').checked = !!cur.clock_in_exempt;
+  document.getElementById('mngClassification').value = cur.classification || '';
+  document.getElementById('mngStatus').value = cur.employment_status || 'active';
+  const msgEl = document.getElementById('mngStatusMsg');
+  if (msgEl) { msgEl.style.display = 'none'; msgEl.textContent = ''; }
+  document.getElementById('manageModalBg').style.display = 'flex';
+}
+
+async function saveManageModal(){
+  const sb = window.LYMX.sb;
+  const msgEl = document.getElementById('mngStatusMsg');
+  const saveBtn = document.getElementById('mngSave');
+  const onPayroll = document.getElementById('mngOnPayroll').checked;
+  const clockExempt = document.getElementById('mngClockExempt').checked;
+  const classification = document.getElementById('mngClassification').value || null;
+  const status = document.getElementById('mngStatus').value;
+
+  saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
+  try {
+    // If no row exists yet (rare for an admin-personnel-file page reached via personnel
+    // records, but possible for testing), insert; otherwise update.
+    const { data: exists } = await sb.from('staff_profiles').select('user_id').eq('user_id', profileId).maybeSingle();
+    let res;
+    if (exists) {
+      res = await sb.from('staff_profiles').update({
+        is_on_payroll: onPayroll,
+        clock_in_exempt: clockExempt,
+        classification: classification,
+        employment_status: status,
+        updated_at: new Date().toISOString()
+      }).eq('user_id', profileId);
+    } else {
+      res = await sb.from('staff_profiles').insert({
+        user_id: profileId,
+        is_on_payroll: onPayroll,
+        clock_in_exempt: clockExempt,
+        classification: classification,
+        employment_status: status,
+        hire_date: new Date().toISOString().slice(0,10)
+      });
+    }
+    if (res.error) throw res.error;
+    if (msgEl) {
+      msgEl.style.display = 'block';
+      msgEl.style.background = '#e6f5ee'; msgEl.style.border = '1px solid #a8d8c0'; msgEl.style.color = '#0a6e44';
+      msgEl.textContent = 'Saved. Reloading…';
+    }
+    // Bust sidebar cache for THIS staff member so their next page load picks up the new flag
+    try { sessionStorage.removeItem('LYMX_is_staff_' + profileId); } catch (e) {}
+    setTimeout(() => location.reload(), 700);
+  } catch (e) {
+    console.warn('[admin-personnel-file] manage save failed:', e);
+    if (msgEl) {
+      msgEl.style.display = 'block';
+      msgEl.style.background = '#fdecec'; msgEl.style.border = '1px solid #f5b7b7'; msgEl.style.color = '#9b1c1c';
+      msgEl.textContent = 'Save failed: ' + (e.message || e);
+    }
+    saveBtn.disabled = false; saveBtn.textContent = 'Save';
+  }
+}
+
+document.addEventListener('click', function (e) {
+  if (e.target.id === 'manageBtn') { e.preventDefault(); openManageModal(); }
+  else if (e.target.id === 'mngCancel') { document.getElementById('manageModalBg').style.display = 'none'; }
+  else if (e.target.id === 'mngSave') { e.preventDefault(); saveManageModal(); }
+  else if (e.target.id === 'manageModalBg') { e.target.style.display = 'none'; }
+});
+
 </script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-sidebar.js" defer></script>
