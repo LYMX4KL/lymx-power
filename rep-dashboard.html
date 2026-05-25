@@ -574,10 +574,16 @@
     // Welcome heading + avatar
     const fullName = partner.display_name || partner.legal_name || 'Partner';
     const firstName = fullName.split(' ')[0];
+    // 2026-05-25 root-cause fix: `initials` was declared inside the `if (av)` block
+    // (block-scoped const), but referenced again at line ~835 to paint the tree-row
+    // avatar. That second reference threw `ReferenceError: initials is not defined`,
+    // killing every async statement after it (tree count load, founding 25 status,
+    // partner_emails card). Hoisting the declaration here makes it available to
+    // every reader and stops the silent abort.
+    const initials = fullName.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'P';
     document.getElementById('repWelcome').textContent = 'Welcome back, ' + firstName + ' 👋';
     const av = document.getElementById('repAvatar');
     if (av) {
-      const initials = fullName.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'P';
       // 2026-05-24 #38d2f693 - root-cause fix: previously `av.textContent = initials`
       // wiped any <img> child that lymx-nav.js's paintAvatarImage had appended,
       // while the lymxAvImg='1' flag stayed set so paint never retried. Result:

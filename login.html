@@ -243,7 +243,10 @@
       if (!user) return 'customer-dashboard.html';
       const sb = LYMX.sb;
       const [biz, cust, partner] = await Promise.all([
-        sb.from('businesses').select('id').eq('user_id', user.id).maybeSingle(),
+        // 2026-05-25: businesses uses owner_user_id (not user_id). Filtering
+        // by user_id returned null silently, so biz-only owners (no customers
+        // row) were always falling through to customer-dashboard.html.
+        sb.from('businesses').select('id').eq('owner_user_id', user.id).maybeSingle(),
         sb.from('customers').select('id').eq('user_id', user.id).maybeSingle(),
         sb.from('partners').select('id').eq('user_id', user.id).maybeSingle()
       ]);

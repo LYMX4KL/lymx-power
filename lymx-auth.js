@@ -182,7 +182,10 @@
         // links to the owner's actual welcome.html?biz=<slug> page; the other
         // columns are read for the header subtitle, tagline, and emoji).
         .select('id, display_name, legal_name, category, issuance_rate, contact_email, slug, created_at, business_kind, approval_status, address_line1, tagline, description, emoji')
-        .eq('user_id', user.id)
+        // 2026-05-25: businesses table uses owner_user_id, not user_id.
+        // Filtering by user_id returned null silently via maybeSingle(),
+        // breaking biz-dashboard for every business owner.
+        .eq('owner_user_id', user.id)
         .maybeSingle();
     },
 
