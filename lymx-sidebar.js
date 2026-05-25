@@ -308,6 +308,8 @@
       { section: 'Outreach' },
       { href: 'admin-invite-friends.html', icon: '\u{1F4E8}', label: 'Invite Friends' },
       { href: 'contacts.html',           icon: '\u{1F4C7}', label: 'Contacts' },
+      { section: 'Knowledge' },
+      { href: 'admin-playbooks.html',    icon: '\u{1F4D6}', label: 'Playbooks' },
       { section: 'Account' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
       { href: 'my-feedback.html',        icon: '\u{1F4DD}', label: 'My Feedback' }

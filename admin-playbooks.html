@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — process playbooks for every internal workflow." />
+<meta name="robots" content="noindex, nofollow" />
+<title>Playbooks · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--maxw:1320px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .nav-links{display:flex;gap:18px;font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .admin-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  @media(max-width:1100px){.nav-links{display:none}}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:14px;margin-bottom:18px}
+  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:15px;max-width:720px}
+
+  /* Two-pane layout */
+  .pane{display:grid;grid-template-columns:280px 1fr;gap:18px;align-items:start}
+  @media(max-width:880px){.pane{grid-template-columns:1fr}}
+
+  .pb-index{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;position:sticky;top:88px}
+  .pb-index h3{margin:0 0 10px;font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.08em}
+  .pb-index ul{list-style:none;margin:0 0 12px;padding:0}
+  .pb-index li{margin:0}
+  .pb-index a{display:block;padding:8px 11px;border-radius:8px;font-size:13.5px;color:var(--ink-2);line-height:1.35;font-weight:600;cursor:pointer;transition:.1s}
+  .pb-index a:hover{background:#eef4ff;color:var(--accent)}
+  .pb-index a.active{background:var(--ink);color:#fff}
+  .pb-index .pb-empty{font-size:12px;color:var(--muted);padding:8px 11px}
+  .pb-index .pb-status{display:inline-block;font-size:10px;font-weight:800;padding:1px 6px;border-radius:99px;margin-left:6px;text-transform:uppercase;letter-spacing:.04em}
+  .pb-index .pb-status.verified{background:#e6f5ee;color:#0a6e44}
+  .pb-index .pb-status.draft{background:#fff3d4;color:#92400e}
+  .pb-index .pb-status.planned{background:#eef0f4;color:#6b7280}
+
+  /* Reading pane */
+  .pb-view{background:#fff;border:1px solid var(--line);border-radius:14px;padding:30px 40px;min-height:60vh}
+  .pb-view .pb-empty{color:var(--muted);font-size:15px;padding:60px 0;text-align:center}
+  .pb-view h1{font-size:30px;font-weight:800;letter-spacing:-.01em;margin:0 0 8px}
+  .pb-view h2{font-size:22px;font-weight:800;margin:30px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .pb-view h3{font-size:17px;font-weight:800;margin:22px 0 6px;color:var(--ink-2)}
+  .pb-view h4{font-size:14px;font-weight:800;margin:14px 0 4px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .pb-view p{margin:8px 0 12px;font-size:15px;line-height:1.65}
+  .pb-view ul,.pb-view ol{margin:6px 0 14px;padding-left:24px;font-size:15px;line-height:1.7}
+  .pb-view li{margin:2px 0}
+  .pb-view a{color:var(--accent-2);text-decoration:underline}
+  .pb-view a:hover{color:var(--accent)}
+  .pb-view code{background:#f3f4f6;color:#9b1c1c;padding:1.5px 6px;border-radius:5px;font-size:13px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .pb-view pre{background:#0e1116;color:#f3f4f6;padding:14px 16px;border-radius:9px;overflow-x:auto;font-size:13px;line-height:1.55;margin:12px 0}
+  .pb-view pre code{background:transparent;color:inherit;padding:0;font-size:inherit}
+  .pb-view table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}
+  .pb-view th{background:#f9fafb;text-align:left;padding:10px 12px;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:800;color:var(--muted);border-bottom:1px solid var(--line)}
+  .pb-view td{padding:11px 12px;border-bottom:1px solid #f0f1f4;vertical-align:top}
+  .pb-view td:first-child{font-weight:700}
+  .pb-view blockquote{border-left:3px solid var(--accent);padding:6px 14px;margin:10px 0;background:#eef4ff;color:var(--ink-2);border-radius:0 8px 8px 0}
+  .pb-view hr{border:0;border-top:1px solid var(--line);margin:30px 0}
+  .pb-view strong{color:var(--ink)}
+
+  /* Frontmatter meta block */
+  .pb-meta{background:#f6f7f9;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:12px 0 22px;font-size:13.5px}
+  .pb-meta-row{display:flex;gap:18px;flex-wrap:wrap;margin-top:4px}
+  .pb-meta-row .lbl{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-right:6px}
+  .pb-meta-chip{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-size:12px;font-weight:700;color:var(--ink-2);margin-right:6px}
+  .pb-meta-chip.role{background:rgba(208,32,84,.12);color:#a01644;border-color:rgba(208,32,84,.2)}
+  .pb-meta-chip.diff.easy{background:#e6f5ee;color:#0a6e44;border-color:#a8d8c0}
+  .pb-meta-chip.diff.medium{background:#fff3d4;color:#92400e;border-color:#f5d77a}
+  .pb-meta-chip.diff.hard{background:#fdecec;color:#9b1c1c;border-color:#f5b7b7}
+
+  /* Header utility row */
+  .pb-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:14px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;border:0;cursor:pointer;font-family:inherit;text-decoration:none;color:inherit}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-secondary:hover{border-color:var(--ink-2)}
+  .status-msg{padding:11px 14px;border-radius:8px;font-size:14px;margin-top:14px;display:none}
+  .status-msg.show{display:block}
+  .status-msg.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
+
+  @media print{
+    header.nav,.pb-index,.pb-toolbar{display:none}
+    .pane{display:block}
+    .pb-view{border:0;padding:0}
+  }
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LYMX" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body data-role-required="admin">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="admin-dashboard.html" class="brand">LYMX <span class="role-tag">Admin</span></a>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Home</a>
+      <a href="admin-tech-support.html">Tech Support</a>
+      <a href="admin-staff.html">Staff</a>
+      <a href="admin-playbooks.html" class="on">Playbooks</a>
+      <a href="admin-broadcast.html">Broadcast</a>
+    </nav>
+    <div class="admin-avatar" id="userInitial">·</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>📖 Playbooks</h1>
+        <p>Step-by-step walkthroughs for every internal process — HR onboarding, partner email setup, customer support, broadcasts. Pick one on the left, follow it top to bottom.</p>
+      </div>
+      <div class="pb-toolbar">
+        <button class="btn btn-secondary" id="printBtn">🖨 Print</button>
+      </div>
+    </div>
+
+    <div class="pane">
+      <aside class="pb-index" id="pbIndex">
+        <h3>Loading…</h3>
+      </aside>
+
+      <article class="pb-view" id="pbView">
+        <div class="pb-empty">Pick a playbook on the left.</div>
+      </article>
+    </div>
+
+    <div class="status-msg err" id="errMsg"></div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+<script src="lymx-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-auth.js"></script>
+<script>
+(async function init(){
+  // Wait for marked.js + supabase-js to land. lymx-role-gate.js will redirect
+  // if the user isn't admin, so this script only matters for admins.
+
+  function setError(msg){
+    const el = document.getElementById('errMsg');
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+
+  // -------------------- 1. Parse the INDEX.md to build the sidebar list --------------------
+  // The INDEX file is plain markdown with a table per section. We extract every link
+  // of shape [slug](slug.md) and group by the H2 above it.
+
+  function parseIndex(md){
+    const sections = [];
+    let current = null;
+    const lines = md.split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++) {
+      const ln = lines[i];
+      const h2 = ln.match(/^##\s+(.+?)$/);
+      if (h2) {
+        current = { title: h2[1].trim(), items: [] };
+        sections.push(current);
+        continue;
+      }
+      // Match table rows like: | [slug](slug.md) | Title | Role | Status |
+      const row = ln.match(/^\|\s*\[([a-z0-9-]+)\]\(([^)]+)\)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|/i);
+      if (row && current) {
+        let statusKind = 'planned';
+        const statusLabel = row[5].trim();
+        if (/verified/i.test(statusLabel)) statusKind = 'verified';
+        else if (/draft/i.test(statusLabel)) statusKind = 'draft';
+        current.items.push({
+          slug: row[1].trim(),
+          file: row[2].trim(),
+          title: row[3].trim(),
+          role: row[4].trim(),
+          statusKind: statusKind,
+          statusLabel: statusLabel
+        });
+      }
+      // Match planned entries that aren't linked yet: | slug-name | Title | Role | Status |
+      const plainRow = ln.match(/^\|\s*([a-z0-9-]+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|/i);
+      if (!row && plainRow && current && plainRow[1] !== 'Slug' && !/^-+$/.test(plainRow[1])) {
+        // Skip table-header-separator rows
+        current.items.push({
+          slug: plainRow[1].trim(),
+          file: null,
+          title: plainRow[2].trim(),
+          role: plainRow[3].trim(),
+          statusKind: 'planned',
+          statusLabel: plainRow[4].trim()
+        });
+      }
+    }
+    return sections;
+  }
+
+  function renderIndex(sections){
+    const el = document.getElementById('pbIndex');
+    let html = '';
+    sections.forEach(function(s){
+      if (!s.items.length) return;
+      html += '<h3>' + escapeHtml(s.title) + '</h3>';
+      html += '<ul>';
+      s.items.forEach(function(it){
+        if (!it.file) {
+          html += '<li><a class="pb-disabled" style="opacity:.5;cursor:default" title="Not written yet">'
+                + escapeHtml(it.title)
+                + '<span class="pb-status planned">Planned</span></a></li>';
+          return;
+        }
+        html += '<li><a data-slug="' + escapeAttr(it.slug) + '" data-file="' + escapeAttr(it.file) + '">'
+              + escapeHtml(it.title)
+              + '<span class="pb-status ' + it.statusKind + '">' + (it.statusKind === 'verified' ? '✓' : it.statusKind) + '</span>'
+              + '</a></li>';
+      });
+      html += '</ul>';
+    });
+    if (!html) html = '<h3>Empty</h3><div class="pb-empty">No playbooks indexed yet.</div>';
+    el.innerHTML = html;
+    Array.prototype.forEach.call(el.querySelectorAll('a[data-slug]'), function(a){
+      a.addEventListener('click', function(){
+        loadPlaybook(a.dataset.slug, a.dataset.file);
+      });
+    });
+  }
+
+  // -------------------- 2. Parse YAML frontmatter from a playbook .md --------------------
+
+  function parseFrontmatter(md){
+    const m = md.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
+    if (!m) return { meta: {}, body: md };
+    const meta = {};
+    m[1].split(/\r?\n/).forEach(function(ln){
+      const kv = ln.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*(.*)$/);
+      if (!kv) return;
+      const k = kv[1], v = kv[2].trim();
+      if (v) meta[k] = v;
+    });
+    return { meta: meta, body: m[2] };
+  }
+
+  function escapeHtml(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+    });
+  }
+  function escapeAttr(s){ return escapeHtml(s); }
+
+  function renderMeta(meta){
+    if (!meta || !Object.keys(meta).length) return '';
+    let out = '<div class="pb-meta">';
+    const chips = [];
+    if (meta.role)         chips.push('<span class="pb-meta-chip role">' + escapeHtml(meta.role) + '</span>');
+    if (meta.duration_min) chips.push('<span class="pb-meta-chip">⏱ ' + escapeHtml(meta.duration_min) + ' min</span>');
+    if (meta.difficulty)   chips.push('<span class="pb-meta-chip diff ' + escapeHtml(meta.difficulty) + '">' + escapeHtml(meta.difficulty) + '</span>');
+    if (meta.last_verified)chips.push('<span class="pb-meta-chip">✓ Verified ' + escapeHtml(meta.last_verified) + '</span>');
+    out += '<div>' + chips.join('') + '</div>';
+    if (meta.prereqs) {
+      out += '<div class="pb-meta-row"><span class="lbl">Prereqs</span>' + escapeHtml(meta.prereqs) + '</div>';
+    }
+    out += '</div>';
+    return out;
+  }
+
+  // -------------------- 3. Load + render a playbook --------------------
+
+  async function loadPlaybook(slug, file){
+    const view = document.getElementById('pbView');
+    view.innerHTML = '<div class="pb-empty">Loading playbook…</div>';
+
+    // Mark active in sidebar
+    Array.prototype.forEach.call(document.querySelectorAll('.pb-index a'), function(a){ a.classList.remove('active'); });
+    const activeLink = document.querySelector('.pb-index a[data-slug="' + slug + '"]');
+    if (activeLink) activeLink.classList.add('active');
+
+    // Push to URL so the page is bookmarkable / linkable from emails
+    try { history.replaceState(null, '', '?p=' + encodeURIComponent(slug)); } catch(e){}
+
+    try {
+      const url = 'playbooks/' + file + '?_t=' + Date.now();
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const md = await r.text();
+      const fm = parseFrontmatter(md);
+      const html = window.marked.parse(fm.body);
+      view.innerHTML = renderMeta(fm.meta) + html;
+      view.scrollTop = 0;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch(e){
+      view.innerHTML = '<div class="pb-empty">Couldn\'t load this playbook (' + escapeHtml(e.message || String(e)) + '). Try refreshing.</div>';
+      console.warn('[playbook load]', e);
+    }
+  }
+
+  // -------------------- 4. Wire up --------------------
+
+  // Set the admin avatar initial from the session (lymx-auth.js exposes window.LYMX)
+  try {
+    const user = window.LYMX && await window.LYMX.getUser();
+    document.getElementById('userInitial').textContent = ((user && user.email) || 'K')[0].toUpperCase();
+  } catch(e){ /* role-gate will redirect if not signed in */ }
+
+  document.getElementById('printBtn').addEventListener('click', function(){ window.print(); });
+
+  // Fetch the INDEX, render sidebar, auto-open ?p=<slug> if present
+  try {
+    const r = await fetch('playbooks/INDEX.md?_t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('INDEX.md HTTP ' + r.status);
+    const md = await r.text();
+    const sections = parseIndex(md);
+    renderIndex(sections);
+
+    const u = new URLSearchParams(location.search);
+    const slug = u.get('p');
+    if (slug) {
+      // Find the file matching the slug
+      let found = null;
+      sections.forEach(function(s){ s.items.forEach(function(it){ if (it.slug === slug && it.file) found = it; }); });
+      if (found) loadPlaybook(found.slug, found.file);
+    }
+  } catch(e){
+    setError('Could not load the playbook index. ' + (e.message || String(e)));
+    console.warn('[playbook index]', e);
+  }
+})();
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>
