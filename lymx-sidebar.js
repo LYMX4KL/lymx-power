@@ -282,12 +282,24 @@
       { href: 'admin-verifications.html', icon: '\u{1FAAA}', label: 'Verifications' },
       { href: 'admin-fraud-flags.html',  icon: '\u{1F6A8}', label: 'Fraud flags' },
       { section: 'Team' },
-      { href: 'staff-clock-in.html',     icon: '⏱',    label: 'Clock In' },
-      { href: 'admin-schedule.html',     icon: '\u{1F4C5}', label: 'Schedule Builder' },
-      { href: 'admin-team-roster.html',  icon: '\u{1F5C2}', label: 'Roster' },
-      { href: 'admin-timesheets.html',   icon: '⏱',    label: 'Timesheets' },
-      { href: 'admin-time-off.html',     icon: '\u{1F334}', label: 'Time-off' },
-      { href: 'admin-staff.html',        icon: '\u{1FAAA}', label: 'Staff Roles' },
+      { href: 'admin-staff.html',           icon: '\u{1FAAA}', label: 'Staff Roles' },
+      { href: 'admin-personnel-records.html', icon: '\u{1F4C7}', label: 'Personnel Records' },
+      { href: 'admin-schedule.html',        icon: '\u{1F4C5}', label: 'Schedule Builder' },
+      { href: 'admin-schedule-requests.html', icon: '\u{1F4DD}', label: 'Schedule Weeks' },
+      { href: 'admin-time-off.html',        icon: '\u{1F334}', label: 'Time-off' },
+      { href: 'admin-team-roster.html',     icon: '\u{1F5C2}', label: 'Roster' },
+      { section: 'HR & Payroll' },
+      { href: 'admin-staff-locations.html',     icon: '\u{1F4CD}', label: 'Clock-in Locations' },
+      { href: 'admin-clock-in-permissions.html', icon: '\u{1F510}', label: 'Clock-in Permissions' },
+      { href: 'admin-clock-in-requests.html',    icon: '\u{1F4E5}', label: 'Pending Requests' },
+      { href: 'admin-timesheets.html',           icon: '\u{23F1}',  label: 'Timesheets' },
+      { href: 'admin-payroll-reconciliation.html', icon: '\u{1F4B0}', label: 'Payroll Run' },
+      { href: 'admin-generate-offer.html',       icon: '\u{1F4E8}', label: 'Generate Offer' },
+      { href: 'admin-counter-offer-queue.html',  icon: '\u{1F501}', label: 'Counter Offers' },
+      { href: 'admin-bulk-policy-assign.html',   icon: '\u{1F4D1}', label: 'Bulk Policy Assign' },
+      { href: 'admin-inventory.html',            icon: '\u{1F4E6}', label: 'Inventory' },
+      { href: 'admin-outstanding-property.html', icon: '\u{1F6A9}', label: 'Outstanding Property' },
+      { href: 'admin-send-hr-launch.html',       icon: '\u{1F44B}', label: 'Send Welcome Email' },
       { section: 'Outreach' },
       { href: 'admin-invite-friends.html', icon: '\u{1F4E8}', label: 'Invite Friends' },
       { href: 'contacts.html',           icon: '\u{1F4C7}', label: 'Contacts' },
@@ -510,9 +522,13 @@
       }
       var insertHTML =
         '<h3>My Work</h3>' +
-        aHTML('staff-clock-in.html', '⏱', 'Clock In') +
+        aHTML('staff-clock-in.html', '\u{23F1}', 'Clock In') +
         aHTML('my-schedule.html', '\u{1F4C5}', 'My Schedule') +
-        aHTML('my-time-off.html', '\u{1F334}', 'My Time-off');
+        aHTML('my-time-off.html', '\u{1F334}', 'My Time-off') +
+        aHTML('my-personnel-file.html', '\u{1F4C7}', 'My File') +
+        aHTML('my-clock-in-anchor.html', '\u{1F4CD}', 'My Locations') +
+        aHTML('staff-clock-in-anchor.html', '\u{1F3E0}', 'Remote Address') +
+        aHTML('staff-clock-in-permission-request.html', '\u{1F4E5}', 'Single-day Exception');
       var signout = asideEl.querySelector('#lymx-sb-signout');
       if (signout) {
         var wrap = document.createElement('div');
