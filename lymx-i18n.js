@@ -192,12 +192,10 @@
     s.id = 'lymxLangChipStyles';
     s.textContent = ''
       /* 2026-05-20 #2b323e35 - right:120px overlapped Sign-out/My-account buttons on pages with full nav-cta (Help + Sign out + avatar). Bump to 220 so chip sits to the LEFT of the entire right-side cluster, not on top of it. Avatar dropdowns stay clear. */
-      // 2026-05-20 #0caea9ca - the floating chip overlapped nav-cta buttons (Help/Sign-out) at 880-1100px viewports. We now try to dock the chip INTO the page's .nav-cta or .nav-links so it flows with the header. If no nav exists, fall back to fixed top-right at top:62px (below typical header heights) instead of top:14px.
-      + '#lymxLangChip{position:fixed;top:62px;right:14px;z-index:99991;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}'
-      + '#lymxLangChip.docked{position:static;display:inline-flex;align-items:center;top:auto;right:auto;margin-left:8px}'
+      + '#lymxLangChip{position:fixed;top:14px;right:220px;z-index:99991;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}'
       + '#lymxLangChipBtn{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;background:rgba(255,255,255,.94);color:#0e1116;border:1px solid #e6e8ec;border-radius:999px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(14,17,22,.08);backdrop-filter:saturate(140%) blur(8px)}'
       + '#lymxLangChipBtn:hover{background:#fff;border-color:#cfd6e0}'
-      + '#lymxLangMenu{position:fixed;top:96px;right:14px;z-index:99992;background:#fff;border:1px solid #e6e8ec;border-radius:10px;box-shadow:0 8px 24px rgba(14,17,22,.14);min-width:170px;padding:6px;display:none}'
+      + '#lymxLangMenu{position:fixed;top:48px;right:220px;z-index:99992;background:#fff;border:1px solid #e6e8ec;border-radius:10px;box-shadow:0 8px 24px rgba(14,17,22,.14);min-width:170px;padding:6px;display:none}'
       + '#lymxLangMenu.open{display:block}'
       + '#lymxLangMenu button{display:flex;width:100%;align-items:center;gap:10px;padding:8px 11px;background:transparent;border:0;border-radius:7px;cursor:pointer;font:600 13.5px/1.2 inherit;color:#1a1f27;text-align:left}'
       + '#lymxLangMenu button:hover{background:#eef4ff}'
@@ -205,25 +203,29 @@
       + '#lymxLangMenu .flag{width:22px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;background:#f3f4f6;border-radius:4px;color:#374151}'
       + '#lymxLangMenu button.active .flag{background:rgba(255,255,255,.18);color:#fff}'
       /* On mobile the full nav-cta collapses to hamburger + avatar only, so 140px is enough to clear */
-      + '@media (max-width:880px){#lymxLangChip:not(.docked){right:12px;top:62px}#lymxLangMenu{right:12px}}';
+      + '@media (max-width:880px){#lymxLangChip{right:140px}#lymxLangMenu{right:140px}}'
+      // 2026-05-25 #012eed96 — docked variant: when the chip lives inside .nav-cta, drop the fixed positioning so it flows inline with sibling nav buttons. The menu still pops absolute-positioned relative to the chip's bounding rect via JS at click time (see openMenu).
+      + '#lymxLangChip.lymx-lang-chip-docked{position:static;margin-right:6px}'
+      + '#lymxLangChip.lymx-lang-chip-docked + #lymxLangMenu,#lymxLangChip.lymx-lang-chip-docked ~ #lymxLangMenu{top:60px}';
     document.head.appendChild(s);
   }
 
   function injectChip() {
     if (document.getElementById('lymxLangChip')) return;
-    // Skip on login / pre-auth flows where it might collide with hero content
-    // (still loads — just doesn't visually inject the chip there. Actually we DO want
-    // it on every page so users can switch BEFORE signing in. Keep it on.)
     injectChipStyles();
     var wrap = document.createElement('div');
     wrap.id = 'lymxLangChip';
     var current = resolveLocale();
     wrap.innerHTML = '<button id="lymxLangChipBtn" type="button" aria-label="Language">🌐 <span id="lymxLangChipLabel">' + (LABELS[current] || 'EN') + '</span> ▾</button>';
-    // 2026-05-20 #0caea9ca - try to dock the chip inside the page nav so it flows
-    // with the header buttons. Falls back to fixed top-right if no nav anchor exists.
-    var navCta = document.querySelector('.nav-cta');
+    // 2026-05-25 #012eed96 — root-cause for "language dropdown overlaps content on
+    // /my-conversations": the chip was position:fixed at right:220px viewport-coords,
+    // which on chat pages with a wide nav-cta cluster placed it directly over the
+    // thread header. Dock it INSIDE .nav-cta (header) when one exists so it lives
+    // inline with the other nav buttons and can never overlap content. Pages without
+    // a header (login, signup) fall back to the legacy fixed-positioned floater.
+    var navCta = document.querySelector('header .nav-cta, header[class*="nav"] .nav-cta');
     if (navCta) {
-      wrap.classList.add('docked');
+      wrap.classList.add('lymx-lang-chip-docked');
       navCta.insertBefore(wrap, navCta.firstChild);
     } else {
       document.body.appendChild(wrap);

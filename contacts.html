@@ -277,7 +277,8 @@
 
     <div class="actions">
       <button class="btn-secondary" id="importCancel" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid var(--line);cursor:pointer;background:#fff">Cancel</button>
-      <button class="btn-primary" id="importDo" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;background:var(--ink);color:#fff;display:none">Import</button>
+      <!-- 2026-05-25 #871cc7d4 — show the primary action button from the moment the modal opens. Starts as disabled "Continue" so users see what their next step is; switches to enabled "Import" once they pick a source. Previously it was display:none and only appeared after a card click, which made the modal feel like it had no forward affordance. -->
+      <button class="btn-primary" id="importDo" data-state="continue" style="padding:9px 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;background:var(--ink);color:#fff;opacity:.45;pointer-events:none" disabled>Continue</button>
     </div>
   </div>
 </div>
@@ -730,7 +731,14 @@ document.getElementById('importBtn').addEventListener('click', () => {
   document.getElementById('importBody').style.display = 'none';
   document.getElementById('uploadZone').style.display = 'none';
   document.getElementById('pasteWrap').style.display = 'none';
-  document.getElementById('importDo').style.display = 'none';
+  // 2026-05-25 #871cc7d4 — reset the primary action button to disabled "Continue" state
+  // so it's visible (signalling "this is your next step") but unclickable until a source is picked.
+  var importDo = document.getElementById('importDo');
+  importDo.textContent = 'Continue';
+  importDo.dataset.state = 'continue';
+  importDo.style.opacity = '.45';
+  importDo.style.pointerEvents = 'none';
+  importDo.disabled = true;
   setStatus('importStatus', null);
   importModal.classList.add('on');
 });
@@ -751,7 +759,14 @@ document.querySelectorAll('.src-card').forEach(card => {
     document.getElementById('importBody').style.display = 'block';
     document.getElementById('uploadZone').style.display = src === 'csv' ? 'block' : 'none';
     document.getElementById('pasteWrap').style.display  = src === 'paste' ? 'block' : 'none';
-    document.getElementById('importDo').style.display   = 'inline-block';
+    // 2026-05-25 #871cc7d4 — source picked, promote the disabled "Continue" pill to an enabled "Import" CTA.
+    var importDo = document.getElementById('importDo');
+    importDo.style.display = 'inline-block';
+    importDo.textContent = 'Import';
+    importDo.dataset.state = 'import';
+    importDo.style.opacity = '1';
+    importDo.style.pointerEvents = 'auto';
+    importDo.disabled = false;
     // 2026-05-24 T-6C342B — show "Download sample CSV" helper only with the CSV path
     const csvHelp = document.getElementById('csvHelper');
     if (csvHelp) csvHelp.style.display = src === 'csv' ? 'block' : 'none';

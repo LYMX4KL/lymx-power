@@ -576,7 +576,12 @@
         + '#lymxNavDrawer a{display:block;padding:13px 12px;color:#0e1116;text-decoration:none;font-weight:600;font-size:15.5px;border-radius:8px;margin-bottom:4px}'
         + '#lymxNavDrawer a:hover,#lymxNavDrawer a:focus{background:#f6f7f9}'
         + '#lymxNavDrawer .drawer-cta{flex:0 0 auto;margin-top:auto;padding-top:18px;border-top:1px solid #e6e8ec}'
-        + '#lymxNavDrawer .drawer-cta a{background:#0e1116;color:#fff;text-align:center;font-weight:700;margin-top:4px}';
+        + '#lymxNavDrawer .drawer-cta a{background:#0e1116;color:#fff;text-align:center;font-weight:700;margin-top:4px}'
+        // 2026-05-25 #15430537 — root-cause for header overlap: ~23 public pages each define their own .btn-biz with padding:7px 12px and font-size:13px, which makes For Business shorter than the My account .btn-primary next to it and feels squished against the search row underneath. Normalizing here injects on every page that loads lymx-nav.js so the fix doesn't have to be repeated in 23 files.
+        + 'header.nav .nav-cta .btn-biz,header[class*="nav"] .nav-cta .btn-biz{padding:8px 14px;font-size:13.5px;line-height:1.2;min-height:36px;display:inline-flex;align-items:center}'
+        + 'header.nav .nav-cta .btn,header[class*="nav"] .nav-cta .btn{min-height:36px}'
+        // 2026-05-25 #0fb8ab93 — dropdown overlay styling baseline: crisp white background, light line border, soft drop shadow. Page-level .nav-more-panel CSS still wins where defined; this is the fallback for pages that don't style their own.
+        + 'details.nav-more .nav-more-panel{background:#fff;border:1px solid #e6e8ec;box-shadow:0 10px 30px rgba(14,17,22,.08);border-radius:10px}';
       document.head.appendChild(s);
     }
     var btn = document.createElement('button');
