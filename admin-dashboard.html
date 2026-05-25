@@ -161,7 +161,7 @@
       <a href="admin-digest.html">Digest</a>
       <a href="admin-runbook.html">Runbook</a>
     </nav>
-    <div class="admin-avatar">KL</div>
+    <div class="admin-avatar" id="adminAvatarChip"></div>
   </div>
 </header>
 
@@ -169,7 +169,7 @@
   <div class="wrap">
     <div class="page-head">
       <div>
-        <h1>Good morning, Kenny</h1>
+        <h1 id="adminGreeting">Welcome</h1>
         <p>Here's what's on the LYMX network today.</p>
       </div>
       <div style="font-size:13px;color:var(--muted)" id="today-date"></div>
@@ -576,6 +576,92 @@
     card.style.display = 'block';
   } catch (e) {
     console.warn('[fraud-flags] load failed', e);
+  }
+})();
+</script>
+<script>
+// 2026-05-25 #389194a0 — H1 was hardcoded "Good morning, Kenny" so EVERY admin
+// (Helen, Rachel, anyone) saw Kenny's name. Wire it to the actual signed-in
+// admin via staff_profiles -> partners -> customers -> email-local-part. Also
+// seeds .admin-avatar with the right initials so the header doesn't render
+// blank before lymx-nav.js paints the photo on top.
+(async function wireAdminIdentity () {
+  function timeOfDayGreeting () {
+    var h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 18) return 'Good afternoon';
+    return 'Good evening';
+  }
+  function initialsFor (name, email) {
+    var src = (name || '').trim();
+    if (src) {
+      var p = src.split(/[\s.]+/).filter(Boolean);
+      if (p.length >= 2) return (p[0][0] + p[1][0]).toUpperCase();
+      if (p.length === 1 && p[0].length >= 2) return p[0].slice(0, 2).toUpperCase();
+      if (p.length === 1) return p[0][0].toUpperCase();
+    }
+    var e = (email || '').trim();
+    if (e) {
+      var local = e.split('@')[0];
+      var lp = local.split(/[._-]+/).filter(Boolean);
+      if (lp.length >= 2) return (lp[0][0] + lp[1][0]).toUpperCase();
+      if (local.length >= 2) return local.slice(0, 2).toUpperCase();
+      return local[0].toUpperCase();
+    }
+    return 'L';
+  }
+  var cfg = window.LYMX_CONFIG;
+  if (!cfg) return;
+  var m = cfg.SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/i);
+  var ref = m ? m[1] : null;
+  var raw = ref ? localStorage.getItem('sb-' + ref + '-auth-token') : null;
+  if (!raw) {
+    var avEl0 = document.getElementById('adminAvatarChip');
+    if (avEl0 && !avEl0.textContent) avEl0.textContent = 'L';
+    return;
+  }
+  var tok, uid = null, email = '';
+  try {
+    var obj = JSON.parse(raw);
+    tok = (obj && obj.access_token) || (obj && obj.currentSession && obj.currentSession.access_token);
+    var jwtBody = tok ? JSON.parse(atob(tok.split('.')[1])) : null;
+    uid = jwtBody && jwtBody.sub;
+    email = (jwtBody && jwtBody.email) || '';
+  } catch (e) { console.warn('[admin-dashboard] token decode', e); }
+  async function lookup (tbl, idCol, sel) {
+    try {
+      var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/' + tbl + '?' + idCol + '=eq.' + uid + '&select=' + sel + '&limit=1',
+        { headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + tok } });
+      if (!r.ok) return null;
+      var rows = await r.json();
+      return (rows && rows[0]) || null;
+    } catch (e) { console.warn('[admin-dashboard] lookup ' + tbl, e); return null; }
+  }
+  var displayName = '';
+  if (uid) {
+    // 2026-05-25 schema-check confirmed: staff_profiles.title stores the
+    // person's name; customers only has display_name; partners has both
+    // display_name and legal_name. Don't select columns that don't exist
+    // (the whole REST call 400s and falls through silently).
+    var pr = await lookup('partners', 'user_id', 'display_name,legal_name');
+    if (pr) displayName = pr.display_name || pr.legal_name || '';
+    if (!displayName) {
+      var cu = await lookup('customers', 'user_id', 'display_name');
+      if (cu) displayName = cu.display_name || '';
+    }
+    if (!displayName) {
+      var sp = await lookup('staff_profiles', 'user_id', 'title');
+      if (sp) displayName = sp.title || '';
+    }
+  }
+  var firstName = displayName ? displayName.split(/[\s.]+/).filter(Boolean)[0] : '';
+  var h1 = document.getElementById('adminGreeting');
+  if (h1) {
+    h1.textContent = firstName ? (timeOfDayGreeting() + ', ' + firstName) : timeOfDayGreeting();
+  }
+  var avEl = document.getElementById('adminAvatarChip');
+  if (avEl && !avEl.querySelector('img')) {
+    avEl.textContent = initialsFor(displayName, email);
   }
 })();
 </script>

@@ -762,7 +762,7 @@
         + '#lymxBackChip:hover{background:#f6f7f9;border-color:#d1d5db}'
         + '#lymxBackChip .arr{font-size:15px;line-height:1;margin-top:-1px}'
         + '@media (max-width:880px){#lymxBackChip{left:14px;top:60px}}'
-        + 'body:not([data-role-required]):not([data-lymx-sidebar="force"]) #lymxBackChip{left:14px}'
+        + 'body:not([data-role-required]):not([data-lymx-sidebar="force"]) #lymxBackChip{left:14px;top:84px}'
         + '@media print{#lymxBackChip{display:none}}';
       document.head.appendChild(s);
     }

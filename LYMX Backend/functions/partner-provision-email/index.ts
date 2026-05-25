@@ -445,6 +445,14 @@ serve(async (req) => {
     }
     if (existing && existing.status === "active") {
         if (body.force_welcome) {
+            // 2026-05-24 (final) — inbound routing now handled by the
+            // `lymx-inbound-forwarder` Cloudflare Email Worker (deployed in
+            // CF dashboard, wired to the getlymx.com catch-all). The Worker
+            // looks up partner_emails by full_email and forwards via Resend
+            // to partner.contact_email — no CF destination verification, no
+            // per-partner CF routing rule needed. So this force_welcome path
+            // no longer needs to touch Cloudflare. We just re-send the
+            // welcome email below.
             const referralCode = (partner.display_name ?? partner.legal_name)
                 .replace(/[^a-zA-Z]/g, "")
                 .toUpperCase()
@@ -593,81 +601,29 @@ serve(async (req) => {
         .eq("id", row.id);
 
     // =========================================================================
-    // STEP 4a: Cloudflare — ensure the destination address (partner's real
-    // email) is registered AND verified. If not, Cloudflare sends a
-    // verification email; we surface that state to the caller so the dashboard
-    // can show "check inbox to complete setup". The forwarding rule can't be
-    // created until the destination is verified, so we return early.
+    // STEP 4: Cloudflare inbound routing (handled by external Worker)
     //
-    // The "Resend welcome" admin button + the partner's own dashboard retry
-    // both call this EF again — when the partner has verified their email,
-    // the next call will pass this check and proceed to STEP 4b.
+    // 2026-05-24 (final) — Inbound mail to *@getlymx.com is now handled by
+    // the `lymx-inbound-forwarder` Cloudflare Email Worker (deployed in CF
+    // dashboard, wired to the getlymx.com catch-all routing rule).
+    //
+    // Architecture: mail to <local>@getlymx.com → CF catch-all → Worker
+    // → Supabase REST lookup on partner_emails.full_email → Resend
+    // forwards the message to partner.contact_email.
+    //
+    // The Worker requires NO CF destination verification. The previous
+    // architecture's gatekeeper (CF refuses to create a route to an
+    // unverified destination, which orphaned 6 of 7 partners including
+    // Helen) is fully bypassed. partner_emails.cloudflare_route_id is now
+    // unused and stays NULL going forward — kept as a column for
+    // historical/backward-compat reasons.
+    //
+    // Nothing to do here at provisioning time. The Worker auto-discovers
+    // the new partner_emails row the next time mail arrives for that
+    // address. We jump straight to STEP 5 (mark active + send welcome).
     // =========================================================================
-    // 2026-05-23 v2 — Cloudflare API call itself is now also non-blocking.
-    // If CF_API_TOKEN_LYMX is invalid/expired (returns 400 Authentication
-    // failed), or the network call throws, we log, set destStatus.verified
-    // to false, and let the rest of the flow continue — the welcome email
-    // still sends to the partner's personal inbox via Resend. The partner's
-    // @getlymx.com forwarding will be set up later when a fresh token is
-    // available; admin can re-run partner-provision-email at that point.
-    let destStatus: { verified: boolean; pending: boolean; sent: boolean; message: string };
-    try {
-        destStatus = await ensureCloudflareDestination({
-            accountId: env("CF_ACCOUNT_ID_LYMX")!,
-            apiToken: env("CF_API_TOKEN_LYMX")!,
-            email: partner.contact_email,
-        });
-    } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        console.warn(`[partner-provision-email] Cloudflare API call failed (continuing — welcome will still send): ${msg}`);
-        destStatus = { verified: false, pending: true, sent: false, message: `Cloudflare API error: ${msg}` };
-        await supabase
-            .from("partner_emails")
-            .update({ last_error: destStatus.message })
-            .eq("id", row.id);
-    }
-
-    // 2026-05-23 — root-cause fix for Helen-style stuck-pending bug.
-    // OLD behavior: if Cloudflare destination is unverified, return 202 and
-    // NEVER send the welcome email. Result: 6 of 7 partners (Helen included)
-    // never received any onboarding info because they didn't click the
-    // Cloudflare verification link from a sender they didn't recognize.
-    // NEW behavior: Cloudflare verification is best-effort. Welcome email
-    // is sent unconditionally (Resend → partner.contact_email, which is
-    // their personal inbox and always works). The welcome explains that
-    // a separate Cloudflare verification email is coming for the @getlymx.com
-    // address. Forwarding gets set up later once they click it.
-    const cloudflarePending = !destStatus.verified;
-
-    // =========================================================================
-    // STEP 4b: Cloudflare — create the forwarding route (only if dest verified)
-    // =========================================================================
-    let cloudflareRouteId: string | null = null;
-    if (!cloudflarePending) {
-        try {
-            cloudflareRouteId = await createCloudflareRoute({
-                zoneId: env("CF_ZONE_ID_LYMX")!,
-                apiToken: env("CF_API_TOKEN_LYMX")!,
-                fullEmail: row.full_email,
-                forwardTo: partner.contact_email,
-                name: `Forward ${row.local_part} (partner ${partner.id.slice(0, 8)})`,
-            });
-        } catch (e) {
-            // Don't block welcome on route create failure — log and continue.
-            const msg = e instanceof Error ? e.message : String(e);
-            console.warn(`[partner-provision-email] Cloudflare route create failed (continuing): ${msg}`);
-            await supabase
-                .from("partner_emails")
-                .update({ last_error: `Cloudflare route create failed: ${msg}` })
-                .eq("id", row.id);
-        }
-    } else {
-        console.log(`[partner-provision-email] Cloudflare destination ${partner.contact_email} not yet verified — welcome will explain verification step`);
-        await supabase
-            .from("partner_emails")
-            .update({ last_error: destStatus.message })
-            .eq("id", row.id);
-    }
+    const cloudflareRouteId: string | null = null;
+    const cloudflarePending = false; // legacy field, kept for response-shape stability
 
     // =========================================================================
     // STEP 5: Mark active + copy in SMTP creds
