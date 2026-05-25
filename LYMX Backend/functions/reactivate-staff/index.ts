@@ -90,15 +90,19 @@ serve(async (req: Request) => {
 
     // 3. Log a marker write-up (visibility for audit)
     try {
+        // 2026-05-25 audit finding (#c57365a5) — personnel_write_ups columns
+        // are `issued_by_id` and `closed_by_id` (migration 058), not
+        // `issued_by` / `closed_by`. The earlier names caused the insert to
+        // silently fail (column-does-not-exist swallowed by the catch block).
         await supa.from("personnel_write_ups").insert({
             profile_id: profileId,
-            issued_by: callerId,
+            issued_by_id: callerId,
             severity: "info",
             category: "admin_action",
             description: (isRehire ? "REHIRE" : "REACTIVATION") + " — " + reason,
             status: "closed",
             closed_at: new Date().toISOString(),
-            closed_by: callerId,
+            closed_by_id: callerId,
         });
     } catch (e) {
         // non-fatal — write_up insert may fail if severity='info' isn't in the enum yet

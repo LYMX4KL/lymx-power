@@ -56,15 +56,15 @@
 <body data-role-required="admin">
 <header class="nav">
   <div class="wrap nav-inner">
-    <a href="admin-dashboard.html" class="brand">LYMX <span class="role-tag">Team</span></a>
+    <a class='brand' href='/admin-dashboard'>LYMX <span class="role-tag">Team</span></a>
     <nav class="nav-links">
-      <a href="admin-dashboard.html">Home</a>
-      <a href="admin-team-roster.html">Roster</a>
-      <a href="admin-timesheets.html" class="on">Timesheets</a>
-      <a href="admin-time-off.html">Time-off</a>
-      <a href="admin-verifications.html">Verifications</a>
-      <a href="admin-tech-support.html">Tech</a>
-      <a href="admin-chat.html">Chat</a>
+      <a href='/admin-dashboard'>Home</a>
+      <a href='/admin-team-roster'>Roster</a>
+      <a class='on' href='/admin-timesheets'>Timesheets</a>
+      <a href='/admin-time-off'>Time-off</a>
+      <a href='/admin-verifications'>Verifications</a>
+      <a href='/admin-tech-support'>Tech</a>
+      <a href='/admin-chat'>Chat</a>
     </nav>
     <div class="admin-avatar" id="userInitial">·</div>
   </div>
@@ -81,7 +81,7 @@
       <option value="14">Last 14 days</option>
       <option value="30">Last 30 days</option>
     </select>
-    <input id="fSearch" type="search" placeholder="Filter by email or note…" style="min-width:240px" />
+    <input id="fSearch" type="search" placeholder="Filter by name, email, or note…" style="min-width:240px" />
     <div class="right">
       <button class="reload" id="reloadBtn">↻ Reload</button>
     </div>
@@ -119,11 +119,15 @@ function fmtTime(iso) { if (!iso) return '—'; const d = new Date(iso); return 
 
 let users = {};
 
+// 2026-05-25 #cc6b5fb8 — also pull display_name (migration 087 added it to
+// v_team_roster and dropped security_invoker so admins actually get rows
+// back). Pre-fix the page rendered an 8-char UUID slice for every row
+// because the view returned empty under invoker semantics.
 async function loadUsers() {
-  const r = await authedFetch('/rest/v1/v_team_roster?select=user_id,email');
+  const r = await authedFetch('/rest/v1/v_team_roster?select=user_id,email,display_name');
   if (r.ok) {
     const arr = await r.json();
-    arr.forEach(u => { users[u.user_id] = u.email; });
+    arr.forEach(u => { users[u.user_id] = { name: u.display_name || '', email: u.email || '' }; });
   }
 }
 
@@ -139,8 +143,10 @@ async function loadRows() {
   let rows = await r.json();
   if (search) {
     rows = rows.filter(x => {
-      const em = (users[x.user_id] || '').toLowerCase();
-      return em.includes(search) || (x.notes || '').toLowerCase().includes(search);
+      const u = users[x.user_id] || {};
+      const em = (u.email || '').toLowerCase();
+      const nm = (u.name  || '').toLowerCase();
+      return em.includes(search) || nm.includes(search) || (x.notes || '').toLowerCase().includes(search);
     });
   }
   if (!rows.length) {
@@ -148,7 +154,12 @@ async function loadRows() {
     return;
   }
   document.getElementById('rows').innerHTML = rows.map(x => {
-    const email = users[x.user_id] || x.user_id?.slice(0, 8) || '—';
+    // 2026-05-25 #cc6b5fb8 — show the employee's name when we have it;
+    // fall back to email, then to the 8-char UUID slice as last resort.
+    const u = users[x.user_id] || {};
+    const label = u.name || u.email || (x.user_id ? x.user_id.slice(0, 8) : '') || '—';
+    const sub   = u.name && u.email && u.name !== u.email ? u.email : '';
+    const personCell = esc(label) + (sub ? '<br><span style="font-size:11.5px;color:#5b6472">' + esc(sub) + '</span>' : '');
     let geofencePill = '<span class="pill remote">no GPS</span>';
     if (x.gps_lat != null) {
       if (x.geofence_pass) geofencePill = '<span class="pill geofence-pass">✓ @ office</span>';
@@ -158,7 +169,7 @@ async function loadRows() {
     const dist = x.distance_from_anchor_m != null ? Math.round(Number(x.distance_from_anchor_m)) + 'm from anchor' : '';
     return `<tr>
       <td>${fmtTime(x.event_at)}</td>
-      <td>${esc(email)}</td>
+      <td>${personCell}</td>
       <td><span class="pill ${esc(x.event_type)}">${esc(x.event_type.replace('_', ' '))}</span></td>
       <td>${geofencePill}</td>
       <td><span class="mono">${esc(dist)}</span>${x.notes ? '<br>' + esc(x.notes) : ''}</td>

@@ -84,9 +84,13 @@ serve(async (req: Request) => {
 
     // 3. Log on termination_records
     if (terminationRecordId) {
+        // 2026-05-25 audit finding (#c57365a5) — termination_records has no
+        // access_revoked_by column (only access_revoked_at, migration 059).
+        // Writing it caused a column-does-not-exist error and rolled the
+        // whole revoke-access step back. Caller is already in revoked_by in
+        // the response JSON; keep the record write to the columns that exist.
         const { error: trErr } = await supa.from("termination_records").update({
             access_revoked_at: new Date().toISOString(),
-            access_revoked_by: callerId,
         }).eq("id", terminationRecordId);
         if (trErr) console.warn("termination_records update failed:", trErr.message);
     }

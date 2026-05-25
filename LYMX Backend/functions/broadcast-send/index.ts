@@ -139,8 +139,12 @@ serve(async (req) => {
     if (req.method !== "POST") return errorResponse("Method not allowed", 405);
 
     // ---- Admin auth ---------------------------------------------------------
+    // 2026-05-25 #d785fe0e — was a hard-equality check against Kenny's UUID,
+    // so every other admin (Helen, future admins) got 403 even though they
+    // hold an 'admin' role in staff_roles. Mirrors the pattern used by
+    // partner-settlement-run and sms-send.
     const userId = userFromJwt(req.headers.get("Authorization"));
-    if (userId !== ADMIN_UUID) return errorResponse("Admin only.", 403);
+    if (!userId) return errorResponse("Sign in required.", 401);
 
     // ---- Parse body ---------------------------------------------------------
     let body: any;
@@ -152,6 +156,14 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SVC_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SVC_KEY);
+
+    if (userId !== ADMIN_UUID) {
+        const { data: staff } = await supabase.from("staff_roles")
+            .select("role").eq("user_id", userId).maybeSingle();
+        if (!staff || staff.role !== "admin") {
+            return errorResponse("Admin only.", 403);
+        }
+    }
 
     // ---- Load the broadcast -------------------------------------------------
     const { data: bc, error: loadErr } = await supabase
