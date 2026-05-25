@@ -235,9 +235,52 @@
     </div>
     <div class="biz-list" id="bizList">
 
+      <!-- 2026-05-25 #bb4ec6ce — surface the two demo biz pages so Browse search returns them.
+           These are static demo storefronts (biz-brew-and-bean.html, biz-oakline-kitchen.html)
+           already in the repo. When the businesses table goes DB-driven these get re-rendered
+           from a JS loader and the hardcoded markup below is removed. -->
+      <a class="biz-card" href="biz-brew-and-bean.html"
+         data-category="Food &amp; Drink" data-price="$$" data-rating="4.7" data-lymx="5"
+         data-lat="36.1716" data-lng="-115.1391" data-pin="1" data-distance="0.6">
+        <div class="ph">
+          <span class="tag">Founding</span>
+          <span class="pin-num">1</span>
+          ☕
+        </div>
+        <div class="body">
+          <h3>Brew &amp; Bean Café</h3>
+          <div class="meta">Downtown Las Vegas · Café &amp; coffee bar</div>
+          <p class="desc">Locally roasted espresso, pour-overs, breakfast bites. Earn 5 LYMX per $1 — redeemable on any future visit.</p>
+          <div class="foot">
+            <span class="stars">★ 4.7 <span style="color:var(--muted);font-weight:600">· 142 reviews</span></span>
+            <span class="lymx-rate">5× LYMX</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="biz-card" href="biz-oakline-kitchen.html"
+         data-category="Food &amp; Drink" data-price="$$" data-rating="4.8" data-lymx="5"
+         data-lat="36.1684" data-lng="-115.1419" data-pin="2" data-distance="0.9">
+        <div class="ph" style="background:linear-gradient(135deg,#f0e5d2,#d6b67a)">
+          <span class="tag">Founding</span>
+          <span class="pin-num">2</span>
+          🍜
+        </div>
+        <div class="body">
+          <h3>Oakline Kitchen</h3>
+          <div class="meta">Downtown Las Vegas · Asian fusion restaurant</div>
+          <p class="desc">Hand-pulled noodles, dim sum, seasonal small plates. Reservations open — earn 5 LYMX per $1 on every check.</p>
+          <div class="foot">
+            <span class="stars">★ 4.8 <span style="color:var(--muted);font-weight:600">· 96 reviews</span></span>
+            <span class="lymx-rate">5× LYMX</span>
+          </div>
+        </div>
+      </a>
+
       <!-- Founding launch — be the first Business -->
       <!-- 2026-05-21 #581061d3 fix: previously had a nested <a href="login.html"> INSIDE this outer <a class="biz-card">. HTML5 parser doesn't allow nested anchors and auto-closes the outer one, producing an empty dashed-blue ghost anchor that Rae rightly flagged as unlabeled. Moved the "Already a Founding 25 candidate?" line OUTSIDE the biz-card as a sibling, so the founding CTA renders as one clean clickable card. -->
-      <a class="biz-card" href="business.html" style="grid-template-columns:1fr;background:linear-gradient(135deg,#fff,#f6f7f9);border:2px dashed var(--accent);padding:28px;text-align:center">
+      <!-- 2026-05-25 #8bc9d91a — every CTA card (founding-25 invite, signup invites, upsell) gets data-cta="1". applyFilters skips data-cta cards from match/count logic so a user typing "biz" no longer surfaces the CTAs as fake results. -->
+      <a class="biz-card" data-cta="1" href="business.html" style="grid-template-columns:1fr;background:linear-gradient(135deg,#fff,#f6f7f9);border:2px dashed var(--accent);padding:28px;text-align:center">
         <div class="body" style="align-items:center;text-align:center">
           <div style="font-size:48px;margin-bottom:8px">🏪</div>
           <h3 style="font-size:20px;color:var(--accent-2)">Be a Founding LYMX Business</h3>
@@ -248,7 +291,7 @@
       <div style="margin-top:-2px;margin-bottom:14px;text-align:center;font-size:12.5px;color:var(--muted)">Already a Founding 25 candidate? <a href="login.html" style="color:var(--accent-2);font-weight:700">Sign in</a></div>
 
       <!-- Customer signup invite -->
-      <a class="biz-card guest-only" id="guestCustomerInvite" href="customer-signup.html" style="grid-template-columns:1fr;background:#fff;border:1px solid var(--line);padding:24px;text-align:center;margin-top:8px">
+      <a class="biz-card guest-only" data-cta="1" id="guestCustomerInvite" href="customer-signup.html" style="grid-template-columns:1fr;background:#fff;border:1px solid var(--line);padding:24px;text-align:center;margin-top:8px">
         <div class="body" style="align-items:center;text-align:center">
           <div style="font-size:36px;margin-bottom:6px">👋</div>
           <h3 style="font-size:17px">Want to know when Businesses go live near you?</h3>
@@ -258,7 +301,7 @@
       </a>
 
       <!-- Partner invite -->
-      <a class="biz-card guest-only" id="guestPartnerInvite" href="partner-signup.html" style="grid-template-columns:1fr;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;padding:24px;text-align:center;margin-top:8px">
+      <a class="biz-card guest-only" data-cta="1" id="guestPartnerInvite" href="partner-signup.html" style="grid-template-columns:1fr;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;padding:24px;text-align:center;margin-top:8px">
         <div class="body" style="align-items:center;text-align:center;color:#fff">
           <div style="font-size:36px;margin-bottom:6px">🤝</div>
           <h3 style="font-size:17px;color:#fff">Or help us bring Businesses on — earn $750 per activation</h3>
@@ -270,7 +313,7 @@
       <!-- 2026-05-20 #8ae35834 — Customer-visible upgrade upsell.
            Hidden by default; lymx-customer-upsell.js (loaded below) reveals
            it when the visitor is a signed-in customer without a partners row. -->
-      <a class="biz-card" id="customerPartnerUpsell" href="partner-upgrade.html" style="display:none;grid-template-columns:1fr;background:linear-gradient(135deg,#fff8e1,#ffeec4);border:1px solid #f5d172;padding:24px;text-align:center;margin-top:8px;color:#1a1f27">
+      <a class="biz-card" data-cta="1" id="customerPartnerUpsell" href="partner-upgrade.html" style="display:none;grid-template-columns:1fr;background:linear-gradient(135deg,#fff8e1,#ffeec4);border:1px solid #f5d172;padding:24px;text-align:center;margin-top:8px;color:#1a1f27">
         <div class="body" style="align-items:center;text-align:center">
           <div style="font-size:36px;margin-bottom:6px">🚀</div>
           <h3 style="font-size:17px;color:#78350f">You're already on LYMX — want to become a Partner too?</h3>
@@ -370,18 +413,32 @@
   }
 
   // ---------- 2. Map setup ----------
-  var map = L.map('map').setView([38.5816, -121.4944], 12);
+  // 2026-05-25 #bb4ec6ce — start centered on the US west coast; after markers
+  // are built we fitBounds() to whatever real biz cards exist so the demo
+  // pins in LV show up first time. If there are zero real bizes we keep the
+  // default view (continental US) rather than zooming to nothing.
+  var map = L.map('map').setView([36.1716, -115.1391], 11);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap',
     maxZoom: 19
   }).addTo(map);
 
+  // 2026-05-25 #8bc9d91a — single source of truth for "is this card a real business?"
+  // CTA cards (founding-25 invite, signup invites, partner upsell) are marked data-cta="1"
+  // and excluded from filtering, counting, and map markers. They remain always visible
+  // because they're empty-state guidance, not search results.
+  function isCta(card){ return card && card.dataset && card.dataset.cta === '1'; }
+  function realBizCards(){
+    return Array.prototype.filter.call(document.querySelectorAll('.biz-card'), function(c){ return !isCta(c); });
+  }
+
   // ---------- 3. Build markers from list ----------
   var markers = {};
-  document.querySelectorAll('.biz-card').forEach(function(card){
+  realBizCards().forEach(function(card){
     var lat = parseFloat(card.dataset.lat);
     var lng = parseFloat(card.dataset.lng);
     var num = card.dataset.pin;
+    if (!isFinite(lat) || !isFinite(lng) || !num) return; // skip cards without geo
     var name = card.querySelector('h3').textContent;
     var meta = card.querySelector('.meta').textContent;
     var rate = card.querySelector('.lymx-rate').textContent;
@@ -405,6 +462,15 @@
       }
     });
   });
+
+  // 2026-05-25 #bb4ec6ce — fit map bounds to whatever real-biz markers exist so the
+  // initial view always frames the live cohort instead of an arbitrary city.
+  (function fitToMarkers(){
+    var pts = Object.values(markers).map(function(m){ return m.getLatLng(); });
+    if (pts.length === 0) return;
+    if (pts.length === 1) { map.setView(pts[0], 13); return; }
+    map.fitBounds(L.latLngBounds(pts).pad(0.4));
+  })();
 
   // ---------- 4. Filtering ----------
   function getActiveCategory(){
@@ -434,7 +500,8 @@
     var near = (nearInput && nearInput.value || '').trim().toLowerCase();
 
     var visible = 0;
-    document.querySelectorAll('.biz-card').forEach(function(card){
+    var realCards = realBizCards();
+    realCards.forEach(function(card){
       var cardCat = decodeHTML(card.dataset.category || '');
       var cardPrice = card.dataset.price || '';
       var cardRating = parseFloat(card.dataset.rating || '0');
@@ -465,12 +532,24 @@
       if (show) visible++;
     });
 
+    // 2026-05-25 #8bc9d91a — CTA cards (data-cta="1") are NOT touched by filtering.
+    // They remain always-visible empty-state guidance and are never counted as results.
+    // Previously they were filtered like biz cards, which caused "search biz → fake hits".
+
     var rc = document.getElementById('resultCount');
     var fc = document.getElementById('footerCount');
     var ll = document.getElementById('locLabel');
+    var totalReal = realCards.length;
     var label = (cat && cat !== 'All' ? cat + ' Businesses' : (visible === 1 ? 'Business' : 'Businesses'));
     if (rc) rc.textContent = visible + ' ' + label;
-    if (fc) fc.textContent = 'Showing ' + visible + ' of 11 Businesses · zoom out for more';
+    if (fc) {
+      // 2026-05-25 #8bc9d91a — count comes from realBizCards() not a hardcoded "of 11"
+      if (totalReal === 0) {
+        fc.textContent = 'The map fills up as Founding Businesses come online · check back soon';
+      } else {
+        fc.textContent = 'Showing ' + visible + ' of ' + totalReal + ' ' + (totalReal === 1 ? 'Business' : 'Businesses');
+      }
+    }
     if (ll && near) ll.textContent = (nearInput.value || 'Las Vegas, NV');
   }
 
@@ -595,7 +674,7 @@ window.addEventListener('DOMContentLoaded', function () {
       var collapsed = filters.classList.toggle('collapsed') === false ? false : filters.classList.contains('collapsed');
       // After toggle, state is: collapsed CLASS may have been added back. Read fresh:
       var nowCollapsed = filters.classList.contains('collapsed');
-      mfBtn.textContent = nowCollapsed ? '+ More filters' : '− Fewer filters';
+      mfBtn.textContent = nowCollapsed ? '+ More filters' : '" Fewer filters';
       mfBtn.setAttribute('aria-expanded', String(!nowCollapsed));
     });
   }
@@ -622,7 +701,7 @@ window.handleSearchSubmit = function() {
 
   if (!find) {
     status.style.display = 'block';
-    status.innerHTML = 'Type what you\'re looking for in the <strong>Find</strong> box — coffee, salons, EV chargers — then tap Search.';
+    status.innerHTML = 'Type what you\'re looking for in the <strong>Find</strong> box   coffee, salons, EV chargers   then tap Search.';
     return false;
   }
 
@@ -642,7 +721,7 @@ window.handleSearchSubmit = function() {
   status.style.display = 'block';
   if (visible === 0) {
     status.innerHTML =
-      'No live <strong>' + find.replace(/[<>]/g,'') + '</strong> in <strong>' + near.replace(/[<>]/g,'') + '</strong> yet — we\'re still onboarding the first 25 Founding Businesses. '
+      'No live <strong>' + find.replace(/[<>]/g,'') + '</strong> in <strong>' + near.replace(/[<>]/g,'') + '</strong> yet   we\'re still onboarding the first 25 Founding Businesses. '
       + '<a href="customer-signup.html" style="color:var(--accent-2);font-weight:700;text-decoration:underline">Create a free wallet</a> and we\'ll email you the moment one opens here.';
   } else {
     status.innerHTML = 'Showing <strong>' + visible + '</strong> result' + (visible === 1 ? '' : 's') + ' for <strong>' + find.replace(/[<>]/g,'') + '</strong> in ' + near.replace(/[<>]/g,'') + '. <a href="#" id="searchClear" style="color:var(--accent-2);font-weight:700">Clear</a>';
