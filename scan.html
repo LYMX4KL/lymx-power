@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Scan · LYMX</title>
+<meta name="description" content="LYMX QR scan landing — resolves a scanned biz or customer code and routes you to the right next step." />
+<meta name="robots" content="noindex" />
+<link rel="canonical" href="https://getlymx.com/scan" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#fafbfc;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;color:var(--ink);background:var(--bg);min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:18px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:26px 22px;max-width:440px;width:100%;text-align:center;box-shadow:0 12px 32px rgba(14,17,22,.06)}
+  h1{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  p{margin:0 0 14px;color:var(--muted);font-size:14px;line-height:1.55}
+  .target{background:var(--bg);border:1px dashed var(--line);border-radius:10px;padding:14px 16px;margin:14px 0}
+  .target .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+  .target .name{font-size:18px;font-weight:800;margin-top:3px}
+  .target .meta{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .amount{display:flex;align-items:center;gap:8px;margin:16px 0}
+  .amount .dollar{font-size:28px;font-weight:800;color:var(--ink)}
+  .amount input{flex:1;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:20px;font-weight:700;text-align:right;font-family:inherit}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:10px;font-weight:700;font-size:14.5px;border:0;cursor:pointer;font-family:inherit;width:100%;margin-top:8px}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-primary:disabled{background:#9ca0a8;cursor:not-allowed}
+  .btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .err{background:#fef2f2;color:#991b1b;border-radius:8px;padding:10px 12px;font-size:13px;margin-top:12px;text-align:left}
+  .ok{background:#ecfdf5;color:#065f46;border-radius:8px;padding:10px 12px;font-size:13px;margin-top:12px;text-align:left}
+  .loader{display:inline-block;width:36px;height:36px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="card" id="root">
+  <div class="loader" id="loader"></div>
+  <h1 id="title" style="margin-top:14px">Looking up that code…</h1>
+  <p id="sub">One second — resolving who this belongs to.</p>
+  <div id="content"></div>
+</div>
+
+<script src="lymx-config.js"></script>
+<script src="lymx-qr.js" defer></script>
+<script>
+(async function () {
+  function $(id) { return document.getElementById(id); }
+  function hideLoader() { $('loader').style.display = 'none'; }
+  function setErr(msg) {
+    hideLoader();
+    $('title').textContent = 'We couldn’t use that code';
+    $('sub').textContent = '';
+    $('content').innerHTML = '<div class="err">' + msg + '</div>'
+      + '<button class="btn btn-ghost" onclick="location.href=\'/\'" style="margin-top:14px">Go home</button>';
+  }
+
+  // 1) Read params
+  var params = new URLSearchParams(location.search);
+  var k = (params.get('k') || '').toLowerCase();
+  var t = (params.get('t') || '').toLowerCase();
+  if (!t || (k !== 'b' && k !== 'c')) {
+    setErr('Missing or invalid scan parameters. Re-scan the QR code or paste a fresh LYMX scan link.');
+    return;
+  }
+  var kind = k === 'b' ? 'business' : 'customer';
+
+  // 2) Wait for the qr module
+  for (var i = 0; i < 30 && !window.LymxQr; i++) await new Promise(function (r) { setTimeout(r, 100); });
+  if (!window.LymxQr) { setErr('Helper failed to load. Refresh and try again.'); return; }
+
+  // 3) Resolve
+  var info;
+  try { info = await window.LymxQr.resolveToken(t, kind); }
+  catch (e) { setErr('Network error. Check your connection and try again.'); return; }
+  if (!info || !info.ok) {
+    setErr(
+      info && info.error === 'token_not_found'
+        ? 'This QR code is no longer active. The owner may have rotated it. Ask them for a fresh one.'
+        : 'Could not look up that code: ' + (info && info.error || 'unknown error')
+    );
+    return;
+  }
+
+  hideLoader();
+  // 4) Route by kind
+  if (kind === 'business') {
+    // Customer flow: show biz info + amount input + Submit claim
+    $('title').textContent = 'Earning LYMX at:';
+    $('sub').textContent = 'Type the dollar amount you spent. The business will confirm.';
+    $('content').innerHTML = ''
+      + '<div class="target"><div class="label">Business</div>'
+      +   '<div class="name">' + (info.name || 'Unknown business') + '</div>'
+      +   '<div class="meta">' + (info.category || 'LYMX Partner') + ' · earns ' + (info.issuance_rate || 5) + 'x LYMX per $1</div>'
+      + '</div>'
+      + '<div class="amount"><span class="dollar">$</span><input id="amt" inputmode="decimal" placeholder="0.00" /></div>'
+      + '<button class="btn btn-primary" id="submitBtn">Submit for approval</button>'
+      + '<button class="btn btn-ghost" id="cancelBtn" style="margin-top:6px">Cancel</button>'
+      + '<div id="feedback"></div>';
+
+    $('cancelBtn').onclick = function () { location.href = '/customer-dashboard.html'; };
+    $('submitBtn').onclick = async function () {
+      var raw = $('amt').value.replace(/[^0-9.]/g, '');
+      var amt = parseFloat(raw);
+      var fb = $('feedback');
+      if (!amt || amt <= 0) { fb.innerHTML = '<div class="err">Enter a dollar amount.</div>'; return; }
+      $('submitBtn').disabled = true;
+      $('submitBtn').textContent = 'Submitting…';
+      var res;
+      try { res = await window.LymxQr.submitCustomerClaim(t, amt); }
+      catch (e) { fb.innerHTML = '<div class="err">Network error: ' + e.message + '</div>'; $('submitBtn').disabled = false; $('submitBtn').textContent = 'Submit for approval'; return; }
+      if (!res || !res.ok) {
+        fb.innerHTML = '<div class="err">' + (res && res.error === 'no_customer_row'
+          ? 'Sign in to your LYMX wallet first, then re-scan.'
+          : 'Couldn’t submit: ' + ((res && res.error) || 'unknown error')) + '</div>';
+        $('submitBtn').disabled = false; $('submitBtn').textContent = 'Submit for approval';
+        return;
+      }
+      fb.innerHTML = '<div class="ok">Submitted! The business has been pinged. You’ll see your LYMX as soon as they confirm (within ~15 minutes).</div>';
+      $('submitBtn').textContent = 'Submitted ✓';
+      $('amt').disabled = true;
+    };
+  } else {
+    // Biz-side flow: show customer info + amount input + Issue
+    $('title').textContent = 'Issuing LYMX to:';
+    $('sub').textContent = 'Type the dollar amount the customer just spent. Issuing is immediate.';
+    $('content').innerHTML = ''
+      + '<div class="target"><div class="label">Customer</div>'
+      +   '<div class="name">' + (info.display_name || 'LYMX Customer') + '</div>'
+      + '</div>'
+      + '<div class="amount"><span class="dollar">$</span><input id="amt" inputmode="decimal" placeholder="0.00" /></div>'
+      + '<input id="bizPicker" placeholder="Your business (auto-detected)" style="width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px;margin-bottom:8px" />'
+      + '<button class="btn btn-primary" id="issueBtn">Issue LYMX</button>'
+      + '<button class="btn btn-ghost" id="cancelBtn" style="margin-top:6px">Cancel</button>'
+      + '<div id="feedback"></div>';
+
+    // Auto-detect the signed-in biz owner's business
+    try {
+      var cfg = window.LYMX_CONFIG;
+      var m = (cfg.SUPABASE_URL || '').match(/https:\/\/([^.]+)\.supabase\.co/i);
+      if (m) {
+        var raw = localStorage.getItem('sb-' + m[1] + '-auth-token');
+        if (raw) {
+          var tok = JSON.parse(raw);
+          var access = tok.access_token || (tok.currentSession && tok.currentSession.access_token);
+          if (access) {
+            var bz = await fetch(cfg.SUPABASE_URL + '/rest/v1/businesses?select=id,display_name&owner_user_id=eq.' + JSON.parse(atob(access.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub + '&archived_at=is.null&limit=1', {
+              headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + access }
+            });
+            if (bz.ok) {
+              var rows = await bz.json();
+              if (rows.length) { $('bizPicker').value = rows[0].display_name; $('bizPicker').dataset.id = rows[0].id; $('bizPicker').readOnly = true; }
+            }
+          }
+        }
+      }
+    } catch (e) { console.warn('[scan] biz auto-detect', e); }
+
+    $('cancelBtn').onclick = function () { location.href = '/biz-dashboard.html'; };
+    $('issueBtn').onclick = async function () {
+      var raw = $('amt').value.replace(/[^0-9.]/g, '');
+      var amt = parseFloat(raw);
+      var fb = $('feedback');
+      if (!amt || amt <= 0) { fb.innerHTML = '<div class="err">Enter a dollar amount.</div>'; return; }
+      var bizId = $('bizPicker').dataset.id;
+      if (!bizId) { fb.innerHTML = '<div class="err">Sign in as a business owner first, then re-scan.</div>'; return; }
+      $('issueBtn').disabled = true;
+      $('issueBtn').textContent = 'Issuing…';
+      var res;
+      try { res = await window.LymxQr.bizScanIssueDirect(bizId, info.id, amt); }
+      catch (e) { fb.innerHTML = '<div class="err">Network error: ' + e.message + '</div>'; $('issueBtn').disabled = false; $('issueBtn').textContent = 'Issue LYMX'; return; }
+      if (!res || !res.transaction_id) {
+        fb.innerHTML = '<div class="err">Couldn’t issue: ' + ((res && (res.error || res.message)) || 'unknown error') + '</div>';
+        $('issueBtn').disabled = false; $('issueBtn').textContent = 'Issue LYMX';
+        return;
+      }
+      fb.innerHTML = '<div class="ok">Issued ' + res.lymx_issued + ' LYMX. New balance: ' + res.new_balance + '.</div>';
+      $('issueBtn').textContent = 'Issued ✓';
+      $('amt').disabled = true;
+    };
+  }
+})();
+</script>
+</body>
+</html>

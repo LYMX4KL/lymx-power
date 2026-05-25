@@ -345,6 +345,30 @@
       })();
       </script>
 
+      <!-- 2026-05-25 QR feature — customer side: My QR + Scan biz button -->
+      <div class="card" id="custQrCard" style="display:none">
+        <div class="card-h">
+          <h2>Pay with QR</h2>
+          <span class="count" id="custQrPendingHint" style="display:none">1 pending</span>
+        </div>
+        <div style="display:grid;grid-template-columns:160px 1fr;gap:18px;align-items:center;flex-wrap:wrap">
+          <div>
+            <div id="custQrCode" style="width:160px;height:160px;background:#fff;border:1px solid #e6e8ec;border-radius:12px;padding:8px"></div>
+            <div style="margin-top:6px;font-size:11px;color:#5b6472;text-align:center">Show this to a business after you pay</div>
+          </div>
+          <div>
+            <div style="font-size:13.5px;color:#1a1f27;margin-bottom:10px;line-height:1.5">Two ways to earn LYMX after a purchase:</div>
+            <ol style="margin:0 0 12px;padding-left:18px;font-size:13px;line-height:1.65;color:#1a1f27">
+              <li>Show your QR (left) and the biz scans it.</li>
+              <li>Or scan the biz\'s QR yourself, type the amount, they confirm.</li>
+            </ol>
+            <button class="btn-w solid" id="custScanBizBtn" type="button" style="padding:9px 14px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;background:#0e1116;color:#fff;cursor:pointer">📷 Scan a business QR</button>
+            <div id="custQrStatus" style="margin-top:10px;font-size:13px;color:#5b6472"></div>
+          </div>
+        </div>
+        <div id="custMyClaims" style="margin-top:14px"></div>
+      </div>
+
       <!-- Pending reviews -->
       <div class="card">
         <div class="card-h">
@@ -1100,5 +1124,87 @@ window.addEventListener('DOMContentLoaded', async function () {
 });
 </script>
 <script src="lymx-app.js" defer></script>
+<!-- 2026-05-25 QR feature — customer side wiring -->
+<script src="lymx-qr.js" defer></script>
+<script>
+(async function () {
+  for (var i = 0; i < 30; i++) {
+    if (window.LYMX_CONFIG && window.LymxQr) break;
+    await new Promise(function (r) { setTimeout(r, 100); });
+  }
+  if (!window.LYMX_CONFIG || !window.LymxQr) return;
+  if (!window.LYMX || !window.LYMX.getSession) return;
+
+  var session = await window.LYMX.getSession();
+  if (!session) return;
+  var uid = session.user.id;
+  var cfg = window.LYMX_CONFIG;
+
+  // Resolve customer row
+  var cRes = await fetch(cfg.SUPABASE_URL + '/rest/v1/customers?select=id,qr_token&user_id=eq.' + uid + '&limit=1', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token }
+  });
+  if (!cRes.ok) return;
+  var rows = await cRes.json();
+  if (!rows.length) return;
+  var cust = rows[0];
+
+  document.getElementById('custQrCard').style.display = '';
+  var url = window.LymxQr.buildScanUrl('customer', cust.qr_token);
+  window.LymxQr.renderQrInto(document.getElementById('custQrCode'), url);
+
+  document.getElementById('custScanBizBtn').onclick = async function () {
+    var status = document.getElementById('custQrStatus');
+    var parsed;
+    try { parsed = await window.LymxQr.openScanner({ title: 'Scan business QR', hint: 'Point at the business\'s QR. We\'ll show their name and ask how much you spent.' }); }
+    catch (e) { return; }
+    status.textContent = 'Looking up business…';
+    var info = await window.LymxQr.resolveToken(parsed.token, 'business');
+    if (!info || !info.ok) { status.textContent = 'Couldn\'t find that business: ' + (info && info.error || 'unknown'); return; }
+    var amt = prompt('You\'re earning LYMX at ' + info.name + '. How much did you spend in dollars?');
+    if (!amt) { status.textContent = ''; return; }
+    var n = parseFloat(String(amt).replace(/[^0-9.]/g, ''));
+    if (!n || n <= 0) { status.textContent = 'Enter a valid dollar amount.'; return; }
+    status.textContent = 'Submitting your claim to ' + info.name + '…';
+    var res = await window.LymxQr.submitCustomerClaim(parsed.token, n);
+    if (res && res.ok) {
+      status.textContent = '✓ Submitted to ' + info.name + '. You\'ll see your LYMX as soon as they approve (usually within minutes).';
+      loadMyClaims();
+    } else {
+      status.textContent = 'Failed: ' + ((res && (res.error || res.message)) || 'unknown error');
+    }
+  };
+
+  async function loadMyClaims() {
+    var host = document.getElementById('custMyClaims');
+    var qr = await fetch(cfg.SUPABASE_URL + '/rest/v1/lymx_qr_claims?select=id,usd_amount,status,created_at,businesses(display_name)&customer_id=eq.' + cust.id + '&order=created_at.desc&limit=6', {
+      headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token }
+    });
+    if (!qr.ok) return;
+    var claims = await qr.json();
+    if (!claims.length) { host.innerHTML = ''; document.getElementById('custQrPendingHint').style.display = 'none'; return; }
+    var pendingCount = claims.filter(function (c) { return c.status === 'pending'; }).length;
+    var hint = document.getElementById('custQrPendingHint');
+    hint.style.display = pendingCount ? '' : 'none';
+    hint.textContent = pendingCount + ' pending';
+
+    host.innerHTML = '<div style="font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#5b6472;font-weight:700;margin-bottom:8px">Recent QR submissions</div>'
+      + claims.map(function (c) {
+        var biz = (c.businesses && c.businesses.display_name) || 'Business';
+        var pill = c.status === 'approved' ? '<span style="background:#ecfdf5;color:#065f46;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700">Approved</span>'
+                 : c.status === 'rejected' ? '<span style="background:#fef2f2;color:#991b1b;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700">Rejected</span>'
+                 : c.status === 'expired'  ? '<span style="background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700">Expired</span>'
+                 :                            '<span style="background:#fff7e6;color:#92400e;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700">Pending</span>';
+        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f1f4;font-size:13px">'
+          +   '<div style="flex:1;min-width:0"><strong>' + biz + '</strong> · $' + Number(c.usd_amount).toFixed(2) + '</div>'
+          +   pill
+          + '</div>';
+      }).join('');
+  }
+
+  loadMyClaims();
+  setInterval(function () { if (document.visibilityState === 'visible') loadMyClaims(); }, 30000);
+})();
+</script>
 </body>
 </html>

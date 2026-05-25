@@ -297,6 +297,42 @@
         </div>
       </div>
 
+      <!-- 2026-05-25 QR feature — biz-side panels: My QR, Scan Customer QR, Pending Claims -->
+      <div class="card" id="bizQrCard" style="display:none">
+        <div class="card-h">
+          <h2>QR scan — issue LYMX on the spot</h2>
+          <span class="more">New</span>
+        </div>
+        <div style="display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:center;flex-wrap:wrap" id="bizQrLayout">
+          <div>
+            <div id="bizQrCode" style="width:200px;height:200px;background:#fff;border:1px solid #e6e8ec;border-radius:12px;padding:10px"></div>
+            <div style="margin-top:8px;font-size:11.5px;color:#5b6472;text-align:center">Print + show on counter so customers can scan with their phone camera. Rotate token if it ever leaks.</div>
+          </div>
+          <div>
+            <div style="font-size:14px;color:#1a1f27;margin-bottom:10px"><strong>Two ways to issue:</strong></div>
+            <ol style="margin:0 0 12px;padding-left:18px;font-size:13.5px;line-height:1.65;color:#1a1f27">
+              <li>The QR on the left — customer scans, types their spend, you confirm (see Pending claims below).</li>
+              <li><strong>Faster:</strong> tap <em>Scan customer QR</em> below, point at their wallet QR, type the spend, done.</li>
+            </ol>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn-w solid" id="bizScanCustomerBtn" type="button" style="padding:9px 14px;border-radius:9px;font-weight:700;font-size:13.5px;border:0;background:#0e1116;color:#fff;cursor:pointer">📷 Scan customer QR</button>
+              <button class="btn-w" id="bizQrRotateBtn" type="button" style="padding:9px 14px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid #e6e8ec;background:#fff;cursor:pointer">Rotate my QR</button>
+              <a class="btn-w" id="bizQrPrintLink" target="_blank" style="padding:9px 14px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid #e6e8ec;background:#fff;color:#1a1f27;text-decoration:none">Open print view</a>
+            </div>
+            <div id="bizQrStatus" style="margin-top:10px;font-size:13px;color:#5b6472"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="bizPendingClaimsCard" style="display:none">
+        <div class="card-h">
+          <h2>Pending QR claims</h2>
+          <span class="more" id="bizPendingClaimsCount">0</span>
+        </div>
+        <div id="bizPendingClaimsList" style="display:flex;flex-direction:column;gap:10px"></div>
+        <div id="bizPendingClaimsEmpty" style="padding:20px 12px;text-align:center;color:#5b6472;font-size:13.5px;background:#f6f7f9;border-radius:10px">No pending claims. When a customer scans your QR after a purchase, it shows up here for you to confirm.</div>
+      </div>
+
       <!-- Monthly volume chart -->
       <div class="card">
         <div class="card-h">
@@ -836,6 +872,127 @@ window.addEventListener('DOMContentLoaded', async function () {
     const btn = document.getElementById('viewPublicListingBtn');
     if (btn && biz && biz.slug) btn.href = 'biz-' + encodeURIComponent(biz.slug.toLowerCase()) + '.html';
   } catch (e) { console.warn('[biz-dashboard] public listing slug resolve failed', e); }
+})();
+</script>
+<!-- 2026-05-25 QR feature wiring -->
+<script src="lymx-qr.js" defer></script>
+<script>
+(async function () {
+  // Wait for config + qr module
+  for (var i = 0; i < 30; i++) {
+    if (window.LYMX_CONFIG && window.LymxQr) break;
+    await new Promise(function (r) { setTimeout(r, 100); });
+  }
+  if (!window.LYMX_CONFIG || !window.LymxQr) { console.warn('[biz-qr] deps not ready'); return; }
+  if (!window.LYMX || !window.LYMX.getSession) { console.warn('[biz-qr] auth not ready'); return; }
+
+  var session = await window.LYMX.getSession();
+  if (!session) return; // page already redirects on its own when signed out
+  var uid = session.user.id;
+  var cfg = window.LYMX_CONFIG;
+
+  // Resolve the owner's primary business
+  var bizRes = await fetch(cfg.SUPABASE_URL + '/rest/v1/businesses?select=id,display_name,qr_token&owner_user_id=eq.' + uid + '&archived_at=is.null&limit=1', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token }
+  });
+  if (!bizRes.ok) { console.warn('[biz-qr] biz fetch failed', bizRes.status); return; }
+  var rows = await bizRes.json();
+  if (!rows.length) return; // not a biz owner yet
+  var biz = rows[0];
+
+  // Reveal cards
+  document.getElementById('bizQrCard').style.display = '';
+  document.getElementById('bizPendingClaimsCard').style.display = '';
+
+  function paintQr() {
+    var url = window.LymxQr.buildScanUrl('business', biz.qr_token);
+    window.LymxQr.renderQrInto(document.getElementById('bizQrCode'), url);
+    document.getElementById('bizQrPrintLink').href = url;
+  }
+  paintQr();
+
+  document.getElementById('bizScanCustomerBtn').onclick = async function () {
+    var status = document.getElementById('bizQrStatus');
+    var parsed;
+    try { parsed = await window.LymxQr.openScanner({ title: 'Scan customer QR', hint: 'Point at the customer\'s wallet QR. We\'ll confirm the customer, then ask for the spend amount.' }); }
+    catch (e) { return; }
+    status.textContent = 'Looking up customer…';
+    var info = await window.LymxQr.resolveToken(parsed.token, 'customer');
+    if (!info || !info.ok) { status.textContent = 'Couldn\'t find that customer code: ' + (info && info.error || 'unknown'); return; }
+    var amt = prompt('How much did ' + (info.display_name || 'this customer') + ' spend in dollars?');
+    if (!amt) { status.textContent = ''; return; }
+    var n = parseFloat(String(amt).replace(/[^0-9.]/g, ''));
+    if (!n || n <= 0) { status.textContent = 'Enter a valid dollar amount.'; return; }
+    status.textContent = 'Issuing ' + (n * 5).toFixed(0) + ' LYMX to ' + (info.display_name || 'customer') + '…';
+    var res = await window.LymxQr.bizScanIssueDirect(biz.id, info.id, n);
+    if (res && res.transaction_id) {
+      status.textContent = '✓ Issued ' + res.lymx_issued + ' LYMX. New balance: ' + res.new_balance + '.';
+      loadPendingClaims();
+    } else {
+      status.textContent = 'Failed: ' + ((res && (res.error || res.message)) || 'unknown error');
+    }
+  };
+
+  document.getElementById('bizQrRotateBtn').onclick = async function () {
+    if (!confirm('Rotating will invalidate every printed QR with the current token. Continue?')) return;
+    var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/rpc/rotate_qr_token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token },
+      body: JSON.stringify({ p_kind: 'business', p_target_id: biz.id })
+    });
+    if (!r.ok) { document.getElementById('bizQrStatus').textContent = 'Rotate failed: ' + r.status; return; }
+    var newTok = await r.json();
+    biz.qr_token = newTok;
+    paintQr();
+    document.getElementById('bizQrStatus').textContent = '✓ Rotated. Reprint your QR; old prints stop working immediately.';
+  };
+
+  async function loadPendingClaims() {
+    var listEl = document.getElementById('bizPendingClaimsList');
+    var emptyEl = document.getElementById('bizPendingClaimsEmpty');
+    var countEl = document.getElementById('bizPendingClaimsCount');
+    // Auto-expire stale ones first
+    try { await fetch(cfg.SUPABASE_URL + '/rest/v1/rpc/expire_stale_qr_claims', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token }, body: '{}' }); } catch (e) {}
+    var qr = await fetch(cfg.SUPABASE_URL + '/rest/v1/lymx_qr_claims?select=id,customer_id,usd_amount,note,created_at,pending_until,status,customers(first_name,last_name,email)&business_id=eq.' + biz.id + '&status=eq.pending&order=created_at.desc&limit=20', {
+      headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token }
+    });
+    if (!qr.ok) { console.warn('[biz-qr] claims fetch failed', qr.status); return; }
+    var claims = await qr.json();
+    countEl.textContent = claims.length;
+    if (!claims.length) { listEl.innerHTML = ''; emptyEl.style.display = ''; return; }
+    emptyEl.style.display = 'none';
+    listEl.innerHTML = claims.map(function (c) {
+      var custName = (c.customers && (c.customers.first_name ? (c.customers.first_name + ' ' + (c.customers.last_name||'')) : c.customers.email)) || 'LYMX Customer';
+      var ago = Math.max(0, Math.round((Date.now() - new Date(c.created_at).getTime()) / 60000));
+      return '<div data-cid="' + c.id + '" style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #e6e8ec;border-radius:10px;background:#fff">'
+        + '<div style="flex:1;min-width:0">'
+        +   '<div style="font-weight:700;font-size:14px">' + custName + ' · $' + Number(c.usd_amount).toFixed(2) + '</div>'
+        +   '<div style="font-size:12.5px;color:#5b6472">scanned ' + ago + ' min ago' + (c.note ? ' · ' + c.note : '') + '</div>'
+        + '</div>'
+        + '<button data-act="approve" style="padding:7px 13px;border-radius:9px;font-weight:700;font-size:13px;border:0;background:#13a26b;color:#fff;cursor:pointer">Approve</button>'
+        + '<button data-act="reject" style="padding:7px 13px;border-radius:9px;font-weight:700;font-size:13px;border:1px solid #e6e8ec;background:#fff;color:#1a1f27;cursor:pointer">Reject</button>'
+        + '</div>';
+    }).join('');
+    listEl.querySelectorAll('[data-act]').forEach(function (btn) {
+      btn.onclick = async function () {
+        var row = btn.closest('[data-cid]');
+        var cid = row.dataset.cid;
+        var action = btn.dataset.act;
+        btn.disabled = true; btn.textContent = action === 'approve' ? 'Approving…' : 'Rejecting…';
+        var res = await window.LymxQr.approveCustomerClaim(cid, action);
+        if (res && res.ok) {
+          loadPendingClaims();
+        } else {
+          alert((action === 'approve' ? 'Approve' : 'Reject') + ' failed: ' + ((res && (res.error || res.message)) || 'unknown'));
+          btn.disabled = false; btn.textContent = action === 'approve' ? 'Approve' : 'Reject';
+        }
+      };
+    });
+  }
+
+  loadPendingClaims();
+  // Light auto-refresh — every 30s while page is visible
+  setInterval(function () { if (document.visibilityState === 'visible') loadPendingClaims(); }, 30000);
 })();
 </script>
 </body>
