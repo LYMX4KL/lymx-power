@@ -218,11 +218,115 @@
     }
   }
 
+  // ----- Reserve a Table (2026-05-25 #026db35c) --------------------------------
+  // Inserts a row into public.table_reservations. RLS allows anon+authenticated
+  // insert (the biz owner sees them in their dashboard queue). Pattern mirrors
+  // bindSaveButton — wires window.submitReservation that any biz page can call.
+  function bindReservationButton(btn, slug, display) {
+    if (!btn || btn.dataset.lymxResWired === '1') return;
+    btn.dataset.lymxResWired = '1';
+    window.submitReservation = async function (b) {
+      b = b || btn;
+      var cfg = getCfg(); if (!cfg) { toast('Config not loaded'); return; }
+      // Resolve business_id from slug
+      var bizId = b.dataset.businessId || null;
+      if (!bizId) {
+        try {
+          var pr = await fetch(cfg.SUPABASE_URL + '/rest/v1/businesses?slug=eq.' + encodeURIComponent(slug.replace(/^biz-/, '')) + '&select=id&limit=1', {
+            headers: { apikey: cfg.SUPABASE_ANON_KEY }
+          });
+          if (pr.ok) {
+            var rows = await pr.json();
+            if (rows && rows[0]) { bizId = rows[0].id; b.dataset.businessId = bizId; }
+          }
+        } catch (e) { console.warn('[lymx-biz-actions] biz lookup', e); }
+      }
+      if (!bizId) { toast('Business not found.'); return; }
+
+      // Collect selected date + time + party from the page (data-res-date, data-res-time, data-res-party)
+      var selectedDate = (document.querySelector('.reserve-card .ip.sel[data-res-date]') || {}).dataset && (document.querySelector('.reserve-card .ip.sel[data-res-date]') || {}).dataset.resDate || '';
+      var selectedTime = (document.querySelector('.reserve-card .ip.sel[data-res-time]') || {}).dataset && (document.querySelector('.reserve-card .ip.sel[data-res-time]') || {}).dataset.resTime || '';
+      var party = parseInt(b.dataset.partySize || '2', 10);
+      if (!selectedDate || !selectedTime) { toast('Pick a date and time'); return; }
+
+      // Compute timestamptz from selected date + time
+      var dt;
+      try { dt = new Date(selectedDate + 'T' + selectedTime); } catch (e) { dt = null; }
+      if (!dt || isNaN(dt.getTime())) { toast('Invalid date/time'); return; }
+
+      // Pull user identity (logged-in OR prompt for name+email)
+      var tok = readToken();
+      var bookerName = '', bookerEmail = '', uid = null;
+      if (tok) {
+        try {
+          var payload = JSON.parse(atob(tok.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+          uid = payload.sub;
+          bookerEmail = payload.email || '';
+          bookerName = (payload.user_metadata && (payload.user_metadata.full_name || payload.user_metadata.name)) || bookerEmail.split('@')[0] || '';
+        } catch (e) {}
+      }
+      if (!bookerName) {
+        bookerName = prompt('Your name for the reservation:', '') || '';
+        if (!bookerName) return;
+      }
+      if (!bookerEmail) {
+        bookerEmail = prompt('Email for the confirmation:', '') || '';
+        if (!bookerEmail) return;
+      }
+
+      b.disabled = true;
+      var origText = b.textContent;
+      b.textContent = 'Submitting...';
+
+      try {
+        var ir = await fetch(cfg.SUPABASE_URL + '/rest/v1/table_reservations', {
+          method: 'POST',
+          headers: {
+            apikey: cfg.SUPABASE_ANON_KEY,
+            Authorization: tok ? ('Bearer ' + tok) : ('Bearer ' + cfg.SUPABASE_ANON_KEY),
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal'
+          },
+          body: JSON.stringify({
+            business_id:   bizId,
+            business_slug: slug,
+            business_name: display.name || slug,
+            user_id:       uid,
+            booker_name:   bookerName,
+            booker_email:  bookerEmail,
+            party_size:    party,
+            requested_for: dt.toISOString(),
+            status:        'pending'
+          })
+        });
+        if (!ir.ok) throw new Error((await ir.text()).slice(0, 200));
+        toast('Reservation request sent — ' + (display.name || 'the business') + ' will confirm shortly.', true);
+        b.textContent = 'Request sent';
+      } catch (e) {
+        console.warn('[lymx-biz-actions] submitReservation failed', e);
+        toast('Could not send — try again in a moment.');
+        b.disabled = false;
+        b.textContent = origText;
+      }
+    };
+  }
+
+  // ----- Boot ----------------------------------------------------------------
+  function bootExt() {
+    if (!isBizProfilePage()) return;
+    var slug = getBizSlug();
+    if (!slug) return;
+    var display = getBizDisplay();
+    var resBtn = document.querySelector('.reserve-card .btn-res');
+    if (resBtn) bindReservationButton(resBtn, slug, display);
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
+    document.addEventListener('DOMContentLoaded', function(){ boot(); bootExt(); });
   } else {
     // The page's inline scripts have already run and set window.toggleSave.
     // Boot synchronously so we override before the user can click.
     boot();
+    bootExt();
   }
 })();

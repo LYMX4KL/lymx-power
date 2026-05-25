@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX — your restaurant + venue table reservations." />
+<meta name="robots" content="noindex,nofollow" />
+<title>My reservations · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:880px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:24px 20px 80px}
+  .page-head h1{margin:0 0 6px;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:0 0 18px;color:var(--muted);font-size:14.5px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .card .name{font-weight:800;font-size:15.5px;color:var(--ink)}
+  .card .when{font-weight:700;color:var(--accent);font-size:14px;margin-top:2px}
+  .card .meta{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .card .notes{margin-top:6px;font-size:13.5px;color:var(--ink-2);font-style:italic;background:#f6f7f9;padding:8px 10px;border-radius:6px;border-left:3px solid var(--line)}
+  .pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-left:6px}
+  .pill.pending{background:#fff3d8;color:#7a4a08}
+  .pill.confirmed{background:#dff8ec;color:#0c6940}
+  .pill.seated{background:#e6f0ff;color:#0a3a8a}
+  .pill.no_show{background:#fde8e6;color:#7a1a17}
+  .pill.cancelled{background:#eef0f3;color:var(--muted)}
+  .actions{display:flex;gap:6px;flex-wrap:wrap}
+  .btn{appearance:none;border:0;border-radius:7px;padding:7px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn-danger{color:var(--danger);border-color:var(--danger)}
+  .empty{text-align:center;padding:50px 20px;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px}
+  .banner{padding:11px 14px;border-radius:8px;margin-bottom:14px;font-size:14px}
+  .banner.ok{background:#dff8ec;color:#0c6940}
+  .banner.err{background:#fde8e6;color:#7a1a17}
+</style>
+</head>
+<body>
+<script src="lymx-config.js"></script>
+<script src="lymx-app.js"></script>
+<script src="lymx-nav.js" defer></script>
+
+<main class="wrap">
+  <div class="page-head">
+    <h1>My table reservations</h1>
+    <p>Reservations you've requested at LYMX partner restaurants + venues. Cancel any time before the date.</p>
+  </div>
+
+  <div id="bannerArea"></div>
+  <div id="list"><div class="empty">Loading…</div></div>
+</main>
+
+<script src="lymx-sidebar.js" defer></script>
+<script>
+(async function init(){
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(init,100); return; }
+  const session = await window.LYMX.getSession();
+  if (!session) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
+  await load();
+})();
+
+const esc = (s) => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+function banner(t, m) {
+  document.getElementById('bannerArea').innerHTML = '<div class="banner ' + t + '">' + esc(m) + '</div>';
+  if (t === 'ok') setTimeout(() => document.getElementById('bannerArea').innerHTML = '', 4000);
+}
+
+async function load() {
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL +
+    '/rest/v1/table_reservations?user_id=eq.' + session.user.id +
+    '&order=requested_for.desc&select=id,business_slug,business_name,party_size,requested_for,special_notes,status,confirm_notes,cancellation_reason,created_at', {
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer '+tok }
+  });
+  if (!r.ok) {
+    document.getElementById('list').innerHTML =
+      '<div class="empty">Could not load reservations (' + r.status + '). Make sure migration 085 ran.</div>';
+    return;
+  }
+  const rows = await r.json();
+  if (!rows.length) {
+    document.getElementById('list').innerHTML =
+      '<div class="empty">No reservations yet.<br><br>' +
+      'Browse <a href="browse.html" style="color:var(--accent);text-decoration:underline">partner businesses</a> and look for the "Reserve a table" card on restaurant pages.</div>';
+    return;
+  }
+  document.getElementById('list').innerHTML = rows.map(r => {
+    const ts = new Date(r.requested_for);
+    const isPast = ts.getTime() < Date.now();
+    const dateStr = ts.toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+    return '<div class="card">' +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="name">' +
+          (r.business_slug
+            ? '<a href="' + esc(r.business_slug) + (r.business_slug.endsWith('.html') ? '' : '.html') + '">' + esc(r.business_name || r.business_slug) + '</a>'
+            : esc(r.business_name || 'Restaurant')) +
+          '<span class="pill ' + esc(r.status) + '">' + esc(r.status) + '</span>' +
+        '</div>' +
+        '<div class="when">' + dateStr + ' · party of ' + r.party_size + (isPast ? ' (past)' : '') + '</div>' +
+        '<div class="meta">Requested ' + new Date(r.created_at).toLocaleDateString() + '</div>' +
+        (r.special_notes ? '<div class="notes">Your note: ' + esc(r.special_notes) + '</div>' : '') +
+        (r.confirm_notes ? '<div class="notes" style="border-color:var(--ok);background:#dff8ec;color:#0c6940">From the business: ' + esc(r.confirm_notes) + '</div>' : '') +
+        (r.cancellation_reason ? '<div class="notes" style="border-color:var(--danger);background:#fde8e6;color:#7a1a17">Cancelled: ' + esc(r.cancellation_reason) + '</div>' : '') +
+      '</div>' +
+      '<div class="actions">' +
+        ((['pending','confirmed'].includes(r.status) && !isPast)
+          ? '<button class="btn btn-danger" onclick="cancelRes(\'' + r.id + '\')">Cancel</button>'
+          : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function cancelRes(id) {
+  if (!confirm('Cancel this reservation?')) return;
+  const reason = prompt('Optional reason for the business:', '') || '';
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/table_reservations?id=eq.' + id, {
+    method:'PATCH',
+    headers:{ apikey: cfg.SUPABASE_ANON_KEY, Authorization:'Bearer '+tok, 'Content-Type':'application/json' },
+    body: JSON.stringify({ status: 'cancelled', cancellation_reason: reason || null })
+  });
+  if (!r.ok) { banner('err','Cancel failed: ' + (await r.text()).slice(0,160)); return; }
+  banner('ok','Cancelled.');
+  await load();
+}
+</script>
+</body>
+</html>

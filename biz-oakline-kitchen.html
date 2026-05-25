@@ -444,20 +444,47 @@
       <div class="card reserve-card">
         <h3>Reserve a table</h3>
         <p>Tonight or this week — book through LYMX, earn on the bill.</p>
-        <div class="res-grid">
-          <div class="ip">Tonight</div>
-          <div class="ip sel">Friday</div>
-          <div class="ip">Saturday</div>
-          <div class="ip">Sunday</div>
+        <div class="res-grid" id="resDateRow">
+          <div class="ip"     data-res-date="">Tonight</div>
+          <div class="ip sel" data-res-date="">Friday</div>
+          <div class="ip"     data-res-date="">Saturday</div>
+          <div class="ip"     data-res-date="">Sunday</div>
         </div>
-        <div class="res-grid">
-          <div class="ip">6:00 PM</div>
-          <div class="ip sel">7:30 PM</div>
-          <div class="ip">8:00 PM</div>
-          <div class="ip">9:00 PM</div>
+        <div class="res-grid" id="resTimeRow">
+          <div class="ip"     data-res-time="18:00">6:00 PM</div>
+          <div class="ip sel" data-res-time="19:30">7:30 PM</div>
+          <div class="ip"     data-res-time="20:00">8:00 PM</div>
+          <div class="ip"     data-res-time="21:00">9:00 PM</div>
         </div>
-        <button class="btn-res" onclick="alert('Reservation request sent — Oakline will confirm via the LYMX app.');">Request table for 2 →</button>
+        <!-- 2026-05-25 #026db35c — was alert() stub. Now wired to public.table_reservations via lymx-biz-actions.js -->
+        <button class="btn-res" data-party-size="2" onclick="window.submitReservation && window.submitReservation(this)">Request table for 2 →</button>
       </div>
+      <script>
+        // 2026-05-25 - Resolve labels (Tonight/Friday/Saturday/Sunday) to actual ISO dates and
+        // wire chip-click to swap .sel within each row so submitReservation can read the choice.
+        (function(){
+          var today = new Date(); today.setHours(0,0,0,0);
+          function nextWeekday(target){
+            var d = new Date(today);
+            var diff = (target - today.getDay() + 7) % 7;
+            d.setDate(d.getDate() + (diff === 0 ? 7 : diff));
+            return d;
+          }
+          var dates = [today, nextWeekday(5), nextWeekday(6), nextWeekday(0)];
+          document.querySelectorAll('#resDateRow .ip').forEach(function(c, i){
+            c.dataset.resDate = dates[i].toISOString().slice(0,10);
+          });
+          ['#resDateRow .ip', '#resTimeRow .ip'].forEach(function(sel){
+            document.querySelectorAll(sel).forEach(function(c){
+              c.style.cursor = 'pointer';
+              c.addEventListener('click', function(){
+                this.parentElement.querySelectorAll('.ip').forEach(function(x){ x.classList.remove('sel'); });
+                this.classList.add('sel');
+              });
+            });
+          });
+        })();
+      </script>
 
       <div class="card">
         <h3>Visit</h3>
@@ -618,5 +645,6 @@
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
+<script src="lymx-biz-actions.js" defer></script><!-- 2026-05-25 #026db35c #6abf510e #b78e5ae6 — wires Save+Share+Reserve to real tables (replaces alert() stub) -->
 </body>
 </html>
