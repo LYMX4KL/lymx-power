@@ -126,9 +126,11 @@
     if (override) { _stashActiveRole(override); return override; }
     var tok = readStoredToken();
     var payload = decodeJwt(tok);
-    if (payload && payload.sub === '1405bb50-2c97-48dd-bfa5-31f32320de9b') {
-      _stashActiveRole('admin'); _stashDbRole('admin'); return 'admin';
-    }
+    // 2026-05-25 #9574bf1a — removed hardcoded Kenny UUID admin shortcut
+    // (ARCHITECTURE-RULES Rule 0: no per-tester UUID special cases). The
+    // _readDbRole() cache below + the async confirmRoleFromDb() resolve every
+    // admin user the same way without singling Kenny out. First paint may show
+    // 'customer' for a few hundred ms on cold sessions; async refresh fixes it.
     // Unambiguous path wins (mode toggle for multi-role users).
     var pathRole = _rolePathOnly();
     if (pathRole) { _stashActiveRole(pathRole); return pathRole; }
@@ -364,7 +366,25 @@
             + '<div id="lymxWhoMiniAvatar" style="width:38px;height:38px;border-radius:50%;background:' + grad2 + ';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;position:relative;overflow:hidden">' + initials2 + '</div>'
             + '<div style="min-width:0;flex:1">'
             + '<b id="lymxWhoMiniName" style="display:block;line-height:1.2">' + initialName + '</b>'
-            + '<span class="role-tag" style="margin-top:3px;display:inline-block">' + role + '</span>'
+            // 2026-05-25 #9574bf1a / #729d977d — the role-tag should reflect the
+            // user's HIGHEST account role (e.g. admin/partner), not the page-mode
+            // role (which is just "which dashboard am I looking at"). Helen Chen
+            // (admin + partner + customer) visited /customer-dashboard, saw the
+            // tag say "Customer", and read it as "my account didn't upgrade".
+            // Root cause: tag was hardcoded to the menu role. Fix: show the
+            // highest of (menu role, cached DB role); add a small "viewing X mode"
+            // sub-pill when the two differ so multi-role users can see both.
+            + (function(){
+                var menuMode = role;
+                var accountRole = (function(){ try { return sessionStorage.getItem('lymx_db_role'); } catch(e) { return null; } })() || menuMode;
+                var rnk = { admin: 4, partner: 3, business: 2, customer: 1 };
+                var topRole = (rnk[accountRole] || 0) >= (rnk[menuMode] || 0) ? accountRole : menuMode;
+                var tag = '<span class="role-tag" data-role-account="1" style="margin-top:3px;display:inline-block">' + topRole + '</span>';
+                if (topRole !== menuMode) {
+                  tag += '<span class="mode-tag" data-role-mode="1" style="margin-left:6px;background:#f3f4f6;color:#4b5563;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:999px;display:inline-block">viewing ' + menuMode + ' mode</span>';
+                }
+                return tag;
+              })()
             + '<div id="lymxWhoMiniCode" style="display:none;margin-top:6px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#0050c7;cursor:pointer" title="Click to copy your referral code"></div>'
             + '</div>'
             + '</div>';
@@ -463,7 +483,12 @@
       try { cached = sessionStorage.getItem(cacheKey); } catch (e) { console.warn('[sidebar] sessionStorage read', e); }
       if (cached === 'no') return;
       if (cached !== 'yes') {
-        var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/hr_employees?user_id=eq.' + uid + '&select=id&limit=1', {
+        // 2026-05-25 #e30cc86d #4aa8c795 — was querying public.hr_employees,
+        // which doesn't exist (HR migration 055 named the table staff_profiles,
+        // keyed on user_id). The 404 fell into the !r.ok branch, cached 'no',
+        // and silently hid Clock In/My Schedule/My Time-off for every staff +
+        // partner user. Fix: query the right table.
+        var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/staff_profiles?user_id=eq.' + uid + '&select=user_id&limit=1', {
           headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + tok }
         });
         if (!r.ok) { try { sessionStorage.setItem(cacheKey, 'no'); } catch (e) { console.warn('[sidebar] sessionStorage write', e); } return; }
@@ -518,7 +543,34 @@
         var dbRole = await resolveRoleFromDb();
         if (!dbRole) return;
         _stashDbRole(dbRole);
-        // Path-disambiguated pages keep their chosen mode; don't override.
+        var rnk = { admin: 4, partner: 3, business: 2, customer: 1 };
+        // 2026-05-25 #9574bf1a / #729d977d — even on path-disambiguated pages,
+        // upgrade the ACCOUNT role-tag in place when the DB resolves a higher
+        // role than what we initially painted. We leave the MENU alone (the user
+        // is intentionally in customer-view mode), but the tag must show their
+        // true account level so they don't think their upgrade failed.
+        try {
+          var tagEl = document.querySelector('.lymx-sb .role-tag[data-role-account="1"]');
+          if (tagEl) {
+            var currentDisplayed = (tagEl.textContent || '').trim().toLowerCase();
+            if ((rnk[dbRole] || 0) > (rnk[currentDisplayed] || 0)) {
+              tagEl.textContent = dbRole;
+              var parentMini = tagEl.parentElement;
+              if (parentMini) {
+                var existingModePill = parentMini.querySelector('.mode-tag[data-role-mode="1"]');
+                if (existingModePill) existingModePill.remove();
+                if (dbRole !== role) {
+                  var modePill = document.createElement('span');
+                  modePill.className = 'mode-tag';
+                  modePill.setAttribute('data-role-mode', '1');
+                  modePill.setAttribute('style', 'margin-left:6px;background:#f3f4f6;color:#4b5563;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:999px;display:inline-block');
+                  modePill.textContent = 'viewing ' + role + ' mode';
+                  tagEl.insertAdjacentElement('afterend', modePill);
+                }
+              }
+            }
+          }
+        } catch (e) { console.warn('[sidebar] role-tag in-place update', e); }
         var pathRole = _rolePathOnly();
         if (pathRole) return;
         if (dbRole !== role && window.LymxSidebar && typeof window.LymxSidebar.refresh === 'function') {
