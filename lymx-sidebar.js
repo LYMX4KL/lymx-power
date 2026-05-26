@@ -243,6 +243,19 @@
       { href: 'partner-resources.html',  icon: '\u{1F4BC}', label: 'Sales Toolkit' },
       { href: 'team-calendar.html',      icon: '\u{1F4C5}', label: 'My Calendar' },
       { href: 'my-bookings.html',        icon: '\u{1F4DD}', label: 'My bookings' },
+      // 2026-05-25 Cluster A — Dave (P-000100) filed 3 tickets that all reduce
+      // to 'these pages exist but partners can't find them in the sidebar':
+      //   - Notifications feature
+      //   - My LYMX Wallet feature
+      //   - My Reviews feature
+      // Wiring them in directly here. Each page already supports the partner
+      // role (no requireRole restrictions). Wallet links to customer-dashboard
+      // because partners earn LYMX as customers do (separate from commissions),
+      // and customer-dashboard renders the balance card from lymx_issuances
+      // keyed on the user_id — which works for any role.
+      { href: 'notifications.html',      icon: '\u{1F514}', label: 'Notifications' },
+      { href: 'customer-dashboard.html#wallet', icon: '\u{1F4B0}', label: 'My LYMX Wallet' },
+      { href: 'my-reviews.html',         icon: '\u2B50',    label: 'My Reviews' },
       // 2026-05-20 #dd9468cc - Removed static Team section (Clock In, My Schedule,
       // My Time-off) from partner menu. These are STAFF-only pages and were
       // showing for every partner, causing 'This page isn't for you' rejections.

@@ -58,6 +58,18 @@
     // Migration 015 seeds Kenny as admin in staff_roles so this still routes
     // him correctly, and also routes Helen + any future admin correctly.
     if (window.LYMX && window.LYMX.isAdminCached && window.LYMX.isAdminCached()) return 'admin-dashboard.html';
+    // 2026-05-25 (Cluster A ticket: 'My Account redirects partner to customer'):
+    // read the cached DB role lymx-sidebar.js writes on every page load. If
+    // partner, send them to rep-dashboard. Falls back to email-domain check
+    // (rep-dashboard for staff aliases) and then customer-dashboard for the
+    // genuine customer case. First-load papercut: same as admin cache — the
+    // very first navigation after sign-in may briefly land on customer-
+    // dashboard before the sidebar refreshes the cache; next click is right.
+    try {
+      var dbRole = sessionStorage.getItem('lymx_db_role');
+      if (dbRole === 'partner') return 'rep-dashboard.html';
+      if (dbRole === 'business') return 'biz-dashboard.html';
+    } catch (e) { /* bandaid-ok: sessionStorage may be blocked in private mode — fall through to email-domain check */ }
     var em = (payload.email || '').toLowerCase();
     if (em.endsWith('@lymxpower.com') || em.endsWith('@getlymx.com')) return 'rep-dashboard.html';
     return 'customer-dashboard.html';
@@ -746,6 +758,12 @@
     if (!payload) return 'home.html';
     // 2026-05-25 root-cause: same swap as routeFor() above.
     if (window.LYMX && window.LYMX.isAdminCached && window.LYMX.isAdminCached()) return 'admin-dashboard.html';
+    // 2026-05-25 Cluster A: same partner/business routing as routeFor.
+    try {
+      var fbRole = sessionStorage.getItem('lymx_db_role');
+      if (fbRole === 'partner') return 'rep-dashboard.html';
+      if (fbRole === 'business') return 'biz-dashboard.html';
+    } catch (e) { /* bandaid-ok: sessionStorage best-effort */ }
     var em = (payload.email || '').toLowerCase();
     if (em.endsWith('@lymxpower.com') || em.endsWith('@getlymx.com')) return 'rep-dashboard.html';
     var role = (payload.user_metadata && payload.user_metadata.role)
