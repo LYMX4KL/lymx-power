@@ -214,15 +214,16 @@
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
 
-  // Admin gate — only the hardcoded admin UUID or staff_roles.role IN (admin,tech,support) sees this.
-  const ADMIN_UUID = '1405bb50-2c97-48dd-bfa5-31f32320de9b';
-  let isAdmin = session.user.id === ADMIN_UUID;
-  if (!isAdmin) {
-    try {
-      const { data: sr } = await sb.from('staff_roles').select('role').eq('user_id', session.user.id).maybeSingle();
-      if (sr && ['admin','tech','support'].includes(sr.role)) isAdmin = true;
-    } catch (e) { console.warn('[admin-partners] staff_roles lookup', e); }
-  }
+  // Admin gate — staff_roles.role IN (admin,tech,support) sees this.
+  // 2026-05-25 root-cause: removed hardcoded Kenny-UUID fast path. Migration
+  // 015 seeds Kenny in staff_roles so the canonical lookup below now passes
+  // for Kenny too AND for Helen / any future admin. Previously this gate
+  // worked for Kenny only.
+  let isAdmin = false;
+  try {
+    const { data: sr } = await sb.from('staff_roles').select('role').eq('user_id', session.user.id).maybeSingle();
+    if (sr && ['admin','tech','support'].includes(sr.role)) isAdmin = true;
+  } catch (e) { console.warn('[admin-partners] staff_roles lookup', e); }
   if (!isAdmin) { location.href = '/not-authorized.html'; return; }
 
   document.getElementById('userInitial').textContent = (session.user.email || 'A').split(/[\s@]+/)[0].slice(0,2).toUpperCase();

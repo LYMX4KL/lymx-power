@@ -79,6 +79,48 @@
       window.location.replace(redirectTo || 'index.html');
     },
 
+    // ---------- Admin check (canonical, used by every gate) ----------
+    // 2026-05-25 — root-cause replacement for hardcoded Kenny-UUID checks
+    // that locked Helen (#d785fe0e) and any future admin out of gated pages.
+    // Calls the am_i_admin() SQL helper (migration 015) so the rule travels
+    // with the DB schema; the frontend stays a thin client.
+    //
+    // - checkIsAdmin()         async, hits the DB. Fails closed on error.
+    // - isAdminCached()        sync, reads LYMX_is_admin from localStorage.
+    //                          For code paths that can't be async (e.g.
+    //                          lymx-nav.js routeFor which decides redirect
+    //                          target during sign-in).
+    // - refreshIsAdminCache()  async, refreshes the localStorage flag.
+    //                          Called on every page load by lymx-nav.js so
+    //                          the sync read stays accurate.
+    async checkIsAdmin() {
+      const user = await this.getUser();
+      if (!user) return false;
+      try {
+        const { data, error } = await sb.rpc('am_i_admin');
+        if (error) {
+          console.warn('[LYMX.checkIsAdmin] am_i_admin RPC failed', error);
+          return false; // fail closed
+        }
+        return !!data;
+      } catch (e) {
+        console.warn('[LYMX.checkIsAdmin] threw', e);
+        return false;
+      }
+    },
+
+    isAdminCached() {
+      try {
+        return localStorage.getItem('LYMX_is_admin') === '1';
+      } catch (e) { return false; }
+    },
+
+    async refreshIsAdminCache() {
+      const yes = await this.checkIsAdmin();
+      try { localStorage.setItem('LYMX_is_admin', yes ? '1' : '0'); } catch (e) {} // bandaid-ok: localStorage write is best-effort per ARCHITECTURE-RULES.md
+      return yes;
+    },
+
     /**
      * Detect role of the current user based on which extension table
      * holds their row. Returns one of: 'customer', 'business', 'partner', null.

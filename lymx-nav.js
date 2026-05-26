@@ -53,7 +53,11 @@
   }
   function routeFor(payload) {
     if (!payload) return 'customer-dashboard.html';
-    if (payload.sub === '1405bb50-2c97-48dd-bfa5-31f32320de9b') return 'admin-dashboard.html';
+    // 2026-05-25 root-cause: replaced hardcoded Kenny-UUID with cached
+    // staff_roles admin flag (refreshed on every page load in boot()).
+    // Migration 015 seeds Kenny as admin in staff_roles so this still routes
+    // him correctly, and also routes Helen + any future admin correctly.
+    if (window.LYMX && window.LYMX.isAdminCached && window.LYMX.isAdminCached()) return 'admin-dashboard.html';
     var em = (payload.email || '').toLowerCase();
     if (em.endsWith('@lymxpower.com') || em.endsWith('@getlymx.com')) return 'rep-dashboard.html';
     return 'customer-dashboard.html';
@@ -441,9 +445,11 @@
     var path = (location.pathname || '').toLowerCase();
     var isAdminPage = /\/admin-[^/]*\.html$/.test(path) || /\/admin-[^/]+$/.test(path);
     if (!isAdminPage) return;
-    var KENNY_ADMIN = '1405bb50-2c97-48dd-bfa5-31f32320de9b';
-    // Fast path: Kenny (hardcoded admin)
-    if (payload && payload.sub === KENNY_ADMIN) return;
+    // 2026-05-25 root-cause: removed hardcoded Kenny-UUID fast path. The
+    // server staff_roles check below now runs for EVERY user requesting an
+    // admin-* page (Kenny is seeded as admin in migration 015, so the check
+    // passes for him too). Previously, the fast path masked breakages in the
+    // staff_roles query that locked Helen #d785fe0e out of admin pages.
     // Server check: does this user have an admin row in staff_roles?
     try {
       var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
@@ -738,7 +744,8 @@
     // Mirrors routeFor()'s decision tree so the fallback is consistent with
     // the rest of the nav (sign-in redirect, swap-guest-buttons, avatar menu).
     if (!payload) return 'home.html';
-    if (payload.sub === '1405bb50-2c97-48dd-bfa5-31f32320de9b') return 'admin-dashboard.html';
+    // 2026-05-25 root-cause: same swap as routeFor() above.
+    if (window.LYMX && window.LYMX.isAdminCached && window.LYMX.isAdminCached()) return 'admin-dashboard.html';
     var em = (payload.email || '').toLowerCase();
     if (em.endsWith('@lymxpower.com') || em.endsWith('@getlymx.com')) return 'rep-dashboard.html';
     var role = (payload.user_metadata && payload.user_metadata.role)
@@ -808,6 +815,13 @@
         injectMobileHamburger();
         injectBackChip(null);
         return;
+      }
+      // 2026-05-25 root-cause: refresh the LYMX_is_admin localStorage flag on
+      // every page load so routeFor() / fallbackDashboardForRole() (sync) read
+      // an accurate value. Fire-and-forget: we don't block routing on the
+      // RPC round-trip; cache is good enough for the next page load.
+      if (window.LYMX && window.LYMX.refreshIsAdminCache) {
+        try { window.LYMX.refreshIsAdminCache(); } catch (e) { console.warn('[lymx-nav] refreshIsAdminCache threw', e); }
       }
       redirectIfSignedIn(payload);
       swapGuestButtons(payload);

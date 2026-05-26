@@ -151,6 +151,12 @@ const ROLES = [
   { key: 'finance',   desc: 'Billing & invoices' },
   { key: 'observer',  desc: 'Read-only' },
 ];
+// 2026-05-25 root-cause: track the current admin's own user_id so the
+// rendering can hide the Remove button on their OWN row (self-removal
+// protection). Previously this was hardcoded to Kenny's UUID — that
+// hid Remove for Kenny only and let any other admin remove themselves
+// (lockout risk).
+let CURRENT_UID = null;
 
 async function authedFetch(path, opts = {}) {
   const session = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
@@ -211,7 +217,9 @@ async function loadStaff() {
     '<td style="font-size:12px;color:var(--muted)">' + new Date(s.granted_at).toLocaleDateString() + '</td>' +
     '<td style="text-align:right">' +
       '<button class="btn btn-secondary" data-edit="' + s.user_id + '" data-role="' + s.role + '">Change role</button> ' +
-      (s.role === 'admin' && s.user_id === '1405bb50-2c97-48dd-bfa5-31f32320de9b' ? '' :
+      // 2026-05-25 root-cause: hide Remove on the admin's OWN row to prevent
+      // self-removal lockouts. Works for every admin, not just Kenny.
+      (s.user_id === CURRENT_UID ? '' :
        '<button class="btn btn-danger" data-remove="' + s.user_id + '">Remove</button>') +
     '</td>' +
   '</tr>').join('');
@@ -304,6 +312,9 @@ async function saveStaff(userId, role, notes, emailHint) {
   if (!window.LYMX || !window.LYMX.getSession) return;
   const s = await window.LYMX.getSession();
   if (!s) return;
+  // 2026-05-25: populate CURRENT_UID BEFORE loadStaff so the Remove-button
+  // hide rule has the current admin's id when it renders.
+  CURRENT_UID = s.user.id;
   document.getElementById('userInitial').textContent = (s.user.email || 'K')[0].toUpperCase();
   loadStaff();
 })();

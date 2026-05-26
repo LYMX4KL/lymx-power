@@ -805,9 +805,15 @@
       var parts = tok.split('.');
       if (parts.length !== 3) return;
       var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-      // Route to the right dashboard based on user role hints
+      // Route to the right dashboard based on user role hints.
+      // 2026-05-25 root-cause: read the LYMX_is_admin localStorage flag
+      // (refreshed on every page load by lymx-nav.js boot() via the
+      // am_i_admin() RPC). Replaces the hardcoded Kenny-UUID check that
+      // locked Helen #d785fe0e out of admin-dashboard.
       var dest = 'customer-dashboard.html';
-      if (payload.sub === '1405bb50-2c97-48dd-bfa5-31f32320de9b') dest = 'admin-dashboard.html';
+      var isAdminCached = false;
+      try { isAdminCached = (localStorage.getItem('LYMX_is_admin') === '1'); } catch (e) {} // bandaid-ok: localStorage read is best-effort
+      if (isAdminCached) dest = 'admin-dashboard.html';
       else if ((payload.email || '').endsWith('@lymxpower.com') || (payload.email || '').endsWith('@getlymx.com')) dest = 'rep-dashboard.html';
       var guest = document.getElementById('navCtaGuest');
       var userEl = document.getElementById('navCtaUser');
