@@ -25,7 +25,9 @@ select
     max(li.created_at)                  as last_issued_at
 from public.lymx_issuances li
 where li.recipient_user_id = auth.uid()
-   or auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+   -- 2026-05-26: removed the OR Kenny-UUID bypass; migration 091 already
+   -- removed it from the live view, here we keep the historical migration
+   -- file in sync so re-deploying from scratch yields the correct shape.
 group by li.recipient_user_id;
 
 grant select on public.v_my_lymx_balance to authenticated;

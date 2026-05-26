@@ -214,7 +214,7 @@
           await navigator.clipboard.writeText(text);
           toast('Copied (native share unsupported on this browser).', 'ok');
         }
-      } catch (err) { /* user cancelled — ignore */ }
+      } catch (err) { console.warn("[share-hub.html:217] caught (user cancelled — ignore):", err); }
     }));
   }
 })();

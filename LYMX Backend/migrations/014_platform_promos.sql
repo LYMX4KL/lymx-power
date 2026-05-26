@@ -31,8 +31,8 @@ alter table public.platform_promos enable row level security;
 
 drop policy if exists promos_admin_all on public.platform_promos;
 create policy promos_admin_all on public.platform_promos for all to authenticated
-    using (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid)
-    with check (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid);
+    using (public.am_i_admin())
+    with check (public.am_i_admin());
 
 drop policy if exists promos_public_read on public.platform_promos;
 create policy promos_public_read on public.platform_promos for select to authenticated, anon

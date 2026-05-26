@@ -538,7 +538,7 @@ If they back out before verification you won't see the bonus — but most Busine
             try {
                 const { data: u } = await supabase.auth.admin.getUserById(uid);
                 if (u?.user?.email) adminEmails.push(u.user.email);
-            } catch (_) { /* skip missing */ }
+            } catch (e) { console.warn('[business-signup:541] best-effort fetch failed, skipping:', (e as Error).message); }
         }
         // Belt + suspenders: include the canonical hello@ inbox so the
         // notification still lands even if staff_roles is empty.
@@ -587,7 +587,7 @@ If they back out before verification you won't see the bonus — but most Busine
                         related_id: biz.id,
                     }),
                 });
-            } catch (_) { /* per-recipient failure is non-fatal */ }
+            } catch (e) { console.warn('[business-signup:590] per-recipient failure (non-fatal):', (e as Error).message); }
         }
     } catch (adminAlertErr) {
         console.warn("Admin notification fan-out failed (non-fatal):", adminAlertErr);

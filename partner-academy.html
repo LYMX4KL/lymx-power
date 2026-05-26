@@ -274,7 +274,7 @@
   const STORAGE_KEY = 'lymx-academy-v1';
   let progress = {};
   try { progress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ progress = {}; }
-  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch(e){} }
+  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) { console.warn("[partner-academy.html:277] web-storage op failed (private mode? quota?):", e); } }
 
   let activeMod = null;
   let activeType = 'all';

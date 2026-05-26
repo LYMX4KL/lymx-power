@@ -86,7 +86,7 @@ serve(async (req) => {
             const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
             providerEmail = payload.email || null;
             providerSub = payload.sub || null;
-        } catch (_e) { /* swallow */ }
+        } catch (e) { console.warn('[google-oauth-callback:89] best-effort step failed:', (e as Error).message); }
     }
     // If no id_token, hit Google's userinfo endpoint instead
     if (!providerEmail && tokens.access_token) {
@@ -97,7 +97,7 @@ serve(async (req) => {
                 providerEmail = j.email || providerEmail;
                 providerSub = j.sub || providerSub;
             }
-        } catch (_e) { /* swallow */ }
+        } catch (e) { console.warn('[google-oauth-callback:100] best-effort step failed:', (e as Error).message); }
     }
 
     const expiresAt = tokens.expires_in

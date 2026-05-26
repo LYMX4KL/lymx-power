@@ -42,7 +42,7 @@
     } catch (e) { return null; }
   }
   function writeCache(value) {
-    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), value: value })); } catch (e) {}
+    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), value: value })); } catch (e) { console.warn("[lymx-role-gate.js:45] web-storage op failed (private mode? quota?):", e); }
   }
 
   function gotoLogin() {

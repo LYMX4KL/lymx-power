@@ -35,8 +35,8 @@ CREATE POLICY fb_att_submitter_read ON public.feedback_attachments
 DROP POLICY IF EXISTS fb_att_admin_all ON public.feedback_attachments;
 CREATE POLICY fb_att_admin_all ON public.feedback_attachments
   FOR ALL TO authenticated
-  USING (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b')
-  WITH CHECK (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b');
+  USING (public.am_i_admin())
+  WITH CHECK (public.am_i_admin());
 
 -- Storage bucket (private — served via signed URLs from admin pages)
 INSERT INTO storage.buckets (id, name, public)

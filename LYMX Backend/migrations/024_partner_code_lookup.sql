@@ -111,4 +111,4 @@ grant execute on function public.lookup_partner_by_code(text) to anon, authentic
 select 'migration 024 applied' as status,
        (select count(*) from public.partners where partner_code is not null) as coded,
        (select count(*) from public.partners) as total,
-       (select partner_code from public.partners where user_id = '1405bb50-2c97-48dd-bfa5-31f32320de9b') as kenny_code;
+       (select partner_code from public.partners p join auth.users u on u.id = p.user_id where u.email = 'zhongkennylin@gmail.com') as kenny_code;

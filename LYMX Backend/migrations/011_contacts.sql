@@ -143,8 +143,8 @@ create policy contacts_owner_all on public.contacts
 drop policy if exists contacts_admin_all on public.contacts;
 create policy contacts_admin_all on public.contacts
     for all to authenticated
-    using (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid)
-    with check (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid);
+    using (public.am_i_admin())
+    with check (public.am_i_admin());
 
 -- ---- contact_tags ----
 drop policy if exists tags_owner_all on public.contact_tags;
@@ -156,8 +156,8 @@ create policy tags_owner_all on public.contact_tags
 drop policy if exists tags_admin_all on public.contact_tags;
 create policy tags_admin_all on public.contact_tags
     for all to authenticated
-    using (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid)
-    with check (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid);
+    using (public.am_i_admin())
+    with check (public.am_i_admin());
 
 -- ---- contact_tag_links (joined via contacts.owner_id) ----
 drop policy if exists tag_links_owner_all on public.contact_tag_links;
@@ -165,11 +165,11 @@ create policy tag_links_owner_all on public.contact_tag_links
     for all to authenticated
     using (
         exists (select 1 from public.contacts c where c.id = contact_tag_links.contact_id and c.owner_id = auth.uid())
-        or auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+        or public.am_i_admin()
     )
     with check (
         exists (select 1 from public.contacts c where c.id = contact_tag_links.contact_id and c.owner_id = auth.uid())
-        or auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+        or public.am_i_admin()
     );
 
 -- ---- contact_lists ----
@@ -182,8 +182,8 @@ create policy lists_owner_all on public.contact_lists
 drop policy if exists lists_admin_all on public.contact_lists;
 create policy lists_admin_all on public.contact_lists
     for all to authenticated
-    using (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid)
-    with check (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid);
+    using (public.am_i_admin())
+    with check (public.am_i_admin());
 
 -- ---- contact_list_members (joined via contact_lists.owner_id) ----
 drop policy if exists list_members_owner_all on public.contact_list_members;
@@ -191,11 +191,11 @@ create policy list_members_owner_all on public.contact_list_members
     for all to authenticated
     using (
         exists (select 1 from public.contact_lists l where l.id = contact_list_members.list_id and l.owner_id = auth.uid())
-        or auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+        or public.am_i_admin()
     )
     with check (
         exists (select 1 from public.contact_lists l where l.id = contact_list_members.list_id and l.owner_id = auth.uid())
-        or auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+        or public.am_i_admin()
     );
 
 -- =====================================================================
@@ -232,7 +232,7 @@ select
     ) as lists
 from public.contacts c
 where c.owner_id = auth.uid()
-   or auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid;
+   or public.am_i_admin();
 
 grant select on public.v_my_contacts to authenticated;
 

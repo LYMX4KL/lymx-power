@@ -81,12 +81,14 @@ create policy feedback_select_own on public.feedback
     for select to authenticated
     using (user_id = auth.uid());
 
--- Admin (hard-coded to Kenny for v1) can read + update everything
+-- Admin (any staff_roles.role='admin') can read + update everything.
+-- 2026-05-26: was hard-coded to Kenny's UUID. Now uses public.am_i_admin()
+-- so Helen + any future admin in staff_roles also gets through.
 drop policy if exists feedback_admin_all on public.feedback;
 create policy feedback_admin_all on public.feedback
     for all to authenticated
-    using (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid)
-    with check (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid);
+    using (public.am_i_admin())
+    with check (public.am_i_admin());
 
 -- ----- Storage bucket for screenshots ----------------------------------------
 -- Note: bucket creation in Supabase is normally done via the Storage UI or the

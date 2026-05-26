@@ -173,29 +173,33 @@ serve(async (req) => {
         { auth: { persistSession: false } },
     );
 
-    // Resolve actual role from DB tables (mirror InvestPro pattern)
+    // Resolve actual role from DB tables (mirror InvestPro pattern).
+    // 2026-05-26 root-cause: removed the `if (userId === ADMIN_UUID)` short-
+    // circuit. Migration 015 seeds Kenny as admin in staff_roles so the
+    // staff_roles row carries his role exactly like everyone else. The empty
+    // catch around staff_roles is replaced with a console.warn so genuine
+    // lookup failures (RLS regression, network) are visible instead of silently
+    // attributing the ticket to "authenticated".
     if (userId) {
-        const ADMIN_UUID = "1405bb50-2c97-48dd-bfa5-31f32320de9b";
-        if (userId === ADMIN_UUID) {
-            userRole = "admin";
-        } else {
-            try {
-                const { data: staff } = await supabase
-                    .from("staff_roles").select("user_id, role").eq("user_id", userId).maybeSingle();
-                if (staff) userRole = (staff.role as string) || "staff";
-            } catch { /* table may not exist */ }
-            if (userRole === "authenticated") {
-                const { data: p } = await supabase
-                    .from("partners").select("user_id").eq("user_id", userId).maybeSingle();
-                if (p) userRole = "partner";
-            }
-            if (userRole === "authenticated") {
-                const { data: b } = await supabase
-                    .from("businesses").select("owner_user_id").eq("owner_user_id", userId).maybeSingle();
-                if (b) userRole = "business";
-            }
-            if (userRole === "authenticated") userRole = "customer";
+        const { data: staff, error: staffErr } = await supabase
+            .from("staff_roles").select("user_id, role").eq("user_id", userId).maybeSingle();
+        if (staffErr) {
+            console.warn(`[feedback-submit] staff_roles lookup failed for ${userId}:`, staffErr.message);
         }
+        if (staff) {
+            userRole = (staff.role as string) || "staff";
+        }
+        if (userRole === "authenticated") {
+            const { data: p } = await supabase
+                .from("partners").select("user_id").eq("user_id", userId).maybeSingle();
+            if (p) userRole = "partner";
+        }
+        if (userRole === "authenticated") {
+            const { data: b } = await supabase
+                .from("businesses").select("owner_user_id").eq("owner_user_id", userId).maybeSingle();
+            if (b) userRole = "business";
+        }
+        if (userRole === "authenticated") userRole = "customer";
     }
 
     // ----- Primary screenshot (back-compat) --------------------------------

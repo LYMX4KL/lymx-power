@@ -193,7 +193,7 @@ serve(async (req) => {
                 });
                 const actionUrl = (link?.properties as Record<string, string> | undefined)?.action_link;
                 if (actionUrl) dashboardUrl = actionUrl;
-            } catch (_e) { /* fall back to plain dashboardUrl */ }
+            } catch (e) { console.warn('[business-approval-email:196] tracking-link build failed, falling back to plain dashboardUrl:', (e as Error).message); }
         }
         const welcomeUrl = `https://getlymx.com/welcome.html?biz=${encodeURIComponent(slug)}`;
         composed = approvedEmail(displayName, slug, dashboardUrl, welcomeUrl);
@@ -231,7 +231,7 @@ serve(async (req) => {
             const newText = await tx(textOnly, "transactional email body from a small rewards platform; preserve tone, URLs, and any numbers/amounts as-is");
             const newHtml = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;font-size:15px;line-height:1.55;color:#0e1116;max-width:600px;margin:0 auto;padding:20px;white-space:pre-wrap">${newText.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" style="color:#0a84ff">$1</a>').replace(/\n/g,"<br>")}</div>`;
             composed = { subject: newSubject, html: newHtml };
-        } catch (_e) { /* keep English on translation error */ }
+        } catch (e) { console.warn('[business-approval-email:234] translation failed, keeping English:', (e as Error).message); }
     }
 
     const sent = await sendViaResend(toEmail, composed.subject, composed.html, resendKey);

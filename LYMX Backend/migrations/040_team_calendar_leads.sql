@@ -291,7 +291,7 @@ create policy bookings_booker_read on public.bookings
 
 -- ===== 9. Seed Kenny's calendar (so the system has at least one active) ====
 insert into public.team_calendars (user_id, handle, display_name, role_title, bio, timezone, welcome_message)
-values ('1405bb50-2c97-48dd-bfa5-31f32320de9b', 'kenny', 'Kenny Lin', 'Founder',
+select u.id, 'kenny', 'Kenny Lin', 'Founder',
         'Founder of LYMX Power. Happy to chat about how LYMX works for your business.',
         'America/Los_Angeles',
         'Pick a 30-min slot and I''ll see you there. Camera optional.')

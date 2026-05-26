@@ -244,9 +244,9 @@
   const TYPE_LABEL = {weekly:'Weekly office hours', bootcamp:'Bootcamp', summit:'Summit', field:'Field training'};
   const STORAGE_KEY = 'lymx-partner-events-rsvp';
   let rsvped = {};
-  try { rsvped = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){}
+  try { rsvped = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) { console.warn("[partner-events.html:247] web-storage op failed (private mode? quota?):", e); }
 
-  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(rsvped)); } catch(e){} }
+  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(rsvped)); } catch (e) { console.warn("[partner-events.html:249] web-storage op failed (private mode? quota?):", e); } }
 
   let activeType = 'all';
 

@@ -70,7 +70,7 @@
           if (tok) return { token: tok, source: 'localStorage' };
         }
       }
-    } catch (e) {}
+    } catch (e) { console.warn("[lymx-feedback.js:73] caught:", e); }
     // 3) Anything else our supabase-js client may have stashed (legacy keys)
     try {
       for (var i = 0; i < localStorage.length; i++) {
@@ -83,7 +83,7 @@
           if (t) return { token: t, source: 'localStorage-fallback' };
         }
       }
-    } catch (e) {}
+    } catch (e) { console.warn("[lymx-feedback.js:86] caught:", e); }
     // 4) Anon — submission will be attributed to nobody
     return { token: window.LYMX_CONFIG.SUPABASE_ANON_KEY, source: 'anon' };
   }
@@ -519,7 +519,7 @@
       };
       if (!draft.message || !draft.message.trim()) localStorage.removeItem(FB_DRAFT_KEY);
       else localStorage.setItem(FB_DRAFT_KEY, JSON.stringify(draft));
-    } catch (e) {}
+    } catch (e) { console.warn("[lymx-feedback.js:522] caught:", e); }
   }
   function loadDraft() {
     try {
@@ -536,9 +536,9 @@
         document.getElementById('lymx-fb-message').value = d.message;
         notice('↻ Draft restored from before you navigated away.', 'ok');
       }
-    } catch (e) {}
+    } catch (e) { console.warn("[lymx-feedback.js:539] caught:", e); }
   }
-  function clearDraft() { try { localStorage.removeItem(FB_DRAFT_KEY); } catch (e) {} }
+  function clearDraft() { try { localStorage.removeItem(FB_DRAFT_KEY); } catch (e) { console.warn("[lymx-feedback.js:541] web-storage op failed (private mode? quota?):", e); } }
 
   function updateWhoLabel() {
     var who = document.getElementById('lymx-fb-who');
@@ -722,7 +722,7 @@
         var f = attachedFiles[i];
         var data = await blobToDataURL(f);
         attachments.push({ name: f.name, type: f.type || 'application/octet-stream', size: f.size, data_url: data });
-      } catch (e) { /* skip */ }
+      } catch (e) { console.warn("[lymx-feedback.js:725] caught (skip):", e); }
     }
 
     var payload = {

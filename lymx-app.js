@@ -132,6 +132,12 @@
       await loadScript('lymx-nav.js');
       await loadScript('lymx-sidebar.js');
       await loadScript('lymx-feedback.js');
+      // 2026-05-26 — universal page-share pill (bottom-left), companion to
+      // the Help & Feedback pill (bottom-right). Born from feedback ticket
+      // c015b0ed "make all pages shable" + Kenny's follow-up that pages
+      // must be shareable with prominent CTA + mobile-friendly. Pages can
+      // opt out with <body data-no-share-btn="true">.
+      await loadScript('lymx-share.js');
       // 2026-05-24 T-6ABF51 / T-B78E5A — biz profile Save + Share wiring.
       // No-ops on non-biz pages (internal isBizProfilePage gate).
       await loadScript('lymx-biz-actions.js');

@@ -290,7 +290,7 @@
     if (activeLink) activeLink.classList.add('active');
 
     // Push to URL so the page is bookmarkable / linkable from emails
-    try { history.replaceState(null, '', '?p=' + encodeURIComponent(slug)); } catch(e){}
+    try { history.replaceState(null, '', '?p=' + encodeURIComponent(slug)); } catch (e) { console.warn("[admin-playbooks.html:293] history.replaceState blocked:", e); }
 
     try {
       const url = 'playbooks/' + file + '?_t=' + Date.now();
@@ -314,7 +314,7 @@
   try {
     const user = window.LYMX && await window.LYMX.getUser();
     document.getElementById('userInitial').textContent = ((user && user.email) || 'K')[0].toUpperCase();
-  } catch(e){ /* role-gate will redirect if not signed in */ }
+  } catch (e) { console.warn("[admin-playbooks.html:317] caught (role-gate will redirect if not signed in):", e); }
 
   document.getElementById('printBtn').addEventListener('click', function(){ window.print(); });
 

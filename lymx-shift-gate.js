@@ -35,7 +35,7 @@
     } catch (e) { return null; }
   }
   function writeCache(value) {
-    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), value: value })); } catch (e) {}
+    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), value: value })); } catch (e) { console.warn("[lymx-shift-gate.js:38] web-storage op failed (private mode? quota?):", e); }
   }
 
   function go(verdict) {
@@ -84,7 +84,7 @@
       var verdict = onShift ? 'on' : 'off';
       writeCache(verdict);
       go(verdict);
-    } catch (e) { /* fail-open */ }
+    } catch (e) { console.warn("[lymx-shift-gate.js:87] caught (fail-open):", e); }
   }
 
   // Run after auth has had a chance to load

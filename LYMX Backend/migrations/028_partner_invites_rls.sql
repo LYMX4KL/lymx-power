@@ -24,7 +24,7 @@ CREATE POLICY partner_invites_self_read ON public.partner_invites
   FOR SELECT TO authenticated
   USING (
     sender_id = auth.uid()
-    OR auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'
+    OR public.am_i_admin()
   );
 
 -- Update: only sender can update their own row (e.g. mark resent), admin can update any
@@ -33,7 +33,7 @@ CREATE POLICY partner_invites_self_update ON public.partner_invites
   FOR UPDATE TO authenticated
   USING (
     sender_id = auth.uid()
-    OR auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'
+    OR public.am_i_admin()
   );
 
 SELECT 'migration 028 applied' AS status,

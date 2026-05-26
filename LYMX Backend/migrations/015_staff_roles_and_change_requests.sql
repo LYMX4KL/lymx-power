@@ -24,7 +24,7 @@ create index if not exists idx_staff_roles_role on public.staff_roles(role);
 
 -- Seed Kenny as admin
 insert into public.staff_roles (user_id, role, notes)
-values ('1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid, 'admin', 'Founder')
+select u.id, 'admin', 'Founder' from auth.users u where u.email = 'zhongkennylin@gmail.com'
 on conflict (user_id) do update set role = 'admin';
 
 -- Helper: is the current user a staff member with at least this role?

@@ -51,7 +51,7 @@ drop policy if exists email_sends_admin_all on public.email_sends;
 create policy email_sends_admin_all on public.email_sends
     for select to authenticated
     using (
-        auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+        public.am_i_admin()
         or sender_user_id = auth.uid()
     );
 
@@ -87,7 +87,7 @@ drop policy if exists email_events_admin_all on public.email_events;
 create policy email_events_admin_all on public.email_events
     for select to authenticated
     using (
-        auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+        public.am_i_admin()
         or exists (
             select 1 from public.email_sends s
              where s.id = email_events.email_send_id
@@ -187,7 +187,7 @@ drop policy if exists sms_messages_admin_all on public.sms_messages;
 create policy sms_messages_admin_all on public.sms_messages
     for select to authenticated
     using (
-        auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+        public.am_i_admin()
         or sender_user_id    = auth.uid()
         or recipient_user_id = auth.uid()
     );

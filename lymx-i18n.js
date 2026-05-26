@@ -89,12 +89,12 @@
     try {
       var v = localStorage.getItem('lymx_locale');
       if (v && SUPPORTED.indexOf(v) !== -1) return v;
-    } catch (e) {}
+    } catch (e) { console.warn("[lymx-i18n.js:92] caught:", e); }
     return null;
   }
 
   function setStoredLocale(loc) {
-    try { localStorage.setItem('lymx_locale', loc); } catch (e) {}
+    try { localStorage.setItem('lymx_locale', loc); } catch (e) { console.warn("[lymx-i18n.js:97] web-storage op failed (private mode? quota?):", e); }
   }
 
   function resolveLocale() {

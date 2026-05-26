@@ -222,7 +222,7 @@
   (function(){
     // Show only on biz-dashboard, persist dismiss to localStorage.
     var dismissed = false;
-    try { dismissed = localStorage.getItem('biz_onboarding_dismissed') === '1'; } catch(e){}
+    try { dismissed = localStorage.getItem('biz_onboarding_dismissed') === '1'; } catch (e) { console.warn("[biz-dashboard.html:225] web-storage op failed (private mode? quota?):", e); }
     if (dismissed) return;
     var card = document.getElementById('bizOnboardingCard');
     var items = document.getElementById('bizOnboardingItems');
@@ -243,7 +243,7 @@
     }).join('');
     card.style.display = 'block';
     document.getElementById('bizOnboardingDismiss').addEventListener('click', function(){
-      try { localStorage.setItem('biz_onboarding_dismissed','1'); } catch(e){}
+      try { localStorage.setItem('biz_onboarding_dismissed','1'); } catch (e) { console.warn("[biz-dashboard.html:246] web-storage op failed (private mode? quota?):", e); }
       card.style.display = 'none';
     });
   })();
@@ -614,7 +614,7 @@
     function initialsOf(name) { return (name || 'C').split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join(''); }
 
     var displayName = biz.display_name || biz.legal_name || 'Your Business';
-    try { document.title = 'Business Dashboard - ' + displayName + ' - LYMX'; } catch (e) {}
+    document.title = 'Business Dashboard - ' + displayName + ' - LYMX';
     var memberSince = new Date(biz.created_at || Date.now()).toLocaleDateString([], { month: 'short', year: 'numeric' });
     var addressLine = biz.address_line1 || biz.address || '';
     var subtitle = document.querySelector('.page-head .biz-name span:last-child');
@@ -952,7 +952,7 @@ window.addEventListener('DOMContentLoaded', async function () {
     var emptyEl = document.getElementById('bizPendingClaimsEmpty');
     var countEl = document.getElementById('bizPendingClaimsCount');
     // Auto-expire stale ones first
-    try { await fetch(cfg.SUPABASE_URL + '/rest/v1/rpc/expire_stale_qr_claims', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token }, body: '{}' }); } catch (e) {}
+    try { await fetch(cfg.SUPABASE_URL + '/rest/v1/rpc/expire_stale_qr_claims', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token }, body: '{}' }); } catch (e) { console.warn("[biz-dashboard.html:955] caught:", e); }
     var qr = await fetch(cfg.SUPABASE_URL + '/rest/v1/lymx_qr_claims?select=id,customer_id,usd_amount,note,created_at,pending_until,status,customers(first_name,last_name,email)&business_id=eq.' + biz.id + '&status=eq.pending&order=created_at.desc&limit=20', {
       headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token }
     });

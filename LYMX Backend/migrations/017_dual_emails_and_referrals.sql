@@ -238,7 +238,7 @@ select
 from public.referrals r
 where r.inviter_user_id = auth.uid()
    or r.invitee_user_id = auth.uid()
-   or auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid;
+   or public.am_i_admin();
 
 grant select on public.v_my_referrals to authenticated;
 

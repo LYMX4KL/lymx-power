@@ -205,7 +205,7 @@ end$trg_er$;
 -- =====================================================================
 -- 5. Backfill — copy existing 'Launch RSVP:%' rows from feedback into event_rsvps
 -- =====================================================================
--- One-time migration of the hack-encoded RSVPs in the feedback table.
+-- One-time migration of the compact-encoded RSVPs in the feedback table (legacy storage format).
 do $backfill_rsvps$
 declare v_count int := 0;
 begin

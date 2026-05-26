@@ -34,7 +34,7 @@ security definer
 set search_path = public
 as $can_read_feedback_storage$
 begin
-    if auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid then
+    if public.am_i_admin() then
         return true;
     end if;
     return exists (

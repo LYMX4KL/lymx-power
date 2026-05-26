@@ -294,8 +294,8 @@ alter table public.business_billing     enable row level security;
 drop policy if exists b2b_admin_all on public.business_partners;
 create policy b2b_admin_all on public.business_partners
     for all to authenticated
-    using (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid)
-    with check (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid);
+    using (public.am_i_admin())
+    with check (public.am_i_admin());
 
 -- Authenticated users can read public business_partners info (for the landing page)
 drop policy if exists business_partners_public_read on public.business_partners;
@@ -307,8 +307,8 @@ create policy business_partners_public_read on public.business_partners
 drop policy if exists issuances_admin_all on public.lymx_issuances;
 create policy issuances_admin_all on public.lymx_issuances
     for all to authenticated
-    using (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid)
-    with check (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid);
+    using (public.am_i_admin())
+    with check (public.am_i_admin());
 
 drop policy if exists issuances_recipient_read on public.lymx_issuances;
 create policy issuances_recipient_read on public.lymx_issuances
@@ -319,8 +319,8 @@ create policy issuances_recipient_read on public.lymx_issuances
 drop policy if exists attributions_admin_all on public.signup_attributions;
 create policy attributions_admin_all on public.signup_attributions
     for all to authenticated
-    using (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid)
-    with check (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid);
+    using (public.am_i_admin())
+    with check (public.am_i_admin());
 
 drop policy if exists attributions_self_read on public.signup_attributions;
 create policy attributions_self_read on public.signup_attributions
@@ -331,8 +331,8 @@ create policy attributions_self_read on public.signup_attributions
 drop policy if exists billing_admin_all on public.business_billing;
 create policy billing_admin_all on public.business_billing
     for all to authenticated
-    using (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid)
-    with check (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid);
+    using (public.am_i_admin())
+    with check (public.am_i_admin());
 
 -- =====================================================================
 -- 9. Helper view — issuance summary per business

@@ -263,7 +263,7 @@
   const STORAGE_KEY = 'lymx-roadmap-votes-v1';
   let votes = {};
   try { votes = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ votes = {}; }
-  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(votes)); } catch(e){} }
+  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(votes)); } catch (e) { console.warn("[roadmap.html:266] web-storage op failed (private mode? quota?):", e); } }
 
   let activeAud = 'all';
   let searchQ = '';

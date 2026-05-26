@@ -26,7 +26,7 @@ BEGIN
     -- Kenny — try multiple known emails
     SELECT id INTO v_kenny_id FROM auth.users
      WHERE lower(email) IN ('zhongkennylin@gmail.com','kenny.lin@getlymx.com','kenny@lymxpower.com')
-        OR id = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+        OR id = (select id from auth.users where email = 'zhongkennylin@gmail.com')
      LIMIT 1;
     RAISE NOTICE 'Kenny auth user_id: %', v_kenny_id;
 
@@ -93,7 +93,7 @@ SELECT  u.id, 'personal_email', 'zhongkennylin@gmail.com', 'zhongkennylin@gmail.
  WHERE  u.id IN (
      SELECT id FROM auth.users
       WHERE lower(email) IN ('zhongkennylin@gmail.com','kenny.lin@getlymx.com','kenny@lymxpower.com')
-         OR id = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+         OR id = (select id from auth.users where email = 'zhongkennylin@gmail.com')
       LIMIT 1
  )
 ON CONFLICT (identifier_norm) DO NOTHING;
@@ -113,7 +113,7 @@ ON CONFLICT (identifier_norm) DO NOTHING;
 UPDATE auth.users
    SET email = 'zhongkennylin@gmail.com',
        email_confirmed_at = COALESCE(email_confirmed_at, NOW())
- WHERE id = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+ WHERE id = (select id from auth.users where email = 'zhongkennylin@gmail.com')
    AND email ILIKE '%@getlymx.com'
    AND NOT EXISTS (
        SELECT 1 FROM auth.users WHERE lower(email) = 'zhongkennylin@gmail.com'
@@ -152,5 +152,5 @@ SELECT u.id              AS auth_user_id,
   FROM auth.users u
   LEFT JOIN public.staff_roles sr ON sr.user_id = u.id
  WHERE lower(u.email) IN ('zhongkennylin@gmail.com','helen0510c@gmail.com')
-    OR u.id = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+    OR u.id = (select id from auth.users where email = 'zhongkennylin@gmail.com')
  ORDER BY u.email;

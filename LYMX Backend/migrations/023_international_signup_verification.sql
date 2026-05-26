@@ -153,7 +153,7 @@ begin
         execute $POL$
             create policy partners_admin_read_unverified on public.partners
                 for select to authenticated
-                using (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid)
+                using (public.am_i_admin())
         $POL$;
     end if;
     if not exists (
@@ -163,7 +163,7 @@ begin
         execute $POL$
             create policy customers_admin_read_unverified on public.customers
                 for select to authenticated
-                using (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid)
+                using (public.am_i_admin())
         $POL$;
     end if;
 end$$;
@@ -186,7 +186,7 @@ declare
     v_customer_hit int;
 begin
     -- Only admin (or staff with 'support' role if helper exists) can call this.
-    if v_caller <> '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid then
+    if not public.am_i_admin() then
         raise exception 'Admin only';
     end if;
 

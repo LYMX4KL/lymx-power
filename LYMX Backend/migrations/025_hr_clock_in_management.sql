@@ -45,7 +45,7 @@ returns boolean
 language sql stable security definer
 as $$
     select
-        auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid -- Kenny (hardcoded launch admin)
+        public.am_i_admin() -- any admin via staff_roles
         OR
         exists (select 1 from public.staff_roles where user_id = auth.uid() and role = 'admin');
 $$;
@@ -320,7 +320,7 @@ grant select on public.v_team_roster to authenticated;
 do $$
 declare
     v_helen_uuid uuid;
-    v_kenny_uuid uuid := '1405bb50-2c97-48dd-bfa5-31f32320de9b';
+    v_kenny_uuid uuid := (select id from auth.users where email = 'zhongkennylin@gmail.com');
 begin
     -- Find Helen by email
     select id into v_helen_uuid from auth.users where lower(email) = 'helen0510c@gmail.com' limit 1;

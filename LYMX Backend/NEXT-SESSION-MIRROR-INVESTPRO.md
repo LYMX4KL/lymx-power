@@ -25,7 +25,7 @@
    - 6 metric cards (Urgent / High / Bugs / Suggestions / Questions / Resolved 7d)
    - Cluster grid (one card per feature area, with new/in-progress/resolved counts)
    - Drill-down table when cluster clicked
-3. Hard-gate access to `auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'` (Kenny) for v1
+3. Hard-gate access to `public.am_i_admin()` (admin via staff_roles) for v1
 4. Wire DB queries via `LYMX.sb.from('feedback').select...`
 5. Smoke test: submit fake feedback via the button, verify it appears in admin inbox
 

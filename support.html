@@ -372,7 +372,7 @@ window.addEventListener('DOMContentLoaded', function () {
       try {
         var raw = localStorage.getItem('sb-apffootxzfwmtyjlnteo-auth-token');
         if (raw) { var s = JSON.parse(raw); tok = s.access_token || s.currentSession?.access_token || ANON; }
-      } catch (e) {}
+      } catch (e) { console.warn("[support.html:375] caught:", e); }
       var res = await fetch(URL + '/functions/v1/feedback-submit', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + tok, 'apikey': ANON, 'Content-Type': 'application/json' },

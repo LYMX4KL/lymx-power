@@ -265,7 +265,7 @@ as $$
            from public.staff_roles sr
           where sr.user_id = auth.uid()
           limit 1),
-        auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+        public.am_i_admin()
     );
 $$;
 
@@ -469,7 +469,7 @@ begin
     -- Is the sender an admin? (uses staff_roles or hardcoded Kenny)
     v_is_admin := exists (
         select 1 from public.staff_roles where user_id = new.sender_user_id
-    ) or new.sender_user_id = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid;
+    ) or exists (select 1 from public.staff_roles sr where sr.user_id = new.sender_user_id and sr.role = 'admin');
 
     if v_is_admin then
         update public.conversations c set

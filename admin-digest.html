@@ -379,9 +379,9 @@
 <script>
   const STORAGE_KEY = 'lymx-digest-actions-v1';
   let done = {0:true,1:true,2:true};
-  try { done = JSON.parse(localStorage.getItem(STORAGE_KEY)) || done; } catch(e){}
+  try { done = JSON.parse(localStorage.getItem(STORAGE_KEY)) || done; } catch (e) { console.warn("[admin-digest.html:382] web-storage op failed (private mode? quota?):", e); }
 
-  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); } catch(e){} }
+  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); } catch (e) { console.warn("[admin-digest.html:384] web-storage op failed (private mode? quota?):", e); } }
   function render(){
     document.querySelectorAll('.action').forEach((a,i)=>{
       const isDone = !!done[i];

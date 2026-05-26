@@ -599,7 +599,7 @@
     var url = window.location.href;
     var title = document.querySelector('h1') ? document.querySelector('h1').textContent : document.title;
     if (navigator.share){
-      navigator.share({title: title, url: url}).catch(function(){ /* user cancelled */ });
+      navigator.share({title: title, url: url}).catch(() => { /* user cancelled native share */ return null; });
       return;
     }
     if (navigator.clipboard){

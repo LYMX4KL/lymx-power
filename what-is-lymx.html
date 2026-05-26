@@ -38,15 +38,34 @@
   .example .step .body span{font-size:14px;color:var(--mute)}
   .example .arrow{font-size:28px;color:var(--mute);margin:0 8px}
 
-  /* Compare table */
-  .compare{margin:24px 0;font-size:15px}
-  .compare-row{display:grid;grid-template-columns:auto 1fr 1fr;gap:18px;padding:14px 0;border-top:1px solid var(--line);align-items:start}
-  .compare-row:first-of-type{border-top:0;padding-top:0}
-  .compare-row .what{font-weight:700;font-size:14px}
-  .compare-row .yes{font-size:13.5px;color:var(--ok);font-weight:600;display:flex;align-items:center;gap:6px}
-  .compare-row .yes::before{content:"✓";font-size:18px}
-  .compare-row .no{font-size:13.5px;color:var(--mute);display:flex;align-items:center;gap:6px}
-  .compare-row .no::before{content:"✗";color:var(--mute);font-size:14px}
+  /* Compare table — 2026-05-26 rebuilt for ticket c9a4fa87 ("the comparesion
+     table"). New 4-column shape adds an explicit VALUE column so the core
+     LYMX advantage (fixed 1¢ redemption) reads at a glance against the
+     fluctuating value of every alternative. Mobile breakpoint stacks each
+     row as a labeled card so the 4 dimensions don't get squeezed below
+     readable width. */
+  .compare{margin:24px 0;font-size:14.5px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .compare-head,.compare-row{display:grid;grid-template-columns:1.2fr 1fr 1.4fr 1.6fr;gap:14px;padding:14px 18px;align-items:start}
+  .compare-head{background:#f7f9fc;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);border-bottom:1px solid var(--line)}
+  .compare-row{border-top:1px solid var(--line)}
+  .compare-row:first-of-type{border-top:0}
+  .compare-row .what{font-weight:700;font-size:14.5px;color:#0e1116}
+  .compare-row .cell{font-size:13.5px;color:#1f2530;display:flex;align-items:flex-start;gap:6px;line-height:1.45}
+  .compare-row .cell.pos::before{content:"✓";color:var(--ok);font-weight:800;flex-shrink:0}
+  .compare-row .cell.neg::before{content:"✗";color:#b91c1c;font-weight:800;flex-shrink:0}
+  .compare-row .cell.warn::before{content:"!";color:#b45309;font-weight:800;flex-shrink:0;font-family:Georgia,serif}
+  .compare-row.is-lymx{background:linear-gradient(90deg,#fff8e1,#fffaf0);border-top:2px solid var(--gold)}
+  .compare-row.is-lymx .what{color:#0e1116;font-weight:800}
+  .compare-row.is-lymx .what::after{content:" ★";color:var(--gold)}
+  .compare-row.is-lymx .cell{color:#1f2530;font-weight:600}
+  .compare-mobile-label{display:none;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin-bottom:3px}
+  @media (max-width:620px){
+    .compare-head{display:none}
+    .compare-row{grid-template-columns:1fr;gap:10px;padding:16px 16px}
+    .compare-row .what{font-size:16px;margin-bottom:4px}
+    .compare-mobile-label{display:block}
+    .compare-row .cell{font-size:13.5px}
+  }
 
   /* Visual grid */
   .pill-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:24px 0}
@@ -174,31 +193,43 @@
 <!-- Comparison -->
 <div class="section">
   <h2>How LYMX compares to other things you might know.</h2>
+  <p style="color:var(--mute);margin:0 0 18px;font-size:14.5px">The biggest difference: every other rewards system has a value that <em>fluctuates</em>. LYMX doesn't. 1 LYMX = 1¢. Forever.</p>
   <div class="compare">
+    <div class="compare-head">
+      <div>Reward type</div>
+      <div>Cost to you</div>
+      <div>Where it works</div>
+      <div>What it's worth</div>
+    </div>
     <div class="compare-row">
       <div class="what">A stamp card</div>
-      <div class="yes">Free for customer</div>
-      <div class="no">Only works at one shop</div>
+      <div class="cell pos"><span><span class="compare-mobile-label">Cost to you</span>Free</span></div>
+      <div class="cell neg"><span><span class="compare-mobile-label">Where it works</span>One shop only</span></div>
+      <div class="cell warn"><span><span class="compare-mobile-label">What it's worth</span>Varies by shop · often a single freebie at the end</span></div>
     </div>
     <div class="compare-row">
       <div class="what">Starbucks Rewards</div>
-      <div class="yes">Free for customer</div>
-      <div class="no">Only works at Starbucks</div>
+      <div class="cell pos"><span><span class="compare-mobile-label">Cost to you</span>Free</span></div>
+      <div class="cell neg"><span><span class="compare-mobile-label">Where it works</span>Starbucks only</span></div>
+      <div class="cell warn"><span><span class="compare-mobile-label">What it's worth</span>Stars devalued in 2019 &amp; 2023 — same star buys less than it used to</span></div>
     </div>
     <div class="compare-row">
       <div class="what">Airline miles</div>
-      <div class="yes">Useful</div>
-      <div class="no">Restrictions, blackouts, expiration</div>
+      <div class="cell pos"><span><span class="compare-mobile-label">Cost to you</span>Earn while flying</span></div>
+      <div class="cell neg"><span><span class="compare-mobile-label">Where it works</span>One airline · blackouts · expiration</span></div>
+      <div class="cell warn"><span><span class="compare-mobile-label">What it's worth</span>Fluctuates 0.5¢–2¢ depending on route &amp; date · devalued every few years</span></div>
     </div>
     <div class="compare-row">
       <div class="what">Credit-card cash-back</div>
-      <div class="yes">Money-back</div>
-      <div class="no">Tied to one card · annual fee · low % return</div>
+      <div class="cell warn"><span><span class="compare-mobile-label">Cost to you</span>Annual fee on most cards</span></div>
+      <div class="cell neg"><span><span class="compare-mobile-label">Where it works</span>Statement credit only · tied to one card</span></div>
+      <div class="cell warn"><span><span class="compare-mobile-label">What it's worth</span>1–2% of spend, capped by category</span></div>
     </div>
-    <div class="compare-row">
-      <div class="what"><strong>LYMX</strong></div>
-      <div class="yes">Free, useful, redeemable across local network</div>
-      <div class="yes">Fixed redemption value, no expiration</div>
+    <div class="compare-row is-lymx">
+      <div class="what">LYMX</div>
+      <div class="cell pos"><span><span class="compare-mobile-label">Cost to you</span>Free, no app, no fee</span></div>
+      <div class="cell pos"><span><span class="compare-mobile-label">Where it works</span>Every LYMX Business in your city</span></div>
+      <div class="cell pos"><span><span class="compare-mobile-label">What it's worth</span><strong>Fixed 1 LYMX = $0.01. Doesn't float, doesn't expire, never devalued.</strong></span></div>
     </div>
   </div>
 </div>
@@ -220,7 +251,7 @@
     <div class="pill-card">
       <div class="ic">🌍</div>
       <h3>Where does it work?</h3>
-      <p>Currently Las Vegas (218 Businesses), with Phoenix and Reno launching late 2026. <a href="city-waitlist.html">Vote for your city</a> if you're elsewhere.</p>
+      <p>Currently Las Vegas (218 Businesses), with Phoenix and Reno launching late 2026. <a href='/city-waitlist'>Vote for your city</a> if you're elsewhere.</p>
     </div>
     <div class="pill-card">
       <div class="ic">⏱️</div>
@@ -250,11 +281,11 @@
   <h2>Want to go deeper?</h2>
   <p>If this rings true for you, here's where to go next:</p>
   <ul style="padding-left:20px">
-    <li><a href="customer-signup.html">Sign up for a wallet (free, 30 sec)</a></li>
-    <li><a href="browse.html">See which Businesses are on the network</a></li>
-    <li><a href="customer-faq.html">Read more questions and answers</a></li>
-    <li><a href="why-lymx.html">Read why LYMX exists (the longer version)</a></li>
-    <li><a href="founder-blog.html">Read the founder's blog</a> — what we've learned building it</li>
+    <li><a href='/customer-signup'>Sign up for a wallet (free, 30 sec)</a></li>
+    <li><a href='/browse'>See which Businesses are on the network</a></li>
+    <li><a href='/customer-faq'>Read more questions and answers</a></li>
+    <li><a href='/why-lymx'>Read why LYMX exists (the longer version)</a></li>
+    <li><a href='/founder-blog'>Read the founder's blog</a> — what we've learned building it</li>
   </ul>
 </div>
 
@@ -262,13 +293,13 @@
 <div class="cta">
   <h2>Try it free.</h2>
   <p>Free wallet. No app. No commitment. You'll know in 30 seconds whether it's something you'll use.</p>
-  <a href="customer-signup.html">Sign up for free →</a>
+  <a href='/customer-signup'>Sign up for free →</a>
 </div>
 
 </div>
 
 <div class="footer">
-  <strong>LYMX Power</strong> · A simple introduction · <a href="customer-signup.html">Sign up</a> · <a href="customer-faq.html">FAQ</a> · <a href="why-lymx.html">Why LYMX</a>
+  <strong>LYMX Power</strong> · A simple introduction · <a href='/customer-signup'>Sign up</a> · <a href='/customer-faq'>FAQ</a> · <a href='/why-lymx'>Why LYMX</a>
 </div>
 
 <script src="lymx-config.js"></script>

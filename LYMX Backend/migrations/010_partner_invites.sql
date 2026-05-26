@@ -76,12 +76,13 @@ create policy invites_update_own on public.partner_invites
     using (sender_id = auth.uid())
     with check (sender_id = auth.uid());
 
--- Admin (Kenny) can read + write everyone's invites
+-- Admin (staff_roles.role='admin') can read + write everyone's invites.
+-- 2026-05-26: replaced Kenny-UUID literal with public.am_i_admin().
 drop policy if exists invites_admin_all on public.partner_invites;
 create policy invites_admin_all on public.partner_invites
     for all to authenticated
-    using (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid)
-    with check (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid);
+    using (public.am_i_admin())
+    with check (public.am_i_admin());
 
 
 -- ---- Helper: handler when a new auth user signs up via an invite link -----

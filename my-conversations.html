@@ -290,7 +290,7 @@
       if (window.matchMedia && window.matchMedia("(max-width:880px)").matches) {
         history.pushState({ lymxConvOpen: convId }, "", "#c=" + convId);
       }
-    } catch (e) { /* history API blocked — fall back to in-page back btn */ }
+    } catch (e) { console.warn("[my-conversations.html:293] caught (history API blocked — fall back to in-page back btn):", e); }
     const c = convCache.find(x => x.id === convId);
     if (!c) return;
     $("threadTitle").textContent = c.title || c.kind;
@@ -502,7 +502,7 @@
         body: JSON.stringify(payload),
       });
       let j = {};
-      try { j = await r.json(); } catch(_) { /* non-JSON response — keep j={} */ }
+      try { j = await r.json(); } catch (e) { console.warn("[my-conversations.html:505] caught (non-JSON response — keep j={}):", e); }
       if (!r.ok || !j.ok) {
         const msg = j.error || ("Send failed (HTTP " + r.status + "). Please try again or refresh the page.");
         throw new Error(msg);
@@ -559,7 +559,7 @@
   document.addEventListener("DOMContentLoaded", function(){
     var bk = document.getElementById("threadBackBtn");
     if (bk) bk.addEventListener("click", function(){
-      try { if (history.state && history.state.lymxConvOpen) { history.back(); return; } } catch(e){}
+      try { if (history.state && history.state.lymxConvOpen) { history.back(); return; } } catch (e) { console.warn("[my-conversations.html:562] caught:", e); }
       closeThreadPane();
     });
     window.addEventListener("popstate", function(){

@@ -65,7 +65,7 @@
         var s = window.lymxSupabase.auth._session || null;
         if (s && s.access_token) return s.access_token;
       }
-    } catch (_) {}
+    } catch (e) { console.warn("[auto-translate-page.js:68] caught:", e); }
     // 2) Scrape sb-*-auth-token from localStorage (Supabase v2 convention)
     try {
       for (var i = 0; i < localStorage.length; i++) {
@@ -77,7 +77,7 @@
           if (tok) return tok;
         }
       }
-    } catch (_) {}
+    } catch (e) { console.warn("[auto-translate-page.js:80] caught:", e); }
     // 3) Public pages: fall back to anon key
     return SUPABASE_ANON;
   }

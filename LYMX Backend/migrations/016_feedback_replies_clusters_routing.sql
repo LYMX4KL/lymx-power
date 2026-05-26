@@ -228,10 +228,18 @@ create trigger feedback_auto_route_trigger
     before insert on public.feedback
     for each row execute function public.feedback_auto_route();
 
--- Seed default catch-all: route everything to Kenny until he adds staff
+-- Seed default catch-all: route everything to founder until staff are added.
+-- 2026-05-26: resolved founder UUID via auth.users lookup instead of literal.
+-- The subquery returns NULL on a fresh deploy where the founder user hasn't
+-- been created yet — the NOT EXISTS guard makes the whole INSERT a no-op in
+-- that case (re-run after the founder signs up to seed the row).
 insert into public.feedback_category_routing (match_type, match_value, assigned_to, notes, sort_order)
-values ('any', '*', '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid, 'Default: all unrouted feedback goes to founder', 999)
-on conflict do nothing;
+select 'any', '*', u.id, 'Default: all unrouted feedback goes to founder', 999
+  from auth.users u
+ where u.email = 'zhongkennylin@gmail.com'
+   and not exists (select 1 from public.feedback_category_routing
+                    where match_type = 'any' and match_value = '*')
+limit 1;
 
 -- =====================================================================
 -- 5. v_my_feedback view — submitter's own portal
@@ -252,7 +260,7 @@ select
        order by r.created_at desc limit 1) as last_admin_reply_at
 from public.feedback f
 where f.user_id = auth.uid()
-   or auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid;
+   or public.am_i_admin();
 
 grant select on public.v_my_feedback to authenticated;
 

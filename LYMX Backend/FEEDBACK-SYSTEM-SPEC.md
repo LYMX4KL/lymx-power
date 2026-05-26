@@ -117,7 +117,7 @@ create policy feedback_admin_all on public.feedback
     for all to authenticated
     using (
         (auth.jwt() -> 'user_metadata' ->> 'is_admin')::boolean = true
-        OR auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'  -- Kenny's user_id, hard-coded for v1
+        OR public.am_i_admin()  -- canonical admin bypass via staff_roles.role='admin'
     );
 
 -- Storage bucket for screenshots

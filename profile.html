@@ -364,7 +364,7 @@ async function save() {
 
   // Apply the locale change immediately to the active page (also persists to localStorage).
   if (preferredLocale && window.LymxI18n && window.LymxI18n.setLocale) {
-    try { window.LymxI18n.setLocale(preferredLocale); } catch(e){}
+    try { window.LymxI18n.setLocale(preferredLocale); } catch (e) { console.warn("[profile.html:367] caught:", e); }
   }
 
   let patch = {};
@@ -886,7 +886,7 @@ function openAvatarCrop(file) {
   try { fillForm(); }     catch (e) { console.warn('[init] fillForm threw', e); }
   try { paintAvatar(myRow && myRow.avatar_url); } catch (e) { console.warn('[init] paintAvatar threw', e); }
   // Re-render header once lymx-nav.js finishes injecting the header chrome.
-  const rerun = () => { try { renderHeader(); } catch (e) {} };
+  const rerun = () => { try { renderHeader(); } catch (e) { console.warn("[profile.html:889] caught:", e); } };
   document.addEventListener('lymx-nav-ready', rerun, { once: true });
   setTimeout(rerun, 500);
 })();
@@ -1020,7 +1020,7 @@ window.addEventListener('DOMContentLoaded', function () {
     // Step 4 — success. Force a clean re-login with the new password.
     showOk('✓ Password updated and verified. Signing you out so you can sign back in with the new password...');
     setTimeout(async function () {
-      try { await sb.auth.signOut(); } catch (e) {}
+      try { await sb.auth.signOut(); } catch (e) { console.warn("[profile.html:1023] caught:", e); }
       location.href = '/login.html?msg=password-changed';
     }, 1400);
   });

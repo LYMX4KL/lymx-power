@@ -237,7 +237,7 @@
           });
           if (!up.ok) {
             var errBody = '';
-            try { errBody = (await up.text()).slice(0, 160); } catch (_) {}
+            try { errBody = (await up.text()).slice(0, 160); } catch (e) { console.warn("[lymx-reviews.js:240] caught:", e); }
             throw new Error('upload HTTP ' + up.status + (errBody ? ' — ' + errBody : ''));
           }
           state.receiptImageUrl = path;

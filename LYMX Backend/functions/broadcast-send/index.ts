@@ -19,7 +19,11 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const ADMIN_UUID = "1405bb50-2c97-48dd-bfa5-31f32320de9b";
+// 2026-05-26 — admin gate is now a staff_roles lookup for ALL users (Kenny,
+// Helen, and any future admin). Migration 015 seeds Kenny as admin in
+// staff_roles, so removing the UUID short-circuit doesn't lock him out.
+// Previous shape hard-rejected Helen + every non-Kenny admin (Helen's
+// #d785fe0e — see feedback_lymx_hardcoded_admin_uuid_anti_pattern.md).
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -157,12 +161,16 @@ serve(async (req) => {
     const SVC_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SVC_KEY);
 
-    if (userId !== ADMIN_UUID) {
-        const { data: staff } = await supabase.from("staff_roles")
-            .select("role").eq("user_id", userId).maybeSingle();
-        if (!staff || staff.role !== "admin") {
-            return errorResponse("Admin only.", 403);
-        }
+    // Admin gate: staff_roles role='admin'. Applies uniformly to every
+    // signed-in user including Kenny — no UUID special-case.
+    const { data: staff, error: staffErr } = await supabase.from("staff_roles")
+        .select("role").eq("user_id", userId).maybeSingle();
+    if (staffErr) {
+        console.warn(`[broadcast-send] staff_roles lookup failed for user ${userId}:`, staffErr.message);
+        return errorResponse("Admin check failed. Please try again.", 503);
+    }
+    if (!staff || staff.role !== "admin") {
+        return errorResponse("Admin only.", 403);
     }
 
     // ---- Load the broadcast -------------------------------------------------
@@ -326,7 +334,7 @@ serve(async (req) => {
                 sent_at:           sendStatus === "sent" ? new Date().toISOString() : null,
             });
         } catch { /* best-effort logging — never fails the broadcast */ }
-        // light rate limit — Resend free tier is 100/day; pause 100ms between sends
+// light rate limit — Resend free tier is 100/day; pause 100ms between sends
         await new Promise(r => setTimeout(r, 100));
     }
 

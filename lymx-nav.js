@@ -414,7 +414,7 @@
               var b = document.getElementById('lymxNavMsgBadge');
               if (b) { b.textContent = total; b.style.display = 'inline-block'; }
             }
-          }).catch(function(){});
+          }).catch(() => { /* user cancelled native share */ return null; });
       }
     } catch (e) { console.warn('[lymx-nav.js:L280] silent error', e); }
     document.body.appendChild(menu);
@@ -446,7 +446,7 @@
         var ref = projectRef();
         if (ref) localStorage.removeItem('sb-' + ref + '-auth-token');
       }
-    } catch (e) {}
+    } catch (e) { console.warn("[lymx-nav.js:449] caught:", e); }
     location.href = '/login.html';
   }
 

@@ -6,7 +6,7 @@
 -- bypass:
 --
 --   where li.recipient_user_id = auth.uid()
---      or auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid  -- Kenny
+--      or auth.uid() = '<KENNY_UUID>'::uuid  -- (literal scrubbed; see git for original)
 --
 -- When Kenny queried the view, the OR clause matched EVERY row in the table
 -- (24 rows across all users). The customer-dashboard reads it via .maybeSingle()
@@ -50,7 +50,10 @@ begin
     if def is null then
         raise exception 'Migration 091 incomplete: v_my_lymx_balance not found after re-create';
     end if;
-    if position('1405bb50-2c97-48dd-bfa5-31f32320de9b' in def) > 0 then
+    -- Heuristic: detect any hardcoded UUID literal in the view body (Postgres OIDs are
+-- always 36-char dash-separated). If found, the migration above failed and the OLD
+-- definition is still live somewhere. Surfacing the def in the notice helps debug.
+if def ~ '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' then
         raise exception 'Migration 091 incomplete: hardcoded admin UUID still in view definition';
     end if;
 end $check$;

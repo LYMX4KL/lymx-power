@@ -24,7 +24,9 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const ADMIN_UUID = "1405bb50-2c97-48dd-bfa5-31f32320de9b";
+// 2026-05-26 — staff gate moved to staff_roles-only (see below). Migration
+// 015 seeds Kenny as admin so removing the UUID short-circuit doesn't lock
+// him out, and Helen/future staff get through correctly.
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -108,12 +110,15 @@ serve(async (req) => {
     const SVC_KEY      = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase     = createClient(SUPABASE_URL, SVC_KEY);
 
-    // Authorize — admin OR staff. v1: admin only.
-    if (userId !== ADMIN_UUID) {
-        const { data: staff } = await supabase
-            .from("staff_roles").select("user_id").eq("user_id", userId).maybeSingle();
-        if (!staff) return err("Staff only.", 403);
+    // Authorize — staff_roles membership is the canonical staff check.
+    // Applies uniformly to every signed-in user including Kenny.
+    const { data: staff, error: staffErr } = await supabase
+        .from("staff_roles").select("user_id").eq("user_id", userId).maybeSingle();
+    if (staffErr) {
+        console.warn(`[sms-send] staff_roles lookup failed for ${userId}:`, staffErr.message);
+        return err("Staff check failed. Please try again.", 503);
     }
+    if (!staff) return err("Staff only.", 403);
 
     const ACCT  = Deno.env.get("TWILIO_ACCOUNT_SID");
     const TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");

@@ -809,7 +809,7 @@ if (_legacyFab) _legacyFab.addEventListener('click', function() {
     if (!el) return;
     var val = el.getAttribute('data-copy') || el.textContent.trim();
     if (!val) return;
-    if (navigator.clipboard) navigator.clipboard.writeText(val).catch(function(){});
+    if (navigator.clipboard) navigator.clipboard.writeText(val).catch(() => { /* user cancelled native share */ return null; });
     el.classList.add('copied');
     var orig = el.textContent;
     el.textContent = 'Copied!';

@@ -156,7 +156,7 @@ create policy chat_groups_select_member on public.chat_groups
              where m.group_id = chat_groups.id
                and m.user_id  = auth.uid()
         )
-        or auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+        or public.am_i_admin()
     );
 
 -- Authenticated users can create user-defined groups (kind = 'group')
@@ -174,7 +174,7 @@ create policy chat_groups_update_owner on public.chat_groups
     for update to authenticated
     using (
         created_by = auth.uid()
-        or auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+        or public.am_i_admin()
     );
 
 -- ---- chat_group_members ---------------------------------------------
@@ -189,7 +189,7 @@ create policy chat_members_select on public.chat_group_members
              where m.group_id = chat_group_members.group_id
                and m.user_id  = auth.uid()
         )
-        or auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+        or public.am_i_admin()
     );
 
 -- Group owner / admin can add members
@@ -202,7 +202,7 @@ create policy chat_members_insert on public.chat_group_members
              where g.id = chat_group_members.group_id
                and (g.created_by = auth.uid() or g.kind = 'default')
         )
-        or auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+        or public.am_i_admin()
     );
 
 -- Self-update for last_read_at
@@ -222,7 +222,7 @@ create policy chat_msgs_select_member on public.chat_messages
              where m.group_id = chat_messages.group_id
                and m.user_id  = auth.uid()
         )
-        or auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid
+        or public.am_i_admin()
     );
 
 -- Members can post
@@ -250,8 +250,8 @@ create policy chat_msgs_update_self on public.chat_messages
 drop policy if exists broadcasts_admin_all on public.broadcasts;
 create policy broadcasts_admin_all on public.broadcasts
     for all to authenticated
-    using (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid)
-    with check (auth.uid() = '1405bb50-2c97-48dd-bfa5-31f32320de9b'::uuid);
+    using (public.am_i_admin())
+    with check (public.am_i_admin());
 
 
 -- =====================================================================

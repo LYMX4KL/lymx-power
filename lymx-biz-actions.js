@@ -271,11 +271,11 @@
       var title = (h1 && h1.textContent.trim()) || document.title || 'LYMX business';
       if (navigator.share) {
         try { await navigator.share({ title: title, url: url }); return; }
-        catch (e) { /* user cancelled or permission denied — fall through to clipboard */ }
+        catch (e) { console.warn("[lymx-biz-actions.js:274] caught (user cancelled or permission denied — fall through to clipboard):", e); }
       }
       if (navigator.clipboard && navigator.clipboard.writeText) {
         try { await navigator.clipboard.writeText(url); toast('Link copied to clipboard', true); return; }
-        catch (e) { /* fall through */ }
+        catch (e) { console.warn("[lymx-biz-actions.js:278] caught (fall through):", e); }
       }
       try {
         var ta = document.createElement('textarea');

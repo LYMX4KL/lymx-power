@@ -226,7 +226,7 @@ serve(async (req) => {
                 }),
             }).catch(() => { /* best-effort */ });
         }
-    } catch (_e) { /* swallow */ }
+    } catch (e) { console.warn('[business-signup-bonus:229] best-effort step failed:', (e as Error).message); }
 
     return json({
         success: true,

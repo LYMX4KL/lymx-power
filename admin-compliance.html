@@ -40,9 +40,9 @@
   .hero .lab{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:#9aa3b0;margin-bottom:5px;position:relative}
   .hero h2{margin:0 0 4px;font-size:24px;font-weight:800;letter-spacing:-.01em;position:relative;color:#fff}
   .hero .sub{font-size:13px;color:#9aa3b0;margin-bottom:10px;position:relative}
-  .progress-bar{height:10px;background:rgba(255,255,255,.18);border-radius:6px;overflow:hidden;position:relative}
-  .progress-bar > div{background:linear-gradient(90deg,#13a26b,#5fd198);height:100%;border-radius:6px;transition:width .4s}
-  .progress-text{font-size:11.5px;color:#9aa3b0;margin-top:6px;position:relative}
+  .in_progress-bar{height:10px;background:rgba(255,255,255,.18);border-radius:6px;overflow:hidden;position:relative}
+  .in_progress-bar > div{background:linear-gradient(90deg,#13a26b,#5fd198);height:100%;border-radius:6px;transition:width .4s}
+  .in_progress-text{font-size:11.5px;color:#9aa3b0;margin-top:6px;position:relative}
   .hero .v{font-size:28px;font-weight:800;letter-spacing:-.01em;position:relative}
   .hero .v.gold{color:#f5d172}
   .hero .v.green{color:#5fd198}
@@ -85,7 +85,7 @@
   .check{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);background:#fff;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px;margin-top:2px}
   .check:hover{border-color:var(--ink)}
   .check.done{background:var(--ok);border-color:var(--ok)}
-  .check.progress{background:var(--warn);border-color:var(--warn)}
+  .check.in_progress{background:var(--warn);border-color:var(--warn)}
   .check.blocked{background:var(--danger);border-color:var(--danger)}
   .it-body{flex:1;min-width:0}
   .it .title{font-size:14.5px;font-weight:800;margin:0 0 3px;line-height:1.3}
@@ -104,8 +104,8 @@
   .it a.lnk{padding:3px 9px;background:var(--bg-soft);border:1px solid var(--line);border-radius:6px;font-size:11px;font-weight:700;color:var(--ink-2)}
   .it a.lnk:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
   .status-pill{padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
-  .status-pill.todo{background:rgba(91,100,114,.12);color:var(--muted)}
-  .status-pill.progress{background:rgba(240,160,32,.16);color:#a06808}
+  .status-pill.not_started{background:rgba(91,100,114,.12);color:var(--muted)}
+  .status-pill.in_progress{background:rgba(240,160,32,.16);color:#a06808}
   .status-pill.done{background:rgba(19,162,107,.14);color:#0d7d51}
   .status-pill.blocked{background:rgba(224,65,62,.13);color:#a01644}
 
@@ -178,8 +178,8 @@
         <div class="lab">Launch readiness</div>
         <h2 id="hero-status">—</h2>
         <div class="sub" id="hero-sub">—</div>
-        <div class="progress-bar"><div id="bar" style="width:0"></div></div>
-        <div class="progress-text" id="bar-text">— complete</div>
+        <div class="in_progress-bar"><div id="bar" style="width:0"></div></div>
+        <div class="in_progress-text" id="bar-text">— complete</div>
       </div>
       <div><div class="lab">Required for go-live</div><div class="v gold" id="m-required">—</div><div class="vsub">items remaining</div></div>
       <div><div class="lab">Blocked</div><div class="v danger" id="m-blocked">—</div><div class="vsub">need unblocking</div></div>
@@ -190,8 +190,8 @@
     <div class="filter-row">
       <div class="chips" id="status-chips">
         <div class="chip on" data-f="all">All</div>
-        <div class="chip" data-f="todo">Not started</div>
-        <div class="chip" data-f="progress">In progress</div>
+        <div class="chip" data-f="not_started">Not started</div>
+        <div class="chip" data-f="in_progress">In in_progress</div>
         <div class="chip" data-f="blocked">Blocked</div>
         <div class="chip" data-f="done">Done</div>
       </div>
@@ -221,7 +221,7 @@
         <div class="panel">
           <h3>Status legend</h3>
           <p>○ <strong>Not started</strong> — needs an owner</p>
-          <p>◐ <strong>In progress</strong> — assigned, working</p>
+          <p>◐ <strong>In in_progress</strong> — assigned, working</p>
           <p>● <strong>Done</strong> — verified, attach evidence</p>
           <p>⊘ <strong>Blocked</strong> — needs to be unblocked before launch</p>
         </div>
@@ -237,54 +237,54 @@
 <script>
   const CATS = [
     {id:'mt', name:'Money Transmission (Nevada NRS 671)', icon:'mt', emoji:'💵', sub:'Avoid the money-transmitter classification', items:[
-      {id:'mt1', title:'Confirm LYMX is promotional credit, not stored value', desc:'Get written counsel opinion that LYMX as designed (Business buys/sells units, never customer-buyback) is outside NRS 671.', owner:'L', required:true, status:'progress', links:[{label:'Inquiry §1', href:'LYMX-Legal-Inquiry.docx'},{label:'Disclaimer', href:'disclaimer.html'}]},
+      {id:'mt1', title:'Confirm LYMX is promotional credit, not stored value', desc:'Get written counsel opinion that LYMX as designed (Business buys/sells units, never customer-buyback) is outside NRS 671.', owner:'L', required:true, status:'in_progress', links:[{label:'Inquiry §1', href:'LYMX-Legal-Inquiry.docx'},{label:'Disclaimer', href:'disclaimer.html'}]},
       {id:'mt2', title:'Document customer-buyback exclusion in all agreements', desc:'Business Activation Agreement §7, Terms of Service, and Disclaimer must all explicitly state: LYMX never repurchases units from end customers.', owner:'K', required:true, status:'done', links:[{label:'Business Agreement §7', href:'business-agreement.html'},{label:'Terms', href:'terms.html'}]},
-      {id:'mt3', title:'Confirm we are NOT regulated as gift certificate (NRS 598B)', desc:'Counsel review: LYMX expiration / disclosure rules under Nevada gift certificate law. Verify our no-expiration design is fully compliant.', owner:'L', required:true, status:'todo', links:[{label:'Inquiry §2', href:'LYMX-Legal-Inquiry.docx'}]},
-      {id:'mt4', title:'Settlement banking — confirm not a "money services" trigger', desc:'Our monthly net-settlement to Businesses must use a bank that classifies it as merchant settlement, not money transmission.', owner:'K', required:true, status:'progress', links:[]}
+      {id:'mt3', title:'Confirm we are NOT regulated as gift certificate (NRS 598B)', desc:'Counsel review: LYMX expiration / disclosure rules under Nevada gift certificate law. Verify our no-expiration design is fully compliant.', owner:'L', required:true, status:'not_started', links:[{label:'Inquiry §2', href:'LYMX-Legal-Inquiry.docx'}]},
+      {id:'mt4', title:'Settlement banking — confirm not a "money services" trigger', desc:'Our monthly net-settlement to Businesses must use a bank that classifies it as merchant settlement, not money transmission.', owner:'K', required:true, status:'in_progress', links:[]}
     ]},
 
     {id:'mlm', name:'MLM / Pyramid (Nevada NRS 207.235 + FTC)', icon:'mlm', emoji:'🤝', sub:'Partner program structure', items:[
-      {id:'ml1', title:'Confirm anti-pyramid no-purchase clause is enforceable', desc:'Counsel review: Partner Agreement §2 must hold up — Partners earn only from real third-party Business sales, never from Partner recruitment alone.', owner:'L', required:true, status:'progress', links:[{label:'Partner Agreement §2', href:'partner-agreement.html'}]},
-      {id:'ml2', title:'Income disclosure statement published', desc:'Required for all MLM-style comp plans. Discloses median Partner earnings, % earning $0, distribution chart. Must be linked from every recruitment page.', owner:'K', required:true, status:'todo', links:[{label:'Partner Agreement §6', href:'partner-agreement.html'}]},
-      {id:'ml3', title:'FTC disclosure language on every Partner-recruitment page', desc:'Partners must disclose paid-relationship status when promoting LYMX. Audit content-hub.html, partner-signup.html, partner-spotlight.html for FTC-compliant language.', owner:'S', required:true, status:'progress', links:[{label:'Spotlight (audit)', href:'partner-spotlight.html'},{label:'Content hub', href:'content-hub.html'}]},
+      {id:'ml1', title:'Confirm anti-pyramid no-purchase clause is enforceable', desc:'Counsel review: Partner Agreement §2 must hold up — Partners earn only from real third-party Business sales, never from Partner recruitment alone.', owner:'L', required:true, status:'in_progress', links:[{label:'Partner Agreement §2', href:'partner-agreement.html'}]},
+      {id:'ml2', title:'Income disclosure statement published', desc:'Required for all MLM-style comp plans. Discloses median Partner earnings, % earning $0, distribution chart. Must be linked from every recruitment page.', owner:'K', required:true, status:'not_started', links:[{label:'Partner Agreement §6', href:'partner-agreement.html'}]},
+      {id:'ml3', title:'FTC disclosure language on every Partner-recruitment page', desc:'Partners must disclose paid-relationship status when promoting LYMX. Audit content-hub.html, partner-signup.html, partner-spotlight.html for FTC-compliant language.', owner:'S', required:true, status:'in_progress', links:[{label:'Spotlight (audit)', href:'partner-spotlight.html'},{label:'Content hub', href:'content-hub.html'}]},
       {id:'ml4', title:'Sponsor-change policy documented + auditable', desc:'NRS-compliant: sponsor changes only within 14 days of signup, no commissions earned. Add audit log in commission-backend.html.', owner:'K', required:false, status:'done', links:[{label:'Policy §7', href:'partner-agreement.html'}]},
-      {id:'ml5', title:'Earnings-claim review: no unsubstantiated promises', desc:'Audit every Partner-facing page for income claims. The "$11,840 last month" figure on partner-spotlight.html must have a corresponding individual disclosure.', owner:'L', required:true, status:'progress', links:[{label:'Spotlight', href:'partner-spotlight.html'}]}
+      {id:'ml5', title:'Earnings-claim review: no unsubstantiated promises', desc:'Audit every Partner-facing page for income claims. The "$11,840 last month" figure on partner-spotlight.html must have a corresponding individual disclosure.', owner:'L', required:true, status:'in_progress', links:[{label:'Spotlight', href:'partner-spotlight.html'}]}
     ]},
 
     {id:'tax', name:'Tax (federal + Nevada state)', icon:'tax', emoji:'📊', sub:'Sales tax, 1099, withholding', items:[
-      {id:'tx1', title:'Sales-tax treatment when LYMX is used as payment', desc:'Confirm with NV Dept of Taxation: when a customer pays with LYMX, the Business still owes sales tax on the full ticket value (not the LYMX-discounted value).', owner:'K', required:true, status:'progress', links:[{label:'Inquiry §4', href:'LYMX-Legal-Inquiry.docx'}]},
+      {id:'tx1', title:'Sales-tax treatment when LYMX is used as payment', desc:'Confirm with NV Dept of Taxation: when a customer pays with LYMX, the Business still owes sales tax on the full ticket value (not the LYMX-discounted value).', owner:'K', required:true, status:'in_progress', links:[{label:'Inquiry §4', href:'LYMX-Legal-Inquiry.docx'}]},
       {id:'tx2', title:'1099-NEC issuance for Partners ($600+ threshold)', desc:'Annual 1099 to all Partners earning $600+. Stripe / payroll vendor must be set up before first month\'s payouts.', owner:'K', required:true, status:'done', links:[{label:'Payouts', href:'partner-payouts.html'}]},
       {id:'tx3', title:'W-9 collection before first payout', desc:'No W-9, no payout. Already enforced in Partner onboarding flow.', owner:'K', required:true, status:'done', links:[{label:'Onboarding', href:'partner-onboarding-checklist.html'}]},
-      {id:'tx4', title:'Bulk-gift orders (catering.html) — sales tax handling', desc:'When a corporate buyer purchases LYMX in bulk, is that a taxable sale? Get counsel opinion before catering.html goes live.', owner:'L', required:false, status:'todo', links:[{label:'Catering', href:'catering.html'}]},
-      {id:'tx5', title:'Nevada Modified Business Tax registration', desc:'Required once we have W-2 employees. Currently 0 employees, but worth registering before first hire.', owner:'K', required:false, status:'todo', links:[]}
+      {id:'tx4', title:'Bulk-gift orders (catering.html) — sales tax handling', desc:'When a corporate buyer purchases LYMX in bulk, is that a taxable sale? Get counsel opinion before catering.html goes live.', owner:'L', required:false, status:'not_started', links:[{label:'Catering', href:'catering.html'}]},
+      {id:'tx5', title:'Nevada Modified Business Tax registration', desc:'Required once we have W-2 employees. Currently 0 employees, but worth registering before first hire.', owner:'K', required:false, status:'not_started', links:[]}
     ]},
 
     {id:'disc', name:'Disclosures & Marketing Claims', icon:'disc', emoji:'📢', sub:'Truth-in-advertising + transparency', items:[
-      {id:'ds1', title:'LYMX disclaimer on every public page', desc:'"LYMX is a promotional credit, not money" must appear in the footer of every customer-facing page. Audit + verify.', owner:'K', required:true, status:'progress', links:[{label:'Disclaimer', href:'disclaimer.html'}]},
+      {id:'ds1', title:'LYMX disclaimer on every public page', desc:'"LYMX is a promotional credit, not money" must appear in the footer of every customer-facing page. Audit + verify.', owner:'K', required:true, status:'in_progress', links:[{label:'Disclaimer', href:'disclaimer.html'}]},
       {id:'ds2', title:'Launch 25 marketing — "first 25" claim is verifiable', desc:'Don\'t exceed 25 in the cohort. Audit the admin-businesses table to confirm a hard cap.', owner:'K', required:true, status:'done', links:[{label:'Launch 25', href:'founding-25.html'}]},
       {id:'ds3', title:'Cookie consent + tracking disclosure', desc:'GDPR / CCPA-friendly cookie banner already on key pages. Sweep remaining pages.', owner:'S', required:false, status:'done', links:[{label:'Cookie consent', href:'index.html'}]},
-      {id:'ds4', title:'Email marketing — CAN-SPAM compliant unsubscribe', desc:'All system emails must have a 1-click unsubscribe + physical mailing address in the footer.', owner:'K', required:true, status:'progress', links:[{label:'Admin emails', href:'admin-emails.html'}]},
+      {id:'ds4', title:'Email marketing — CAN-SPAM compliant unsubscribe', desc:'All system emails must have a 1-click unsubscribe + physical mailing address in the footer.', owner:'K', required:true, status:'in_progress', links:[{label:'Admin emails', href:'admin-emails.html'}]},
       {id:'ds5', title:'Promotional credit math disclosure', desc:'1 LYMX = $0.01 face value disclosure on the customer wallet, every Business POS, every help article.', owner:'K', required:true, status:'done', links:[{label:'Help article', href:'help-article.html'}]}
     ]},
 
     {id:'priv', name:'Privacy & Data Protection', icon:'priv', emoji:'🔒', sub:'PII handling, retention, access controls', items:[
-      {id:'pr1', title:'Privacy policy reviewed by counsel', desc:'Current draft is placeholder. Needs counsel sign-off before launch — covers what we collect, how long we retain, who we share with.', owner:'L', required:true, status:'progress', links:[{label:'Privacy', href:'privacy.html'}]},
-      {id:'pr2', title:'Customer data retention policy documented', desc:'How long do we keep transaction history, IP logs, support tickets? Default 7 years for financial records, 90 days for support / IP.', owner:'K', required:true, status:'todo', links:[]},
-      {id:'pr3', title:'Right-to-delete flow tested end-to-end', desc:'Customer can request data deletion via customer-settings → admin processes within 30 days → data confirmed scrubbed from production + backups within 90.', owner:'S', required:true, status:'progress', links:[{label:'Customer settings', href:'customer-settings.html'}]},
-      {id:'pr4', title:'Vendor list / data-flow mapping', desc:'Document every third-party that touches customer PII (Stripe, Twilio, Sendgrid, Netlify). Required for incident response.', owner:'K', required:false, status:'todo', links:[]},
+      {id:'pr1', title:'Privacy policy reviewed by counsel', desc:'Current draft is placeholder. Needs counsel sign-off before launch — covers what we collect, how long we retain, who we share with.', owner:'L', required:true, status:'in_progress', links:[{label:'Privacy', href:'privacy.html'}]},
+      {id:'pr2', title:'Customer data retention policy documented', desc:'How long do we keep transaction history, IP logs, support tickets? Default 7 years for financial records, 90 days for support / IP.', owner:'K', required:true, status:'not_started', links:[]},
+      {id:'pr3', title:'Right-to-delete flow tested end-to-end', desc:'Customer can request data deletion via customer-settings → admin processes within 30 days → data confirmed scrubbed from production + backups within 90.', owner:'S', required:true, status:'in_progress', links:[{label:'Customer settings', href:'customer-settings.html'}]},
+      {id:'pr4', title:'Vendor list / data-flow mapping', desc:'Document every third-party that touches customer PII (Stripe, Twilio, Sendgrid, Netlify). Required for incident response.', owner:'K', required:false, status:'not_started', links:[]},
       {id:'pr5', title:'Employee access controls — least-privilege audit', desc:'Confirm no employees / contractors have prod database access without SSH keys + 2FA + role-based limits.', owner:'K', required:true, status:'blocked', links:[]}
     ]},
 
     {id:'ins', name:'Insurance & Banking', icon:'ins', emoji:'🛡️', sub:'Coverage + relationships', items:[
-      {id:'in1', title:'General liability + cyber liability insurance', desc:'Quotes from 3 carriers in hand. Pick + bind before public launch. Targeting $2M GL / $5M cyber.', owner:'K', required:true, status:'progress', links:[]},
-      {id:'in2', title:'Errors & Omissions for the Partner program', desc:'Required given the Partner Agreement disclaimers. Counsel + insurance broker working on language.', owner:'L', required:false, status:'todo', links:[]},
+      {id:'in1', title:'General liability + cyber liability insurance', desc:'Quotes from 3 carriers in hand. Pick + bind before public launch. Targeting $2M GL / $5M cyber.', owner:'K', required:true, status:'in_progress', links:[]},
+      {id:'in2', title:'Errors & Omissions for the Partner program', desc:'Required given the Partner Agreement disclaimers. Counsel + insurance broker working on language.', owner:'L', required:false, status:'not_started', links:[]},
       {id:'in3', title:'Operating bank — settlement account opened', desc:'Currently using a personal bank account for testing. Open an LLC operating account before first real settlement.', owner:'K', required:true, status:'done', links:[]},
-      {id:'in4', title:'Reserve fund for buyback obligations', desc:'Hold N months of expected buyback liability in segregated reserve. Defines our default float requirement.', owner:'K', required:true, status:'progress', links:[]}
+      {id:'in4', title:'Reserve fund for buyback obligations', desc:'Hold N months of expected buyback liability in segregated reserve. Defines our default float requirement.', owner:'K', required:true, status:'in_progress', links:[]}
     ]}
   ];
 
-  const STATUS_NEXT = {todo:'progress', progress:'done', done:'todo', blocked:'todo'};
-  const STATUS_LABEL = {todo:'Not started', progress:'In progress', done:'Done', blocked:'Blocked'};
+  const STATUS_NEXT = {not_started:'in_progress', in_progress:'done', done:'not_started', blocked:'not_started'};
+  const STATUS_LABEL = {not_started:'Not started', in_progress:'In in_progress', done:'Done', blocked:'Blocked'};
 
   const STORAGE_KEY = 'lymx-compliance-v1';
   let overrides = {};
@@ -293,7 +293,7 @@
   let filterRequired = false;
 
   function statusOf(item){ return overrides[item.id] || item.status; }
-  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides)); } catch(e){} }
+  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides)); } catch (e) { console.warn("[admin-compliance.html:296] web-storage op failed (private mode? quota?):", e); } }
 
   function cycleStatus(itemId){
     const all = [];
@@ -393,8 +393,8 @@
         <div class="items">
           ${filteredItems.map(i=>{
             const s = statusOf(i);
-            const checkClass = s === 'done' ? 'done' : s === 'progress' ? 'progress' : s === 'blocked' ? 'blocked' : '';
-            const checkSym = s === 'done' ? '✓' : s === 'progress' ? '◐' : s === 'blocked' ? '⊘' : '';
+            const checkClass = s === 'done' ? 'done' : s === 'in_progress' ? 'in_progress' : s === 'blocked' ? 'blocked' : '';
+            const checkSym = s === 'done' ? '✓' : s === 'in_progress' ? '◐' : s === 'blocked' ? '⊘' : '';
             const ownerName = {K:'Kenny',S:'Sam',L:'Counsel'}[i.owner] || '—';
             return `<div class="it">
               <div class="check ${checkClass}" onclick="cycleStatus('${i.id}')" title="Click to cycle status">${checkSym}</div>

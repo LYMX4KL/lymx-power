@@ -73,7 +73,13 @@
   .nav-more-panel{position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:8px;min-width:200px;display:flex;flex-direction:column;gap:2px;z-index:10}
   .nav-more-panel a{padding:8px 12px;border-radius:6px;font-size:13.5px;color:var(--ink-2);white-space:nowrap}
   .nav-more-panel a:hover{background:var(--bg-soft);color:var(--accent)}
-  @media(max-width:980px){.nav-links{display:none}} @media(min-width:981px) and (max-width:1180px){.nav-links{gap:12px;font-size:12.5px}}
+  /* 2026-05-26 — hamburger breakpoint (lymx-nav.js) is max-width:880px, so
+     hide the desktop nav-links at the SAME breakpoint. The previous
+     980px threshold left a 100px-wide range (880–980px) where neither the
+     full nav-links NOR the hamburger was visible — narrow-laptop users
+     and split-screen tablets could see neither path to /what-is-lymx,
+     /partners, etc. Aligning the two breakpoints closes that gap. */
+  @media(max-width:880px){.nav-links{display:none}} @media(min-width:881px) and (max-width:1180px){.nav-links{gap:12px;font-size:12.5px}}
 
   /* Hero with search */
   .hero{
@@ -823,7 +829,7 @@
         userEl.style.display = 'flex';
         userLink.href = dest;
       }
-    } catch (e) { /* silent — show guest buttons */ }
+    } catch (e) { console.warn("[index.html:832] caught (silent — show guest buttons):", e); }
   })();
 </script>
 <script src="lymx-app.js" defer></script>
