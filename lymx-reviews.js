@@ -78,12 +78,20 @@
     if (window.__LYMX_BIZ_META_PROMISE) return window.__LYMX_BIZ_META_PROMISE;
     window.__LYMX_BIZ_META_PROMISE = (async function () {
       try {
-        var r = await fetch(URL + '/rest/v1/businesses?slug=eq.' + encodeURIComponent(slug) + '&select=id,demo_only,display_name&limit=1', {
-          headers: { apikey: ANON }
+        // Migration 094: route through the SECURITY DEFINER RPC fn_biz_public_meta
+        // — anon role can't SELECT on businesses directly (RLS denies).
+        var r = await fetch(URL + '/rest/v1/rpc/fn_biz_public_meta', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: ANON,
+            Authorization: 'Bearer ' + ANON
+          },
+          body: JSON.stringify({ p_slug: slug })
         });
         if (!r.ok) { console.warn('[lymx-reviews] loadBizMetaSafe', r.status); return null; }
         var rows = await r.json();
-        return (rows && rows[0]) || null;
+        return (Array.isArray(rows) && rows[0]) || (rows && rows.id ? rows : null);
       } catch (e) {
         console.warn('[lymx-reviews] loadBizMetaSafe failed', e);
         return null;

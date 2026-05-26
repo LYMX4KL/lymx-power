@@ -114,17 +114,27 @@
     }
     window.__LYMX_BIZ_META_PROMISE = (async function () {
       try {
+        // Migration 094: route through the SECURITY DEFINER RPC fn_biz_public_meta
+        // instead of a direct table SELECT. The anon role cannot read businesses
+        // directly (RLS denies, returns 401) — see 094 root-cause comment.
         var r = await fetch(
-          cfg.SUPABASE_URL + '/rest/v1/businesses?slug=eq.' + encodeURIComponent(slug) +
-          '&select=id,demo_only,display_name&limit=1',
-          { headers: { apikey: cfg.SUPABASE_ANON_KEY } }
+          cfg.SUPABASE_URL + '/rest/v1/rpc/fn_biz_public_meta',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              apikey: cfg.SUPABASE_ANON_KEY,
+              Authorization: 'Bearer ' + cfg.SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({ p_slug: slug })
+          }
         );
         if (!r.ok) {
           console.warn('[lymx-biz-actions] loadBizMeta', r.status);
           return null;
         }
         var rows = await r.json();
-        return (rows && rows[0]) || null;
+        return (Array.isArray(rows) && rows[0]) || (rows && rows.id ? rows : null);
       } catch (e) {
         console.warn('[lymx-biz-actions] loadBizMeta failed', e);
         return null;
