@@ -15,9 +15,9 @@
 | Slug | Title | Role | Status |
 |---|---|---|---|
 | customer-onboarding | Sign up, get 100 LYMX, find your first business | Customer | 📋 Planned |
-| [business-onboarding/README](business-onboarding/README.md) | Full flow: invite → signup → approval → call → issue → redeem | Multiple | 🚧 In progress (Module 1 shipped 2026-05-26) |
-| &nbsp;&nbsp;↳ [01-invite](business-onboarding/01-invite.md) | Invite a business to LYMX | Admin / Partner | ✅ Verified 2026-05-26 |
-| &nbsp;&nbsp;↳ [02-signup](business-onboarding/02-signup.md) | Sign up your business on LYMX (from invite) | Prospect (guest) | ✅ Verified 2026-05-26 |
+| [business-onboarding-readme](business-onboarding/README.md) | Business onboarding flow — overview + step index | Multiple | 🚧 In progress |
+| [business-onboarding-01-invite](business-onboarding/01-invite.md) | Invite a business to LYMX | Admin / Partner | ✅ Verified 2026-05-26 |
+| [business-onboarding-02-signup](business-onboarding/02-signup.md) | Sign up your business on LYMX (from invite) | Prospect (guest) | ✅ Verified 2026-05-26 |
 | partner-onboarding | Apply, get $750 setup, pitch your first business | Partner | 📋 Planned |
 
 ## Daily operations (planned)

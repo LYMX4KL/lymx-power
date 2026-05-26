@@ -204,6 +204,8 @@
       { href: 'my-reviews.html',         icon: '⭐',    label: 'My Reviews' },
       { href: 'my-saved-places.html',   icon: '\u{1F4CC}', label: 'Saved Places' },
       { href: 'customer-charity.html',   icon: '\u{1F49D}', label: 'Donate LYMX' },
+      { section: 'Help' },
+      { href: 'playbooks.html',          icon: '\u{1F4D6}', label: 'Playbooks' },
       { section: 'Account' },
       { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
@@ -223,6 +225,8 @@
       { href: 'biz-payouts.html',        icon: '\u{1F3E6}', label: 'Payouts (Stripe)' },
       { href: 'biz-pos-comparison.html', icon: '\u{1F50C}', label: 'POS / Integrations' },
       { href: 'my-bookings.html',        icon: '\u{1F4C5}', label: 'My bookings' },
+      { section: 'Help' },
+      { href: 'playbooks.html',          icon: '\u{1F4D6}', label: 'Playbooks' },
       { section: 'Account' },
       { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
@@ -256,6 +260,8 @@
       { href: 'notifications.html',      icon: '\u{1F514}', label: 'Notifications' },
       { href: 'customer-dashboard.html#wallet', icon: '\u{1F4B0}', label: 'My LYMX Wallet' },
       { href: 'my-reviews.html',         icon: '\u2B50',    label: 'My Reviews' },
+      { section: 'Help' },
+      { href: 'playbooks.html',          icon: '\u{1F4D6}', label: 'Playbooks' },
       // 2026-05-20 #dd9468cc - Removed static Team section (Clock In, My Schedule,
       // My Time-off) from partner menu. These are STAFF-only pages and were
       // showing for every partner, causing 'This page isn't for you' rejections.
@@ -322,7 +328,7 @@
       { href: 'admin-invite-friends.html', icon: '\u{1F4E8}', label: 'Invite Friends' },
       { href: 'contacts.html',           icon: '\u{1F4C7}', label: 'Contacts' },
       { section: 'Knowledge' },
-      { href: 'admin-playbooks.html',    icon: '\u{1F4D6}', label: 'Playbooks' },
+      { href: 'playbooks.html',          icon: '\u{1F4D6}', label: 'Playbooks' },
       { section: 'Account' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
       { href: 'my-feedback.html',        icon: '\u{1F4DD}', label: 'My Feedback' }

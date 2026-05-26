@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Playbooks — LYMX</title>
+<meta name="description" content="LYMX process playbooks — step-by-step walkthroughs for every flow you can do on LYMX. Filtered by your role." />
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--err:#b81324;--radius:12px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+
+  .page{padding:28px 0 64px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:14px;margin-bottom:18px}
+  .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:14.5px;max-width:720px}
+  .role-pill{display:inline-block;background:#EEF6FF;color:#0050c7;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-left:6px;vertical-align:middle}
+
+  .pane{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start}
+  @media(max-width:880px){.pane{grid-template-columns:1fr}}
+
+  .pb-index{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:14px;position:sticky;top:88px;max-height:calc(100vh - 120px);overflow-y:auto}
+  .pb-index h3{margin:0 0 10px;font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.08em}
+  .pb-index h3:not(:first-of-type){margin-top:18px}
+  .pb-index ul{list-style:none;margin:0 0 12px;padding:0}
+  .pb-index li{margin:0}
+  .pb-index a{display:block;padding:9px 11px;border-radius:8px;font-size:13.5px;color:var(--ink-2);line-height:1.4;font-weight:600;cursor:pointer;transition:.1s;text-align:left;background:transparent;border:0;width:100%;font-family:inherit}
+  .pb-index a:hover{background:#eef4ff;color:var(--accent)}
+  .pb-index a.active{background:var(--ink);color:#fff}
+  .pb-index a.active:hover{background:#1a1f27;color:#fff}
+  .pb-index .pb-empty{font-size:12.5px;color:var(--muted);padding:10px 12px;background:#f6f7f9;border-radius:7px}
+  .pb-index .pb-status{display:inline-block;font-size:10px;font-weight:800;padding:1px 6px;border-radius:99px;margin-left:6px;text-transform:uppercase;letter-spacing:.04em;vertical-align:middle}
+  .pb-index .pb-status.verified{background:#e6f5ee;color:#0a6e44}
+  .pb-index .pb-status.draft{background:#fff3d4;color:#92400e}
+  .pb-index .pb-status.planned{background:#eef0f4;color:#6b7280}
+  .pb-index .pb-disabled{opacity:.55;cursor:not-allowed}
+
+  .pb-view{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px 36px;min-height:60vh}
+  .pb-view .pb-empty{color:var(--muted);font-size:15px;padding:60px 0;text-align:center}
+  .pb-view h1{margin:0 0 6px;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .pb-view h2{margin:24px 0 8px;font-size:18px;font-weight:800;color:var(--ink)}
+  .pb-view h3{margin:22px 0 6px;font-size:15.5px;font-weight:800;color:var(--ink-2)}
+  .pb-view p{margin:8px 0;font-size:14.5px;color:var(--ink-2)}
+  .pb-view ul,.pb-view ol{margin:6px 0 12px;padding-left:24px;font-size:14.5px;color:var(--ink-2)}
+  .pb-view li{margin:4px 0}
+  .pb-view code{background:#f6f7f9;padding:1px 6px;border-radius:5px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .pb-view pre{background:#0e1116;color:#e6e8ec;padding:14px 16px;border-radius:9px;overflow-x:auto;font-size:13px;line-height:1.45}
+  .pb-view pre code{background:transparent;padding:0;color:inherit;font-size:13px}
+  .pb-view blockquote{margin:10px 0;padding:10px 14px;background:#fffaeb;border-left:4px solid #f0a020;color:#5a3e00;border-radius:0 7px 7px 0;font-size:14px}
+  .pb-view table{border-collapse:collapse;margin:10px 0;font-size:13.5px;width:100%}
+  .pb-view th,.pb-view td{border:1px solid var(--line);padding:7px 11px;text-align:left;vertical-align:top}
+  .pb-view th{background:#f6f7f9;font-weight:700}
+  .pb-view hr{border:0;border-top:1px solid var(--line);margin:20px 0}
+  .pb-view a{color:var(--accent);text-decoration:underline}
+  .pb-view .pb-meta{background:#f6f7f9;border-radius:9px;padding:11px 14px;font-size:12.5px;color:var(--muted);margin-bottom:14px;display:flex;gap:14px;flex-wrap:wrap}
+  .pb-view .pb-meta b{color:var(--ink);font-weight:700}
+
+  .pb-toolbar{display:flex;gap:8px}
+  .btn{display:inline-flex;align-items:center;gap:7px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit}
+  .btn:hover{border-color:var(--ink-2)}
+  .status-msg{display:none;margin:14px 0;padding:11px 14px;border-radius:9px;font-size:13.5px}
+  .status-msg.err{background:#fbe6ea;border:1px solid #f0a8b4;color:var(--err)}
+  .status-msg.show{display:block}
+
+  @media print{
+    .pb-index, .pb-toolbar, header, footer, .lymx-sb, .nav-back, .nav-links { display:none !important }
+    .pane{grid-template-columns:1fr}
+    .pb-view{border:0;padding:0}
+  }
+</style>
+</head>
+<body>
+
+<script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div>
+        <h1>📖 Playbooks <span class="role-pill" id="rolePill">…</span></h1>
+        <p>Step-by-step walkthroughs for every flow you can do on LYMX. The list on the left is filtered to playbooks relevant to your role. Click any entry to read it. Each playbook ends with a Common Errors table — start there if you're stuck.</p>
+      </div>
+      <div class="pb-toolbar">
+        <button class="btn" id="printBtn" title="Print or save as PDF">🖨 Print</button>
+      </div>
+    </div>
+
+    <div class="pane">
+      <aside class="pb-index" id="pbIndex">
+        <h3>Loading…</h3>
+      </aside>
+      <article class="pb-view" id="pbView">
+        <div class="pb-empty">Pick a playbook on the left.</div>
+      </article>
+    </div>
+
+    <div class="status-msg err" id="errMsg"></div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+
+<script>
+// =============================================================================
+// playbooks.html — universal Playbooks reader, role-filtered.
+// =============================================================================
+// Reads playbooks/INDEX.md, filters rows by the current user's role, renders
+// the sidebar list, and shows the selected playbook in the right pane.
+//
+// URL deep-link: ?p=<slug>  (matches frontmatter slug AND INDEX slug).
+//
+// Role filter rules (case-insensitive match on the "Role" column in INDEX.md):
+//   - admin  → sees ALL playbooks (omniscient view)
+//   - partner → rows whose role mentions "partner", "admin / partner", "multiple"
+//   - business → rows mentioning "business", "multiple"
+//   - customer → rows mentioning "customer", "multiple"
+//   - guest (signed out) → rows mentioning "guest", "prospect", "anyone"
+//
+// A row tagged "Multiple" or "Anyone" is shown to everyone — useful for cross-
+// role flows like business onboarding where multiple roles touch the same
+// process.
+// =============================================================================
+
+(async function init(){
+  function setError(msg){
+    var el = document.getElementById('errMsg');
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+  function escapeHtml(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+  function escapeAttr(s){ return escapeHtml(s); }
+
+  // Wait for config + sidebar to provide the role detection
+  while (!window.LYMX_CONFIG) { await new Promise(function(r){ setTimeout(r, 60); }); }
+
+  // -------------------- Role detection --------------------
+  // Resolve the viewer's effective role with the same logic the sidebar uses.
+  // Cached in sessionStorage by lymx-sidebar.js as 'lymx_active_role' /
+  // 'lymx_db_role'. Falls back to 'guest' for signed-out viewers.
+  function readToken(){
+    try {
+      var cfg = window.LYMX_CONFIG;
+      var m = cfg.SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/i);
+      if (!m) return null;
+      var raw = localStorage.getItem('sb-' + m[1] + '-auth-token');
+      if (!raw) return null;
+      var obj = JSON.parse(raw);
+      return (obj && obj.access_token) || (obj && obj.currentSession && obj.currentSession.access_token) || null;
+    } catch (e) { console.warn('[playbooks] readToken', e); return null; }
+  }
+
+  async function getRole(){
+    var tok = readToken();
+    if (!tok) return 'guest';
+    // Use cached values first to avoid waiting on the network
+    var cached = '';
+    try { cached = sessionStorage.getItem('lymx_active_role') || sessionStorage.getItem('lymx_db_role') || ''; } catch (e) { console.warn('[playbooks] sessionStorage role read', e); }
+    if (cached) return cached.toLowerCase();
+
+    // Async fallback: hit am_i_admin RPC + staff_roles + partners/customers
+    try {
+      var H = { apikey: window.LYMX_CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' };
+      var a = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/rest/v1/rpc/am_i_admin', { method: 'POST', headers: H, body: '{}' });
+      if (a.ok && (await a.json()) === true) return 'admin';
+    } catch (e) { console.warn('[playbooks] admin check', e); }
+    return 'customer'; // safe default — most permissive non-admin filter
+  }
+
+  var role = await getRole();
+  document.getElementById('rolePill').textContent = role;
+
+  // -------------------- Role → keyword match --------------------
+  function isVisibleForRole(rowRole, viewerRole){
+    if (viewerRole === 'admin') return true;
+    var r = (rowRole || '').toLowerCase();
+    if (r.indexOf('multiple') !== -1) return true;
+    if (r.indexOf('anyone') !== -1) return true;
+    switch (viewerRole) {
+      case 'partner':  return /(partner|admin)/.test(r);
+      case 'business': return /(business|owner)/.test(r);
+      case 'customer': return /customer/.test(r);
+      case 'guest':    return /(guest|prospect|anyone)/.test(r);
+    }
+    return false;
+  }
+
+  // -------------------- Parse INDEX.md --------------------
+  function parseIndex(md){
+    var sections = [];
+    var current = null;
+    var lines = md.split(/\r?\n/);
+    for (var i = 0; i < lines.length; i++){
+      var ln = lines[i];
+      var h2 = ln.match(/^##\s+(.+?)$/);
+      if (h2){
+        current = { title: h2[1].trim(), items: [] };
+        sections.push(current);
+        continue;
+      }
+      var row = ln.match(/^\|\s*\[([a-z0-9-]+)\]\(([^)]+)\)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|/i);
+      if (row && current) {
+        var statusKind = 'planned';
+        var statusLabel = row[5].trim();
+        if (/verified/i.test(statusLabel)) statusKind = 'verified';
+        else if (/draft|in progress/i.test(statusLabel)) statusKind = 'draft';
+        current.items.push({
+          slug: row[1].trim(),
+          file: row[2].trim(),
+          title: row[3].trim(),
+          role: row[4].trim(),
+          statusKind: statusKind,
+          statusLabel: statusLabel
+        });
+        continue;
+      }
+      var plainRow = ln.match(/^\|\s*([a-z0-9-]+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|/i);
+      if (!row && plainRow && current && plainRow[1] !== 'Slug' && !/^-+$/.test(plainRow[1])){
+        current.items.push({
+          slug: plainRow[1].trim(),
+          file: null,
+          title: plainRow[2].trim(),
+          role: plainRow[3].trim(),
+          statusKind: 'planned',
+          statusLabel: plainRow[4].trim()
+        });
+      }
+    }
+    return sections;
+  }
+
+  function renderIndex(sections){
+    var el = document.getElementById('pbIndex');
+    var html = '';
+    var anyShown = false;
+    sections.forEach(function(s){
+      var visibleItems = s.items.filter(function(it){ return isVisibleForRole(it.role, role); });
+      if (!visibleItems.length) return;
+      anyShown = true;
+      html += '<h3>' + escapeHtml(s.title) + '</h3><ul>';
+      visibleItems.forEach(function(it){
+        if (!it.file){
+          html += '<li><a class="pb-disabled" title="Not written yet">'
+                + escapeHtml(it.title)
+                + '<span class="pb-status planned">Planned</span></a></li>';
+          return;
+        }
+        html += '<li><a data-slug="' + escapeAttr(it.slug) + '" data-file="' + escapeAttr(it.file) + '">'
+              + escapeHtml(it.title)
+              + '<span class="pb-status ' + it.statusKind + '">'
+              + (it.statusKind === 'verified' ? '✓' : it.statusKind)
+              + '</span></a></li>';
+      });
+      html += '</ul>';
+    });
+    if (!anyShown) html = '<div class="pb-empty">No playbooks available for your role yet. Check back as more flows ship.</div>';
+    el.innerHTML = html;
+    Array.prototype.forEach.call(el.querySelectorAll('a[data-slug]'), function(a){
+      a.addEventListener('click', function(){
+        Array.prototype.forEach.call(el.querySelectorAll('a.active'), function(x){ x.classList.remove('active'); });
+        a.classList.add('active');
+        loadPlaybook(a.dataset.slug, a.dataset.file);
+      });
+    });
+  }
+
+  // -------------------- Parse YAML frontmatter --------------------
+  function parseFrontmatter(md){
+    var m = md.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
+    if (!m) return { meta: {}, body: md };
+    var meta = {};
+    m[1].split(/\r?\n/).forEach(function(ln){
+      var kv = ln.match(/^([a-zA-Z_]+):\s*(.*?)$/);
+      if (kv) meta[kv[1]] = kv[2].trim();
+    });
+    return { meta: meta, body: m[2] };
+  }
+
+  // -------------------- Load + render a playbook --------------------
+  async function loadPlaybook(slug, file){
+    var view = document.getElementById('pbView');
+    view.innerHTML = '<div class="pb-empty">Loading playbook…</div>';
+    try { history.replaceState(null, '', '?p=' + encodeURIComponent(slug)); } catch (e) { console.warn('[playbooks] history.replaceState blocked', e); }
+    try {
+      var r = await fetch('playbooks/' + file + '?_t=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) throw new Error('http ' + r.status);
+      var md = await r.text();
+      var parsed = parseFrontmatter(md);
+      var meta = parsed.meta;
+      var bodyHtml = window.marked ? window.marked.parse(parsed.body) : ('<pre>' + escapeHtml(parsed.body) + '</pre>');
+      var metaHtml = '';
+      if (meta.role || meta.duration_min || meta.last_verified){
+        metaHtml = '<div class="pb-meta">'
+                 + (meta.role ? '<span><b>Role:</b> ' + escapeHtml(meta.role) + '</span>' : '')
+                 + (meta.duration_min ? '<span><b>Time:</b> ~' + escapeHtml(meta.duration_min) + ' min</span>' : '')
+                 + (meta.difficulty ? '<span><b>Difficulty:</b> ' + escapeHtml(meta.difficulty) + '</span>' : '')
+                 + (meta.last_verified ? '<span><b>Last verified:</b> ' + escapeHtml(meta.last_verified) + '</span>' : '')
+                 + '</div>';
+      }
+      view.innerHTML = metaHtml + bodyHtml;
+      view.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e){
+      view.innerHTML = '<div class="pb-empty" style="color:#b81324">Couldn\'t load this playbook (' + escapeHtml(e.message || String(e)) + '). Try refreshing.</div>';
+      console.warn('[playbook load]', e);
+    }
+  }
+
+  // -------------------- Boot --------------------
+  try {
+    var r = await fetch('playbooks/INDEX.md?_t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('http ' + r.status);
+    var md = await r.text();
+    var sections = parseIndex(md);
+    renderIndex(sections);
+
+    var params = new URLSearchParams(location.search);
+    var wanted = (params.get('p') || '').trim();
+    if (wanted){
+      var found = null;
+      sections.forEach(function(s){ s.items.forEach(function(it){ if (it.slug === wanted && it.file) found = it; }); });
+      if (found){
+        var a = document.querySelector('[data-slug="' + wanted + '"]');
+        if (a) a.classList.add('active');
+        loadPlaybook(found.slug, found.file);
+      }
+    }
+  } catch (e){
+    setError('Could not load the playbook index. ' + (e.message || String(e)));
+    console.warn('[playbook index]', e);
+  }
+
+  document.getElementById('printBtn').addEventListener('click', function(){ window.print(); });
+})();
+</script>
+
+</body>
+</html>

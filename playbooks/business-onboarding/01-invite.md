@@ -1,5 +1,7 @@
 ---
 slug: business-onboarding-01-invite
+# Note: slug matches the flat entry in playbooks/INDEX.md so the in-app sidebar
+# (admin-playbooks.html) can deep-link via ?p=business-onboarding-01-invite.
 title: Invite a business to LYMX
 project: LYMX Power
 role: admin                       # also usable by partner — see "Who can do this"
