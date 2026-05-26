@@ -809,20 +809,46 @@
       const startMo = new Date(); startMo.setDate(1); startMo.setHours(0,0,0,0);
       const startIso = startMo.toISOString();
       const headers = { apikey: ANON, Authorization: 'Bearer ' + tok };
-      // Earned this month
+      // 2026-05-25 root-cause fix: customer_redemptions table doesn't exist — those
+      // three REST calls were silently failing for every customer on every page load.
+      // The canonical source for redemption activity is transactions(type='redemption').
+      // Chain: auth.user_id → customers.id → wallets.customer_id → transactions.wallet_id
       let earnedMo = 0, spentMo = 0, lifetime = 0;
+
+      // Earned this month — issuances filter by recipient_user_id which IS a real column
       try {
         const r = await fetch(URL + '/rest/v1/lymx_issuances?recipient_user_id=eq.' + userId + '&created_at=gte.' + encodeURIComponent(startIso) + '&select=amount_lymx', { headers });
         if (r.ok) { const rows = await r.json(); earnedMo = rows.reduce((s, x) => s + (Number(x.amount_lymx) || 0), 0); }
-      } catch (e) { console.warn('[customer-dashboard.html:L663] silent error', e); }
+      } catch (e) { console.warn('[customer-dashboard:L815] earned-this-month load failed', e); }
+
+      // Resolve the customer's wallet_id (needed for spend lookups)
+      let walletId = null;
       try {
-        const r = await fetch(URL + '/rest/v1/customer_redemptions?customer_user_id=eq.' + userId + '&created_at=gte.' + encodeURIComponent(startIso) + '&select=amount', { headers });
-        if (r.ok) { const rows = await r.json(); spentMo = rows.reduce((s, x) => s + (Number(x.amount) || 0), 0); }
-      } catch (e) { console.warn('[customer-dashboard.html:L667] silent error', e); }
-      try {
-        const r = await fetch(URL + '/rest/v1/customer_redemptions?customer_user_id=eq.' + userId + '&select=id', { headers, method: 'GET' });
-        if (r.ok) { const rows = await r.json(); lifetime = rows.length; }
-      } catch (e) { console.warn('[customer-dashboard.html:L671] silent error', e); }
+        const cr = await fetch(URL + '/rest/v1/customers?user_id=eq.' + userId + '&select=id&limit=1', { headers });
+        if (cr.ok) {
+          const custRows = await cr.json();
+          const custId = custRows[0] && custRows[0].id;
+          if (custId) {
+            const wr = await fetch(URL + '/rest/v1/wallets?customer_id=eq.' + custId + '&select=id&limit=1', { headers });
+            if (wr.ok) {
+              const wrows = await wr.json();
+              walletId = wrows[0] && wrows[0].id;
+            }
+          }
+        }
+      } catch (e) { console.warn('[customer-dashboard:L825] wallet resolve failed', e); }
+
+      // Spent this month (sum of lymx_amount on type='redemption' since startIso)
+      if (walletId) {
+        try {
+          const r = await fetch(URL + '/rest/v1/transactions?wallet_id=eq.' + walletId + '&type=eq.redemption&created_at=gte.' + encodeURIComponent(startIso) + '&select=lymx_amount', { headers });
+          if (r.ok) { const rows = await r.json(); spentMo = rows.reduce((s, x) => s + (Number(x.lymx_amount) || 0), 0); }
+        } catch (e) { console.warn('[customer-dashboard:L835] spent-this-month load failed', e); }
+        try {
+          const r = await fetch(URL + '/rest/v1/transactions?wallet_id=eq.' + walletId + '&type=eq.redemption&select=id', { headers });
+          if (r.ok) { const rows = await r.json(); lifetime = rows.length; }
+        } catch (e) { console.warn('[customer-dashboard:L840] lifetime visits load failed', e); }
+      }
       function fmt(n, prefix) {
         if (!n) return '0';
         const s = Math.abs(Math.round(n)).toLocaleString();
