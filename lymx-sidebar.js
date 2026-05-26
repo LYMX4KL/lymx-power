@@ -155,12 +155,33 @@
       if (!uid) return null;
 
       try {
-        var sr = await fetch(cfg.SUPABASE_URL + '/rest/v1/staff_roles?user_id=eq.' + uid + '&select=role&limit=5', {
+        // 2026-05-26 root-cause fix for Rachel's blink-loop tickets
+        // (#b4304da7 customer-dashboard blink, #d1c9cb75 menu items blink,
+        // #f35538b9 clock icon blink, #a088daa2 "page is for Admin").
+        // Previously this query selected `role` only and ANY staff_roles row
+        // painted the admin sidebar via `if (sroles.length) return 'admin'`.
+        // That band-aid disagreed with lymx-nav.js:474's correct predicate
+        // (role==='admin' || is_cfo || is_hr), so non-admin staff like Rachel
+        // (role='marketing') got the admin menu, clicked an admin-* link,
+        // got bounced by enforceAdminGuard, landed back on a page whose
+        // sidebar still showed admin links - the blink loop.
+        // Fix: select the same fields enforceAdminGuard reads and use the
+        // SAME predicate. Non-admin staff fall through to the partners/
+        // businesses/customer resolver and get the menu matching their
+        // actual product role.
+        var sr = await fetch(cfg.SUPABASE_URL + '/rest/v1/staff_roles?user_id=eq.' + uid + '&select=role,is_cfo,is_hr&limit=5', {
           headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
         });
         if (sr.ok) {
           var sroles = await sr.json();
-          if (Array.isArray(sroles) && sroles.length) return 'admin';
+          if (Array.isArray(sroles) && sroles.length) {
+            var hasAdminRow = sroles.some(function (s) {
+              return s.role === 'admin' || s.is_cfo === true || s.is_hr === true;
+            });
+            if (hasAdminRow) return 'admin';
+            // else: staff but not admin-tier; fall through so their sidebar
+            // matches their actual product role (customer / partner / business).
+          }
         }
       } catch (e) { console.warn('[sidebar] staff_roles probe', e); }
 

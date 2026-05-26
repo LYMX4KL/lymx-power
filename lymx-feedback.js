@@ -355,17 +355,30 @@
       baseCanvas = canvas;
       overlay.style.visibility = 'visible';
       var picker = document.createElement('div');
-      picker.style.cssText = 'position:fixed;inset:0;z-index:100000;cursor:crosshair;background:rgba(14,17,22,.4)';
+      // 2026-05-26 root-cause fix for Rachel's tickets #a1936ddc (Crop
+      // unresponsive) + #e40f6add (X-icon stuck). Previously the picker only
+      // listened for mousedown/move/up so taps did NOTHING on touch devices,
+      // leaving mobile users trapped under the picker overlay with no Esc key
+      // to reach. Now: pointer events (covers mouse AND touch in one API),
+      // touch-action:none so the browser doesn't steal the gesture for
+      // scrolling, and a visible Cancel chip top-right so mobile users have
+      // a reachable exit even if the gesture path fails.
+      picker.style.cssText = 'position:fixed;inset:0;z-index:100000;cursor:crosshair;background:rgba(14,17,22,.4);touch-action:none;user-select:none;-webkit-user-select:none';
       var hint = document.createElement('div');
-      hint.textContent = 'Drag to crop the screenshot — Esc to cancel';
-      hint.style.cssText = 'position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#0e1116;color:#fff;padding:8px 16px;border-radius:999px;font:600 13px sans-serif;pointer-events:none';
+      hint.textContent = 'Drag (or touch-drag) to crop the screenshot';
+      hint.style.cssText = 'position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#0e1116;color:#fff;padding:8px 16px;border-radius:999px;font:600 13px sans-serif;pointer-events:none;max-width:calc(100% - 140px);text-align:center';
+      var cancelChip = document.createElement('button');
+      cancelChip.type = 'button';
+      cancelChip.textContent = '✕ Cancel';
+      cancelChip.style.cssText = 'position:absolute;top:14px;right:14px;background:#fff;color:#0e1116;border:0;padding:8px 14px;border-radius:999px;font:700 13px sans-serif;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);touch-action:manipulation';
       var sel = document.createElement('div');
-      sel.style.cssText = 'position:absolute;border:2px dashed #FBBF24;background:rgba(251,191,36,.18);display:none';
-      picker.appendChild(hint); picker.appendChild(sel);
+      sel.style.cssText = 'position:absolute;border:2px dashed #FBBF24;background:rgba(251,191,36,.18);display:none;pointer-events:none';
+      picker.appendChild(hint); picker.appendChild(cancelChip); picker.appendChild(sel);
       overlay.style.display = 'none';
       document.body.appendChild(picker);
-      var startX = 0, startY = 0, dragging = false;
+      var startX = 0, startY = 0, dragging = false, activePointerId = null;
       function done(canceled, rect) {
+        try { if (activePointerId !== null && picker.releasePointerCapture) picker.releasePointerCapture(activePointerId); } catch (e) { /* bandaid-ok: pointer-capture release is best-effort; some browsers throw if id already released */ }
         picker.remove();
         overlay.style.display = 'flex';
         document.removeEventListener('keydown', onEsc);
@@ -398,24 +411,41 @@
       }
       function onEsc(e) { if (e.key === 'Escape') done(true); }
       document.addEventListener('keydown', onEsc);
-      picker.addEventListener('mousedown', function (e) {
-        dragging = true; startX = e.clientX; startY = e.clientY;
+      cancelChip.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); done(true); });
+      // pointerdown fires for mouse, touch, and pen — single code path.
+      picker.addEventListener('pointerdown', function (e) {
+        // Ignore taps on the Cancel chip (its own click handler runs first).
+        if (e.target === cancelChip || cancelChip.contains(e.target)) return;
+        e.preventDefault();
+        dragging = true;
+        activePointerId = e.pointerId;
+        startX = e.clientX; startY = e.clientY;
         sel.style.display = 'block'; sel.style.left = startX + 'px'; sel.style.top = startY + 'px';
         sel.style.width = '0px'; sel.style.height = '0px';
+        // Lock pointer to picker so finger/mouse can leave the element and
+        // we still get move/up events.
+        try { picker.setPointerCapture(e.pointerId); } catch (err) { /* bandaid-ok: setPointerCapture not supported on all browsers — events still bubble via the picker */ }
       });
-      picker.addEventListener('mousemove', function (e) {
-        if (!dragging) return;
+      picker.addEventListener('pointermove', function (e) {
+        if (!dragging || e.pointerId !== activePointerId) return;
+        e.preventDefault();
         var x = Math.min(startX, e.clientX), y = Math.min(startY, e.clientY);
         var w = Math.abs(e.clientX - startX), h = Math.abs(e.clientY - startY);
         sel.style.left = x+'px'; sel.style.top = y+'px';
         sel.style.width = w+'px'; sel.style.height = h+'px';
       });
-      picker.addEventListener('mouseup', function (e) {
-        if (!dragging) return;
+      function finishPointer(e) {
+        if (!dragging || e.pointerId !== activePointerId) return;
         dragging = false;
         var x = Math.min(startX, e.clientX), y = Math.min(startY, e.clientY);
         var w = Math.abs(e.clientX - startX), h = Math.abs(e.clientY - startY);
         done(false, { x: x, y: y, w: w, h: h });
+      }
+      picker.addEventListener('pointerup', finishPointer);
+      picker.addEventListener('pointercancel', function (e) {
+        if (!dragging || e.pointerId !== activePointerId) return;
+        dragging = false;
+        done(true);
       });
     }).catch(function (e) {
       overlay.style.visibility = 'visible';
