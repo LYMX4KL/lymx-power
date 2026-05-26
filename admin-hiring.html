@@ -145,7 +145,15 @@
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <a href="admin-generate-offer.html" class="btn btn-ghost">📄 Generate offer</a>
-        <button class="btn btn-primary" onclick="openAdd()">+ Add applicant</button>
+        <!-- 2026-05-26 #b39ad14a (Helen): the previous "+ Add applicant" button
+             opened a localStorage-only mock with hardcoded role options that didn't
+             include "concierge" (or anything outside frontend / ops / design). It
+             confused Helen because the playbook actually says Step 1 is to generate
+             the offer via admin-generate-offer.html (which IS backed by jobs +
+             job_applications tables and accepts any role title in a free-text
+             field). Per the no-fake-fix rule, removed the mock and replaced with
+             a direct link to the real backed flow. -->
+        <a class="btn btn-primary" href="/admin-generate-offer.html" style="text-decoration:none">+ Generate offer for new candidate</a>
       </div>
     </div>
 
@@ -172,39 +180,12 @@
   </div>
 </main>
 
-<!-- Add applicant modal -->
-<div class="modal" id="add-modal" onclick="if(event.target===this)closeAdd()">
-  <div class="modal-card">
-    <div class="modal-h"><h3>Add applicant</h3></div>
-    <div class="modal-body">
-      <div class="field"><label>Name</label><input class="input" id="a-name" /></div>
-      <div class="field"><label>Email</label><input class="input" type="email" id="a-email" /></div>
-      <div class="field">
-        <label>Role</label>
-        <select id="a-role">
-          <option value="frontend">Frontend / PWA Engineer</option>
-          <option value="ops">Founding Operations</option>
-          <option value="design">Brand &amp; Content Designer</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Source</label>
-        <select id="a-source">
-          <option>Direct application</option>
-          <option>LinkedIn</option>
-          <option>Referral</option>
-          <option>Recruiter</option>
-          <option>Other</option>
-        </select>
-      </div>
-      <div class="field"><label>Notes</label><textarea id="a-notes" placeholder="Anything from initial review"></textarea></div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeAdd()">Cancel</button>
-      <button class="btn btn-primary" onclick="addApplicant()">Add to pipeline</button>
-    </div>
-  </div>
-</div>
+<!-- Add applicant modal removed 2026-05-26 #b39ad14a (Helen): was
+     localStorage-only mock with a hardcoded role enum that excluded
+     "concierge support". The real new-candidate path is the
+     "+ Generate offer for new candidate" CTA above, which routes to
+     admin-generate-offer.html (backed by jobs + job_applications tables
+     with free-text role title). -->
 
 <div class="toast" id="toast"></div>
 
@@ -324,22 +305,9 @@
     showToast(`${c.name} advanced to ${stages[idx + 1]}`, 'success');
   }
 
-  function openAdd(){ document.getElementById('add-modal').classList.add('on'); }
-  function closeAdd(){ document.getElementById('add-modal').classList.remove('on'); }
-  function addApplicant(){
-    const name = document.getElementById('a-name').value.trim();
-    if (!name){ showToast('Enter a name'); return; }
-    const role = document.getElementById('a-role').value;
-    const source = document.getElementById('a-source').value;
-    const initials = name.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
-    candidates.push({id:'c'+Date.now(), name, role, stage:'applied', applied:'just now', source, av:initials});
-    closeAdd();
-    document.getElementById('a-name').value = '';
-    document.getElementById('a-email').value = '';
-    document.getElementById('a-notes').value = '';
-    render();
-    showToast(`${name} added to pipeline`, 'success');
-  }
+  // openAdd / closeAdd / addApplicant functions removed 2026-05-26 #b39ad14a
+  // (Helen): were paired with the "+ Add applicant" modal that wrote to
+  // localStorage only. New candidate flow lives at admin-generate-offer.html.
 
   function exportCSV(){
     let csv = 'Name,Role,Stage,Applied,Source\n';

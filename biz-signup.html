@@ -193,8 +193,28 @@
         </div>
         <div class="field">
           <label>Create password <span class="req">*</span></label>
-          <input class="input" name="owner_password" type="password" required minlength="10" autocomplete="new-password">
+          <!-- 2026-05-26 #d854fdca - eye toggle so business owners can verify
+               their typed password before submit. Same pattern as welcome.html
+               line 156-168 (shipped 2026-05-19 #68fa5d98). Consistency across
+               every signup surface. -->
+          <div style="position:relative">
+            <input class="input" id="ownerPassword" name="owner_password" type="password" required minlength="10" autocomplete="new-password" style="padding-right:42px">
+            <button type="button" id="ownerPwToggle" aria-label="Show password" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;font-size:18px;padding:4px">&#x1F441;&#xFE0F;</button>
+          </div>
           <div class="helper">10 characters minimum.</div>
+          <script>
+            (function () {
+              var t = document.getElementById('ownerPwToggle');
+              if (!t) return;
+              t.addEventListener('click', function () {
+                var el = document.getElementById('ownerPassword');
+                var hidden = el.type === 'password';
+                el.type = hidden ? 'text' : 'password';
+                this.innerHTML = hidden ? '&#x1F648;' : '&#x1F441;&#xFE0F;';
+                this.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
+              });
+            })();
+          </script>
         </div>
       </div>
     </section>
