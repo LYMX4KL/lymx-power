@@ -254,7 +254,12 @@
 
   let timeFilter = 'all';
   let bizMode = 'combined';
-  const TODAY = new Date('2026-04-29');
+  // 2026-05-25 Cluster B fix (Dave): TODAY was hardcoded to '2026-04-29'
+  // for the original launch demo, which made the 'This month' / 'Last 30 days'
+  // filters compare against a stale date. After May 25 every customer was
+  // seeing 'no activity' even when their real transactions existed within the
+  // window. Now uses live new Date() so the filters move with the calendar.
+  const TODAY = new Date();
 
   function txInRange(tx){
     if(timeFilter === 'all') return true;

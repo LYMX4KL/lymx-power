@@ -105,8 +105,12 @@
     <div class="col yes">
       <h3>✅ What we collect</h3>
       <ul>
-        <li><b>Phone number</b><span>The unique identifier for your wallet.</span></li>
-        <li><b>First name only</b><span>For greeting at register. Last name optional.</span></li>
+        <!-- 2026-05-25 Cluster B fix (Dave): page described phone-based
+             identity which doesn't match the live system (Supabase Auth uses
+             email + password). Updated to reflect what we actually collect. -->
+        <li><b>Email address</b><span>The unique identifier for your account. Used for sign-in + receipts.</span></li>
+        <li><b>Display name (first name optional)</b><span>For greeting in-app + at register. Last name optional.</span></li>
+        <li><b>Optional phone number</b><span>For SMS receipts + 2FA, only if you opt in. Not required to use LYMX.</span></li>
         <li><b>Transaction history</b><span>Every earn + redemption, with Business + amount + date.</span></li>
         <li><b>Birthday (month + day, no year) — if you opt in</b><span>For birthday bonus promos. Optional.</span></li>
         <li><b>Approximate city</b><span>Derived from your IP at sign-up. Used for "Businesses near you" feature.</span></li>
