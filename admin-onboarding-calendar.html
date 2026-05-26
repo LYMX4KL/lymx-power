@@ -154,9 +154,9 @@
   // Bookings
   async function loadBookings() {
     const nowIso = new Date().toISOString();
-    const upR = await fetch(URL + '/rest/v1/onboarding_bookings?host_id=eq.' + host.id + '&status=eq.confirmed&starts_at=gte.' + nowIso + '&order=starts_at', { headers: H });
+    const upR = await fetch(URL + '/rest/v1/onboarding_bookings?host_id=eq.' + host.id + '&status=eq.confirmed&starts_at=gte.' + nowIso + '&order=starts_at&select=*,business:businesses(slug,display_name,approval_status,approved_at)', { headers: H });
     const upcoming = await upR.json();
-    const pastR = await fetch(URL + '/rest/v1/onboarding_bookings?host_id=eq.' + host.id + '&starts_at=lt.' + nowIso + '&order=starts_at.desc&limit=25', { headers: H });
+    const pastR = await fetch(URL + '/rest/v1/onboarding_bookings?host_id=eq.' + host.id + '&starts_at=lt.' + nowIso + '&order=starts_at.desc&limit=25&select=*,business:businesses(slug,display_name,approval_status,approved_at)', { headers: H });
     const past = await pastR.json();
     return { upcoming: Array.isArray(upcoming) ? upcoming : [], past: Array.isArray(past) ? past : [] };
   }
@@ -173,9 +173,21 @@
     const day = d.toLocaleDateString([], { weekday: 'short' });
     const dateStr = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
     const timeStr = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    // Module 3: prefer the linked business (via ?biz=<slug>) over the free-text
+    // business_name field. Show approval date + slug chip when linked.
+    var linkedBizHtml = '';
+    if (b.business && b.business.display_name) {
+      var approvedStr = b.business.approved_at ? new Date(b.business.approved_at).toLocaleDateString([], { month: 'short', day: 'numeric' }) : '';
+      linkedBizHtml = '<div class="linked-biz" style="font-size:12px;color:#0a6e44;background:#e6f5ee;border:1px solid #a8d8c0;border-radius:6px;padding:3px 8px;display:inline-block;margin-top:4px;font-weight:600">'
+        + '\uD83C\uDFE2 <a href="admin-business-applications.html" style="color:#0a6e44;text-decoration:none">' + esc(b.business.display_name) + '</a>'
+        + (approvedStr ? ' \u00B7 approved ' + esc(approvedStr) : '')
+        + ' \u00B7 <code style="font-size:11px">' + esc(b.business.slug || '') + '</code>'
+        + '</div>';
+    }
     row.innerHTML = '<div class="when"><div class="day">' + day + ' · ' + dateStr + '</div>' + timeStr + '</div>'
-      + '<div class="who"><div class="name">' + esc(b.booker_name) + (b.business_name ? ' · ' + esc(b.business_name) : '') + '</div>'
+      + '<div class="who"><div class="name">' + esc(b.booker_name) + (b.business_name && !b.business ? ' · ' + esc(b.business_name) : '') + '</div>'
       + '<div class="biz">' + esc(b.booker_email) + (b.booker_phone ? ' · ' + esc(b.booker_phone) : '') + '</div>'
+      + linkedBizHtml
       + (b.notes ? '<div class="notes">' + esc(b.notes) + '</div>' : '') + '</div>'
       + '<div class="actions"></div>';
     const actions = row.querySelector('.actions');

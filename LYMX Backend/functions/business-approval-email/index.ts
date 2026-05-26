@@ -46,13 +46,23 @@ function userFromJwt(authHeader: string | null): string | null {
 }
 
 function approvedEmail(displayName: string, slug: string, dashboardUrl: string, welcomeUrl: string): { subject: string; html: string } {
+    // Module 3 / migration 096: per-biz booking URL so Rachel sees the biz
+    // context when the booking row arrives. The page consumes ?biz=<slug>,
+    // prefills the form, and links the resulting booking to businesses.id.
+    const bookCallUrl = `https://getlymx.com/book-onboarding-call.html?biz=${encodeURIComponent(slug)}`;
     return {
-        subject: `Your LYMX Business is live — ${displayName}`,
+        subject: `Your LYMX Business is live — ${displayName} (next step: book your 20-min onboarding call)`,
         html: `<p>Hi,</p>
 
 <p>Good news: <strong>${displayName}</strong> is now live on the LYMX network.</p>
 
-<h3>What to do next</h3>
+<p style="background:#fff8e6;border-left:4px solid #f0a020;padding:12px 16px;border-radius:0 8px 8px 0;margin:18px 0"><strong>One required next step:</strong> book your free 20-minute onboarding call below. We need this call before you start issuing rewards — it's how we confirm your POS setup, walk you through the dashboard, and make sure your first transaction works. Most businesses are done in under 20 minutes.</p>
+
+<p style="margin:18px 0"><a href="${bookCallUrl}" style="display:inline-block;background:#0a84ff;color:#fff;padding:13px 24px;border-radius:9px;font-weight:700;text-decoration:none">Book your 20-min onboarding call →</a></p>
+
+<p style="color:#5b6472;font-size:13px;margin-top:-6px">Or paste this link into your browser:<br><a href="${bookCallUrl}">${bookCallUrl}</a></p>
+
+<h3>While you wait for your call</h3>
 
 <p><strong>1) Sign in to your business dashboard:</strong><br>
 <a href="${dashboardUrl}">${dashboardUrl}</a></p>
@@ -63,11 +73,6 @@ function approvedEmail(displayName: string, slug: string, dashboardUrl: string, 
 <a href="${welcomeUrl}">${welcomeUrl}</a></p>
 
 <p>Drop that link in your newsletter, on your storefront QR code, in your email signature — anywhere customers can click. The first 25 customers who sign up via that URL get <strong>150 LYMX</strong> (100 from LYMX + 50 from you, billed at $0.50 per customer).</p>
-
-<p><strong>3) Book a 1-on-1 with Rachel</strong> if you want a live walkthrough:<br>
-<a href="https://getlymx.com/book-onboarding-call.html">getlymx.com/book-onboarding-call.html</a></p>
-
-<p>She'll spend 30 minutes with you, answer questions, and help you set up your first promotion.</p>
 
 <h3>Your plan</h3>
 <p>3 months free — your first invoice is on the 1st of the 4th month. $199/mo after that. You can cancel any time. See full terms at <a href="https://getlymx.com/biz-tos.html">getlymx.com/biz-tos.html</a>.</p>

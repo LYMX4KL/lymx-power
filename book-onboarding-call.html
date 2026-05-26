@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Book a 1-on-1 onboarding call — LYMX</title>
-<meta name="description" content="Book a free 30-minute onboarding call with the LYMX team. We walk you through joining LYMX as a Business — your questions, your pace." />
+<meta name="description" content="Book a free 20-minute onboarding call with the LYMX team. We walk you through joining LYMX as a Business — your questions, your pace." />
 <link rel="canonical" href="https://getlymx.com/book-onboarding-call.html" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--err:#b81324}
@@ -67,7 +67,7 @@
   </div>
 
   <h1 id="pageTitle">Book a 1-on-1 onboarding call</h1>
-  <p class="lede" id="pageLede">Free 30-minute walkthrough. Bring your questions about joining LYMX as a Business — we'll get you set up live on the call.</p>
+  <p class="lede" id="pageLede">Free 20-minute walkthrough. Bring your questions about joining LYMX as a Business — we'll get you set up live on the call.</p>
   <script>
     // 2026-05-20 #8ae35834 — When ?for=partner is in the URL, reframe the
     // copy + the form for new Partners (vs Businesses). New onboarding panel
@@ -76,8 +76,43 @@
       var forParam = new URLSearchParams(location.search).get('for');
       if (forParam !== 'partner') return;
       document.getElementById('pageTitle').textContent = 'Book your Partner onboarding call';
-      document.getElementById('pageLede').textContent = 'Free 30-minute 1-on-1 with the LYMX team. We help you build your local prospect list, walk through the pitch, and answer anything about commissions or compliance.';
+      document.getElementById('pageLede').textContent = 'Free 20-minute 1-on-1 with the LYMX team. We help you build your local prospect list, walk through the pitch, and answer anything about commissions or compliance.';
       document.title = 'Book Partner onboarding · LYMX';
+    })();
+
+    // Module 3 / migration 096: ?biz=<slug> support. When the approval email
+    // links here with a specific business, fetch its display name + prefill
+    // the business_name field, and surface a small banner so the booker
+    // knows the call is being booked AGAINST that biz.
+    (async function () {
+      var bizSlug = new URLSearchParams(location.search).get('biz');
+      if (!bizSlug) return;
+      window.__BIZ_SLUG = bizSlug;
+      try {
+        while (!window.LYMX_CONFIG) await new Promise(function (r) { setTimeout(r, 80); });
+        var cfg = window.LYMX_CONFIG;
+        var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/rpc/fn_biz_public_meta', {
+          method: 'POST',
+          headers: { apikey: cfg.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ p_slug: bizSlug })
+        });
+        if (!r.ok) return;
+        var rows = await r.json();
+        var meta = Array.isArray(rows) ? rows[0] : rows;
+        if (!meta || !meta.display_name) return;
+        window.__BIZ_META = meta;
+        var banner = document.createElement('div');
+        banner.style.cssText = 'background:#eef6ff;border:1px solid #c7d2fe;border-radius:9px;padding:11px 14px;margin:14px 0;font-size:13.5px;color:#1e40af;font-weight:600';
+        banner.innerHTML = '📅 Booking your onboarding call for <strong>' + (meta.display_name || bizSlug).replace(/[<>]/g, '') + '</strong>';
+        var lede = document.getElementById('pageLede');
+        if (lede && lede.parentNode) lede.parentNode.insertBefore(banner, lede.nextSibling);
+        var prefill = function () {
+          var inp = document.getElementById('fBiz');
+          if (inp && !inp.value) { inp.value = meta.display_name; }
+        };
+        if (document.getElementById('fBiz')) prefill();
+        else document.addEventListener('DOMContentLoaded', prefill);
+      } catch (e) { console.warn('[book-onboarding-call] biz prefill failed', e); }
     })();
   </script>
 
@@ -334,6 +369,22 @@
       const rows = await res.json();
       const booking = rows[0];
 
+      // Module 3: if the page was opened with ?biz=<slug>, link the booking
+      // to that business via fn_mark_onboarding_booking_for_business. The
+      // RPC has a 5-min freshness gate so anonymous callers can only link
+      // a booking they just created.
+      if (window.__BIZ_SLUG && booking && booking.id) {
+        try {
+          await fetch(URL + '/rest/v1/rpc/fn_mark_onboarding_booking_for_business', {
+            method: 'POST',
+            headers: { apikey: ANON, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ p_booking_id: booking.id, p_biz_slug: window.__BIZ_SLUG })
+          });
+        } catch (e) {
+          console.warn('[book-onboarding-call] biz link failed (non-fatal)', e);
+        }
+      }
+
       const ics = buildICS(host, booking, selectedSlot);
       const blob = new Blob([ics], { type: 'text/calendar' });
       document.getElementById('icsBtn').href = window.URL.createObjectURL(blob);
@@ -362,7 +413,7 @@
       'DTSTART:' + fmt(slot.start),
       'DTEND:'   + fmt(slot.end),
       'SUMMARY:LYMX onboarding call with ' + host.display_name,
-      'DESCRIPTION:Your 30-min LYMX onboarding call. ' + host.display_name + ' will email you the meeting link before the call.',
+      'DESCRIPTION:Your ' + (host.slot_minutes || 20) + '-min LYMX onboarding call. ' + host.display_name + ' will email you the meeting link before the call.',
       'ORGANIZER;CN=' + host.display_name + ':mailto:' + host.email,
       'ATTENDEE;CN=' + booking.booker_name + ';RSVP=TRUE:mailto:' + booking.booker_email,
       'END:VEVENT',
