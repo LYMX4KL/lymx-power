@@ -215,16 +215,14 @@ async function hydrate(){
     var sb = window.LYMX && window.LYMX.sb;
     var sess = window.LYMX && window.LYMX.getSession ? await window.LYMX.getSession() : null;
     if (sb && sess && sess.user) {
-      // 2026-05-20 audit fix - wallets column is `balance` not `balance_lymx`, and `customer_id` references customers.id not auth.users.id. (Audit Pass 3)
-      var { data: cust } = await sb.from('customers').select('id').eq('user_id', sess.user.id).maybeSingle();
-      if (cust && cust.id) {
-        var { data: walletRows } = await sb.from('wallets').select('balance').eq('customer_id', cust.id);
-        if (walletRows && walletRows.length) {
-          var total = walletRows.reduce(function(s,w){ return s + Number(w.balance || 0); }, 0);
-          document.getElementById('balanceVal').textContent = Math.round(total).toLocaleString();
+      // 2026-05-26 Module 5 unification: balance from v_my_lymx_balance.
+      try {
+        var { data: ledger } = await sb.from('v_my_lymx_balance').select('available_lymx').maybeSingle();
+        if (ledger) {
+          document.getElementById('balanceVal').textContent = Math.round(Number(ledger.available_lymx || 0)).toLocaleString();
           document.getElementById('balanceBox').classList.add('show');
         }
-      }
+      } catch(e) { console.warn('[pay] balance read failed', e); }
       document.getElementById('signinPrompt').classList.remove('show');
     } else {
       document.getElementById('signinPrompt').classList.add('show');

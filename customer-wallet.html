@@ -329,46 +329,36 @@
       } catch (e) { console.warn('[customer-wallet] avatar load failed', e); }
     }
 
+    // 2026-05-26 Module 5 unification: v_my_lymx_balance is the sole source of truth.
+    // The deprecated wallets/transactions reads added 0 (those tables were empty);
+    // customer_redemptions view (Mod 5) is now the canonical redemption source.
     let totalLymx = 0;
+    let earnedMo  = 0;
+    let spentMo   = 0;
     try {
-      const { data: ledger } = await window.LYMX.sb.from('v_my_lymx_balance').select('*').maybeSingle();
-      if (ledger) totalLymx += Number(ledger.available_lymx || 0);
-    } catch(e) { console.warn('[customer-wallet.html:L315] silent error', e); }
-    // 2026-05-20 audit fix - wallets column is `balance` not `lymx_balance`, and `customer_id` references customers.id not auth.users.id - need 2-step lookup. (Audit Pass 3)
-    let myWalletIds = [];
-    try {
-      const { data: cust } = await window.LYMX.sb.from('customers').select('id').eq('user_id', user.id).maybeSingle();
-      if (cust && cust.id) {
-        const { data: wallets } = await window.LYMX.sb.from('wallets').select('id, balance').eq('customer_id', cust.id);
-        if (wallets && wallets.length) {
-          wallets.forEach(w => {
-            totalLymx += Number(w.balance || 0);
-            myWalletIds.push(w.id);
-          });
-        }
-      }
-    } catch(e) { console.warn('[customer-wallet.html:L329] silent error', e); }
+      const { data: ledger } = await window.LYMX.sb.from('v_my_lymx_balance').select('available_lymx, total_earned, total_redeemed').maybeSingle();
+      if (ledger) totalLymx = Number(ledger.available_lymx || 0);
+    } catch(e) { console.warn('[customer-wallet] balance read failed', e); }
 
     const balEl = document.getElementById('bal-display');
     if (balEl) balEl.innerHTML = totalLymx.toLocaleString('en-US') + ' <small>LYMX</small>';
 
     const startMo = new Date(); startMo.setDate(1); startMo.setHours(0,0,0,0);
     const startIso = startMo.toISOString();
-    let earnedMo = 0, spentMo = 0;
+
+    // Earned this month — positive issuance rows since the 1st
     try {
       const { data: iss } = await window.LYMX.sb.from('lymx_issuances')
-        .select('amount_lymx').eq('recipient_user_id', user.id).gte('created_at', startIso);
+        .select('amount_lymx').eq('recipient_user_id', user.id).gte('created_at', startIso).gt('amount_lymx', 0);
       (iss || []).forEach(r => earnedMo += Number(r.amount_lymx || 0));
-    } catch (e) { console.warn('[customer-wallet.html:L341] silent error', e); }
-    // 2026-05-20 audit fix - customer_redemptions table doesn't exist; query transactions where type='redemption' (Audit Pass 2)
-    if (myWalletIds.length > 0) {
-      try {
-        const { data: red } = await window.LYMX.sb.from('transactions')
-          .select('lymx_amount').in('wallet_id', myWalletIds).eq('type', 'redemption').gte('created_at', startIso);
-        // Redemption amounts are negative; show as positive "spent" total
-        (red || []).forEach(r => spentMo += Math.abs(Number(r.lymx_amount || 0)));
-      } catch (e) { console.warn('[customer-wallet.html:L349] silent error', e); }
-    }
+    } catch (e) { console.warn('[customer-wallet] earned-this-month load failed', e); }
+
+    // Spent this month — customer_redemptions view (lymx_amount is positive in the view)
+    try {
+      const { data: red } = await window.LYMX.sb.from('customer_redemptions')
+        .select('lymx_amount').eq('customer_user_id', user.id).gte('created_at', startIso);
+      (red || []).forEach(r => spentMo += Number(r.lymx_amount || 0));
+    } catch (e) { console.warn('[customer-wallet] spent-this-month load failed', e); }
 
     const rows = document.querySelectorAll('.balance .row');
     if (rows.length >= 2) {

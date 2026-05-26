@@ -249,34 +249,29 @@
     const sb = window.LYMX.sb;
 
     const day14ago = new Date(Date.now() - 14*24*60*60*1000).toISOString();
-    // 2026-05-20 audit fix - transactions has no `customer_id` (linked via wallet_id → wallets.customer_id) and referrals has no `invitee_email` (only invitee_user_id). Notifications panel for redemptions + referrals was silently empty before this fix. (Audit Pass 3)
-    const { data: custForNotif } = await sb.from('customers').select('id').eq('user_id', user.id).maybeSingle();
-    const custIdN = custForNotif && custForNotif.id;
-    let myWalletIdsN = [];
-    if (custIdN) {
-      const { data: walletsArrN } = await sb.from('wallets').select('id').eq('customer_id', custIdN);
-      myWalletIdsN = (walletsArrN || []).map(w => w.id);
-    }
-    const [issRes, txRes, refRes] = await Promise.all([
+    // 2026-05-26 Module 5 unification: single source = lymx_issuances. Earn rows
+    // (positive amount_lymx) AND redemption rows (negative amount_lymx with
+    // reason='redemption') both appear in one query. The deprecated
+    // wallets+transactions chain is gone.
+    const [issRes, refRes] = await Promise.all([
       sb.from('lymx_issuances')
         .select('id, amount_lymx, reason, created_at, businesses(display_name)')
         .eq('recipient_user_id', user.id)
         .gte('created_at', day14ago)
-        .order('created_at', { ascending: false }).limit(60),
-      myWalletIdsN.length === 0
-        ? Promise.resolve({ data: [] })
-        : sb.from('transactions')
-            .select('id, lymx_amount, type, created_at, businesses(display_name)')
-            .in('wallet_id', myWalletIdsN)
-            .eq('type', 'redemption')
-            .gte('created_at', day14ago)
-            .order('created_at', { ascending: false }).limit(60),
+        .order('created_at', { ascending: false }).limit(120),
       sb.from('referrals')
         .select('id, status, invitee_user_id, created_at, inviter_bonus_amount')
         .eq('inviter_user_id', user.id)
         .gte('created_at', day14ago)
         .order('created_at', { ascending: false }).limit(30)
     ]);
+    // Split iss rows into earnings + redemptions for the existing render code
+    const issRows = (issRes.data || []).filter(r => (r.reason !== 'redemption') && Number(r.amount_lymx || 0) > 0);
+    const txRows  = (issRes.data || []).filter(r => r.reason === 'redemption' || Number(r.amount_lymx || 0) < 0)
+      .map(r => ({ id: r.id, lymx_amount: Math.abs(Number(r.amount_lymx || 0)), type: 'redemption', created_at: r.created_at, businesses: r.businesses }));
+    // Shape-compat: notifications.html below reads issRes.data and txRes.data
+    issRes.data = issRows;
+    const txRes = { data: txRows };
 
     function dayLabel(iso) {
       const d = new Date(iso);

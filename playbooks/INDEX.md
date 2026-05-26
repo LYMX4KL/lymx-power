@@ -21,6 +21,8 @@
 | [business-onboarding-03-approval](business-onboarding/03-approval.md) | Review a pending business application (approve / request more info / reject) | Admin | ✅ Verified 2026-05-26 |
 | [business-onboarding-04-approval-email-and-callback](business-onboarding/04-approval-email-and-callback.md) | Approval email + the required 20-min onboarding call + nudge cron | Admin | ✅ Verified 2026-05-26 |
 | [business-onboarding-05-booking-the-call](business-onboarding/05-booking-the-call.md) | Book + run the 20-min onboarding call (Daily.co room + post-call summary) | Business prospect / Admin | ✅ Verified 2026-05-26 |
+| [business-onboarding-06-issuing-lymx](business-onboarding/06-issuing-lymx.md) | Issue and redeem LYMX at your business (Module 5 unified pipeline) | Business owner / Engineer | ✅ Verified 2026-05-26 |
+| [business-onboarding-07-customer-redeems](business-onboarding/07-customer-redeems.md) | How a customer sees, earns, and redeems LYMX (Module 6 customer surfaces) | Customer / Engineer | ✅ Verified 2026-05-26 |
 | partner-onboarding | Apply, get $750 setup, pitch your first business | Partner | 📋 Planned |
 
 ## Daily operations (planned)

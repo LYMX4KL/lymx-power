@@ -420,46 +420,26 @@
     if (!user) return;
     const sb = window.LYMX.sb;
 
-    // 2026-05-20 audit fix - lymx_issuances column is `business_id` (renamed from source_business_id) + transactions has no `customer_id` column (linked via wallet_id → wallets.customer_id). (Audit Pass 3)
-    const { data: cust } = await sb.from('customers').select('id').eq('user_id', user.id).maybeSingle();
-    const custId = cust && cust.id;
-    let walletIds = [];
-    if (custId) {
-      const { data: walletsArr } = await sb.from('wallets').select('id').eq('customer_id', custId);
-      walletIds = (walletsArr || []).map(w => w.id);
-    }
-    const [issRes, txRes] = await Promise.all([
-      sb.from('lymx_issuances')
-        .select('amount_lymx, reason, created_at, business_id, businesses(display_name, category)')
-        .eq('recipient_user_id', user.id)
-        .order('created_at', { ascending: false }).limit(500),
-      walletIds.length === 0
-        ? Promise.resolve({ data: [] })
-        : sb.from('transactions')
-            .select('lymx_amount, type, created_at, business_id, businesses(display_name, category)')
-            .in('wallet_id', walletIds)
-            .in('type', ['redemption', 'transfer_out', 'transfer_in', 'adjustment'])
-            .order('created_at', { ascending: false }).limit(500)
-    ]);
+    // 2026-05-26 Module 5 unification: single source of truth — lymx_issuances.
+    // Positive amount_lymx rows = earn (includes signup_bonus, transaction,
+    // referral, manual, promo, review, correction). Redemption rows have
+    // NEGATIVE amount_lymx and reason='redemption' — flip the sign for display
+    // and tag as spend. The deprecated wallets+transactions chain is gone.
+    const { data: issData } = await sb.from('lymx_issuances')
+      .select('amount_lymx, reason, created_at, business_id, businesses(display_name, category)')
+      .eq('recipient_user_id', user.id)
+      .order('created_at', { ascending: false }).limit(500);
 
     const rows = [];
-    (issRes.data || []).forEach(i => {
+    (issData || []).forEach(i => {
+      const amt = Number(i.amount_lymx || 0);
+      const isSpend = i.reason === 'redemption' || amt < 0;
       rows.push({
         date: (i.created_at || '').slice(0, 10),
         biz: (i.businesses && i.businesses.display_name) || (i.reason || 'LYMX Network'),
         cat: (i.businesses && i.businesses.category) || 'system',
-        type: 'earn',
-        amt: Math.abs(Number(i.amount_lymx || 0))
-      });
-    });
-    (txRes.data || []).forEach(t => {
-      const isEarn = (t.type === 'transfer_in' || (t.type === 'adjustment' && Number(t.lymx_amount) > 0));
-      rows.push({
-        date: (t.created_at || '').slice(0, 10),
-        biz: (t.businesses && t.businesses.display_name) || 'LYMX Business',
-        cat: (t.businesses && t.businesses.category) || 'system',
-        type: isEarn ? 'earn' : 'spend',
-        amt: Math.abs(Number(t.lymx_amount || 0))
+        type: isSpend ? 'spend' : 'earn',
+        amt: Math.abs(amt)
       });
     });
 

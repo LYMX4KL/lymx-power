@@ -146,68 +146,63 @@
      * Each row: { id, customer_id, business_id, lymx_balance, businesses: { display_name, category } }
      */
     async fetchMyWallets() {
+      // 2026-05-26 Module 5 unification: returns a virtual "per-business wallet"
+      // computed from SUM(lymx_issuances) grouped by business_id. The underlying
+      // wallets table is deprecated (always empty pre-Module-5). UIs that used
+      // this for per-biz balance get a real number now.
       const user = await this.getUser();
       if (!user) return { data: [], error: new Error('Not signed in') };
-      const { data: customer } = await sb.from('customers').select('id').eq('user_id', user.id).maybeSingle();
-      if (!customer) return { data: [], error: null };
-      // 2026-05-20 audit fix - wallets column is `balance`, not `lymx_balance`. Customer dashboard was reading 0 for all balances. (Audit Pass 3)
-      return await sb
-        .from('wallets')
-        .select('id, business_id, balance, businesses(display_name, category)')
-        .eq('customer_id', customer.id);
+      const { data: rows, error } = await sb
+        .from('lymx_issuances')
+        .select('business_id, amount_lymx, businesses(display_name, category)')
+        .eq('recipient_user_id', user.id)
+        .in('admin_status', ['auto', 'approved']);
+      if (error) return { data: [], error };
+      const map = new Map();
+      for (const r of (rows || [])) {
+        if (!r.business_id) continue;
+        const key = r.business_id;
+        const prior = map.get(key) || { business_id: r.business_id, balance: 0, businesses: r.businesses, id: null };
+        prior.balance += Number(r.amount_lymx || 0);
+        prior.businesses = prior.businesses || r.businesses;
+        map.set(key, prior);
+      }
+      return { data: Array.from(map.values()), error: null };
     },
 
     async fetchMyTransactions(limit) {
+      // 2026-05-26 Module 5 unification: single query against lymx_issuances.
+      // Pre-Module-5 we also queried wallets+transactions, but both were empty
+      // and the merge added zero rows. With Module 5, every issuance AND every
+      // redemption (negative amount, reason='redemption') lives in lymx_issuances.
+      // Map to the UI's expected shape: positive rows → type='issuance',
+      // negative rows → type='redemption' (and we flip the sign for the
+      // displayed lymx_amount so the UI can always read it as a positive int).
       const user = await this.getUser();
       if (!user) return { data: [], error: new Error('Not signed in') };
-      const { data: customer } = await sb.from('customers').select('id').eq('user_id', user.id).maybeSingle();
-      // 2026-05-20 #a8fc64af - was wallet-only; missed platform-issued LYMX
-      // (welcome bonuses, promo bonuses) which live in lymx_issuances keyed
-      // by recipient_user_id. Now merge both sources into a unified activity feed.
-      const promises = [];
-      // Wallet-linked transactions (per-business issuances + redemptions + transfers)
-      if (customer) {
-        const { data: walletsArr } = await sb.from('wallets').select('id').eq('customer_id', customer.id);
-        const walletIds = (walletsArr || []).map(w => w.id);
-        if (walletIds.length > 0) {
-          promises.push(
-            sb.from('transactions')
-              .select('id, type, lymx_amount, usd_basis, created_at, business_id, wallet_id, businesses(display_name)')
-              .in('wallet_id', walletIds)
-              .order('created_at', { ascending: false })
-              .limit(limit || 20)
-              .then(r => (r.data || []).map(t => ({
-                source: 'transaction',
-                id: t.id, type: t.type, lymx_amount: t.lymx_amount, usd_basis: t.usd_basis,
-                created_at: t.created_at, business_id: t.business_id, businesses: t.businesses,
-              })))
-              .catch(() => [])
-          );
-        }
-      }
-      // Platform-issued LYMX (welcome bonus, promos, referral pair)
-      promises.push(
-        sb.from('lymx_issuances')
-          .select('id, amount_lymx, reason, created_at, business_id, businesses(display_name)')
-          .eq('recipient_user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(limit || 20)
-          .then(r => (r.data || []).map(i => ({
-            source: 'issuance',
-            id: i.id,
-            type: 'issuance',
-            lymx_amount: Number(i.amount_lymx || 0),
-            usd_basis: null,
-            created_at: i.created_at,
-            business_id: i.business_id,
-            businesses: i.businesses,
-            reason: i.reason,
-          })))
-          .catch(() => [])
-      );
-      const both = await Promise.all(promises);
-      const merged = [].concat(...both).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, limit || 20);
-      return { data: merged, error: null };
+      const { data: rows, error } = await sb
+        .from('lymx_issuances')
+        .select('id, amount_lymx, reason, transaction_method, transaction_amount_cents, created_at, business_id, businesses(display_name)')
+        .eq('recipient_user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(limit || 20);
+      if (error) return { data: [], error };
+      const mapped = (rows || []).map(r => {
+        const amt = Number(r.amount_lymx || 0);
+        const isRedemption = r.reason === 'redemption' || amt < 0;
+        return {
+          source: 'lymx_issuances',
+          id: r.id,
+          type: isRedemption ? 'redemption' : 'issuance',
+          lymx_amount: Math.abs(amt),
+          usd_basis: r.transaction_amount_cents ? (Number(r.transaction_amount_cents) / 100) : null,
+          created_at: r.created_at,
+          business_id: r.business_id,
+          businesses: r.businesses,
+          reason: r.reason,
+        };
+      });
+      return { data: mapped, error: null };
     },
 
     // ---------- Business data ----------
@@ -268,15 +263,32 @@
     },
 
     async fetchMyBusinessTransactions(businessId, fromDate, limit) {
-      // 2026-05-20 audit fix - transactions has no `usd_amount` (column is `usd_basis`) and no direct `customer_id` (linked via wallet_id → wallets.customer_id). (Audit Pass 3)
+      // 2026-05-26 Module 5 unification: reads from lymx_issuances (canonical).
+      // Maps to the UI's expected { type, lymx_amount, usd_basis } shape.
+      // Negative amount_lymx + reason='redemption' becomes type='redemption' with
+      // a positive lymx_amount for display.
       let q = sb
-        .from('transactions')
-        .select('id, type, lymx_amount, usd_basis, created_at, wallet_id, wallets(customer_id)')
+        .from('lymx_issuances')
+        .select('id, amount_lymx, reason, transaction_amount_cents, created_at, recipient_user_id')
         .eq('business_id', businessId)
         .order('created_at', { ascending: false })
         .limit(limit || 50);
       if (fromDate) q = q.gte('created_at', fromDate);
-      return await q;
+      const { data, error } = await q;
+      if (error) return { data: null, error };
+      const mapped = (data || []).map(r => {
+        const amt = Number(r.amount_lymx || 0);
+        const isRedemption = r.reason === 'redemption' || amt < 0;
+        return {
+          id: r.id,
+          type: isRedemption ? 'redemption' : 'issuance',
+          lymx_amount: Math.abs(amt),
+          usd_basis: r.transaction_amount_cents ? (Number(r.transaction_amount_cents) / 100) : null,
+          created_at: r.created_at,
+          recipient_user_id: r.recipient_user_id,
+        };
+      });
+      return { data: mapped, error: null };
     },
 
     // ---------- Helpers ----------
