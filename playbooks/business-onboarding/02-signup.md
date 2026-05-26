@@ -2,9 +2,9 @@
 slug: business-onboarding-02-signup
 title: Sign up your business on LYMX (from an invite link)
 project: LYMX Power
-role: guest                       # the prospect doesn't have a LYMX account yet
+role: guest
 prereqs:
-  - has_invite_url                # they got the link from Kenny / a partner / an email
+  - has_invite_url
 duration_min: 5
 difficulty: easy
 last_verified: 2026-05-26
