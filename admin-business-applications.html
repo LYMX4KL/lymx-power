@@ -55,17 +55,58 @@
 <script src="lymx-app.js" defer></script>
 
 <main class="main">
-  <h1>Business Applications</h1>
-  <div class="sub">Self-serve biz signups via <code>biz-signup.html</code>. Approve = activate their <code>business_partners</code> bridge row so <code>welcome.html?biz=&lt;slug&gt;</code> goes live for their customers.</div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:6px">
+    <h1>Business Applications</h1>
+    <button id="btnInviteBiz" class="btn approve" style="background:#0a84ff;padding:10px 18px">+ Invite a business</button>
+  </div>
+  <div class="sub">Self-serve biz signups via <code>biz-signup.html</code>. Approve = activate their <code>business_partners</code> bridge row so <code>welcome.html?biz=&lt;slug&gt;</code> goes live for their customers. The <strong>Invites</strong> tab tracks invitation links sent to prospects (Module 1, migration 093).</div>
 
   <div class="tabs">
     <button class="tab active" data-tab="pending">Pending <span class="ct" id="ctPending">—</span></button>
     <button class="tab" data-tab="approved">Approved <span class="ct" id="ctApproved">—</span></button>
     <button class="tab" data-tab="rejected">Rejected <span class="ct" id="ctRejected">—</span></button>
+    <button class="tab" data-tab="invites">Invites <span class="ct" id="ctInvites">—</span></button>
   </div>
 
   <div id="list" class="list"></div>
 </main>
+
+<!-- Invite-a-business modal (migration 093) -->
+<div id="inviteModal" style="display:none;position:fixed;inset:0;background:rgba(14,17,22,.45);z-index:9999;align-items:center;justify-content:center;padding:18px">
+  <div style="background:#fff;border-radius:14px;padding:24px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-size:20px;font-weight:800">Invite a business</div>
+      <button id="inviteClose" style="background:transparent;border:0;font-size:22px;cursor:pointer;color:#5b6472" aria-label="Close">×</button>
+    </div>
+    <div style="color:#5b6472;font-size:13.5px;margin-bottom:18px">Creates a tracked invite link. Optionally emails it to the prospect — they land on the signup form with their name + email pre-filled.</div>
+    <form id="inviteForm" onsubmit="return false">
+      <label style="display:block;font-size:13px;font-weight:700;margin-bottom:4px">Business name <span style="color:#b81324">*</span></label>
+      <input id="invBizName" required style="width:100%;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;font-size:14px;margin-bottom:14px;font-family:inherit" placeholder="e.g. Joe's Pizza">
+
+      <label style="display:block;font-size:13px;font-weight:700;margin-bottom:4px">Owner name</label>
+      <input id="invOwnerName" style="width:100%;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;font-size:14px;margin-bottom:14px;font-family:inherit" placeholder="e.g. Joe Martinez">
+
+      <label style="display:block;font-size:13px;font-weight:700;margin-bottom:4px">Contact email</label>
+      <input id="invEmail" type="email" style="width:100%;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;font-size:14px;margin-bottom:14px;font-family:inherit" placeholder="owner@example.com">
+
+      <label style="display:block;font-size:13px;font-weight:700;margin-bottom:4px">Contact phone</label>
+      <input id="invPhone" style="width:100%;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;font-size:14px;margin-bottom:14px;font-family:inherit" placeholder="(555) 555-1234">
+
+      <label style="display:block;font-size:13px;font-weight:700;margin-bottom:4px">Notes (internal, only admins see)</label>
+      <textarea id="invNotes" style="width:100%;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;font-size:14px;margin-bottom:14px;font-family:inherit;min-height:60px" placeholder="Where you met, what they care about, follow-up reminders…"></textarea>
+
+      <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:18px;cursor:pointer">
+        <input id="invSendEmail" type="checkbox" checked> Email the invite link to the contact email
+      </label>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button type="button" id="inviteCancel" class="btn outline">Cancel</button>
+        <button type="submit" id="inviteSubmit" class="btn approve">Create invite</button>
+      </div>
+    </form>
+    <div id="inviteResult" style="display:none;margin-top:14px;padding:14px;background:#e6f5ee;border:1px solid #a8d8c0;border-radius:9px;font-size:13.5px;color:#0a6e44"></div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -113,11 +154,18 @@
       document.getElementById('ctPending').textContent  = ct.pending;
       document.getElementById('ctApproved').textContent = ct.approved;
       document.getElementById('ctRejected').textContent = ct.rejected;
-    } catch (e) { console.warn('[admin-business-applications.html:L116] silent error', e); }
+    } catch (e) { console.warn('[admin-business-applications.html] refreshCounts', e); }
+    // Invites count (migration 093)
+    try {
+      const ir = await fetch(URL + '/rest/v1/v_admin_biz_invitations?select=id&status=in.(pending,clicked)', { headers: H });
+      const inv = ir.ok ? await ir.json() : [];
+      document.getElementById('ctInvites').textContent = Array.isArray(inv) ? inv.length : 0;
+    } catch (e) { console.warn('[admin-business-applications.html] invite count', e); }
   }
 
   async function loadList() {
     listEl.innerHTML = '<div class="empty">Loading…</div>';
+    if (currentTab === 'invites') { return loadInvites(); }
     try {
       const cols = 'id,slug,legal_name,display_name,category,contact_email,contact_phone,owner_user_id,approval_status,approved_at,approved_by,rejection_reason,created_at,issuance_rate,redemption_rate';
       const r = await fetch(URL + '/rest/v1/businesses?approval_status=eq.' + currentTab + '&select=' + cols + '&order=created_at.desc&limit=200', { headers: H });
@@ -129,6 +177,161 @@
       listEl.innerHTML = '<div class="empty" style="color:#b81324">Could not load: ' + e.message + '</div>';
     }
   }
+
+  // ---- Invites tab (migration 093) ----------------------------------------
+  async function loadInvites() {
+    listEl.innerHTML = '<div class="empty">Loading invites…</div>';
+    try {
+      const r = await fetch(URL + '/rest/v1/v_admin_biz_invitations?select=*&order=created_at.desc&limit=200', { headers: H });
+      if (!r.ok) throw new Error(await r.text());
+      const rows = await r.json();
+      if (!Array.isArray(rows) || !rows.length) {
+        listEl.innerHTML = '<div class="empty">No invites yet. Click <strong>+ Invite a business</strong> above to create one.</div>';
+        return;
+      }
+      listEl.innerHTML = '';
+      rows.forEach(inv => listEl.appendChild(buildInviteCard(inv)));
+    } catch (e) {
+      listEl.innerHTML = '<div class="empty" style="color:#b81324">Could not load invites: ' + e.message + '</div>';
+    }
+  }
+
+  function buildInviteCard(inv) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const statusColors = { pending:'pending', clicked:'pending', signed_up:'approved', expired:'rejected', revoked:'rejected' };
+    const badgeCls = statusColors[inv.status] || 'pending';
+    card.innerHTML = ''
+      + '<div class="head">'
+      +   '<div><div class="name">' + esc(inv.prospect_business_name) + '</div>'
+      +     '<div class="meta">'
+      +       (inv.prospect_owner_name ? esc(inv.prospect_owner_name) + ' · ' : '')
+      +       (inv.prospect_contact_email || '—')
+      +       (inv.prospect_contact_phone ? ' · ' + esc(inv.prospect_contact_phone) : '')
+      +     '</div></div>'
+      +   '<span class="badge ' + badgeCls + '">' + esc(inv.status) + '</span>'
+      + '</div>'
+      + '<dl class="detail">'
+      +   '<div><dt>Created</dt><dd>' + fmt(inv.created_at) + '</dd></div>'
+      +   '<div><dt>Expires</dt><dd>' + fmt(inv.expires_at) + '</dd></div>'
+      +   '<div><dt>Clicked</dt><dd>' + (inv.clicked_at ? fmt(inv.clicked_at) : '—') + '</dd></div>'
+      +   '<div><dt>Signed up</dt><dd>' + (inv.signup_completed_at ? fmt(inv.signup_completed_at) : '—') + '</dd></div>'
+      +   (inv.assigned_partner_name ? '<div class="full"><dt>Assigned partner</dt><dd>' + esc(inv.assigned_partner_name) + '</dd></div>' : '')
+      +   (inv.resulting_business_slug ? '<div class="full"><dt>Resulting business</dt><dd><a href="welcome.html?biz=' + encodeURIComponent(inv.resulting_business_slug) + '" target="_blank">' + esc(inv.resulting_business_name || inv.resulting_business_slug) + '</a></dd></div>' : '')
+      +   '<div class="full"><dt>Invite URL</dt><dd><span class="welcome-link">' + esc(inv.invite_url) + '</span> <button class="btn copy" data-copy="' + esc(inv.invite_url) + '">Copy</button></dd></div>'
+      + '</dl>'
+      + '<div class="actions"></div>';
+
+    const actions = card.querySelector('.actions');
+    if (inv.status === 'pending' || inv.status === 'clicked') {
+      if (inv.prospect_contact_email) {
+        const re = document.createElement('button');
+        re.className = 'btn outline'; re.textContent = 'Resend email';
+        re.addEventListener('click', () => doResendInvite(inv.id, re));
+        actions.appendChild(re);
+      }
+      const rv = document.createElement('button');
+      rv.className = 'btn reject'; rv.textContent = 'Revoke';
+      rv.addEventListener('click', () => doRevokeInvite(inv.id, rv));
+      actions.appendChild(rv);
+    }
+    card.querySelectorAll('button[data-copy]').forEach(btn => btn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(btn.dataset.copy); toast('Copied.', 'ok'); }
+      catch (e) { toast('Copy failed', 'err'); }
+    }));
+    return card;
+  }
+
+  async function doResendInvite(id, btn) {
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      const r = await fetch(URL + '/functions/v1/biz-invite-send-email', {
+        method: 'POST', headers: H,
+        body: JSON.stringify({ invitation_id: id })
+      });
+      if (!r.ok) throw new Error(await r.text());
+      toast('Invite re-sent.', 'ok');
+      btn.textContent = 'Resend email';
+      btn.disabled = false;
+    } catch (e) {
+      btn.disabled = false; btn.textContent = 'Resend email';
+      toast('Resend failed: ' + e.message.slice(0, 100), 'err');
+    }
+  }
+
+  async function doRevokeInvite(id, btn) {
+    if (!confirm('Revoke this invite? The prospect will no longer be able to use the link.')) return;
+    btn.disabled = true; btn.textContent = 'Revoking…';
+    try {
+      const r = await fetch(URL + '/rest/v1/biz_invitations?id=eq.' + id, {
+        method: 'PATCH',
+        headers: { ...H, Prefer: 'return=minimal' },
+        body: JSON.stringify({ status: 'revoked' })
+      });
+      if (!r.ok) throw new Error(await r.text());
+      toast('Revoked.', 'ok');
+      loadInvites(); refreshCounts();
+    } catch (e) {
+      btn.disabled = false; btn.textContent = 'Revoke';
+      toast('Revoke failed', 'err');
+    }
+  }
+
+  // ---- Modal: + Invite a business ----------------------------------------
+  function wireInviteModal() {
+    const modal = document.getElementById('inviteModal');
+    const closeBtn = document.getElementById('inviteClose');
+    const cancelBtn = document.getElementById('inviteCancel');
+    const openBtn = document.getElementById('btnInviteBiz');
+    const form = document.getElementById('inviteForm');
+    const result = document.getElementById('inviteResult');
+    const submitBtn = document.getElementById('inviteSubmit');
+
+    function close() { modal.style.display = 'none'; result.style.display = 'none'; result.innerHTML = ''; form.reset(); }
+    function open()  { modal.style.display = 'flex'; setTimeout(() => document.getElementById('invBizName').focus(), 50); }
+
+    openBtn.addEventListener('click', open);
+    closeBtn.addEventListener('click', close);
+    cancelBtn.addEventListener('click', close);
+    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+    form.addEventListener('submit', async () => {
+      const body = {
+        prospect_business_name: document.getElementById('invBizName').value.trim(),
+        prospect_owner_name:    document.getElementById('invOwnerName').value.trim() || null,
+        prospect_contact_email: document.getElementById('invEmail').value.trim() || null,
+        prospect_contact_phone: document.getElementById('invPhone').value.trim() || null,
+        notes:                  document.getElementById('invNotes').value.trim() || null,
+        send_email:             document.getElementById('invSendEmail').checked && !!document.getElementById('invEmail').value.trim()
+      };
+      if (!body.prospect_business_name) { toast('Business name is required', 'err'); return; }
+      submitBtn.disabled = true; submitBtn.textContent = 'Creating…';
+      try {
+        const r = await fetch(URL + '/functions/v1/biz-invite-create', { method:'POST', headers:H, body: JSON.stringify(body) });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || ('http ' + r.status));
+        result.style.display = 'block';
+        result.innerHTML = ''
+          + '<div style="font-weight:700;font-size:14.5px;margin-bottom:6px">Invite created' + (j.email_dispatched ? ' + email sent ✓' : '') + '</div>'
+          + '<div style="font-size:13px;color:#0e1116;margin-bottom:8px">Send this link to the prospect:</div>'
+          + '<div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;background:#fff;border:1px solid #a8d8c0;padding:8px 10px;border-radius:6px;word-break:break-all">' + esc(j.invite_url) + '</div>'
+          + '<button class="btn copy" data-copy="' + esc(j.invite_url) + '" style="margin-top:6px">Copy URL</button>';
+        result.querySelectorAll('button[data-copy]').forEach(btn => btn.addEventListener('click', async () => {
+          try { await navigator.clipboard.writeText(btn.dataset.copy); toast('Copied.', 'ok'); }
+          catch (e) { toast('Copy failed', 'err'); }
+        }));
+        submitBtn.textContent = 'Create another';
+        submitBtn.disabled = false;
+        form.reset();
+        refreshCounts();
+        if (currentTab === 'invites') loadInvites();
+      } catch (e) {
+        submitBtn.disabled = false; submitBtn.textContent = 'Create invite';
+        toast('Create failed: ' + (e.message || '').slice(0, 140), 'err');
+      }
+    });
+  }
+  wireInviteModal();
 
   function buildCard(b) {
     const card = document.createElement('div');

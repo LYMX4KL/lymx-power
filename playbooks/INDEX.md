@@ -2,7 +2,7 @@
 
 > Registry of every process playbook for LYMX Power. Format spec lives at `shared accross projects\PLAYBOOK-CREATION-RULES.md`.
 >
-> Last updated: 2026-05-24
+> Last updated: 2026-05-26
 
 ## Email
 
@@ -10,12 +10,13 @@
 |---|---|---|---|
 | [partner-email-setup](partner-email-setup.md) | Connect your @getlymx.com email to Gmail | Partner | ✅ Verified 2026-05-24 |
 
-## Onboarding (planned)
+## Onboarding
 
 | Slug | Title | Role | Status |
 |---|---|---|---|
 | customer-onboarding | Sign up, get 100 LYMX, find your first business | Customer | 📋 Planned |
-| business-onboarding | Apply, get approved, set up your storefront page | Business | 📋 Planned |
+| [business-onboarding/README](business-onboarding/README.md) | Full flow: invite → signup → approval → call → issue → redeem | Multiple | 🚧 In progress (Module 1 shipped 2026-05-26) |
+| &nbsp;&nbsp;↳ [01-invite](business-onboarding/01-invite.md) | Invite a business to LYMX | Admin / Partner | ✅ Verified 2026-05-26 |
 | partner-onboarding | Apply, get $750 setup, pitch your first business | Partner | 📋 Planned |
 
 ## Daily operations (planned)

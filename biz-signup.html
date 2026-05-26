@@ -127,11 +127,11 @@
 
 <header class="nav">
   <div class="nav-inner">
-    <a class="brand" href="index.html">
+    <a class='brand' href='/'>
       <span class="logo">L</span>
       <span>LYMX</span>
     </a>
-    <a class="nav-back" href="index.html">← Back to home</a>
+    <a class='nav-back' href='/'>← Back to home</a>
   </div>
 </header>
 
@@ -149,6 +149,8 @@
   </section>
 
   <form id="biz-form" novalidate>
+  <!-- Migration 093: invite banner (populated by JS if ?invite_token= is valid) -->
+  <div id="inviteBanner" style="display:none;background:linear-gradient(135deg,#e6f1ff,#cfe3ff);border:1px solid #a8c8f0;border-radius:11px;padding:14px 18px;margin-bottom:18px;color:#0e1116;font-size:14px"></div>
 
     <!-- 1. Mode selector -->
     <section class="card">
@@ -391,7 +393,7 @@
     <section class="card">
       <label class="check">
         <input type="checkbox" id="tos" required>
-        <span>I'm authorized to sign on behalf of the business and I accept the <a href="biz-tos.html" target="_blank">Business Terms</a> and <a href="privacy.html" target="_blank">Privacy Policy</a>.</span>
+        <span>I'm authorized to sign on behalf of the business and I accept the <a href='/biz-tos' target='_blank'>Business Terms</a> and <a href='/privacy' target='_blank'>Privacy Policy</a>.</span>
       </label>
       <div class="cta-row">
         <button type="submit" class="cta" id="submit">Submit application</button>
@@ -417,13 +419,13 @@
         <div style="flex:1;min-width:200px">
           <div style="font-weight:800;font-size:17px;color:#0e1116;margin-bottom:4px">Want to chat with a real human first?</div>
           <div style="font-size:14px;color:#1a1f27;margin-bottom:14px;line-height:1.5">Book a free 30-minute 1-on-1 with <strong>Rachel</strong>, our onboarding lead. She'll walk you through everything live and answer any questions before payouts go live — no pressure, no upsell.</div>
-          <a href="book-onboarding-call.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;background:#0e1116;color:#fff;border-radius:10px;font-weight:700;font-size:14.5px;text-decoration:none">Book a 1-on-1 onboarding call →</a>
+          <a href='/book-onboarding-call' style='display:inline-flex;align-items:center;gap:8px;padding:12px 22px;background:#0e1116;color:#fff;border-radius:10px;font-weight:700;font-size:14.5px;text-decoration:none'>Book a 1-on-1 onboarding call →</a>
         </div>
       </div>
     </div>
   </section>
 
-  <p class="footer">© LYMX · <a href="biz-faq.html">Business FAQ</a> · <a href="mailto:hello@getlymx.com">Contact</a></p>
+  <p class="footer">© LYMX · <a href='/biz-faq'>Business FAQ</a> · <a href="mailto:hello@getlymx.com">Contact</a></p>
 </main>
 
 <script src="lymx-config.js"></script>
@@ -543,6 +545,8 @@ function buildPayload(form){
     contact_email:  (fd.get('contact_email')  || '').trim(),
     contact_phone:  (fd.get('contact_phone')  || '').trim() || null,
     partner_referral_code: (fd.get('partner_referral_code') || '').trim() || undefined,
+    // Migration 093: pass invite_token through if biz-signup.html was opened with ?invite_token=
+    invite_token: (window.__LYMX_INVITE_TOKEN || null),
     // 2026-05-24 audit additions — legal/tax + ops
     intake: {
       entity_type:             (fd.get('entity_type')             || '').trim() || null,
@@ -614,6 +618,68 @@ function validatePayload(p){
   }
   return null;
 }
+
+// ── Migration 093 — invite-token prefill ──────────────────────────────
+// If biz-signup.html?invite_token=… is opened, validate via RPC and prefill
+// the form fields with whatever the inviter knew. The RPC also marks the
+// invite as 'clicked' (first call only).
+(async function consumeInviteToken(){
+  try {
+    const params = new URLSearchParams(location.search);
+    const token = (params.get('invite_token') || '').trim();
+    if (!token || token.length < 16) return;
+    const r = await fetch(`${LYMX_CONFIG.SUPABASE_URL}/rest/v1/rpc/fn_validate_invitation_token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': LYMX_CONFIG.SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + LYMX_CONFIG.SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ p_token: token })
+    });
+    if (!r.ok) return;
+    const rows = await r.json();
+    const meta = Array.isArray(rows) ? rows[0] : rows;
+    if (!meta || !meta.valid) {
+      // Surface a friendly note when token is expired/revoked/used
+      if (meta && meta.reason && meta.reason !== 'not_found') {
+        const b = document.getElementById('inviteBanner');
+        if (b) {
+          b.style.display = 'block';
+          b.style.background = 'linear-gradient(135deg,#fff4d6,#ffe9a8)';
+          b.style.borderColor = '#d4a017';
+          b.style.color = '#5a3e00';
+          const niceReason = { expired:'expired', revoked:'been revoked', already_used:'already been used', malformed_token:'malformed' }[meta.reason] || meta.reason;
+          b.textContent = '⚠ This invite link has ' + niceReason + '. You can still fill out the form below to sign up.';
+        }
+      }
+      return;
+    }
+    // Stash for inclusion in payload
+    window.__LYMX_INVITE_TOKEN = token;
+    // Show success banner
+    const b = document.getElementById('inviteBanner');
+    if (b) {
+      b.style.display = 'block';
+      const inviterTxt = meta.has_partner ? 'a LYMX Partner' : 'the LYMX team';
+      b.innerHTML = '<strong>You were invited by ' + inviterTxt + '.</strong> We\'ve pre-filled what we know — finish the form below to activate ' + (meta.prospect_business_name || 'your business') + ' on LYMX.';
+    }
+    // Prefill form fields (only if currently empty)
+    function setIfEmpty(name, val){
+      if (!val) return;
+      const el = document.querySelector('[name="' + name + '"]');
+      if (el && !el.value) el.value = val;
+    }
+    setIfEmpty('owner_name',      meta.prospect_owner_name);
+    setIfEmpty('owner_email',     meta.prospect_contact_email);
+    setIfEmpty('contact_email',   meta.prospect_contact_email);
+    setIfEmpty('contact_phone',   meta.prospect_contact_phone);
+    setIfEmpty('display_name',    meta.prospect_business_name);
+    setIfEmpty('legal_name',      meta.prospect_business_name);
+  } catch (e) {
+    console.warn('[biz-signup] invite_token consume failed', e);
+  }
+})();
 
 // Submit ───────────────────────────────────────────────────────────────
 const form = document.getElementById('biz-form');

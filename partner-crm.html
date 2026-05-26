@@ -181,17 +181,17 @@
 
 <header class="nav">
   <div class="wrap nav-inner">
-    <a class="brand" href="index.html"><img src="logo.png" alt="LYMX logo" /><span class="role-tag">Partner</span></a>
+    <a class='brand' href='/'><img src="logo.png" alt="LYMX logo" /><span class="role-tag">Partner</span></a>
     <nav class="nav-links">
-      <a href="rep-dashboard.html">Dashboard</a>
-      <a href="projection.html">Projection</a>
-      <a href="partner-crm.html" class="on">CRM</a>
-      <a href="content-hub.html">Content</a>
-      <a href="territory-program.html">Territory</a>
-      <a href="partner-payouts.html">Payouts</a>
+      <a href='/rep-dashboard'>Dashboard</a>
+      <a href='/projection'>Projection</a>
+      <a class='on' href='/partner-crm'>CRM</a>
+      <a href='/content-hub'>Content</a>
+      <a href='/territory-program'>Territory</a>
+      <a href='/partner-payouts'>Payouts</a>
     </nav>
     <div style="display:flex;gap:10px;align-items:center">
-      <a class="btn btn-ghost" href="rep-dashboard.html">← Back to dashboard</a>
+      <a class='btn btn-ghost' href='/rep-dashboard'>← Back to dashboard</a>
       <div class="rep-avatar" title="Kenny Lin">KL</div>
     </div>
   </div>
@@ -200,11 +200,14 @@
 <div class="wrap page">
   <div class="page-head">
     <div>
-      <div class="crumb"><a href="rep-dashboard.html">Dashboard</a> · CRM</div>
+      <div class="crumb"><a href='/rep-dashboard'>Dashboard</a> · CRM</div>
       <h1>My prospects</h1>
       <p>Track every Business you're courting — from first conversation to activation. Click any row to see notes and timeline.</p>
     </div>
-    <button class="btn btn-primary" id="btn-add">+ Add prospect</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-ghost" id="btn-invite-biz" title="Send a tracked LYMX invite link (migration 093)">📨 Invite via LYMX</button>
+      <button class="btn btn-primary" id="btn-add">+ Add prospect</button>
+    </div>
   </div>
 
   <!-- Stats -->
@@ -322,7 +325,7 @@
 
 <footer>
   <div class="wrap">
-    <div>© <span id="yr"></span> LYMX · <a href="rep-dashboard.html" style="color:var(--accent-2)">Dashboard</a> · <a href="projection.html" style="color:var(--accent-2)">Projection</a> · <a href="content-hub.html" style="color:var(--accent-2)">Content Hub</a></div>
+    <div>© <span id="yr"></span> LYMX · <a href='/rep-dashboard' style='color:var(--accent-2)'>Dashboard</a> · <a href='/projection' style='color:var(--accent-2)'>Projection</a> · <a href='/content-hub' style='color:var(--accent-2)'>Content Hub</a></div>
     <div class="disc">Prospect data is private to your account. The team only sees a count of activated Businesses for MGC commission tracking.</div>
   </div>
 </footer>
@@ -608,5 +611,126 @@ searchEl.addEventListener('input', e => {
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
 <script src="lymx-role-gate.js" defer></script>
+
+<!-- Invite-a-business modal (migration 093 / Module 1 of biz-onboarding roadmap) -->
+<div id="inviteModal" style="display:none;position:fixed;inset:0;background:rgba(14,17,22,.45);z-index:9999;align-items:center;justify-content:center;padding:18px">
+  <div style="background:#fff;border-radius:14px;padding:24px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);font-family:inherit;color:#0e1116">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-size:20px;font-weight:800">Invite a business to LYMX</div>
+      <button id="inviteClose" style="background:transparent;border:0;font-size:22px;cursor:pointer;color:#5b6472" aria-label="Close">×</button>
+    </div>
+    <div style="color:#5b6472;font-size:13.5px;margin-bottom:18px">Generates a tracked link with your partner attribution. Optionally emails it to the prospect.</div>
+    <form id="inviteForm" onsubmit="return false">
+      <label style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;letter-spacing:.04em;text-transform:uppercase;color:#5b6472">Business name *</label>
+      <input id="invBizName" required style="width:100%;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;font-size:14px;margin-bottom:14px;font-family:inherit" placeholder="e.g. Joe's Pizza">
+
+      <label style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;letter-spacing:.04em;text-transform:uppercase;color:#5b6472">Owner name</label>
+      <input id="invOwnerName" style="width:100%;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;font-size:14px;margin-bottom:14px;font-family:inherit" placeholder="e.g. Joe Martinez">
+
+      <label style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;letter-spacing:.04em;text-transform:uppercase;color:#5b6472">Contact email</label>
+      <input id="invEmail" type="email" style="width:100%;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;font-size:14px;margin-bottom:14px;font-family:inherit" placeholder="owner@example.com">
+
+      <label style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;letter-spacing:.04em;text-transform:uppercase;color:#5b6472">Contact phone</label>
+      <input id="invPhone" style="width:100%;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;font-size:14px;margin-bottom:14px;font-family:inherit" placeholder="(555) 555-1234">
+
+      <label style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;letter-spacing:.04em;text-transform:uppercase;color:#5b6472">Notes (only you + admins see this)</label>
+      <textarea id="invNotes" style="width:100%;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;font-size:14px;margin-bottom:14px;font-family:inherit;min-height:60px" placeholder="Where you met, what they care about, follow-up reminders…"></textarea>
+
+      <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:18px;cursor:pointer">
+        <input id="invSendEmail" type="checkbox" checked> Email the invite link to the contact email
+      </label>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button type="button" id="inviteCancel" class="btn btn-ghost">Cancel</button>
+        <button type="submit" id="inviteSubmit" class="btn btn-primary">Create invite</button>
+      </div>
+    </form>
+    <div id="inviteResult" style="display:none;margin-top:14px;padding:14px;background:#e6f5ee;border:1px solid #a8d8c0;border-radius:9px;font-size:13.5px;color:#0a6e44"></div>
+  </div>
+</div>
+<script>
+// Wires the "📨 Invite via LYMX" button on partner-crm.html to biz-invite-create EF
+(function () {
+  function esc(s){return String(s==null?'':s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'})[c]);}
+  function toast(msg, ok){
+    var t=document.createElement('div');
+    t.textContent=msg;
+    t.style.cssText='position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:'+(ok?'#13a26b':'#0e1116')+';color:#fff;padding:12px 20px;border-radius:12px;font-weight:600;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:10001';
+    document.body.appendChild(t);
+    setTimeout(()=>{t.style.transition='.4s';t.style.opacity='0';},1800);
+    setTimeout(()=>t.remove(),2300);
+  }
+
+  async function waitForAuth(){
+    for (var i=0;i<60;i++){
+      if (window.LYMX_CONFIG && window.LYMX && window.LYMX.getSession) return;
+      await new Promise(r=>setTimeout(r,100));
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', async function () {
+    var openBtn = document.getElementById('btn-invite-biz');
+    if (!openBtn) return;
+    await waitForAuth();
+    var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+    var URL  = window.LYMX_CONFIG.SUPABASE_URL;
+    var session = await window.LYMX.getSession();
+    if (!session){
+      openBtn.addEventListener('click', () => { location.href = 'login.html?return=partner-crm.html'; });
+      return;
+    }
+    var H = { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' };
+
+    var modal = document.getElementById('inviteModal');
+    var closeBtn = document.getElementById('inviteClose');
+    var cancelBtn = document.getElementById('inviteCancel');
+    var form = document.getElementById('inviteForm');
+    var result = document.getElementById('inviteResult');
+    var submitBtn = document.getElementById('inviteSubmit');
+
+    function close(){ modal.style.display='none'; result.style.display='none'; result.innerHTML=''; form.reset(); submitBtn.textContent='Create invite'; submitBtn.disabled=false; }
+    function open(){ modal.style.display='flex'; setTimeout(()=>document.getElementById('invBizName').focus(),50); }
+
+    openBtn.addEventListener('click', open);
+    closeBtn.addEventListener('click', close);
+    cancelBtn.addEventListener('click', close);
+    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+    form.addEventListener('submit', async () => {
+      var body = {
+        prospect_business_name: document.getElementById('invBizName').value.trim(),
+        prospect_owner_name:    document.getElementById('invOwnerName').value.trim() || null,
+        prospect_contact_email: document.getElementById('invEmail').value.trim() || null,
+        prospect_contact_phone: document.getElementById('invPhone').value.trim() || null,
+        notes:                  document.getElementById('invNotes').value.trim() || null,
+        send_email:             document.getElementById('invSendEmail').checked && !!document.getElementById('invEmail').value.trim()
+      };
+      if (!body.prospect_business_name){ toast('Business name is required'); return; }
+      submitBtn.disabled = true; submitBtn.textContent = 'Creating…';
+      try {
+        var r = await fetch(URL + '/functions/v1/biz-invite-create', { method:'POST', headers: H, body: JSON.stringify(body) });
+        var j = await r.json();
+        if (!r.ok) throw new Error(j.error || ('http ' + r.status));
+        result.style.display = 'block';
+        result.innerHTML = ''
+          + '<div style="font-weight:700;font-size:14.5px;margin-bottom:6px">Invite created' + (j.email_dispatched ? ' + email sent ✓' : '') + '</div>'
+          + '<div style="font-size:13px;color:#0e1116;margin-bottom:8px">Send this link to the prospect:</div>'
+          + '<div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;background:#fff;border:1px solid #a8d8c0;padding:8px 10px;border-radius:6px;word-break:break-all">' + esc(j.invite_url) + '</div>'
+          + '<button class="btn btn-ghost btn-sm" data-copy="' + esc(j.invite_url) + '" style="margin-top:8px">Copy URL</button>';
+        result.querySelectorAll('button[data-copy]').forEach(b => b.addEventListener('click', async () => {
+          try { await navigator.clipboard.writeText(b.dataset.copy); toast('Copied.', true); }
+          catch (e) { toast('Copy failed'); }
+        }));
+        submitBtn.textContent = 'Create another';
+        submitBtn.disabled = false;
+        form.reset();
+      } catch (e) {
+        submitBtn.disabled = false; submitBtn.textContent = 'Create invite';
+        toast('Create failed: ' + (e.message || '').slice(0, 140));
+      }
+    });
+  });
+})();
+</script>
 </body>
 </html>

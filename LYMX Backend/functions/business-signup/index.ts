@@ -179,6 +179,14 @@ serve(async (req) => {
 
     // Default kind = 'storefront' for backwards compatibility
     const kind = body.kind ?? "storefront";
+
+    // Module 1 (migration 093): optional invite_token from biz-signup.html?invite_token=…
+    // If present, we link the new businesses row to the invitation row at the
+    // very end of the flow (just before the final response) so the link only
+    // happens when everything else succeeded.
+    const invite_token = typeof body.invite_token === "string" && body.invite_token.length >= 16
+        ? body.invite_token
+        : null;
     if (kind !== "storefront" && kind !== "self_employed") {
         return errorResponse(
             `Unsupported kind: ${kind}. Use 'storefront' or 'self_employed'.`,
@@ -585,6 +593,24 @@ If they back out before verification you won't see the bonus — but most Busine
         console.warn("Admin notification fan-out failed (non-fatal):", adminAlertErr);
     }
 
+    // Link the invitation row (Module 1, migration 093) — service-role RPC
+    let invitation_linked: { linked: boolean; reason?: string; assigned_partner_id?: string | null } | null = null;
+    if (invite_token) {
+        try {
+            const { data: linkResult, error: linkErr } = await supabase.rpc(
+                "fn_link_invitation_to_business",
+                { p_token: invite_token, p_business_id: biz.id }
+            );
+            if (linkErr) {
+                console.warn("[business-signup] fn_link_invitation_to_business failed", linkErr);
+            } else {
+                invitation_linked = linkResult as any;
+            }
+        } catch (e) {
+            console.warn("[business-signup] invitation link threw", e);
+        }
+    }
+
     return jsonResponse({
         user_id: userId,
         business_id: biz.id,
@@ -593,6 +619,7 @@ If they back out before verification you won't see the bonus — but most Busine
         service_ids: serviceIds,
         kind,
         welcome_bonus: welcomeBonus,
+        invitation_linked,
     }, 201);
 });
 
