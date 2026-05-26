@@ -20,6 +20,7 @@
 | [business-onboarding-02-signup](business-onboarding/02-signup.md) | Sign up your business on LYMX (from invite) | Prospect (guest) | ✅ Verified 2026-05-26 |
 | [business-onboarding-03-approval](business-onboarding/03-approval.md) | Review a pending business application (approve / request more info / reject) | Admin | ✅ Verified 2026-05-26 |
 | [business-onboarding-04-approval-email-and-callback](business-onboarding/04-approval-email-and-callback.md) | Approval email + the required 20-min onboarding call + nudge cron | Admin | ✅ Verified 2026-05-26 |
+| [business-onboarding-05-booking-the-call](business-onboarding/05-booking-the-call.md) | Book + run the 20-min onboarding call (Daily.co room + post-call summary) | Business prospect / Admin | ✅ Verified 2026-05-26 |
 | partner-onboarding | Apply, get $750 setup, pitch your first business | Partner | 📋 Planned |
 
 ## Daily operations (planned)

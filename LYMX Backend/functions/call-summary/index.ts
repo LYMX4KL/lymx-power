@@ -158,7 +158,86 @@ serve(async (req) => {
         .select("id, team_calendar_id, lead_id, summary, transcript, video_room_data")
         .eq("video_room_id", roomName)
         .maybeSingle();
-    if (!booking) return json({ ok: true, ignored: true, reason: "no booking with that room name", room: roomName });
+
+    // Module 4: when no team-calendar booking matches the room name, fall back
+    // to onboarding_bookings (the biz-onboarding flow uses the same Daily.co
+    // webhook URL). On match: update status + completed_at + video_room_data,
+    // optionally email host on a no-show. Return early — the heavy
+    // team-calendar flow below (leads, conversations, transcript summary) is
+    // not applicable to onboarding bookings.
+    if (!booking) {
+        const { data: onb } = await supabase
+            .from("onboarding_bookings")
+            .select("id, host_id, booker_name, booker_email, business_id, business_name, video_room_data")
+            .eq("video_room_id", roomName)
+            .maybeSingle();
+        if (!onb) {
+            return json({ ok: true, ignored: true, reason: "no booking with that room name", room: roomName });
+        }
+
+        if (eventType === "meeting.ended" || eventType === "room.meeting.ended") {
+            const durationSec: number = Number(data.duration ?? data.session_duration ?? 0);
+            const participantsRaw = data.participants ?? data.participant_data ?? null;
+            const participantCount: number = Array.isArray(participantsRaw)
+                ? participantsRaw.length
+                : (typeof participantsRaw === "number" ? participantsRaw : (data.max_participants ?? 0));
+            const isNoShow = (durationSec > 0 && durationSec < 60) || (participantCount > 0 && participantCount < 2);
+            const newStatus = isNoShow ? "no_show" : "completed";
+
+            await supabase.from("onboarding_bookings").update({
+                status: newStatus,
+                completed_at: new Date().toISOString(),
+                video_room_data: { ...((onb as any).video_room_data || {}), meeting_ended_data: data },
+            }).eq("id", (onb as any).id);
+
+            // No-show: nudge the host so they can follow up. Booker no-shows on
+            // onboarding calls usually mean a scheduling mistake — we want the
+            // host to reach out manually rather than auto-rebooking.
+            if (isNoShow) {
+                const RESEND_KEY_NS = Deno.env.get("RESEND_API_KEY");
+                const { data: host } = await supabase
+                    .from("onboarding_hosts")
+                    .select("display_name, email")
+                    .eq("id", (onb as any).host_id)
+                    .maybeSingle();
+                if (RESEND_KEY_NS && host) {
+                    const bizLabel = (onb as any).business_name || "—";
+                    try {
+                        await fetch("https://api.resend.com/emails", {
+                            method: "POST",
+                            headers: { "Authorization": `Bearer ${RESEND_KEY_NS}`, "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                from: "LYMX <kenny@lymxpower.com>",
+                                to: [(host as any).email],
+                                subject: `No-show on the LYMX onboarding call — ${(onb as any).booker_name}`,
+                                html: `<p>Hi ${escapeHtml((host as any).display_name)},</p>
+<p>The onboarding call with <strong>${escapeHtml((onb as any).booker_name)}</strong> &lt;${escapeHtml((onb as any).booker_email)}&gt;${bizLabel !== "—" ? " for <strong>" + escapeHtml(bizLabel) + "</strong>" : ""} ended without enough participants to count as a real call (duration ${durationSec}s, ${participantCount} participant${participantCount === 1 ? "" : "s"}).</p>
+<p>Reach out directly to reschedule — they may have had a scheduling mistake.</p>
+<p style="color:#5b6472;font-size:12.5px;margin-top:18px">— Automated message from LYMX Power onboarding</p>`,
+                                reply_to: (onb as any).booker_email,
+                            }),
+                        });
+                    } catch (e: any) { console.warn(`[call-summary] onboarding no-show email failed: ${e.message}`); }
+                }
+            }
+
+            return json({
+                ok: true,
+                action: isNoShow ? "marked_no_show" : "marked_completed",
+                booking_kind: "onboarding",
+                booking_id: (onb as any).id,
+                duration_sec: durationSec,
+                participant_count: participantCount,
+            });
+        }
+
+        // Transcript / recording events: stash the event payload on the
+        // booking row for audit but skip the team-calendar transcript flow
+        // (which is keyed off team_calendars + leads + conversations).
+        const merged = { ...((onb as any).video_room_data || {}), [eventType]: data };
+        await supabase.from("onboarding_bookings").update({ video_room_data: merged }).eq("id", (onb as any).id);
+        return json({ ok: true, ignored: true, booking_kind: "onboarding", reason: "event_logged_only", event: eventType });
+    }
 
     // Handle each event type
     if (eventType === "meeting.ended" || eventType === "room.meeting.ended") {

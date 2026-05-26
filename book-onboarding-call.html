@@ -385,13 +385,49 @@
         }
       }
 
+      // Module 4: create a Daily.co (or Jitsi fallback) room for the call,
+      // persist it on the booking row, and trigger confirmation emails to
+      // both the booker and the host. The EF has its own 5-min freshness
+      // gate that mirrors the link RPC above.
+      var roomUrl = null;
+      if (booking && booking.id) {
+        try {
+          var roomResp = await fetch(URL + '/functions/v1/onboarding-room-create', {
+            method: 'POST',
+            headers: { apikey: ANON, Authorization: 'Bearer ' + ANON, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ booking_id: booking.id })
+          });
+          if (roomResp.ok) {
+            var roomJson = await roomResp.json();
+            if (roomJson && roomJson.video_room_url) {
+              roomUrl = roomJson.video_room_url;
+              booking.meeting_url = roomUrl;
+              booking.video_room_url = roomUrl;
+            }
+          } else {
+            console.warn('[book-onboarding-call] room create failed', await roomResp.text());
+          }
+        } catch (e) {
+          console.warn('[book-onboarding-call] room create error (non-fatal)', e);
+        }
+      }
+
       const ics = buildICS(host, booking, selectedSlot);
       const blob = new Blob([ics], { type: 'text/calendar' });
       document.getElementById('icsBtn').href = window.URL.createObjectURL(blob);
 
       document.getElementById('detailsArea').style.display = 'none';
       const slotStr = selectedSlot.start.toLocaleString([], { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-      document.getElementById('successDetail').textContent = 'See you on ' + slotStr + '. ' + host.display_name + ' will email you the meeting link before the call.';
+      // Module 4: if the room was created inline, surface the URL on the success
+      // card immediately so the booker can copy it before the email even arrives.
+      var detailEl = document.getElementById('successDetail');
+      if (roomUrl) {
+        detailEl.innerHTML = 'See you on <strong>' + slotStr + '</strong>. Your join link is:<br>'
+          + '<a href="' + roomUrl + '" style="color:#0a84ff;font-weight:600;word-break:break-all">' + roomUrl + '</a>'
+          + '<br><span style="font-size:12.5px;color:#5b6472">A confirmation email with this link + a calendar invite was just sent to you.</span>';
+      } else {
+        detailEl.textContent = 'See you on ' + slotStr + '. ' + host.display_name + ' will email you the meeting link before the call.';
+      }
       document.getElementById('successArea').style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
@@ -413,12 +449,13 @@
       'DTSTART:' + fmt(slot.start),
       'DTEND:'   + fmt(slot.end),
       'SUMMARY:LYMX onboarding call with ' + host.display_name,
-      'DESCRIPTION:Your ' + (host.slot_minutes || 20) + '-min LYMX onboarding call. ' + host.display_name + ' will email you the meeting link before the call.',
+      ((booking.video_room_url || booking.meeting_url) ? 'LOCATION:' + (booking.video_room_url || booking.meeting_url) : null),
+      'DESCRIPTION:Your ' + (host.slot_minutes || 20) + '-min LYMX onboarding call. Join: ' + (booking.video_room_url || booking.meeting_url || (host.display_name + ' will email you the meeting link before the call.')),
       'ORGANIZER;CN=' + host.display_name + ':mailto:' + host.email,
       'ATTENDEE;CN=' + booking.booker_name + ';RSVP=TRUE:mailto:' + booking.booker_email,
       'END:VEVENT',
       'END:VCALENDAR'
-    ].join('\r\n');
+    ].filter(function(line){ return line !== null; }).join('\r\n');
   }
 
   paintDays();
