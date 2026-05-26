@@ -11,7 +11,7 @@
 | # | Step | Role | Status |
 |---|---|---|---|
 | 1 | [Invite a business](01-invite.md) | Admin or Partner | ✅ Shipped 2026-05-26 |
-| 2 | Sign up | Business owner | 📋 Planned (Module 2 — surfaces existing biz-signup flow) |
+| 2 | [Sign up (prospect side)](02-signup.md) | Business owner (guest) | ✅ Shipped 2026-05-26 |
 | 3 | Admin approves | Admin | 📋 Planned (Module 2) |
 | 4 | Approval email + required 20-min call | Business owner | 📋 Planned (Module 3) |
 | 5 | Book the 20-min call with Rachel | Business owner | 📋 Planned (Module 4) |
