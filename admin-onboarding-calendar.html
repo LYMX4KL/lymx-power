@@ -154,9 +154,9 @@
   // Bookings
   async function loadBookings() {
     const nowIso = new Date().toISOString();
-    const upR = await fetch(URL + '/rest/v1/onboarding_bookings?host_id=eq.' + host.id + '&status=eq.confirmed&starts_at=gte.' + nowIso + '&order=starts_at&select=*,business:businesses(slug,display_name,approval_status,approved_at)', { headers: H });
+    const upR = await fetch(URL + '/rest/v1/onboarding_bookings?host_id=eq.' + host.id + '&status=eq.confirmed&starts_at=gte.' + nowIso + '&order=starts_at&select=*,business:businesses!onboarding_bookings_business_id_fkey(slug,display_name,approval_status,approved_at)', { headers: H });
     const upcoming = await upR.json();
-    const pastR = await fetch(URL + '/rest/v1/onboarding_bookings?host_id=eq.' + host.id + '&starts_at=lt.' + nowIso + '&order=starts_at.desc&limit=25&select=*,business:businesses(slug,display_name,approval_status,approved_at)', { headers: H });
+    const pastR = await fetch(URL + '/rest/v1/onboarding_bookings?host_id=eq.' + host.id + '&starts_at=lt.' + nowIso + '&order=starts_at.desc&limit=25&select=*,business:businesses!onboarding_bookings_business_id_fkey(slug,display_name,approval_status,approved_at)', { headers: H });
     const past = await pastR.json();
     return { upcoming: Array.isArray(upcoming) ? upcoming : [], past: Array.isArray(past) ? past : [] };
   }
