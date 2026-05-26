@@ -18,6 +18,7 @@
 | [business-onboarding-readme](business-onboarding/README.md) | Business onboarding flow — overview + step index | Multiple | 🚧 In progress |
 | [business-onboarding-01-invite](business-onboarding/01-invite.md) | Invite a business to LYMX | Admin / Partner | ✅ Verified 2026-05-26 |
 | [business-onboarding-02-signup](business-onboarding/02-signup.md) | Sign up your business on LYMX (from invite) | Prospect (guest) | ✅ Verified 2026-05-26 |
+| [business-onboarding-03-approval](business-onboarding/03-approval.md) | Review a pending business application (approve / request more info / reject) | Admin | ✅ Verified 2026-05-26 |
 | partner-onboarding | Apply, get $750 setup, pitch your first business | Partner | 📋 Planned |
 
 ## Daily operations (planned)
@@ -42,7 +43,6 @@
 
 | Slug | Title | Role | Status |
 |---|---|---|---|
-| admin-approve-business | Approve a Founding-25 application | Admin | 📋 Planned |
 | admin-handle-feedback | Triage + reply to a feedback ticket | Admin | 📋 Planned |
 | admin-broadcast | Send a team-wide announcement | Admin | 📋 Planned |
 

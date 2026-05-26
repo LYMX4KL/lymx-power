@@ -45,9 +45,27 @@
   .toast.show{display:block}
   .toast.ok{background:var(--ok)} .toast.err{background:var(--err)}
   .welcome-link{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;background:#f6f7f9;padding:4px 8px;border-radius:5px;border:1px solid var(--line);display:inline-block}
+
+  /* Module 2 — approval queue v2 additions */
+  .src-tag{display:inline-flex;align-items:center;gap:6px;background:#eef6ff;color:#1e40af;border:1px solid #c7d2fe;padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:600;margin-top:6px}
+  .src-tag.direct{background:#f6f7f9;color:#5b6472;border-color:var(--line)}
+  .intake-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+  .intake-chip{display:inline-flex;align-items:center;gap:5px;background:#f6f7f9;border:1px solid var(--line);color:#0e1116;padding:3px 9px;border-radius:7px;font-size:11.5px;font-weight:600}
+  .intake-chip.set{background:#e6f5ee;color:var(--ok);border-color:#a8d8c0}
+  .intake-chip.unset{color:#9aa3b2;background:#fafbfc;border-style:dashed}
+  .more-info-banner{background:#fff8e6;border:1px solid #f0d28a;color:#8a5e00;padding:11px 14px;border-radius:9px;margin:10px 0;font-size:13px}
+  .more-info-banner.responded{background:#e6f5ee;border-color:#a8d8c0;color:#0a6e44}
+  .more-info-banner .lbl{font-weight:700;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;display:block}
+  .more-info-banner .q{white-space:pre-wrap;line-height:1.45}
+  .more-info-banner .meta{font-size:11.5px;color:inherit;opacity:.75;margin-top:6px}
+  .btn.more-info{background:#fff;color:var(--accent);border:1.5px solid var(--accent)}
+  .btn.more-info:hover{background:#eef6ff}
+
+  /* Modal shared with the Invite-a-business modal */
+  #moreInfoModal textarea{width:100%;padding:10px 12px;border:1px solid #e6e8ec;border-radius:8px;font-size:14px;font-family:inherit;min-height:120px;resize:vertical;line-height:1.5;box-sizing:border-box}
 </style>
 </head>
-<body data-role-required="admin" data-playbook-slug="business-onboarding-01-invite">
+<body data-role-required="admin" data-playbook-slug="business-onboarding-03-approval">
 
 <script src="lymx-config.js"></script>
 <script src="lymx-sidebar.js" defer></script>
@@ -108,6 +126,26 @@
   </div>
 </div>
 
+<!-- Request-more-info modal (Module 2, migration 095) -->
+<div id="moreInfoModal" style="display:none;position:fixed;inset:0;background:rgba(14,17,22,.45);z-index:9999;align-items:center;justify-content:center;padding:18px">
+  <div style="background:#fff;border-radius:14px;padding:24px;max-width:520px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div style="font-size:20px;font-weight:800">🔄 Request more info</div>
+      <button id="miClose" style="background:transparent;border:0;font-size:22px;cursor:pointer;color:#5b6472" aria-label="Close">×</button>
+    </div>
+    <div id="miBizName" style="color:var(--accent);font-size:13.5px;font-weight:700;margin-bottom:4px"></div>
+    <div style="color:#5b6472;font-size:13.5px;margin-bottom:18px">The applicant gets your question by email and replies directly to <code>kenny@lymxpower.com</code>. The application stays in Pending until you click Approve or Reject.</div>
+    <form id="miForm" onsubmit="return false">
+      <label style="display:block;font-size:13px;font-weight:700;margin-bottom:4px">What do you need from them? <span style="color:#b81324">*</span></label>
+      <textarea id="miText" required minlength="5" maxlength="4000" placeholder="e.g. Your EIN on the application is 12-3456789 but doesn't match the legal name on file with the state. Can you confirm the EIN, or send a copy of your IRS EIN assignment letter?"></textarea>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+        <button type="button" id="miCancel" class="btn outline">Cancel</button>
+        <button type="submit" id="miSubmit" class="btn approve" style="background:var(--accent)">Send request</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -147,7 +185,8 @@
 
   async function refreshCounts() {
     try {
-      const r = await fetch(URL + '/rest/v1/businesses?select=approval_status', { headers: H });
+      // Match loadList's filter: only count real (non-demo) businesses.
+      const r = await fetch(URL + '/rest/v1/businesses?select=approval_status&demo_only=eq.false', { headers: H });
       const rows = await r.json();
       const ct = { pending: 0, approved: 0, rejected: 0 };
       (Array.isArray(rows) ? rows : []).forEach(x => { if (ct[x.approval_status] !== undefined) ct[x.approval_status]++; });
@@ -167,14 +206,18 @@
     listEl.innerHTML = '<div class="empty">Loading…</div>';
     if (currentTab === 'invites') { return loadInvites(); }
     try {
-      const cols = 'id,slug,legal_name,display_name,category,contact_email,contact_phone,owner_user_id,approval_status,approved_at,approved_by,rejection_reason,created_at,issuance_rate,redemption_rate';
-      const r = await fetch(URL + '/rest/v1/businesses?approval_status=eq.' + currentTab + '&select=' + cols + '&order=created_at.desc&limit=200', { headers: H });
-      const rows = r.ok ? await r.json() : [];
+      // Module 2 — pull from v_admin_business_applications (migration 095). This
+      // view joins biz_invitations + partners + business_documents counts so the
+      // card can render invitation source, intake summary, and doc count in one
+      // round-trip. Skip demo_only rows (Phase 4 — those are static-page props).
+      const r = await fetch(URL + '/rest/v1/v_admin_business_applications?approval_status=eq.' + currentTab + '&demo_only=eq.false&select=*&order=created_at.desc&limit=200', { headers: H });
+      if (!r.ok) throw new Error(await r.text());
+      const rows = await r.json();
       if (!Array.isArray(rows) || !rows.length) { listEl.innerHTML = '<div class="empty">No ' + currentTab + ' applications.</div>'; return; }
       listEl.innerHTML = '';
       rows.forEach(b => listEl.appendChild(buildCard(b)));
     } catch (e) {
-      listEl.innerHTML = '<div class="empty" style="color:#b81324">Could not load: ' + e.message + '</div>';
+      listEl.innerHTML = '<div class="empty" style="color:#b81324">Could not load: ' + (e.message || e) + '</div>';
     }
   }
 
@@ -333,6 +376,65 @@
   }
   wireInviteModal();
 
+  // Module 2 helpers — render the new surfaces (invitation source, intake chips,
+  // doc count, request-more-info banner). All driven by the v_admin_business_
+  // applications view from migration 095.
+
+  function renderInvitationSource(b) {
+    // Three shapes: invited by a partner / invited by an admin / direct signup.
+    if (!b.invitation_id) {
+      return '<div class="src-tag direct">🌐 Direct signup (no invitation)</div>';
+    }
+    if (b.invitation_partner_name) {
+      return '<div class="src-tag">📨 Invited via <strong>' + esc(b.invitation_partner_name) + '</strong> · ' + fmt(b.invitation_created_at) + '</div>';
+    }
+    return '<div class="src-tag">📨 Invited by internal team · ' + fmt(b.invitation_created_at) + '</div>';
+  }
+
+  function renderIntakeChips(b) {
+    // Each chip: label + ✓ if set, dashed/grayed if not. Module 2 surfaces these
+    // so the admin can see at-a-glance what the applicant filled in without
+    // opening biz-profile.html as the owner.
+    const items = [
+      { label: 'EIN',           val: b.intake_ein },
+      { label: 'License',       val: b.intake_license },
+      { label: b.intake_entity_type ? b.intake_entity_type.replace(/_/g, ' ') : 'Entity', val: b.intake_entity_type, isCategory: true },
+      { label: b.intake_year_founded ? 'Founded ' + b.intake_year_founded : 'Year founded', val: b.intake_year_founded },
+      { label: b.intake_state || 'State',  val: b.intake_state },
+      { label: b.intake_employee_count ? b.intake_employee_count : 'Headcount', val: b.intake_employee_count },
+      { label: 'Website',       val: b.intake_website, isLink: true },
+      { label: 'Hours',         val: b.intake_operating_hours && Object.keys(b.intake_operating_hours).length ? true : null },
+      { label: 'Stripe',        val: b.intake_stripe_connected },
+    ];
+    const chips = items.map(it => {
+      const isSet = !!it.val;
+      if (isSet && it.isLink) {
+        return '<a class="intake-chip set" href="' + esc(String(it.val)) + '" target="_blank" rel="noopener">' + esc(it.label) + ' ↗</a>';
+      }
+      return '<span class="intake-chip ' + (isSet ? 'set' : 'unset') + '">' + (isSet ? '✓ ' : '') + esc(it.label) + '</span>';
+    }).join('');
+    const docLine = '<span class="intake-chip ' + (b.total_docs > 0 ? 'set' : 'unset') + '">📎 ' + b.total_docs + ' doc' + (b.total_docs === 1 ? '' : 's')
+      + (b.verified_docs > 0 ? ' (' + b.verified_docs + ' verified)' : '') + '</span>';
+    return '<div class="intake-chips">' + chips + docLine + '</div>';
+  }
+
+  function renderMoreInfoBanner(b) {
+    if (!b.request_more_info_at) return '';
+    const responded = !!b.requested_info_response_at;
+    const cls = responded ? 'more-info-banner responded' : 'more-info-banner';
+    const lbl = responded ? '✓ Response received' : '⏳ Awaiting response';
+    const askedHtml = ''
+      + '<span class="lbl">' + lbl + '</span>'
+      + '<div class="q"><strong>You asked:</strong>\n' + esc(b.requested_info_text || '') + '</div>'
+      + '<div class="meta">Asked ' + fmt(b.request_more_info_at) + '</div>';
+    if (!responded) return '<div class="' + cls + '">' + askedHtml + '</div>';
+    return '<div class="' + cls + '">'
+      + askedHtml
+      + '<div class="q" style="margin-top:8px"><strong>They replied:</strong>\n' + esc(b.requested_info_response_text || '') + '</div>'
+      + '<div class="meta">Replied ' + fmt(b.requested_info_response_at) + '</div>'
+      + '</div>';
+  }
+
   function buildCard(b) {
     const card = document.createElement('div');
     card.className = 'card';
@@ -340,10 +442,14 @@
     card.innerHTML = ''
       + '<div class="head">'
       +   '<div><div class="name">' + esc(b.display_name || b.legal_name || 'Unnamed business') + '</div>'
-      +     '<div class="meta">' + esc(b.category || '—') + ' · ' + esc(b.contact_email) + (b.contact_phone ? ' · ' + esc(b.contact_phone) : '') + '</div></div>'
+      +     '<div class="meta">' + esc(b.category || '—') + ' · ' + esc(b.contact_email) + (b.contact_phone ? ' · ' + esc(b.contact_phone) : '') + '</div>'
+      +     renderInvitationSource(b)
+      +   '</div>'
       +   '<span class="badge ' + b.approval_status + '">' + b.approval_status + '</span>'
       + '</div>'
-      + '<dl class="detail">'
+      + renderIntakeChips(b)
+      + renderMoreInfoBanner(b)
+      + '<dl class="detail" style="margin-top:12px">'
       +   '<div><dt>Legal name</dt><dd>' + esc(b.legal_name || '—') + '</dd></div>'
       +   '<div><dt>Slug</dt><dd>' + esc(b.slug || '—') + '</dd></div>'
       +   '<div><dt>Issuance rate</dt><dd>' + (b.issuance_rate || 0) + ' LYMX / $1</dd></div>'
@@ -359,10 +465,15 @@
       const ok = document.createElement('button');
       ok.className = 'btn approve'; ok.textContent = '✓ Approve';
       ok.addEventListener('click', () => doApprove(b.id, b.display_name || b.legal_name, ok));
+      // Module 2: 🔄 Request more info — keeps status=pending, emails applicant.
+      const mi = document.createElement('button');
+      mi.className = 'btn more-info';
+      mi.textContent = b.request_more_info_at ? '🔄 Ask another follow-up' : '🔄 Request more info';
+      mi.addEventListener('click', () => openMoreInfoModal(b));
       const no = document.createElement('button');
       no.className = 'btn reject'; no.textContent = '✗ Reject';
       no.addEventListener('click', () => doReject(b.id, no));
-      actions.appendChild(ok); actions.appendChild(no);
+      actions.appendChild(ok); actions.appendChild(mi); actions.appendChild(no);
     } else if (b.approval_status === 'approved') {
       const live = document.createElement('a');
       live.className = 'btn outline'; live.textContent = 'Open landing page →';
@@ -387,6 +498,53 @@
 
     return card;
   }
+
+  // ---- Modal: 🔄 Request more info (Module 2, migration 095) -------------
+  let _miCurrentBiz = null;
+  function openMoreInfoModal(b) {
+    _miCurrentBiz = b;
+    document.getElementById('miBizName').textContent = (b.display_name || b.legal_name || 'this application') + ' · ' + (b.contact_email || '—');
+    document.getElementById('miText').value = '';
+    document.getElementById('moreInfoModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('miText').focus(), 50);
+  }
+  function closeMoreInfoModal() {
+    document.getElementById('moreInfoModal').style.display = 'none';
+    _miCurrentBiz = null;
+  }
+  function wireMoreInfoModal() {
+    document.getElementById('miClose').addEventListener('click', closeMoreInfoModal);
+    document.getElementById('miCancel').addEventListener('click', closeMoreInfoModal);
+    document.getElementById('moreInfoModal').addEventListener('click', e => {
+      if (e.target.id === 'moreInfoModal') closeMoreInfoModal();
+    });
+    document.getElementById('miForm').addEventListener('submit', async () => {
+      if (!_miCurrentBiz) return;
+      const text = document.getElementById('miText').value.trim();
+      if (text.length < 5) { toast('Message must be at least 5 characters', 'err'); return; }
+      const submitBtn = document.getElementById('miSubmit');
+      submitBtn.disabled = true; submitBtn.textContent = 'Sending…';
+      try {
+        const r = await fetch(URL + '/functions/v1/biz-request-more-info', {
+          method: 'POST', headers: H,
+          body: JSON.stringify({ business_id: _miCurrentBiz.id, requested_info_text: text })
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || !j.success) {
+          throw new Error(j.error || ('http ' + r.status));
+        }
+        toast('Request sent — applicant emailed.', 'ok');
+        closeMoreInfoModal();
+        loadList();
+      } catch (e) {
+        toast('Send failed: ' + ((e.message || e) + '').slice(0, 140), 'err');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send request';
+      }
+    });
+  }
+  wireMoreInfoModal();
 
   async function doApprove(id, name, btn) {
     btn.disabled = true; btn.textContent = 'Approving…';
