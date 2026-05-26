@@ -749,9 +749,10 @@
     // state no matter how the request resolves (success, HTTP error, network
     // error, timeout, or unexpected exception in the success-side cleanup).
     var ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    var timeoutId = ac ? setTimeout(function () {
-      try { ac.abort(); } catch (e) { /* already aborted — no-op */ } // bandaid-ok: AbortController.abort() throws if signal already aborted; nothing actionable to log
-    }, 30000) : null;
+    // AbortController.abort() is idempotent per spec — safe to call even if
+    // the signal is already aborted (e.g. user closed the modal before timeout
+    // fires). No try/catch needed.
+    var timeoutId = ac ? setTimeout(function () { ac.abort(); }, 30000) : null;
     var didSucceed = false;
     try {
       var res = await fetch(
