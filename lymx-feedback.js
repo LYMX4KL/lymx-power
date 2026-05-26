@@ -650,6 +650,7 @@
       if (pb) pb.textContent = shortPath();
     } catch (e) { console.warn('[lymx-feedback.js:L627] silent error', e); }
     notice(null);
+    resetSendButton();
     loadDraft();
     updateWhoLabel();
     // 2026-05-21 #440f1159 — re-enable auto-capture on modal open. The prior
@@ -668,6 +669,19 @@
   function close() {
     overlay.classList.remove('on');
     document.body.style.overflow = '';
+  }
+  // 2026-05-26 root-cause fix for Helen's "Feedback box frozen" ticket
+  // (#a6e69703): if a previous submit() hung at the fetch step (no network
+  // timeout was set, so a stalled DNS/TLS handshake or cold-start Edge
+  // Function could leave the modal forever in "Sending…" disabled state),
+  // the next open() of the widget showed the stuck button and looked
+  // unresponsive. The submit() flow now has a 30s AbortController +
+  // try/finally that always resets state, but we ALSO reset here on every
+  // open() as defense-in-depth so the widget is always usable regardless
+  // of what happened in a previous session.
+  function resetSendButton() {
+    var sendBtn = document.getElementById('lymx-fb-send');
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send Feedback'; }
   }
   function notice(text, kind) {
     var n = document.getElementById('lymx-fb-notice');
@@ -727,6 +741,18 @@
     };
 
     var auth = await resolveAccessToken();
+    // 2026-05-26 root-cause fix for "Feedback box frozen" (Helen #a6e69703):
+    // a stalled fetch (DNS, TLS handshake, Edge Function cold-start) used to
+    // leave sendBtn forever in "Sending…" disabled state because nothing
+    // re-enabled it. AbortController gives every submit a hard 30s ceiling,
+    // and the try/finally below guarantees the button returns to a clickable
+    // state no matter how the request resolves (success, HTTP error, network
+    // error, timeout, or unexpected exception in the success-side cleanup).
+    var ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timeoutId = ac ? setTimeout(function () {
+      try { ac.abort(); } catch (e) { /* already aborted — no-op */ } // bandaid-ok: AbortController.abort() throws if signal already aborted; nothing actionable to log
+    }, 30000) : null;
+    var didSucceed = false;
     try {
       var res = await fetch(
         window.LYMX_CONFIG.SUPABASE_URL + '/functions/v1/feedback-submit',
@@ -737,15 +763,14 @@
             'apikey': window.LYMX_CONFIG.SUPABASE_ANON_KEY,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          signal: ac ? ac.signal : undefined
         }
       );
       var data = null;
       try { data = await res.json(); } catch (e) { console.warn('[lymx-feedback.js:L720] silent error', e); }
       if (!res.ok) {
         notice((data && data.error) || ('Submit failed: ' + res.status), 'err');
-        sendBtn.disabled = false;
-        sendBtn.textContent = 'Send Feedback';
         return;
       }
       notice('Thanks! Sent. We\'ll dig in shortly.', 'ok');
@@ -756,15 +781,30 @@
       shotBlob = null; shotKind = 'none';
       attachedFiles = [];
       renderFileList();
-      setTimeout(function () {
-        close();
-        sendBtn.disabled = false;
-        sendBtn.textContent = 'Send Feedback';
-      }, 1400);
+      // Only mark success after all cleanup completed without throwing —
+      // ensures the finally block's auto-close + reset only runs on a
+      // genuinely clean success, not a half-cleaned-up state.
+      didSucceed = true;
     } catch (err) {
-      notice('Network error: ' + (err.message || err), 'err');
-      sendBtn.disabled = false;
-      sendBtn.textContent = 'Send Feedback';
+      if (err && err.name === 'AbortError') {
+        notice('Submit timed out after 30 seconds. Check your connection and try again.', 'err');
+      } else {
+        notice('Network error: ' + (err.message || err), 'err');
+      }
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+      // On success we briefly show "Sent ✓" then close the modal; the
+      // success-side delay also returns the button to "Send Feedback".
+      // On any failure path we reset the button immediately so the user
+      // can retry without reopening the modal.
+      if (didSucceed) {
+        setTimeout(function () {
+          close();
+          resetSendButton();
+        }, 1400);
+      } else {
+        resetSendButton();
+      }
     }
   }
 
