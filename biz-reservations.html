@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reservations &middot; LYMX Business</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--card:#fff;--accent:#0a84ff;--ok:#13a26b;--warn:#f0a020;--err:#b81324}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  .wrap{max-width:980px;margin:0 auto;padding:28px 22px 80px}
+  h1{margin:0 0 4px;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .lede{color:var(--muted);font-size:14.5px;margin-bottom:20px}
+  .tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+  .tab{padding:8px 14px;border:1px solid var(--line);background:#fff;border-radius:99px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted)}
+  .tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .tab .ct{display:inline-block;font-weight:800;font-size:11px;padding:1px 7px;border-radius:5px;margin-left:5px;background:rgba(255,255,255,.18);color:inherit}
+  .tab:not(.on) .ct{background:var(--bg);color:var(--muted)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .card .left{flex:1;min-width:240px}
+  .card .name{font-weight:800;font-size:15.5px}
+  .card .when{font-weight:700;color:var(--accent);font-size:14px;margin-top:2px;font-variant-numeric:tabular-nums}
+  .card .meta{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .card .notes{margin-top:6px;font-size:13.5px;color:var(--ink-2);font-style:italic;background:var(--bg);padding:8px 10px;border-radius:6px;border-left:3px solid var(--line)}
+  .pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-left:6px;vertical-align:middle}
+  .pill.pending{background:#fff3d8;color:#7a4a08}
+  .pill.confirmed{background:#dff8ec;color:#0c6940}
+  .pill.seated{background:#e6f0ff;color:#0a3a8a}
+  .pill.no_show{background:#fde8e6;color:#7a1a17}
+  .pill.cancelled{background:#eef0f3;color:var(--muted)}
+  .actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .btn{appearance:none;border:0;border-radius:7px;padding:8px 13px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn:hover:not(:disabled){border-color:var(--ink)}
+  .btn:disabled{opacity:.6;cursor:wait}
+  .btn-primary{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .btn-danger{color:var(--err);border-color:var(--err)}
+  .btn-mute{color:var(--muted)}
+  .empty{text-align:center;padding:60px 20px;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px}
+  .banner{padding:12px 14px;border-radius:8px;margin-bottom:14px;font-size:14px;display:none}
+  .banner.show{display:block}
+  .banner.ok{background:#dff8ec;color:#0c6940}
+  .banner.err{background:#fde8e6;color:#7a1a17}
+  details{margin-top:6px}
+  details summary{font-size:12px;color:var(--muted);cursor:pointer;font-weight:600}
+  details textarea{width:100%;margin-top:4px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13px;min-height:60px;resize:vertical}
+</style>
+</head>
+<body data-page="biz-reservations" data-role-required="business" data-feature-key="manage_reservations" data-playbook-slug="business-operations-reservations">
+
+<script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-playbook-help.js" defer></script>
+
+<div class="wrap">
+  <h1>Reservations</h1>
+  <p class="lede">Customer requests submitted on your business page. Confirm to lock them in, decline if you can&rsquo;t accommodate, mark seated when they arrive. The customer sees status changes immediately on their My Reservations page.</p>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="pending">Pending <span class="ct" id="ct-pending">0</span></button>
+    <button class="tab" data-tab="confirmed">Confirmed <span class="ct" id="ct-confirmed">0</span></button>
+    <button class="tab" data-tab="all">All <span class="ct" id="ct-all">0</span></button>
+  </div>
+
+  <div class="banner" id="banner"></div>
+  <div id="list"><div class="empty">Loading reservations&hellip;</div></div>
+</div>
+
+<script>
+(async function () {
+  while (!window.LYMX_CONFIG || !window.LYMX || !window.LYMX.getSession) {
+    await new Promise(function (r) { setTimeout(r, 100); });
+  }
+  var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  var URL_ = window.LYMX_CONFIG.SUPABASE_URL;
+  var session = await window.LYMX.getSession();
+  if (!session) { location.href = "login.html?return=biz-reservations.html"; return; }
+  var H = { apikey: ANON, Authorization: "Bearer " + session.access_token, "Content-Type": "application/json" };
+
+  var listEl = document.getElementById("list");
+  var bannerEl = document.getElementById("banner");
+  var bizId = null;
+  var allRows = [];
+  var currentTab = "pending";
+
+  function showBanner(kind, msg) {
+    bannerEl.textContent = msg;
+    bannerEl.className = "banner show " + kind;
+    setTimeout(function () { bannerEl.className = "banner " + kind; }, 4000);
+  }
+
+  function fmtWhen(iso) {
+    if (!iso) return "";
+    var d = new Date(iso);
+    return d.toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  }
+  function fmtCreated(iso) {
+    if (!iso) return "";
+    var d = new Date(iso);
+    var diff = Date.now() - d.getTime();
+    if (diff < 60 * 1000) return "just now";
+    if (diff < 60 * 60 * 1000) return Math.floor(diff / 60000) + "m ago";
+    if (diff < 24 * 60 * 60 * 1000) return Math.floor(diff / 3600000) + "h ago";
+    return d.toLocaleDateString();
+  }
+
+  async function resolveBusiness() {
+    var r = await fetch(URL_ + "/rest/v1/businesses?owner_user_id=eq." + session.user.id + "&select=id,display_name&order=created_at.desc&limit=1", { headers: H });
+    if (!r.ok) return null;
+    var rows = await r.json();
+    return (rows && rows[0]) || null;
+  }
+
+  async function loadReservations() {
+    if (!bizId) { listEl.innerHTML = "<div class='empty'>No business found on your account. <a href='biz-signup.html'>Apply here</a> to onboard.</div>"; return; }
+    var r = await fetch(URL_ + "/rest/v1/table_reservations?business_id=eq." + bizId + "&select=id,booker_name,booker_email,booker_phone,party_size,requested_for,special_notes,status,confirmed_at,confirm_notes,cancellation_reason,created_at&order=requested_for.asc&limit=200", { headers: H });
+    if (!r.ok) { listEl.innerHTML = "<div class='empty'>Could not load reservations.</div>"; return; }
+    allRows = await r.json();
+    renderTabs();
+    renderList();
+  }
+
+  function renderTabs() {
+    var counts = { pending: 0, confirmed: 0, all: allRows.length };
+    allRows.forEach(function (r) {
+      if (r.status === "pending") counts.pending++;
+      if (r.status === "confirmed") counts.confirmed++;
+    });
+    document.getElementById("ct-pending").textContent = counts.pending;
+    document.getElementById("ct-confirmed").textContent = counts.confirmed;
+    document.getElementById("ct-all").textContent = counts.all;
+  }
+
+  function renderList() {
+    var rows = allRows;
+    if (currentTab === "pending") rows = allRows.filter(function (r) { return r.status === "pending"; });
+    else if (currentTab === "confirmed") rows = allRows.filter(function (r) { return r.status === "confirmed" || r.status === "seated"; });
+
+    if (!rows.length) {
+      listEl.innerHTML = "<div class='empty'>" + (currentTab === "pending" ? "No pending reservation requests right now." : currentTab === "confirmed" ? "No confirmed reservations right now." : "No reservations yet. Customer requests from your business page will appear here.") + "</div>";
+      return;
+    }
+
+    listEl.innerHTML = rows.map(function (r) {
+      var actions = "";
+      if (r.status === "pending") {
+        actions += '<button class="btn btn-primary" data-act="confirm" data-id="' + r.id + '">Confirm</button>'
+                +  '<button class="btn btn-danger" data-act="decline" data-id="' + r.id + '">Decline</button>';
+      } else if (r.status === "confirmed") {
+        actions += '<button class="btn btn-primary" data-act="seated" data-id="' + r.id + '">Mark seated</button>'
+                +  '<button class="btn btn-mute" data-act="noshow" data-id="' + r.id + '">No-show</button>'
+                +  '<button class="btn btn-danger" data-act="cancel" data-id="' + r.id + '">Cancel</button>';
+      }
+
+      var contact = "";
+      if (r.booker_email) contact += r.booker_email;
+      if (r.booker_phone) contact += (contact ? " &middot; " : "") + r.booker_phone;
+
+      var noteBlock = r.special_notes ? '<div class="notes">' + (r.special_notes || "").replace(/[<>]/g, "") + '</div>' : "";
+      var confirmInput = (r.status === "pending")
+        ? '<details><summary>Add a note for the customer (optional)</summary><textarea data-note-for="' + r.id + '" placeholder="e.g. Table 7, ask for Maria"></textarea></details>'
+        : (r.confirm_notes ? '<div class="notes">' + (r.confirm_notes || "").replace(/[<>]/g, "") + '</div>' : "");
+
+      return '<div class="card" data-row="' + r.id + '">'
+        + '<div class="left">'
+        +   '<div class="name">' + (r.booker_name || "Guest") + ' &middot; party of ' + r.party_size + '<span class="pill ' + r.status + '">' + r.status + '</span></div>'
+        +   '<div class="when">' + fmtWhen(r.requested_for) + '</div>'
+        +   '<div class="meta">' + (contact || "no contact provided") + ' &middot; requested ' + fmtCreated(r.created_at) + '</div>'
+        +   noteBlock
+        +   confirmInput
+        + '</div>'
+        + '<div class="actions">' + actions + '</div>'
+        + '</div>';
+    }).join("");
+
+    Array.prototype.forEach.call(listEl.querySelectorAll("button[data-act]"), function (btn) {
+      btn.addEventListener("click", function () { onAction(btn); });
+    });
+  }
+
+  async function onAction(btn) {
+    var id = btn.getAttribute("data-id");
+    var act = btn.getAttribute("data-act");
+    var payload = {};
+    if (act === "confirm") {
+      var noteEl = document.querySelector('textarea[data-note-for="' + id + '"]');
+      payload.status = "confirmed";
+      payload.confirmed_at = new Date().toISOString();
+      payload.confirmed_by = session.user.id;
+      if (noteEl && noteEl.value.trim()) payload.confirm_notes = noteEl.value.trim();
+    } else if (act === "decline") {
+      var reason = prompt("Reason for declining (shown to customer)?", "");
+      if (reason === null) return;
+      payload.status = "cancelled";
+      payload.cancellation_reason = reason || "Could not accommodate";
+    } else if (act === "seated") {
+      payload.status = "seated";
+    } else if (act === "noshow") {
+      if (!confirm("Mark as no-show?")) return;
+      payload.status = "no_show";
+    } else if (act === "cancel") {
+      var reason2 = prompt("Cancellation reason (shown to customer)?", "");
+      if (reason2 === null) return;
+      payload.status = "cancelled";
+      payload.cancellation_reason = reason2 || "Business cancelled";
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Saving\u2026";
+    try {
+      var r = await fetch(URL_ + "/rest/v1/table_reservations?id=eq." + id, {
+        method: "PATCH",
+        headers: Object.assign({}, H, { Prefer: "return=representation" }),
+        body: JSON.stringify(payload),
+      });
+      if (!r.ok) {
+        var msg = await r.text();
+        showBanner("err", "Update failed: " + msg);
+        btn.disabled = false;
+        return;
+      }
+      showBanner("ok", "Reservation updated.");
+      await loadReservations();
+    } catch (e) {
+      showBanner("err", "Update failed: " + e.message);
+      btn.disabled = false;
+    }
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (tab) {
+    tab.addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll(".tab.on"), function (t) { t.classList.remove("on"); });
+      tab.classList.add("on");
+      currentTab = tab.getAttribute("data-tab");
+      renderList();
+    });
+  });
+
+  var biz = await resolveBusiness();
+  if (biz) { bizId = biz.id; document.querySelector("h1").textContent = "Reservations \u2014 " + (biz.display_name || ""); }
+  await loadReservations();
+})();
+</script>
+
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

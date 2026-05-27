@@ -244,6 +244,9 @@
       { href: 'biz-customer-data.html',  icon: '\u{1F465}', label: 'My Customers' },
       { section: 'Operations' },
       { href: 'biz-staff-roles.html',    icon: '\u{1FAAA}', label: 'Staff' },
+      // 2026-05-27 Sprint 4 — biz-side reservation inbox (table_reservations,
+      // mig 085 + 104). Pairs with customer-side my-reservations.html.
+      { href: 'biz-reservations.html',  icon: '\u{1F4C5}', label: 'Reservations' },
       { href: 'biz-promo-planner.html',  icon: '\u{1F381}', label: 'Promo Planner' },
       { href: 'share-hub.html',          icon: '\u{1F4E3}', label: 'Share hub' },
       { href: 'biz-cashflow.html',       icon: '\u{1F4B5}', label: 'Cashflow' },
