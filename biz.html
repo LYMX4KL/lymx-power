@@ -287,16 +287,28 @@
 //    via body data-biz-slug. We set that attribute once the biz loads.
 // =============================================================================
 
-(async function init() {
-  var URL_ = (window.LYMX_CONFIG || {}).SUPABASE_URL;
-  var ANON = (window.LYMX_CONFIG || {}).SUPABASE_ANON_KEY;
-  if (!URL_ || !ANON) {
-    document.getElementById('stateLoading').style.display = 'none';
-    document.getElementById('state404').style.display = 'block';
-    document.getElementById('state404').querySelector('h1').textContent = 'Config error';
-    document.getElementById('state404').querySelector('p').textContent = 'Page config is missing. Refresh the page.';
-    return;
-  }
+function waitForConfig(cb) {
+  // Poll for lymx-config.js (loaded by the <script src="lymx-config.js"> tag below).
+  // Inline scripts can run before deferred/sync external scripts have evaluated, so
+  // window.LYMX_CONFIG may not be defined yet when this IIFE first executes. Up to 10s.
+  if (window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL) return cb();
+  var tries = 0;
+  var iv = setInterval(function () {
+    tries++;
+    if (window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL) { clearInterval(iv); cb(); }
+    else if (tries > 100) {
+      clearInterval(iv);
+      document.getElementById('stateLoading').style.display = 'none';
+      document.getElementById('state404').style.display = 'block';
+      document.getElementById('state404').querySelector('h1').textContent = 'Config error';
+      document.getElementById('state404').querySelector('p').textContent = 'Page config did not load. Refresh the page.';
+    }
+  }, 100);
+}
+
+waitForConfig(async function init() {
+  var URL_ = window.LYMX_CONFIG.SUPABASE_URL;
+  var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
   var slug = new URLSearchParams(location.search).get('slug') || '';
   if (!slug) { show404(); return; }
 
@@ -333,7 +345,7 @@
   if (biz.demo_only) document.getElementById('previewBanner').style.display = 'block';
 
   document.title = biz.display_name + ' · LYMX';
-})();
+});
 
 function show404() {
   document.getElementById('stateLoading').style.display = 'none';
