@@ -94,6 +94,7 @@
     <button type="button" class="tab on" data-tab="info">Profile info</button>
     <button type="button" class="tab" data-tab="hours">Hours</button>
     <button type="button" class="tab" data-tab="docs">Documents</button>
+    <button type="button" class="tab" data-tab="photos">Photos</button>
     <button type="button" class="tab" data-tab="comms">Communications</button>
   </div>
 
@@ -229,6 +230,21 @@
     </div>
   </section>
 
+  <!-- TAB: Photos (P2-Photos 2026-05-27, mig 125) -->
+  <section class="tab-panel" id="tab-photos">
+    <div class="card">
+      <h2>Photos on your storefront</h2>
+      <div class="sub">These render on your public storefront page. The first photo is the main hero; the next four fill the side grid. JPG / PNG / WebP, max 10 MB each. Drag to reorder coming soon - for now, delete + re-upload in the order you want.</div>
+      <div class="row-2" style="margin:14px 0 0">
+        <div class="field"><label>Pick a photo</label><input type="file" id="photo_file" accept="image/jpeg,image/png,image/webp" class="input" /></div>
+        <div class="field"><label>Alt text (accessibility + SEO)</label><input class="input" id="photo_alt" placeholder="Optional. Describe the photo for screen readers." maxlength="160" /></div>
+      </div>
+      <div class="save-row" style="justify-content:flex-end"><button type="button" class="btn btn-primary" id="btnUploadPhoto">Upload photo</button></div>
+      <h3 style="margin:24px 0 10px;font-size:15px;font-weight:700">Current photos <span id="photosCount" style="color:var(--muted);font-weight:500"></span></h3>
+      <div id="photosList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px"></div>
+    </div>
+  </section>
+
   <!-- TAB: Communications -->
   <section class="tab-panel" id="tab-comms">
     <div class="card">
@@ -279,8 +295,9 @@
     btn.classList.add('on');
     const target = btn.getAttribute('data-tab');
     $('tab-' + target).classList.add('on');
-    if (target === 'docs')  loadDocs();
-    if (target === 'comms') loadComms();
+    if (target === 'docs')   loadDocs();
+    if (target === 'photos') loadPhotos();
+    if (target === 'comms')  loadComms();
   }));
 
   // Auth + load biz
@@ -499,6 +516,96 @@
       '</div>';
     }).join('');
   }
+
+
+  // ---- P2-Photos 2026-05-27 (mig 125): public storefront photo management ----
+  // Uploads to the 'business-photos' bucket (public-read), inserts a row in
+  // public.business_photos, then refreshes the grid. Owner-write RLS lets the
+  // biz owner manage their own photos; admins can manage any biz.
+  async function loadPhotos() {
+    if (!myBiz) return;
+    const listEl = document.getElementById('photosList');
+    const countEl = document.getElementById('photosCount');
+    const r = await sb.from('business_photos')
+      .select('id, file_path, alt_text, display_order, kind, uploaded_at')
+      .eq('business_id', myBiz.id)
+      .is('archived_at', null)
+      .order('display_order', { ascending: true })
+      .order('uploaded_at', { ascending: true });
+    if (r.error) {
+      console.warn('[biz-profile] loadPhotos failed', r.error);
+      listEl.innerHTML = '<div style="color:var(--muted);font-size:13px">Could not load photos: ' + r.error.message + '</div>';
+      return;
+    }
+    const rows = r.data || [];
+    countEl.textContent = rows.length ? '(' + rows.length + ' uploaded)' : '(none yet)';
+    if (!rows.length) {
+      listEl.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:13.5px;padding:24px;border:2px dashed var(--line);border-radius:10px;text-align:center">No photos yet. Upload above; they appear on your storefront immediately.</div>';
+      return;
+    }
+    const publicBase = window.LYMX_CONFIG.SUPABASE_URL + '/storage/v1/object/public/business-photos/';
+    listEl.innerHTML = rows.map(function (p, i) {
+      const tag = i === 0 ? 'MAIN' : ('#' + (i + 1));
+      return '<div style="position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);aspect-ratio:1;background:#f6f7f9">' +
+        '<img src="' + publicBase + encodeURI(p.file_path) + '" alt="' + esc(p.alt_text || '') + '" style="width:100%;height:100%;object-fit:cover;display:block" />' +
+        '<div style="position:absolute;top:6px;left:6px;background:rgba(14,17,22,.78);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px">' + tag + '</div>' +
+        '<button type="button" data-photo-delete="' + p.id + '" data-photo-path="' + esc(p.file_path) + '" title="Remove" style="position:absolute;top:6px;right:6px;background:rgba(192,57,43,.92);color:#fff;border:0;width:26px;height:26px;border-radius:50%;font-weight:800;cursor:pointer;font-size:14px;line-height:1">x</button>' +
+        '</div>';
+    }).join('');
+    listEl.querySelectorAll('[data-photo-delete]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-photo-delete');
+        const path = btn.getAttribute('data-photo-path');
+        if (!confirm('Remove this photo from your storefront? This cannot be undone (file is removed from storage too).')) return;
+        btn.disabled = true;
+        const dr = await sb.from('business_photos').delete().eq('id', id);
+        if (dr.error) { alert('Delete failed: ' + dr.error.message); btn.disabled = false; return; }
+        // Best-effort storage delete; row is already gone so the photo will not render even if this fails.
+        try { await sb.storage.from('business-photos').remove([path]); } catch (e) { console.warn('[biz-profile] storage delete failed', e); }
+        loadPhotos();
+      });
+    });
+  }
+
+  document.getElementById('btnUploadPhoto').addEventListener('click', async () => {
+    if (!myBiz) { toast('No business linked yet', 'err'); return; }
+    const fileEl = document.getElementById('photo_file');
+    const altEl = document.getElementById('photo_alt');
+    const file = fileEl.files[0];
+    if (!file) { toast('Pick an image first', 'err'); return; }
+    if (file.size > 10 * 1024 * 1024) { toast('Max 10 MB per photo', 'err'); return; }
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) { toast('Only JPG / PNG / WebP', 'err'); return; }
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
+    const path = myBiz.id + '/' + Date.now() + '_' + safeName;
+    const up = await sb.storage.from('business-photos').upload(path, file, { contentType: file.type, upsert: false });
+    if (up.error) { toast('Upload failed: ' + up.error.message.slice(0, 120), 'err'); return; }
+    // Compute display_order = max(existing) + 1 so new uploads land at the end
+    const orderR = await sb.from('business_photos')
+      .select('display_order').eq('business_id', myBiz.id).is('archived_at', null)
+      .order('display_order', { ascending: false }).limit(1).maybeSingle();
+    const nextOrder = (orderR && orderR.data ? Number(orderR.data.display_order || 0) : -1) + 1;
+    const ins = await sb.from('business_photos').insert({
+      business_id:         myBiz.id,
+      file_path:           path,
+      display_order:       nextOrder,
+      alt_text:            altEl.value.trim() || null,
+      bytes:               file.size,
+      mime_type:           file.type,
+      uploaded_by_user_id: user.id,
+    });
+    if (ins.error) {
+      toast('Row save failed (file uploaded but not visible): ' + ins.error.message.slice(0, 120), 'err');
+      // Best-effort storage cleanup so we don't leave an orphan file
+      try { await sb.storage.from('business-photos').remove([path]); } catch (e) { console.warn('[biz-profile] cleanup of orphan upload failed', e); }
+      return;
+    }
+    fileEl.value = '';
+    altEl.value = '';
+    toast('Photo uploaded. It is live on your storefront now.', 'ok');
+    loadPhotos();
+  });
+
 
   await loadBiz();
 })();

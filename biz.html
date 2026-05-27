@@ -43,8 +43,27 @@
   .crumb a{color:var(--muted)}
   .crumb a:hover{color:var(--ink)}
 
-  .hero{display:flex;align-items:center;justify-content:center;height:380px;border-radius:var(--radius);overflow:hidden;margin-bottom:24px;background:linear-gradient(135deg,#fff5e1,#ffd5a3);font-size:170px}
-  @media(max-width:780px){.hero{height:240px;font-size:130px}}
+  /* P2-Photos 2026-05-27 - hero block adapts based on photo count:
+     - 0 photos: single emoji-only hero (legacy fallback, same look as Phase 1)
+     - 1 photo:  single full-width image, same 380px height
+     - 2-5+:     grid like the original hand-coded oakline (2fr 1fr 1fr / 2 rows)
+     Photos are fetched from fn_biz_photos and rendered into #bizHero. */
+  .hero{border-radius:var(--radius);overflow:hidden;margin-bottom:24px;background:linear-gradient(135deg,#fff5e1,#ffd5a3)}
+  .hero.emoji-only{display:flex;align-items:center;justify-content:center;height:380px;font-size:170px}
+  .hero.single{height:380px}
+  .hero.single img{width:100%;height:100%;object-fit:cover;display:block}
+  .hero.grid{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:6px;height:380px}
+  .hero.grid .ph{overflow:hidden;background:linear-gradient(135deg,#ffe0d6,#ffaa7d);cursor:zoom-in}
+  .hero.grid .ph img{width:100%;height:100%;object-fit:cover;display:block;transition:.2s}
+  .hero.grid .ph img:hover{transform:scale(1.04)}
+  .hero.grid .ph.main{grid-row:span 2}
+  @media(max-width:780px){
+    .hero.emoji-only{height:240px;font-size:130px}
+    .hero.single{height:240px}
+    .hero.grid{grid-template-columns:1fr 1fr;grid-template-rows:200px 100px;height:auto}
+    .hero.grid .ph.main{grid-row:span 2}
+    .hero.grid .ph.p4,.hero.grid .ph.p5{display:none}
+  }
 
   .title-row{display:flex;justify-content:space-between;align-items:start;gap:24px;flex-wrap:wrap;margin-bottom:8px}
   .title-row h1{margin:0;font-size:clamp(28px,3.8vw,40px);font-weight:800;letter-spacing:-.01em;line-height:1.1}
@@ -179,7 +198,7 @@
       <a href="/">Home</a> · <a href="/browse">Browse</a> · <span id="bizCrumbCat" style="color:var(--ink)"></span>
     </div>
 
-    <div class="hero" id="bizHero">🏪</div>
+    <div class="hero emoji-only" id="bizHero">🏪</div>
 
     <div class="title-row">
       <div>
@@ -339,6 +358,9 @@ waitForConfig(async function init() {
   // 4. Reviews (separate fetch — anon read allowed per mig 030)
   await renderReviews(slug, URL_, ANON);
 
+  // 4b. Photos (anon-safe via fn_biz_photos RPC, added 2026-05-27 mig 125)
+  await renderPhotos(slug, URL_, ANON);
+
   // 5. Show
   document.getElementById('stateLoading').style.display = 'none';
   document.getElementById('storefront').style.display = '';
@@ -359,9 +381,13 @@ function escapeHtml(s) {
 }
 
 function renderStorefront(b) {
-  // Hero
+  // Hero - default to single-emoji fallback. loadPhotos() runs after this and
+  // upgrades to a real photo grid when fn_biz_photos returns rows.
   var hero = document.getElementById('bizHero');
-  if (hero) hero.textContent = b.emoji || '🏪';
+  if (hero) {
+    hero.className = 'hero emoji-only';
+    hero.textContent = b.emoji || '🏪';
+  }
   // Crumb
   var crumb = document.getElementById('bizCrumbCat');
   if (crumb) crumb.textContent = b.display_name || '—';
@@ -445,6 +471,40 @@ function renderHours(hours) {
     lines.push(label + ' —');
   }
   return lines.join('<br>');
+}
+
+
+async function renderPhotos(slug, URL_, ANON) {
+  var hero = document.getElementById('bizHero');
+  if (!hero) return;
+  try {
+    var r = await fetch(URL_ + '/rest/v1/rpc/fn_biz_photos', {
+      method: 'POST',
+      headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_slug: slug })
+    });
+    if (!r.ok) return;  // keep emoji fallback
+    var rows = await r.json();
+    if (!Array.isArray(rows) || !rows.length) return;  // emoji fallback
+    var publicBase = URL_ + '/storage/v1/object/public/business-photos/';
+    if (rows.length === 1) {
+      var p0 = rows[0];
+      hero.className = 'hero single';
+      hero.innerHTML = '<img src="' + publicBase + encodeURI(p0.file_path) + '" alt="' + escapeHtml(p0.alt_text || document.title) + '" />';
+      return;
+    }
+    // 2+ photos: grid layout (2fr 1fr 1fr, 2 rows). Main is first, then up to 4 fillers.
+    hero.className = 'hero grid';
+    var inner = '';
+    var classes = ['main', 'p2', 'p3', 'p4', 'p5'];
+    var maxCells = Math.min(rows.length, 5);
+    for (var i = 0; i < maxCells; i++) {
+      var p = rows[i];
+      var cls = classes[i] || 'p' + (i + 1);
+      inner += '<div class="ph ' + cls + '"><img src="' + publicBase + encodeURI(p.file_path) + '" alt="' + escapeHtml(p.alt_text || (document.title + ' photo ' + (i + 1))) + '" /></div>';
+    }
+    hero.innerHTML = inner;
+  } catch (e) { console.warn('[biz.html] renderPhotos failed', e); }
 }
 
 async function renderReviews(slug, URL_, ANON) {
