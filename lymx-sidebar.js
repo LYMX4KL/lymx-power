@@ -381,7 +381,14 @@
       { href: 'admin-staff-locations.html',     icon: '\u{1F4CD}', label: 'Clock-in Locations' },
       { href: 'admin-clock-in-permissions.html', icon: '\u{1F510}', label: 'Clock-in Permissions' },
       { href: 'admin-clock-in-requests.html',    icon: '\u{1F4E5}', label: 'Pending Requests' },
-      { href: 'admin-timesheets.html',           icon: '\u{23F1}',  label: 'Timesheets' },
+      { href: 'admin-timesheets.html',           icon: '\u{23F1}',  label: 'Timesheets (raw events)' },
+      // 2026-05-27 — Kenny request: accounting/admin need to backfill or fix
+      // a daily timesheet line (missed clock-outs, system glitches, retro
+      // adjustments). admin-timesheet-edit.html works on timesheet_lines
+      // (the payroll-bound daily summary), keeps clock_events untouched, and
+      // every save auto-stamps edited_by_* + locked=true so the next recompute
+      // doesn't blow it away.
+      { href: 'admin-timesheet-edit.html',       icon: '\u{270F}\u{FE0F}',  label: 'Edit timesheet lines' },
       { href: 'admin-payroll-reconciliation.html', icon: '\u{1F4B0}', label: 'Payroll Run' },
       { href: 'admin-generate-offer.html',       icon: '\u{1F4E8}', label: 'Generate Offer' },
       { href: 'admin-counter-offer-queue.html',  icon: '\u{1F501}', label: 'Counter Offers' },

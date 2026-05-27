@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — backfill or adjust a staff member's daily timesheet line. Edits auto-stamp the editor + require a reason. Locked rows skip auto-recompute." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Edit timesheets · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:1280px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .page{padding:28px 0 80px}
+  .page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+  .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:14.5px;max-width:760px}
+  .btn{appearance:none;border:0;border-radius:8px;padding:9px 14px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-outline{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn-outline:hover{border-color:var(--ink-2)}
+  .btn-success{background:var(--ok);color:#fff}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-tiny{padding:5px 9px;font-size:12px;border-radius:6px}
+  .btn[disabled]{opacity:.6;cursor:not-allowed}
+  .filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px;align-items:end}
+  .filters label{display:block;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+  .filters select, .filters input{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13.5px;background:#fff}
+  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 13px}
+  .stat .lab{font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .stat .v{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:2px}
+  .tbl{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;padding:11px 14px;background:var(--bg-soft);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line)}
+  td{padding:11px 14px;border-bottom:1px solid #f1f3f6;vertical-align:top;font-variant-numeric:tabular-nums}
+  td.staff{font-variant-numeric:normal}
+  tr:hover td{background:#fafbfd}
+  .pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:99px}
+  .pill.edited{background:#fff3d8;color:#7a4a08}
+  .pill.locked{background:#cffafe;color:#155e75}
+  .pill.approved{background:#d1fae5;color:#065f46}
+  .empty{padding:48px 24px;text-align:center;color:var(--muted)}
+  .banner{padding:11px 14px;border-radius:8px;margin-bottom:14px;font-size:14px}
+  .banner.err{background:#fde8e6;color:#7a1a17}
+  .banner.ok{background:#dff8ec;color:#0c6940}
+  .banner.warn{background:#fff3d8;color:#7a4a08}
+  /* Modal */
+  .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;padding:20px}
+  .ov.on{display:flex}
+  .modal{background:#fff;border-radius:14px;padding:22px;width:560px;max-width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+  .modal h3{margin:0 0 4px;font-size:18px}
+  .modal .sub{color:var(--muted);font-size:13px;margin-bottom:12px}
+  .modal .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .modal label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:10px}
+  .modal input, .modal select, .modal textarea{width:100%;padding:9px 11px;margin-top:3px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px;background:#fff}
+  .modal textarea{min-height:60px;resize:vertical}
+  .modal .checkrow{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px}
+  .modal .checkrow input{width:auto;margin:0}
+  .modal-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end;flex-wrap:wrap}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+  .err{color:var(--danger);font-size:13px;margin-top:8px}
+</style>
+</head>
+<body data-role-required="admin">
+<script src="lymx-config.js"></script>
+<script src="lymx-app.js"></script>
+<script src="lymx-nav.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+
+<main class="wrap page">
+  <div class="page-head">
+    <div>
+      <h1>Edit timesheets</h1>
+      <p>Backfill a missed punch, fix a wrong clock-out, or override paid minutes. Every save stamps your name + a reason, and the row locks against auto-recompute. Underlying raw <a href="admin-timesheets.html" style="color:var(--accent);text-decoration:underline">clock events</a> stay untouched.</p>
+    </div>
+    <button class="btn btn-primary" id="backfillBtn" type="button">+ Backfill a day</button>
+  </div>
+
+  <div id="bannerArea"></div>
+
+  <div class="filters">
+    <div>
+      <label>Staff member</label>
+      <select id="fStaff"><option value="">All staff</option></select>
+    </div>
+    <div>
+      <label>From date</label>
+      <input id="fFrom" type="date" />
+    </div>
+    <div>
+      <label>To date</label>
+      <input id="fTo" type="date" />
+    </div>
+    <div>
+      <label>Show</label>
+      <select id="fScope">
+        <option value="all">All lines</option>
+        <option value="edited">Edited only</option>
+        <option value="locked">Locked only</option>
+        <option value="missed_lunch">Missed lunch flag</option>
+        <option value="zero">Zero paid minutes (likely missing)</option>
+      </select>
+    </div>
+    <div style="text-align:right">
+      <button class="btn btn-outline" id="reloadBtn" type="button">↻ Reload</button>
+    </div>
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Staff</th>
+          <th>In</th>
+          <th>Out</th>
+          <th>Paid hrs</th>
+          <th>Reg / OT</th>
+          <th>Pay</th>
+          <th>Flags</th>
+          <th style="width:1%">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="rows"><tr><td colspan="9" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Edit / Backfill modal -->
+<div class="ov" id="editOv">
+  <div class="modal">
+    <h3 id="mTitle">Edit timesheet line</h3>
+    <div class="sub" id="mSub">Manual edit — every save records your name + reason and locks the row.</div>
+
+    <div class="grid2">
+      <div>
+        <label>Staff member</label>
+        <select id="mUser"></select>
+      </div>
+      <div>
+        <label>Work date</label>
+        <input id="mWorkDate" type="date" />
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>Clock in (local)</label>
+        <input id="mClockIn" type="datetime-local" />
+      </div>
+      <div>
+        <label>Clock out (local)</label>
+        <input id="mClockOut" type="datetime-local" />
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>Paid minutes (total)</label>
+        <input id="mPaidMin" type="number" min="0" step="1" placeholder="e.g. 450 for 7.5h" />
+        <div class="hint">Auto-suggested below from in/out span minus break.</div>
+      </div>
+      <div>
+        <label>Qualifying lunch minutes</label>
+        <input id="mLunchMin" type="number" min="0" step="1" placeholder="0 if none" />
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>Daily regular minutes</label>
+        <input id="mRegMin" type="number" min="0" step="1" />
+      </div>
+      <div>
+        <label>Daily OT minutes</label>
+        <input id="mOtMin" type="number" min="0" step="1" />
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>Hourly rate (USD, optional)</label>
+        <input id="mRate" type="number" min="0" step="0.01" placeholder="e.g. 24.50" />
+      </div>
+      <div class="checkrow" style="align-items:flex-end;padding-bottom:9px">
+        <input id="mMissedLunch" type="checkbox" />
+        <label for="mMissedLunch" style="margin:0;text-transform:none;letter-spacing:0;font-size:13px;font-weight:600">Missed lunch flag (premium pay owed)</label>
+      </div>
+    </div>
+
+    <label>Edit reason (required) — what was wrong and what you changed</label>
+    <textarea id="mReason" placeholder="e.g. Helen forgot to clock out at lunch return; the system left her on a 8h+ unpaid break. Restored clock-in/out from her Slack confirmation."></textarea>
+
+    <div class="checkrow">
+      <input id="mLocked" type="checkbox" checked />
+      <label for="mLocked" style="margin:0;text-transform:none;letter-spacing:0;font-size:13px;font-weight:600">Lock this row (prevent auto-recompute from clock_events)</label>
+    </div>
+
+    <div id="mErr" class="err"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="mCancel" type="button">Cancel</button>
+      <button class="btn btn-danger" id="mDelete" type="button" style="margin-right:auto;display:none">Delete row</button>
+      <button class="btn btn-success" id="mSave" type="button">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 2026-05-27 — admin/HR timesheet editor. RLS policy tsl_hr_write (migration 084
+// line 384) lets am_i_hr_or_admin() OR am_i_cfo() INSERT/UPDATE/DELETE on
+// timesheet_lines. Page is gated by data-role-required="admin" + lymx-role-gate.js.
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+function banner(t, m) {
+  $('bannerArea').innerHTML = '<div class="banner ' + t + '">' + esc(m) + '</div>';
+  if (t === 'ok' || t === 'warn') setTimeout(() => $('bannerArea').innerHTML = '', 5000);
+}
+function fmtMin(min) {
+  if (min == null) return '—';
+  const h = Math.floor(min / 60), m = min % 60;
+  return h + 'h ' + String(m).padStart(2, '0') + 'm';
+}
+function fmtUsd(n) { return n == null ? '—' : '$' + Number(n).toFixed(2); }
+function fmtDateLocal(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  // datetime-local needs YYYY-MM-DDTHH:MM in the browser's local zone, NO timezone suffix
+  const pad = (n) => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function isoFromLocal(local) {
+  if (!local) return null;
+  return new Date(local).toISOString();
+}
+function weekStartFor(workDate) {
+  // Match the InvestPro convention: week_start = Monday of the work_date's week.
+  const d = new Date(workDate + 'T00:00:00');
+  const dow = (d.getDay() + 6) % 7; // 0=Mon ... 6=Sun
+  d.setDate(d.getDate() - dow);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+let _state = {
+  rows: [],
+  staffById: {},
+  meUid: null,
+  meName: ''
+};
+
+async function getHeaders() {
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  if (!session) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return null; }
+  _state.meUid = session.user && session.user.id;
+  _state.meName = session.user && (session.user.email || '');
+  return {
+    apikey: cfg.SUPABASE_ANON_KEY,
+    Authorization: 'Bearer ' + session.access_token,
+    'Content-Type': 'application/json'
+  };
+}
+
+async function loadStaff() {
+  const cfg = window.LYMX_CONFIG;
+  const headers = await getHeaders();
+  if (!headers) return;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/v_team_roster?select=user_id,email,job_title,role&order=email.asc', { headers });
+  if (!r.ok) { banner('err', 'Could not load staff list (' + r.status + ')'); return; }
+  const staff = await r.json();
+  // Names from staff_profiles
+  const ids = staff.map(s => s.user_id);
+  let nameByUid = {};
+  if (ids.length) {
+    const pr = await fetch(cfg.SUPABASE_URL + '/rest/v1/staff_profiles?user_id=in.(' + ids.join(',') + ')&select=user_id,display_name', { headers });
+    if (pr.ok) { (await pr.json()).forEach(p => { nameByUid[p.user_id] = p.display_name; }); }
+  }
+  _state.staffById = {};
+  staff.forEach(s => {
+    _state.staffById[s.user_id] = {
+      user_id: s.user_id,
+      email: s.email,
+      job_title: s.job_title,
+      display_name: nameByUid[s.user_id] || (s.email || '').split('@')[0]
+    };
+  });
+  // Populate filter + modal dropdowns
+  const opts = ['<option value="">All staff</option>'].concat(
+    staff.map(s => '<option value="' + esc(s.user_id) + '">' + esc(nameByUid[s.user_id] || s.email) + (s.job_title ? ' · ' + esc(s.job_title) : '') + '</option>')
+  ).join('');
+  $('fStaff').innerHTML = opts;
+  $('mUser').innerHTML = staff.map(s =>
+    '<option value="' + esc(s.user_id) + '">' + esc(nameByUid[s.user_id] || s.email) + (s.email ? ' · ' + esc(s.email) : '') + '</option>'
+  ).join('');
+}
+
+async function loadLines() {
+  const cfg = window.LYMX_CONFIG;
+  const headers = await getHeaders();
+  if (!headers) return;
+  // Defaults: last 30 days, all staff
+  const fromInp = $('fFrom').value, toInp = $('fTo').value;
+  const today = new Date();
+  const to30 = new Date(today); to30.setDate(to30.getDate() - 30);
+  const from = fromInp || (to30.getFullYear() + '-' + String(to30.getMonth()+1).padStart(2,'0') + '-' + String(to30.getDate()).padStart(2,'0'));
+  const to   = toInp   || (today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0'));
+  let url = '/rest/v1/timesheet_lines?select=*&work_date=gte.' + from + '&work_date=lte.' + to + '&order=work_date.desc,user_id.asc&limit=500';
+  const u = $('fStaff').value;
+  if (u) url += '&user_id=eq.' + u;
+  const scope = $('fScope').value;
+  if (scope === 'edited') url += '&edited_at=not.is.null';
+  else if (scope === 'locked') url += '&locked=eq.true';
+  else if (scope === 'missed_lunch') url += '&missed_lunch_flag=eq.true';
+  else if (scope === 'zero') url += '&paid_minutes=eq.0';
+  const r = await fetch(cfg.SUPABASE_URL + url, { headers });
+  if (!r.ok) {
+    $('rows').innerHTML = '<tr><td colspan="9" class="empty">Could not load: ' + esc((await r.text()).slice(0,160)) + '</td></tr>';
+    return;
+  }
+  _state.rows = await r.json();
+  renderSummary();
+  renderRows();
+}
+
+function renderSummary() {
+  let totalLines = _state.rows.length;
+  let editedCount = _state.rows.filter(r => r.edited_at).length;
+  let lockedCount = _state.rows.filter(r => r.locked).length;
+  let missedLunchCount = _state.rows.filter(r => r.missed_lunch_flag).length;
+  let zeroMinCount = _state.rows.filter(r => (r.paid_minutes || 0) === 0).length;
+  let totalPay = _state.rows.reduce((sum, r) => sum + Number(r.estimated_gross_usd || 0), 0);
+  $('summary').innerHTML =
+    '<div class="stat"><div class="lab">Lines</div><div class="v">' + totalLines + '</div></div>' +
+    '<div class="stat"><div class="lab">Edited</div><div class="v">' + editedCount + '</div></div>' +
+    '<div class="stat"><div class="lab">Locked</div><div class="v">' + lockedCount + '</div></div>' +
+    '<div class="stat"><div class="lab">Missed lunch</div><div class="v">' + missedLunchCount + '</div></div>' +
+    '<div class="stat"><div class="lab">Zero paid</div><div class="v">' + zeroMinCount + '</div></div>' +
+    '<div class="stat"><div class="lab">Est. gross</div><div class="v">' + fmtUsd(totalPay) + '</div></div>';
+}
+
+function renderRows() {
+  if (!_state.rows.length) {
+    $('rows').innerHTML = '<tr><td colspan="9" class="empty">No timesheet lines match these filters. Click <strong>+ Backfill a day</strong> to insert one manually.</td></tr>';
+    return;
+  }
+  $('rows').innerHTML = _state.rows.map(r => {
+    const st = _state.staffById[r.user_id] || { display_name: r.user_name_snapshot || (r.user_id || '').slice(0,8), email: '' };
+    const flags = [
+      r.edited_at ? '<span class="pill edited">edited</span>' : '',
+      r.locked ? '<span class="pill locked">locked</span>' : '',
+      r.approved_at ? '<span class="pill approved">approved</span>' : '',
+      r.missed_lunch_flag ? '<span class="pill edited">missed lunch</span>' : ''
+    ].filter(Boolean).join(' ');
+    return '<tr>' +
+      '<td>' + esc(r.work_date) + '</td>' +
+      '<td class="staff">' + esc(st.display_name) + (st.email ? '<br><span style="font-size:11.5px;color:var(--muted)">' + esc(st.email) + '</span>' : '') + '</td>' +
+      '<td>' + (r.clock_in_at  ? new Date(r.clock_in_at ).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : '—') + '</td>' +
+      '<td>' + (r.clock_out_at ? new Date(r.clock_out_at).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : '—') + '</td>' +
+      '<td>' + fmtMin(r.paid_minutes) + '</td>' +
+      '<td>' + fmtMin(r.final_regular_minutes) + ' / ' + fmtMin(r.final_ot_minutes) + '</td>' +
+      '<td>' + fmtUsd(r.estimated_gross_usd) + '</td>' +
+      '<td>' + (flags || '<span style="color:var(--muted);font-size:12px">—</span>') + '</td>' +
+      '<td><button class="btn btn-outline btn-tiny" onclick="openEdit(\'' + esc(r.id) + '\')">Edit</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+let _editingId = null;
+
+window.openEdit = function(id) {
+  const r = _state.rows.find(x => x.id === id);
+  if (!r) { banner('err', 'Row not found in cache — reload.'); return; }
+  _editingId = id;
+  $('mTitle').textContent = 'Edit timesheet line';
+  $('mSub').textContent = 'Editing ' + r.work_date + ' for ' + ((_state.staffById[r.user_id] || {}).display_name || r.user_id);
+  $('mUser').value = r.user_id; $('mUser').disabled = true;
+  $('mWorkDate').value = r.work_date; $('mWorkDate').disabled = true;
+  $('mClockIn').value = fmtDateLocal(r.clock_in_at);
+  $('mClockOut').value = fmtDateLocal(r.clock_out_at);
+  $('mPaidMin').value = r.paid_minutes || '';
+  $('mLunchMin').value = r.qualifying_lunch_minutes || '';
+  $('mRegMin').value = r.final_regular_minutes || '';
+  $('mOtMin').value = r.final_ot_minutes || '';
+  $('mRate').value = r.hourly_rate_usd || '';
+  $('mMissedLunch').checked = !!r.missed_lunch_flag;
+  $('mReason').value = r.edit_reason || '';
+  $('mLocked').checked = !!r.locked || true; // edits default to locked unless admin opts out
+  $('mDelete').style.display = '';
+  $('mErr').textContent = '';
+  $('editOv').classList.add('on');
+};
+
+function openBackfill() {
+  _editingId = null;
+  $('mTitle').textContent = 'Backfill a timesheet line';
+  $('mSub').textContent = 'Insert a row for a date that has no timesheet line yet. If a line already exists for this staff member + date, hit Edit on that row instead.';
+  $('mUser').disabled = false;
+  $('mWorkDate').disabled = false;
+  $('mWorkDate').value = new Date().toISOString().slice(0,10);
+  $('mClockIn').value = '';
+  $('mClockOut').value = '';
+  $('mPaidMin').value = '';
+  $('mLunchMin').value = '';
+  $('mRegMin').value = '';
+  $('mOtMin').value = '';
+  $('mRate').value = '';
+  $('mMissedLunch').checked = false;
+  $('mReason').value = '';
+  $('mLocked').checked = true;
+  $('mDelete').style.display = 'none';
+  $('mErr').textContent = '';
+  $('editOv').classList.add('on');
+}
+$('backfillBtn').addEventListener('click', openBackfill);
+$('mCancel').addEventListener('click', () => $('editOv').classList.remove('on'));
+$('editOv').addEventListener('click', (e) => { if (e.target === $('editOv')) $('editOv').classList.remove('on'); });
+
+$('mSave').addEventListener('click', async () => {
+  const cfg = window.LYMX_CONFIG;
+  const headers = await getHeaders();
+  if (!headers) return;
+  const reason = $('mReason').value.trim();
+  if (!reason) { $('mErr').textContent = 'Edit reason is required — explain what you changed and why.'; return; }
+  const userId = $('mUser').value;
+  const workDate = $('mWorkDate').value;
+  if (!userId || !workDate) { $('mErr').textContent = 'Staff member and work date are both required.'; return; }
+  const payload = {
+    clock_in_at: isoFromLocal($('mClockIn').value),
+    clock_out_at: isoFromLocal($('mClockOut').value),
+    paid_minutes: Number($('mPaidMin').value) || 0,
+    qualifying_lunch_minutes: Number($('mLunchMin').value) || 0,
+    final_regular_minutes: Number($('mRegMin').value) || 0,
+    final_ot_minutes: Number($('mOtMin').value) || 0,
+    missed_lunch_flag: $('mMissedLunch').checked,
+    hourly_rate_usd: $('mRate').value ? Number($('mRate').value) : null,
+    edit_reason: reason,
+    edited_by_id: _state.meUid,
+    edited_by_name: _state.meName,
+    edited_at: new Date().toISOString(),
+    locked: $('mLocked').checked
+  };
+  $('mSave').disabled = true; $('mSave').textContent = 'Saving…';
+  try {
+    let r;
+    if (_editingId) {
+      // UPDATE existing line
+      r = await fetch(cfg.SUPABASE_URL + '/rest/v1/timesheet_lines?id=eq.' + _editingId, {
+        method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' }, body: JSON.stringify(payload)
+      });
+    } else {
+      // INSERT new line (BACKFILL). Use ?on_conflict=user_id,work_date with merge-duplicates
+      // so a backfill on a day that already has a row becomes an upsert instead of 409.
+      const insertPayload = { ...payload, user_id: userId, work_date: workDate, week_start: weekStartFor(workDate) };
+      r = await fetch(cfg.SUPABASE_URL + '/rest/v1/timesheet_lines?on_conflict=user_id,work_date', {
+        method: 'POST',
+        headers: { ...headers, Prefer: 'return=minimal,resolution=merge-duplicates' },
+        body: JSON.stringify(insertPayload)
+      });
+    }
+    if (!r.ok) {
+      const err = await r.text();
+      $('mErr').textContent = 'Save failed: ' + err.slice(0, 240);
+      return;
+    }
+    $('editOv').classList.remove('on');
+    banner('ok', _editingId ? 'Timesheet line updated.' : 'Timesheet line backfilled.');
+    await loadLines();
+  } catch (e) {
+    $('mErr').textContent = 'Save failed: ' + (e && e.message ? e.message : 'unknown error');
+  } finally {
+    $('mSave').disabled = false; $('mSave').textContent = 'Save';
+  }
+});
+
+$('mDelete').addEventListener('click', async () => {
+  if (!_editingId) return;
+  if (!confirm('Delete this timesheet line? This removes the row entirely. If you want to mark it incorrect instead, use Edit + set paid_minutes to 0 with a reason — that preserves history.')) return;
+  const cfg = window.LYMX_CONFIG;
+  const headers = await getHeaders();
+  if (!headers) return;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/timesheet_lines?id=eq.' + _editingId, {
+    method: 'DELETE', headers: { ...headers, Prefer: 'return=minimal' }
+  });
+  if (!r.ok) { $('mErr').textContent = 'Delete failed: ' + (await r.text()).slice(0, 200); return; }
+  $('editOv').classList.remove('on');
+  banner('ok', 'Timesheet line deleted.');
+  await loadLines();
+});
+
+// Auto-suggest paid minutes from in/out delta minus lunch
+function recomputeSuggestedPaid() {
+  const inV = $('mClockIn').value, outV = $('mClockOut').value;
+  if (!inV || !outV) return;
+  const span = (new Date(outV) - new Date(inV)) / 60000;
+  const lunch = Number($('mLunchMin').value) || 0;
+  if (span > 0) $('mPaidMin').value = Math.max(0, Math.round(span - lunch));
+}
+['mClockIn','mClockOut','mLunchMin'].forEach(id => $(id).addEventListener('change', recomputeSuggestedPaid));
+
+['fStaff','fFrom','fTo','fScope'].forEach(id => $(id).addEventListener('change', loadLines));
+$('reloadBtn').addEventListener('click', loadLines);
+
+(async function init() {
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(init, 100); return; }
+  await loadStaff();
+  await loadLines();
+})();
+</script>
+
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

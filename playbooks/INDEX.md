@@ -40,6 +40,7 @@
 | [business-onboarding-06-issuing-lymx](business-onboarding/06-issuing-lymx.md) | Issue and redeem LYMX at your business (Module 5 unified pipeline) | Business owner / Engineer | issue_lymx_at_business | ✅ Verified 2026-05-26 |
 | [business-onboarding-07-customer-redeems](business-onboarding/07-customer-redeems.md) | How a customer sees, earns, and redeems LYMX (Module 6 customer surfaces) | Customer / Engineer | redeem_lymx_at_business | ✅ Verified 2026-05-26 |
 | [business-onboarding-08-settlement](business-onboarding/08-settlement.md) | How your monthly LYMX settlement works (Sprint 1 — clearing-house model) | Business | business_view_settlements | 🚧 Shipped 2026-05-27; awaiting browser-verify |
+| [business-onboarding-09-print-kit](business-onboarding/09-print-kit.md) | Download your customized print kit (window clings, table tents, QR cards in en/es/zh-CN) | Business | business_download_print_kit | 🚧 Shipped 2026-05-27; awaiting browser-verify |
 | partner-onboarding | Apply, get $750 setup, pitch your first business | Partner |  | 📋 Planned |
 | [partner-notifications](partner-onboarding/notifications.md) | Your partner notifications feed (Sprint 3 — auto-emit on commission/activation/settlement) | Partner | partner_view_notifications | 🚧 Shipped 2026-05-27; awaiting browser-verify |
 | [partner-my-network](partner-onboarding/my-network.md) | Recruited customers + recruited business reviews (Sprint 6) | Partner |  | 🚧 Shipped 2026-05-27; awaiting browser-verify |
@@ -75,6 +76,7 @@
 | admin-manage-permissions | Toggle feature permissions per member (matrix UI) | Admin | admin_manage_permissions | 🚧 In progress (page shipped 2026-05-26; playbook pending) |
 | [admin-settlement-run](admin/settlement-run.md) | Run a monthly business settlement batch (Sprint 1) | Admin | admin_run_settlements | 🚧 Shipped 2026-05-27; awaiting browser-verify |
 | [admin-clock-in-now](admin/clock-in-now.md) | Live view of who is currently clocked in / on break / out | Admin | admin_view_clock_in_now | 🚧 Shipped 2026-05-27; awaiting browser-verify |
+| [admin-timesheet-edit](admin/timesheet-edit.md) | Backfill or adjust a staff member's daily timesheet line | Admin / HR / CFO / Accounting | admin_edit_timesheet | 🚧 Shipped 2026-05-27; awaiting browser-verify |
 | admin-handle-feedback | Triage + reply to a feedback ticket | Admin |  | 📋 Planned |
 | admin-broadcast | Send a team-wide announcement | Admin |  | 📋 Planned |
 
