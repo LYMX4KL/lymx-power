@@ -370,39 +370,22 @@
       </div>
 
       <!-- Pending reviews -->
-      <div class="card">
+      <!-- 2026-05-26 root-cause fix (#98fcfa23): page used to ship with hardcoded
+           "3 visits waiting" + 3 fake businesses, then TWO competing JS handlers
+           tried to scrub them — one with a wrong selector that left the count
+           pill stale forever ("3 visits waiting · earn up to 300 LYMX" persisting
+           even for users with 0 visits). The root cause was: don't render a lie
+           and then clean it up. Now: HTML ships an honest "Loading…" scaffold,
+           and a single handler at the bottom of the page (Module 8) queries
+           v_my_pending_reviews and replaces the scaffold with real rows or the
+           empty state. One source of truth, no scrubbing race. -->
+      <div class="card" id="pendingReviewsCard">
         <div class="card-h">
           <h2>Pending reviews</h2>
-          <span class="count">3 visits waiting · earn up to 300 LYMX</span>
+          <span class="count" id="pendingReviewsCount">Loading…</span>
         </div>
-        <div class="pending-list">
-          <div class="pending-row">
-            <div class="biz-ph">☕</div>
-            <div class="body">
-              <div class="name">Brew &amp; Bean Café</div>
-              <div class="when">Visited yesterday · $12.50 · earned 63 LYMX</div>
-            </div>
-            <span class="reward">+100 LYMX</span>
-            <a class='write' href='/biz-brew-and-bean#write-review'>Write review</a>
-          </div>
-          <div class="pending-row">
-            <div class="biz-ph b">🔌</div>
-            <div class="body">
-              <div class="name">EverGrid Hub</div>
-              <div class="when">Visited 3 days ago · charge session · earned 240 LYMX</div>
-            </div>
-            <span class="reward">+100 LYMX</span>
-            <a class="write" href="#">Write review</a>
-          </div>
-          <div class="pending-row">
-            <div class="biz-ph c">🏠</div>
-            <div class="body">
-              <div class="name">InvestPro Realty</div>
-              <div class="when">Rent paid 5 days ago · earned 1,800 LYMX</div>
-            </div>
-            <span class="reward">+100 LYMX</span>
-            <a class="write" href="#">Write review</a>
-          </div>
+        <div class="pending-list" id="pendingReviewsList">
+          <div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px">Loading…</div>
         </div>
       </div>
 
@@ -922,17 +905,19 @@ window.addEventListener('DOMContentLoaded', function () {
     if (/See all\s*\(/i.test(a.textContent)) a.textContent = 'See all →';
   });
 
-  // Pending reviews list
-  var pending = document.querySelector('.pending-list');
-  if (pending) pending.innerHTML = '<div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">⏳</div>No visits waiting to review yet. Visit a LYMX business and your pending reviews will show up here.</div>';
+  // 2026-05-26 root-cause fix (#98fcfa23): removed the Pending Reviews
+  // list scrub here. The HTML no longer ships fake rows, so there is
+  // nothing to scrub. The Module 8 handler at the bottom of the page is
+  // the single source of truth for that card.
   // Recent activity list
   var activity = document.getElementById('activityList');
   if (activity) activity.innerHTML = '<div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">📊</div>No activity yet. Your LYMX earnings, redemptions, and reviews will appear here.</div>';
-  // Update pending review count text
-  var pendCount = document.querySelector('.card-h .count');
-  if (pendCount && /visits waiting/i.test(pendCount.textContent)) {
-    pendCount.textContent = '0 pending';
-  }
+  // 2026-05-26 root-cause fix (#98fcfa23): removed the Pending Reviews
+  // count update here. Its selector picked the FIRST .card-h .count on the
+  // page (Wallet/Recent activity, not Pending reviews), and its regex
+  // guard then bailed because that card's count didn't say "visits waiting"
+  // — so the Pending count pill stayed stuck on the hardcoded "3 visits
+  // waiting" forever. The Module 8 handler at the bottom owns the count.
   // Friends Joined counter (find anchor that mentions Friends Joined)
   document.querySelectorAll('.stat, .stat-card, .kpi, [class*="friend"], [class*="invite"]').forEach(function (el) {
     if (/friends?\s*joined/i.test(el.textContent) || /invited\s*friends?/i.test(el.textContent)) {
@@ -1237,7 +1222,14 @@ window.addEventListener('DOMContentLoaded', async function () {
 window.addEventListener('DOMContentLoaded', async function () {
   if (!window.LYMX || !window.LYMX.getSession) { setTimeout(arguments.callee, 100); return; }
   const session = await window.LYMX.getSession();
-  if (!session) return; // signed out - keep the placeholder cleared state
+  if (!session) {
+    // Signed out — paint empty state instead of leaving the "Loading…" scaffold.
+    const c = document.getElementById('pendingReviewsCount');
+    const l = document.getElementById('pendingReviewsList');
+    if (c) c.textContent = 'Sign in to see your pending reviews';
+    if (l) l.innerHTML = '<div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><a href="/login.html" style="color:#0050c7;font-weight:600;text-decoration:none">Sign in</a> to track pending reviews and earn 100 LYMX for each one.</div>';
+    return;
+  }
 
   const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
   const URL  = window.LYMX_CONFIG.SUPABASE_URL;
@@ -1274,29 +1266,33 @@ window.addEventListener('DOMContentLoaded', async function () {
       rows = await r.json();
     } else {
       console.warn('[customer-dashboard.html v_my_pending_reviews] fetch failed', r.status);
-      return; // leave empty state in place
+      const c = document.getElementById('pendingReviewsCount');
+      const l = document.getElementById('pendingReviewsList');
+      if (c) c.textContent = 'Could not load';
+      if (l) l.innerHTML = '<div style="padding:20px;text-align:center;color:#b81324;font-size:13.5px">Could not load pending reviews right now. Reload the page or try again in a moment.</div>';
+      return;
     }
   } catch (e) {
     console.warn('[customer-dashboard.html v_my_pending_reviews] fetch error', e);
+    const c = document.getElementById('pendingReviewsCount');
+    const l = document.getElementById('pendingReviewsList');
+    if (c) c.textContent = 'Could not load';
+    if (l) l.innerHTML = '<div style="padding:20px;text-align:center;color:#b81324;font-size:13.5px">Could not load pending reviews right now. Reload the page or try again in a moment.</div>';
     return;
   }
+
+  // The HTML scaffolds the card with #pendingReviewsCount + #pendingReviewsList
+  // (no more competing selectors, no more guessing which card to update).
+  const pendingCardCount = document.getElementById('pendingReviewsCount');
+  const pendingList = document.getElementById('pendingReviewsList');
 
   if (!Array.isArray(rows) || rows.length === 0) {
-    // No pending reviews - leave the existing empty state untouched.
+    if (pendingCardCount) pendingCardCount.textContent = '0 pending';
+    if (pendingList) {
+      pendingList.innerHTML = '<div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">⏳</div>No visits waiting to review yet. Visit a LYMX business and your pending reviews will show up here.</div>';
+    }
     return;
   }
-
-  // Update the count pill to reflect real data.
-  // The Pending reviews card is the first .card with .card-h h2 == "Pending reviews".
-  const allCards = document.querySelectorAll('.card');
-  let pendingCardCount = null, pendingList = null;
-  allCards.forEach(function (card) {
-    const h = card.querySelector('.card-h h2');
-    if (h && /^\s*Pending reviews\s*$/i.test(h.textContent || '')) {
-      pendingCardCount = card.querySelector('.card-h .count');
-      pendingList = card.querySelector('.pending-list');
-    }
-  });
 
   if (pendingCardCount) {
     const totalReward = rows.reduce(function (s, r) { return s + (r.potential_reward_lymx || 100); }, 0);
