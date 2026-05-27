@@ -324,6 +324,11 @@
       { section: 'Network' },
       { href: 'leads.html',              icon: '\u{1F4CC}', label: 'Leads' },
       { href: 'admin-bookings.html',     icon: '\u{1F4CB}', label: 'All bookings' },
+      // 2026-05-27 Sprint 1 — admin queue page for monthly clearing-house
+      // settlement (business_settlements ledger). Gated by feature_catalog
+      // key 'admin_run_settlements' (migration 106) but admin always passes
+      // via am_i_admin() short-circuit, so no extra guard here.
+      { href: 'admin-settlements.html', icon: '\u{1F4B0}', label: 'Settlements' },
       { href: 'admin-businesses.html',   icon: '\u{1F3E2}', label: 'Businesses' },
       { href: 'admin-business-applications.html', icon: '\u{1F4DD}', label: 'Biz Applications' },
       { href: 'admin-business-transfer.html', icon: '\u{1F504}', label: 'Transfer ownership' },

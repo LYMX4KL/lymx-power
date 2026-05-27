@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Business Settlements — LYMX Admin</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--accent:#0a84ff;--ok:#13a26b;--warn:#f0a020;--err:#b81324}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  .wrap{max-width:1080px;margin:0 auto;padding:30px 22px 80px}
+  h1{margin:0 0 4px;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .lede{color:var(--muted);font-size:14.5px;margin-bottom:22px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:14px}
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+  .controls label{font-size:13px;color:var(--ink-2);font-weight:600;display:flex;flex-direction:column;gap:4px}
+  .controls input[type=date]{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px}
+  .btn{padding:10px 18px;border-radius:10px;border:0;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:disabled{background:#9aa0b2;cursor:wait}
+  .btn-ghost{background:transparent;color:var(--accent);border:1px solid var(--line)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;padding:10px 8px;border-bottom:2px solid var(--line);color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:11.5px}
+  td{padding:11px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  .status-pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .status-pending{background:#fff8e6;color:#7a5a08}
+  .status-approved{background:#e6f0ff;color:#0050c7}
+  .status-paid{background:#e6f5ee;color:#0a6e44}
+  .status-failed{background:#fbe6ea;color:var(--err)}
+  .status-skipped_zero{background:#f1f3f6;color:var(--muted)}
+  .status-skipped_stripe_disabled{background:#f1f3f6;color:var(--muted)}
+  .num{font-variant-numeric:tabular-nums}
+  .num.pos{color:var(--ok);font-weight:700}
+  .num.neg{color:var(--err);font-weight:700}
+  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:14px 0}
+  .stat{padding:14px 16px;background:#f6f9fc;border-radius:10px;border:1px solid var(--line)}
+  .stat .lbl{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+  .stat .val{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+  .err-box{background:#fbe6ea;border:1px solid #f0a8b4;color:var(--err);padding:12px 14px;border-radius:9px;margin-top:12px;font-size:14px;display:none}
+  .err-box.show{display:block}
+  .ok-box{background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44;padding:12px 14px;border-radius:9px;margin-top:12px;font-size:14px;display:none}
+  .ok-box.show{display:block}
+  .empty{padding:30px 12px;text-align:center;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body data-page="admin-settlements" data-role-required="admin" data-feature-key="admin_run_settlements">
+
+<script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<div class="wrap">
+  <h1>Business Settlements</h1>
+  <p class="lede">Monthly clearing-house settlement queue. Run a settlement batch to compute pending rows for a period; approve and pay each row individually. ACH cadence: 5th business day of each month, covering the previous calendar month.</p>
+
+  <div class="card">
+    <div class="controls">
+      <label>Period start
+        <input type="date" id="periodStart" />
+      </label>
+      <label>Period end (exclusive)
+        <input type="date" id="periodEnd" />
+      </label>
+      <label>Business (optional)
+        <input type="text" id="bizId" placeholder="UUID — leave blank for all approved businesses" style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;min-width:340px" />
+      </label>
+      <button class="btn btn-primary" id="runBtn" type="button">Run settlement</button>
+      <button class="btn btn-ghost" id="dryRunBtn" type="button">Dry run</button>
+    </div>
+    <p style="margin:0;font-size:12.5px;color:var(--muted)">Default period: previous calendar month. Re-running the same period is idempotent — existing settlement rows are returned unchanged.</p>
+    <div class="err-box" id="errBox"></div>
+    <div class="ok-box" id="okBox"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 12px;font-size:15px;font-weight:800">Last run summary</h3>
+    <div class="summary" id="summary">
+      <div class="stat"><div class="lbl">Computed</div><div class="val" id="statComputed">—</div></div>
+      <div class="stat"><div class="lbl">Skipped (existing)</div><div class="val" id="statSkipExisting">—</div></div>
+      <div class="stat"><div class="lbl">Skipped (zero activity)</div><div class="val" id="statSkipZero">—</div></div>
+      <div class="stat"><div class="lbl">Pending payout</div><div class="val" id="statPayout">—</div></div>
+      <div class="stat"><div class="lbl">Pending charge</div><div class="val" id="statCharge">—</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 12px;font-size:15px;font-weight:800">Pending settlements</h3>
+    <div id="pendingTableWrap">
+      <div class="empty">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(async function () {
+  while (!window.LYMX_CONFIG || !window.LYMX || !window.LYMX.getSession) {
+    await new Promise(function (r) { setTimeout(r, 100); });
+  }
+  var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  var URL_ = window.LYMX_CONFIG.SUPABASE_URL;
+  var session = await window.LYMX.getSession();
+  if (!session) { location.href = 'login.html?return=admin-settlements.html'; return; }
+  var H = { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' };
+
+  var errBox  = document.getElementById('errBox');
+  var okBox   = document.getElementById('okBox');
+  var runBtn  = document.getElementById('runBtn');
+  var dryBtn  = document.getElementById('dryRunBtn');
+
+  function showErr(m) { errBox.textContent = m; errBox.className = 'err-box show'; okBox.className = 'ok-box'; }
+  function showOk(m)  { okBox.textContent  = m; okBox.className  = 'ok-box show'; errBox.className = 'err-box'; }
+  function clearMsg() { errBox.className = 'err-box'; okBox.className = 'ok-box'; }
+
+  // Default period = previous calendar month
+  function defaultPeriod() {
+    var now = new Date();
+    var y = now.getUTCFullYear(), m = now.getUTCMonth();
+    var start = new Date(Date.UTC(y, m - 1, 1));
+    var end   = new Date(Date.UTC(y, m, 1));
+    var toIso = function (d) { return d.toISOString().slice(0, 10); };
+    return { start: toIso(start), end: toIso(end) };
+  }
+  var dp = defaultPeriod();
+  document.getElementById('periodStart').value = dp.start;
+  document.getElementById('periodEnd').value   = dp.end;
+
+  function fmtUsd(cents) {
+    var sign = cents < 0 ? '-' : '';
+    return sign + '$' + (Math.abs(cents) / 100).toFixed(2);
+  }
+
+  async function loadPending() {
+    var wrap = document.getElementById('pendingTableWrap');
+    try {
+      var r = await fetch(URL_ + '/rest/v1/business_settlements?status=in.(pending,approved,failed)&select=id,business_id,period_start,period_end,lymx_issued,lymx_redeemed,net_cents,status,status_message&order=period_end.desc,created_at.desc&limit=200', { headers: H });
+      if (!r.ok) throw new Error('http ' + r.status);
+      var rows = await r.json();
+
+      if (!Array.isArray(rows) || !rows.length) {
+        wrap.innerHTML = '<div class="empty">No pending settlements. Run a batch above to compute the next period.</div>';
+        return;
+      }
+
+      // Hydrate business names in one batch
+      var bizIds = Array.from(new Set(rows.map(function (r) { return r.business_id; })));
+      var bizMap = {};
+      try {
+        var br = await fetch(URL_ + '/rest/v1/businesses?id=in.(' + bizIds.join(',') + ')&select=id,display_name', { headers: H });
+        if (br.ok) {
+          var brows = await br.json();
+          brows.forEach(function (b) { bizMap[b.id] = b.display_name || '(unnamed)'; });
+        }
+      } catch (e) { console.warn('[admin-settlements] business name hydrate', e); }
+
+      var html = '<table><thead><tr>'
+        + '<th>Business</th><th>Period</th><th>Issued</th><th>Redeemed</th><th>Owed by</th><th>Owed to</th><th>Net</th><th>Status</th><th></th>'
+        + '</tr></thead><tbody>';
+      rows.forEach(function (r) {
+        var name = bizMap[r.business_id] || r.business_id;
+        var netClass = r.net_cents > 0 ? 'pos' : (r.net_cents < 0 ? 'neg' : '');
+        html += '<tr>'
+          + '<td><strong>' + name + '</strong><div style="font-size:11.5px;color:var(--muted);font-family:ui-monospace,monospace">' + r.business_id + '</div></td>'
+          + '<td class="num">' + r.period_start + '<br><span style="color:var(--muted)">→ ' + r.period_end + '</span></td>'
+          + '<td class="num">' + (r.lymx_issued || 0) + '</td>'
+          + '<td class="num">' + (r.lymx_redeemed || 0) + '</td>'
+          + '<td class="num">' + fmtUsd((r.usd_owed_by_cents || 0)) + '</td>'
+          + '<td class="num">' + fmtUsd((r.usd_owed_to_cents || 0)) + '</td>'
+          + '<td class="num ' + netClass + '">' + fmtUsd(r.net_cents) + '</td>'
+          + '<td><span class="status-pill status-' + r.status + '">' + r.status + '</span>'
+          + (r.status_message ? '<div style="font-size:11.5px;color:var(--muted);margin-top:3px">' + r.status_message + '</div>' : '')
+          + '</td>'
+          + '<td>' + (r.status === 'pending'
+              ? '<button class="btn btn-ghost" data-approve="' + r.id + '" style="padding:6px 12px;font-size:12.5px">Approve</button>'
+              : '') + '</td>'
+          + '</tr>';
+      });
+      html += '</tbody></table>';
+      wrap.innerHTML = html;
+
+      Array.prototype.forEach.call(wrap.querySelectorAll('button[data-approve]'), function (btn) {
+        btn.addEventListener('click', function () {
+          var id = btn.getAttribute('data-approve');
+          approveSettlement(id, btn);
+        });
+      });
+    } catch (e) {
+      wrap.innerHTML = '<div class="empty">Failed to load pending settlements: ' + e.message + '</div>';
+    }
+  }
+
+  async function approveSettlement(id, btn) {
+    if (!confirm('Approve this settlement? This marks it ready for Stripe execution (no money moves until Stripe Connect is enabled).')) return;
+    btn.disabled = true; btn.textContent = 'Approving…';
+    try {
+      var r = await fetch(URL_ + '/rest/v1/business_settlements?id=eq.' + id, {
+        method: 'PATCH',
+        headers: Object.assign({}, H, { Prefer: 'return=representation' }),
+        body: JSON.stringify({ status: 'approved', approved_at: new Date().toISOString(), approved_by: session.user.id }),
+      });
+      if (!r.ok) {
+        var msg = await r.text();
+        showErr('Approve failed: ' + msg);
+        btn.disabled = false; btn.textContent = 'Approve';
+        return;
+      }
+      showOk('Settlement approved. Re-run the batch or refresh to see updated status.');
+      loadPending();
+    } catch (e) {
+      showErr('Approve failed: ' + e.message);
+      btn.disabled = false; btn.textContent = 'Approve';
+    }
+  }
+
+  async function runBatch(dryRun) {
+    clearMsg();
+    var ps = document.getElementById('periodStart').value;
+    var pe = document.getElementById('periodEnd').value;
+    var bid = document.getElementById('bizId').value.trim();
+    if (!ps || !pe) { showErr('period_start and period_end are required'); return; }
+    if (pe <= ps)  { showErr('period_end must be after period_start'); return; }
+
+    var btn = dryRun ? dryBtn : runBtn;
+    btn.disabled = true;
+    var origText = btn.textContent;
+    btn.textContent = dryRun ? 'Dry running…' : 'Running…';
+
+    try {
+      var body = { period_start: ps, period_end: pe, dry_run: !!dryRun };
+      if (bid) body.business_id = bid;
+      var r = await fetch(URL_ + '/functions/v1/business-settlement-run', {
+        method: 'POST', headers: H, body: JSON.stringify(body),
+      });
+      var j = await r.json().catch(function () { return {}; });
+      if (!r.ok || !j.ok) {
+        showErr(j.error || 'Batch run failed (HTTP ' + r.status + ')');
+        return;
+      }
+      document.getElementById('statComputed').textContent     = j.settlements_computed || 0;
+      document.getElementById('statSkipExisting').textContent = j.settlements_skipped_existing || 0;
+      document.getElementById('statSkipZero').textContent     = j.settlements_skipped_zero || 0;
+      document.getElementById('statPayout').textContent       = fmtUsd(j.total_pending_payout_cents || 0);
+      document.getElementById('statCharge').textContent       = fmtUsd(j.total_pending_charge_cents || 0);
+      showOk('Batch complete: ' + (j.settlements_computed || 0) + ' computed, ' + (j.settlements_skipped_existing || 0) + ' existing, ' + (j.settlements_skipped_zero || 0) + ' zero-activity.');
+      loadPending();
+    } catch (e) {
+      showErr('Batch run failed: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = origText;
+    }
+  }
+
+  runBtn.addEventListener('click', function () { runBatch(false); });
+  dryBtn.addEventListener('click', function () { runBatch(true);  });
+
+  loadPending();
+})();
+</script>
+
+<script src="lymx-role-gate.js" defer></script>
+<script src="lymx-playbook-help.js" defer></script>
+</body>
+</html>

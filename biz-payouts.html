@@ -50,7 +50,12 @@
   <h1>Set up payouts</h1>
   <p class="lede">Connect your bank with Stripe so LYMX can send you USD when customers redeem the LYMX they earned. Takes about 5 minutes; you'll come back here when done.</p>
 
-  <div style="background:#fff8e6;border:1.5px solid #f0a020;color:#7a5a08;padding:14px 18px;border-radius:11px;margin-bottom:16px;font-size:14px;line-height:1.55">
+  <!-- Pre-launch banner — shown when app_config.stripe_connect_enabled = false.
+       Replaces the previous hardcoded banner + `if (false) connectBtn.addEventListener`
+       band-aid (root-cause fix per ARCHITECTURE-RULES Rule 0: a DB flag, not a
+       commented-out attach). Flip app_config.stripe_connect_enabled to true the
+       moment Stripe approves the platform — no code deploy needed. -->
+  <div id="preLaunchBanner" style="display:none;background:#fff8e6;border:1.5px solid #f0a020;color:#7a5a08;padding:14px 18px;border-radius:11px;margin-bottom:16px;font-size:14px;line-height:1.55">
     <strong>Coming soon — waiting on Stripe approval.</strong> We've submitted LYMX's Stripe Connect platform application; approval typically takes 1–2 weeks. Until then, this page is paused. The moment Stripe clears us, every approved business gets an email with a link to come back here and finish setup. Your business application is already approved — you just can't connect a bank yet because Stripe hasn't cleared LYMX's platform application.
   </div>
 
@@ -70,16 +75,34 @@
       <li><span class="ic">·</span>About 5 minutes</li>
     </ul>
 
-    <button class="btn" id="connectBtn" type="button" disabled style="background:#9aa0b2;cursor:not-allowed">Connect Stripe (pending platform approval)</button>
+    <!-- Connect button — initial state managed by refresh() based on
+         app_config.stripe_connect_enabled AND the business's stripe state.
+         Starts disabled to avoid a flash of clickable-then-greyed. -->
+    <button class="btn" id="connectBtn" type="button" disabled style="background:#9aa0b2;cursor:not-allowed">Loading…</button>
     <div class="err-box" id="errBox"></div>
     <p class="help">You'll be redirected to Stripe. After completing onboarding, you'll come back here and see a green "complete" badge.</p>
   </div>
 
   <div class="card">
     <h3 style="margin:0 0 10px;font-size:16px;font-weight:800">How money flows</h3>
-    <p style="margin:0 0 10px;font-size:14.5px;color:var(--ink-2)"><strong>You → LYMX:</strong> $199/month after your 3-month trial. Charged automatically; you'll get a Stripe invoice each month.</p>
-    <p style="margin:0 0 10px;font-size:14.5px;color:var(--ink-2)"><strong>LYMX → You:</strong> When a customer redeems LYMX they earned elsewhere at your business, LYMX sends you the cash equivalent (1 LYMX = $0.01). Settled weekly via ACH to the bank you connect on this page.</p>
+    <p style="margin:0 0 10px;font-size:14.5px;color:var(--ink-2)"><strong>You → LYMX:</strong> $199/month after your 3-month trial. Charged automatically; you'll get a Stripe invoice each month. Plus you buy LYMX units from us at $0.008 per LYMX (80% of face value) to issue to your customers.</p>
+    <p style="margin:0 0 10px;font-size:14.5px;color:var(--ink-2)"><strong>LYMX → You:</strong> When customers redeem LYMX at your business, LYMX buys those units back from you at the same $0.008 per LYMX. The 20% gap (face value vs buy-back) is your effective discount expense. <strong>Settled monthly on the 5th business day</strong> via ACH to the bank you connect here.</p>
     <p style="margin:0;font-size:13px;color:var(--muted)">Full terms: <a href="biz-tos.html">Business Terms</a></p>
+  </div>
+
+  <!-- Settlement History (Sprint 1) — visible to business owners with the
+       business_view_settlements permission (default true for business role
+       per migration 106). Reads public.business_settlements + the running
+       fn_business_unsettled_balance for the unsettled-period card. -->
+  <div class="card" id="settlementCard" style="display:none">
+    <h3 style="margin:0 0 14px;font-size:16px;font-weight:800">Settlement history</h3>
+    <div id="unsettledBalance" style="background:#f0f7ff;border:1px solid #c6dcfb;color:#0050c7;padding:14px 16px;border-radius:11px;margin-bottom:14px;font-size:14.5px">
+      Loading current period…
+    </div>
+    <div id="settlementList" style="font-size:14px;color:var(--ink-2)">
+      Loading past settlements…
+    </div>
+    <p style="margin:14px 0 0;font-size:12.5px;color:var(--muted)">Settlement runs the 5th business day of each month, covering the previous calendar month.</p>
   </div>
 
   <div class="links">
@@ -142,8 +165,35 @@
     }
   }
 
-  // PRE-LAUNCH: disable the Connect button until Stripe clears
-if (false) connectBtn.addEventListener('click', async () => {
+  // Sprint 1 root-cause fix: replace `if (false) connectBtn.addEventListener`
+  // band-aid with a real DB flag read. Flip app_config.stripe_connect_enabled
+  // to true the moment Stripe approves the LYMX Connect platform - no code
+  // deploy needed. The pre-launch banner + button-disabled state are gated
+  // off the same flag, so the page snaps live without manual intervention.
+  let stripeConnectEnabled = false;
+  async function loadAppConfig() {
+    try {
+      const r = await fetch(URL + '/rest/v1/app_config?id=eq.singleton&select=stripe_connect_enabled', { headers: H });
+      if (!r.ok) return;
+      const rows = await r.json();
+      stripeConnectEnabled = !!(rows && rows[0] && rows[0].stripe_connect_enabled);
+    } catch (e) { console.warn('[biz-payouts] app_config load', e); }
+    const banner = document.getElementById('preLaunchBanner');
+    if (banner) banner.style.display = stripeConnectEnabled ? 'none' : 'block';
+    if (!stripeConnectEnabled) {
+      connectBtn.disabled = true;
+      connectBtn.style.background = '#9aa0b2';
+      connectBtn.style.cursor = 'not-allowed';
+      connectBtn.textContent = 'Connect Stripe (pending platform approval)';
+    } else {
+      connectBtn.style.background = '';
+      connectBtn.style.cursor = '';
+      connectBtn.disabled = false;
+      connectBtn.addEventListener('click', onConnectClick);
+    }
+  }
+
+  async function onConnectClick() {
     connectBtn.disabled = true;
     connectBtn.textContent = 'Preparing your Stripe link…';
     errBox.className = 'err-box';
@@ -159,20 +209,83 @@ if (false) connectBtn.addEventListener('click', async () => {
         connectBtn.disabled = false;
         return;
       }
-      // Redirect to Stripe
       location.href = j.url;
     } catch (e) {
       showError(e.message || 'Network error.');
       connectBtn.disabled = false;
     }
-  });
+  }
 
-  // Surface status hint from URL query (Stripe redirects with ?status=ok or ?status=refresh)
+  // Sprint 1 - Settlement History card. Gated by business_view_settlements
+  // permission (default true for business role per migration 106). Fails
+  // closed: if the permission read errors or returns false, the card stays
+  // hidden rather than rendering a confusing empty state.
+  async function loadSettlements() {
+    try {
+      const permR = await fetch(URL + '/rest/v1/rpc/has_permission', {
+        method: 'POST', headers: H, body: JSON.stringify({ p_key: 'business_view_settlements' }),
+      });
+      if (!permR.ok) return;
+      const allowed = await permR.json();
+      if (allowed !== true) return;
+
+      const bizR = await fetch(URL + '/rest/v1/businesses?owner_user_id=eq.' + session.user.id + '&select=id&order=created_at.desc&limit=1', { headers: H });
+      if (!bizR.ok) return;
+      const bizRows = await bizR.json();
+      if (!Array.isArray(bizRows) || !bizRows.length) return;
+      const bizId = bizRows[0].id;
+
+      document.getElementById('settlementCard').style.display = 'block';
+
+      try {
+        const ub = await fetch(URL + '/rest/v1/rpc/fn_business_unsettled_balance', {
+          method: 'POST', headers: H, body: JSON.stringify({ p_business_id: bizId }),
+        });
+        const ubRows = ub.ok ? await ub.json() : null;
+        const ubRow = Array.isArray(ubRows) && ubRows.length ? ubRows[0] : null;
+        const ubEl = document.getElementById('unsettledBalance');
+        if (ubRow) {
+          const net = ubRow.net_cents || 0;
+          const direction = net > 0 ? 'LYMX will pay you' : (net < 0 ? 'You will owe LYMX' : 'Net zero for this period');
+          const usd = (Math.abs(net) / 100).toFixed(2);
+          const since = ubRow.since_period_end ? (' since ' + ubRow.since_period_end) : ' (all-time, no prior settlement)';
+          ubEl.innerHTML = '<strong>Current period' + since + ':</strong> ' + direction + (net !== 0 ? ' <strong>$' + usd + '</strong>' : '') + '. Based on ' + (ubRow.lymx_issued || 0) + ' LYMX issued and ' + (ubRow.lymx_redeemed || 0) + ' LYMX redeemed.';
+        } else {
+          ubEl.textContent = 'No unsettled activity yet.';
+        }
+      } catch (e) { console.warn('[biz-payouts] unsettled balance', e); }
+
+      try {
+        const sr = await fetch(URL + '/rest/v1/business_settlements?business_id=eq.' + bizId + '&select=period_start,period_end,lymx_issued,lymx_redeemed,net_cents,status,paid_at&order=period_end.desc&limit=24', { headers: H });
+        const sRows = sr.ok ? await sr.json() : [];
+        const listEl = document.getElementById('settlementList');
+        if (!sRows.length) {
+          listEl.innerHTML = '<p style="color:var(--muted);font-size:13.5px;margin:0">No past settlements yet. The first settlement will appear on the 5th business day of next month.</p>';
+        } else {
+          const rowsHtml = sRows.map(function (r) {
+            const usd = (Math.abs(r.net_cents) / 100).toFixed(2);
+            const dir = r.net_cents > 0 ? 'paid to you' : (r.net_cents < 0 ? 'charged' : 'net zero');
+            const statusColor = r.status === 'paid' ? 'var(--ok)' : (r.status === 'failed' ? 'var(--err)' : 'var(--muted)');
+            return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-top:1px solid var(--line)">'
+              + '<div><strong>' + r.period_start + ' → ' + r.period_end + '</strong>'
+              + '<div style="font-size:12.5px;color:var(--muted)">' + (r.lymx_issued || 0) + ' issued, ' + (r.lymx_redeemed || 0) + ' redeemed</div></div>'
+              + '<div style="text-align:right">'
+              + (r.net_cents !== 0 ? '<strong>$' + usd + '</strong> ' + dir : '<span style="color:var(--muted)">no movement</span>')
+              + '<div style="font-size:12.5px;color:' + statusColor + '">' + r.status + '</div></div></div>';
+          }).join('');
+          listEl.innerHTML = rowsHtml;
+        }
+      } catch (e) { console.warn('[biz-payouts] settlement list', e); }
+    } catch (e) { console.warn('[biz-payouts] loadSettlements', e); }
+  }
+
   const q = new URLSearchParams(location.search);
   if (q.get('status') === 'ok') showStatus('Welcome back — checking your Stripe status…', 'complete');
   if (q.get('status') === 'refresh') showStatus('Stripe asked you to come back — click the button below to continue.', 'pending');
 
-  refresh();
+  await refresh();
+  await loadAppConfig();
+  loadSettlements();
 })();
 </script>
 
