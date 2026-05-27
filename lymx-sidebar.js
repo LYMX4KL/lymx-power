@@ -218,6 +218,8 @@
       { href: 'customer-dashboard.html', icon: '\u{1F3E0}', label: 'Dashboard' },
       { href: 'customer-wallet.html',    icon: '\u{1F4B0}', label: 'My LYMX Wallet' },
       { href: 'browse.html',             icon: '\u{1F50D}', label: 'Browse Businesses' },
+      // 2026-05-27 Sprint 5 — full network directory (vs the curated browse.html)
+      { href: 'browse-all.html',         icon: '\u{1F4DA}', label: 'All businesses' },
       { section: 'Network' },
       { href: 'refer.html',              icon: '\u{1F4E8}', label: 'Refer Friends' },
       { href: 'share-hub.html',          icon: '\u{1F4E3}', label: 'Share hub' },

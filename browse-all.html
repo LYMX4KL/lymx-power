@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>All businesses &middot; LYMX</title>
+<meta name="description" content="Every business on the LYMX network. Search by name or filter by kind." />
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--mute:#5b6472;--line:#e6e8ec;--bg:#fafafa;--card:#fff;--accent:#0a84ff;--ok:#13a26b;--warn:#f0a020;--err:#b81324}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 22px 80px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  .crumb a{color:var(--mute);text-decoration:underline}
+  h1{margin:0 0 4px;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .lede{color:var(--mute);font-size:14.5px;margin-bottom:20px}
+
+  .toolbar{display:flex;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+  .search-box{flex:1;min-width:220px;display:flex;align-items:center;gap:8px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-radius:11px}
+  .search-box input{flex:1;border:0;font:inherit;font-size:14.5px;outline:none}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:8px 14px;border:1px solid var(--line);background:#fff;border-radius:99px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--mute)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;cursor:pointer;transition:border-color .12s,box-shadow .12s;display:block}
+  .card:hover{border-color:var(--accent);box-shadow:0 6px 18px rgba(10,132,255,.10)}
+  .card .name{font-weight:800;font-size:15px;color:var(--ink);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+  .card .name .vfy{font-size:11px;font-weight:800;color:var(--ok);background:#dff8ec;padding:2px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.04em}
+  .card .legal{font-size:12.5px;color:var(--mute)}
+  .card .kind{display:inline-block;margin-top:9px;font-size:11px;color:var(--mute);background:var(--bg);padding:3px 9px;border-radius:5px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+
+  .pager{display:flex;justify-content:center;gap:8px;margin-top:24px;flex-wrap:wrap}
+  .pager button{padding:9px 16px;border:1px solid var(--line);background:#fff;border-radius:9px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+  .pager button:hover:not(:disabled){border-color:var(--ink)}
+  .pager button:disabled{opacity:.45;cursor:default}
+  .pager .lbl{align-self:center;font-size:13px;color:var(--mute);padding:0 8px}
+
+  .empty{padding:60px 20px;text-align:center;color:var(--mute);background:#fff;border:1px dashed var(--line);border-radius:12px}
+</style>
+</head>
+<body data-page="browse-all">
+
+<script src="lymx-config.js"></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-nav.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+
+<div class="wrap">
+  <div class="crumb"><a href="/browse.html">&larr; Featured</a></div>
+  <h1>All businesses</h1>
+  <p class="lede">The full LYMX network. Search by name or filter by kind. Tap a card to open the business page and start earning.</p>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <span>&#x1F50D;</span>
+      <input type="search" id="searchInput" placeholder="Search by name or category&hellip;" autocomplete="off" />
+    </div>
+    <div class="chips" id="kindChips">
+      <button class="chip on" data-kind="all">All</button>
+    </div>
+  </div>
+
+  <div id="grid" class="grid"><div class="empty" style="grid-column:1/-1">Loading businesses&hellip;</div></div>
+
+  <div class="pager">
+    <button id="prevBtn" type="button" disabled>&larr; Previous</button>
+    <span class="lbl" id="pageLbl">Page 1</span>
+    <button id="nextBtn" type="button" disabled>Next &rarr;</button>
+  </div>
+</div>
+
+<script>
+(async function () {
+  while (!window.LYMX_CONFIG) await new Promise(function (r) { setTimeout(r, 100); });
+  var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  var URL_ = window.LYMX_CONFIG.SUPABASE_URL;
+
+  var PAGE_SIZE = 24;
+  var page = 0;
+  var currentKind = "all";
+  var currentSearch = "";
+  var totalCount = null;
+
+  var gridEl = document.getElementById("grid");
+  var prevBtn = document.getElementById("prevBtn");
+  var nextBtn = document.getElementById("nextBtn");
+  var pageLbl = document.getElementById("pageLbl");
+  var searchInput = document.getElementById("searchInput");
+  var kindChipsEl = document.getElementById("kindChips");
+
+  function escHtml(s) { return (s || "").replace(/[<>&]/g, function (c) { return { "<":"&lt;", ">":"&gt;", "&":"&amp;" }[c]; }); }
+
+  async function loadKinds() {
+    try {
+      var r = await fetch(URL_ + "/rest/v1/v_businesses_directory?select=business_kind", {
+        headers: { apikey: ANON }
+      });
+      if (!r.ok) return;
+      var rows = await r.json();
+      var kinds = {};
+      rows.forEach(function (b) { if (b.business_kind) kinds[b.business_kind] = (kinds[b.business_kind] || 0) + 1; });
+      var sorted = Object.keys(kinds).sort(function (a, b) { return kinds[b] - kinds[a]; });
+      sorted.forEach(function (k) {
+        var btn = document.createElement("button");
+        btn.className = "chip";
+        btn.setAttribute("data-kind", k);
+        btn.textContent = k + " (" + kinds[k] + ")";
+        kindChipsEl.appendChild(btn);
+      });
+      // Wire all chip clicks (including the existing "All")
+      Array.prototype.forEach.call(kindChipsEl.querySelectorAll(".chip"), function (chip) {
+        chip.addEventListener("click", function () {
+          Array.prototype.forEach.call(kindChipsEl.querySelectorAll(".chip.on"), function (c) { c.classList.remove("on"); });
+          chip.classList.add("on");
+          currentKind = chip.getAttribute("data-kind");
+          page = 0;
+          load();
+        });
+      });
+    } catch (e) { console.warn("[browse-all] kinds load", e); }
+  }
+
+  async function load() {
+    var headers = { apikey: ANON, Prefer: "count=exact", Range: (page * PAGE_SIZE) + "-" + (page * PAGE_SIZE + PAGE_SIZE - 1) };
+    var qs = "?select=id,display_name,legal_name,slug,business_kind,verified_at&order=display_name.asc";
+    if (currentKind !== "all") qs += "&business_kind=eq." + encodeURIComponent(currentKind);
+    if (currentSearch) qs += "&or=(display_name.ilike.*" + encodeURIComponent(currentSearch) + "*,legal_name.ilike.*" + encodeURIComponent(currentSearch) + "*,business_kind.ilike.*" + encodeURIComponent(currentSearch) + "*)";
+
+    try {
+      var r = await fetch(URL_ + "/rest/v1/v_businesses_directory" + qs, { headers: headers });
+      if (!r.ok) { gridEl.innerHTML = '<div class="empty" style="grid-column:1/-1">Could not load businesses (HTTP ' + r.status + ').</div>'; return; }
+      var contentRange = r.headers.get("content-range") || "";
+      var m = contentRange.match(/\/(\d+|\*)/);
+      if (m && m[1] !== "*") totalCount = parseInt(m[1], 10);
+      var rows = await r.json();
+
+      if (!rows.length) {
+        gridEl.innerHTML = '<div class="empty" style="grid-column:1/-1">No businesses match.' + (currentSearch ? " Clear search to see all." : "") + '</div>';
+      } else {
+        gridEl.innerHTML = rows.map(function (b) {
+          var verified = b.verified_at ? '<span class="vfy">verified</span>' : "";
+          var name = escHtml(b.display_name || b.legal_name || "(unnamed)");
+          var legal = (b.legal_name && b.legal_name !== b.display_name) ? escHtml(b.legal_name) : "";
+          var kind = b.business_kind ? '<span class="kind">' + escHtml(b.business_kind) + '</span>' : "";
+          var href = b.slug ? "/biz-" + encodeURIComponent(b.slug) + ".html" : "#";
+          return '<a class="card" href="' + href + '">'
+            + '<div class="name">' + name + verified + '</div>'
+            + (legal ? '<div class="legal">' + legal + '</div>' : '')
+            + kind
+            + '</a>';
+        }).join("");
+      }
+
+      prevBtn.disabled = page === 0;
+      nextBtn.disabled = totalCount !== null ? (page + 1) * PAGE_SIZE >= totalCount : rows.length < PAGE_SIZE;
+      var totalLbl = totalCount !== null ? (" of " + Math.ceil(totalCount / PAGE_SIZE)) : "";
+      pageLbl.textContent = "Page " + (page + 1) + totalLbl + (totalCount !== null ? " \u00B7 " + totalCount + " businesses" : "");
+    } catch (e) {
+      gridEl.innerHTML = '<div class="empty" style="grid-column:1/-1">Load failed: ' + escHtml(e.message) + '</div>';
+    }
+  }
+
+  // Debounce search input
+  var searchTimer = null;
+  searchInput.addEventListener("input", function () {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function () {
+      currentSearch = searchInput.value.trim();
+      page = 0;
+      load();
+    }, 300);
+  });
+
+  prevBtn.addEventListener("click", function () { if (page > 0) { page--; load(); window.scrollTo({ top: 0, behavior: "smooth" }); } });
+  nextBtn.addEventListener("click", function () { page++; load(); window.scrollTo({ top: 0, behavior: "smooth" }); });
+
+  loadKinds();
+  load();
+})();
+</script>
+
+</body>
+</html>
