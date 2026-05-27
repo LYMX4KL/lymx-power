@@ -43,6 +43,20 @@
   .btn-primary:hover{background:#000}
   .btn-biz{background:var(--accent);color:#fff;font-size:13px;padding:7px 12px}
   @media(max-width:880px){.nav-links{display:none}} @media(min-width:881px) and (max-width:1080px){.nav-links{gap:14px;font-size:13px}}
+  /* 2026-05-27 #15430537 — narrow-viewport polish so nav-cta buttons don't
+     cramp against the search container. Tighten gap + font when space gets
+     tight; on phones, scale down padding so buttons stay clickable but small. */
+  @media(max-width:720px){
+    .nav-inner{height:auto;padding:8px 0;align-items:center}
+    .nav-cta{gap:6px}
+    .nav-cta .btn{padding:6px 10px;font-size:12.5px}
+    .nav-cta .btn-biz{padding:6px 10px;font-size:12.5px}
+    .brand img{height:36px}
+  }
+  @media(max-width:520px){
+    .nav-cta .btn-ghost{padding:5px 9px;font-size:12px}
+    .nav-cta .btn-biz{padding:5px 9px;font-size:12px;letter-spacing:-.005em}
+  }
 
   /* Search bar at top */
   .top-search{padding:14px 0;background:var(--bg-soft);border-bottom:1px solid var(--line)}

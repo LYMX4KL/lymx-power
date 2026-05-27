@@ -803,8 +803,8 @@
         + '#lymxBackChip{position:fixed;top:14px;left:260px;z-index:99989;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;color:#0e1116;border:1px solid #e6e8ec;border-radius:999px;font-weight:700;font-size:13.5px;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;box-shadow:0 4px 12px rgba(14,17,22,.10);cursor:pointer;line-height:1}'
         + '#lymxBackChip:hover{background:#f6f7f9;border-color:#d1d5db}'
         + '#lymxBackChip .arr{font-size:15px;line-height:1;margin-top:-1px}'
-        + '@media (max-width:880px){#lymxBackChip{left:14px;top:60px}}'
-        + 'body:not([data-role-required]):not([data-lymx-sidebar="force"]) #lymxBackChip{left:14px;top:84px}'
+        + '@media (max-width:880px){#lymxBackChip{left:14px;top:74px;background:rgba(255,255,255,.96);backdrop-filter:saturate(180%) blur(8px)}}'
+        + 'body:not([data-role-required]):not([data-lymx-sidebar="force"]) #lymxBackChip{left:14px;top:96px}'
         + '@media print{#lymxBackChip{display:none}}';
       document.head.appendChild(s);
     }

@@ -72,7 +72,8 @@
   .empty .ic{font-size:42px;margin-bottom:8px;opacity:.6}
 
   /* Bottom nav */
-  .botnav{background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 0 14px;flex-shrink:0}
+  /* 2026-05-27 #87485d22 — was flex-shrink:0 but the .feed kept growing past the device height, pushing botnav off-screen. Sticky positioning keeps the tabs anchored at the bottom of the device viewport. */
+  .botnav{background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 0 14px;flex-shrink:0;position:sticky;bottom:0;z-index:5}
   .botnav a{text-align:center;padding:6px 0;font-size:11px;color:var(--muted);font-weight:700;position:relative}
   .botnav a.on{color:var(--accent-2)}
   .botnav a .b{font-size:18px;display:block;margin-bottom:1px}

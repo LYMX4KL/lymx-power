@@ -79,6 +79,18 @@
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
 
+<!-- 2026-05-27 #d8c66097 — page had no top-nav markup, so lymx-nav.js had
+     nothing to enhance and the messages page rendered with no nav bar.
+     Adding the canonical nav header used by other pages so avatar menu,
+     hamburger, back chip, and Sign In chip all attach normally. -->
+<header class="nav" style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid #e6e8ec">
+  <div class="nav-inner" style="max-width:1400px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px">
+    <a class="brand" href="/" style="display:flex;align-items:center;gap:10px;font-weight:800;text-decoration:none;color:inherit"><img src="logo.png" alt="LYMX logo" style="height:44px;width:auto" /></a>
+    <nav class="nav-links" style="display:flex;gap:24px;font-size:14px"></nav>
+    <div class="nav-cta" style="display:flex;gap:10px;align-items:center"></div>
+  </div>
+</header>
+
 <div class="layout" id="layout">
   <section class="list-pane">
     <div class="list-head">
