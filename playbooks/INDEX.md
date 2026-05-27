@@ -49,6 +49,10 @@
 
 | Slug | Title | Role | Feature | Status |
 |---|---|---|---|---|
+| [business-operations-edit-my-storefront](business-operations/edit-my-storefront.md) | Edit your LYMX storefront (overview — info / hours / photos / offers / menu) | Business | business_edit_storefront | ✅ Shipped 2026-05-27 |
+| [business-operations-upload-photos](business-operations/upload-photos.md) | Upload photos to your storefront (Phase 2 strand 1, mig 125) | Business | business_upload_photos | ✅ Shipped 2026-05-27 |
+| [business-operations-manage-offers](business-operations/manage-offers.md) | Manage LYMX offers on your storefront (Phase 2 strand 2) | Business | business_manage_offers | ✅ Shipped 2026-05-27 |
+| [business-operations-manage-menu](business-operations/manage-menu.md) | Manage menu items grouped by section (Phase 2 strand 3, mig 126) | Business | business_manage_menu | ✅ Shipped 2026-05-27 |
 | [business-operations-reservations](business-operations/reservations.md) | Manage table reservations (Sprint 4 — biz-reservations.html inbox) | Business | manage_reservations | 🚧 Shipped 2026-05-27; awaiting browser-verify |
 
 ## Daily operations (planned)
@@ -75,15 +79,4 @@
 |---|---|---|---|---|
 | admin-manage-permissions | Toggle feature permissions per member (matrix UI) | Admin | admin_manage_permissions | 🚧 In progress (page shipped 2026-05-26; playbook pending) |
 | [admin-settlement-run](admin/settlement-run.md) | Run a monthly business settlement batch (Sprint 1) | Admin | admin_run_settlements | 🚧 Shipped 2026-05-27; awaiting browser-verify |
-| [admin-clock-in-now](admin/clock-in-now.md) | Live view of who is currently clocked in / on break / out | Admin | admin_view_clock_in_now | 🚧 Shipped 2026-05-27; awaiting browser-verify |
-| [admin-timesheet-edit](admin/timesheet-edit.md) | Backfill or adjust a staff member's daily timesheet line | Admin / HR / CFO / Accounting | admin_edit_timesheet | 🚧 Shipped 2026-05-27; awaiting browser-verify |
-| [admin-offer-accept-flow](admin/offer-accept-flow.md) | How the public accept-offer magic-link flow works (HR P3) | Admin / HR | admin_send_offer_magic_link | 🚧 Shipped 2026-05-27; awaiting browser-verify |
-| [admin-event-create](admin/event-create.md) | Create an event end-to-end (admin + speaker magic-link + publish) | Admin | admin_create_event | 🚧 Shipped 2026-05-27; awaiting browser-verify |
-| admin-handle-feedback | Triage + reply to a feedback ticket | Admin |  | 📋 Planned |
-| admin-broadcast | Send a team-wide announcement | Admin |  | 📋 Planned |
-
-## Status legend
-
-- ✅ Verified — file exists, format-checked, walked end-to-end recently
-- 🚧 Draft — file exists, may have gaps or stale steps
-- 📋 Planned — file doesn't exist yet
+| [admin-clock-in-now](admin/clock-in-now.md) | Live view of who is currently clocked in / on break / ou
