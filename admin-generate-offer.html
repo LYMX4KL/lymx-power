@@ -74,6 +74,12 @@
         <div class="field"><label>Position title</label><input type="text" id="title" placeholder="e.g. Customer Support Specialist" /></div>
         <div class="field">
           <label>Target role (sets onboarding tasks)</label>
+          <!-- 2026-05-27 #03/#13 — was a 9-option enum that didn't include the
+               role Helen needed to onboard Rachel (concierge support). jobs.target_role
+               is free-form text in the schema (migration 056:21) so the enum constraint
+               was UI-side only. Adding the missing common role AND an Other (specify)
+               escape-hatch that posts whatever Helen types. Stored as the same
+               free-form text the onboarding-task templates already match against. -->
           <select id="targetRole">
             <option value="staff">Staff (generic)</option>
             <option value="hr">HR</option>
@@ -84,7 +90,11 @@
             <option value="engineering">Engineering</option>
             <option value="marketing">Marketing</option>
             <option value="support">Customer support</option>
+            <option value="concierge_support">Concierge support</option>
+            <option value="__custom__">Other (specify below)</option>
           </select>
+          <input type="text" id="targetRoleCustom" placeholder="Type the role key (e.g. operations_lead, partner_success_coach)" style="display:none;margin-top:6px;width:100%;padding:9px 11px;border:1px solid #e6e8ec;border-radius:7px;font:inherit;font-size:13.5px;background:#fff" />
+          <div id="targetRoleCustomHint" class="hint" style="display:none">We'll save this exact string as the role key. Lowercase + underscores recommended.</div>
         </div>
       </div>
 
@@ -230,6 +240,32 @@ async function init(){
       ' [' + esc(a.status) + ']</option>'
     ).join('');
 
+  // 2026-05-27 #13 — when arriving from admin-hiring's Add Applicant modal we
+  // get ?app=<uuid> in the URL. Pre-select that option so Helen doesn't have
+  // to scroll the dropdown to find the row she just inserted.
+  try {
+    const wantApp = new URL(location.href).searchParams.get('app');
+    if (wantApp) {
+      sel.value = wantApp;
+      if (sel.value === wantApp) {
+        sel.dispatchEvent(new Event('change'));
+      }
+    }
+  } catch (e) { console.warn('[generate-offer] app pre-select failed', e); }
+
+  // 2026-05-27 #03/#13 — toggle the custom-role text input when "Other" is picked.
+  const trSel = $('targetRole');
+  const trCustom = $('targetRoleCustom');
+  const trHint = $('targetRoleCustomHint');
+  if (trSel && trCustom) {
+    trSel.addEventListener('change', () => {
+      const showCustom = trSel.value === '__custom__';
+      trCustom.style.display = showCustom ? '' : 'none';
+      if (trHint) trHint.style.display = showCustom ? '' : 'none';
+      if (showCustom) trCustom.focus();
+    });
+  }
+
   sel.addEventListener('change', async () => {
     const opt = sel.selectedOptions[0];
     if (!opt || !opt.value) return;
@@ -257,7 +293,20 @@ $('genBtn').addEventListener('click', async () => {
   status.innerHTML = '';
   const appId = $('applicationSelect').value;
   const title = $('title').value.trim();
-  const targetRole = $('targetRole').value;
+  let targetRole = $('targetRole').value;
+  if (targetRole === '__custom__') {
+    const customRaw = ($('targetRoleCustom').value || '').trim();
+    if (!customRaw) {
+      $('status').innerHTML = '<div class="status-msg err">Type the custom role key (e.g. operations_lead) or pick one from the list.</div>';
+      return;
+    }
+    // Normalize to lowercase + underscores so it lines up with onboarding_task_templates.target_role matching.
+    targetRole = customRaw.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    if (!targetRole) {
+      $('status').innerHTML = '<div class="status-msg err">Custom role must contain letters / digits / underscores.</div>';
+      return;
+    }
+  }
   const employmentType = $('employmentType').value;
   const workMode = $('workMode').value;
   const payType = $('payType').value;
