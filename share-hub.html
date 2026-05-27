@@ -204,17 +204,48 @@
       catch (err) { toast('Copy failed — long-press the text to copy manually.', 'err'); }
     }));
     grid.querySelectorAll('[data-share]').forEach(b => b.addEventListener('click', async e => {
+      // 2026-05-27 #20 — fixed silent-swallow bug. Previous catch ate ALL
+      // failures (user cancel + permission denied + clipboard-failed) with
+      // no visible feedback, so clicking Share on a desktop Chrome that
+      // exposes navigator.share BUT the user cancels → nothing visible
+      // happens and tester reports "Share buttons not working". New flow:
+      // try navigator.share first; if it throws AbortError that's a user
+      // cancel and we stay silent; for any other error fall through to
+      // clipboard with a visible toast either way.
       const card = e.currentTarget.closest('.post');
       const text = card.getAttribute('data-short');
       const url  = card.getAttribute('data-url');
-      try {
-        if (navigator.share) {
+      const shareText = text + (text.includes(url) ? '' : '\n\n' + url);
+      if (navigator.share) {
+        try {
           await navigator.share({ title: 'LYMX', text: text, url: url });
-        } else {
-          await navigator.clipboard.writeText(text);
-          toast('Copied (native share unsupported on this browser).', 'ok');
+          return; // success → native share sheet handled it
+        } catch (err) {
+          // AbortError = user dismissed the sheet. Stay silent.
+          if (err && err.name === 'AbortError') return;
+          // Other failures (NotAllowedError, permission, etc.) → fall through
+          // to clipboard so the user still gets the link.
+          console.warn('[share-hub.html] navigator.share failed, falling back to clipboard:', err);
         }
-      } catch (err) { console.warn("[share-hub.html:217] caught (user cancelled — ignore):", err); }
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+          await navigator.clipboard.writeText(shareText);
+          toast('Copied. Paste into your social / SMS / email.', 'ok');
+          return;
+        } catch (err) {
+          console.warn('[share-hub.html] clipboard.writeText failed:', err);
+        }
+      }
+      // Last resort — execCommand copy + visible feedback.
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = shareText; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+        toast('Copied to clipboard.', 'ok');
+      } catch (err) {
+        toast('Could not share automatically. Long-press the post text and copy it manually.', 'err');
+      }
     }));
   }
 })();
