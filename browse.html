@@ -66,7 +66,10 @@
   .chip.cat-on{background:rgba(10,132,255,.08);border-color:var(--accent);color:var(--accent-2)}
   .filters .sep{height:18px;width:1px;background:var(--line)}
   .filters .sort{margin-left:auto;display:flex;align-items:center;gap:8px}
-  .filters select{padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px;color:var(--ink);outline:0;font-family:inherit}
+  /* 2026-05-27 #0fb8ab93 — was bare-bones; add subtle shadow + custom arrow + lighter hover so the dropdown matches the rest of the page aesthetic. */
+  .filters select{padding:7px 32px 7px 12px;border:1px solid var(--line);border-radius:9px;background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%235b6472' d='M0 0l5 6 5-6z'/></svg>") no-repeat right 10px center;background-size:10px 6px;font-size:13px;color:var(--ink);outline:0;font-family:inherit;-webkit-appearance:none;-moz-appearance:none;appearance:none;cursor:pointer;box-shadow:0 1px 2px rgba(14,17,22,.04);transition:.15s}
+  .filters select:hover{border-color:#c8cdd5;background-color:#fafbfc}
+  .filters select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
 
   /* 2026-05-20 Rae cluster - browse UX polish */
   .search-hint{max-width:680px;margin:8px auto 0;padding:0 4px;font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}

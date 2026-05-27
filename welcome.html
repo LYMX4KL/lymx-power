@@ -243,18 +243,33 @@ async function loadBusiness() {
   const r = await fetch(SUPABASE_URL + '/rest/v1/business_partners?slug=eq.' + bizSlug + '&active=eq.true&select=*&limit=1', {
     headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON }
   });
-  if (!r.ok) {
-    document.getElementById('signupCard').style.display = 'none';
-    document.getElementById('bizUnknown').style.display = 'block';
-    return;
-  }
-  const rows = await r.json();
+  // 2026-05-27 #33513118 — fall back to a synthetic LYMX-default bizConfig
+  // when (a) the fetch fails OR (b) no row is returned, BUT the requested
+  // slug is the default 'lymx'. Friends visiting a naked /welcome.html or a
+  // partner share link should ALWAYS see a working signup form. Previously,
+  // missing the 'lymx' row in business_partners hid signupCard and showed
+  // "looks invalid", making the page literally unclickable.
+  const LYMX_DEFAULT_BIZ = {
+    slug: 'lymx',
+    display_name: 'LYMX',
+    primary_color: '#0a84ff',
+    signup_bonus_from_lymx: 100,
+    signup_bonus_from_biz: 0,
+    active: true,
+    logo_url: null,
+  };
+  const rows = r.ok ? (await r.json()) : [];
   if (!rows.length) {
-    document.getElementById('signupCard').style.display = 'none';
-    document.getElementById('bizUnknown').style.display = 'block';
-    return;
+    if (bizSlug === 'lymx') {
+      bizConfig = LYMX_DEFAULT_BIZ;
+    } else {
+      document.getElementById('signupCard').style.display = 'none';
+      document.getElementById('bizUnknown').style.display = 'block';
+      return;
+    }
+  } else {
+    bizConfig = rows[0];
   }
-  bizConfig = rows[0];
 
   // Paint co-brand
   const cob = document.getElementById('cobrand');

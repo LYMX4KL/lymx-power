@@ -268,6 +268,10 @@
       { section: 'Partner' },
       { href: 'rep-dashboard.html',      icon: '\u{1F4CA}', label: 'Dashboard' },
       { href: 'partner-tree.html',       icon: '\u{1F333}', label: 'My Tree' },
+      // 2026-05-27 #37bb73c1 — surfaced new recruit-links hub. Partners had
+      // no single place to grab all 4 signup links (customer / partner /
+      // business / biz-invite). Now one sidebar entry covers them all.
+      { href: 'partner-recruit-links.html', icon: '\u{1F517}', label: 'Recruitment links' },
       { href: 'partner-leaderboard.html', icon: '\u{1F3C6}', label: 'Leaderboard' },
       { href: 'partner-payouts.html',    icon: '\u{1F4B8}', label: 'Payouts' },
       // 2026-05-26 #7bfc73c8 (Rachel) — Comp Plan page now exists at /comp-plan.html.

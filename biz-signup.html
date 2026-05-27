@@ -735,7 +735,15 @@ form.addEventListener('submit', async (e) => {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok){
-      showStatus(data.error || `Sign-up failed (${res.status}). Please check your details and try again.`);
+      // 2026-05-27 #eb909f5b — translate the "email already exists" raw EF
+      // error into actionable copy. Most testers hit this because they already
+      // created a customer or partner account with the same email earlier,
+      // not because biz signup is broken. Tell them what to do next.
+      let msg = data.error || `Sign-up failed (${res.status}). Please check your details and try again.`;
+      if (/already.{0,5}exist|already.{0,5}registered|duplicate.{0,5}key|already.{0,5}user/i.test(msg)) {
+        msg = "This email already has a LYMX account (most likely from a customer or partner signup). Sign in first at /login.html, then come back to /biz-signup.html — your business application will attach to your existing account. Or use a different email if this is a new Business with separate ownership.";
+      }
+      showStatus(msg);
       submitBtn.disabled = false;
       submitBtn.textContent = 'Submit application';
       return;

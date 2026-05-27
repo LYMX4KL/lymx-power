@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Recruitment links · LYMX Partner</title>
+<meta name="description" content="All your recruitment links in one place — customer, partner, business, and biz-invite — each auto-stamped with your partner code." />
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08)}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  .layout{margin-left:240px;padding:20px 24px;min-height:100vh;max-width:920px}
+  @media(max-width:1100px){.layout{margin-left:0;padding:14px}}
+  h1{margin:0 0 4px;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:14.5px;margin-bottom:22px}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:14px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;box-shadow:var(--shadow)}
+  .card .ic{flex:0 0 auto;width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px}
+  .card.cust .ic{background:#e6f0ff;color:var(--accent-2)}
+  .card.partner .ic{background:#dff8ec;color:#0c6940}
+  .card.biz .ic{background:#fef9e7;color:#8b6f1f}
+  .card.invite .ic{background:#f3e8ff;color:#5b2e9a}
+  .card .body{flex:1;min-width:240px}
+  .card .body .label{font-weight:800;font-size:15.5px;margin-bottom:2px}
+  .card .body .desc{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:10px}
+  .card .body .url{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--bg-soft);border:1px solid var(--line);padding:9px 11px;border-radius:8px;color:var(--ink);word-break:break-all;display:block}
+  .card .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{appearance:none;border:0;border-radius:8px;padding:9px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:#0e1116;color:#fff}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn.share{background:var(--accent);color:#fff}
+  .badge{display:inline-block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;padding:2px 8px;border-radius:5px;margin-left:6px}
+  .badge.partner{background:#dff8ec;color:#0c6940}
+  .badge.biz{background:#fef9e7;color:#8b6f1f}
+  .badge.invite{background:#f3e8ff;color:#5b2e9a}
+
+  .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#13a26b;color:#fff;padding:11px 20px;border-radius:11px;font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:10000;opacity:0;pointer-events:none;transition:.2s}
+  .toast.on{opacity:1}
+  .empty{text-align:center;padding:50px 20px;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px}
+  .help{margin-top:18px;background:#eef4ff;border:1px solid #c8dcff;border-radius:11px;padding:14px 16px;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+  .help b{color:var(--accent-2)}
+</style>
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<div class="layout">
+  <h1>🔗 Your recruitment links</h1>
+  <div class="sub">All four LYMX signup paths in one place. Each link is auto-stamped with your partner code, so anyone who signs up through it credits you for the referral.</div>
+
+  <div id="links">
+    <div class="empty">Loading your links…</div>
+  </div>
+
+  <div class="help">
+    <b>Which link should I share?</b><br>
+    <strong>Customer link</strong> — for friends + family who'll use LYMX as customers (earn + spend at LYMX Businesses). 100 LYMX to them, 200 LYMX to you when they make their first purchase.<br>
+    <strong>Partner link</strong> — for someone interested in earning $750 + 11% recurring by activating Businesses onto LYMX. You earn override commissions across 3 generations.<br>
+    <strong>Business link</strong> — for a local Business owner ready to add LYMX rewards. They join as Founding 25 ($850 sign-up + 3 months free + $199/mo after). You earn $750 + 11% recurring.<br>
+    <strong>Biz Invite</strong> — for a SPECIFIC Business you've already pitched. Sends them a tracked invite email with a one-time code, so signup is one-tap on their side.
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(async function init(){
+  if (!window.LYMX || !window.LYMX.requireAuth) { setTimeout(init, 200); return; }
+  const user = await window.LYMX.requireAuth();
+  if (!user) return;
+  const sb = window.LYMX.sb;
+
+  // Resolve the partner code so links carry attribution.
+  // Priority: partners.partner_code (P-XXXXXX) → fallback to U-<first6>.
+  let code = '';
+  try {
+    const { data: prow } = await sb.from('partners').select('partner_code').eq('user_id', user.id).maybeSingle();
+    code = (prow && prow.partner_code) || ('U-' + user.id.slice(0, 6).toUpperCase());
+  } catch (e) {
+    code = 'U-' + user.id.slice(0, 6).toUpperCase();
+  }
+
+  const BASE = location.origin;
+  const refQS = '?ref=' + encodeURIComponent(code);
+
+  const LINKS = [
+    {
+      key: 'customer',
+      cls: 'cust',
+      icon: '👤',
+      label: 'Customer signup link',
+      badge: '',
+      desc: 'For friends + family. They get 100 LYMX welcome; you get 200 LYMX when they make their first purchase.',
+      url: BASE + '/welcome.html' + refQS,
+    },
+    {
+      key: 'partner',
+      cls: 'partner',
+      icon: '🤝',
+      label: 'Partner signup link',
+      badge: '<span class="badge partner">EARN $750 + 11%</span>',
+      desc: 'For someone who wants to sign Businesses onto LYMX as a side income. No fee for new Partners through 7/31/2027.',
+      url: BASE + '/partner-signup.html' + refQS,
+    },
+    {
+      key: 'business',
+      cls: 'biz',
+      icon: '🏪',
+      label: 'Business signup link',
+      badge: '<span class="badge biz">FOUNDING 25</span>',
+      desc: 'For local Business owners. They join as Founding 25 ($850 sign-up + 3 months free + $199/mo). You earn $750 + 11% recurring.',
+      url: BASE + '/biz-signup.html' + refQS,
+    },
+    {
+      key: 'biz_invite',
+      cls: 'invite',
+      icon: '📨',
+      label: 'Send a Business invite (tracked)',
+      badge: '<span class="badge invite">ONE-TAP SIGNUP</span>',
+      desc: 'For a specific Business you have already pitched. Generates a one-time tracked invite link they can sign up with in one tap — and you get notified when they do.',
+      url: BASE + '/partner-crm.html#invite-biz',
+      cta: '📨 Create biz invite',
+    },
+  ];
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    setTimeout(() => t.classList.remove('on'), 1800);
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(() => showToast('Link copied'));
+    }
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); showToast('Link copied'); }
+    catch (e) { showToast('Copy failed'); }
+    ta.remove();
+  }
+
+  function shareText(text, title) {
+    if (navigator.share) {
+      navigator.share({ title: title, url: text }).catch(() => { /* user cancelled */ });
+    } else {
+      copyText(text);
+    }
+  }
+
+  const wrap = document.getElementById('links');
+  wrap.innerHTML = LINKS.map(L => {
+    const cta = L.cta || '↗ Share';
+    const showCopy = L.key !== 'biz_invite';
+    return '<div class="card ' + L.cls + '">' +
+             '<div class="ic">' + L.icon + '</div>' +
+             '<div class="body">' +
+               '<div class="label">' + L.label + L.badge + '</div>' +
+               '<div class="desc">' + L.desc + '</div>' +
+               (showCopy
+                 ? '<code class="url">' + L.url + '</code>'
+                 : '<a class="url" href="' + L.url + '" style="text-decoration:none">' + L.url + ' →</a>') +
+             '</div>' +
+             '<div class="actions">' +
+               (showCopy
+                 ? '<button class="btn ghost" data-copy="' + L.url.replace(/"/g, '&quot;') + '">📋 Copy</button>' +
+                   '<button class="btn share" data-share="' + L.url.replace(/"/g, '&quot;') + '" data-title="' + L.label + '">' + cta + '</button>'
+                 : '<a class="btn share" href="' + L.url + '">' + cta + '</a>') +
+             '</div>' +
+           '</div>';
+  }).join('');
+
+  wrap.querySelectorAll('[data-copy]').forEach(b => {
+    b.addEventListener('click', () => copyText(b.dataset.copy));
+  });
+  wrap.querySelectorAll('[data-share]').forEach(b => {
+    b.addEventListener('click', () => shareText(b.dataset.share, b.dataset.title));
+  });
+})();
+</script>
+
+</body>
+</html>

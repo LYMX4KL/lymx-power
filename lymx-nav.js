@@ -97,6 +97,12 @@
     ];
     var partnerEntryPages = ['/partner-signup.html', '/partner-signup'];
     if (/[?&]force=1/.test(location.search)) return; // explicit override
+    // 2026-05-27 #464e3e08 — also skip the redirect when ?ref= is on the URL.
+    // A signed-in user landing on /welcome.html?ref=XYZ is either a partner
+    // testing their own share link or following someone else's link mid-session.
+    // In both cases, sending them to their dashboard is wrong — they want to
+    // see the welcome flow.
+    if (/[?&]ref=/.test(location.search)) return;
 
     // 1a. /partner-signup.html — route signed-in users to upgrade flow,
     //     UNLESS they're already a partner (then send to their dashboard).
@@ -868,7 +874,19 @@
         (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
         window.navigator.standalone === true ||
         (document.referrer && document.referrer.indexOf('android-app://') === 0);
-      if (!standalone) return;
+      // 2026-05-27 #da1d7396 — also hide for any signed-in user. They're already
+      // using LYMX; the install nudge is for new visitors, not authenticated
+      // users. Signal: there's a Supabase session in localStorage. This
+      // function runs inside the post-session callback, so by the time it's
+      // called the session check has already resolved.
+      var signedIn = false;
+      try {
+        for (var i = 0; i < window.localStorage.length; i++) {
+          var k = window.localStorage.key(i);
+          if (k && k.indexOf('sb-') === 0 && k.indexOf('-auth-token') > 0) { signedIn = true; break; }
+        }
+      } catch (e) { /* localStorage blocked — fall back to standalone-only */ }
+      if (!standalone && !signedIn) return;
       var selectors = ['#getAppCta', '#navGetApp', '.get-app-cta', '.install-app-cta', '[data-lymx-hide-in-pwa]'];
       selectors.forEach(function (sel) {
         document.querySelectorAll(sel).forEach(function (el) { el.style.display = 'none'; });
