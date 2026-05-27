@@ -53,8 +53,14 @@
   .photos .ph.p2{background:linear-gradient(135deg,#ffe0d6,#ffaa7d)}
   .photos .ph.p3{background:linear-gradient(135deg,#fee5cc,#f5b977)}
   .photos .ph.p4{background:linear-gradient(135deg,#fff0d6,#e8c282)}
-  .photos .ph.p5{background:linear-gradient(135deg,#f0d8b5,#c89165);position:relative;cursor:pointer}
-  .photos .ph.p5::after{content:"+18 more";position:absolute;bottom:12px;right:12px;background:rgba(14,17,22,.78);color:#fff;font-size:13px;padding:6px 12px;border-radius:999px;font-weight:600}
+  .photos .ph.p5{background:linear-gradient(135deg,#f0d8b5,#c89165)}
+  /* 2026-05-26 #4e5e1160 (Dave) — removed the "+18 more" CSS pseudo-element
+     overlay. There is NO business_photos table in the backend (no migration
+     defines one), so the badge was claiming 23 total photos exist when in
+     fact zero photos are stored anywhere. The 5 visible cells are CSS
+     gradient emoji placeholders kept as a visual stand-in — that's a design
+     choice, not a numeric lie. When real photo uploads ship, restore a
+     dynamic "+N more" badge driven by the actual count. */
   @media(max-width:780px){.photos{grid-template-columns:1fr 1fr;grid-template-rows:200px 100px;height:auto}.photos .ph.main{grid-row:span 2}.photos .ph.p4,.photos .ph.p5{display:none}}
 
   .title-row{display:flex;justify-content:space-between;align-items:start;gap:24px;flex-wrap:wrap;margin-bottom:8px}
