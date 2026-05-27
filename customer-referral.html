@@ -469,20 +469,35 @@
       var inviteeIds = refs.map(function(x){ return x.invitee_user_id; }).filter(Boolean);
       var nameMap = {};
       if (inviteeIds.length) {
+        // 2026-05-27 #c4cbf47c — referrals were showing "Pending member" when
+        // the referee signed up as a partner (no customers row) or a business
+        // owner. Root cause: the lookup only checked customers. Now we query
+        // BOTH customers AND partners, taking the first non-empty display_name
+        // from either table. Email-prefix fallback stays for the customers-only
+        // case where display_name is blank.
+        var idList = inviteeIds.join(',');
+        var nameify = function (s) {
+          if (!s) return '';
+          return String(s).split('@')[0].replace(/[._-]+/g, ' ').replace(/\b([a-z])/g, function(_, m){ return m.toUpperCase(); });
+        };
         try {
-          var cr = await fetch(SUPA + '/rest/v1/customers?user_id=in.(' + inviteeIds.join(',') + ')&select=user_id,display_name,email', { headers: headers });
-          if (cr.ok) {
-            var crows = await cr.json();
-            (crows || []).forEach(function(c){
-              var nm = c.display_name && c.display_name.trim();
-              if (!nm && c.email) {
-                var prefix = c.email.split('@')[0] || '';
-                nm = prefix.replace(/[._-]+/g, ' ').replace(/\b([a-z])/g, function(_, m){ return m.toUpperCase(); });
-              }
-              if (nm) nameMap[c.user_id] = nm;
+          var custResp = await fetch(SUPA + '/rest/v1/customers?user_id=in.(' + idList + ')&select=user_id,display_name,email', { headers: headers });
+          if (custResp.ok) {
+            (await custResp.json() || []).forEach(function(r){
+              var nm = (r.display_name || '').trim() || nameify(r.email);
+              if (nm) nameMap[r.user_id] = nm;
             });
           }
-        } catch (e) { console.warn("[customer-referral.html:431] caught (name lookup is best-effort):", e); }
+        } catch (e) { console.warn("[customer-referral] customer name lookup:", e); }
+        try {
+          var partnerResp = await fetch(SUPA + '/rest/v1/partners?user_id=in.(' + idList + ')&select=user_id,display_name,legal_name,contact_email', { headers: headers });
+          if (partnerResp.ok) {
+            (await partnerResp.json() || []).forEach(function(r){
+              var nm = (r.display_name || '').trim() || (r.legal_name || '').trim() || nameify(r.contact_email);
+              if (nm && !nameMap[r.user_id]) nameMap[r.user_id] = nm;
+            });
+          }
+        } catch (e) { console.warn("[customer-referral] partner name lookup:", e); }
       }
 
       var html = refs.map(function(x){

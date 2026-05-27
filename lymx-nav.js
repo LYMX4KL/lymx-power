@@ -405,16 +405,22 @@
       var URL2  = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
       var tok2  = readToken();
       if (URL2 && ANON2 && tok2) {
-        fetch(URL2 + '/rest/v1/conversations?select=unread_count_subject&unread_count_subject=gt.0',
+        // 2026-05-27 #29eedbfd — was summing per-conversation unread counts
+        // (so the badge showed e.g. 77 when there were 25 conversations with a
+        // few unread each). my-conversations.html shows CONVERSATIONS with
+        // unread, not raw messages, so the badge and page disagreed. Switching
+        // badge to count conversations with unread so the two metrics line up.
+        // Per-message detail is still available inside each thread.
+        fetch(URL2 + '/rest/v1/conversations?select=id&unread_count_subject=gt.0',
               { headers: { apikey: ANON2, Authorization: 'Bearer ' + tok2 } })
           .then(function (r) { return r.ok ? r.json() : []; })
           .then(function (rows) {
-            var total = (rows || []).reduce(function (s, r) { return s + (r.unread_count_subject || 0); }, 0);
-            if (total > 0) {
+            var convoCount = (rows || []).length;
+            if (convoCount > 0) {
               var b = document.getElementById('lymxNavMsgBadge');
-              if (b) { b.textContent = total; b.style.display = 'inline-block'; }
+              if (b) { b.textContent = convoCount; b.style.display = 'inline-block'; }
             }
-          }).catch(() => { /* user cancelled native share */ return null; });
+          }).catch(function (e) { console.warn('[lymx-nav] msg badge', e); });
       }
     } catch (e) { console.warn('[lymx-nav.js:L280] silent error', e); }
     document.body.appendChild(menu);

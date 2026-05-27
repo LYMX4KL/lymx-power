@@ -973,6 +973,203 @@
   load();
 })();
 </script>
+<script>
+// 2026-05-27 #e5dd5d72 — Tree-render: was a hard-coded "Your tree is empty"
+// placeholder with no JS behind it. Now queries the partners table 3 levels
+// deep via sponsor_partner_id, plus the partner's own activated businesses.
+// Renders tree rows under the YOU row when downline exists; keeps the empty
+// state when there's nothing yet.
+(function () {
+  function renderTreeRow(p, gen) {
+    var name = (p.display_name || p.legal_name || (p.contact_email || '').split('@')[0] || 'Partner');
+    var initials = name.split(/\s+/).filter(Boolean).slice(0,2).map(s => (s[0]||'').toUpperCase()).join('') || 'P';
+    var thisMo = p._thisMonthOverride || 0;
+    var payHtml = '$' + thisMo.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }) + ' <span class="sub">this month</span>';
+    var genLabel = gen === 1 ? 'G1' : gen === 2 ? 'G2' : 'G3';
+    return '<div class="tree-row g' + gen + '">' +
+      '<div class="av">' + initials + '</div>' +
+      '<div class="body">' +
+        '<div class="nm">' + name.replace(/[<>]/g,'') + ' <span class="gen-pill">' + genLabel + '</span></div>' +
+        '<div class="ds">' + (p._meta || 'Partner') + '</div>' +
+      '</div>' +
+      '<div class="pay">' + payHtml + '</div>' +
+    '</div>';
+  }
+
+  async function renderTree() {
+    if (!window.LYMX || !window.LYMX.sb || !window.LYMX.user) {
+      setTimeout(renderTree, 250);
+      return;
+    }
+    var sb = window.LYMX.sb;
+    try {
+      // Resolve the partner row for the signed-in user
+      var pme = await sb.from('partners')
+        .select('id, display_name, legal_name, contact_email')
+        .eq('user_id', window.LYMX.user.id).maybeSingle();
+      if (!pme.data) return;
+      var myPartnerId = pme.data.id;
+
+      // G1: partners with sponsor_partner_id = mine
+      var g1 = await sb.from('partners')
+        .select('id, display_name, legal_name, contact_email, created_at')
+        .eq('sponsor_partner_id', myPartnerId)
+        .order('created_at', { ascending: false }).limit(30);
+      var g1Rows = g1.data || [];
+      var g1Ids = g1Rows.map(r => r.id);
+
+      // G2: partners with sponsor in g1Ids
+      var g2Rows = [];
+      if (g1Ids.length) {
+        var g2 = await sb.from('partners')
+          .select('id, display_name, legal_name, contact_email, sponsor_partner_id, created_at')
+          .in('sponsor_partner_id', g1Ids)
+          .order('created_at', { ascending: false }).limit(60);
+        g2Rows = g2.data || [];
+      }
+      var g2Ids = g2Rows.map(r => r.id);
+
+      // G3
+      var g3Rows = [];
+      if (g2Ids.length) {
+        var g3 = await sb.from('partners')
+          .select('id, display_name, legal_name, contact_email, sponsor_partner_id, created_at')
+          .in('sponsor_partner_id', g2Ids)
+          .order('created_at', { ascending: false }).limit(120);
+        g3Rows = g3.data || [];
+      }
+
+      // Compute this-month commission per partner from partner_commissions table.
+      // The override on a child partner is what the parent earns FROM them.
+      var startMo = new Date(); startMo.setDate(1); startMo.setHours(0,0,0,0);
+      var allChildIds = [].concat(g1Ids, g2Ids, g3Rows.map(r => r.id));
+      var commByChild = {};
+      if (allChildIds.length) {
+        var cr = await sb.from('partner_commissions')
+          .select('source_partner_id, amount')
+          .eq('partner_id', myPartnerId)
+          .in('source_partner_id', allChildIds)
+          .gte('created_at', startMo.toISOString());
+        (cr.data || []).forEach(c => {
+          if (!c.source_partner_id) return;
+          commByChild[c.source_partner_id] = (commByChild[c.source_partner_id] || 0) + Number(c.amount || 0);
+        });
+      }
+      [g1Rows, g2Rows, g3Rows].forEach(rows => rows.forEach(r => { r._thisMonthOverride = commByChild[r.id] || 0; }));
+
+      var totalRows = g1Rows.length + g2Rows.length + g3Rows.length;
+      if (!totalRows) return;  // keep the empty state
+
+      // Build markup — keep the existing YOU row, replace the empty-state div
+      var treeEl = document.getElementById('repTree');
+      if (!treeEl) return;
+      var youRow = treeEl.querySelector('.tree-row.you');
+      var youHtml = youRow ? youRow.outerHTML : '';
+      var rowsHtml = g1Rows.map(r => renderTreeRow(r, 1)).join('') +
+                     g2Rows.map(r => renderTreeRow(r, 2)).join('') +
+                     g3Rows.map(r => renderTreeRow(r, 3)).join('');
+      treeEl.innerHTML = youHtml + rowsHtml;
+    } catch (e) {
+      console.warn('[rep-dashboard] tree render failed', e);
+    }
+  }
+  renderTree();
+})();
+</script>
+
+<script>
+// 2026-05-27 #b679f887 — Recent Activity extension: original widget pulled
+// leads + closed leads + bookings only. Tester reported "empty" because
+// commission posts and Business activations (the real partner-side events)
+// weren't represented. Adding three more event types: commission credit,
+// Business activation, customer referral. Merged with existing event types
+// into one sorted feed.
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[<>&"]/g, c => ({ '<':'&lt;', '>':'&gt;', '&':'&amp;', '"':'&quot;' }[c])); }
+  function timeAgo(iso) {
+    if (!iso) return '';
+    var d = new Date(iso); var s = Math.round((Date.now() - d) / 1000);
+    if (s < 60) return 'just now'; if (s < 3600) return Math.round(s/60) + 'm ago';
+    if (s < 86400) return Math.round(s/3600) + 'h ago'; if (s < 604800) return Math.round(s/86400) + 'd ago';
+    return d.toLocaleDateString();
+  }
+  async function loadExtra() {
+    if (!window.LYMX || !window.LYMX.sb || !window.LYMX.user) { setTimeout(loadExtra, 250); return; }
+    try {
+      var sb = window.LYMX.sb;
+      var weekAgo = new Date(Date.now() - 14 * 86400 * 1000).toISOString();
+      // Need partner.id from the partners table
+      var pme = await sb.from('partners').select('id').eq('user_id', window.LYMX.user.id).maybeSingle();
+      if (!pme.data) return;
+      var partnerId = pme.data.id;
+
+      // 3 new event types in parallel
+      var pComms = sb.from('partner_commissions')
+        .select('id, amount, type, generation, created_at')
+        .eq('partner_id', partnerId)
+        .gte('created_at', weekAgo)
+        .order('created_at', { ascending: false }).limit(20);
+      var pActivations = sb.from('businesses')
+        .select('id, display_name, created_at')
+        .eq('signed_up_by_partner_id', partnerId)
+        .gte('created_at', weekAgo)
+        .order('created_at', { ascending: false }).limit(20);
+      var pRefs = sb.from('referrals')
+        .select('id, status, invitee_user_id, inviter_bonus_amount, created_at')
+        .eq('inviter_user_id', window.LYMX.user.id)
+        .gte('created_at', weekAgo)
+        .order('created_at', { ascending: false }).limit(20);
+
+      var r = await Promise.all([pComms, pActivations, pRefs]);
+      var events = [];
+      (r[0].data || []).forEach(c => events.push({
+        at: c.created_at, icon: '💰',
+        title: 'Commission · $' + Number(c.amount||0).toFixed(2) + (c.generation ? ' (G' + c.generation + ')' : ''),
+        who: (c.type || '').replace(/_/g, ' '), sub: ''
+      }));
+      (r[1].data || []).forEach(b => events.push({
+        at: b.created_at, icon: '🏪',
+        title: 'Business activated', who: b.display_name || '—', sub: ''
+      }));
+      (r[2].data || []).forEach(ref => events.push({
+        at: ref.created_at, icon: ref.status === 'credited' ? '🎁' : '⏳',
+        title: ref.status === 'credited' ? ('Referral credited · +' + (ref.inviter_bonus_amount || 0) + ' LYMX') : 'Referral pending',
+        who: '', sub: ''
+      }));
+      if (!events.length) return;
+      events.sort((a,b) => (b.at || '').localeCompare(a.at || ''));
+      events = events.slice(0, 20);
+
+      var el = document.getElementById('repActivity');
+      if (!el) return;
+      var rendered = events.map(e => {
+        var when = new Date(e.at).toLocaleDateString([], { month: 'short', day: 'numeric' });
+        return '<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;align-items:center"><span style="font-size:18px">' + e.icon + '</span>'
+          + '<div style="flex:1;min-width:0"><div style="font-weight:700">' + esc(e.title) + (e.who ? ' · ' + esc(e.who) : '') + '</div>'
+          + (e.sub ? '<div style="font-size:12px;color:#5b6472;margin-top:1px">' + esc(e.sub) + '</div>' : '')
+          + '</div>'
+          + '<span style="font-size:11.5px;color:#5b6472;font-weight:600;white-space:nowrap">' + when + '</span></div>';
+      }).join('');
+      // Prepend to whatever leads/bookings widget loaded — but only if that
+      // widget left the empty state. If it loaded real events, append at the top.
+      var existingEmpty = el.innerHTML.indexOf('No activity yet') >= 0 || el.innerHTML.indexOf('No recent activity yet') >= 0;
+      if (existingEmpty) {
+        el.innerHTML = rendered;
+      } else {
+        // Insert above existing children
+        var holder = document.createElement('div');
+        holder.innerHTML = rendered;
+        while (holder.firstChild) el.insertBefore(holder.firstChild, el.firstChild);
+      }
+    } catch (e) {
+      console.warn('[rep-dashboard] extra activity feed failed', e);
+    }
+  }
+  loadExtra();
+})();
+</script>
+
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>

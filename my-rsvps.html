@@ -67,18 +67,34 @@ async function load() {
   const cfg = window.LYMX_CONFIG;
   const session = await window.LYMX.getSession();
   const tok = session.access_token;
-  // Read by user_id OR by attendee_email (RLS handles both)
-  const r = await fetch(cfg.SUPABASE_URL +
-    '/rest/v1/event_rsvps?or=(user_id.eq.' + session.user.id + ',attendee_email.eq.' + encodeURIComponent(session.user.email || '') + ')' +
-    '&order=created_at.desc&select=id,event_slug,event_title,party_size,status,notes,dietary_notes,plus_ones,created_at', {
-    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer '+tok }
-  });
-  if (!r.ok) {
+  // 2026-05-27 #c23046a9 — was a single PostgREST OR query that:
+  //   (1) failed silently when the RSVP was submitted anonymously
+  //       (user_id NULL) and the user later signed in,
+  //   (2) used eq (case-sensitive) on attendee_email, so RSVPs submitted
+  //       with mixed-case emails wouldn't match the lowercased session email.
+  // Now we run two queries (by user_id, by ilike on email) and merge by id.
+  const SELECT = 'id,event_slug,event_title,party_size,status,notes,dietary_notes,plus_ones,created_at,attendee_email,user_id';
+  const headers = { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok };
+  const email = (session.user.email || '').toLowerCase();
+  const [rUid, rEmail] = await Promise.all([
+    fetch(cfg.SUPABASE_URL + '/rest/v1/event_rsvps?user_id=eq.' + session.user.id + '&select=' + SELECT + '&order=created_at.desc', { headers }),
+    email
+      ? fetch(cfg.SUPABASE_URL + '/rest/v1/event_rsvps?attendee_email=ilike.' + encodeURIComponent(email) + '&select=' + SELECT + '&order=created_at.desc', { headers })
+      : Promise.resolve({ ok: true, json: async () => [] }),
+  ]);
+  if (!rUid.ok && !rEmail.ok) {
     document.getElementById('list').innerHTML =
-      '<div class="empty">Could not load RSVPs (' + r.status + '). Make sure migration 085 ran.</div>';
+      '<div class="empty">Could not load RSVPs (' + rUid.status + '). Make sure migration 085 ran.</div>';
     return;
   }
-  const rows = await r.json();
+  const [a, b] = await Promise.all([
+    rUid.ok ? rUid.json() : Promise.resolve([]),
+    rEmail.ok ? rEmail.json() : Promise.resolve([]),
+  ]);
+  const seenIds = new Set();
+  const rows = [];
+  [...a, ...b].forEach(x => { if (x && !seenIds.has(x.id)) { seenIds.add(x.id); rows.push(x); } });
+  rows.sort((x, y) => (y.created_at || '').localeCompare(x.created_at || ''));
   if (!rows.length) {
     document.getElementById('list').innerHTML =
       '<div class="empty">No RSVPs yet. <br><br>' +

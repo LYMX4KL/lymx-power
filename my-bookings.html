@@ -97,13 +97,24 @@
     myEmail = (user.email || '').toLowerCase().trim();
     myUserId = user.id;
 
-    // Fetch bookings where booker matches this user (by email or user_id)
-    const { data: bks } = await sb.from('bookings')
-      .select('id, team_calendar_id, starts_at, ends_at, duration_min, status, video_room_url, summary, cancel_token, booker_name, booker_email, booker_user_id')
-      .or(`booker_email.eq.${myEmail},booker_user_id.eq.${myUserId}`)
-      .order('starts_at', { ascending: false })
-      .limit(100);
-    allBookings = bks || [];
+    // 2026-05-27 #348abe95 — root-cause-style fix for "confirmed bookings don't
+    // appear in My Bookings". The original OR query failed in two ways:
+    //   (1) When booker_user_id is NULL in the DB row but the booker IS signed
+    //       in (the book-call EF doesn't always preserve session user_id),
+    //       email match was the only path — and eq is case-sensitive while
+    //       myEmail is lowercased.
+    //   (2) When the EF created the row with status='pending' (awaiting
+    //       confirmation email click), it fell into Past tab and looked lost.
+    // Now we run two queries and merge by id, AND show pending in Upcoming.
+    const SELECT = 'id, team_calendar_id, starts_at, ends_at, duration_min, status, video_room_url, summary, cancel_token, booker_name, booker_email, booker_user_id';
+    const [{ data: byUid }, { data: byEmail }] = await Promise.all([
+      sb.from('bookings').select(SELECT).eq('booker_user_id', myUserId).order('starts_at', { ascending: false }).limit(100),
+      sb.from('bookings').select(SELECT).ilike('booker_email', myEmail).order('starts_at', { ascending: false }).limit(100),
+    ]);
+    const seen = new Set();
+    allBookings = [];
+    [...(byUid || []), ...(byEmail || [])].forEach(b => { if (b && !seen.has(b.id)) { seen.add(b.id); allBookings.push(b); } });
+    allBookings.sort((a, b) => (b.starts_at || '').localeCompare(a.starts_at || ''));
 
     if (allBookings.length) {
       const calIds = [...new Set(allBookings.map(b => b.team_calendar_id).filter(Boolean))];
@@ -128,8 +139,14 @@
 
   function render(){
     const nowIso = new Date().toISOString();
-    const upcoming = allBookings.filter(b => b.status === 'confirmed' && b.starts_at >= nowIso).sort((a,b) => a.starts_at.localeCompare(b.starts_at));
-    const past = allBookings.filter(b => !(b.status === 'confirmed' && b.starts_at >= nowIso));
+    // 2026-05-27 #348abe95 — accept both 'confirmed' and 'pending' as upcoming.
+    // Pending means the booking was submitted but the confirmation email hasn't
+    // been clicked yet. Hiding those from Upcoming made testers think their
+    // booking vanished.
+    const upcomingStatuses = ['confirmed', 'pending'];
+    const upcoming = allBookings.filter(b => upcomingStatuses.indexOf(b.status) >= 0 && b.starts_at >= nowIso)
+                                 .sort((a,b) => a.starts_at.localeCompare(b.starts_at));
+    const past = allBookings.filter(b => !(upcomingStatuses.indexOf(b.status) >= 0 && b.starts_at >= nowIso));
     const list = currentTab === 'upcoming' ? upcoming : past;
 
     if (!list.length) {

@@ -402,6 +402,43 @@
       }
     }
 
+    // 2026-05-27 #fe74c743 — Partners viewing /customer-wallet saw customer
+    // earn/spend rows that didn't reflect their actual partner activity. Now,
+    // if the signed-in user has a partners row, prepend up-to-10 commission
+    // events ahead of any customer-side rows so the activity section reflects
+    // BOTH sides of their LYMX activity.
+    try {
+      const { data: pme } = await window.LYMX.sb.from('partners').select('id').eq('user_id', user.id).maybeSingle();
+      if (pme && pme.id) {
+        const { data: comms } = await window.LYMX.sb.from('partner_commissions')
+          .select('id, amount, type, generation, created_at')
+          .eq('partner_id', pme.id)
+          .order('created_at', { ascending: false })
+          .limit(10);
+        const txSection2 = document.querySelector('.section');
+        if (comms && comms.length && txSection2) {
+          const sh = txSection2.querySelector('.sec-h');
+          const frag = document.createDocumentFragment();
+          comms.forEach(c => {
+            const amt = Number(c.amount || 0);
+            const cls = amt >= 0 ? 'earn' : 'spend';
+            const sign = amt >= 0 ? '+' : '-';
+            const when = window.LYMX.fmtDate ? window.LYMX.fmtDate(c.created_at) : new Date(c.created_at).toLocaleDateString();
+            const label = 'Partner commission' + (c.generation ? ' · G' + c.generation : '') + (c.type ? ' · ' + String(c.type).replace(/_/g,' ') : '');
+            const row = document.createElement('div');
+            row.className = 'tx';
+            row.innerHTML = '<div class="ic ' + cls + '">' + sign + '</div>'
+              + '<div class="who"><div class="n">' + label + '</div><div class="d">' + when + '</div></div>'
+              + '<div class="v ' + cls + '">' + sign + '$' + Math.abs(amt).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }) + '</div>';
+            frag.appendChild(row);
+          });
+          // Insert immediately after the section header so commission rows lead
+          if (sh) sh.after(frag);
+          else txSection2.prepend(frag);
+        }
+      }
+    } catch (e) { console.warn('[customer-wallet] partner commission prepend failed', e); }
+
     const qrBalEl = document.querySelector('.qr-bal strong');
     if (qrBalEl) qrBalEl.textContent = totalLymx.toLocaleString('en-US') + ' LYMX';
     const qrCodeEl = document.querySelector('.qr-code');

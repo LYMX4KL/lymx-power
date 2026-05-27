@@ -291,11 +291,14 @@
     return Math.floor(diff/365) + 'y ago';
   }
 
+  // 2026-05-27 #12486612 — balance must reflect the user's REAL available_lymx,
+  // not a filtered-window math + imaginary starting balance. window.__lymxRealBal
+  // is populated by loadHistoryFromDb() from v_my_lymx_balance.
   function render(){
     const filtered = TXS.filter(txInRange);
     const earned = filtered.filter(t=>t.type==='earn').reduce((a,b)=>a+b.amt,0);
     const spent = filtered.filter(t=>t.type==='spend').reduce((a,b)=>a+b.amt,0);
-    const balance = earned - spent + 4150; // imaginary running starting bal
+    const balance = (typeof window.__lymxRealBal === 'number') ? window.__lymxRealBal : (earned - spent);
     const total = earned + spent || 1;
 
     document.getElementById('earned-v').firstChild.nodeValue = fmt(earned);
@@ -425,6 +428,16 @@
     // referral, manual, promo, review, correction). Redemption rows have
     // NEGATIVE amount_lymx and reason='redemption' — flip the sign for display
     // and tag as spend. The deprecated wallets+transactions chain is gone.
+    // 2026-05-27 #12486612 — also pull the canonical balance from
+    // v_my_lymx_balance so render() can show the user's real available_lymx
+    // instead of the previous hardcoded "+ 4150" imaginary starting balance.
+    try {
+      const { data: bal } = await sb.from('v_my_lymx_balance').select('available_lymx').maybeSingle();
+      if (bal && bal.available_lymx != null) {
+        window.__lymxRealBal = Number(bal.available_lymx);
+      }
+    } catch (e) { console.warn('[customer-history] balance read:', e); }
+
     const { data: issData } = await sb.from('lymx_issuances')
       .select('amount_lymx, reason, created_at, business_id, businesses(display_name, category)')
       .eq('recipient_user_id', user.id)
