@@ -65,8 +65,8 @@
   /* 2026-05-21 #4e62be7c + 2026-05-25 #4e62be7c follow-up: even after the +28px margin, marketing testers still felt the headline was crowded against the sticky nav. Doubling the breathing room. */
   .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-top:48px;margin-bottom:24px;flex-wrap:wrap}
   .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
-  /* 2026-05-21 + 2026-05-25 #17ec1753 follow-up: -0.08em wasn't enough — emoji still rendered above the name baseline on common system fonts. Pushing to -0.14em + explicit font-size match. */
-  .wave-emoji{display:inline-block;vertical-align:-0.14em;line-height:1;font-size:0.92em}
+  /* 2026-05-21 + 2026-05-25 + 2026-05-27 #17ec1753 follow-up x3: even -0.14em wasn't enough across Windows / Android system fonts. Root cause: emoji glyphs have inconsistent baseline metrics across font stacks, and vertical-align alone can't compensate. Combining vertical-align with position:relative top nudge so it visually lands on the same line as the headline text regardless of font. */
+  .wave-emoji{display:inline-block;vertical-align:baseline;line-height:1;font-size:0.92em;position:relative;top:6px}
   .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
 
   /* Layout */

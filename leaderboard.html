@@ -166,14 +166,14 @@
     <h2>How the leaderboard works</h2>
     <div class="rule-grid">
       <div class="rule">
-        <div class="ic">📅</div>
+        <div class="ic">🔁</div>
         <h3>Quarterly reset</h3>
         <p>Counts reset January / April / July / October. Top 3 of each quarter get a permanent badge on their profile.</p>
       </div>
       <div class="rule">
         <div class="ic">✓</div>
         <h3>What counts</h3>
-        <p>Customers: friends who sign up + earn first LYMX. Partners: Businesses that activate. Businesses: other Businesses that activate.</p>
+        <p id="whatCountsBody">A friend who signs up with your code and earns their first LYMX at a real LYMX Business.</p>
       </div>
       <div class="rule">
         <div class="ic">🔥</div>
@@ -298,12 +298,29 @@
     t.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
       t.classList.add('on');
-      active = t.dataset.cat || t.textContent.trim().toLowerCase();
+      // 2026-05-27 #56fd10b7 + tab-render fix: buttons use data-t, not data-cat.
+      // Also strip trailing 's' if textContent fallback fires (Customers → customer).
+      active = t.dataset.t || t.textContent.trim().toLowerCase().replace(/s$/, '');
       render();
+      renderWhatCounts();
     });
   });
 
+  // 2026-05-27 #56fd10b7 — swap "What counts" body to match the active tab so the rule
+  // legend always lines up with what's shown above. Static three-in-one was confusing.
+  function renderWhatCounts(){
+    const el = document.getElementById('whatCountsBody');
+    if (!el) return;
+    const COPY = {
+      customer: 'A friend who signs up with your code and earns their first LYMX at a real LYMX Business.',
+      partner:  'A Business you activated onto the LYMX network. The Business must complete sign-up and go live.',
+      business: 'Another Business you brought onto LYMX. The recruited Business must complete sign-up and go live.'
+    };
+    el.textContent = COPY[active] || COPY.customer;
+  }
+
   render();
+  renderWhatCounts();
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

@@ -191,11 +191,11 @@
     + '<div class="ai-tips" id="lymx-fb-ai-tips"></div>'
     + '<div class="shot-box"><div class="shot-row"><label>📸 Screenshot / attachments</label>'
     +   '<div class="shot-btns">'
-    +   '<button type="button" class="shot-btn" id="lymx-fb-shot-auto">↻ Recapture</button>'
+    +   '<button type="button" class="shot-btn" id="lymx-fb-shot-auto">📸 Capture screenshot</button>'
     +   '<button type="button" class="shot-btn" id="lymx-fb-shot-region">✂️ Crop screenshot</button>'
     +   '<button type="button" class="shot-btn" id="lymx-fb-shot-upload">📎 Add file</button></div></div>'
     + '<input type="file" id="lymx-fb-shot-file" accept="image/*,application/pdf,.txt,.log,.csv,.xlsx,.docx" multiple style="display:none" />'
-    + '<div class="shot-preview" id="lymx-fb-shot-preview"><span id="lymx-fb-shot-status">Capturing page…</span></div>'
+    + '<div class="shot-preview" id="lymx-fb-shot-preview"><span id="lymx-fb-shot-status" style="color:#5b6472;font-size:12.5px">No screenshot attached. Tap 📸 Capture screenshot, ✂️ Crop, or 📎 Add file if you want to include one.</span></div>'
     + '<div class="file-list" id="lymx-fb-file-list"></div></div>'
     + '<div class="actions"><a href="/my-feedback.html" class="my-link">📋 View my submissions</a>'
     + '<div class="actions-right">'
@@ -683,14 +683,13 @@
     resetSendButton();
     loadDraft();
     updateWhoLabel();
-    // 2026-05-21 #440f1159 — re-enable auto-capture on modal open. The prior
-    // bug (#22ad49e8 — form looked like it disappeared) was caused by hiding
-    // the overlay during capture. captureAuto() now uses html2canvas's
-    // ignoreElements option to omit the overlay from the canvas without
-    // hiding it visually, so the user keeps seeing the modal the whole time.
-    var preview = document.getElementById('lymx-fb-shot-preview');
-    if (preview) preview.innerHTML = '<span style="color:#5b6472;font-size:12.5px">Capturing page screenshot…</span>';
-    setTimeout(function () { captureAuto(); }, 100);
+    // 2026-05-27 #4b738066 — screenshot is now opt-in. Auto-capture was on by
+    // default but testers reported a privacy concern (capturing the page without
+    // being asked) and added bandwidth on every submission. Users who want a
+    // screenshot tap 📸 Capture screenshot, ✂️ Crop, or 📎 Add file. The prior
+    // captureAuto-on-open call has been removed.
+    shotBlob = null; shotKind = 'none';
+    renderShotPreview('reset');
     setTimeout(function () {
       var msg = document.getElementById('lymx-fb-message');
       if (msg && !msg.value) msg.focus();
