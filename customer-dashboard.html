@@ -1210,5 +1210,118 @@ window.addEventListener('DOMContentLoaded', async function () {
   setInterval(function () { if (document.visibilityState === 'visible') loadMyClaims(); }, 30000);
 })();
 </script>
+
+<script>
+// =============================================================================
+// Module 8 - Pending Reviews (real backend, no more fake rows)
+// =============================================================================
+// 2026-05-26 #98fcfa23 - Rachel reported the Pending Reviews card was empty
+// even when she had visits she could review. Root cause: the page had
+// hardcoded fake rows that the placeholder-clearing script unconditionally
+// replaced with an empty state - meaning every customer saw "no visits
+// waiting" forever, regardless of real history.
+//
+// Fix: query the new v_my_pending_reviews view (migration 103). The view
+// returns one row per (current user, business) pair where the user has
+// earned LYMX from a real visit but has not yet written a review. We
+// render those rows into the existing .pending-list, update the count
+// pill, and wire each "Write review" link to /biz-<slug>.html#write-review.
+//
+// If the user has no pending reviews, we leave the existing empty state
+// in place (already wired in the earlier DOMContentLoaded handler).
+//
+// Ordering: this script runs after DOMContentLoaded fires, so by the time
+// our fetch resolves the empty state is already painted. If we got rows
+// back, we overwrite it. If not, the empty state stays.
+// =============================================================================
+window.addEventListener('DOMContentLoaded', async function () {
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(arguments.callee, 100); return; }
+  const session = await window.LYMX.getSession();
+  if (!session) return; // signed out - keep the placeholder cleared state
+
+  const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  const URL  = window.LYMX_CONFIG.SUPABASE_URL;
+  const headers = { apikey: ANON, Authorization: 'Bearer ' + session.access_token };
+
+  function esc(x) {
+    return String(x == null ? '' : x).replace(/[&<>"']/g, c => (
+      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+    ));
+  }
+  function timeAgo(iso) {
+    if (!iso) return '';
+    const ms = Date.now() - new Date(iso).getTime();
+    const sec = Math.max(0, Math.floor(ms / 1000));
+    if (sec < 60) return 'just now';
+    const min = Math.floor(sec / 60);
+    if (min < 60) return min + ' min ago';
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return hr + (hr === 1 ? ' hour ago' : ' hours ago');
+    const day = Math.floor(hr / 24);
+    if (day === 1) return 'yesterday';
+    if (day < 7) return day + ' days ago';
+    const wk = Math.floor(day / 7);
+    if (wk < 5) return wk + (wk === 1 ? ' week ago' : ' weeks ago');
+    const mo = Math.floor(day / 30);
+    if (mo < 12) return mo + (mo === 1 ? ' month ago' : ' months ago');
+    return new Date(iso).toLocaleDateString();
+  }
+
+  let rows = [];
+  try {
+    const r = await fetch(URL + '/rest/v1/v_my_pending_reviews?select=business_id,business_slug,business_name,business_emoji,category,visit_count,last_visit_at,lymx_earned_here,potential_reward_lymx&order=last_visit_at.desc&limit=8', { headers });
+    if (r.ok) {
+      rows = await r.json();
+    } else {
+      console.warn('[customer-dashboard.html v_my_pending_reviews] fetch failed', r.status);
+      return; // leave empty state in place
+    }
+  } catch (e) {
+    console.warn('[customer-dashboard.html v_my_pending_reviews] fetch error', e);
+    return;
+  }
+
+  if (!Array.isArray(rows) || rows.length === 0) {
+    // No pending reviews - leave the existing empty state untouched.
+    return;
+  }
+
+  // Update the count pill to reflect real data.
+  // The Pending reviews card is the first .card with .card-h h2 == "Pending reviews".
+  const allCards = document.querySelectorAll('.card');
+  let pendingCardCount = null, pendingList = null;
+  allCards.forEach(function (card) {
+    const h = card.querySelector('.card-h h2');
+    if (h && /^\s*Pending reviews\s*$/i.test(h.textContent || '')) {
+      pendingCardCount = card.querySelector('.card-h .count');
+      pendingList = card.querySelector('.pending-list');
+    }
+  });
+
+  if (pendingCardCount) {
+    const totalReward = rows.reduce(function (s, r) { return s + (r.potential_reward_lymx || 100); }, 0);
+    pendingCardCount.textContent = rows.length + (rows.length === 1 ? ' visit waiting - earn ' : ' visits waiting - earn up to ') + totalReward + ' LYMX';
+  }
+
+  if (pendingList) {
+    pendingList.innerHTML = rows.map(function (r) {
+      const emoji = r.business_emoji || '\u{1F3EA}';
+      const writeHref = '/biz-' + encodeURIComponent((r.business_slug || '').replace(/^biz-/, '')) + '.html#write-review';
+      const visitWord = (r.visit_count > 1) ? (r.visit_count + ' visits - last ') : 'Visited ';
+      return ''
+        + '<div class="pending-row">'
+        +   '<div class="biz-ph">' + esc(emoji) + '</div>'
+        +   '<div class="body">'
+        +     '<div class="name">' + esc(r.business_name || 'Business') + '</div>'
+        +     '<div class="when">' + esc(visitWord) + esc(timeAgo(r.last_visit_at)) + ' - earned ' + esc(String(r.lymx_earned_here || 0)) + ' LYMX</div>'
+        +   '</div>'
+        +   '<span class="reward">+' + esc(String(r.potential_reward_lymx || 100)) + ' LYMX</span>'
+        +   '<a class="write" href="' + esc(writeHref) + '">Write review</a>'
+        + '</div>';
+    }).join('');
+  }
+});
+</script>
+
 </body>
 </html>

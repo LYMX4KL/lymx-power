@@ -16,6 +16,12 @@
 |---|---|---|---|
 | [comp-plan-partner-walkthrough](comp-plan-partner-walkthrough.md) | Understand the LYMX Partner Comp Plan | Partner | ✅ Verified 2026-05-26 |
 
+## Customer onboarding
+
+| Slug | Title | Role | Status |
+|---|---|---|---|
+| [customer-onboarding-03-pending-reviews](customer-onboarding/03-pending-reviews.md) | See and write your pending reviews (earn 100 LYMX each) | Customer | ✅ Verified 2026-05-26 |
+
 ## Onboarding
 
 | Slug | Title | Role | Status |
