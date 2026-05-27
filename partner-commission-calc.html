@@ -336,7 +336,7 @@
       var thisCard = ev && (ev.currentTarget || ev.target && ev.target.closest('.scenario'));
       document.querySelectorAll('.scenario').forEach(function(s){ s.classList.remove('is-selected'); });
       if (thisCard && thisCard.classList) thisCard.classList.add('is-selected');
-    } catch (e) { /* selection state is cosmetic; recalc already ran */ }
+    } catch (e) { /* selection state is cosmetic; recalc already ran */ } // bandaid-ok: DOM class toggle for visual selection only; recalc() above handles the real work
     document.querySelector('.input-card').scrollIntoView({behavior:'smooth',block:'start'});
   }
 

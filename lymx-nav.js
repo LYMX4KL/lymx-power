@@ -885,7 +885,7 @@
           var k = window.localStorage.key(i);
           if (k && k.indexOf('sb-') === 0 && k.indexOf('-auth-token') > 0) { signedIn = true; break; }
         }
-      } catch (e) { /* localStorage blocked — fall back to standalone-only */ }
+      } catch (e) { /* localStorage blocked — fall back to standalone-only */ } // bandaid-ok: localStorage feature-detect; private-mode browsers throw, fall-through is intentional
       if (!standalone && !signedIn) return;
       var selectors = ['#getAppCta', '#navGetApp', '.get-app-cta', '.install-app-cta', '[data-lymx-hide-in-pwa]'];
       selectors.forEach(function (sel) {

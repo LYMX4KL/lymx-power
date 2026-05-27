@@ -101,8 +101,8 @@
 
 <header class="nav">
   <div class="nav-inner">
-    <a class="brand" href="biz-dashboard.html">LYMX <span>Power</span> <span class="biz-tag">Business</span></a>
-    <a href="biz-marketing-kit.html" class="nav-link">← Back to marketing kit</a>
+    <a class='brand' href='/biz-dashboard'>LYMX <span>Power</span> <span class="biz-tag">Business</span></a>
+    <a class='nav-link' href='/biz-marketing-kit'>← Back to marketing kit</a>
   </div>
 </header>
 
@@ -279,7 +279,7 @@
       <p>For Launch 25 Businesses only. Frames nicely for your wall — proof you were here at the start. We can also send you a metal version (mailing fee applies).</p>
       <div class="actions">
         <a class="btn btn-pdf" href="#">↓ PDF (gold-foil)</a>
-        <a class="btn btn-png" href="founding-25-detail.html">Order metal version →</a>
+        <a class='btn btn-png' href='/founding-25-detail'>Order metal version →</a>
       </div>
     </div>
   </div>
@@ -322,11 +322,153 @@
 </div>
 
 <div class="footer">
-  <strong>LYMX Power</strong> · Print kit · <a href="biz-dashboard.html">Back to dashboard</a> · <a href="biz-marketing-kit.html">Marketing kit</a> · <a href="brand-guide.html">Brand guide</a>
+  <strong>LYMX Power</strong> · Print kit · <a href='/biz-dashboard'>Back to dashboard</a> · <a href='/biz-marketing-kit'>Marketing kit</a> · <a href='/brand-guide'>Brand guide</a>
 </div>
 
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
+
+<!-- 2026-05-27 #06 — root-cause fix: each "down PDF" / "down PNG preview" link used
+     href="#" with no handler — clicking did nothing (the "Dead button" anti-pattern
+     in ARCHITECTURE-RULES.md band-aid catalog). Now: detect the current biz
+     (signed-in owner OR ?biz= URL param), look up the per-biz PDFs that
+     generate_print_kit_for_biz.py produced under ONBOARDING-KIT/per-biz/{slug},
+     and rewrite each button's href to the real file. PDF button = download attr,
+     PNG button = open-in-browser preview (browsers render PDFs natively).
+     When no biz is resolvable, surface a friendly sign-in banner instead of
+     silently leaving the buttons dead. -->
+<script>
+(function () {
+  'use strict';
+
+  // 6 product cards in the .grid in the order they appear in the markup
+  // <-> the 10-piece set produced by generate_print_kit_for_biz.py.
+  // Cards 1+2 (minimal + bold) are visual variants of one piece; we serve
+  // the same window-decal for both until separate variant templates ship.
+  // The 5 pieces NOT yet surfaced in HTML (employee-button, bag-sticker,
+  // business-card, banner-stand, receipt-stuffer) ship next iteration as
+  // a "More from your kit" section.
+  var PIECE_FOR_CARD_INDEX = [
+    '01-window-decal',    // card 0: Window cling minimal
+    '01-window-decal',    // card 1: Window cling bold (same piece, variant later)
+    '09-table-tent',      // card 2: Table tent / register card
+    '04-wall-poster',     // card 3: Multiplier promo poster
+    '02-counter-decal',   // card 4: Counter card "Tap to pay"
+    '03-qr-stand'         // card 5: Launch 25 plaque (closest piece match)
+  ];
+
+  function pickLang() {
+    try {
+      if (window.LymxI18n && typeof window.LymxI18n.getLocale === 'function') {
+        var l = window.LymxI18n.getLocale();
+        if (l === 'es' || l === 'zh-CN') return l;
+      }
+    } catch (e) { console.warn('[print-kit] i18n probe failed', e); }
+    var htmlLang = document.documentElement.getAttribute('lang') || 'en';
+    if (htmlLang === 'es' || htmlLang === 'zh-CN') return htmlLang;
+    return 'en';
+  }
+
+  function bizFromUrl() {
+    try {
+      var u = new URL(location.href);
+      var v = u.searchParams.get('biz');
+      if (v && /^[a-z0-9-]+$/i.test(v)) return v;
+    } catch (e) { console.warn('[print-kit] URL parse failed', e); }
+    return null;
+  }
+
+  async function bizFromSignedInOwner() {
+    try {
+      if (!window.LYMX_CONFIG) return null;
+      var cfg = window.LYMX_CONFIG;
+      var m = cfg.SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/i);
+      var ref = m ? m[1] : null;
+      if (!ref) return null;
+      var raw = localStorage.getItem('sb-' + ref + '-auth-token');
+      if (!raw) return null;
+      var tok = JSON.parse(raw);
+      var access = (tok && tok.access_token) || (tok && tok.currentSession && tok.currentSession.access_token);
+      if (!access) return null;
+      var jwt = JSON.parse(atob(access.split('.')[1]));
+      var uid = jwt && jwt.sub;
+      if (!uid) return null;
+      var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/businesses?owner_user_id=eq.' + uid + '&select=slug&limit=1', {
+        headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + access }
+      });
+      if (!r.ok) return null;
+      var rows = await r.json();
+      return (rows && rows[0] && rows[0].slug) || null;
+    } catch (e) { console.warn('[print-kit] owner lookup failed', e); return null; }
+  }
+
+  function fileUrl(slug, lang, piece) {
+    // Filename pattern matches generate_print_kit.py:  {NN-piece}_{lang}.pdf
+    return '/ONBOARDING-KIT/per-biz/' + encodeURIComponent(slug) + '/' + encodeURIComponent(lang) +
+           '/' + piece + '_' + lang + '.pdf';
+  }
+
+  function injectSigninBanner(reason) {
+    var ctrl = document.querySelector('.ctrl');
+    if (!ctrl) return;
+    if (document.getElementById('printKitSigninBanner')) return;
+    var msg = (reason === 'no-owner-biz')
+      ? "Sign in as the Business owner of the storefront whose kit you want to print. The buttons below customize each piece with your QR code automatically."
+      : "Sign in as a Business owner to see your print kit with your QR code baked in.";
+    var node = document.createElement('div');
+    node.id = 'printKitSigninBanner';
+    node.style.cssText = 'background:#fff5e6;border:1px solid #f0c987;border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:13.5px;color:#7a4a0e';
+    node.innerHTML = '<strong>Heads-up - </strong>' + msg + ' <a href="login.html?next=biz-print-kit.html" style="color:#0050c7;font-weight:700">Sign in</a>';
+    ctrl.parentNode.insertBefore(node, ctrl);
+  }
+
+  function wireButtonsForBiz(slug, lang) {
+    var items = document.querySelectorAll('.grid > .item');
+    items.forEach(function (item, idx) {
+      var piece = PIECE_FOR_CARD_INDEX[idx];
+      if (!piece) return;
+      var url = fileUrl(slug, lang, piece);
+      item.querySelectorAll('.btn-pdf').forEach(function (a) {
+        a.setAttribute('href', url);
+        a.setAttribute('download', piece + '_' + slug + '_' + lang + '.pdf');
+        a.setAttribute('rel', 'noopener');
+      });
+      item.querySelectorAll('.btn-png').forEach(function (a) {
+        var existing = a.getAttribute('href') || '';
+        if (existing && existing !== '#' && !existing.startsWith('#')) return; // real link, leave it
+        a.setAttribute('href', url);
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener');
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', async function () {
+    var lang = pickLang();
+    var slug = bizFromUrl();
+    if (!slug) {
+      slug = await bizFromSignedInOwner();
+    }
+    if (!slug) {
+      injectSigninBanner('not-signed-in');
+      return;
+    }
+    try {
+      var probe = await fetch(fileUrl(slug, lang, PIECE_FOR_CARD_INDEX[0]), { method: 'HEAD', cache: 'no-store' });
+      if (!probe.ok) {
+        injectSigninBanner('no-owner-biz');
+        return;
+      }
+    } catch (e) {
+      console.warn('[print-kit] HEAD probe failed', e);
+      injectSigninBanner('no-owner-biz');
+      return;
+    }
+    wireButtonsForBiz(slug, lang);
+  });
+})();
+</script>
+
 </body>
 </html>

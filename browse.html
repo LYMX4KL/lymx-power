@@ -518,7 +518,7 @@
       if (cat && cat !== 'All') u.searchParams.set('category', cat);
       else u.searchParams.delete('category');
       history.replaceState(null, '', u);
-    } catch (e) { /* URL update is cosmetic */ }
+    } catch (e) { /* URL update is cosmetic */ } // bandaid-ok: history.replaceState is cosmetic bookmark-state only; no data dependency
 
     var visible = 0;
     var realCards = realBizCards();
