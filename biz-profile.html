@@ -95,6 +95,7 @@
     <button type="button" class="tab" data-tab="hours">Hours</button>
     <button type="button" class="tab" data-tab="docs">Documents</button>
     <button type="button" class="tab" data-tab="photos">Photos</button>
+    <button type="button" class="tab" data-tab="offers">Offers</button>
     <button type="button" class="tab" data-tab="comms">Communications</button>
   </div>
 
@@ -245,6 +246,20 @@
     </div>
   </section>
 
+  <!-- TAB: Offers (P2-Offers 2026-05-27, edits businesses.current_promos jsonb) -->
+  <section class="tab-panel" id="tab-offers">
+    <div class="card">
+      <h2>LYMX offers shown on your storefront</h2>
+      <div class="sub">Up to 6 promotional cards rendered on your public storefront page (e.g. "2x LYMX 4-6 PM weekdays", "+250 LYMX welcome"). Each card has a badge (category label), a title, and a body sentence. Save when done.</div>
+      <div id="offersList" style="margin-top:18px;display:flex;flex-direction:column;gap:14px"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button type="button" class="btn btn-ghost" id="btnOfferAdd">+ Add offer</button>
+        <button type="button" class="btn btn-primary" id="btnOffersSave" style="margin-left:auto">Save offers</button>
+      </div>
+      <div class="helper" style="margin-top:14px;color:var(--muted);font-size:12.5px">Examples: badge "Happy hour" title "2x LYMX 4-6 PM weekdays" body "Earn 10 LYMX per $1 on bar tabs during happy hour." Keep titles under ~50 chars so they don't wrap on mobile.</div>
+    </div>
+  </section>
+
   <!-- TAB: Communications -->
   <section class="tab-panel" id="tab-comms">
     <div class="card">
@@ -297,6 +312,7 @@
     $('tab-' + target).classList.add('on');
     if (target === 'docs')   loadDocs();
     if (target === 'photos') loadPhotos();
+    if (target === 'offers') loadOffers();
     if (target === 'comms')  loadComms();
   }));
 
@@ -309,7 +325,7 @@
   async function loadBiz() {
     const { data, error } = await sb
       .from('businesses')
-      .select('id, display_name, legal_name, slug, category, contact_email, contact_phone, address_line1, tagline, description, emoji, website, ein, business_license_number, incorporation_state, entity_type, year_founded, employee_count_range, operating_hours, issuance_rate, approval_status, created_at')
+      .select('id, display_name, legal_name, slug, category, contact_email, contact_phone, address_line1, tagline, description, emoji, website, ein, business_license_number, incorporation_state, entity_type, year_founded, employee_count_range, operating_hours, current_promos, issuance_rate, approval_status, created_at')
       .eq('owner_user_id', user.id)
       .order('created_at', { ascending: true })
       .limit(1)
@@ -517,6 +533,91 @@
     }).join('');
   }
 
+
+
+  // ---- P2-Offers 2026-05-27: edit businesses.current_promos jsonb array ----
+  // Each promo: { badge: "Happy hour", title: "2x LYMX 4-6 PM", body: "Earn 10 LYMX..." }
+  // biz.html already renders these from current_promos (built in Phase 1); this UI
+  // lets the owner add/edit/remove them. Save patches the whole array back.
+  let currentOffers = [];
+  function renderOffersList() {
+    const listEl = document.getElementById('offersList');
+    if (!listEl) return;
+    if (!currentOffers.length) {
+      listEl.innerHTML = '<div style="padding:24px;border:2px dashed var(--line);border-radius:10px;text-align:center;color:var(--muted);font-size:13.5px">No offers yet. Click <strong>+ Add offer</strong> below to publish your first one.</div>';
+      return;
+    }
+    listEl.innerHTML = currentOffers.map(function (o, i) {
+      return '<div style="border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff;display:flex;flex-direction:column;gap:8px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong style="font-size:13px;color:var(--muted)">Offer #' + (i + 1) + '</strong><div><button type="button" data-offer-up="' + i + '" title="Move up" style="background:#fff;border:1px solid var(--line);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px;margin-right:4px">^</button><button type="button" data-offer-down="' + i + '" title="Move down" style="background:#fff;border:1px solid var(--line);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px;margin-right:4px">v</button><button type="button" data-offer-del="' + i + '" title="Remove" style="background:#fff;border:1px solid #fecaca;color:#c0392b;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:12px;font-weight:700">x</button></div></div>' +
+        '<div class="row-2">' +
+          '<div class="field"><label>Badge (category label)</label><input class="input" data-offer-field="badge" data-offer-idx="' + i + '" value="' + esc(o.badge || '') + '" maxlength="40" placeholder="Happy hour" /></div>' +
+          '<div class="field"><label>Title</label><input class="input" data-offer-field="title" data-offer-idx="' + i + '" value="' + esc(o.title || '') + '" maxlength="80" placeholder="2x LYMX 4-6 PM weekdays" /></div>' +
+        '</div>' +
+        '<div class="field"><label>Body</label><textarea class="input" rows="2" data-offer-field="body" data-offer-idx="' + i + '" maxlength="220" placeholder="Earn 10 LYMX per $1 on bar tabs during happy hour.">' + esc(o.body || '') + '</textarea></div>' +
+      '</div>';
+    }).join('');
+    // Bind input changes to keep currentOffers in sync
+    listEl.querySelectorAll('[data-offer-field]').forEach(function (el) {
+      const handler = function () {
+        const idx = parseInt(el.getAttribute('data-offer-idx'), 10);
+        const field = el.getAttribute('data-offer-field');
+        if (currentOffers[idx]) currentOffers[idx][field] = el.value;
+      };
+      el.addEventListener('input', handler);
+      el.addEventListener('change', handler);
+    });
+    // Reorder + delete
+    listEl.querySelectorAll('[data-offer-up]').forEach(b => b.addEventListener('click', () => {
+      const i = parseInt(b.getAttribute('data-offer-up'), 10);
+      if (i > 0) { const t = currentOffers[i - 1]; currentOffers[i - 1] = currentOffers[i]; currentOffers[i] = t; renderOffersList(); }
+    }));
+    listEl.querySelectorAll('[data-offer-down]').forEach(b => b.addEventListener('click', () => {
+      const i = parseInt(b.getAttribute('data-offer-down'), 10);
+      if (i < currentOffers.length - 1) { const t = currentOffers[i + 1]; currentOffers[i + 1] = currentOffers[i]; currentOffers[i] = t; renderOffersList(); }
+    }));
+    listEl.querySelectorAll('[data-offer-del]').forEach(b => b.addEventListener('click', () => {
+      const i = parseInt(b.getAttribute('data-offer-del'), 10);
+      if (confirm('Remove offer #' + (i + 1) + '?')) { currentOffers.splice(i, 1); renderOffersList(); }
+    }));
+  }
+
+  async function loadOffers() {
+    if (!myBiz) return;
+    // Re-fetch fresh so we don't overwrite unsaved server-side changes
+    const r = await sb.from('businesses').select('current_promos').eq('id', myBiz.id).maybeSingle();
+    if (r.error) { console.warn('[biz-profile] loadOffers fetch failed', r.error); currentOffers = []; renderOffersList(); return; }
+    const raw = (r.data && r.data.current_promos) || [];
+    currentOffers = Array.isArray(raw) ? raw.map(function (o) { return { badge: o.badge || o.type || '', title: o.title || o.name || '', body: o.body || o.description || '' }; }) : [];
+    renderOffersList();
+  }
+
+  document.getElementById('btnOfferAdd').addEventListener('click', () => {
+    if (currentOffers.length >= 6) { toast('Max 6 offers per storefront', 'err'); return; }
+    currentOffers.push({ badge: '', title: '', body: '' });
+    renderOffersList();
+    // Focus the new badge input
+    const newest = document.querySelectorAll('[data-offer-field="badge"]');
+    if (newest.length) newest[newest.length - 1].focus();
+  });
+
+  document.getElementById('btnOffersSave').addEventListener('click', async () => {
+    if (!myBiz) { toast('No business linked', 'err'); return; }
+    // Strip empty offers + trim fields
+    const toSave = currentOffers
+      .map(o => ({ badge: (o.badge || '').trim(), title: (o.title || '').trim(), body: (o.body || '').trim() }))
+      .filter(o => o.badge || o.title || o.body);
+    // Reject if any partial (has 1-2 fields but not all 3)
+    for (var i = 0; i < toSave.length; i++) {
+      if (!toSave[i].badge || !toSave[i].title || !toSave[i].body) {
+        toast('Offer #' + (i + 1) + ' is missing badge, title, or body. Fill all three or remove the offer.', 'err'); return;
+      }
+    }
+    const up = await sb.from('businesses').update({ current_promos: toSave }).eq('id', myBiz.id);
+    if (up.error) { toast('Save failed: ' + up.error.message.slice(0, 120), 'err'); return; }
+    myBiz.current_promos = toSave;
+    toast(toSave.length + ' offer' + (toSave.length === 1 ? '' : 's') + ' saved. Live on your storefront now.', 'ok');
+  });
 
   // ---- P2-Photos 2026-05-27 (mig 125): public storefront photo management ----
   // Uploads to the 'business-photos' bucket (public-read), inserts a row in
