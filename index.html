@@ -457,6 +457,176 @@
   </div>
 </section>
 
+<!-- TOP-RATED LOCAL (F) + NEW ON LYMX (G) — mig 129. Hidden by default; the
+     JS below shows whichever shelf returned >=1 row. ZIP-prefix filter from
+     the signed-in customer's home_zip; falls back to nationwide for anon. -->
+<section id="topRatedLocal" class="soft" style="display:none">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <h2 id="topRatedLocalH">Top rated near you</h2>
+        <p id="topRatedLocalSub">Customer-reviewed favorites in your area.</p>
+      </div>
+      <a class="more" href="/browse">See all →</a>
+    </div>
+    <div id="topRatedLocalGrid" class="lymx-card-row"></div>
+  </div>
+</section>
+
+<section id="newLocal">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <h2 id="newLocalH">New on LYMX near you</h2>
+        <p id="newLocalSub">Local businesses that just opened their LYMX storefront in the last 30 days.</p>
+      </div>
+      <a class="more" href="/browse?sort=newest">See all →</a>
+    </div>
+    <div id="newLocalGrid" class="lymx-card-row"></div>
+  </div>
+</section>
+
+<style>
+  .lymx-card-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:8px}
+  .lymx-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
+  .lymx-card:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(14,17,22,.10)}
+  .lymx-card-hero{aspect-ratio:16/10;background:linear-gradient(135deg,#eef1f6,#dde3ee);display:flex;align-items:center;justify-content:center;font-size:48px}
+  .lymx-card-hero img{width:100%;height:100%;object-fit:cover;display:block}
+  .lymx-card-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px}
+  .lymx-card-title{font-weight:800;font-size:15.5px;color:var(--ink);line-height:1.25;letter-spacing:-.005em}
+  .lymx-card-meta{font-size:12px;color:var(--muted)}
+  .lymx-card-tag{font-size:11.5px;color:var(--ink-2);font-weight:600;background:var(--bg-soft);border:1px solid var(--line);border-radius:99px;padding:3px 9px;align-self:flex-start;margin-top:6px}
+  .lymx-card-rating{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--ink);font-weight:700;margin-top:4px}
+  .lymx-card-rating .stars{color:#f0a020}
+  .lymx-card-newchip{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0a84ff;background:#e8f4ff;border:1px solid #b4d4ff;border-radius:99px;padding:2px 9px;align-self:flex-start}
+</style>
+
+<script>
+(function lymxHomeLocalLists(){
+  function waitForCfg(cb, tries){
+    tries = tries || 0;
+    if (window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL) return cb();
+    if (tries > 50) return; // ~5s
+    setTimeout(function(){ waitForCfg(cb, tries + 1); }, 100);
+  }
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c]; }); }
+
+  function storefrontUrl(slug){ return '/biz?slug=' + encodeURIComponent(slug); }
+
+  function photoUrl(filePath){
+    if (!filePath) return null;
+    return window.LYMX_CONFIG.SUPABASE_URL + '/storage/v1/object/public/business-photos/' + filePath.split('/').map(encodeURIComponent).join('/');
+  }
+
+  function stars(rating){
+    var r = Math.round((Number(rating) || 0) * 2) / 2;
+    var full = Math.floor(r), half = (r - full) >= 0.5;
+    var out = '';
+    for (var i = 0; i < full; i++) out += '★';
+    if (half) out += '½';
+    while (out.length < 5) out += '☆';
+    return out;
+  }
+
+  function renderCard(row, opts){
+    var photo = row.hero_photo_path ? photoUrl(row.hero_photo_path) : null;
+    var emoji = (row.emoji || '🏪').slice(0, 4);
+    var heroInner = photo
+      ? '<img loading="lazy" alt="' + esc(row.display_name || 'Business') + '" src="' + esc(photo) + '" onerror="this.parentNode.innerHTML=\'' + esc(emoji) + '\'">'
+      : esc(emoji);
+    var tag = row.category ? '<span class="lymx-card-tag">' + esc(row.category) + '</span>' : '';
+    var subline = '';
+    if (opts && opts.kind === 'rated' && row.review_count != null) {
+      subline = '<div class="lymx-card-rating"><span class="stars">' + stars(row.avg_rating) + '</span> ' + (Number(row.avg_rating) || 0).toFixed(1) + ' <span style="color:#8a92a0;font-weight:500">(' + row.review_count + ' review' + (Number(row.review_count) === 1 ? '' : 's') + ')</span></div>';
+    } else if (opts && opts.kind === 'new') {
+      var d = Math.max(0, Number(row.days_since_launch) || 0);
+      var newLabel = d === 0 ? 'Just launched' : (d === 1 ? '1 day ago' : d + ' days ago');
+      subline = '<span class="lymx-card-newchip">★ ' + esc(newLabel) + '</span>';
+    }
+    var tagline = row.tagline ? '<div class="lymx-card-meta" style="margin-top:4px">' + esc(row.tagline) + '</div>' : '';
+
+    return ''
+      + '<a class="lymx-card" href="' + storefrontUrl(row.slug) + '">'
+      +   '<div class="lymx-card-hero">' + heroInner + '</div>'
+      +   '<div class="lymx-card-body">'
+      +     '<div class="lymx-card-title">' + esc(row.display_name || 'Business') + '</div>'
+      +     (tag || tagline ? '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px">' + tag + '</div>' : '')
+      +     tagline
+      +     subline
+      +   '</div>'
+      + '</a>';
+  }
+
+  async function getZipPrefix(){
+    // Read customers.home_zip if signed in; otherwise null (nationwide).
+    try {
+      if (!window.supabase) return null;
+      var sb = window.LYMX && window.LYMX.sb ? window.LYMX.sb : null;
+      if (!sb) return null;
+      var sess = (await sb.auth.getSession()).data.session;
+      if (!sess) return null;
+      var r = await sb.from('customers').select('home_zip').eq('user_id', sess.user.id).maybeSingle();
+      var z = (r && r.data && r.data.home_zip) || '';
+      z = z.replace(/[^0-9]/g, '');
+      return z.length >= 3 ? z.substring(0, 3) : null;
+    } catch (e) { return null; }
+  }
+
+  async function callRpc(name, args){
+    var url = window.LYMX_CONFIG.SUPABASE_URL + '/rest/v1/rpc/' + name;
+    var r = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': window.LYMX_CONFIG.SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + window.LYMX_CONFIG.SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify(args)
+    });
+    if (!r.ok) return [];
+    try { return await r.json(); } catch { return []; }
+  }
+
+  waitForCfg(async function(){
+    var prefix = await getZipPrefix();
+
+    // ----- F: Top rated local -----
+    try {
+      var topRows = await callRpc('fn_top_rated_local_businesses', { p_zip_prefix: prefix, p_limit: 10 });
+      var topSection = document.getElementById('topRatedLocal');
+      var topGrid    = document.getElementById('topRatedLocalGrid');
+      if (Array.isArray(topRows) && topRows.length && topSection && topGrid) {
+        // If no zip filter (anon) just adjust the label
+        if (!prefix) {
+          document.getElementById('topRatedLocalH').textContent  = 'Top rated on LYMX';
+          document.getElementById('topRatedLocalSub').textContent = 'The most-reviewed merchants across the network.';
+        }
+        topGrid.innerHTML = topRows.map(function(r){ return renderCard(r, { kind: 'rated' }); }).join('');
+        topSection.style.display = '';
+      }
+    } catch (e) { /* leave hidden */ }
+
+    // ----- G: New on LYMX -----
+    try {
+      var newRows = await callRpc('fn_new_local_businesses', { p_zip_prefix: prefix, p_days: 30, p_limit: 12 });
+      var newSection = document.getElementById('newLocal');
+      var newGrid    = document.getElementById('newLocalGrid');
+      if (Array.isArray(newRows) && newRows.length && newSection && newGrid) {
+        if (!prefix) {
+          document.getElementById('newLocalH').textContent  = 'New on LYMX';
+          document.getElementById('newLocalSub').textContent = 'Businesses that just opened their LYMX storefront in the last 30 days.';
+        }
+        newGrid.innerHTML = newRows.map(function(r){ return renderCard(r, { kind: 'new' }); }).join('');
+        newSection.style.display = '';
+      } else if (newSection) {
+        newSection.style.display = 'none';
+      }
+    } catch (e) { /* leave default */ }
+  });
+})();
+</script>
+
 <!-- FOUNDING LAUNCH — REPLACES PLACEHOLDER BUSINESSES -->
 <section id="browse">
   <div class="wrap">
