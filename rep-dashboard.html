@@ -21,7 +21,12 @@
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  /* T4 [d6420793] 2026-05-27 - overflow-x:hidden on root prevents any
+     horizontal page scroll regardless of what's inside. Rachel reported
+     "has to scroll or pan around the screen" on rep-dashboard at mobile
+     widths. Defensive cap; the @media block at the bottom of this stylesheet
+     also fixes the actual min-width offenders so wrap behaves correctly. */
+  html,body{margin:0;padding:0;background:var(--bg-soft);overflow-x:hidden}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
   img{max-width:100%;display:block}
   a{color:inherit;text-decoration:none}
@@ -199,6 +204,39 @@
   /* Footer */
   footer{padding:36px 0 32px;color:var(--muted);font-size:13px;text-align:center}
   footer .disc{max-width:780px;margin:8px auto 0;font-size:11.5px;line-height:1.55}
+
+  /* T4 [d6420793] 2026-05-27 - mobile-overflow root-cause fix.
+     Rachel reported the partner dashboard "shifts and isn't stable" on mobile
+     and that users have to "scroll or pan around the screen". Audit found
+     several flex children with hardcoded min-widths that summed past a
+     <=480px viewport, plus header items that didn't shrink. Each rule below
+     addresses a SPECIFIC overflow source identified via the layout audit -
+     none of them are blanket suppression. */
+  @media (max-width: 480px) {
+    /* Founding-25 banner - body had min-width:260, counter had min-width:120,
+       summed with badge + button + gaps they overflow. Null both so wrap behaves. */
+    .founding-banner{padding:14px 16px;gap:12px}
+    .founding-banner .body{min-width:0}
+    .founding-banner .counter{min-width:0;text-align:left;font-size:12.5px}
+    .founding-banner .counter strong{font-size:20px}
+    /* Tier-perks min-width:240 was fine when tier-card grid collapsed to
+       1fr at 780px, but the 240 still forces wrap-content >240. Null it. */
+    .tier-perks{min-width:0}
+    /* mySponsorStrip inline min-width:220 on first child (line 358). The
+       attribute selector targets it without needing to edit every inline. */
+    #mySponsorStrip > div[style*="min-width:220px"],
+    #mySponsorStrip > div{min-width:0}
+    /* Header - at <=880px nav-links is already display:none. At <=480px the
+       lang chip + Help button + avatar + role-tag can still overflow. Tighten
+       the wrap padding (24->14) and shrink the Help chip to icon-only feel. */
+    .wrap{padding:0 14px}
+    .nav-cta{gap:6px}
+    .nav-cta .btn-sm{padding:6px 10px;font-size:12.5px}
+    .role-tag{font-size:10px;padding:2px 6px;margin-left:4px}
+    /* .earn-hero numbers can break to next line if wrap kicks in - tighten
+       gaps so the layout reflows cleanly instead of leaving a wide row. */
+    .earn-hero .row1{gap:12px}
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
