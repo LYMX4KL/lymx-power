@@ -563,6 +563,13 @@
         });
         if (!eR.ok) console.warn('approval email send failed:', await eR.text());
       } catch (em) { console.warn('approval email error', em); }
+      // 2026-05-27 — local-blast is OWNER-FIRED from biz-profile.html, NOT
+      // here. At approval time the storefront is empty (no description, no
+      // photos, no offers), so an automatic blast would mail a useless link.
+      // Owner clicks "Publish & notify nearby LYMX users" on biz-profile
+      // once their page is filled in. Admin can also manually re-fire from
+      // /admin-manual-blast.html (or by passing force:true via direct EF call)
+      // for stuck cases. See mig 128 + EF blast-new-business-to-locals.
       toast('Approved + email sent. Their welcome URL is now live.', 'ok');
       refreshCounts(); loadList();
     } catch (e) {

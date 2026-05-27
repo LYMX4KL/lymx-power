@@ -74,6 +74,15 @@ function approvedEmail(displayName: string, slug: string, dashboardUrl: string, 
 
 <p>Drop that link in your newsletter, on your storefront QR code, in your email signature — anywhere customers can click. The first 25 customers who sign up via that URL get <strong>150 LYMX</strong> (100 from LYMX + 50 from you, billed at $0.50 per customer).</p>
 
+<p><strong>3) Set up your public storefront — do this TODAY:</strong><br>
+<a href="https://getlymx.com/biz-profile.html">getlymx.com/biz-profile.html</a></p>
+
+<p>This is where you upload photos, write your offers (Happy Hour, Welcome bonus, etc.), and post your menu highlights. Everything you save here goes live on your public storefront at <a href="https://getlymx.com/biz?slug=${slug}">getlymx.com/biz?slug=${slug}</a> immediately. No code from us — you fully control how customers see you.</p>
+
+<p style="background:#e8f4ff;border-left:4px solid #0a84ff;padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0"><strong>Why TODAY matters:</strong> the moment you click <strong>"Publish &amp; notify nearby LYMX users"</strong> on your storefront editor, LYMX automatically emails every opted-in LYMX customer in your ZIP area about your business — with your photos, your offers, your tagline. Think of it as a free local launch broadcast. <strong>It only fires once</strong>, so do not click Publish until your page looks the way you want customers to see it. An empty page = an empty email = a wasted shot. Most owners get their first wave of foot traffic in the first 48 hours after Publish.</p>
+
+<p>Rachel will walk you through this on the 20-min call above; the 📖 Page guide chip on the editor explains every tab if you want to start before the call.</p>
+
 <h3>Your plan</h3>
 <p>3 months free — your first invoice is on the 1st of the 4th month. $199/mo after that. You can cancel any time. See full terms at <a href="https://getlymx.com/biz-tos.html">getlymx.com/biz-tos.html</a>.</p>
 
