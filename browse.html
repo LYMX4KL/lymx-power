@@ -804,7 +804,7 @@ window.handleSearchSubmit = function() {
     // Real biz cards: href="/biz-<slug>" or "/biz-<slug>.html". Skip CTAs.
     if (card.getAttribute('data-cta') === '1') return null;
     if (/guest-only/.test(card.className)) return null;
-    var m = href.match(/^\/biz-([a-z0-9-]+?)(?:\.html)?$/i);
+    var m = href.match(/^\/biz-([a-z0-9-]+?)(?:\.html)?(?:[?#].*)?$/i);
     return m ? ('biz-' + m[1].toLowerCase()) : null;
   }
 
