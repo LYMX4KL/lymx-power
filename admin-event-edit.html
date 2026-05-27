@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Edit event · LYMX Admin</title>
+<meta name="robots" content="noindex,nofollow" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:980px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:28px 24px 80px}
+  .crumbs{font-size:13px;color:var(--muted);margin-bottom:8px}
+  .crumbs a{color:var(--accent)}
+  .page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.01em}
+  h2{margin:24px 0 12px;font-size:17px;font-weight:800}
+  .btn{appearance:none;border:0;border-radius:8px;padding:9px 14px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-success{background:var(--ok);color:#fff}
+  .btn-outline{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-tiny{padding:5px 9px;font-size:12px;border-radius:6px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+  @media(max-width:660px){.grid2{grid-template-columns:1fr}}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .field input, .field textarea, .field select{padding:9px 11px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:14px;background:#fff;width:100%}
+  .field textarea{min-height:70px;resize:vertical}
+  .actions-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
+  .pill{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:99px;letter-spacing:.04em;text-transform:uppercase}
+  .pill.draft, .pill.invited{background:#eef0f3;color:var(--muted)}
+  .pill.published{background:#d1fae5;color:#065f46}
+  .pill.archived{background:#fef3c7;color:#78350f}
+  .pill.profile_complete{background:#fff3d8;color:#7a4a08}
+  .pill.declined{background:#fde8e6;color:#7a1a17}
+  .banner{padding:11px 14px;border-radius:8px;margin-bottom:14px;font-size:14px}
+  .banner.err{background:#fde8e6;color:#7a1a17}
+  .banner.ok{background:#d1fae5;color:#065f46}
+  .speaker-row{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #f1f3f6}
+  .speaker-row:last-child{border-bottom:0}
+  .speaker-row .av{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0;background-size:cover;background-position:center}
+  .speaker-row .body{flex:1;min-width:0}
+  .speaker-row .name{font-weight:700;font-size:15px}
+  .speaker-row .meta{font-size:12.5px;color:var(--muted)}
+  .speaker-row .acts{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
+  .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;padding:20px}
+  .ov.on{display:flex}
+  .modal{background:#fff;border-radius:14px;padding:22px;width:560px;max-width:100%;max-height:92vh;overflow-y:auto}
+  .modal h3{margin:0 0 4px;font-size:18px}
+  .modal .sub{color:var(--muted);font-size:13px;margin-bottom:12px}
+  .modal label{display:block;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-top:10px}
+  .modal input{width:100%;padding:9px 11px;margin-top:3px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13.5px}
+  .modal .magic-link{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:#f6f7f9;padding:8px 10px;border-radius:6px;word-break:break-all;margin-top:6px;border:1px solid var(--line)}
+  .err{color:var(--danger);font-size:13px;margin-top:8px}
+  .empty{padding:20px 8px;text-align:center;color:var(--muted);font-size:13.5px}
+  .public-url{font-family:ui-monospace,Menlo,monospace;background:#f6f7f9;padding:6px 8px;border-radius:5px;font-size:12px;display:inline-block}
+</style>
+</head>
+<body data-role-required="admin">
+<script src="lymx-config.js"></script>
+<script src="lymx-app.js"></script>
+<script src="lymx-nav.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+
+<main class="wrap">
+  <div class="crumbs"><a href="admin-events.html">← Events</a></div>
+  <div class="page-head">
+    <div>
+      <h1 id="evTitleHead">Loading event…</h1>
+      <div id="evMeta" style="font-size:13.5px;color:var(--muted);margin-top:4px"></div>
+    </div>
+    <div class="actions-row" id="topActions"></div>
+  </div>
+  <div id="bannerArea"></div>
+
+  <!-- Event details -->
+  <div class="card">
+    <h2 style="margin-top:0">Event details</h2>
+    <div class="grid2">
+      <div class="field"><label>Title</label><input id="fTitle" type="text" /></div>
+      <div class="field"><label>Slug</label><input id="fSlug" type="text" readonly style="background:#f6f7f9;color:var(--muted)" /><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Slug is immutable to avoid breaking public URLs.</div></div>
+      <div class="field" style="grid-column:1/-1"><label>Subtitle</label><input id="fSubtitle" type="text" /></div>
+      <div class="field" style="grid-column:1/-1"><label>Description (markdown ok)</label><textarea id="fDescription"></textarea></div>
+      <div class="field"><label>Date + time</label><input id="fEventAt" type="datetime-local" /></div>
+      <div class="field"><label>End (optional)</label><input id="fEndAt" type="datetime-local" /></div>
+      <div class="field"><label>Location name</label><input id="fLocName" type="text" /></div>
+      <div class="field"><label>Capacity</label><input id="fCapacity" type="number" min="1" /></div>
+      <div class="field" style="grid-column:1/-1"><label>Location address</label><input id="fLocAddr" type="text" /></div>
+    </div>
+    <div class="actions-row">
+      <button class="btn btn-primary" id="saveEvBtn" type="button">Save event details</button>
+      <button class="btn btn-success" id="publishBtn" type="button">Publish (make live)</button>
+      <button class="btn btn-outline" id="unpublishBtn" type="button" style="display:none">Unpublish (draft mode)</button>
+      <span id="publicLink" style="margin-left:auto;font-size:13px;color:var(--muted)"></span>
+    </div>
+  </div>
+
+  <!-- Speakers -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <h2 style="margin-top:0">Speakers</h2>
+      <button class="btn btn-primary btn-tiny" id="addSpeakerBtn" type="button">+ Invite speaker</button>
+    </div>
+    <div id="speakers"><div class="empty">Loading…</div></div>
+  </div>
+</main>
+
+<!-- Add speaker modal -->
+<div class="ov" id="addOv">
+  <div class="modal">
+    <h3>Invite a speaker</h3>
+    <div class="sub">Generates a one-time-use magic link the speaker can use to fill their own profile (name, photo, bio, talk) — no sign-in required. Paste the link into your invitation email.</div>
+    <label>Display name (placeholder until they fill the profile)</label>
+    <input id="aName" type="text" placeholder="e.g. Sienna Vega" />
+    <label>Title (optional placeholder)</label>
+    <input id="aTitle" type="text" placeholder="e.g. Master Partner" />
+    <label>Invite email (where you'll send the magic link)</label>
+    <input id="aEmail" type="email" placeholder="speaker@example.com" />
+    <div id="addErr" class="err"></div>
+    <div class="actions-row" style="justify-content:flex-end">
+      <button class="btn btn-outline" id="addCancel" type="button">Cancel</button>
+      <button class="btn btn-primary" id="addSave" type="button">Generate magic link</button>
+    </div>
+    <div id="addResult" style="margin-top:14px"></div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+function banner(t, m) {
+  $('bannerArea').innerHTML = '<div class="banner ' + t + '">' + esc(m) + '</div>';
+  if (t === 'ok') setTimeout(() => $('bannerArea').innerHTML = '', 4000);
+}
+function getEventId() {
+  return new URL(location.href).searchParams.get('id');
+}
+async function headers() {
+  const s = await window.LYMX.getSession();
+  if (!s) { location.href = '/login.html?next=' + encodeURIComponent(location.href); return null; }
+  const cfg = window.LYMX_CONFIG;
+  return { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + s.access_token, 'Content-Type': 'application/json' };
+}
+function toLocal(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+let _event = null;
+let _speakers = [];
+
+async function loadEvent() {
+  const id = getEventId();
+  if (!id) { banner('err', 'No event id in URL.'); return; }
+  const cfg = window.LYMX_CONFIG;
+  const h = await headers(); if (!h) return;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/events?id=eq.' + id + '&select=*', { headers: h });
+  if (!r.ok) { banner('err', 'Could not load event: ' + (await r.text()).slice(0, 200)); return; }
+  const rows = await r.json();
+  if (!rows[0]) { banner('err', 'Event not found.'); return; }
+  _event = rows[0];
+  paintEvent();
+  await loadSpeakers();
+}
+
+function paintEvent() {
+  $('evTitleHead').textContent = _event.title || '(no title)';
+  $('evMeta').innerHTML = '<span class="pill ' + esc(_event.status) + '">' + esc(_event.status) + '</span> · ' +
+    'slug <span class="public-url">' + esc(_event.slug) + '</span> · ' +
+    (_event.event_at ? new Date(_event.event_at).toLocaleString() : 'no date');
+  $('fTitle').value = _event.title || '';
+  $('fSlug').value = _event.slug || '';
+  $('fSubtitle').value = _event.subtitle || '';
+  $('fDescription').value = _event.description_md || '';
+  $('fEventAt').value = toLocal(_event.event_at);
+  $('fEndAt').value = toLocal(_event.end_at);
+  $('fLocName').value = _event.location_name || '';
+  $('fLocAddr').value = _event.location_address || '';
+  $('fCapacity').value = _event.capacity || '';
+
+  $('publishBtn').style.display = _event.status === 'published' ? 'none' : '';
+  $('unpublishBtn').style.display = _event.status === 'published' ? '' : 'none';
+  if (_event.status === 'published') {
+    const url = (_event.slug === 'lymx-launch-25') ? '/launch-event.html' : ('/event-' + _event.slug + '.html');
+    $('publicLink').innerHTML = '🟢 Live at <a class="public-url" target="_blank" rel="noopener" href="' + esc(url) + '">' + esc(url) + '</a>';
+  } else {
+    $('publicLink').innerHTML = '';
+  }
+}
+
+async function saveEvent() {
+  const id = _event.id;
+  const payload = {
+    title: $('fTitle').value.trim(),
+    subtitle: $('fSubtitle').value.trim() || null,
+    description_md: $('fDescription').value.trim() || null,
+    event_at: $('fEventAt').value ? new Date($('fEventAt').value).toISOString() : null,
+    end_at: $('fEndAt').value ? new Date($('fEndAt').value).toISOString() : null,
+    location_name: $('fLocName').value.trim() || null,
+    location_address: $('fLocAddr').value.trim() || null,
+    capacity: $('fCapacity').value ? Number($('fCapacity').value) : null
+  };
+  if (!payload.title) { banner('err', 'Title required.'); return; }
+  if (!payload.event_at) { banner('err', 'Date + time required.'); return; }
+  const cfg = window.LYMX_CONFIG;
+  const h = await headers(); if (!h) return;
+  $('saveEvBtn').disabled = true; $('saveEvBtn').textContent = 'Saving…';
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/events?id=eq.' + id, {
+    method: 'PATCH', headers: { ...h, Prefer: 'return=minimal' }, body: JSON.stringify(payload)
+  });
+  $('saveEvBtn').disabled = false; $('saveEvBtn').textContent = 'Save event details';
+  if (!r.ok) { banner('err', 'Save failed: ' + (await r.text()).slice(0, 200)); return; }
+  banner('ok', 'Event details saved.');
+  await loadEvent();
+}
+
+async function setStatus(newStatus) {
+  const id = _event.id;
+  const cfg = window.LYMX_CONFIG;
+  const h = await headers(); if (!h) return;
+  const patch = { status: newStatus };
+  if (newStatus === 'published') patch.published_at = new Date().toISOString();
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/events?id=eq.' + id, {
+    method: 'PATCH', headers: { ...h, Prefer: 'return=minimal' }, body: JSON.stringify(patch)
+  });
+  if (!r.ok) { banner('err', 'Status flip failed: ' + (await r.text()).slice(0, 200)); return; }
+  banner('ok', 'Status: ' + newStatus);
+  await loadEvent();
+}
+
+async function loadSpeakers() {
+  const cfg = window.LYMX_CONFIG;
+  const h = await headers(); if (!h) return;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/event_speakers?event_id=eq.' + _event.id + '&select=*&order=sort_order.asc,created_at.asc', { headers: h });
+  if (!r.ok) { $('speakers').innerHTML = '<div class="empty">Could not load speakers.</div>'; return; }
+  _speakers = await r.json();
+  paintSpeakers();
+}
+
+function paintSpeakers() {
+  if (!_speakers.length) {
+    $('speakers').innerHTML = '<div class="empty">No speakers yet. Click <strong>+ Invite speaker</strong> to add one.</div>';
+    return;
+  }
+  $('speakers').innerHTML = _speakers.map(s => {
+    const initials = (s.display_name || '?').split(/\s+/).map(x => x[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+    const photoStyle = s.photo_path
+      ? 'background-image:url(\'' + (window.LYMX_CONFIG.SUPABASE_URL + '/storage/v1/object/public/' + s.photo_path) + '\');background-color:#000'
+      : '';
+    const magicAction = s.invite_token
+      ? '<button class="btn btn-outline btn-tiny" onclick="copyMagicLink(\'' + esc(s.invite_token) + '\')">Copy magic link</button>'
+      : (s.status === 'profile_complete' ? '<button class="btn btn-success btn-tiny" onclick="publishSpeaker(\'' + esc(s.id) + '\')">Publish</button>' : '');
+    const unpublishAction = s.status === 'published' ? '<button class="btn btn-outline btn-tiny" onclick="unpublishSpeaker(\'' + esc(s.id) + '\')">Unpublish</button>' : '';
+    return '<div class="speaker-row">' +
+      '<div class="av" style="' + photoStyle + '">' + (s.photo_path ? '' : esc(initials)) + '</div>' +
+      '<div class="body">' +
+        '<div class="name">' + esc(s.display_name || '(no name yet)') + ' <span class="pill ' + esc(s.status) + '">' + esc(s.status) + '</span></div>' +
+        '<div class="meta">' + esc(s.title || '') + (s.company ? ' · ' + esc(s.company) : '') + (s.invite_email ? '<br>📧 ' + esc(s.invite_email) : '') + (s.talk_title ? '<br>🎙 ' + esc(s.talk_title) : '') + '</div>' +
+      '</div>' +
+      '<div class="acts">' + magicAction + ' ' + unpublishAction + ' <button class="btn btn-danger btn-tiny" onclick="deleteSpeaker(\'' + esc(s.id) + '\')">Delete</button></div>' +
+    '</div>';
+  }).join('');
+}
+
+window.copyMagicLink = function(token) {
+  const url = location.origin + '/event-speaker-edit.html?t=' + token;
+  navigator.clipboard.writeText(url).then(
+    () => banner('ok', 'Magic link copied: ' + url),
+    () => { prompt('Copy this link to send to the speaker:', url); }
+  );
+};
+
+window.publishSpeaker = async function(id) {
+  const cfg = window.LYMX_CONFIG;
+  const h = await headers(); if (!h) return;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/event_speakers?id=eq.' + id, {
+    method: 'PATCH', headers: { ...h, Prefer: 'return=minimal' }, body: JSON.stringify({ status: 'published' })
+  });
+  if (!r.ok) { banner('err', 'Publish failed: ' + (await r.text()).slice(0, 200)); return; }
+  banner('ok', 'Speaker published.');
+  await loadSpeakers();
+};
+
+window.unpublishSpeaker = async function(id) {
+  const cfg = window.LYMX_CONFIG;
+  const h = await headers(); if (!h) return;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/event_speakers?id=eq.' + id, {
+    method: 'PATCH', headers: { ...h, Prefer: 'return=minimal' }, body: JSON.stringify({ status: 'profile_complete' })
+  });
+  if (!r.ok) { banner('err', 'Unpublish failed: ' + (await r.text()).slice(0, 200)); return; }
+  banner('ok', 'Speaker hidden from public page.');
+  await loadSpeakers();
+};
+
+window.deleteSpeaker = async function(id) {
+  if (!confirm('Delete this speaker? Their photo upload (if any) stays in Storage but the row is gone.')) return;
+  const cfg = window.LYMX_CONFIG;
+  const h = await headers(); if (!h) return;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/event_speakers?id=eq.' + id, {
+    method: 'DELETE', headers: { ...h, Prefer: 'return=minimal' }
+  });
+  if (!r.ok) { banner('err', 'Delete failed: ' + (await r.text()).slice(0, 200)); return; }
+  banner('ok', 'Speaker removed.');
+  await loadSpeakers();
+};
+
+$('saveEvBtn').addEventListener('click', saveEvent);
+$('publishBtn').addEventListener('click', () => { if (confirm('Publish this event? It becomes publicly visible.')) setStatus('published'); });
+$('unpublishBtn').addEventListener('click', () => { if (confirm('Unpublish? The event reverts to draft and the public page returns 404.')) setStatus('draft'); });
+
+$('addSpeakerBtn').addEventListener('click', () => {
+  $('aName').value = ''; $('aTitle').value = ''; $('aEmail').value = '';
+  $('addErr').textContent = ''; $('addResult').innerHTML = '';
+  $('addOv').classList.add('on');
+  setTimeout(() => $('aName').focus(), 80);
+});
+$('addCancel').addEventListener('click', () => $('addOv').classList.remove('on'));
+$('addOv').addEventListener('click', e => { if (e.target === $('addOv')) $('addOv').classList.remove('on'); });
+
+$('addSave').addEventListener('click', async () => {
+  const name = $('aName').value.trim();
+  const email = $('aEmail').value.trim();
+  if (!name) { $('addErr').textContent = 'Display name required.'; return; }
+  if (!email || !email.includes('@')) { $('addErr').textContent = 'Valid invite email required.'; return; }
+  const token = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : null;
+  if (!token) { $('addErr').textContent = 'Could not generate token (old browser?).'; return; }
+  const payload = {
+    event_id: _event.id,
+    display_name: name,
+    title: $('aTitle').value.trim() || null,
+    invite_email: email,
+    invite_token: token,
+    invite_token_expires_at: new Date(Date.now() + 30*86400000).toISOString(),
+    invite_token_issued_at: new Date().toISOString(),
+    invited_at: new Date().toISOString(),
+    status: 'invited',
+    sort_order: ( _speakers.reduce((m, s) => Math.max(m, s.sort_order || 100), 100) ) + 10
+  };
+  const cfg = window.LYMX_CONFIG;
+  const h = await headers(); if (!h) return;
+  $('addSave').disabled = true; $('addSave').textContent = 'Saving…';
+  try {
+    const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/event_speakers', {
+      method: 'POST', headers: { ...h, Prefer: 'return=representation' }, body: JSON.stringify(payload)
+    });
+    if (!r.ok) { $('addErr').textContent = 'Save failed: ' + (await r.text()).slice(0, 200); return; }
+    const url = location.origin + '/event-speaker-edit.html?t=' + token;
+    $('addResult').innerHTML =
+      '<div class="banner ok"><strong>Magic link ready</strong> — copy it into your invitation email to ' + esc(email) + ':</div>' +
+      '<div class="magic-link">' + esc(url) + '</div>' +
+      '<button class="btn btn-primary btn-tiny" style="margin-top:8px" onclick="navigator.clipboard.writeText(\'' + esc(url) + '\').then(()=>this.textContent=\'Copied ✓\')">Copy link</button>';
+    await loadSpeakers();
+  } finally {
+    $('addSave').disabled = false; $('addSave').textContent = 'Generate magic link';
+  }
+});
+
+(async function init() {
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(init, 100); return; }
+  await loadEvent();
+})();
+</script>
+
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

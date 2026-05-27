@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your speaker profile · LYMX</title>
+<meta name="description" content="Fill in your speaker profile for the LYMX event." />
+<meta name="robots" content="noindex,nofollow" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4af37;--danger:#e0413e;--maxw:680px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100vh}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;color:var(--ink);line-height:1.55}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:36px 22px 80px}
+  .brand-mark{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.01em;margin-bottom:18px}
+  .brand-mark .dot{width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  h1{margin:0 0 6px;font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:14.5px;margin-bottom:22px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;box-shadow:0 4px 14px rgba(14,17,22,.04);margin-bottom:14px}
+  .event-strip{background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;padding:18px 22px;border-radius:14px;margin-bottom:18px}
+  .event-strip .eyebrow{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#f5d172;font-weight:800;margin-bottom:4px}
+  .event-strip .name{font-size:18px;font-weight:800}
+  .event-strip .meta{font-size:13px;color:#9aa3b0;margin-top:3px}
+  label{display:block;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-top:14px}
+  input, textarea{width:100%;padding:10px 12px;margin-top:4px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14.5px;background:#fff}
+  textarea{min-height:90px;resize:vertical}
+  .help{font-size:12px;color:var(--muted);margin-top:4px}
+  .photo-row{display:flex;gap:16px;align-items:center;margin-top:14px}
+  .photo-preview{width:96px;height:96px;border-radius:50%;background:#f1f3f6;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;background-size:cover;background-position:center;border:2px dashed var(--line);flex-shrink:0;text-align:center;padding:6px}
+  .photo-preview.has-img{border-style:solid;border-color:var(--accent)}
+  .upload-btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 14px;border-radius:8px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+  .upload-btn:hover{border-color:var(--ink-2)}
+  .upload-input{display:none}
+  .save-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+  .save-btn{appearance:none;border:0;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;font-weight:800;padding:13px 28px;border-radius:10px;font-size:15.5px;cursor:pointer;font-family:inherit}
+  .save-btn:hover{filter:brightness(1.08)}
+  .save-btn[disabled]{opacity:.55;cursor:not-allowed;filter:none}
+  .alert{padding:14px 18px;border-radius:10px;margin-bottom:14px;font-size:14.5px}
+  .alert.err{background:#fde8e6;color:#7a1a17;border-left:4px solid var(--danger)}
+  .alert.ok{background:#d1fae5;color:#065f46;border-left:4px solid var(--ok)}
+  .alert.warn{background:#fff3d8;color:#7a4a08;border-left:4px solid var(--gold)}
+  .success-card{background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;border:0}
+  .success-card h2{margin:0 0 8px;font-size:22px}
+  .success-card p{margin:0;color:#dffceb;font-size:14.5px;line-height:1.6}
+  .small{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:12px}
+  .skeleton{padding:48px 16px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand-mark"><span class="dot"></span> LYMX</div>
+  <div id="content" class="card skeleton">Loading your speaker profile…</div>
+</div>
+
+<script>
+// 2026-05-27 Events e2e — Public speaker profile editor. No sign-in.
+// Magic link carries ?t=<uuid>. Resolves via fn_event_speaker_resolve_by_token
+// (migration 122). Saves via fn_event_speaker_save_by_token. Photo uploads
+// to the 'event-speakers' public Storage bucket using the anon key — the
+// bucket's RLS policy on storage.objects must allow public INSERT (Kenny:
+// confirm in Supabase Storage Settings → event-speakers → policies).
+
+const SUPABASE_URL = 'https://apffootxzfwmtyjlnteo.supabase.co';
+const BUCKET = 'event-speakers';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+
+function getToken() {
+  try {
+    const t = new URL(location.href).searchParams.get('t');
+    if (!t || !/^[0-9a-f-]{32,40}$/i.test(t)) return null;
+    return t;
+  } catch (e) { return null; }
+}
+
+let _anonKey = null;
+let _speakerId = null;
+let _eventSlug = null;
+let _photoPath = null;
+let _token = null;
+
+async function loadAnonKey() {
+  const r = await fetch('/lymx-config.js', { cache: 'no-store' });
+  const txt = await r.text();
+  const m = txt.match(/SUPABASE_ANON_KEY\s*:\s*["']([^"']+)/);
+  _anonKey = m ? m[1] : null;
+  return _anonKey;
+}
+
+async function rpc(name, args) {
+  const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/' + name, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: _anonKey, Authorization: 'Bearer ' + _anonKey },
+    body: JSON.stringify(args)
+  });
+  if (!r.ok) {
+    let body = '';
+    try { body = await r.text(); } catch (e) { console.warn('[event-speaker] rpc body read failed', e); } // bandaid-ok: best-effort enrichment of error msg
+    throw new Error('http ' + r.status + (body ? ': ' + body.slice(0, 200) : ''));
+  }
+  return r.json();
+}
+
+function renderError(title, msg, isExpired) {
+  $('content').classList.remove('skeleton');
+  $('content').innerHTML =
+    '<div class="alert ' + (isExpired ? 'warn' : 'err') + '"><strong>' + esc(title) + '</strong><br>' + esc(msg) + '</div>' +
+    '<p class="small">If you think this link should be working, reply to the email LYMX sent you and we will issue a fresh one.</p>';
+}
+
+function renderForm(data) {
+  const c = $('content');
+  c.classList.remove('skeleton');
+  const sp = data.speaker;
+  _photoPath = sp.photo_path || null;
+  const eventDate = data.event_at ? new Date(data.event_at).toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' }) : '';
+  const photoStyle = _photoPath
+    ? 'background-image:url(\'' + (SUPABASE_URL + '/storage/v1/object/public/' + _photoPath) + '\');background-color:#000'
+    : '';
+  c.innerHTML =
+    '<div class="event-strip">' +
+      '<div class="eyebrow">You\'re speaking at</div>' +
+      '<div class="name">' + esc(data.event_title || '') + '</div>' +
+      '<div class="meta">' + esc(eventDate) + (data.event_location_name ? ' · ' + esc(data.event_location_name) : '') + '</div>' +
+    '</div>' +
+    '<h1>Your speaker profile</h1>' +
+    '<p class="sub">Hi ' + esc(sp.display_name || 'there') + ' — fill in how you want to appear on the public event page. ' +
+      'You can come back to this link any time before the organizer publishes your profile.</p>' +
+    '<div class="card">' +
+      '<div class="photo-row">' +
+        '<div class="photo-preview ' + (_photoPath ? 'has-img' : '') + '" id="photoPreview" style="' + photoStyle + '">' + (_photoPath ? '' : 'Headshot') + '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<button class="upload-btn" id="uploadBtn" type="button">' + (_photoPath ? 'Replace photo' : 'Upload a photo') + '</button>' +
+          '<input class="upload-input" id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" />' +
+          '<div class="help">JPG / PNG / WebP, ideally a square headshot ≥ 400×400. Public on the event page.</div>' +
+          '<div id="uploadStatus" class="help" style="margin-top:6px"></div>' +
+        '</div>' +
+      '</div>' +
+      '<label>Display name</label><input id="fName" type="text" value="' + esc(sp.display_name || '') + '" />' +
+      '<label>Title</label><input id="fTitle" type="text" placeholder="e.g. Master Partner / Founder & CEO / Owner" value="' + esc(sp.title || '') + '" />' +
+      '<label>Company or affiliation</label><input id="fCompany" type="text" placeholder="e.g. Brew & Bean Café · Las Vegas territory" value="' + esc(sp.company || '') + '" />' +
+      '<label>Short bio</label><textarea id="fBio" placeholder="2-3 sentences about you. Plain text only.">' + esc(sp.bio || '') + '</textarea>' +
+      '<label>Talk title (optional)</label><input id="fTalkTitle" type="text" placeholder="What you\'re speaking about" value="' + esc(sp.talk_title || '') + '" />' +
+      '<label>Talk description (optional)</label><textarea id="fTalkDesc" placeholder="1-2 sentences on what you\'ll cover.">' + esc(sp.talk_description || '') + '</textarea>' +
+      '<div class="save-row">' +
+        '<div class="help" style="flex:1;min-width:200px">The organizer will review and publish your bio before the event. You can update this page any time before then.</div>' +
+        '<button class="save-btn" id="saveBtn" type="button">Save profile</button>' +
+      '</div>' +
+      '<div id="saveStatus"></div>' +
+    '</div>';
+
+  $('uploadBtn').addEventListener('click', () => $('photoInput').click());
+  $('photoInput').addEventListener('change', onPhotoChange);
+  $('saveBtn').addEventListener('click', onSave);
+}
+
+async function onPhotoChange(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { $('uploadStatus').innerHTML = '<span style="color:var(--danger)">File too large (max 5 MB).</span>'; return; }
+
+  // Upload to event-speakers/<event_slug>/<speaker_id>.<ext>
+  const ext = (file.type === 'image/png') ? 'png' : (file.type === 'image/webp') ? 'webp' : 'jpg';
+  const path = BUCKET + '/' + _eventSlug + '/' + _speakerId + '.' + ext;
+  const uploadUrl = SUPABASE_URL + '/storage/v1/object/' + path;
+  $('uploadStatus').innerHTML = 'Uploading…';
+  try {
+    const r = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        apikey: _anonKey,
+        Authorization: 'Bearer ' + _anonKey,
+        'Content-Type': file.type,
+        'x-upsert': 'true'
+      },
+      body: file
+    });
+    if (!r.ok) {
+      const errBody = (await r.text()).slice(0, 200);
+      $('uploadStatus').innerHTML = '<span style="color:var(--danger)">Upload failed: ' + esc(errBody) + '</span><div class="help">If the error is about RLS or permissions, the Supabase bucket policy needs to allow public INSERT — ask the organizer to fix it.</div>';
+      return;
+    }
+    _photoPath = path;
+    $('photoPreview').style.backgroundImage = 'url(\'' + (SUPABASE_URL + '/storage/v1/object/public/' + path) + '?cb=' + Date.now() + '\')';
+    $('photoPreview').style.backgroundColor = '#000';
+    $('photoPreview').classList.add('has-img');
+    $('photoPreview').textContent = '';
+    $('uploadBtn').textContent = 'Replace photo';
+    $('uploadStatus').innerHTML = '<span style="color:var(--ok)">✓ Photo uploaded.</span> Click Save profile to keep it.';
+  } catch (e) {
+    $('uploadStatus').innerHTML = '<span style="color:var(--danger)">Upload failed: ' + esc(e.message || 'unknown') + '</span>';
+  }
+}
+
+async function onSave() {
+  const btn = $('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const result = await rpc('fn_event_speaker_save_by_token', {
+      p_token: _token,
+      p_display_name: $('fName').value.trim(),
+      p_title: $('fTitle').value.trim(),
+      p_company: $('fCompany').value.trim(),
+      p_bio: $('fBio').value.trim(),
+      p_photo_path: _photoPath || '',
+      p_talk_title: $('fTalkTitle').value.trim(),
+      p_talk_description: $('fTalkDesc').value.trim()
+    });
+    if (!result || !result.ok) {
+      const errKey = (result && result.error) || 'unknown';
+      const human = {
+        no_token: 'The link is missing a token. Open it from your email exactly.',
+        token_not_found: 'This link is no longer valid — already used or rescinded. Reply to the email.',
+        token_expired: 'This link expired. Reply to the email and the organizer will issue a fresh one.',
+        speaker_status_locked: 'Your profile is already locked. Reply to the email for changes.',
+        name_required: 'Display name is required.'
+      }[errKey] || ('Could not save: ' + errKey);
+      $('saveStatus').innerHTML = '<div class="alert err" style="margin-top:14px">' + esc(human) + '</div>';
+      btn.disabled = false; btn.textContent = 'Save profile';
+      return;
+    }
+    // Success — replace with confirmation
+    $('content').innerHTML =
+      '<div class="card success-card"><h2>🎤 You\'re set!</h2><p>' + esc(result.message || 'Profile saved.') + '</p></div>' +
+      '<p class="small">Want to update anything? This link works once more (reload this page) for as long as the organizer keeps it open. After they publish, you\'ll appear on the public event page automatically.</p>';
+  } catch (e) {
+    console.warn('[event-speaker-edit] save failed', e);
+    $('saveStatus').innerHTML = '<div class="alert err" style="margin-top:14px">Could not save right now — please retry. Error: ' + esc(e.message || 'unknown') + '</div>';
+    btn.disabled = false; btn.textContent = 'Save profile';
+  }
+}
+
+(async function init() {
+  _token = getToken();
+  if (!_token) {
+    renderError('Missing token', 'This page needs the magic-link URL from the email the organizer sent you. Open the link from your inbox exactly as it was sent.');
+    return;
+  }
+  try {
+    await loadAnonKey();
+    if (!_anonKey) {
+      renderError('Configuration error', 'Could not load the API key. Try refreshing in a minute.');
+      return;
+    }
+    const data = await rpc('fn_event_speaker_resolve_by_token', { p_token: _token });
+    if (!data || !data.ok) {
+      const errKey = (data && data.error) || 'unknown';
+      const human = {
+        no_token: 'No token in the URL.',
+        token_not_found: 'This link is invalid or has already been used. If you already saved, the organizer has your profile and you can close this tab.',
+        token_expired: 'This link expired. Reply to the email and the organizer will issue a fresh one.',
+        speaker_status_locked: 'Your profile has already been finalized. Reply to the email if you need changes.'
+      }[errKey] || ('Could not load: ' + errKey);
+      renderError('Cannot open this profile', human, errKey === 'token_expired');
+      return;
+    }
+    _speakerId = data.speaker_id;
+    _eventSlug = data.event_slug;
+    renderForm(data);
+  } catch (e) {
+    console.warn('[event-speaker-edit] init failed', e);
+    renderError('Something went wrong', e.message || 'Unknown error. Please try again in a moment.');
+  }
+})();
+</script>
+</body>
+</html>

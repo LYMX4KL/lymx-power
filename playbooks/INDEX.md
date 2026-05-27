@@ -78,6 +78,7 @@
 | [admin-clock-in-now](admin/clock-in-now.md) | Live view of who is currently clocked in / on break / out | Admin | admin_view_clock_in_now | 🚧 Shipped 2026-05-27; awaiting browser-verify |
 | [admin-timesheet-edit](admin/timesheet-edit.md) | Backfill or adjust a staff member's daily timesheet line | Admin / HR / CFO / Accounting | admin_edit_timesheet | 🚧 Shipped 2026-05-27; awaiting browser-verify |
 | [admin-offer-accept-flow](admin/offer-accept-flow.md) | How the public accept-offer magic-link flow works (HR P3) | Admin / HR | admin_send_offer_magic_link | 🚧 Shipped 2026-05-27; awaiting browser-verify |
+| [admin-event-create](admin/event-create.md) | Create an event end-to-end (admin + speaker magic-link + publish) | Admin | admin_create_event | 🚧 Shipped 2026-05-27; awaiting browser-verify |
 | admin-handle-feedback | Triage + reply to a feedback ticket | Admin |  | 📋 Planned |
 | admin-broadcast | Send a team-wide announcement | Admin |  | 📋 Planned |
 

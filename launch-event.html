@@ -298,7 +298,7 @@
   <div class="wrap">
     <h2>Speakers</h2>
     <p class="lede">Who you'll hear from.</p>
-    <div class="speakers">
+    <div class="speakers" id="speakerCards" data-event-slug="lymx-launch-25">
       <div class="speaker">
         <div class="av">KL</div>
         <h4>Kenny Lin</h4>
@@ -608,5 +608,63 @@
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
+
+<!-- 2026-05-27 Events e2e — replace the hardcoded speaker cards with dynamic
+     render from public.events + public.event_speakers (migration 122). The
+     hardcoded cards above remain as a graceful fallback for the case where
+     the event row hasn't been seeded yet or status != 'published'. -->
+<script>
+(async function renderSpeakersFromDb() {
+  try {
+    const container = document.getElementById('speakerCards');
+    if (!container) return;
+    const slug = container.dataset.eventSlug;
+    if (!slug) return;
+    // Load anon key from lymx-config.js (same pattern as other public pages)
+    const cfgR = await fetch('/lymx-config.js', { cache: 'no-store' });
+    const cfgTxt = await cfgR.text();
+    const m = cfgTxt.match(/SUPABASE_ANON_KEY\s*:\s*["\']([^"\']+)/);
+    const anonKey = m ? m[1] : null;
+    if (!anonKey) { console.warn('[launch-event] no anon key, keeping fallback'); return; }
+    const SUPABASE_URL = (cfgTxt.match(/SUPABASE_URL\s*:\s*["\']([^"\']+)/) || [])[1];
+    if (!SUPABASE_URL) return;
+
+    // 1. Fetch the event row (only published, only matching slug)
+    const evR = await fetch(SUPABASE_URL + '/rest/v1/events?slug=eq.' + encodeURIComponent(slug) + '&status=eq.published&select=id,title,subtitle,event_at,location_name,location_address',
+      { headers: { apikey: anonKey, Authorization: 'Bearer ' + anonKey } });
+    if (!evR.ok) return;
+    const ev = (await evR.json())[0];
+    if (!ev) { console.warn('[launch-event] no published event row, keeping fallback'); return; }
+
+    // 2. Fetch published speakers ordered by sort_order
+    const spR = await fetch(SUPABASE_URL + '/rest/v1/event_speakers?event_id=eq.' + ev.id + '&status=eq.published&select=display_name,title,company,bio,photo_path,talk_title&order=sort_order.asc',
+      { headers: { apikey: anonKey, Authorization: 'Bearer ' + anonKey } });
+    if (!spR.ok) return;
+    const speakers = await spR.json();
+    if (!speakers.length) { console.warn('[launch-event] no published speakers, keeping fallback'); return; }
+
+    function initials(n) {
+      return (n || '').split(/\s+/).filter(Boolean).map(x => x[0]).slice(0, 2).join('').toUpperCase() || '?';
+    }
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[<>&"\']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"\'":'&#39;'}[c]));
+    }
+    const palettes = ['', 'gold', 'b', 'g'];
+    const html = speakers.map((s, i) => {
+      const photoUrl = s.photo_path ? (SUPABASE_URL + '/storage/v1/object/public/' + s.photo_path) : null;
+      const av = photoUrl
+        ? '<div class="av" style="background-image:url(\'' + esc(photoUrl) + '\');background-size:cover;background-position:center"></div>'
+        : '<div class="av ' + palettes[i % palettes.length] + '">' + esc(initials(s.display_name)) + '</div>';
+      const roleLines = [s.title, s.company].filter(Boolean).map(esc).join('<br>');
+      const talkLine = s.talk_title ? '<div class="role" style="margin-top:6px;font-style:italic;color:#7a5e10">🎙 ' + esc(s.talk_title) + '</div>' : '';
+      return '<div class="speaker">' + av + '<h4>' + esc(s.display_name || '') + '</h4><div class="role">' + roleLines + '</div>' + talkLine + '</div>';
+    }).join('');
+    container.innerHTML = html;
+  } catch (e) {
+    console.warn('[launch-event] dynamic speaker render failed, keeping fallback', e);
+  }
+})();
+</script>
+
 </body>
 </html>

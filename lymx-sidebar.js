@@ -397,6 +397,10 @@
       { href: 'admin-outstanding-property.html', icon: '\u{1F6A9}', label: 'Outstanding Property' },
       { href: 'admin-send-hr-launch.html',       icon: '\u{1F44B}', label: 'Send Welcome Email' },
       { section: 'Outreach' },
+      // 2026-05-27 — events backed by public.events + public.event_speakers
+      // (migration 122). admin-events lists all; clicking opens admin-event-edit
+      // where Helen invites speakers via magic-link.
+      { href: 'admin-events.html',         icon: '\u{1F39F}\u{FE0F}',  label: 'Events' },
       { href: 'admin-invite-friends.html', icon: '\u{1F4E8}', label: 'Invite Friends' },
       { href: 'contacts.html',           icon: '\u{1F4C7}', label: 'Contacts' },
       { section: 'Knowledge' },
