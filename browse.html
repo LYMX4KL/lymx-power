@@ -749,5 +749,193 @@ window.handleSearchSubmit = function() {
   return false;
 };
 </script>
+
+<!-- 2026-05-27 #08 — root-cause fix part 2: build the per-card Save heart on the
+     directory grid. Tester saw biz cards on /browse and expected a Save
+     affordance there (the existing Save lives only on each biz's profile page,
+     so the experience was missing on browse). New: a heart icon overlaid on
+     each real biz card, click toggles public.saved_businesses (RLS-scoped),
+     state persists across reloads and the home dashboard's Saved Places
+     section now picks up these saves automatically. Pair-fix: lymx-biz-actions.js
+     INSERT now includes ?on_conflict=user_id,business_slug so a second click on
+     an already-saved biz no longer 409s. -->
+<style>
+  .biz-card { position: relative; }
+  .biz-card .save-heart {
+    position: absolute; top: 10px; right: 10px; z-index: 5;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,.92); backdrop-filter: blur(4px);
+    border: 1px solid rgba(0,0,0,.08); box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: transform .12s, background .15s;
+    font-size: 18px; color: #b81324; line-height: 1; padding: 0;
+  }
+  .biz-card .save-heart:hover { transform: scale(1.08); background: #fff; }
+  .biz-card .save-heart[data-saved="1"] { background: #b81324; color: #fff; }
+  .biz-card .save-heart[disabled] { opacity: .5; cursor: not-allowed; }
+</style>
+<script>
+(function () {
+  'use strict';
+  // Pull session token via the existing sb-<ref>-auth-token pattern. Returns
+  // { access, uid } or null if not signed in. Stays defensive — never throws.
+  function getSession() {
+    try {
+      if (!window.LYMX_CONFIG) return null;
+      var cfg = window.LYMX_CONFIG;
+      var m = cfg.SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/i);
+      var ref = m ? m[1] : null;
+      if (!ref) return null;
+      var raw = localStorage.getItem('sb-' + ref + '-auth-token');
+      if (!raw) return null;
+      var tok = JSON.parse(raw);
+      var access = (tok && tok.access_token) || (tok && tok.currentSession && tok.currentSession.access_token);
+      if (!access) return null;
+      var jwt = JSON.parse(atob(access.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return { access: access, uid: jwt && jwt.sub, anon: cfg.SUPABASE_ANON_KEY, url: cfg.SUPABASE_URL };
+    } catch (e) {
+      console.warn('[browse-save] getSession failed', e);
+      return null;
+    }
+  }
+
+  function slugFromCard(card) {
+    var href = card.getAttribute('href') || '';
+    // Real biz cards: href="/biz-<slug>" or "/biz-<slug>.html". Skip CTAs.
+    if (card.getAttribute('data-cta') === '1') return null;
+    if (/guest-only/.test(card.className)) return null;
+    var m = href.match(/^\/biz-([a-z0-9-]+?)(?:\.html)?$/i);
+    return m ? ('biz-' + m[1].toLowerCase()) : null;
+  }
+
+  function bizName(card) {
+    var h = card.querySelector('h3');
+    return h ? h.textContent.replace(/\s+/g, ' ').trim() : '';
+  }
+  function bizEmoji(card) {
+    var ph = card.querySelector('.ph');
+    if (!ph) return null;
+    var txt = (ph.textContent || '').trim();
+    var m = txt.match(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
+    return m ? m[0] : null;
+  }
+
+  function ensureHeart(card) {
+    if (card.querySelector('.save-heart')) return card.querySelector('.save-heart');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'save-heart';
+    btn.setAttribute('aria-label', 'Save this business');
+    btn.textContent = '\u2661'; // outline heart by default
+    card.appendChild(btn);
+    return btn;
+  }
+
+  async function loadInitialState(session, cards) {
+    var slugs = cards.map(function (c) { return c.dataset.slug; }).filter(Boolean);
+    if (!slugs.length) return new Set();
+    try {
+      var r = await fetch(session.url + '/rest/v1/saved_businesses' +
+        '?user_id=eq.' + session.uid +
+        '&business_slug=in.(' + slugs.map(encodeURIComponent).join(',') + ')' +
+        '&select=business_slug',
+        { headers: { apikey: session.anon, Authorization: 'Bearer ' + session.access } });
+      if (!r.ok) return new Set();
+      var rows = await r.json();
+      return new Set((rows || []).map(function (x) { return x.business_slug; }));
+    } catch (e) {
+      console.warn('[browse-save] loadInitialState failed', e);
+      return new Set();
+    }
+  }
+
+  function paint(btn, saved) {
+    btn.dataset.saved = saved ? '1' : '';
+    btn.textContent = saved ? '\u2665' : '\u2661';
+    btn.setAttribute('aria-pressed', saved ? 'true' : 'false');
+  }
+
+  async function toggle(session, card, btn) {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    var slug = card.dataset.slug;
+    var wasSaved = btn.dataset.saved === '1';
+    paint(btn, !wasSaved); // optimistic
+    try {
+      if (wasSaved) {
+        var dr = await fetch(session.url + '/rest/v1/saved_businesses' +
+          '?user_id=eq.' + session.uid +
+          '&business_slug=eq.' + encodeURIComponent(slug),
+          { method: 'DELETE', headers: { apikey: session.anon, Authorization: 'Bearer ' + session.access, Prefer: 'return=minimal' } });
+        if (!dr.ok) throw new Error('delete ' + dr.status);
+      } else {
+        var ir = await fetch(session.url + '/rest/v1/saved_businesses?on_conflict=user_id,business_slug', {
+          method: 'POST',
+          headers: {
+            apikey: session.anon,
+            Authorization: 'Bearer ' + session.access,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal,resolution=merge-duplicates'
+          },
+          body: JSON.stringify({
+            user_id: session.uid,
+            business_slug: slug,
+            business_name: card.dataset.bizName || slug,
+            business_emoji: card.dataset.bizEmoji || null
+          })
+        });
+        if (!ir.ok) throw new Error('insert ' + ir.status + ' ' + (await ir.text()).slice(0, 120));
+      }
+    } catch (e) {
+      console.warn('[browse-save] toggle failed', e);
+      paint(btn, wasSaved); // revert
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function showSigninNudge() {
+    // Lightweight tooltip-style banner above the grid the first time someone
+    // tries to use the heart without being signed in.
+    if (document.getElementById('saveSigninNudge')) return;
+    var grid = document.querySelector('.grid') || document.querySelector('.cards') || document.body;
+    var msg = document.createElement('div');
+    msg.id = 'saveSigninNudge';
+    msg.style.cssText = 'background:#fff5e6;border:1px solid #f0c987;border-radius:10px;padding:10px 14px;margin:10px 0;font-size:13px;color:#7a4a0e';
+    msg.innerHTML = 'Sign in to save your favorite spots and see them on your dashboard. <a href="login.html?next=browse.html" style="color:#0050c7;font-weight:700">Sign in</a>';
+    grid.parentNode.insertBefore(msg, grid);
+  }
+
+  document.addEventListener('DOMContentLoaded', async function () {
+    var allAnchors = Array.prototype.slice.call(document.querySelectorAll('a.biz-card'));
+    var realCards = allAnchors.filter(function (a) { return slugFromCard(a); });
+    realCards.forEach(function (a) {
+      a.dataset.slug = slugFromCard(a);
+      a.dataset.bizName = bizName(a);
+      var emoji = bizEmoji(a);
+      if (emoji) a.dataset.bizEmoji = emoji;
+      var btn = ensureHeart(a);
+      // Stop the click from propagating to the anchor (which would navigate).
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var session = getSession();
+        if (!session) { showSigninNudge(); return; }
+        toggle(session, a, btn);
+      });
+      paint(btn, false);
+    });
+
+    var session = getSession();
+    if (!session) return;
+    var savedSet = await loadInitialState(session, realCards);
+    realCards.forEach(function (a) {
+      var btn = a.querySelector('.save-heart');
+      if (btn) paint(btn, savedSet.has(a.dataset.slug));
+    });
+  });
+})();
+</script>
+
 </body>
 </html>

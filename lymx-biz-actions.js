@@ -234,7 +234,15 @@
             console.warn('[lymx-biz-actions] toggleSave JWT parse failed', e);
           }
           if (!uid) throw new Error('no uid in session');
-          var ir = await fetch(cfg.SUPABASE_URL + '/rest/v1/saved_businesses', {
+          // 2026-05-27 #08 — PostgREST upsert needs the on_conflict query param
+          // pointing at the unique constraint (user_id, business_slug). Without it,
+          // a duplicate save returns HTTP 409 even though the request asked for
+          // merge-duplicates resolution. Symptom: clicking Save a second time on
+          // an already-saved biz threw "duplicate key value violates unique
+          // constraint saved_businesses_user_id_business_slug_key" and the toast
+          // showed "Could not update saved". Adding on_conflict makes the second
+          // click a true no-op upsert and keeps the UI consistent.
+          var ir = await fetch(cfg.SUPABASE_URL + '/rest/v1/saved_businesses?on_conflict=user_id,business_slug', {
             method: 'POST',
             headers: {
               apikey: cfg.SUPABASE_ANON_KEY,
