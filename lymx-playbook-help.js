@@ -180,7 +180,7 @@
           return permsMap;
         }
       }
-    } catch (e) { /* ignore */ }
+    } catch (e) { /* bandaid-ok: sessionStorage cache read; on miss/parse-fail we fall through to the RPC fetch below */ }
     var sb = await waitForSb(2000);
     if (!sb) { permsMap = {}; return permsMap; }
     try {
@@ -189,7 +189,7 @@
       var r = await sb.rpc('list_my_permissions');
       if (r.error) throw r.error;
       permsMap = r.data || {};
-      try { sessionStorage.setItem('lymx_my_perms', JSON.stringify({ t: Date.now(), m: permsMap })); } catch (e) { /* quota */ }
+      try { sessionStorage.setItem('lymx_my_perms', JSON.stringify({ t: Date.now(), m: permsMap })); } catch (e) { /* bandaid-ok: best-effort cache write; quota-exceeded is fine — next call refetches */ }
     } catch (e) {
       console.warn('[lymx-playbook-help] list_my_permissions', e);
       permsMap = {};

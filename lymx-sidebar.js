@@ -338,6 +338,13 @@
       { href: 'admin-fraud-flags.html',  icon: '\u{1F6A8}', label: 'Fraud flags' },
       { section: 'Team' },
       { href: 'admin-staff.html',           icon: '\u{1FAAA}', label: 'Staff Roles' },
+      // 2026-05-26 — Sprint 0 shipped admin-manage-permissions.html (the
+      // feature-permission matrix from migration 104) but never wired a
+      // sidebar entry, so admins couldn't find it. Adding under Team since
+      // it pairs naturally with Staff Roles: Staff Roles assigns the role,
+      // Feature Permissions grants the specific capability keys gated by
+      // ARCHITECTURE-RULES Rule 1.
+      { href: 'admin-manage-permissions.html', icon: '\u{1F511}', label: 'Feature Permissions' },
       { href: 'admin-personnel-records.html', icon: '\u{1F4C7}', label: 'Personnel Records' },
       { href: 'admin-schedule.html',        icon: '\u{1F4C5}', label: 'Schedule Builder' },
       { href: 'admin-schedule-requests.html', icon: '\u{1F4DD}', label: 'Schedule Weeks' },
@@ -711,7 +718,7 @@
             var orig = el.textContent;
             el.textContent = 'copied!';
             setTimeout(function () { el.textContent = orig; }, 1200);
-          } catch (e) { console.warn('[sidebar] copy failed', e); }
+          } catch (e) {  console.warn('[sidebar] copy failed', e); }
         });
       } catch (e) { console.warn('[sidebar] partner_code loader', e); }
     })();

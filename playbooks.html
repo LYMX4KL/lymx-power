@@ -199,7 +199,7 @@
     try {
       var cached = sessionStorage.getItem('lymx_active_role') || sessionStorage.getItem('lymx_db_role') || '';
       if (cached) return cached.toLowerCase();
-    } catch (e) { /* sessionStorage blocked */ }
+    } catch (e) { /* bandaid-ok: sessionStorage role cache; on private-mode block we fall through to the am_i_admin RPC */ }
     try {
       var H = { apikey: window.LYMX_CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' };
       var a = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/rest/v1/rpc/am_i_admin', { method: 'POST', headers: H, body: '{}' });
@@ -222,14 +222,14 @@
           return cached.m;
         }
       }
-    } catch (e) { /* parse failure → refetch */ }
+    } catch (e) { /* bandaid-ok: sessionStorage permission cache; parse-fail / read-block falls through to list_my_permissions RPC */ }
     try {
       var H = { apikey: window.LYMX_CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' };
       var r = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/rest/v1/rpc/list_my_permissions', { method: 'POST', headers: H, body: '{}' });
       if (!r.ok) throw new Error('http ' + r.status);
       var data = await r.json();
       var map = (typeof data === 'object' && data) ? data : {};
-      try { sessionStorage.setItem('lymx_my_perms', JSON.stringify({ t: Date.now(), m: map })); } catch (e) { /* quota */ }
+      try { sessionStorage.setItem('lymx_my_perms', JSON.stringify({ t: Date.now(), m: map })); } catch (e) { /* bandaid-ok: best-effort cache write; quota-exceeded is fine — next call refetches */ }
       return map;
     } catch (e) {
       console.warn('[playbooks] list_my_permissions', e);
