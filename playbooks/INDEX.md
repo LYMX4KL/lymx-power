@@ -4,7 +4,7 @@
 >
 > Each row carries a `Feature` key that ties the playbook to an entry in `public.feature_catalog` (mig 104). The Playbooks reader filters by `list_my_permissions()` — a member with permission for a feature sees that feature's playbook automatically. Toggle grants live at `/admin-manage-permissions.html`.
 >
-> Last updated: 2026-05-27 (Sprint 1 — business settlement)
+> Last updated: 2026-05-27 (Sprint 2 — Donate LYMX)
 
 ## Email
 
@@ -23,6 +23,7 @@
 | Slug | Title | Role | Feature | Status |
 |---|---|---|---|---|
 | [customer-onboarding-03-pending-reviews](customer-onboarding/03-pending-reviews.md) | See and write your pending reviews (earn 100 LYMX each) | Customer | customer_write_review | ✅ Verified 2026-05-26 |
+| [customer-onboarding-04-donate-lymx](customer-onboarding/04-donate-lymx.md) | Donate LYMX from your wallet to a verified nonprofit (Sprint 2) | Customer | customer_donate_lymx | 🚧 Shipped 2026-05-27; awaiting browser-verify |
 
 ## Onboarding
 
