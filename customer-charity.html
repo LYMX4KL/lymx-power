@@ -3,306 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Donate LYMX to local nonprofits · LYMX</title>
-<meta name="description" content="Donate LYMX directly from your wallet to Las Vegas nonprofits. LYMX matches 1:1. Local impact, instant, no fees.">
+<title>Donate LYMX — Coming soon · LYMX</title>
+<meta name="description" content="Donate LYMX to local nonprofits — coming soon. The customer charity flow is on the roadmap; this page will go live once the donations backend, nonprofit registry, and 1:1 LYMX matching are built.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/png" href="favicon.png">
 <style>
-  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--red:#c0392b}
+  :root{--ink:#0e1116;--mute:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--ok:#13a26b;--warn:#f0a020;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.06)}
   *{box-sizing:border-box}
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  html,body{margin:0;padding:0;background:var(--bg)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
   a{color:var(--accent);text-decoration:none}
-  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
-  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
-  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em}
-  .brand span{color:var(--accent)}
-  .nav-links{display:flex;gap:18px;font-size:14px}
-  .nav-links a{color:var(--ink);font-weight:500}
-  .wrap{max-width:1000px;margin:0 auto;padding:32px 24px 64px}
-  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
-  h1{font-size:38px;margin:0 0 12px;letter-spacing:-.025em}
-  .lead{color:var(--mute);font-size:16px;max-width:680px;margin-bottom:32px}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 22px 80px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:18px}
+  .crumb a{color:var(--mute);text-decoration:underline}
 
-  .hero-card{background:linear-gradient(135deg,#0a7a4d,#13a26b);color:#fff;border-radius:18px;padding:36px 40px;margin-bottom:32px;display:grid;grid-template-columns:2fr 1fr;gap:24px;align-items:center}
-  @media(max-width:760px){.hero-card{grid-template-columns:1fr}}
-  .hero-card h2{margin:0 0 8px;color:#fff;font-size:26px;letter-spacing:-.02em}
-  .hero-card p{margin:0;color:#d8efe2;font-size:15px}
-  .hero-card .stat{background:rgba(255,255,255,.12);border-radius:12px;padding:18px 22px;text-align:center}
-  .hero-card .stat .n{font-size:36px;font-weight:800;color:#f5d172;letter-spacing:-.025em;line-height:1}
-  .hero-card .stat .l{font-size:12px;color:#d8efe2;text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:4px}
+  .hero{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:36px 32px;box-shadow:var(--shadow);text-align:center}
+  .hero .eyebrow{display:inline-block;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--warn);font-weight:800;background:#fff7e6;padding:5px 12px;border-radius:999px;margin-bottom:18px}
+  .hero h1{margin:0 0 12px;font-size:34px;letter-spacing:-.02em;font-weight:800}
+  .hero .lede{margin:0 0 22px;color:var(--mute);font-size:16px;max-width:560px;margin-left:auto;margin-right:auto}
+  .hero .icon{font-size:54px;margin-bottom:14px;line-height:1}
 
-  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px}
-  @media(max-width:760px){.stats-row{grid-template-columns:repeat(2,1fr)}}
-  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;text-align:center}
-  .stat .n{font-size:24px;font-weight:800;color:var(--ok);letter-spacing:-.02em}
-  .stat .l{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-top:4px}
+  .planned{margin-top:28px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px}
+  .planned h2{margin:0 0 10px;font-size:17px;font-weight:800;letter-spacing:-.01em}
+  .planned p{margin:0 0 10px;font-size:14.5px;color:var(--ink)}
+  .planned ul{margin:8px 0 0;padding-left:22px;font-size:14.5px;color:var(--ink)}
+  .planned li{margin:6px 0}
+  .planned li strong{font-weight:700}
 
-  .nonprofit-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:32px}
-  @media(max-width:760px){.nonprofit-grid{grid-template-columns:1fr}}
-  .np{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 26px;display:grid;grid-template-columns:60px 1fr;gap:18px;align-items:start}
-  .np .ico{width:48px;height:48px;border-radius:14px;background:#e8f6ee;color:#0a7a4d;font-size:24px;display:flex;align-items:center;justify-content:center}
-  .np h3{margin:0 0 4px;font-size:16px}
-  .np .cat{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:6px}
-  .np p{margin:0 0 10px;font-size:13.5px;color:var(--mute)}
-  .np .raised{font-size:13px;color:var(--ok);font-weight:700}
-  .np .donate-btn{display:inline-block;margin-top:8px;padding:7px 14px;background:#e8f6ee;color:#0a7a4d;border-radius:7px;font-size:13px;font-weight:700;text-decoration:none}
-  .np .donate-btn:hover{background:#0a7a4d;color:#fff}
+  .actions{margin-top:24px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:9px;font-weight:700;font-size:14px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;text-decoration:none}
+  .btn:hover{border-color:var(--ink)}
+  .btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn.primary:hover{background:#000}
 
-  .how-section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 32px;margin-bottom:24px}
-  .how-section h2{margin:0 0 14px;font-size:22px}
-  .how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-  @media(max-width:760px){.how-grid{grid-template-columns:repeat(2,1fr)}}
-  .how-step{padding:16px 18px;background:#f8fafc;border-radius:10px}
-  .how-step .num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--ok);color:#fff;font-weight:800;font-size:13px;margin-bottom:8px}
-  .how-step h4{margin:0 0 4px;font-size:14px}
-  .how-step p{margin:0;font-size:12.5px;color:var(--mute)}
-
-  .match-banner{background:linear-gradient(135deg,#fef9e7,#fff5c2);border:2px solid var(--gold);border-radius:14px;padding:24px 28px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
-  .match-banner .left{flex:1;min-width:280px}
-  .match-banner h3{margin:0 0 6px;font-size:18px;color:#5a4200}
-  .match-banner p{margin:0;font-size:14px;color:#7a5a00}
-  .match-banner .right{font-size:32px;font-weight:800;color:var(--gold);letter-spacing:-.02em}
-
-  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
-  summary{cursor:pointer;font-weight:600;font-size:14.5px}
-  details[open] summary{margin-bottom:8px}
-  details p{margin:0;color:var(--mute);font-size:14px}
-
-  footer{border-top:1px solid var(--line);padding:24px;text-align:center;font-size:13px;color:var(--mute);margin-top:40px}
+  .footer{margin-top:36px;text-align:center;font-size:12.5px;color:var(--mute)}
 </style>
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="manifest" href="manifest.webmanifest" />
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
-<meta name="theme-color" content="#0a84ff" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="LYMX" />
-<meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
-<div class="nav">
-  <div class="nav-inner">
-    <div class="brand">LYMX <span>·</span> Power</div>
-    <div class="nav-links">
-      <a href="customer-faq.html">FAQ</a>
-      <a href="giving-back.html">Giving back</a>
-      <a href="customer-wallet.html">My wallet</a>
-    </div>
-  </div>
-</div>
-
-<div class="wrap">
-  <div class="crumb">Customer · Wallet · Donate LYMX</div>
-  <h1>Donate your LYMX to local nonprofits</h1>
-  <p class="lead">Have LYMX you'll never spend? Donate them straight to a Las Vegas nonprofit. We match every donation 1:1 — your $10 of LYMX becomes $20 of impact. Local, instant, no fees.</p>
-
-  <div class="hero-card">
-    <div>
-      <h2>$184k donated YTD 2026</h2>
-      <p>From Vegas customers like you, supporting local Vegas nonprofits. The LYMX 1:1 match doubles every dollar. 14 partner nonprofits to date.</p>
-    </div>
-    <div class="stat">
-      <div class="n">$184k</div>
-      <div class="l">2026 YTD impact</div>
-    </div>
-  </div>
-
-  <div class="stats-row">
-    <div class="stat"><div class="n">14</div><div class="l">Partner nonprofits</div></div>
-    <div class="stat"><div class="n">$92k</div><div class="l">From customers</div></div>
-    <div class="stat"><div class="n">$92k</div><div class="l">LYMX 1:1 match</div></div>
-    <div class="stat"><div class="n">3,400+</div><div class="l">Donor wallets</div></div>
-  </div>
-
-  <div class="match-banner">
-    <div class="left">
-      <h3>The LYMX 1:1 match</h3>
-      <p>For every LYMX you donate to a partner nonprofit, LYMX matches it dollar-for-dollar in cash, paid directly to the nonprofit. Up to $25,000/quarter network-wide cap.</p>
-    </div>
-    <div class="right">2× impact</div>
-  </div>
-
-  <h2 style="font-size:24px;margin:0 0 14px">14 Las Vegas nonprofits accepting LYMX</h2>
-  <div class="nonprofit-grid">
-
-    <div class="np">
-      <div class="ico">🏠</div>
-      <div>
-        <h3>Vegas Housing Coalition</h3>
-        <div class="cat">Housing · 501(c)(3)</div>
-        <p>Affordable housing assistance + legal aid for Vegas families facing displacement.</p>
-        <div class="raised">$28k raised in 2026</div>
-        <a class="donate-btn" href="#">Donate LYMX →</a>
-      </div>
-    </div>
-
-    <div class="np">
-      <div class="ico">🍱</div>
-      <div>
-        <h3>Three Square Food Bank</h3>
-        <div class="cat">Hunger · 501(c)(3)</div>
-        <p>Largest food bank in Southern Nevada. Each $1 donated provides 3 meals.</p>
-        <div class="raised">$24k raised in 2026</div>
-        <a class="donate-btn" href="#">Donate LYMX →</a>
-      </div>
-    </div>
-
-    <div class="np">
-      <div class="ico">📚</div>
-      <div>
-        <h3>Three Square Books</h3>
-        <div class="cat">Literacy · 501(c)(3)</div>
-        <p>Books to under-resourced kids in CCSD. 1 book per $5 donated.</p>
-        <div class="raised">$18k raised in 2026</div>
-        <a class="donate-btn" href="#">Donate LYMX →</a>
-      </div>
-    </div>
-
-    <div class="np">
-      <div class="ico">🐾</div>
-      <div>
-        <h3>The Animal Foundation</h3>
-        <div class="cat">Animal welfare · 501(c)(3)</div>
-        <p>Largest animal shelter in NV. Adoption, spay/neuter, emergency rescue.</p>
-        <div class="raised">$15k raised in 2026</div>
-        <a class="donate-btn" href="#">Donate LYMX →</a>
-      </div>
-    </div>
-
-    <div class="np">
-      <div class="ico">🎓</div>
-      <div>
-        <h3>UNLV Foundation Scholarships</h3>
-        <div class="cat">Education · 501(c)(3)</div>
-        <p>First-generation college scholarships for Las Vegas-raised students at UNLV.</p>
-        <div class="raised">$14k raised in 2026</div>
-        <a class="donate-btn" href="#">Donate LYMX →</a>
-      </div>
-    </div>
-
-    <div class="np">
-      <div class="ico">💪</div>
-      <div>
-        <h3>Boys & Girls Club Las Vegas</h3>
-        <div class="cat">Youth · 501(c)(3)</div>
-        <p>After-school programs and mentorship for 9,000+ Vegas kids each year.</p>
-        <div class="raised">$12k raised in 2026</div>
-        <a class="donate-btn" href="#">Donate LYMX →</a>
-      </div>
-    </div>
-
-    <div class="np">
-      <div class="ico">🏥</div>
-      <div>
-        <h3>Nevada Childhood Cancer Foundation</h3>
-        <div class="cat">Health · 501(c)(3)</div>
-        <p>Direct aid + research support for childhood-cancer families in southern NV.</p>
-        <div class="raised">$11k raised in 2026</div>
-        <a class="donate-btn" href="#">Donate LYMX →</a>
-      </div>
-    </div>
-
-    <div class="np">
-      <div class="ico">🎨</div>
-      <div>
-        <h3>Nevada Ballet Theatre</h3>
-        <div class="cat">Arts · 501(c)(3)</div>
-        <p>Free ballet classes + scholarships for kids who couldn't otherwise access training.</p>
-        <div class="raised">$9k raised in 2026</div>
-        <a class="donate-btn" href="#">Donate LYMX →</a>
-      </div>
-    </div>
-
-    <div class="np">
-      <div class="ico">🌳</div>
-      <div>
-        <h3>Outside Las Vegas Foundation</h3>
-        <div class="cat">Environment · 501(c)(3)</div>
-        <p>Trail maintenance + youth outdoor programs at Red Rock + Mount Charleston.</p>
-        <div class="raised">$8k raised in 2026</div>
-        <a class="donate-btn" href="#">Donate LYMX →</a>
-      </div>
-    </div>
-
-    <div class="np">
-      <div class="ico">🏆</div>
-      <div>
-        <h3>Special Olympics Nevada</h3>
-        <div class="cat">Sports / inclusion · 501(c)(3)</div>
-        <p>Year-round athletic competition + community programs for athletes with intellectual disabilities.</p>
-        <div class="raised">$7k raised in 2026</div>
-        <a class="donate-btn" href="#">Donate LYMX →</a>
-      </div>
-    </div>
-
-    <div class="np">
-      <div class="ico">🩺</div>
-      <div>
-        <h3>Volunteers in Medicine of S. Nevada</h3>
-        <div class="cat">Health · 501(c)(3)</div>
-        <p>Free medical care for working uninsured Las Vegas residents.</p>
-        <div class="raised">$7k raised in 2026</div>
-        <a class="donate-btn" href="#">Donate LYMX →</a>
-      </div>
-    </div>
-
-    <div class="np">
-      <div class="ico">👵</div>
-      <div>
-        <h3>Catholic Charities of Southern Nevada</h3>
-        <div class="cat">Senior support · 501(c)(3)</div>
-        <p>Meals on Wheels + senior services across Clark County.</p>
-        <div class="raised">$6k raised in 2026</div>
-        <a class="donate-btn" href="#">Donate LYMX →</a>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="how-section">
-    <h2>How donating LYMX works</h2>
-    <div class="how-grid">
-      <div class="how-step">
-        <div class="num">1</div>
-        <h4>Open wallet</h4>
-        <p>wallet.lymx.com → "Donate" tab</p>
-      </div>
-      <div class="how-step">
-        <div class="num">2</div>
-        <h4>Pick a nonprofit</h4>
-        <p>14 verified partners. Read about their work.</p>
-      </div>
-      <div class="how-step">
-        <div class="num">3</div>
-        <h4>Choose amount</h4>
-        <p>Any LYMX amount, $1 minimum.</p>
-      </div>
-      <div class="how-step">
-        <div class="num">4</div>
-        <h4>LYMX matches</h4>
-        <p>1:1 match in cash. Both go to the nonprofit.</p>
-      </div>
-    </div>
-  </div>
-
-  <h2 style="font-size:22px;margin:32px 0 14px">FAQ</h2>
-  <details><summary>How does the 1:1 match work?</summary><p>You donate LYMX (which has redemption value at participating Businesses). LYMX simultaneously donates an equal cash amount directly to the nonprofit. Your $10 of LYMX → $10 of LYMX redeemable by the nonprofit + $10 in cash from LYMX = $20 total impact.</p></details>
-  <details><summary>What does the nonprofit do with the LYMX?</summary><p>They redeem at participating Businesses for goods + services. Some buy meals from LYMX restaurants for their programs. Some use it for office supplies, supplies for events, etc. They have full flexibility.</p></details>
-  <details><summary>Is my donation tax-deductible?</summary><p>Yes — for the cash-equivalent value of donated LYMX. The nonprofit issues you a tax receipt. Consult your tax advisor for specifics. Note: only the LYMX value (your donation) is tax-deductible to you; the LYMX 1:1 match is deductible by LYMX, not by you.</p></details>
-  <details><summary>Can I suggest a nonprofit to add to the program?</summary><p>Yes — email <code>charity@lymx.com</code> with the nonprofit's name + 501(c)(3) status + Vegas connection. We add 1-3 new partners per quarter based on customer + Business votes.</p></details>
-  <details><summary>Is there a cap on the LYMX 1:1 match?</summary><p>$25,000/quarter network-wide. If we hit the cap, donations still go through but the match pauses for the rest of the quarter. We notify everyone when match resets.</p></details>
-  <details><summary>What about Businesses donating their LYMX revenue?</summary><p>Businesses can donate LYMX too — see <a href="giving-back.html">giving-back</a> for the Business-side donation tools. They're separate from customer donations but contribute to the same nonprofits.</p></details>
-
-  <p style="text-align:center;margin-top:32px;font-size:14px;color:var(--mute)">All nonprofits are verified 501(c)(3) entities with active Vegas operations. Annual audit at <a href="transparency.html">transparency report</a>.</p>
-
-</div>
-
-<footer>
-  © 2026 LYMX Power · Las Vegas, NV · <a href="giving-back.html" style="color:#5a6373">Business giving back</a> · <a href="vegas-impact.html" style="color:#5a6373">Local impact report</a> · <a href="customer-faq.html" style="color:#5a6373">FAQ</a>
-</footer>
 <script src="lymx-config.js"></script>
-<script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
+<script src="lymx-nav.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+
+<main class="wrap">
+  <div class="crumb"><a href="/customer-dashboard.html">← Dashboard</a></div>
+
+  <section class="hero">
+    <div class="icon">💝</div>
+    <span class="eyebrow">Coming soon</span>
+    <h1>Donate LYMX</h1>
+    <p class="lede">A donation flow that lets you give LYMX directly from your wallet to a local nonprofit is on the roadmap. It isn't live yet — we'd rather wait until the backend, the nonprofit registry, and the matching logic are real than ship a button that pretends to work.</p>
+    <div class="actions">
+      <a href="/customer-dashboard.html" class="btn primary">Back to dashboard</a>
+      <a href="/browse.html" class="btn">Browse LYMX businesses</a>
+    </div>
+  </section>
+
+  <section class="planned">
+    <h2>What this page will do when it ships</h2>
+    <ul>
+      <li><strong>Pick a nonprofit</strong> from a verified registry of partner nonprofits.</li>
+      <li><strong>Donate any amount of LYMX</strong> from your wallet — instant, no fees.</li>
+      <li><strong>Get a receipt</strong> with the dollar value and the cause your gift supported.</li>
+      <li><strong>See running totals</strong> on the nonprofit's profile so you can watch the network's impact compound.</li>
+    </ul>
+    <p style="margin-top:14px;color:var(--mute);font-size:13.5px">If you want to be notified the moment it goes live, use the <strong>Send Feedback</strong> chip in the corner and ask to be on the donations beta list.</p>
+  </section>
+
+  <p class="footer">Last updated 2026-05-26 — page is intentionally a placeholder until the donations backend ships.</p>
+</main>
 </body>
 </html>
