@@ -196,7 +196,14 @@ serve(async (req: Request) => {
         return errorResponse("Failed to generate unique invitation token after 5 tries", 500);
     }
 
-    const inviteUrl = `${publicSiteBaseUrl()}/biz-signup.html?invite_token=${invitation_token}`;
+    // 2026-05-27 #05 — append the assigned partner's id as ?ref so when the
+    // prospect opens the link, biz-signup.html (and downstream attribution)
+    // sees which partner sent them. Previous URL had only ?invite_token, so
+    // the partner ref was lost and the prospect's signup couldn't be
+    // attributed back. assigned_partner_id is the canonical partners.id UUID
+    // (not the human P-000xxx code); biz-signup.html resolves either format.
+    const refSuffix = resolvedAssignedPartnerId ? `&ref=${resolvedAssignedPartnerId}` : "";
+    const inviteUrl = `${publicSiteBaseUrl()}/biz-signup.html?invite_token=${invitation_token}${refSuffix}`;
 
     // ─── Optionally dispatch email ───
     let email_dispatched = false;

@@ -605,7 +605,7 @@
         topGrid.innerHTML = topRows.map(function(r){ return renderCard(r, { kind: 'rated' }); }).join('');
         topSection.style.display = '';
       }
-    } catch (e) { /* leave hidden */ }
+    } catch (e) { console.warn('[index.html:608] Top-rated-local shelf failed to load:', e); }
 
     // ----- G: New on LYMX -----
     try {
@@ -622,7 +622,7 @@
       } else if (newSection) {
         newSection.style.display = 'none';
       }
-    } catch (e) { /* leave default */ }
+    } catch (e) { console.warn('[index.html:625] New-on-LYMX shelf failed to load:', e); }
   });
 })();
 </script>
