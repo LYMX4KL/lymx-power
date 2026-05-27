@@ -380,7 +380,11 @@
       function done(canceled, rect) {
         try { if (activePointerId !== null && picker.releasePointerCapture) picker.releasePointerCapture(activePointerId); } catch (e) { /* bandaid-ok: pointer-capture release is best-effort; some browsers throw if id already released */ }
         picker.remove();
-        overlay.style.display = 'flex';
+        // Restore to class-controlled visibility -- the .on class is still
+        // present here, so clearing the inline display lets the stylesheet
+        // (.on{display:flex}) show the modal again. Do NOT pin an inline 'flex'
+        // here: it would survive a later close() and keep the overlay visible.
+        overlay.style.display = '';
         document.removeEventListener('keydown', onEsc);
         if (canceled || !rect || rect.w < 6 || rect.h < 6) return;
         // 2026-05-20 #c40f06e2 - was missing scroll offset. The picker uses
@@ -697,6 +701,17 @@
   }
   function close() {
     overlay.classList.remove('on');
+    // 2026-05-27 root-cause fix (tickets: Cancel/X/backdrop unresponsive after
+    // using the Crop screenshot tool). captureRegion() hides the modal with an
+    // inline overlay.style.display='none' and used to restore it with ='flex'.
+    // An inline display value overrides the stylesheet rule
+    // #lymx-fb-overlay{display:none}, so removing the .on class alone could not
+    // hide the overlay -- the form stayed open and every close path (X, Cancel,
+    // backdrop, Esc) looked dead. close() now clears the inline display and
+    // visibility so it is the single authoritative reset, regardless of what
+    // the capture flow left behind.
+    overlay.style.display = '';
+    overlay.style.visibility = '';
     document.body.style.overflow = '';
   }
   // 2026-05-26 root-cause fix for Helen's "Feedback box frozen" ticket
