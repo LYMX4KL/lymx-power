@@ -540,5 +540,48 @@ If timing's not right, no worries. If it is — 15 minutes here: [link]
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
+
+<!-- 2026-05-27 #32/#33 — Dead-button anti-pattern fix. The asset Download/Preview
+     buttons all had href="#" because the actual files aren't hosted yet (content
+     pack ships gradually). Result: testers (Dave + marketing) clicked Download
+     and nothing happened, filed two duplicate tickets. Now: every href="#"
+     button inside .asset triggers a pre-filled mailto:materials@getlymx.com
+     request, and a top-of-page banner explains the model. Real direct downloads
+     replace the mailto once each asset file lands. Same pattern partner-social-kit
+     uses for in-progress graphics. -->
+<script>
+(function () {
+  'use strict';
+  // 1. Inject the explanatory banner just below the page header
+  document.addEventListener('DOMContentLoaded', function () {
+    var firstPanel = document.querySelector('.panel') || document.querySelector('.asset-grid');
+    if (!firstPanel || firstPanel.dataset.hubBannerInjected === '1') return;
+    firstPanel.dataset.hubBannerInjected = '1';
+    var banner = document.createElement('div');
+    banner.style.cssText = 'background:linear-gradient(135deg,#fff5e6,#fff0d6);border:1px solid #f0c987;border-radius:11px;padding:13px 16px;margin-bottom:18px;font-size:13.5px;color:#7a4a0e;line-height:1.55';
+    banner.innerHTML = '<strong>Content drops weekly.</strong> Click any Download / Open / Preview button below \u2014 we\u2019ll email the latest version of that asset to your inbox within 24 hours. Real direct downloads ship as each asset is finalized.';
+    firstPanel.parentNode.insertBefore(banner, firstPanel);
+  });
+
+  // 2. Intercept clicks on any .actions a[href="#"] and convert to a pre-filled
+  //    mailto:materials@getlymx.com request naming the specific asset.
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a.btn');
+    if (!a) return;
+    var href = a.getAttribute('href') || '';
+    if (href !== '#' && href !== '') return; // real links pass through
+    var asset = a.closest('.asset');
+    var assetName = (asset && (asset.querySelector('h3') || asset.querySelector('.title')) || {}).textContent || 'an asset';
+    assetName = assetName.trim();
+    var label = (a.textContent || '').trim() || 'asset';
+    e.preventDefault();
+    var subject = 'Content Hub request: ' + assetName;
+    var body = 'Hi LYMX team,\n\nPlease send me the latest version of "' + assetName + '" (button: "' + label + '"). \n\nThanks!';
+    var mailto = 'mailto:materials@getlymx.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    window.location.href = mailto;
+  });
+})();
+</script>
+
 </body>
 </html>
