@@ -137,6 +137,12 @@
   function escapeHtml(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
   function escapeAttr(s){ return escapeHtml(s); }
 
+  // 2026-05-26 #de56d42b - hoisted so loadPlaybook can resolve .md links inside
+  // rendered playbooks back to INDEX entries (without this, relative links like
+  // [Sign up](02-signup.md) inside business-onboarding/README.md resolve to the
+  // site root -> 404).
+  var ALL_SECTIONS = [];
+
   // Wait for config + sidebar to provide the role detection
   while (!window.LYMX_CONFIG) { await new Promise(function(r){ setTimeout(r, 60); }); }
 
@@ -282,6 +288,53 @@
     return { meta: meta, body: m[2] };
   }
 
+  // -------------------- Rewrite relative .md links to in-app navigations --------------------
+  // 2026-05-26 #de56d42b - without this, a markdown link like [Sign up](02-signup.md)
+  // inside business-onboarding/README.md renders as <a href="02-signup.md"> and the
+  // browser navigates to /02-signup.md (404). This walks rendered links, resolves
+  // each relative .md href against the playbook's own folder, then matches the
+  // resolved path against INDEX entries to find a slug. Matched: rewrites to
+  // ?p=<slug> + in-page loader. Unmatched (the linked playbook isn't written yet):
+  // shows a "not yet written" tooltip + disables the link rather than 404ing.
+  function rewriteInternalLinks(currentFile){
+    var view = document.getElementById('pbView');
+    if (!view) return;
+    var folder = currentFile.indexOf('/') >= 0 ? currentFile.replace(/\/[^\/]+$/, '/') : '';
+    var base = location.origin + '/playbooks/' + folder;
+    Array.prototype.forEach.call(view.querySelectorAll('a[href]'), function(a){
+      var href = a.getAttribute('href');
+      if (!href) return;
+      if (/^(https?:|\/\/|mailto:|tel:|#)/i.test(href)) return;
+      if (!/\.md(\?|#|$)/i.test(href)) return;
+      var url;
+      try { url = new URL(href, base); } catch (e) { return; }
+      if (url.origin !== location.origin) return;
+      var path = url.pathname.replace(/^\/playbooks\//, '');
+      var match = null;
+      ALL_SECTIONS.forEach(function(s){
+        s.items.forEach(function(it){
+          if (it.file && it.file === path) match = it;
+        });
+      });
+      if (match){
+        a.setAttribute('href', '?p=' + encodeURIComponent(match.slug));
+        a.addEventListener('click', function(e){
+          e.preventDefault();
+          Array.prototype.forEach.call(document.querySelectorAll('#pbIndex a.active'), function(x){ x.classList.remove('active'); });
+          var s = document.querySelector('#pbIndex [data-slug="' + match.slug + '"]');
+          if (s) s.classList.add('active');
+          loadPlaybook(match.slug, match.file);
+        });
+      } else {
+        a.removeAttribute('href');
+        a.setAttribute('title', 'This playbook step is referenced but not written yet.');
+        a.style.color = '#999';
+        a.style.cursor = 'not-allowed';
+        a.style.textDecoration = 'line-through';
+      }
+    });
+  }
+
   // -------------------- Load + render a playbook --------------------
   async function loadPlaybook(slug, file){
     var view = document.getElementById('pbView');
@@ -304,6 +357,7 @@
                  + '</div>';
       }
       view.innerHTML = metaHtml + bodyHtml;
+      rewriteInternalLinks(file);
       view.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (e){
       view.innerHTML = '<div class="pb-empty" style="color:#b81324">Couldn\'t load this playbook (' + escapeHtml(e.message || String(e)) + '). Try refreshing.</div>';
@@ -317,6 +371,7 @@
     if (!r.ok) throw new Error('http ' + r.status);
     var md = await r.text();
     var sections = parseIndex(md);
+    ALL_SECTIONS = sections;
     renderIndex(sections);
 
     var params = new URLSearchParams(location.search);

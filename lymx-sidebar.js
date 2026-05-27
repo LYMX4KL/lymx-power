@@ -222,6 +222,10 @@
       { href: 'refer.html',              icon: '\u{1F4E8}', label: 'Refer Friends' },
       { href: 'share-hub.html',          icon: '\u{1F4E3}', label: 'Share hub' },
       { href: 'my-bookings.html',        icon: '\u{1F4C5}', label: 'My bookings' },
+      // 2026-05-26 #8a0a4296 (Dave) — my-rsvps.html existed but was unreachable
+      // from any nav. Wiring directly into customer + business + partner menus.
+      // Page lists user's RSVPs to LYMX-hosted events (launch-event, etc.).
+      { href: 'my-rsvps.html',           icon: '\u{1F39F}', label: 'My RSVPs' },
       { href: 'my-reviews.html',         icon: '⭐',    label: 'My Reviews' },
       { href: 'my-saved-places.html',   icon: '\u{1F4CC}', label: 'Saved Places' },
       { href: 'customer-charity.html',   icon: '\u{1F49D}', label: 'Donate LYMX' },
@@ -246,6 +250,7 @@
       { href: 'biz-payouts.html',        icon: '\u{1F3E6}', label: 'Payouts (Stripe)' },
       { href: 'biz-pos-comparison.html', icon: '\u{1F50C}', label: 'POS / Integrations' },
       { href: 'my-bookings.html',        icon: '\u{1F4C5}', label: 'My bookings' },
+      { href: 'my-rsvps.html',           icon: '\u{1F39F}', label: 'My RSVPs' },
       { section: 'Help' },
       { href: 'playbooks.html',          icon: '\u{1F4D6}', label: 'Playbooks' },
       { section: 'Account' },
@@ -272,6 +277,7 @@
       { href: 'partner-resources.html',  icon: '\u{1F4BC}', label: 'Sales Toolkit' },
       { href: 'team-calendar.html',      icon: '\u{1F4C5}', label: 'My Calendar' },
       { href: 'my-bookings.html',        icon: '\u{1F4DD}', label: 'My bookings' },
+      { href: 'my-rsvps.html',           icon: '\u{1F39F}', label: 'My RSVPs' },
       // 2026-05-25 Cluster A — Dave (P-000100) filed 3 tickets that all reduce
       // to 'these pages exist but partners can't find them in the sidebar':
       //   - Notifications feature
