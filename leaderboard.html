@@ -189,8 +189,12 @@
 </footer>
 
 <script>
+(function () {
   // Public leaderboard data — populated by loadFromDb() below.
   // Mock data wrapped 2026-05-18 so no fake "Maya Hopkins / Sienna Vega" appears.
+  // 2026-05-27 root-cause: file was missing this IIFE opener while keeping the
+  // closing })() at the bottom — every tab click had been silently throwing
+  // SyntaxError at parse time. Adding the opener so the handler actually wires.
   let DATA = {
     customer: { title: 'Top referrers — Customers', podium: [], list: [] },
     partner:  { title: 'Top referrers — Partners',  podium: [], list: [] },
