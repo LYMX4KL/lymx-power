@@ -167,6 +167,34 @@
         });
       </script>
 
+      <!-- 2026-05-27 #15 — Confirm Password field added so users can verify their typed password before submit. Validation happens client-side in the submit handler. -->
+      <label for="confirmPassword">Confirm password</label>
+      <div style="position:relative">
+        <input id="confirmPassword" type="password" required minlength="8" autocomplete="new-password" style="padding-right:42px" />
+        <button type="button" id="pwToggleConfirm" aria-label="Show password" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;font-size:18px;padding:4px">👁️</button>
+      </div>
+      <div id="pwMatchHint" style="font-size:12px;color:#5b6472;margin-top:4px;min-height:16px"></div>
+      <script>
+        (function () {
+          var pw = document.getElementById('password');
+          var cf = document.getElementById('confirmPassword');
+          var hint = document.getElementById('pwMatchHint');
+          document.getElementById('pwToggleConfirm').addEventListener('click', function () {
+            var hidden = cf.type === 'password';
+            cf.type = hidden ? 'text' : 'password';
+            this.textContent = hidden ? '🙈' : '👁️';
+            this.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
+          });
+          function check() {
+            if (!cf.value) { hint.textContent = ''; hint.style.color = '#5b6472'; return; }
+            if (pw.value === cf.value) { hint.textContent = '✓ Passwords match'; hint.style.color = '#13a26b'; }
+            else { hint.textContent = '⚠ Passwords don\'t match yet'; hint.style.color = '#b81324'; }
+          }
+          pw.addEventListener('input', check);
+          cf.addEventListener('input', check);
+        })();
+      </script>
+
       <button class="btn-submit" id="submitBtn">Create account &amp; claim my LYMX</button>
 
       <div class="status" id="status"></div>
@@ -304,6 +332,10 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   const password = document.getElementById('password').value;
 
   if (!first || !email || !password) { setStatus('Please fill in name, email, and password.', 'err'); return; }
+  // 2026-05-27 #15 — Confirm Password match check
+  const confirmPw = document.getElementById('confirmPassword').value;
+  if (!confirmPw) { setStatus('Please confirm your password.', 'err'); return; }
+  if (password !== confirmPw) { setStatus('Passwords don\'t match. Re-type your confirm password.', 'err'); return; }
   if (!phone || phone.replace(/\D/g, '').length < 7) { setStatus('Please enter a phone number — businesses use it to look you up at checkout.', 'err'); return; }
   if (password.length < 8) { setStatus('Password must be at least 8 characters.', 'err'); return; }
   if (!bizConfig) { setStatus('Business config not loaded yet — try again in a moment.', 'err'); return; }

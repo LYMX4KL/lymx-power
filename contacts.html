@@ -916,7 +916,11 @@ document.getElementById('cSave').addEventListener('click', async () => {
     job_title:  document.getElementById('cJob').value.trim() || null,
     notes:      document.getElementById('cNotes').value.trim() || null
   };
-  if (!/[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(payload.email)) { showToast('Email is required.', 'err'); return; }
+  // 2026-05-27 #17 — toast said "Email is required" but the regex tests FORMAT.
+  // Empty-email is the form-level required attribute. Toast now describes the
+  // actual failure (bad format).
+  if (!payload.email || !payload.email.trim()) { showToast('Email is required.', 'err'); return; }
+  if (!/[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(payload.email)) { showToast('Please enter a valid email address.', 'err'); return; }
   let r;
   let contactId = editingId;
   if (editingId) {
