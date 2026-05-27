@@ -325,19 +325,77 @@
       });
     });
 
+    // Sprint 3 (2026-05-27) — partner_notifications feed. Adds commission /
+    // activation / settlement / system events for the signed-in user IF they
+    // have a partners row. Customers without a partners row skip silently
+    // (no error — the .from() select just returns []). The kind→type mapping
+    // routes each event to the existing visual class so the feed renders
+    // consistently across customer + partner flavors.
+    //
+    // Mark-read goes through fn_mark_notification_read (RLS-safe). We
+    // store the real DB row id on _pnId so readOne() can pick it back up.
+    try {
+      const pnRes = await sb.from('partner_notifications')
+        .select('id, kind, title, body, target_url, is_read, created_at, related_entity_type, related_entity_id')
+        .order('created_at', { ascending: false })
+        .limit(60);
+      const KIND_TO_TYPE = {
+        commission_earned:  'earn',
+        settlement_paid:    'earn',
+        direct_activation:  'referral',
+        downline_signup:    'referral',
+        qualifier_progress: 'promo',
+        system:             'system',
+      };
+      (pnRes.data || []).forEach(n => {
+        notifications.push({
+          id: nextId++,
+          _pnId: n.id,
+          _target: n.target_url || null,
+          type: KIND_TO_TYPE[n.kind] || 'system',
+          day: dayLabel(n.created_at), time: timeLabel(n.created_at),
+          title: n.title,
+          desc: n.body || '',
+          unread: n.is_read === false,
+          v: '', vClass: 'muted',
+          _ts: n.created_at,
+        });
+      });
+    } catch (e) { console.warn('[notifications] partner_notifications fetch', e); }
+
+    // Sprint 3 — wrap the in-memory readOne (defined above as a vanilla
+    // unread=false setter) 
+    // setter) so partner-notification rows ALSO call fn_mark_notification_read
+    // to persist read state across reloads. Customer earn/spend rows (no _pnId)
+    // keep the existing in-memory behavior since they don't have a backing
+    // notification row to update.
+    if (typeof readOne === 'function') {
+      const _origReadOne = readOne;
+      readOne = function (id) {
+        const n = notifications.find(x => x.id === id);
+        if (n && n._pnId) {
+          sb.rpc('fn_mark_notification_read', { p_notification_id: n._pnId })
+            .then(r => { if (r.error) console.warn('[notifications] mark-read', r.error); });
+          if (n._target) {
+            setTimeout(function () { location.href = n._target; }, 80);
+          }
+        }
+        _origReadOne(id);
+      };
+    }
+
     notifications.sort((a, b) => (b._ts || '').localeCompare(a._ts || ''));
     if (typeof render === 'function') render();
 
     const feed = document.getElementById('feed');
     if (feed && notifications.length === 0) {
-      // 2026-05-24 #f45a94ab (Rae) - empty-state with actionable shortcuts so users don't have to navigate to find Invite/Browse. Primary CTA = share-hub (universal across roles). Secondary CTA = browse rewards.
       feed.innerHTML = '<div class="empty">'
-        + '<div class="ic">📭</div>'
+        + '<div class="ic">\u{1F4ED}</div>'
         + '<div style="font-weight:700;color:#1a1f27;font-size:15.5px;margin-bottom:6px">No notifications yet</div>'
         + '<div style="font-size:13.5px;line-height:1.5;color:#5b6472;margin-bottom:18px;max-width:320px;margin-left:auto;margin-right:auto">Earn, spend, or invite a friend and updates will show up here.</div>'
         + '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'
-        +   '<a href="share-hub.html" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:9px;font-weight:700;font-size:13.5px;background:#0e1116;color:#fff;text-decoration:none">📤 Invite a friend</a>'
-        +   '<a href="browse.html" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:9px;font-weight:700;font-size:13.5px;background:#f6f7f9;color:#0e1116;text-decoration:none;border:1px solid #e6e8ec">🔎 Browse rewards</a>'
+        +   '<a href="share-hub.html" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:9px;font-weight:700;font-size:13.5px;background:#0e1116;color:#fff;text-decoration:none">\u{1F4E4} Invite a friend</a>'
+        +   '<a href="browse.html" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:9px;font-weight:700;font-size:13.5px;background:#f6f7f9;color:#0e1116;text-decoration:none;border:1px solid #e6e8ec">\u{1F50E} Browse rewards</a>'
         + '</div>'
         + '</div>';
     }
