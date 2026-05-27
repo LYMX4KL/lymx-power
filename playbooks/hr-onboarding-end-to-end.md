@@ -10,7 +10,7 @@ prereqs:
 duration_min: 25
 difficulty: medium
 last_verified: 2026-05-25
-last_revised: 2026-05-25 (Step 4 Manage button; Step 5 home-address model; Step 6 optional; sub-role enum)
+last_revised: 2026-05-27 (added Step 0 Add applicant; rewrote Step 2 against new offer pipeline; fixed wrong table names — was offers.offer_letter_path/(no separate counter-offer table — revised offers are new draft rows in `offers`)/policy_acknowledgments/clock_in_locations, now offers.offer_letter_path/policy_acknowledgments/clock_in_locations)
 related:
   - partner-email-setup
   - admin-handle-feedback
@@ -57,29 +57,51 @@ You'll see them appear in `admin-personnel-records.html` with status **Active**.
 
 ## Steps
 
+### Step 0 — Add the applicant to the hiring pipeline
+
+**Where:** `/admin-hiring.html`
+**Do:** Click `+ Add applicant` at the top right. In the modal, enter:
+- First name + last name (both required — `job_applications.last_name` is `NOT NULL`)
+- Email (this is how the candidate gets pinged in later steps)
+- Phone (optional)
+- Source (Direct outreach / Careers page / Partner referral / LinkedIn / Indeed / Other — matches the `job_applications.source` enum)
+Click **Save + continue to offer**.
+**Element:** `#openAddApplicantBtn` opens the modal; `#appAddSubmit` saves.
+**Expect:** A row lands in `public.job_applications` with status `new` and `submitted_at = now()`. The page jumps to `/admin-generate-offer.html?app=<new_uuid>` with the applicant pre-selected in the dropdown.
+**If you see "Could not save: …":** check the error toast. Common causes: the email is malformed, or the auth session has expired (refresh + sign back in).
+**Why this is Step 0:** Before 2026-05-27 the offer-letter dropdown was empty for new hires and Helen was stuck — there was no way to insert a `job_applications` row from inside the admin app. Adding the applicant first is the prereq the rest of the playbook assumes.
+
 ### Step 1 — Generate the offer letter
 
-**Where:** `/admin-generate-offer.html`
-**Do:** Click `📄 Generate offer` at the top right of `admin-hiring.html`, OR navigate directly. Fill in:
-- Candidate's full legal name
-- Role title (e.g. "Senior Frontend Developer", "Partner Concierge")
-- Start date (typically next Monday)
-- Base compensation (annual salary or hourly rate)
-- Equity / bonus structure (if any — pulls from the active Benefits Policy)
+**Where:** `/admin-generate-offer.html` (you should already be here if you came from Step 0)
+**Do:** The applicant you just added is pre-selected at the top. Fill in:
+- Position title (e.g. "Senior PWA Engineer", "Partner Concierge")
+- Target role — pick from the dropdown OR choose **Other (specify below)** and type any custom role key (e.g. `concierge_support`, `partner_success_coach`). The role drives which onboarding-task templates seed in Step 5 of the trigger (`onboarding_task_templates.target_role` matches against this).
+- Employment type + work mode
+- Pay type (salary / hourly / commission-only), pay period, pay rate
+- Sign-on bonus (optional)
+- Start date (typically next Monday) + location
 
 Click `📄 Generate & save offer`.
 **Element:** `#genBtn`
-**Expect:** A PDF previews on the right side of the screen. The offer letter is also saved to the candidate's offer row in the database. Send the PDF to the candidate by email or share the auto-generated signing link.
-**If you see "Could not save offer":** double-check every field is filled. Empty fields (especially compensation) silently fail validation.
+**Expect:** The offer letter HTML is saved to storage as `personnel-files/<application_uuid>/offer_letter_<ts>.html` and the path lands in `offers.offer_letter_path`. A new row appears in `public.offers` with status `draft`.
+**If you see "Could not save offer":** check the status banner. Common causes: pay rate is 0, start date is empty, or no Benefits Policy v1 has been seeded (run migration 055 or seed manually via SQL).
 
-### Step 2 — Wait for accept, handle counter-offers if any
+### Step 2 — Send the offer to the candidate, then mark their decision
 
-**Where:** `/admin-counter-offer-queue.html`
-**Do:** When the candidate replies with either an acceptance or a counter, you'll see their offer move into this queue.
-- If they accepted: click `Mark accepted` on their card and move to Step 3.
-- If they countered: click `Open counter` to see what they asked for, generate a revised offer (back to Step 1), or `Decline` the counter.
-**Expect:** Once accepted, the offer row flips to status `accepted` and the candidate's email shows on the personnel-records page in Step 3.
-**If the candidate is taking forever to reply:** that's normal. The offer stays in the queue indefinitely. Nudge them by personal text — the playbook doesn't auto-remind.
+**Where:** `/admin-counter-offer-queue.html` (titled "Offer pipeline" in the header)
+**Do:** Find their offer in the **Drafts** tab. Click **Send to candidate** — this flips `offers.status` to `sent` and stamps `sent_at = now()`. Then **copy the View letter link** (it opens the storage URL of the saved offer letter HTML) and paste it into your own email to the candidate. (Auto-emailing the offer is on the roadmap — for now Helen sends it manually so we know the candidate definitely received it.)
+
+When they reply:
+- **Accepted in writing:** open the **Sent · waiting** tab, find their row, click **Mark accepted**. Confirm in the dialog. This sets `offers.status = 'accepted'` + `accepted_at = now()` AND fires the `tg_offer_accepted_spawn_onboarding` trigger, which auto-creates the `staff_profiles` row + seeds onboarding tasks from `onboarding_task_templates` matching the `target_role` from Step 1.
+- **Declined:** click **Mark declined**, optionally type a brief reason. Status flips to `declined`, `declined_at = now()`.
+- **Want to pull the offer back:** click **Rescind** (works from Draft or Sent).
+- **Counter-offer / revised pay:** today this isn't a structured workflow — generate a new draft via Step 1 with the revised terms, then rescind the original.
+
+**Element:** `#sendToCandidate` / `#markAccepted` / `#markDeclined` are the per-row action handlers (look at the buttons in the Actions column).
+**Expect:** After Mark accepted, the offer moves to the **Accepted** tab. The candidate's `job_applications.status` also flips to `hired` automatically (also by the trigger). Open Personnel Records (`/admin-personnel-records.html`) to confirm a `staff_profiles` row exists for them — that's the Step 3 entry point.
+**If the candidate is taking forever to reply:** normal. Offers stay in **Sent · waiting** indefinitely. Nudge them by personal text.
+**If Mark accepted shows "Update failed":** the page logs the error in the banner. Most likely cause is an RLS policy that doesn't let Helen update `offers` for a different application_id — confirm she's an admin (`am_i_admin()` should return true).
 
 ### Step 3 — Add them as staff with the right sub-role
 
@@ -185,13 +207,13 @@ In the right column, tick the new staff member's name. Click `Assign →`.
 This section is for technical readers. Helen and other HR-tier admins don't need to read it.
 
 - **Tables touched** during this playbook, in order:
-  - Step 1 → `offers` (insert), `offer_documents` (insert)
-  - Step 2 → `offers` (update status), `offer_counters` (insert if applicable)
+  - Step 1 → `offers` (insert), `offers.offer_letter_path` (insert)
+  - Step 2 → `offers` (update status), `(no separate counter-offer table — revised offers are new draft rows in `offers`)` (insert if applicable)
   - Step 3 → `staff_roles` (insert), `staff_profiles` (insert)
   - Step 4 → `personnel_files` view (read-only; populated by trigger on `staff_profiles`)
-  - Step 5 → `staff_locations` (insert)
+  - Step 5 → `clock_in_locations` (insert)
   - Step 6 → `clock_in_permissions` (insert)
-  - Step 7 → `policy_assignments` (bulk insert; unique constraint on (`staff_user_id`, `policy_id`) prevents dupes)
+  - Step 7 → `policy_acknowledgments` (bulk insert; unique constraint on (`staff_user_id`, `policy_id`) prevents dupes)
   - Step 8 → `onboarding_bookings` (insert by booking link; managed by `book-onboarding-call` EF)
   - Step 9 → Edge Function `provision-staff-email` fires on `staff_roles` insert via trigger
   - Step 10 → no DB writes, manual sanity walkthrough

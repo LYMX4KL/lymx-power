@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="LYMX Admin — counter-offer queue: review offers staff have countered, decide accept/decline/withdraw." />
 <meta name="robots" content="noindex,nofollow" />
-<title>Counter-offer queue · LYMX Admin</title>
+<title>Offer pipeline · LYMX Admin</title>
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:1080px}
   *{box-sizing:border-box}
@@ -53,8 +53,8 @@
 
 <main class="wrap page">
   <div class="page-head">
-    <h1>Counter-offer queue</h1>
-    <p>Job offers you've sent. Filter by status — focus on "countered" to review what candidates pushed back on. Use <a href="admin-generate-offer.html" style="color:var(--accent);text-decoration:underline">Generate offer</a> to draft a new one.</p>
+    <h1>Offer pipeline</h1>
+    <p>Every offer letter you've generated, grouped by status. From here Helen can Send a draft to the candidate, mark a Sent offer as Accepted (which fires the auto-onboarding trigger), or rescind. Use <a href="admin-generate-offer.html" style="color:var(--accent);text-decoration:underline">Generate offer</a> to draft a new one.</p>
   </div>
 
   <div id="bannerArea"></div>
@@ -66,8 +66,8 @@
       <tr>
         <th>Candidate</th>
         <th>Position</th>
-        <th>Original</th>
-        <th>Counter</th>
+        <th>Pay</th>
+        <th>Employment</th>
         <th>Status</th>
         <th>Sent</th>
         <th>Actions</th>
@@ -79,15 +79,25 @@
 
 <script src="lymx-sidebar.js" defer></script>
 <script>
+// 2026-05-27 #HR-P2 — rewrite against the REAL offers schema (migration 056).
+// Pre-fix this page referenced columns that don't exist (candidate_name,
+// position_title, offer_pay_rate_cents, counter_pay_rate_cents, counter_notes,
+// withdrawn_at) and a 'countered' status that isn't in the offers enum. Result:
+// every row painted blank, status filtering broken, and the "Withdraw" button
+// silently 23514'd. Now: SELECT offers + batch-join job_applications for
+// candidate info, status enum = (draft|sent|accepted|declined|expired|rescinded),
+// actions wired to real lifecycle transitions including a Send-to-candidate
+// button that flips draft -> sent + sent_at = now().
 const TABS = [
-  { key:'countered', label:'Countered' },
+  { key:'draft',     label:'Drafts' },
   { key:'sent',      label:'Sent · waiting' },
   { key:'accepted',  label:'Accepted' },
-  { key:'declined',  label:'Declined / withdrawn' },
+  { key:'closed',    label:'Declined / rescinded / expired' },
   { key:'all',       label:'All' }
 ];
-let _activeTab = 'countered';
+let _activeTab = 'draft';
 let _offers = [];
+let _appsById = {};
 
 (async function init(){
   if (!window.LYMX || !window.LYMX.getSession) { setTimeout(init,100); return; }
@@ -103,33 +113,51 @@ function banner(t, m) {
   $('bannerArea').innerHTML = '<div class="banner ' + t + '">' + esc(m) + '</div>';
   if (t === 'ok') setTimeout(() => $('bannerArea').innerHTML = '', 4000);
 }
+function bucketOf(status) {
+  const s = (status || '').toLowerCase();
+  if (s === 'draft') return 'draft';
+  if (s === 'sent') return 'sent';
+  if (s === 'accepted') return 'accepted';
+  if (s === 'declined' || s === 'rescinded' || s === 'expired') return 'closed';
+  return 'all';
+}
 
 async function load() {
   const cfg = window.LYMX_CONFIG;
   const session = await window.LYMX.getSession();
   const tok = session.access_token;
+  const headers = { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer '+tok };
+
+  // Pull offers — real columns per migration 056: title, target_role, pay_*, status, sent_at, accepted_at, ...
   const r = await fetch(cfg.SUPABASE_URL +
-    '/rest/v1/offers?select=*&order=sent_at.desc.nullslast,created_at.desc&limit=200', {
-    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer '+tok }
-  });
-  if (!r.ok) { $('oBody').innerHTML = '<tr><td colspan="7" class="empty">Load failed.</td></tr>'; return; }
+    '/rest/v1/offers?select=id,application_id,title,target_role,employment_type,pay_type,pay_rate_cents,pay_period,start_date,location,work_mode,sign_on_bonus_cents,offer_letter_path,status,sent_at,accepted_at,declined_at,decline_reason,created_at' +
+    '&order=created_at.desc&limit=200', { headers });
+  if (!r.ok) { $('oBody').innerHTML = '<tr><td colspan="7" class="empty">Load failed: ' + esc((await r.text()).slice(0,160)) + '</td></tr>'; return; }
   _offers = await r.json();
+
+  // Batch-fetch candidate info from job_applications for each offer.
+  const appIds = [...new Set(_offers.map(o => o.application_id).filter(Boolean))];
+  _appsById = {};
+  if (appIds.length) {
+    const ar = await fetch(cfg.SUPABASE_URL +
+      '/rest/v1/job_applications?id=in.(' + appIds.join(',') + ')&select=id,first_name,last_name,email,phone',
+      { headers });
+    if (ar.ok) {
+      const apps = await ar.json();
+      apps.forEach(a => { _appsById[a.id] = a; });
+    }
+  }
+
   paintTabs();
   paintList();
 }
 
 function paintTabs() {
-  const counts = { countered:0, sent:0, accepted:0, declined:0, all:_offers.length };
-  _offers.forEach(o => {
-    const s = (o.status || '').toLowerCase();
-    if (s === 'countered') counts.countered += 1;
-    else if (s === 'sent' || s === 'draft') counts.sent += 1;
-    else if (s === 'accepted') counts.accepted += 1;
-    else if (s === 'declined' || s === 'withdrawn' || s === 'expired') counts.declined += 1;
-  });
+  const counts = { draft:0, sent:0, accepted:0, closed:0, all:_offers.length };
+  _offers.forEach(o => { counts[bucketOf(o.status)] = (counts[bucketOf(o.status)] || 0) + 1; });
   $('tabs').innerHTML = TABS.map(t =>
     '<button class="tab ' + (t.key === _activeTab ? 'active' : '') + '" data-tab="' + t.key + '">' +
-      esc(t.label) + '<span class="c">' + counts[t.key] + '</span>' +
+      esc(t.label) + '<span class="c">' + (counts[t.key] || 0) + '</span>' +
     '</button>'
   ).join('');
   $('tabs').querySelectorAll('.tab').forEach(b =>
@@ -139,30 +167,39 @@ function paintTabs() {
 
 function paintList() {
   let rows = _offers;
-  if (_activeTab === 'countered') rows = rows.filter(o => (o.status || '').toLowerCase() === 'countered');
-  else if (_activeTab === 'sent') rows = rows.filter(o => ['sent','draft'].includes((o.status || '').toLowerCase()));
-  else if (_activeTab === 'accepted') rows = rows.filter(o => (o.status || '').toLowerCase() === 'accepted');
-  else if (_activeTab === 'declined') rows = rows.filter(o => ['declined','withdrawn','expired'].includes((o.status || '').toLowerCase()));
+  if (_activeTab !== 'all') rows = rows.filter(o => bucketOf(o.status) === _activeTab);
 
   if (!rows.length) { $('oBody').innerHTML = '<tr><td colspan="7" class="empty">No offers in this tab.</td></tr>'; return; }
   $('oBody').innerHTML = rows.map(o => {
     const s = (o.status || 'draft').toLowerCase();
-    const original = o.offer_pay_rate_cents != null ? fmtUsd(o.offer_pay_rate_cents) + (o.offer_pay_period ? '/' + o.offer_pay_period : '') : '-';
-    const counter = o.counter_pay_rate_cents != null ? '<span class="salary">' + fmtUsd(o.counter_pay_rate_cents) + (o.counter_pay_period ? '/' + o.counter_pay_period : '') + '</span>' :
-                    (s === 'countered' ? '<em style="color:var(--warn)">(non-pay change)</em>' : '-');
+    const a = _appsById[o.application_id] || {};
+    const fullName = [(a.first_name || '').trim(), (a.last_name || '').trim()].filter(Boolean).join(' ') || '(no candidate row)';
+    const candEmail = a.email || '';
+    const pay = o.pay_rate_cents != null ? fmtUsd(o.pay_rate_cents) + (o.pay_period ? ' /' + o.pay_period : '') : '-';
     let acts = '';
-    if (s === 'countered') {
-      acts = '<button class="btn btn-success" onclick="setStatus(\'' + o.id + '\',\'accepted\')">Accept counter</button>' +
-             '<button class="btn btn-outline" onclick="setStatus(\'' + o.id + '\',\'sent\')">Send revised</button>' +
-             '<button class="btn btn-danger" onclick="setStatus(\'' + o.id + '\',\'withdrawn\')">Withdraw</button>';
-    } else if (s === 'sent' || s === 'draft') {
-      acts = '<button class="btn btn-danger" onclick="setStatus(\'' + o.id + '\',\'withdrawn\')">Withdraw</button>';
+    const letterBtn = o.offer_letter_path
+      ? '<a class="btn btn-outline" target="_blank" rel="noopener" href="' + esc(letterUrl(o.offer_letter_path)) + '">View letter</a>'
+      : '';
+    if (s === 'draft') {
+      acts = '<button class="btn btn-primary" onclick="sendToCandidate(\'' + o.id + '\')">Send to candidate</button>' +
+             letterBtn +
+             '<button class="btn btn-danger" onclick="setStatus(\'' + o.id + '\',\'rescinded\')">Rescind</button>';
+    } else if (s === 'sent') {
+      acts = '<button class="btn btn-success" onclick="markAccepted(\'' + o.id + '\')">Mark accepted</button>' +
+             '<button class="btn btn-outline" onclick="markDeclined(\'' + o.id + '\')">Mark declined</button>' +
+             letterBtn +
+             '<button class="btn btn-danger" onclick="setStatus(\'' + o.id + '\',\'rescinded\')">Rescind</button>';
+    } else if (s === 'accepted') {
+      acts = letterBtn +
+             '<a class="btn btn-outline" href="/admin-personnel-records.html">Open personnel records</a>';
+    } else {
+      acts = letterBtn;
     }
     return '<tr>' +
-      '<td>' + esc(o.candidate_name || '?') + '<br><span style="font-size:12px;color:var(--muted)">' + esc(o.candidate_email || '') + '</span></td>' +
-      '<td>' + esc(o.position_title || '-') + '</td>' +
-      '<td class="salary">' + original + '</td>' +
-      '<td>' + counter + (o.counter_notes ? '<br><span style="font-size:12px;color:var(--muted);font-style:italic">"' + esc(o.counter_notes.slice(0,90)) + '"</span>' : '') + '</td>' +
+      '<td>' + esc(fullName) + '<br><span style="font-size:12px;color:var(--muted)">' + esc(candEmail) + '</span></td>' +
+      '<td>' + esc(o.title || '-') + (o.target_role ? '<br><span style="font-size:11.5px;color:var(--muted)">role: ' + esc(o.target_role) + '</span>' : '') + '</td>' +
+      '<td class="salary">' + pay + '</td>' +
+      '<td>' + esc(o.employment_type || '-') + ' / ' + esc(o.work_mode || '-') + '</td>' +
       '<td><span class="pill ' + esc(s) + '">' + esc(s) + '</span></td>' +
       '<td>' + (o.sent_at ? new Date(o.sent_at).toLocaleDateString() : (o.created_at ? new Date(o.created_at).toLocaleDateString() + ' (draft)' : '-')) + '</td>' +
       '<td><div class="actions">' + acts + '</div></td>' +
@@ -170,21 +207,61 @@ function paintList() {
   }).join('');
 }
 
+function letterUrl(path) {
+  // offer_letter_path is stored as "personnel-files/<uuid>/offer_letter_<ts>.html".
+  // Storage URL = <SUPABASE_URL>/storage/v1/object/public/<path> for public buckets,
+  // or use signed URLs. Try public path first; the generator EF puts letters in
+  // a public bucket per the design.
+  const cfg = window.LYMX_CONFIG;
+  if (!cfg || !path) return '#';
+  return cfg.SUPABASE_URL + '/storage/v1/object/public/' + path;
+}
+
+async function sendToCandidate(id) {
+  const o = _offers.find(x => x.id === id);
+  const a = (o && _appsById[o.application_id]) || {};
+  const who = [(a.first_name||''), (a.last_name||'')].filter(Boolean).join(' ') || a.email || 'this candidate';
+  if (!confirm('Send the offer to ' + who + '?\nThe status flips to "sent" and the timestamp is recorded. The actual email delivery still needs to be done manually for now — copy the View letter link and paste it into your email to ' + (a.email || 'them') + '.')) return;
+  await patchOffer(id, { status: 'sent', sent_at: new Date().toISOString() }, 'Marked as sent. Copy the View letter link and email it to the candidate.');
+}
+
+async function markAccepted(id) {
+  const o = _offers.find(x => x.id === id);
+  const a = (o && _appsById[o.application_id]) || {};
+  const who = [(a.first_name||''), (a.last_name||'')].filter(Boolean).join(' ') || a.email || 'this candidate';
+  if (!confirm('Mark this offer as ACCEPTED by ' + who + '?\nThis fires the auto-onboarding trigger — it will create the staff_profiles row and seed onboarding tasks. Only confirm after the candidate has agreed in writing.')) return;
+  // accepted_at is auto-stamped by the trigger if null, but we set it explicitly for clarity.
+  await patchOffer(id, { status: 'accepted', accepted_at: new Date().toISOString() }, 'Offer accepted. Personnel record + onboarding tasks have been auto-created. Open Personnel Records to verify.');
+}
+
+async function markDeclined(id) {
+  const reason = (prompt('Optional: brief decline reason (leave blank if not specified)') || '').trim().slice(0, 240);
+  const patch = { status: 'declined', declined_at: new Date().toISOString() };
+  if (reason) patch.decline_reason = reason;
+  await patchOffer(id, patch, 'Marked as declined.');
+}
+
 async function setStatus(id, newStatus) {
   if (!confirm('Set offer to "' + newStatus + '"?')) return;
+  const patch = { status: newStatus };
+  // The offers enum is (draft|sent|accepted|declined|expired|rescinded). There's
+  // no withdrawn_at column; only accepted_at + declined_at + expires_at exist.
+  if (newStatus === 'accepted') patch.accepted_at = new Date().toISOString();
+  if (newStatus === 'declined') patch.declined_at = new Date().toISOString();
+  await patchOffer(id, patch, 'Updated.');
+}
+
+async function patchOffer(id, patch, okMsg) {
   const cfg = window.LYMX_CONFIG;
   const session = await window.LYMX.getSession();
   const tok = session.access_token;
-  const patch = { status: newStatus };
-  if (newStatus === 'accepted') patch.accepted_at = new Date().toISOString();
-  if (newStatus === 'withdrawn') patch.withdrawn_at = new Date().toISOString();
   const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/offers?id=eq.' + id, {
     method:'PATCH',
-    headers:{ apikey: cfg.SUPABASE_ANON_KEY, Authorization:'Bearer '+tok, 'Content-Type':'application/json' },
+    headers:{ apikey: cfg.SUPABASE_ANON_KEY, Authorization:'Bearer '+tok, 'Content-Type':'application/json', Prefer:'return=minimal' },
     body: JSON.stringify(patch)
   });
-  if (!r.ok) { banner('err','Update failed: ' + (await r.text()).slice(0,160)); return; }
-  banner('ok','Updated.');
+  if (!r.ok) { banner('err','Update failed: ' + (await r.text()).slice(0,200)); return; }
+  banner('ok', okMsg || 'Updated.');
   await load();
 }
 </script>
