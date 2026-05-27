@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Recruited Customers &middot; LYMX Partner</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--mute:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--card:#fff;--accent:#0a84ff;--ok:#13a26b;--gold:#d4af37;--err:#b81324}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  .wrap{max-width:980px;margin:0 auto;padding:28px 22px 80px}
+  h1{margin:0 0 4px;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .lede{color:var(--mute);font-size:14.5px;margin-bottom:20px}
+  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:13px 16px}
+  .stat .lbl{font-size:11px;color:var(--mute);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+  .stat .val{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+  .stat .val.ok{color:var(--ok)}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th{text-align:left;padding:11px 12px;background:var(--bg);font-size:11px;font-weight:800;color:var(--mute);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--line)}
+  td{padding:11px 12px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  .pill{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+  .pill.credited{background:#dff8ec;color:#0c6940}
+  .pill.pending{background:#fff3d8;color:#7a4a08}
+  .pill.blocked{background:#fde8e6;color:#7a1a17}
+  .pill.reversed{background:#eef0f3;color:var(--mute)}
+  .num{font-variant-numeric:tabular-nums;text-align:right}
+  .empty{padding:50px 20px;text-align:center;color:var(--mute);background:var(--card);border:1px dashed var(--line);border-radius:12px}
+</style>
+</head>
+<body data-page="partner-my-customers" data-role-required="partner" data-playbook-slug="partner-my-network">
+
+<script src="lymx-config.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-playbook-help.js" defer></script>
+
+<div class="wrap">
+  <h1>Customers you recruited</h1>
+  <p class="lede">Every customer who joined LYMX through your referral link. Once they complete their first transaction, your bonus is credited and a notification lands in your feed.</p>
+
+  <div class="summary">
+    <div class="stat"><div class="lbl">Total recruited</div><div class="val" id="statTotal">&mdash;</div></div>
+    <div class="stat"><div class="lbl">Credited</div><div class="val ok" id="statCredited">&mdash;</div></div>
+    <div class="stat"><div class="lbl">Pending</div><div class="val" id="statPending">&mdash;</div></div>
+    <div class="stat"><div class="lbl">LYMX earned</div><div class="val" id="statLymx">&mdash;</div></div>
+  </div>
+
+  <div id="list"><div class="empty">Loading&hellip;</div></div>
+</div>
+
+<script>
+(async function () {
+  while (!window.LYMX_CONFIG || !window.LYMX || !window.LYMX.getSession) await new Promise(function (r) { setTimeout(r, 100); });
+  var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  var URL_ = window.LYMX_CONFIG.SUPABASE_URL;
+  var session = await window.LYMX.getSession();
+  if (!session) { location.href = "login.html?return=partner-my-customers.html"; return; }
+  var H = { apikey: ANON, Authorization: "Bearer " + session.access_token, "Content-Type": "application/json" };
+
+  var listEl = document.getElementById("list");
+
+  function escHtml(s) { return (s || "").replace(/[<>&]/g, function (c) { return { "<":"&lt;", ">":"&gt;", "&":"&amp;" }[c]; }); }
+  function whenFmt(iso) { return new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
+
+  // Referrals where I am the inviter
+  var rr = await fetch(URL_ + "/rest/v1/referrals?inviter_user_id=eq." + session.user.id + "&select=id,invitee_user_id,status,invite_method,invite_template,inviter_bonus_amount,blocked_reason,created_at&order=created_at.desc&limit=500", { headers: H });
+  if (!rr.ok) { listEl.innerHTML = '<div class="empty">Could not load your recruited customers.</div>'; return; }
+  var rows = await rr.json();
+
+  var credited = rows.filter(function (r) { return r.status === "credited"; }).length;
+  var pending  = rows.filter(function (r) { return r.status === "pending"; }).length;
+  var lymxEarned = rows.filter(function (r) { return r.status === "credited"; }).reduce(function (s, r) { return s + (r.inviter_bonus_amount || 0); }, 0);
+  document.getElementById("statTotal").textContent = rows.length;
+  document.getElementById("statCredited").textContent = credited;
+  document.getElementById("statPending").textContent = pending;
+  document.getElementById("statLymx").textContent = lymxEarned;
+
+  if (!rows.length) {
+    listEl.innerHTML = '<div class="empty">No customers recruited yet. Share your referral link from <a href="refer.html">Refer a Friend</a> to get your first one.</div>';
+    return;
+  }
+
+  // Hydrate display_names (best-effort) by joining to customers table on user_id
+  var ids = Array.from(new Set(rows.map(function (r) { return r.invitee_user_id; }))).filter(Boolean);
+  var nameMap = {};
+  if (ids.length) {
+    try {
+      var cr = await fetch(URL_ + "/rest/v1/customers?user_id=in.(" + ids.join(",") + ")&select=user_id,display_name", { headers: H });
+      if (cr.ok) {
+        var crows = await cr.json();
+        crows.forEach(function (c) { nameMap[c.user_id] = c.display_name; });
+      }
+    } catch (e) { console.warn("[partner-my-customers] name hydrate", e); }
+  }
+
+  var thead = '<thead><tr><th>Customer</th><th>Status</th><th>Bonus</th><th>Source</th><th>When</th></tr></thead>';
+  var tbody = rows.map(function (r) {
+    var name = nameMap[r.invitee_user_id] || ("customer …" + (r.invitee_user_id || "").slice(-8));
+    var statusCell = '<span class="pill ' + r.status + '">' + r.status + '</span>'
+                   + (r.status === "blocked" && r.blocked_reason ? '<div style="font-size:11.5px;color:var(--mute);margin-top:3px">' + escHtml(r.blocked_reason) + '</div>' : "");
+    var bonus = (r.status === "credited") ? '+' + (r.inviter_bonus_amount || 0) + ' LYMX'
+              : (r.status === "pending") ? 'Pending'
+              : '—';
+    var src = (r.invite_template || "link") + (r.invite_method && r.invite_method !== r.invite_template ? ' / ' + r.invite_method : "");
+    return '<tr><td><strong>' + escHtml(name) + '</strong></td>'
+         + '<td>' + statusCell + '</td>'
+         + '<td class="num">' + bonus + '</td>'
+         + '<td>' + escHtml(src) + '</td>'
+         + '<td>' + whenFmt(r.created_at) + '</td></tr>';
+  }).join("");
+
+  listEl.innerHTML = '<table>' + thead + '<tbody>' + tbody + '</tbody></table>';
+})();
+</script>
+
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

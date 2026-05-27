@@ -4,7 +4,7 @@
 >
 > Each row carries a `Feature` key that ties the playbook to an entry in `public.feature_catalog` (mig 104). The Playbooks reader filters by `list_my_permissions()` — a member with permission for a feature sees that feature's playbook automatically. Toggle grants live at `/admin-manage-permissions.html`.
 >
-> Last updated: 2026-05-27 (Sprint 5 — Browse See All)
+> Last updated: 2026-05-27 (Sprint 6 — Partner network surfaces)
 
 ## Email
 
@@ -42,6 +42,7 @@
 | [business-onboarding-08-settlement](business-onboarding/08-settlement.md) | How your monthly LYMX settlement works (Sprint 1 — clearing-house model) | Business | business_view_settlements | 🚧 Shipped 2026-05-27; awaiting browser-verify |
 | partner-onboarding | Apply, get $750 setup, pitch your first business | Partner |  | 📋 Planned |
 | [partner-notifications](partner-onboarding/notifications.md) | Your partner notifications feed (Sprint 3 — auto-emit on commission/activation/settlement) | Partner | partner_view_notifications | 🚧 Shipped 2026-05-27; awaiting browser-verify |
+| [partner-my-network](partner-onboarding/my-network.md) | Recruited customers + recruited business reviews (Sprint 6) | Partner |  | 🚧 Shipped 2026-05-27; awaiting browser-verify |
 
 ## Business operations
 

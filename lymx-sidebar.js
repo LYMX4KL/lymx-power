@@ -296,6 +296,12 @@
       { href: 'notifications.html',      icon: '\u{1F514}', label: 'Notifications' },
       { href: 'customer-dashboard.html#wallet', icon: '\u{1F4B0}', label: 'My LYMX Wallet' },
       { href: 'my-reviews.html',         icon: '\u2B50',    label: 'My Reviews' },
+      // 2026-05-27 Sprint 6 — partner network surfaces.
+      // partner-my-reviews: reviews on businesses I recruited.
+      // partner-my-customers: customers who signed up via my referral link.
+      // Closes tickets 7d044c5e + b37214f3.
+      { href: 'partner-my-reviews.html',   icon: '\u{1F4DD}', label: 'Recruited Reviews' },
+      { href: 'partner-my-customers.html', icon: '\u{1F46A}', label: 'Recruited Customers' },
       { section: 'Help' },
       { href: 'playbooks.html',          icon: '\u{1F4D6}', label: 'Playbooks' },
       // 2026-05-20 #dd9468cc - Removed static Team section (Clock In, My Schedule,
