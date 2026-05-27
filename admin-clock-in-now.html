@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — live view of who is currently clocked in, on break, or off-shift. Auto-refreshes every 30 seconds." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Who's clocked in · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:1080px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .page{padding:28px 0 80px}
+  .page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .page-head p{margin:6px 0 0;color:var(--muted);font-size:14.5px}
+  .refresh{display:flex;align-items:center;gap:10px}
+  .refresh .last{font-size:12px;color:var(--muted)}
+  .btn{appearance:none;border:0;border-radius:8px;padding:8px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:var(--ink);color:#fff}
+  .btn:hover{background:#000}
+  .btn[disabled]{opacity:.6;cursor:not-allowed}
+  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .stat .lab{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .stat .v{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:3px}
+  .stat .v.ok{color:var(--ok)}
+  .stat .v.warn{color:var(--warn)}
+  .stat .v.muted{color:var(--muted)}
+  .group{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:16px;overflow:hidden}
+  .group-h{padding:12px 16px;background:#f6f7f9;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px}
+  .group-h .dot{width:9px;height:9px;border-radius:50%}
+  .group.in .group-h .dot{background:var(--ok)}
+  .group.break .group-h .dot{background:var(--warn)}
+  .group.out .group-h .dot{background:#b6bcc7}
+  .group.never .group-h .dot{background:#dde0e5}
+  .group-h .c{margin-left:auto;background:rgba(0,0,0,.06);padding:2px 9px;border-radius:99px;font-size:11.5px}
+  .row{padding:11px 16px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;font-size:14px}
+  .row:last-child{border-bottom:0}
+  .who{display:flex;align-items:center;gap:10px;min-width:0}
+  .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+  .name{font-weight:700;font-size:14px;color:var(--ink)}
+  .meta{font-size:12px;color:var(--muted)}
+  .when{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+  .gps{font-size:11px;color:var(--muted)}
+  .gps .ok{color:var(--ok);font-weight:700}
+  .gps .bad{color:var(--danger);font-weight:700}
+  .empty{padding:30px 16px;text-align:center;color:var(--muted);font-size:13.5px}
+  .banner{padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:14px}
+  .banner.err{background:#fde8e6;color:#7a1a17}
+</style>
+</head>
+<body>
+<script src="lymx-config.js"></script>
+<script src="lymx-app.js"></script>
+<script src="lymx-nav.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+
+<main class="wrap page">
+  <div class="page-head">
+    <div>
+      <h1>Who's clocked in</h1>
+      <p>Live view of every staff member's most-recent clock event. Auto-refreshes every 30 seconds. <a href="admin-timesheets.html" style="color:var(--accent);text-decoration:underline">View past timesheets</a> or <a href="admin-staff-locations.html" style="color:var(--accent);text-decoration:underline">manage clock-in locations</a>.</p>
+    </div>
+    <div class="refresh">
+      <span class="last" id="lastRefresh">—</span>
+      <button class="btn" id="refreshBtn" type="button">↻ Refresh</button>
+    </div>
+  </div>
+
+  <div id="bannerArea"></div>
+
+  <div class="summary" id="summary"></div>
+
+  <div id="groups"></div>
+</main>
+
+<script>
+// 2026-05-27 #01/#25 — net-new live "who is clocked in" board for HR admins.
+// Pre-fix Helen had no place to see who was on the clock; the team-roster
+// page showed only last_clock_in (not current status), and timesheets was
+// historical. This page reads clock_events, computes the latest event per
+// user, and buckets into IN / ON BREAK / OUT / NEVER. RLS already lets admins
+// SELECT all rows (migration 025 clock_admin_all policy).
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+function banner(t, m) {
+  $('bannerArea').innerHTML = '<div class="banner ' + t + '">' + esc(m) + '</div>';
+  if (t === 'ok') setTimeout(() => $('bannerArea').innerHTML = '', 4000);
+}
+function initials(name) {
+  return (name || '').split(/\s+/).filter(Boolean).map(s => s[0]).slice(0, 2).join('').toUpperCase() || '?';
+}
+function fmtAgo(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const secs = Math.round((Date.now() - d.getTime()) / 1000);
+  if (secs < 60) return secs + 's ago';
+  if (secs < 3600) return Math.round(secs / 60) + 'm ago';
+  if (secs < 86400) return Math.round(secs / 3600) + 'h ago';
+  return Math.round(secs / 86400) + 'd ago';
+}
+
+// Compute the current status bucket for a given last clock_event.
+// Returns: 'in' | 'break' | 'out' | 'never'
+function bucketOf(lastEvent) {
+  if (!lastEvent) return 'never';
+  const t = lastEvent.event_type;
+  if (t === 'in') return 'in';
+  if (t === 'break_start') return 'break';
+  if (t === 'out' || t === 'break_end') return 'out';
+  return 'out';
+}
+
+let _state = { staff: [], lastByUid: {}, fetchedAt: null };
+
+async function load() {
+  $('refreshBtn').disabled = true;
+  $('refreshBtn').textContent = '↻ Refreshing…';
+  try {
+    const cfg = window.LYMX_CONFIG;
+    const session = await window.LYMX.getSession();
+    if (!session) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
+    const tok = session.access_token;
+    const headers = { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok };
+
+    // 1) Pull the staff roster. v_team_roster gives us user_id + email + role +
+    //    job_title + last_clock_in. We'll get name from staff_profiles below.
+    const rosterRes = await fetch(cfg.SUPABASE_URL +
+      '/rest/v1/v_team_roster?select=user_id,email,job_title,role&order=role.asc,email.asc',
+      { headers });
+    if (!rosterRes.ok) throw new Error('roster ' + rosterRes.status + ': ' + (await rosterRes.text()).slice(0, 120));
+    const staff = await rosterRes.json();
+
+    if (!staff.length) {
+      $('summary').innerHTML = '';
+      $('groups').innerHTML = '<div class="group"><div class="empty">No staff in v_team_roster yet. Add staff via admin-staff.html.</div></div>';
+      return;
+    }
+
+    // 2) Pull display names (best-effort) from staff_profiles for any staff rows
+    //    that exist there. Falls back to email local-part if missing.
+    const uids = staff.map(s => s.user_id);
+    const profRes = await fetch(cfg.SUPABASE_URL +
+      '/rest/v1/staff_profiles?user_id=in.(' + uids.join(',') + ')&select=user_id,display_name',
+      { headers });
+    const profByUid = {};
+    if (profRes.ok) {
+      const profs = await profRes.json();
+      profs.forEach(p => { profByUid[p.user_id] = p; });
+    }
+
+    // 3) Pull the most-recent clock_event per staff member. We do this in one
+    //    bulk query (?user_id=in.(...)) ordered by event_at desc; then fold
+    //    client-side, keeping only the latest event per user_id.
+    const evRes = await fetch(cfg.SUPABASE_URL +
+      '/rest/v1/clock_events?user_id=in.(' + uids.join(',') + ')&select=user_id,event_type,event_at,gps_lat,gps_lng,geofence_pass,distance_from_anchor_m,remote_allowed_at_event&order=event_at.desc&limit=2000',
+      { headers });
+    if (!evRes.ok) throw new Error('clock_events ' + evRes.status + ': ' + (await evRes.text()).slice(0, 120));
+    const events = await evRes.json();
+    const lastByUid = {};
+    events.forEach(e => {
+      if (!lastByUid[e.user_id]) lastByUid[e.user_id] = e;
+    });
+
+    _state = {
+      staff: staff.map(s => ({
+        user_id: s.user_id,
+        email: s.email,
+        job_title: s.job_title,
+        role: s.role,
+        display_name: (profByUid[s.user_id] && profByUid[s.user_id].display_name) || (s.email || '').split('@')[0]
+      })),
+      lastByUid: lastByUid,
+      fetchedAt: new Date()
+    };
+    render();
+    $('lastRefresh').textContent = 'Refreshed at ' + _state.fetchedAt.toLocaleTimeString();
+  } catch (e) {
+    console.warn('[clock-in-now] load failed', e);
+    banner('err', 'Load failed: ' + (e && e.message ? e.message : 'unknown error'));
+  } finally {
+    $('refreshBtn').disabled = false;
+    $('refreshBtn').textContent = '↻ Refresh';
+  }
+}
+
+function render() {
+  const buckets = { in: [], break: [], out: [], never: [] };
+  _state.staff.forEach(s => {
+    const last = _state.lastByUid[s.user_id] || null;
+    buckets[bucketOf(last)].push({ ...s, last });
+  });
+  // Sort each bucket by event recency (most recent first); never-clocked sorts by email.
+  ['in', 'break', 'out'].forEach(b => {
+    buckets[b].sort((a, b2) => new Date(b2.last.event_at) - new Date(a.last.event_at));
+  });
+  buckets.never.sort((a, b2) => (a.email || '').localeCompare(b2.email || ''));
+
+  // Summary stats
+  $('summary').innerHTML =
+    '<div class="stat"><div class="lab">Clocked in</div><div class="v ok">' + buckets.in.length + '</div></div>' +
+    '<div class="stat"><div class="lab">On break</div><div class="v warn">' + buckets.break.length + '</div></div>' +
+    '<div class="stat"><div class="lab">Clocked out</div><div class="v muted">' + buckets.out.length + '</div></div>' +
+    '<div class="stat"><div class="lab">Never clocked in</div><div class="v muted">' + buckets.never.length + '</div></div>' +
+    '<div class="stat"><div class="lab">Total staff</div><div class="v">' + _state.staff.length + '</div></div>';
+
+  // Groups
+  const labels = {
+    in:    { label: 'Currently clocked in',    cls: 'in' },
+    break: { label: 'On break',                cls: 'break' },
+    out:   { label: 'Clocked out',             cls: 'out' },
+    never: { label: 'Never clocked in (yet)',  cls: 'never' }
+  };
+  $('groups').innerHTML = ['in', 'break', 'out', 'never'].map(key => {
+    const list = buckets[key];
+    if (!list.length) return ''; // hide empty buckets
+    const rowHtml = list.map(p => {
+      const ago = p.last ? fmtAgo(p.last.event_at) : '—';
+      const eventLabel = p.last ? (
+        p.last.event_type === 'in' ? 'Clocked in'
+        : p.last.event_type === 'break_start' ? 'Started break'
+        : p.last.event_type === 'break_end' ? 'Ended break'
+        : 'Clocked out'
+      ) : 'No events yet';
+      const gpsHtml = p.last && p.last.gps_lat != null
+        ? '<span class="gps">' + (p.last.geofence_pass ? '<span class="ok">✓ in geofence</span>' : '<span class="bad">⚠ outside geofence</span>') +
+          (p.last.distance_from_anchor_m != null ? ' · ' + Math.round(p.last.distance_from_anchor_m) + 'm' : '') +
+          (p.last.remote_allowed_at_event ? ' · remote allowed' : '') +
+          '</span>'
+        : '';
+      return '<div class="row">' +
+        '<div class="who">' +
+          '<div class="av">' + esc(initials(p.display_name)) + '</div>' +
+          '<div style="min-width:0">' +
+            '<div class="name">' + esc(p.display_name) + '</div>' +
+            '<div class="meta">' + esc(p.email) + (p.job_title ? ' · ' + esc(p.job_title) : '') + (p.role ? ' · ' + esc(p.role) : '') + '</div>' +
+            (gpsHtml ? '<div style="margin-top:2px">' + gpsHtml + '</div>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="when">' + esc(eventLabel) + '<br><span style="font-size:11px">' + esc(ago) + '</span></div>' +
+      '</div>';
+    }).join('');
+    return '<div class="group ' + labels[key].cls + '">' +
+      '<div class="group-h"><span class="dot"></span>' + esc(labels[key].label) + '<span class="c">' + list.length + '</span></div>' +
+      rowHtml +
+    '</div>';
+  }).join('');
+}
+
+(async function init() {
+  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(init, 100); return; }
+  await load();
+  // Auto-refresh every 30s. The Refresh button does the same thing manually.
+  setInterval(load, 30000);
+})();
+
+$('refreshBtn').addEventListener('click', load);
+</script>
+
+</body>
+</html>

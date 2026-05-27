@@ -371,6 +371,13 @@
       { href: 'admin-time-off.html',        icon: '\u{1F334}', label: 'Time-off' },
       { href: 'admin-team-roster.html',     icon: '\u{1F5C2}', label: 'Roster' },
       { section: 'HR & Payroll' },
+      // 2026-05-27 #01/#25 — was missing: HR admins (Helen) had no place to
+      // see who is currently on the clock vs on break vs out. v_team_roster
+      // showed last_clock_in only; timesheets was historical. The new
+      // admin-clock-in-now.html computes the latest event per user from
+      // clock_events and buckets into IN / ON BREAK / OUT live with a 30s
+      // auto-refresh.
+      { href: 'admin-clock-in-now.html',        icon: '\u{23F1}',  label: "Who's clocked in" },
       { href: 'admin-staff-locations.html',     icon: '\u{1F4CD}', label: 'Clock-in Locations' },
       { href: 'admin-clock-in-permissions.html', icon: '\u{1F510}', label: 'Clock-in Permissions' },
       { href: 'admin-clock-in-requests.html',    icon: '\u{1F4E5}', label: 'Pending Requests' },
