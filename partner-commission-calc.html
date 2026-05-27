@@ -63,6 +63,12 @@
   .scenario{padding:18px;border:1px solid var(--line);border-radius:10px;cursor:pointer;transition:.15s}
   .scenario:hover{border-color:var(--ink);transform:translateY(-1px)}
   .scenario.gold{border:2px solid var(--gold);background:#fffbe6}
+  /* 2026-05-27 #4b9926dc — visible selected state when a user clicks a scenario card.
+     Was: setScenario() updated the form values but didn't mark the card, so testers
+     couldn't tell which scenario was active. Now: blue ring + light blue tint when
+     selected; clicking another card switches the highlight. */
+  .scenario.is-selected{border:2px solid var(--accent);background:#eaf3ff;box-shadow:0 0 0 4px rgba(10,132,255,.14);transform:translateY(-1px)}
+  .scenario.gold.is-selected{background:#fff8d4;border-color:var(--accent);box-shadow:0 0 0 4px rgba(10,132,255,.18)}
   .scenario h3{margin:0 0 4px;font-size:15px}
   .scenario .role{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:14px}
   .scenario .income{font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
@@ -324,6 +330,13 @@
     document.getElementById('g2').value = g2;
     document.getElementById('g3').value = g3;
     recalc();
+    // 2026-05-27 #4b9926dc — mark the clicked card as selected; clear others.
+    try {
+      var ev = window.event;
+      var thisCard = ev && (ev.currentTarget || ev.target && ev.target.closest('.scenario'));
+      document.querySelectorAll('.scenario').forEach(function(s){ s.classList.remove('is-selected'); });
+      if (thisCard && thisCard.classList) thisCard.classList.add('is-selected');
+    } catch (e) { /* selection state is cosmetic; recalc already ran */ }
     document.querySelector('.input-card').scrollIntoView({behavior:'smooth',block:'start'});
   }
 

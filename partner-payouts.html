@@ -228,11 +228,35 @@
       <aside class="panel">
         <div class="ach-card">
           <h3>Bank details</h3>
-          <div class="field"><div>Bank</div><strong>Chase</strong></div>
-          <div class="field"><div>Routing</div><strong>****0025</strong></div>
-          <div class="field"><div>Account</div><strong>****6411</strong></div>
-          <a href="rep-dashboard.html#ach">Update bank info →</a>
+          <!-- 2026-05-27 #d3171999 — was hardcoded Chase/****0025/****6411 placeholder
+               + dead link to rep-dashboard.html#ach (no such anchor exists). Now
+               links to partner-bank-update.html which reads the actual partner
+               bank state (stripe_connect_account_id + bank_last4) and presents a
+               Stripe Connect update flow (or manual-setup fallback via email). -->
+          <div id="payout-bank-summary" style="font-size:13px;color:var(--muted);margin-bottom:10px">Loading payout setup…</div>
+          <a href="partner-bank-update.html" class="btn btn-primary" style="display:inline-block;padding:9px 14px;background:#0a84ff;color:#fff;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">🏦 Update bank info →</a>
         </div>
+        <script>
+        (async function loadPayoutBankSummary(){
+          try {
+            if (!window.LYMX || !window.LYMX.requireAuth) { setTimeout(loadPayoutBankSummary, 300); return; }
+            var user = await window.LYMX.requireAuth();
+            if (!user) return;
+            var { data: p } = await window.LYMX.sb.from('partners')
+              .select('stripe_connect_account_id, bank_last4, bank_name, payout_method')
+              .eq('user_id', user.id).maybeSingle();
+            var el = document.getElementById('payout-bank-summary');
+            if (!el) return;
+            if (p && p.bank_last4) {
+              el.innerHTML = '<strong style="color:#0c6940">✅ Verified</strong><br>' + (p.bank_name || 'Bank') + ' · ****' + p.bank_last4 + ' · ' + (p.payout_method || 'ACH');
+            } else if (p && p.stripe_connect_account_id) {
+              el.innerHTML = '<strong style="color:#7c5a00">⚠ Stripe account created — add a bank to enable payouts</strong>';
+            } else {
+              el.innerHTML = '<strong style="color:#7c5a00">No bank linked yet.</strong><br>Commissions accumulate; ACH transfer starts after setup.';
+            }
+          } catch (e) { console.warn('[partner-payouts] bank summary load', e); }
+        })();
+        </script>
 
         <div class="card">
           <h3>YTD breakdown</h3>

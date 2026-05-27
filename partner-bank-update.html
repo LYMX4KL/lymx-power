@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Update bank details · LYMX Partner</title>
+<meta name="description" content="Set up or update the bank account that receives your monthly LYMX Partner ACH payouts." />
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--err:#dc2626;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08)}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  .layout{margin-left:240px;padding:20px 24px;min-height:100vh;max-width:780px}
+  @media(max-width:1100px){.layout{margin-left:0;padding:14px}}
+  h1{margin:0 0 4px;font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:14.5px;margin-bottom:22px}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .card h2{margin:0 0 10px;font-size:17px;font-weight:800}
+  .card p{margin:0 0 10px;font-size:14px;color:var(--ink-2);line-height:1.55}
+  .status{display:flex;align-items:center;gap:10px;padding:14px 18px;border-radius:11px;margin-bottom:16px}
+  .status.green{background:#dff8ec;color:#0c6940;border:1px solid #b8e8d0}
+  .status.amber{background:#fef3c7;color:#7c5a00;border:1px solid #f3e0a0}
+  .status.gray{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb}
+  .status .ic{font-size:22px;flex-shrink:0}
+  .status .body{font-size:14px;line-height:1.5}
+  .status .body b{display:block;margin-bottom:2px;font-size:14.5px}
+
+  .field{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .field:last-child{border-bottom:0}
+  .field .l{color:var(--muted)}
+  .field .r{font-weight:700;color:var(--ink);font-family:ui-monospace,Menlo,monospace}
+
+  .btn{appearance:none;border:0;border-radius:9px;padding:11px 18px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#0e1116;color:#fff;text-decoration:none;display:inline-block;margin-right:8px;margin-top:6px}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn:hover{opacity:.92}
+
+  .info-list{margin:0;padding:0 0 0 18px;font-size:13.5px;color:var(--ink-2);line-height:1.7}
+  .info-list li{margin-bottom:6px}
+</style>
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<div class="layout">
+  <h1>🏦 Update bank details</h1>
+  <div class="sub">Set up or update the bank account that receives your monthly LYMX Partner ACH payouts (paid the 5th of each month).</div>
+
+  <div id="status-box"><div class="status gray"><span class="ic">⏳</span><div class="body"><b>Loading…</b>Checking your current payout setup.</div></div></div>
+
+  <div class="card" id="bank-card" style="display:none">
+    <h2>Current bank on file</h2>
+    <div id="bank-fields"></div>
+  </div>
+
+  <div class="card">
+    <h2>How LYMX handles bank info</h2>
+    <p>LYMX uses <strong>Stripe Connect</strong> to pay Partners. Your bank account is held by Stripe, not by LYMX — we never see your full routing or account number, and you can update it any time through Stripe's hosted form.</p>
+    <ul class="info-list">
+      <li>Account verification happens through Stripe (typically 1–2 micro-deposits).</li>
+      <li>Bank changes take effect immediately for future payouts — pending payouts stay on the previous bank until cleared.</li>
+      <li>Tax info (W-9 / 1099-NEC) is also collected through Stripe Connect.</li>
+    </ul>
+    <div style="margin-top:14px">
+      <button class="btn primary" id="updateBankBtn" type="button">🔗 Update via Stripe</button>
+      <a class="btn ghost" href="partner-payouts.html">← Back to Payouts</a>
+    </div>
+    <div id="update-msg" style="margin-top:12px;font-size:13px;color:var(--muted);line-height:1.5"></div>
+  </div>
+
+  <div class="card" style="background:#f8fafc">
+    <h2>Need help?</h2>
+    <p>If Stripe Connect isn't loading or you'd rather set up the bank manually, email <a href="mailto:partners@getlymx.com?subject=Partner%20bank%20setup" style="color:var(--accent-2);font-weight:700">partners@getlymx.com</a>. Admin will reach out within 24 hours during business days.</p>
+  </div>
+</div>
+
+<script>
+(async function init() {
+  if (!window.LYMX || !window.LYMX.requireAuth) { setTimeout(init, 200); return; }
+  const user = await window.LYMX.requireAuth();
+  if (!user) return;
+  const sb = window.LYMX.sb;
+
+  const statusBox = document.getElementById('status-box');
+  const bankCard = document.getElementById('bank-card');
+  const bankFields = document.getElementById('bank-fields');
+  const updateBtn = document.getElementById('updateBankBtn');
+  const updateMsg = document.getElementById('update-msg');
+
+  // Pull partner row + any stripe_connect fields
+  let partner = null;
+  try {
+    const { data } = await sb.from('partners')
+      .select('id, display_name, legal_name, contact_email, stripe_connect_account_id, payout_method, bank_last4, bank_name')
+      .eq('user_id', user.id).maybeSingle();
+    partner = data;
+  } catch (e) { console.warn('[partner-bank-update] partner load', e); }
+
+  if (!partner) {
+    statusBox.innerHTML = '<div class="status amber"><span class="ic">⚠️</span><div class="body"><b>No Partner profile</b>You\'re signed in but not registered as a Partner. <a href="/partner-signup.html" style="color:#7c5a00;font-weight:800">Apply as a Partner →</a></div></div>';
+    updateBtn.disabled = true;
+    return;
+  }
+
+  const hasStripeAccount = !!partner.stripe_connect_account_id;
+  const hasBankOnFile = hasStripeAccount && partner.bank_last4;
+
+  if (hasBankOnFile) {
+    statusBox.innerHTML = '<div class="status green"><span class="ic">✅</span><div class="body"><b>Bank on file — ready for payouts</b>Verified via Stripe Connect. You can update through the button below.</div></div>';
+    bankCard.style.display = '';
+    bankFields.innerHTML =
+      '<div class="field"><div class="l">Bank</div><div class="r">' + (partner.bank_name || '—') + '</div></div>' +
+      '<div class="field"><div class="l">Account</div><div class="r">****' + partner.bank_last4 + '</div></div>' +
+      '<div class="field"><div class="l">Payout method</div><div class="r">' + (partner.payout_method || 'ACH') + '</div></div>';
+  } else if (hasStripeAccount) {
+    statusBox.innerHTML = '<div class="status amber"><span class="ic">⚠️</span><div class="body"><b>Stripe account created — bank not added yet</b>Click Update via Stripe to add your bank account. Until then, payouts will accumulate but not transfer.</div></div>';
+  } else {
+    statusBox.innerHTML = '<div class="status amber"><span class="ic">🏦</span><div class="body"><b>No bank set up yet</b>You\'ll need to connect a bank through Stripe before your first payout can transfer. Commissions accumulate in your LYMX dashboard either way.</div></div>';
+  }
+
+  updateBtn.addEventListener('click', async () => {
+    updateBtn.disabled = true;
+    updateBtn.textContent = 'Generating Stripe link…';
+    updateMsg.textContent = '';
+    try {
+      const session = (await sb.auth.getSession()).data.session;
+      const tok = session && session.access_token;
+      const cfg = window.LYMX_CONFIG;
+      const resp = await fetch(cfg.SUPABASE_URL + '/functions/v1/partner-bank-onboarding-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok },
+        body: JSON.stringify({ return_url: location.origin + '/partner-payouts.html?bank_updated=1' })
+      });
+      const json = await resp.json().catch(() => ({}));
+      if (resp.ok && json.url) {
+        location.href = json.url;
+        return;
+      }
+      // EF not built yet OR error — fall back to email instructions
+      updateMsg.innerHTML = 'Stripe Connect onboarding isn\'t wired to the dashboard yet — admin is finishing the EF this week. In the meantime, email <a href="mailto:partners@getlymx.com?subject=Partner%20bank%20setup" style="color:#0050c7;font-weight:700">partners@getlymx.com</a> with your preferred bank and admin will set it up manually within 24 hours.';
+      updateBtn.disabled = false;
+      updateBtn.textContent = '🔗 Update via Stripe';
+    } catch (e) {
+      console.warn('[partner-bank-update] stripe link', e);
+      updateMsg.innerHTML = 'Could not reach Stripe Connect right now — try again in a few minutes, or email <a href="mailto:partners@getlymx.com" style="color:#0050c7;font-weight:700">partners@getlymx.com</a> for manual setup.';
+      updateBtn.disabled = false;
+      updateBtn.textContent = '🔗 Update via Stripe';
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
