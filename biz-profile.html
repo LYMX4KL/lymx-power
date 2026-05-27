@@ -96,6 +96,7 @@
     <button type="button" class="tab" data-tab="docs">Documents</button>
     <button type="button" class="tab" data-tab="photos">Photos</button>
     <button type="button" class="tab" data-tab="offers">Offers</button>
+    <button type="button" class="tab" data-tab="menu">Menu</button>
     <button type="button" class="tab" data-tab="comms">Communications</button>
   </div>
 
@@ -260,6 +261,25 @@
     </div>
   </section>
 
+  <!-- TAB: Menu (P2-Menu 2026-05-27, mig 126) -->
+  <section class="tab-panel" id="tab-menu">
+    <div class="card">
+      <h2>Menu items shown on your storefront</h2>
+      <div class="sub">Add the items you want featured under "Menu highlights" on your public storefront. Group by section (Small plates / Mains / Cocktails / etc.). Each save is immediate; no batch.</div>
+
+      <div style="margin:18px 0 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+        <div class="field" style="flex:1;min-width:140px"><label>Section</label><input class="input" id="m_section" placeholder="Small plates" list="m_section_list" value="Menu" /><datalist id="m_section_list"></datalist></div>
+        <div class="field" style="flex:2;min-width:200px"><label>Item name</label><input class="input" id="m_name" placeholder="Hand-pulled beef noodle" maxlength="80" /></div>
+        <div class="field" style="flex:0 0 100px"><label>Price ($)</label><input class="input" id="m_price" type="number" step="0.01" min="0" placeholder="22.00" /></div>
+        <button type="button" class="btn btn-primary" id="btnMenuAdd">+ Add item</button>
+      </div>
+      <div class="field"><label>Description (optional)</label><input class="input" id="m_desc" placeholder="5-hour broth, daikon, bok choy, chili oil" maxlength="180" /></div>
+
+      <h3 style="margin:24px 0 10px;font-size:15px;font-weight:700">Current menu <span id="menuCount" style="color:var(--muted);font-weight:500"></span></h3>
+      <div id="menuList" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </section>
+
   <!-- TAB: Communications -->
   <section class="tab-panel" id="tab-comms">
     <div class="card">
@@ -313,6 +333,7 @@
     if (target === 'docs')   loadDocs();
     if (target === 'photos') loadPhotos();
     if (target === 'offers') loadOffers();
+    if (target === 'menu')   loadMenu();
     if (target === 'comms')  loadComms();
   }));
 
@@ -617,6 +638,122 @@
     if (up.error) { toast('Save failed: ' + up.error.message.slice(0, 120), 'err'); return; }
     myBiz.current_promos = toSave;
     toast(toSave.length + ' offer' + (toSave.length === 1 ? '' : 's') + ' saved. Live on your storefront now.', 'ok');
+  });
+
+
+  // ---- P2-Menu 2026-05-27 (mig 126): CRUD business_menu_items by section ----
+  // Owner adds items via the form at top of the Menu tab. Each item is its own
+  // row; edit-in-place changes write immediately. Section dropdown autocompletes
+  // from this biz's existing distinct sections (so owner can re-use "Mains" etc.)
+  async function loadMenu() {
+    if (!myBiz) return;
+    const listEl = document.getElementById('menuList');
+    const countEl = document.getElementById('menuCount');
+    const sectionList = document.getElementById('m_section_list');
+    const r = await sb.from('business_menu_items')
+      .select('id, section, name, description, price_cents, display_order, available, dietary_tags, updated_at')
+      .eq('business_id', myBiz.id)
+      .is('archived_at', null)
+      .order('section', { ascending: true })
+      .order('display_order', { ascending: true })
+      .order('name', { ascending: true });
+    if (r.error) {
+      console.warn('[biz-profile] loadMenu failed', r.error);
+      listEl.innerHTML = '<div style="color:var(--muted);font-size:13px">Could not load menu: ' + r.error.message + '</div>';
+      return;
+    }
+    const rows = r.data || [];
+    countEl.textContent = rows.length ? '(' + rows.length + ' items)' : '(none yet)';
+    // Populate datalist of distinct sections for autocomplete
+    const sections = Array.from(new Set(rows.map(x => x.section).filter(Boolean)));
+    sectionList.innerHTML = sections.map(s => '<option value="' + esc(s) + '"></option>').join('');
+    if (!rows.length) {
+      listEl.innerHTML = '<div style="padding:24px;border:2px dashed var(--line);border-radius:10px;text-align:center;color:var(--muted);font-size:13.5px">No menu items yet. Add your first one above; it appears on your storefront immediately.</div>';
+      return;
+    }
+    // Render grouped by section
+    let html = '';
+    let lastSection = null;
+    rows.forEach(function (it) {
+      if (it.section !== lastSection) {
+        html += '<div style="margin-top:14px;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:800">' + esc(it.section || 'Menu') + '</div>';
+        lastSection = it.section;
+      }
+      const priceStr = it.price_cents != null ? (Number(it.price_cents) / 100).toFixed(2) : '';
+      html += '<div style="border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff;display:flex;gap:8px;align-items:start;flex-wrap:wrap">' +
+        '<input class="input" style="flex:1;min-width:180px" data-mi-field="name" data-mi-id="' + it.id + '" value="' + esc(it.name) + '" maxlength="80" />' +
+        '<input class="input" style="flex:2;min-width:240px" data-mi-field="description" data-mi-id="' + it.id + '" value="' + esc(it.description || '') + '" maxlength="180" placeholder="Optional description" />' +
+        '<input class="input" style="flex:0 0 90px" data-mi-field="price_cents" data-mi-id="' + it.id + '" type="number" step="0.01" min="0" value="' + priceStr + '" placeholder="--" />' +
+        '<input class="input" style="flex:0 0 130px" data-mi-field="section" data-mi-id="' + it.id + '" value="' + esc(it.section || '') + '" maxlength="40" placeholder="Section" />' +
+        '<label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);cursor:pointer"><input type="checkbox" data-mi-field="available" data-mi-id="' + it.id + '" ' + (it.available ? 'checked' : '') + ' /> live</label>' +
+        '<button type="button" data-mi-save="' + it.id + '" class="btn btn-primary" style="padding:8px 14px;font-size:13px">Save</button>' +
+        '<button type="button" data-mi-del="' + it.id + '" style="background:#fff;border:1px solid #fecaca;color:#c0392b;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:700;font-size:13px">x</button>' +
+      '</div>';
+    });
+    listEl.innerHTML = html;
+    // Per-row save buttons
+    listEl.querySelectorAll('[data-mi-save]').forEach(b => b.addEventListener('click', async () => {
+      const id = b.getAttribute('data-mi-save');
+      const fields = {};
+      listEl.querySelectorAll('[data-mi-id="' + id + '"]').forEach(el => {
+        const f = el.getAttribute('data-mi-field');
+        if (f === 'available') fields[f] = el.checked;
+        else if (f === 'price_cents') {
+          const v = el.value.trim();
+          fields[f] = v === '' ? null : Math.round(Number(v) * 100);
+        }
+        else fields[f] = el.value.trim() || (f === 'description' ? null : '');
+      });
+      if (!fields.name) { toast('Item name cannot be empty', 'err'); return; }
+      if (!fields.section) { toast('Section cannot be empty', 'err'); return; }
+      b.disabled = true; b.textContent = 'Saving...';
+      const up = await sb.from('business_menu_items').update(fields).eq('id', id);
+      b.disabled = false; b.textContent = 'Save';
+      if (up.error) { toast('Save failed: ' + up.error.message.slice(0, 120), 'err'); return; }
+      toast('Saved.', 'ok');
+    }));
+    // Per-row delete (soft via archived_at to preserve audit trail)
+    listEl.querySelectorAll('[data-mi-del]').forEach(b => b.addEventListener('click', async () => {
+      const id = b.getAttribute('data-mi-del');
+      if (!confirm('Remove this menu item from your storefront?')) return;
+      const dr = await sb.from('business_menu_items').update({ archived_at: new Date().toISOString() }).eq('id', id);
+      if (dr.error) { toast('Delete failed: ' + dr.error.message, 'err'); return; }
+      loadMenu();
+    }));
+  }
+
+  document.getElementById('btnMenuAdd').addEventListener('click', async () => {
+    if (!myBiz) { toast('No business linked', 'err'); return; }
+    const section = document.getElementById('m_section').value.trim();
+    const name = document.getElementById('m_name').value.trim();
+    const desc = document.getElementById('m_desc').value.trim();
+    const priceStr = document.getElementById('m_price').value.trim();
+    if (!name) { toast('Item name is required', 'err'); return; }
+    if (!section) { toast('Section is required', 'err'); return; }
+    const price_cents = priceStr === '' ? null : Math.round(Number(priceStr) * 100);
+    if (price_cents != null && (!Number.isFinite(price_cents) || price_cents < 0)) { toast('Price must be a positive number', 'err'); return; }
+    // Compute display_order = max(existing in this section) + 1
+    const orderR = await sb.from('business_menu_items')
+      .select('display_order').eq('business_id', myBiz.id).eq('section', section).is('archived_at', null)
+      .order('display_order', { ascending: false }).limit(1).maybeSingle();
+    const nextOrder = (orderR && orderR.data ? Number(orderR.data.display_order || 0) : -1) + 1;
+    const ins = await sb.from('business_menu_items').insert({
+      business_id:   myBiz.id,
+      section:       section,
+      name:          name,
+      description:   desc || null,
+      price_cents:   price_cents,
+      display_order: nextOrder,
+      available:     true,
+      created_by:    user.id,
+    });
+    if (ins.error) { toast('Add failed: ' + ins.error.message.slice(0, 120), 'err'); return; }
+    document.getElementById('m_name').value = '';
+    document.getElementById('m_desc').value = '';
+    document.getElementById('m_price').value = '';
+    document.getElementById('m_name').focus();
+    toast('Added.', 'ok');
+    loadMenu();
   });
 
   // ---- P2-Photos 2026-05-27 (mig 125): public storefront photo management ----

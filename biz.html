@@ -109,6 +109,17 @@
 
   .offers{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
   .offer{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+  /* P2-Menu 2026-05-27 mig 126 - data-driven menu render */
+  .menu{display:grid;grid-template-columns:1fr 1fr;gap:12px 28px}
+  .menu-section{grid-column:1/-1;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:14px 0 4px;border-bottom:2px solid var(--line);margin-bottom:6px}
+  .menu-section:first-child{padding-top:0}
+  .menu-item{display:flex;justify-content:space-between;align-items:start;padding:10px 0;border-bottom:1px solid var(--line);gap:12px}
+  .menu-item h4{margin:0;font-size:15px;font-weight:700}
+  .menu-item p{margin:2px 0 0;font-size:13.5px;color:var(--muted)}
+  .menu-item .price{font-weight:700;font-size:14.5px;white-space:nowrap}
+  .menu-item .tags{font-size:11px;color:var(--muted);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap}
+  .menu-item .tag{background:var(--bg-soft);padding:2px 7px;border-radius:999px;font-weight:600}
+  @media(max-width:680px){.menu{grid-template-columns:1fr}}
   .offer .badge{display:inline-block;background:rgba(10,132,255,.08);color:var(--accent-2);padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
   .offer h4{margin:0 0 4px;font-size:15px;font-weight:700}
   .offer p{margin:0;font-size:13.5px;color:var(--muted)}
@@ -222,6 +233,11 @@
           <h2>Current LYMX offers</h2>
           <div class="offers" id="bizOffers"></div>
           <div id="bizOffersEmpty" class="empty">No active offers right now. Earn LYMX on every transaction here regardless.</div>
+        </div>
+
+        <div class="sec" id="menu" style="display:none">
+          <h2>Menu highlights</h2>
+          <div class="menu" id="bizMenu"></div>
         </div>
 
         <div class="sec" id="reviews">
@@ -361,6 +377,9 @@ waitForConfig(async function init() {
   // 4b. Photos (anon-safe via fn_biz_photos RPC, added 2026-05-27 mig 125)
   await renderPhotos(slug, URL_, ANON);
 
+  // 4c. Menu (anon-safe via fn_biz_menu RPC, added 2026-05-27 mig 126)
+  await renderMenu(slug, URL_, ANON);
+
   // 5. Show
   document.getElementById('stateLoading').style.display = 'none';
   document.getElementById('storefront').style.display = '';
@@ -473,6 +492,46 @@ function renderHours(hours) {
   return lines.join('<br>');
 }
 
+
+
+async function renderMenu(slug, URL_, ANON) {
+  var sec = document.getElementById('menu');
+  var listEl = document.getElementById('bizMenu');
+  if (!sec || !listEl) return;
+  try {
+    var r = await fetch(URL_ + '/rest/v1/rpc/fn_biz_menu', {
+      method: 'POST',
+      headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_slug: slug })
+    });
+    if (!r.ok) return;
+    var rows = await r.json();
+    if (!Array.isArray(rows) || !rows.length) return;  // section stays hidden
+    // Group by section preserving server order (the RPC orders by section then display_order)
+    var html = '';
+    var lastSection = null;
+    rows.forEach(function (it) {
+      if (it.section !== lastSection) {
+        html += '<div class="menu-section">' + escapeHtml(it.section || 'Menu') + '</div>';
+        lastSection = it.section;
+      }
+      var price = '';
+      if (it.price_cents != null) {
+        price = '$' + (Number(it.price_cents) / 100).toFixed(Number(it.price_cents) % 100 === 0 ? 0 : 2);
+      }
+      var tags = '';
+      if (Array.isArray(it.dietary_tags) && it.dietary_tags.length) {
+        tags = '<div class="tags">' + it.dietary_tags.map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('') + '</div>';
+      }
+      html += '<div class="menu-item"><div><h4>' + escapeHtml(it.name) + '</h4>' +
+              (it.description ? '<p>' + escapeHtml(it.description) + '</p>' : '') +
+              tags + '</div>' +
+              (price ? '<div class="price">' + price + '</div>' : '') + '</div>';
+    });
+    listEl.innerHTML = html;
+    sec.style.display = '';
+  } catch (e) { console.warn('[biz.html] renderMenu failed', e); }
+}
 
 async function renderPhotos(slug, URL_, ANON) {
   var hero = document.getElementById('bizHero');
