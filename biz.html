@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX business storefront — auto-populated from approved business signups." />
+<title>Loading… · LYMX</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;overflow-x:hidden}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+  img{max-width:100%;display:block}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+  .brand img{height:44px;width:auto}
+  .nav-links{display:flex;gap:26px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-cta{display:flex;gap:10px;align-items:center}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:10px;font-weight:600;font-size:14.5px;border:1px solid transparent;cursor:pointer;transition:.15s;text-decoration:none}
+  .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
+  .btn-ghost:hover{border-color:var(--ink-2)}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000}
+  .btn-biz{background:var(--accent);color:#fff;font-size:13.5px;padding:8px 14px}
+  .btn-biz:hover{background:var(--accent-2)}
+  @media(max-width:880px){.nav-links{display:none}}
+
+  /* PREVIEW banner for demo_only=true rows */
+  .preview-banner{background:#fef9e6;border-bottom:1px solid #fbe6a8;color:#7a4a0e;padding:10px 16px;text-align:center;font-size:13.5px;font-weight:600}
+
+  /* "Not yet published" + 404 + loading states */
+  .state-card{max-width:560px;margin:64px auto;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:48px 36px;text-align:center;box-shadow:var(--shadow)}
+  .state-card .ico{font-size:64px;margin-bottom:18px}
+  .state-card h1{margin:0 0 8px;font-size:24px;font-weight:800}
+  .state-card p{margin:0 0 18px;color:var(--muted);font-size:15px;line-height:1.55}
+
+  .crumb{padding:18px 0 8px;color:var(--muted);font-size:13.5px}
+  .crumb a{color:var(--muted)}
+  .crumb a:hover{color:var(--ink)}
+
+  .hero{display:flex;align-items:center;justify-content:center;height:380px;border-radius:var(--radius);overflow:hidden;margin-bottom:24px;background:linear-gradient(135deg,#fff5e1,#ffd5a3);font-size:170px}
+  @media(max-width:780px){.hero{height:240px;font-size:130px}}
+
+  .title-row{display:flex;justify-content:space-between;align-items:start;gap:24px;flex-wrap:wrap;margin-bottom:8px}
+  .title-row h1{margin:0;font-size:clamp(28px,3.8vw,40px);font-weight:800;letter-spacing:-.01em;line-height:1.1}
+  .title-row .save{display:flex;gap:8px}
+  .meta-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:14.5px;color:var(--ink-2);margin-bottom:6px}
+  .stars-big{color:var(--warn);font-weight:800;font-size:16px}
+  .meta-row .dot{color:var(--muted)}
+  .tag-live{background:var(--ok);color:#fff;font-size:11.5px;letter-spacing:.04em;font-weight:700;padding:4px 10px;border-radius:999px}
+  .tag-preview{background:#f0a020;color:#fff;font-size:11.5px;letter-spacing:.04em;font-weight:700;padding:4px 10px;border-radius:999px}
+
+  .layout{display:grid;grid-template-columns:1fr 360px;gap:36px;margin-top:32px}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}}
+  /* T1 [5b986813] root-cause fix: at narrow widths .side stacks below main;
+     sticky-pinning at top:96px would trap the bottom card behind the
+     floating Help & Feedback chip. Drop sticky at <=980px so .side scrolls
+     naturally with the page. Wide-screen behavior preserved. */
+  .side{position:sticky;top:96px;align-self:start;display:flex;flex-direction:column;gap:16px}
+  @media(max-width:980px){.side{position:static;top:auto}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+  .card h3{margin:0 0 12px;font-size:16px;font-weight:700}
+  .lymx-side{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border:0}
+  .lymx-side h3{color:#fff;margin-bottom:8px}
+  .lymx-side .rate{font-size:24px;font-weight:800}
+  .lymx-side .rate small{font-size:14px;opacity:.85;font-weight:600}
+  .lymx-side ul{list-style:none;padding:0;margin:14px 0 0;font-size:13.5px}
+  .lymx-side ul li{padding:6px 0;display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.95)}
+  .lymx-side ul li::before{content:"✓";font-weight:800;color:#a4ffe5}
+  .lymx-side .btn-side{margin-top:16px;background:#fff;color:var(--ink);width:100%}
+  .lymx-side .btn-side:hover{background:#eaeaea}
+
+  .info-row{display:flex;gap:10px;font-size:13.5px;color:var(--ink-2);padding:6px 0;border-bottom:1px solid var(--line)}
+  .info-row:last-child{border-bottom:0}
+  .info-row .ic{font-size:16px;flex-shrink:0;width:20px}
+  .info-row .lab{color:var(--muted);min-width:64px}
+  .info-row .val{flex:1}
+
+  .sec{padding-top:36px;border-top:1px solid var(--line);margin-top:36px}
+  .sec:first-child{border-top:0;padding-top:0;margin-top:0}
+  .sec h2{margin:0 0 14px;font-size:24px;font-weight:800}
+  .sec p{color:var(--ink-2);font-size:15.5px;margin:0 0 12px}
+  .sec p:last-child{margin-bottom:0}
+  .sec .empty{color:var(--muted);font-size:14px;font-style:italic;padding:14px 0}
+
+  .offers{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .offer{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+  .offer .badge{display:inline-block;background:rgba(10,132,255,.08);color:var(--accent-2);padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
+  .offer h4{margin:0 0 4px;font-size:15px;font-weight:700}
+  .offer p{margin:0;font-size:13.5px;color:var(--muted)}
+
+  .review-summary{display:flex;align-items:center;gap:24px;background:var(--bg-soft);border-radius:var(--radius);padding:20px;margin-bottom:20px;flex-wrap:wrap}
+  .review-summary .big{font-size:48px;font-weight:800;line-height:1;color:var(--ink)}
+  .review-summary .big-sub{font-size:13px;color:var(--muted)}
+  .review-summary .stars-big-2{color:var(--warn);font-size:18px;letter-spacing:1px}
+
+  .review-list{display:flex;flex-direction:column;gap:14px}
+  .review-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .review-card .head{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+  .review-card .author{display:flex;align-items:center;gap:10px}
+  .review-card .avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#13a26b);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+  .review-card .name{font-weight:700;font-size:14.5px}
+  .review-card .when{font-size:12.5px;color:var(--muted)}
+  .review-card .stars-row{color:var(--warn);font-size:14.5px;letter-spacing:1px;margin:6px 0 8px}
+  .review-card .quote{font-size:14.5px;color:var(--ink-2);margin:0 0 12px;line-height:1.55}
+  .badge-verified{color:var(--ok);background:rgba(19,162,107,.08);font-weight:700;padding:3px 9px;border-radius:999px;font-size:12px}
+
+  .write-form{background:linear-gradient(135deg,#f6f7f9,#fff);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin-top:24px}
+  .write-form h3{margin:0 0 18px;font-size:18px;font-weight:800}
+  .field-group{margin-bottom:18px}
+  .field-group label{display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:.02em}
+  .star-picker{display:flex;gap:6px;font-size:32px;color:var(--line);cursor:pointer;user-select:none}
+  .star-picker .star{transition:.1s;line-height:1}
+  .star-picker .star.on{color:var(--warn)}
+  textarea.review-input{width:100%;min-height:120px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14.5px;font-family:inherit;color:var(--ink);background:#fff;resize:vertical;outline:0}
+
+  footer{padding:48px 0 40px;border-top:1px solid var(--line);color:var(--muted);font-size:14px;margin-top:64px}
+  footer .disc{max-width:780px;margin:8px auto 0;font-size:11.5px;line-height:1.55;text-align:center}
+  footer .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:30px;margin-bottom:30px}
+  footer .foot-grid h4{color:var(--ink);font-size:13px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 12px}
+  footer .foot-grid a{display:block;padding:4px 0;font-size:14px}
+  footer .foot-grid a:hover{color:var(--ink)}
+  @media(max-width:780px){footer .foot-grid{grid-template-columns:1fr 1fr}}
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+
+<div id="previewBanner" class="preview-banner" style="display:none">
+  <strong>PREVIEW listing</strong> — sample business used as a visual example. Not a real merchant; nothing here transacts.
+</div>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/"><img src="logo.png" alt="LYMX logo" /></a>
+    <nav class="nav-links">
+      <a href="/browse">Browse</a>
+      <a href="/#categories">Categories</a>
+      <a href="/#how">How LYMX works</a>
+      <a href="/app">Get the app</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="/login">Sign in</a>
+      <a class="btn btn-biz" href="/business">For Business →</a>
+    </div>
+  </div>
+</header>
+
+<!-- Loading state -->
+<div id="stateLoading" class="state-card">
+  <div class="ico">⏳</div>
+  <h1>Loading…</h1>
+  <p>Fetching the business profile.</p>
+</div>
+
+<!-- 404 state (slug not found / pending approval) -->
+<div id="state404" class="state-card" style="display:none">
+  <div class="ico">🔎</div>
+  <h1>Business not found</h1>
+  <p>This URL doesn't match a published business on LYMX. The business may not have been approved yet, may have been archived, or the link may be wrong.</p>
+  <a class="btn btn-primary" href="/browse">Browse all businesses →</a>
+</div>
+
+<!-- Main storefront (hidden until data loads) -->
+<main id="storefront" style="display:none">
+  <div class="wrap">
+    <div class="crumb">
+      <a href="/">Home</a> · <a href="/browse">Browse</a> · <span id="bizCrumbCat" style="color:var(--ink)"></span>
+    </div>
+
+    <div class="hero" id="bizHero">🏪</div>
+
+    <div class="title-row">
+      <div>
+        <h1 id="bizDisplayName">—</h1>
+        <div class="meta-row" style="margin-top:8px" id="bizMetaRow"></div>
+      </div>
+      <div class="save">
+        <button class="btn btn-ghost" type="button" id="saveBtn" onclick="toggleSave(this)">♡ Save</button>
+        <button class="btn btn-ghost" type="button" id="shareBtn" onclick="shareBiz(this)">↗ Share</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div>
+        <div class="sec">
+          <h2>About</h2>
+          <div id="bizDescription"><p class="empty">No description yet — the business hasn't filled this in.</p></div>
+        </div>
+
+        <div class="sec">
+          <h2>Current LYMX offers</h2>
+          <div class="offers" id="bizOffers"></div>
+          <div id="bizOffersEmpty" class="empty">No active offers right now. Earn LYMX on every transaction here regardless.</div>
+        </div>
+
+        <div class="sec" id="reviews">
+          <h2>Reviews</h2>
+          <div class="review-summary" id="reviewSummary"></div>
+          <div class="review-list" id="reviewList"></div>
+          <div id="reviewEmpty" class="empty">No reviews yet — be the first.</div>
+
+          <div class="write-form" id="write-review">
+            <h3>Write a review</h3>
+            <form id="reviewForm" onsubmit="return false">
+              <div class="field-group">
+                <label>How was your visit?</label>
+                <div class="star-picker" id="starPicker">
+                  <span class="star" data-v="1">★</span>
+                  <span class="star" data-v="2">★</span>
+                  <span class="star" data-v="3">★</span>
+                  <span class="star" data-v="4">★</span>
+                  <span class="star" data-v="5">★</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="reviewText">Tell other LYMX members about your visit</label>
+                <textarea id="reviewText" class="review-input" placeholder="What did you order? How was the service? Be specific — vague reviews don't earn LYMX."></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Post review & earn LYMX →</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <aside class="side">
+        <div class="card lymx-side">
+          <h3>LYMX at this business</h3>
+          <div class="rate"><span id="bizRate">5</span> LYMX <small>per $1 spent</small></div>
+          <ul>
+            <li>Earn on every transaction</li>
+            <li id="redeemCapLi">Redeem up to 80% of your bill</li>
+            <li>1 LYMX = $0.01, fixed</li>
+            <li>Spend at any LYMX partner</li>
+          </ul>
+          <a class="btn btn-side" href="/customer-dashboard">Open in LYMX app →</a>
+        </div>
+
+        <div class="card" id="visitCard">
+          <h3>Visit</h3>
+          <div id="visitInfo"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <img src="logo.png" alt="LYMX" style="height:22px;margin-bottom:10px" />
+        <div>One loyalty credit. Every LYMX Business. Earn anywhere on the network, redeem anywhere on the network.</div>
+      </div>
+      <div><h4>Discover</h4><a href="/#browse">Browse</a><a href="/#categories">Categories</a><a href="/#how">How LYMX works</a><a href="/app">Get the app</a></div>
+      <div><h4>Business</h4><a href="/business">Why LYMX</a><a href="/business#plans">Plans &amp; pricing</a><a href="/business#earn">Partner program</a><a href="mailto:hello@getlymx.com">Contact sales</a></div>
+      <div><h4>Company</h4><a href="/about">About</a><a href="/careers">Careers</a><a href="/press">Press</a><a href="/support">Support</a></div>
+    </div>
+    <div class="disc">LYMX is a promotional credit unit used exclusively within the Enterprise ecosystem. LYMX is not cash, not cryptocurrency, and not a stored monetary balance.</div>
+  </div>
+</footer>
+
+<script>
+// =============================================================================
+// biz.html — Templated public storefront.
+// =============================================================================
+// Reads ?slug=<slug>, calls fn_biz_public_meta (SECURITY DEFINER RPC), and
+// renders the storefront. Replaces hand-coded biz-<slug>.html files. Auto-
+// populates the moment an admin approves a real business signup. No per-biz
+// HTML coding required.
+//
+// Design notes:
+//  - Anon-safe: uses fn_biz_public_meta which excludes PII columns.
+//  - Reviews: fetched via /rest/v1/reviews (anon read policy from mig 030).
+//  - Save/Share/Reserve/Review: bound by lymx-biz-actions.js + lymx-reviews.js
+//    via body data-biz-slug. We set that attribute once the biz loads.
+// =============================================================================
+
+(async function init() {
+  var URL_ = (window.LYMX_CONFIG || {}).SUPABASE_URL;
+  var ANON = (window.LYMX_CONFIG || {}).SUPABASE_ANON_KEY;
+  if (!URL_ || !ANON) {
+    document.getElementById('stateLoading').style.display = 'none';
+    document.getElementById('state404').style.display = 'block';
+    document.getElementById('state404').querySelector('h1').textContent = 'Config error';
+    document.getElementById('state404').querySelector('p').textContent = 'Page config is missing. Refresh the page.';
+    return;
+  }
+  var slug = new URLSearchParams(location.search).get('slug') || '';
+  if (!slug) { show404(); return; }
+
+  // 1. Fetch business metadata via SECURITY DEFINER RPC (anon-safe)
+  var bizRes = await fetch(URL_ + '/rest/v1/rpc/fn_biz_public_meta', {
+    method: 'POST',
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_slug: slug })
+  });
+  if (!bizRes.ok) { show404(); return; }
+  var bizRows = await bizRes.json();
+  var biz = Array.isArray(bizRows) ? bizRows[0] : bizRows;
+  if (!biz || !biz.id) { show404(); return; }
+
+  // Approval gate: only render fully-approved businesses to anon visitors.
+  // Owners + admins MAY see pending/rejected; for now we keep it simple and
+  // 404 anon visitors on non-approved. (Future: detect owner via authed call.)
+  if (biz.approval_status !== 'approved') { show404(); return; }
+
+  // 2. Set body attributes so lymx-biz-actions.js + lymx-reviews.js can wire
+  document.body.setAttribute('data-biz-slug', biz.slug);
+  document.body.setAttribute('data-biz-name', biz.display_name || '');
+  document.body.setAttribute('data-biz-emoji', biz.emoji || '');
+
+  // 3. Render the storefront
+  renderStorefront(biz);
+
+  // 4. Reviews (separate fetch — anon read allowed per mig 030)
+  await renderReviews(slug, URL_, ANON);
+
+  // 5. Show
+  document.getElementById('stateLoading').style.display = 'none';
+  document.getElementById('storefront').style.display = '';
+  if (biz.demo_only) document.getElementById('previewBanner').style.display = 'block';
+
+  document.title = biz.display_name + ' · LYMX';
+})();
+
+function show404() {
+  document.getElementById('stateLoading').style.display = 'none';
+  document.getElementById('state404').style.display = '';
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+  });
+}
+
+function renderStorefront(b) {
+  // Hero
+  var hero = document.getElementById('bizHero');
+  if (hero) hero.textContent = b.emoji || '🏪';
+  // Crumb
+  var crumb = document.getElementById('bizCrumbCat');
+  if (crumb) crumb.textContent = b.display_name || '—';
+  // Title + meta
+  document.getElementById('bizDisplayName').textContent = b.display_name || '—';
+  var meta = document.getElementById('bizMetaRow');
+  if (meta) {
+    var parts = [];
+    if (b.category) parts.push('<span>' + escapeHtml(b.category) + '</span>');
+    if (b.business_kind && b.business_kind !== 'storefront') parts.push('<span class="dot">·</span><span>' + escapeHtml(b.business_kind.replace(/_/g, ' ')) + '</span>');
+    if (b.address_line1) parts.push('<span class="dot">·</span><span>' + escapeHtml(b.address_line1.split(',').slice(-2).join(',').trim()) + '</span>');
+    parts.push('<span class="' + (b.demo_only ? 'tag-preview' : 'tag-live') + '">' + (b.demo_only ? 'PREVIEW' : 'Live on LYMX') + '</span>');
+    meta.innerHTML = parts.join(' ');
+  }
+  // About
+  var desc = document.getElementById('bizDescription');
+  if (desc) {
+    if (b.description && b.description.trim()) {
+      desc.innerHTML = '<p>' + escapeHtml(b.description).replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+    }
+    if (b.tagline && b.tagline.trim() && b.tagline !== b.description) {
+      desc.insertAdjacentHTML('afterbegin', '<p style="font-size:17px;font-weight:600;color:var(--ink-2);font-style:italic">' + escapeHtml(b.tagline) + '</p>');
+    }
+  }
+  // Offers (from current_promos jsonb array)
+  var offers = document.getElementById('bizOffers');
+  var offersEmpty = document.getElementById('bizOffersEmpty');
+  var promos = Array.isArray(b.current_promos) ? b.current_promos : [];
+  if (offers && promos.length) {
+    offers.innerHTML = promos.map(function(p) {
+      var badge = p.badge || p.type || 'OFFER';
+      var title = p.title || p.name || '';
+      var body  = p.body  || p.description || '';
+      return '<div class="offer"><span class="badge">' + escapeHtml(badge) + '</span><h4>' + escapeHtml(title) + '</h4><p>' + escapeHtml(body) + '</p></div>';
+    }).join('');
+    if (offersEmpty) offersEmpty.style.display = 'none';
+  }
+  // LYMX rate side card
+  var rateEl = document.getElementById('bizRate');
+  if (rateEl && b.issuance_rate != null) rateEl.textContent = Number(b.issuance_rate).toString();
+  var capEl = document.getElementById('redeemCapLi');
+  if (capEl && b.redemption_cap_pct != null) {
+    capEl.textContent = 'Redeem up to ' + Math.round(Number(b.redemption_cap_pct) * 100) + '% of your bill';
+  }
+  // Visit card
+  var visit = document.getElementById('visitInfo');
+  if (visit) {
+    var rows = [];
+    if (b.address_line1) rows.push({ ic:'📍', lab:'Address', val: escapeHtml(b.address_line1).replace(/, /g, ',<br>') });
+    if (b.operating_hours && Object.keys(b.operating_hours).length) {
+      rows.push({ ic:'🕐', lab:'Hours', val: renderHours(b.operating_hours) });
+    }
+    if (b.contact_phone) rows.push({ ic:'📞', lab:'Phone', val: escapeHtml(b.contact_phone) });
+    if (b.website) {
+      var w = String(b.website).replace(/^https?:\/\//, '').replace(/\/$/, '');
+      rows.push({ ic:'🌐', lab:'Web', val:'<a href="' + escapeHtml(b.website.startsWith('http') ? b.website : 'https://' + b.website) + '" target="_blank" rel="noopener">' + escapeHtml(w) + '</a>' });
+    }
+    if (rows.length) {
+      visit.innerHTML = rows.map(function(r){
+        return '<div class="info-row"><span class="ic">' + r.ic + '</span><span class="lab">' + r.lab + '</span><span class="val">' + r.val + '</span></div>';
+      }).join('');
+    } else {
+      visit.innerHTML = '<div class="empty">No visit info yet — the business hasn\'t added their address or hours.</div>';
+    }
+  }
+}
+
+function renderHours(hours) {
+  // operating_hours jsonb shape: { mon: {open, close} | null, tue: ..., ... }
+  // or { mon: "9-5", ... } depending on biz form. Be defensive.
+  var days = ['mon','tue','wed','thu','fri','sat','sun'];
+  var lines = [];
+  for (var i = 0; i < days.length; i++) {
+    var d = days[i];
+    var v = hours[d];
+    var label = d.charAt(0).toUpperCase() + d.slice(1);
+    if (!v) { lines.push(label + ' Closed'); continue; }
+    if (typeof v === 'string') { lines.push(label + ' ' + v); continue; }
+    if (v.closed) { lines.push(label + ' Closed'); continue; }
+    if (v.open && v.close) { lines.push(label + ' ' + v.open + '–' + v.close); continue; }
+    lines.push(label + ' —');
+  }
+  return lines.join('<br>');
+}
+
+async function renderReviews(slug, URL_, ANON) {
+  var listEl = document.getElementById('reviewList');
+  var summaryEl = document.getElementById('reviewSummary');
+  var emptyEl = document.getElementById('reviewEmpty');
+  try {
+    var r = await fetch(URL_ + '/rest/v1/reviews?business_slug=eq.' + encodeURIComponent(slug) + '&verification_status=eq.approved&select=id,rating,body,has_photo,verification_status,created_at,reviewer_user_id&order=created_at.desc&limit=20', {
+      headers: { 'apikey': ANON }
+    });
+    if (!r.ok) { listEl.innerHTML = ''; return; }
+    var rows = await r.json();
+    if (!Array.isArray(rows) || !rows.length) {
+      summaryEl.style.display = 'none';
+      listEl.style.display = 'none';
+      emptyEl.style.display = '';
+      return;
+    }
+    // Compute summary
+    var total = rows.length;
+    var sum = rows.reduce(function(s, x) { return s + Number(x.rating || 0); }, 0);
+    var avg = (sum / total).toFixed(1);
+    var stars = '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
+    summaryEl.innerHTML =
+      '<div><div class="big">' + avg + '</div><div class="stars-big-2">' + stars + '</div><div class="big-sub">' + total + ' review' + (total === 1 ? '' : 's') + '</div></div>' +
+      '<div style="color:var(--muted);font-size:13.5px;flex:1;min-width:200px">All ratings shown below are from receipt-verified visits.</div>';
+    // Render list
+    listEl.innerHTML = rows.map(function(rv) {
+      var when = new Date(rv.created_at).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
+      var rs = Math.max(0, Math.min(5, Number(rv.rating || 0)));
+      var starsRow = '★'.repeat(rs) + '☆'.repeat(5 - rs);
+      var initials = '··';
+      return '<div class="review-card">' +
+        '<div class="head"><div class="author"><div class="avatar">' + initials + '</div><div><div class="name">LYMX member</div><div class="when">' + when + '</div></div></div><span class="badge-verified">✓ Verified visit</span></div>' +
+        '<div class="stars-row">' + starsRow + '</div>' +
+        '<p class="quote">' + escapeHtml(rv.body || '').slice(0, 800) + '</p>' +
+      '</div>';
+    }).join('');
+    emptyEl.style.display = 'none';
+  } catch (e) {
+    console.warn('[biz.html] reviews fetch failed', e);
+    listEl.innerHTML = '';
+    emptyEl.style.display = '';
+  }
+}
+
+// Star picker for the write-review form
+(function () {
+  var picker = document.getElementById('starPicker');
+  if (!picker) return;
+  var current = 0;
+  var stars = picker.querySelectorAll('.star');
+  function paint(n) { stars.forEach(function(s,i){ s.classList.toggle('on', i < n); }); }
+  stars.forEach(function(s, i) {
+    s.addEventListener('mouseenter', function(){ paint(i+1); });
+    s.addEventListener('click', function(){ current = i+1; paint(current); });
+  });
+  picker.addEventListener('mouseleave', function(){ paint(current); });
+})();
+
+// Save / Share — minimal toast + clipboard, real wiring lives in lymx-biz-actions.js
+function showToast(msg, ok) {
+  var t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:' + (ok ? '#13a26b' : '#0e1116') + ';color:#fff;padding:12px 20px;border-radius:12px;font-weight:600;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:10000';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.transition='.4s'; t.style.opacity='0'; }, 1800);
+  setTimeout(function(){ t.remove(); }, 2300);
+}
+window.toggleSave = function(btn) {
+  // lymx-biz-actions.js binds the real persistence; this is a UI fallback.
+  var saved = btn.dataset.saved === '1';
+  if (saved) { btn.dataset.saved='0'; btn.textContent='♡ Save'; btn.style.color=''; showToast('Removed from saved'); }
+  else { btn.dataset.saved='1'; btn.textContent='♥ Saved'; btn.style.color='#e0245e'; showToast('Saved to your favorites', true); }
+};
+window.shareBiz = function() {
+  var url = window.location.href;
+  var title = document.getElementById('bizDisplayName').textContent || document.title;
+  if (navigator.share) { navigator.share({ title: title, url: url }).catch(function(e){ if (e && e.name !== "AbortError") console.warn("[biz.html] navigator.share failed", e); }); return; }
+  if (navigator.clipboard) { navigator.clipboard.writeText(url).then(function(){ showToast('Link copied to clipboard', true); }); return; }
+  showToast('Share: ' + url);
+};
+</script>
+
+<script src="lymx-config.js"></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-reviews.js" defer></script>
+<script src="lymx-biz-actions.js" defer></script>
+</body>
+</html>

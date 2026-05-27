@@ -22,3 +22,24 @@
 /customer-wallet             /customer-wallet.html             301
 /admin-dashboard             /admin-dashboard.html             301
 /write-review                /write-review.html                301
+
+# 2026-05-27 — biz storefront templating (T1 root-cause architectural fix).
+# Replaced per-biz hand-coded HTML (biz-oakline-kitchen.html + biz-brew-and-
+# bean.html) with a single templated biz.html that reads ?slug=<slug> and
+# renders from public.businesses via fn_biz_public_meta. The old direct-file
+# URLs redirect into the templated page so existing inbound links + /browse
+# cards + search results + bookmarks keep working.
+/biz                         /biz.html                         301
+
+# Suffix-less paths (browse cards + most internal links)
+/biz-oakline-kitchen         /biz.html?slug=oakline-kitchen    301
+/biz-brew-and-bean           /biz.html?slug=brew-and-bean      301
+
+# .html-suffix paths (external bookmarks + deep links)
+/biz-oakline-kitchen.html    /biz.html?slug=oakline-kitchen    301
+/biz-brew-and-bean.html      /biz.html?slug=brew-and-bean      301
+
+# Forward-looking generic route: every future approved business auto-has a
+# public URL the moment their slug is set. /biz/<slug> → biz.html template.
+# No per-biz HTML coding from the team is needed.
+/biz/:slug                   /biz.html?slug=:slug              200
