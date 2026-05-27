@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Playbooks — LYMX</title>
-<meta name="description" content="LYMX process playbooks — step-by-step walkthroughs for every flow you can do on LYMX. Filtered by your role." />
+<meta name="description" content="LYMX process playbooks — step-by-step walkthroughs for every flow you can do on LYMX." />
 <link rel="icon" type="image/png" href="favicon.png" />
 <style>
   :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--err:#b81324;--radius:12px}
@@ -19,6 +19,14 @@
   .page-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.01em}
   .page-head p{margin:6px 0 0;color:var(--muted);font-size:14.5px;max-width:720px}
   .role-pill{display:inline-block;background:#EEF6FF;color:#0050c7;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-left:6px;vertical-align:middle}
+
+  /* Role-filter chip row — opt-in narrowing. Default = "All" for any signed-in viewer. */
+  .pb-chiprow{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px;padding:0}
+  .pb-chip{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#0e1116;border:1px solid #e6e8ec;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s,color .12s}
+  .pb-chip:hover{border-color:#0a84ff;color:#0a84ff}
+  .pb-chip.active{background:#0e1116;color:#fff;border-color:#0e1116}
+  .pb-chip .count{display:inline-block;background:#eef0f4;color:#5b6472;font-size:11px;font-weight:800;padding:1px 7px;border-radius:99px}
+  .pb-chip.active .count{background:#1a1f27;color:#cdd2d8}
 
   .pane{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start}
   @media(max-width:880px){.pane{grid-template-columns:1fr}}
@@ -84,8 +92,9 @@
   <div class="wrap">
     <div class="page-head">
       <div>
-        <h1>📖 Playbooks <span class="role-pill" id="rolePill">…</span></h1>
-        <p>Step-by-step walkthroughs for every flow you can do on LYMX. The list on the left is filtered to playbooks relevant to your role. Click any entry to read it. Each playbook ends with a Common Errors table — start there if you're stuck.</p>
+        <h1>📖 Playbooks <span class="role-pill" id="rolePill">viewing as …</span></h1>
+        <p>Step-by-step walkthroughs for every flow you can do on LYMX. Use the chips below to narrow by audience — by default you see every playbook so testers can verify cross-role flows. Click any entry to read it. Each playbook ends with a Common Errors table — start there if you're stuck.</p>
+        <div class="pb-chiprow" id="pbChipRow" aria-label="Filter playbooks by role"></div>
       </div>
       <div class="pb-toolbar">
         <button class="btn" id="printBtn" title="Print or save as PDF">🖨 Print</button>
@@ -109,23 +118,40 @@
 
 <script>
 // =============================================================================
-// playbooks.html — universal Playbooks reader, role-filtered.
+// playbooks.html — universal Playbooks reader. Feature-permission gated.
 // =============================================================================
-// Reads playbooks/INDEX.md, filters rows by the current user's role, renders
-// the sidebar list, and shows the selected playbook in the right pane.
+// Reads playbooks/INDEX.md, renders the sidebar list, and shows the selected
+// playbook in the right pane.
 //
 // URL deep-link: ?p=<slug>  (matches frontmatter slug AND INDEX slug).
 //
-// Role filter rules (case-insensitive match on the "Role" column in INDEX.md):
-//   - admin  → sees ALL playbooks (omniscient view)
-//   - partner → rows whose role mentions "partner", "admin / partner", "multiple"
-//   - business → rows mentioning "business", "multiple"
-//   - customer → rows mentioning "customer", "multiple"
-//   - guest (signed out) → rows mentioning "guest", "prospect", "anyone"
+// VISIBILITY (Kenny 2026-05-26 evening — "the playbook goes with the feature,
+// not with the role or member"):
+//   Each playbook is tagged with a feature_key in INDEX.md (5th column).
+//   The viewer sees a playbook iff list_my_permissions() returns true for that
+//   feature_key. This is driven entirely by the permission grants admin sets
+//   in /admin-manage-permissions.html — assigning the feature to a member
+//   automatically reveals its playbook on every page that hosts the feature.
+//   No role hardcoding, no tester exceptions: the permission grant IS the
+//   training entitlement.
 //
-// A row tagged "Multiple" or "Anyone" is shown to everyone — useful for cross-
-// role flows like business onboarding where multiple roles touch the same
-// process.
+//   Default chip = "Mine" (every feature the viewer has permission for, plus
+//   any row tagged "Multiple"/"Anyone" or with no feature_key set).
+//
+//   Chip row (opt-in overrides):
+//     Mine / All / Admin / Partner / Business / Customer / Guest
+//     - Mine → only permitted features + universal rows
+//     - All  → bypass the gate (playbooks are documentation, not the gate)
+//     - Other chips narrow further by the Role column text — useful for
+//       browsing "all partner-shaped playbooks among the ones I have."
+//
+//   Selection is not persisted across sessions; "Mine" is the default.
+//
+//   Guests (signed out) default to a guest-only view (rows tagged
+//   guest|prospect|anyone|multiple or features whose default_for_roles
+//   includes 'anonymous'). They cannot see permission-gated playbooks.
+//
+//   A row tagged "Multiple" or "Anyone" is shown by every chip selection.
 // =============================================================================
 
 (async function init(){
@@ -162,33 +188,75 @@
     } catch (e) { console.warn('[playbooks] readToken', e); return null; }
   }
 
-  async function getRole(){
+  // -------------------- Identity + permission resolution --------------------
+  // Two pieces:
+  //   * roleLabel — what to show in the "viewing as" pill (informational)
+  //   * permsMap  — { feature_key: boolean, ... } from list_my_permissions() RPC,
+  //                 the source of truth for the "Mine" filter.
+  async function getRoleLabel(){
     var tok = readToken();
     if (!tok) return 'guest';
-    // Use cached values first to avoid waiting on the network
-    var cached = '';
-    try { cached = sessionStorage.getItem('lymx_active_role') || sessionStorage.getItem('lymx_db_role') || ''; } catch (e) { console.warn('[playbooks] sessionStorage role read', e); }
-    if (cached) return cached.toLowerCase();
-
-    // Async fallback: hit am_i_admin RPC + staff_roles + partners/customers
+    try {
+      var cached = sessionStorage.getItem('lymx_active_role') || sessionStorage.getItem('lymx_db_role') || '';
+      if (cached) return cached.toLowerCase();
+    } catch (e) { /* sessionStorage blocked */ }
     try {
       var H = { apikey: window.LYMX_CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' };
       var a = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/rest/v1/rpc/am_i_admin', { method: 'POST', headers: H, body: '{}' });
       if (a.ok && (await a.json()) === true) return 'admin';
     } catch (e) { console.warn('[playbooks] admin check', e); }
-    return 'customer'; // safe default — most permissive non-admin filter
+    return 'member';
   }
 
-  var role = await getRole();
-  document.getElementById('rolePill').textContent = role;
+  // Permission map cached in sessionStorage for the lifetime of the tab.
+  // 60s TTL so newly-granted perms surface fast without spamming the RPC.
+  var PERMS_TTL_MS = 60 * 1000;
+  async function getPermsMap(){
+    var tok = readToken();
+    if (!tok) return {};
+    try {
+      var raw = sessionStorage.getItem('lymx_my_perms');
+      if (raw) {
+        var cached = JSON.parse(raw);
+        if (cached && cached.t && (Date.now() - cached.t) < PERMS_TTL_MS && cached.m) {
+          return cached.m;
+        }
+      }
+    } catch (e) { /* parse failure → refetch */ }
+    try {
+      var H = { apikey: window.LYMX_CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' };
+      var r = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/rest/v1/rpc/list_my_permissions', { method: 'POST', headers: H, body: '{}' });
+      if (!r.ok) throw new Error('http ' + r.status);
+      var data = await r.json();
+      var map = (typeof data === 'object' && data) ? data : {};
+      try { sessionStorage.setItem('lymx_my_perms', JSON.stringify({ t: Date.now(), m: map })); } catch (e) { /* quota */ }
+      return map;
+    } catch (e) {
+      console.warn('[playbooks] list_my_permissions', e);
+      return {}; // fail closed
+    }
+  }
 
-  // -------------------- Role → keyword match --------------------
-  function isVisibleForRole(rowRole, viewerRole){
-    if (viewerRole === 'admin') return true;
+  var role = await getRoleLabel();
+  var permsMap = await getPermsMap();
+  var isGuest = (role === 'guest');
+  document.getElementById('rolePill').textContent = 'viewing as ' + role;
+
+  // -------------------- Filter selection --------------------
+  // Default: 'mine' for signed-in viewers (permission-gated),
+  // 'guest' for signed-out viewers.
+  var currentFilter = isGuest ? 'guest' : 'mine';
+
+  // -------------------- Visibility check --------------------
+  // 'mine'  → user has permission for the row's feature_key, OR the row has
+  //           no feature_key (universal documentation), OR the row's role
+  //           text is 'multiple'/'anyone' (cross-role flows).
+  // 'all'   → bypass the gate; show every row.
+  // others  → narrow by row-role text within visible-to-me set.
+  function rowMatchesRole(rowRole, roleKey){
     var r = (rowRole || '').toLowerCase();
-    if (r.indexOf('multiple') !== -1) return true;
-    if (r.indexOf('anyone') !== -1) return true;
-    switch (viewerRole) {
+    switch (roleKey) {
+      case 'admin':    return /admin/.test(r);
       case 'partner':  return /partner/.test(r);
       case 'business': return /(business|owner)/.test(r);
       case 'customer': return /customer/.test(r);
@@ -197,7 +265,29 @@
     return false;
   }
 
+  function isVisibleForFilter(row, filter){
+    if (filter === 'all') return true;
+    var rowRole = row.role || '';
+    var featKey = row.feature || '';
+    var rText = rowRole.toLowerCase();
+    // Universal markers always show
+    if (rText.indexOf('multiple') !== -1 || rText.indexOf('anyone') !== -1) {
+      return filter === 'mine' || filter !== 'guest' || /(guest|prospect|anyone)/.test(rText);
+    }
+    if (filter === 'mine') {
+      // No feature tagged → universal (treat as visible)
+      if (!featKey) return true;
+      return permsMap[featKey] === true;
+    }
+    // Specific role chip — match the row's Role column text
+    return rowMatchesRole(rowRole, filter);
+  }
+
   // -------------------- Parse INDEX.md --------------------
+  // Schema (header columns expected; trailing | required):
+  //   | Slug | Title | Role | Feature | Status |
+  // Backward-compat: if a row has only 5 cells (no Feature), feature is left
+  // empty and the row is treated as "universal" (no permission gate).
   function parseIndex(md){
     var sections = [];
     var current = null;
@@ -210,22 +300,43 @@
         sections.push(current);
         continue;
       }
-      var row = ln.match(/^\|\s*\[([a-z0-9-]+)\]\(([^)]+)\)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|/i);
-      if (row && current) {
+      // 6-cell row with Feature column
+      var row6 = ln.match(/^\|\s*\[([a-z0-9-]+)\]\(([^)]+)\)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|\s*([^|]+?)\s*\|/i);
+      if (row6 && current) {
+        var statusLabel = row6[6].trim();
         var statusKind = 'planned';
-        var statusLabel = row[5].trim();
         if (/verified/i.test(statusLabel)) statusKind = 'verified';
         else if (/draft|in progress/i.test(statusLabel)) statusKind = 'draft';
         current.items.push({
-          slug: row[1].trim(),
-          file: row[2].trim(),
-          title: row[3].trim(),
-          role: row[4].trim(),
+          slug: row6[1].trim(),
+          file: row6[2].trim(),
+          title: row6[3].trim(),
+          role: row6[4].trim(),
+          feature: row6[5].trim(),
           statusKind: statusKind,
           statusLabel: statusLabel
         });
         continue;
       }
+      // 5-cell row (legacy, no Feature)
+      var row = ln.match(/^\|\s*\[([a-z0-9-]+)\]\(([^)]+)\)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|/i);
+      if (row && current) {
+        var statusKind5 = 'planned';
+        var statusLabel5 = row[5].trim();
+        if (/verified/i.test(statusLabel5)) statusKind5 = 'verified';
+        else if (/draft|in progress/i.test(statusLabel5)) statusKind5 = 'draft';
+        current.items.push({
+          slug: row[1].trim(),
+          file: row[2].trim(),
+          title: row[3].trim(),
+          role: row[4].trim(),
+          feature: '',
+          statusKind: statusKind5,
+          statusLabel: statusLabel5
+        });
+        continue;
+      }
+      // Planned row (no link wrapping the slug)
       var plainRow = ln.match(/^\|\s*([a-z0-9-]+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|/i);
       if (!row && plainRow && current && plainRow[1] !== 'Slug' && !/^-+$/.test(plainRow[1])){
         current.items.push({
@@ -233,6 +344,7 @@
           file: null,
           title: plainRow[2].trim(),
           role: plainRow[3].trim(),
+          feature: '',
           statusKind: 'planned',
           statusLabel: plainRow[4].trim()
         });
@@ -246,7 +358,7 @@
     var html = '';
     var anyShown = false;
     sections.forEach(function(s){
-      var visibleItems = s.items.filter(function(it){ return isVisibleForRole(it.role, role); });
+      var visibleItems = s.items.filter(function(it){ return isVisibleForFilter(it, currentFilter); });
       if (!visibleItems.length) return;
       anyShown = true;
       html += '<h3>' + escapeHtml(s.title) + '</h3><ul>';
@@ -265,13 +377,47 @@
       });
       html += '</ul>';
     });
-    if (!anyShown) html = '<div class="pb-empty">No playbooks available for your role yet. Check back as more flows ship.</div>';
+    if (!anyShown) html = '<div class="pb-empty">No playbooks match the current filter. Try clicking <b>All</b> above.</div>';
     el.innerHTML = html;
     Array.prototype.forEach.call(el.querySelectorAll('a[data-slug]'), function(a){
       a.addEventListener('click', function(){
         Array.prototype.forEach.call(el.querySelectorAll('a.active'), function(x){ x.classList.remove('active'); });
         a.classList.add('active');
         loadPlaybook(a.dataset.slug, a.dataset.file);
+      });
+    });
+  }
+
+  // -------------------- Filter chip row --------------------
+  // Renders one chip per option with a live count of matching playbooks.
+  // Click swaps the active chip and re-renders the index.
+  function renderChips(sections){
+    var row = document.getElementById('pbChipRow');
+    var options = [
+      { key: 'mine',     label: 'Mine' },
+      { key: 'all',      label: 'All' },
+      { key: 'admin',    label: 'Admin' },
+      { key: 'partner',  label: 'Partner' },
+      { key: 'business', label: 'Business' },
+      { key: 'customer', label: 'Customer' },
+      { key: 'guest',    label: 'Guest' }
+    ];
+    var allItems = [];
+    sections.forEach(function(s){ allItems = allItems.concat(s.items); });
+    var html = options.map(function(opt){
+      var n = allItems.filter(function(it){ return it.file && isVisibleForFilter(it, opt.key); }).length;
+      var cls = 'pb-chip' + (opt.key === currentFilter ? ' active' : '');
+      return '<button type="button" class="' + cls + '" data-filter="' + opt.key + '">'
+           + escapeHtml(opt.label)
+           + ' <span class="count">' + n + '</span></button>';
+    }).join('');
+    row.innerHTML = html;
+    Array.prototype.forEach.call(row.querySelectorAll('button[data-filter]'), function(b){
+      b.addEventListener('click', function(){
+        currentFilter = b.dataset.filter;
+        Array.prototype.forEach.call(row.querySelectorAll('.pb-chip.active'), function(x){ x.classList.remove('active'); });
+        b.classList.add('active');
+        renderIndex(ALL_SECTIONS);
       });
     });
   }
@@ -372,6 +518,7 @@
     var md = await r.text();
     var sections = parseIndex(md);
     ALL_SECTIONS = sections;
+    renderChips(sections);
     renderIndex(sections);
 
     var params = new URLSearchParams(location.search);
