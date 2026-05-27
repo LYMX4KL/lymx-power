@@ -10,6 +10,12 @@
 |---|---|---|---|
 | [partner-email-setup](partner-email-setup.md) | Connect your @getlymx.com email to Gmail | Partner | ✅ Verified 2026-05-24 |
 
+## Earn / Compensation
+
+| Slug | Title | Role | Status |
+|---|---|---|---|
+| [comp-plan-partner-walkthrough](comp-plan-partner-walkthrough.md) | Understand the LYMX Partner Comp Plan | Partner | ✅ Verified 2026-05-26 |
+
 ## Onboarding
 
 | Slug | Title | Role | Status |

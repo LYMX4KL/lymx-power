@@ -260,6 +260,10 @@
       { href: 'partner-tree.html',       icon: '\u{1F333}', label: 'My Tree' },
       { href: 'partner-leaderboard.html', icon: '\u{1F3C6}', label: 'Leaderboard' },
       { href: 'partner-payouts.html',    icon: '\u{1F4B8}', label: 'Payouts' },
+      // 2026-05-26 #7bfc73c8 (Rachel) — Comp Plan page now exists at /comp-plan.html.
+      // Sidebar entry sits in the Partner section so partners can find it on every
+      // page, not just from the share-hub "see comp plan" link that used to 404.
+      { href: 'comp-plan.html',          icon: '\u{1F4B5}', label: 'Comp Plan' },
       { href: 'prospects.html',          icon: '\u{1F3AF}', label: 'My Prospects' },
       // 2026-05-25 #6df906ba — partners had no direct sidebar entry to the
       // Sales Toolkit (the page reachable from the "Open pitch toolkit" empty-
