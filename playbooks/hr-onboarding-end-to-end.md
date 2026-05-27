@@ -90,10 +90,13 @@ Click `📄 Generate & save offer`.
 ### Step 2 — Send the offer to the candidate, then mark their decision
 
 **Where:** `/admin-counter-offer-queue.html` (titled "Offer pipeline" in the header)
-**Do:** Find their offer in the **Drafts** tab. Click **Send to candidate** — this flips `offers.status` to `sent` and stamps `sent_at = now()`. Then **copy the View letter link** (it opens the storage URL of the saved offer letter HTML) and paste it into your own email to the candidate. (Auto-emailing the offer is on the roadmap — for now Helen sends it manually so we know the candidate definitely received it.)
+**Do:** Find their offer in the **Drafts** tab. Click **Send to candidate**. This (1) flips `offers.status` to `sent` + stamps `sent_at = now()`, (2) generates a one-time-use accept token valid for 14 days and writes it to `offers.accept_token`, and (3) opens a copy-paste email modal with the magic-link URL baked in. **Copy the body** (or use "Copy as mailto link" to launch your mail client) and send it to the candidate's email. The accept link is `https://getlymx.com/accept-offer.html?t=<token>`.
+
+(Auto-email from a server is on the roadmap — for now human-from-human send means the candidate sees a personal sender, not a corporate noreply, and we sidestep the SES placeholder env bug that's blocking the broadcast pipeline.)
 
 When they reply:
-- **Accepted in writing:** open the **Sent · waiting** tab, find their row, click **Mark accepted**. Confirm in the dialog. This sets `offers.status = 'accepted'` + `accepted_at = now()` AND fires the `tg_offer_accepted_spawn_onboarding` trigger, which auto-creates the `staff_profiles` row + seeds onboarding tasks from `onboarding_task_templates` matching the `target_role` from Step 1.
+- **Accepted via the magic link (preferred):** the candidate clicks the link in the email, lands on `/accept-offer.html?t=<token>`, reviews the offer, and clicks **✓ Accept this offer**. The trigger `tg_offer_accepted_spawn_onboarding` fires automatically — staff_profiles row + onboarding_tasks land without Helen touching anything. The offer row in the queue moves to the **Accepted** tab; you'll see `accepted_via_token = true` for audit.
+- **Accepted in writing (no click):** if the candidate replies by email saying "yes" but doesn't click the link, you can still complete the flow manually — open the **Sent · waiting** tab, find their row, click **Mark accepted**. Confirm in the dialog. Same trigger fires; `accepted_via_token = false` distinguishes this from the self-accept path. (Prefer the magic link when possible — it's binding-by-click and auditable.)
 - **Declined:** click **Mark declined**, optionally type a brief reason. Status flips to `declined`, `declined_at = now()`.
 - **Want to pull the offer back:** click **Rescind** (works from Draft or Sent).
 - **Counter-offer / revised pay:** today this isn't a structured workflow — generate a new draft via Step 1 with the revised terms, then rescind the original.

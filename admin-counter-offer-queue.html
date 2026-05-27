@@ -221,8 +221,101 @@ async function sendToCandidate(id) {
   const o = _offers.find(x => x.id === id);
   const a = (o && _appsById[o.application_id]) || {};
   const who = [(a.first_name||''), (a.last_name||'')].filter(Boolean).join(' ') || a.email || 'this candidate';
-  if (!confirm('Send the offer to ' + who + '?\nThe status flips to "sent" and the timestamp is recorded. The actual email delivery still needs to be done manually for now — copy the View letter link and paste it into your email to ' + (a.email || 'them') + '.')) return;
-  await patchOffer(id, { status: 'sent', sent_at: new Date().toISOString() }, 'Marked as sent. Copy the View letter link and email it to the candidate.');
+  const candEmail = a.email || '';
+  if (!confirm('Send the offer to ' + who + '?\n\nThis (1) flips the status to "sent", (2) generates a one-time-use accept link valid for 14 days, and (3) shows you a copy-paste email body to send to ' + (candEmail || 'them') + ' manually. The candidate clicks the link to accept and the personnel record auto-creates.')) return;
+
+  // Generate the magic-link token. Browser crypto.randomUUID() is supported
+  // in modern Chrome/Firefox/Safari; fall back to a uuid v4 polyfill if not.
+  const token = (typeof crypto !== 'undefined' && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : (() => {
+        const r = (n) => Math.floor(Math.random() * (1 << n));
+        const hex = (n) => Array.from({length: n/4}, () => r(4).toString(16)).join('');
+        return hex(8) + '-' + hex(4) + '-4' + hex(3).slice(1) + '-' + (8 + r(2)).toString(16) + hex(3).slice(1) + '-' + hex(12);
+      })();
+  const expiresAt = new Date(Date.now() + 14*24*60*60*1000).toISOString();
+  const acceptUrl = location.origin + '/accept-offer.html?t=' + token;
+
+  // Patch the offer row: status=sent, sent_at, accept_token + expiry + issued_at.
+  // The accept-offer.html page resolves the token via fn_offer_resolve_by_token
+  // (migration 121) and the Accept button calls fn_offer_accept_by_token, which
+  // fires tg_offer_accepted_spawn_onboarding (migration 056) for the personnel
+  // record + onboarding tasks.
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/offers?id=eq.' + id, {
+    method:'PATCH',
+    headers:{ apikey: cfg.SUPABASE_ANON_KEY, Authorization:'Bearer '+tok, 'Content-Type':'application/json', Prefer:'return=minimal' },
+    body: JSON.stringify({
+      status: 'sent',
+      sent_at: new Date().toISOString(),
+      accept_token: token,
+      accept_token_expires_at: expiresAt,
+      accept_token_issued_at: new Date().toISOString()
+    })
+  });
+  if (!r.ok) {
+    banner('err', 'Send failed: ' + (await r.text()).slice(0,200));
+    return;
+  }
+
+  // Show the copy-paste email body in a modal so Helen can grab it.
+  showSendModal(who, candEmail, acceptUrl, o);
+  await load();
+}
+
+function showSendModal(who, candEmail, acceptUrl, offer) {
+  // Compose a copy-paste email body. Plain language; the magic link is the
+  // call-to-action. Helen pastes this into Gmail / her client of choice.
+  const subj = 'Your LYMX offer letter';
+  const body =
+    'Hi ' + (who.split(' ')[0] || 'there') + ',\n\n' +
+    'Great news — your offer letter is ready. Click below to review the terms and accept when you are ready:\n\n' +
+    acceptUrl + '\n\n' +
+    'Quick summary:\n' +
+    '• Position: ' + (offer.title || '—') + '\n' +
+    '• Start date: ' + (offer.start_date || '—') + '\n' +
+    '• Pay: ' + (offer.pay_rate_cents != null ? '$' + (Number(offer.pay_rate_cents)/100).toLocaleString() + ' / ' + (offer.pay_period || '') : '—') + '\n\n' +
+    'The accept link is valid for 14 days. Reply to this email if you want to talk through any of the terms before clicking accept.\n\n' +
+    'Welcome to LYMX,\nKenny + the LYMX team';
+
+  // Build a self-contained modal element so we don't depend on prefab CSS.
+  const existing = document.getElementById('sendModalOv');
+  if (existing) existing.remove();
+  const ov = document.createElement('div');
+  ov.id = 'sendModalOv';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.innerHTML =
+    '<div style="background:#fff;border-radius:14px;padding:22px;width:640px;max-width:100%;max-height:92vh;overflow-y:auto;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Inter,sans-serif;line-height:1.55">' +
+      '<h3 style="margin:0 0 6px;font-size:18px">Offer sent — copy the email below</h3>' +
+      '<p style="margin:0 0 12px;font-size:13.5px;color:#5b6472">The accept link is now live and expires in 14 days. Copy-paste the body below into your email to <strong>' + (candEmail || 'the candidate') + '</strong>. (Auto-email is on the roadmap; for now the human-from-human send works better.)</p>' +
+      '<div style="font-size:11px;color:#5b6472;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">To</div>' +
+      '<input type="text" readonly value="' + (candEmail || '').replace(/"/g, '&quot;') + '" style="width:100%;padding:9px 11px;border:1px solid #e6e8ec;border-radius:7px;font:inherit;font-size:13.5px;margin-bottom:10px;background:#f6f7f9" />' +
+      '<div style="font-size:11px;color:#5b6472;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Subject</div>' +
+      '<input type="text" readonly value="' + subj + '" style="width:100%;padding:9px 11px;border:1px solid #e6e8ec;border-radius:7px;font:inherit;font-size:13.5px;margin-bottom:10px;background:#f6f7f9" />' +
+      '<div style="font-size:11px;color:#5b6472;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Body</div>' +
+      '<textarea readonly id="sendBodyTa" style="width:100%;min-height:200px;padding:11px;border:1px solid #e6e8ec;border-radius:7px;font:inherit;font-size:13.5px;background:#f6f7f9;resize:vertical">' + body.replace(/</g, '&lt;') + '</textarea>' +
+      '<div style="font-size:11px;color:#5b6472;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin:10px 0 4px">Magic link (also in the body above)</div>' +
+      '<input type="text" readonly value="' + acceptUrl + '" style="width:100%;padding:9px 11px;border:1px solid #e6e8ec;border-radius:7px;font:inherit;font-size:12.5px;margin-bottom:14px;background:#f6f7f9;font-family:ui-monospace,Menlo,monospace" />' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">' +
+        '<button type="button" id="sendCopyBody" style="appearance:none;border:1px solid #e6e8ec;background:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font:inherit;font-size:13.5px;font-weight:700">Copy body</button>' +
+        '<button type="button" id="sendCopyAll" style="appearance:none;border:0;background:#0e1116;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font:inherit;font-size:13.5px;font-weight:700">Copy as mailto link</button>' +
+        '<button type="button" id="sendModalClose" style="appearance:none;border:1px solid #e6e8ec;background:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font:inherit;font-size:13.5px;font-weight:700">Done</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click', (e) => { if (e.target === ov) ov.remove(); });
+  document.getElementById('sendModalClose').addEventListener('click', () => ov.remove());
+  document.getElementById('sendCopyBody').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(body); banner('ok', 'Email body copied — paste into your mail client to ' + (candEmail || 'the candidate') + '.'); }
+    catch (e) { banner('err', 'Could not copy — select the textarea + Ctrl+C manually.'); }
+  });
+  document.getElementById('sendCopyAll').addEventListener('click', () => {
+    const mailto = 'mailto:' + encodeURIComponent(candEmail || '') + '?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent(body);
+    // Open mailto: in a new tab so Gmail / Outlook / native client takes over
+    window.open(mailto, '_blank');
+  });
 }
 
 async function markAccepted(id) {

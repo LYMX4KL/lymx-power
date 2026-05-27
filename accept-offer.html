@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Accept your offer · LYMX</title>
+<meta name="description" content="Review and accept your LYMX offer letter." />
+<meta name="robots" content="noindex,nofollow" />
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--gold:#d4af37;--danger:#e0413e;--maxw:680px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft);min-height:100vh}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:36px 22px 80px}
+  .brand-mark{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.01em;margin-bottom:18px}
+  .brand-mark .dot{width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,#0a84ff,#0050c7)}
+  h1{margin:0 0 6px;font-size:30px;font-weight:800;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:15px;margin-bottom:22px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;box-shadow:0 4px 14px rgba(14,17,22,.04);margin-bottom:14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px}
+  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
+  .field-label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .field-val{font-size:15px;font-weight:600;color:var(--ink);margin-top:2px}
+  .field-val.big{font-size:18px}
+  .field-val.gold{color:#7a5e10}
+  .accept-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+  .accept-row .stamp{font-size:13px;color:var(--muted);line-height:1.4;flex:1;min-width:200px}
+  .accept-btn{appearance:none;border:0;background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;font-weight:800;padding:13px 28px;border-radius:10px;font-size:15.5px;cursor:pointer;font-family:inherit;letter-spacing:.01em}
+  .accept-btn:hover{filter:brightness(1.08)}
+  .accept-btn[disabled]{opacity:.55;cursor:not-allowed;filter:none}
+  .letter-link{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:700;font-size:14px;margin-top:10px}
+  .alert{padding:14px 18px;border-radius:10px;margin-bottom:14px;font-size:14.5px}
+  .alert.err{background:#fde8e6;color:#7a1a17;border-left:4px solid var(--danger)}
+  .alert.ok{background:#d1fae5;color:#065f46;border-left:4px solid var(--ok)}
+  .alert.warn{background:#fff3d8;color:#7a4a08;border-left:4px solid var(--gold)}
+  .success-card{background:linear-gradient(135deg,#13a26b,#0d7d51);color:#fff;border:0}
+  .success-card h2{margin:0 0 8px;font-size:22px}
+  .success-card p{margin:0;color:#dffceb;font-size:14.5px;line-height:1.6}
+  .small{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:12px}
+  .small code{background:#f1f3f6;padding:1px 5px;border-radius:4px;font-size:12px}
+  .skeleton{padding:48px 16px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand-mark"><span class="dot"></span> LYMX</div>
+  <div id="content" class="card skeleton">Loading your offer…</div>
+</div>
+
+<script>
+// 2026-05-27 HR P3 — Public accept-offer page. No sign-in required.
+// Magic-link URL carries ?t=<uuid>. Resolves via fn_offer_resolve_by_token
+// (migration 121). Accept calls fn_offer_accept_by_token, which flips
+// status='accepted' and the trigger tg_offer_accepted_spawn_onboarding
+// (migration 056) auto-creates staff_profiles + onboarding_tasks.
+
+const SUPABASE_URL = 'https://apffootxzfwmtyjlnteo.supabase.co';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+function fmtUsd(cents, period) {
+  if (cents == null) return '—';
+  const n = Number(cents) / 100;
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + (period ? ' / ' + period : '');
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+}
+function getToken() {
+  try {
+    const t = new URL(location.href).searchParams.get('t');
+    if (!t) return null;
+    if (!/^[0-9a-f-]{32,40}$/i.test(t)) return null;
+    return t;
+  } catch (e) { return null; }
+}
+
+let _anonKey = null;
+async function loadAnonKey() {
+  const r = await fetch('/lymx-config.js', { cache: 'no-store' });
+  const txt = await r.text();
+  const m = txt.match(/SUPABASE_ANON_KEY\s*:\s*["']([^"']+)/);
+  _anonKey = m ? m[1] : null;
+  return _anonKey;
+}
+
+async function rpc(name, args) {
+  const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/' + name, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: _anonKey, Authorization: 'Bearer ' + _anonKey },
+    body: JSON.stringify(args)
+  });
+  if (!r.ok) {
+    let body = '';
+    try { body = await r.text(); } catch (e) { console.warn('[accept-offer] could not read error body', e); } // bandaid-ok: best-effort enrichment, we already have HTTP status for the throw
+    throw new Error('http ' + r.status + (body ? ': ' + body.slice(0, 200) : ''));
+  }
+  return r.json();
+}
+
+function renderError(title, msg, isExpired) {
+  $('content').classList.remove('skeleton');
+  $('content').innerHTML =
+    '<div class="alert ' + (isExpired ? 'warn' : 'err') + '"><strong>' + esc(title) + '</strong><br>' + esc(msg) + '</div>' +
+    '<p class="small">If you think this link should be working, reply to the email you got from LYMX and we will re-send a fresh one.</p>';
+}
+
+function renderOffer(o) {
+  const c = $('content');
+  c.classList.remove('skeleton');
+  const candidateName = [o.candidate_first_name, o.candidate_last_name].filter(Boolean).join(' ') || 'there';
+  const expiresAt = o.token_expires_at ? new Date(o.token_expires_at) : null;
+  const expiryMsg = expiresAt ? 'This link expires on ' + expiresAt.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) + '.' : '';
+  const letterUrl = o.offer_letter_path ? (SUPABASE_URL + '/storage/v1/object/public/' + o.offer_letter_path) : null;
+  c.innerHTML =
+    '<h1>Your LYMX offer</h1>' +
+    '<p class="sub">Hi ' + esc(candidateName) + ' — here is a summary of the offer. Review it, then click Accept below when you are ready.</p>' +
+    (letterUrl ? '<a class="letter-link" target="_blank" rel="noopener" href="' + esc(letterUrl) + '">📄 Read the full offer letter →</a>' : '') +
+    '<div class="card" style="margin-top:14px">' +
+      '<div class="grid2">' +
+        '<div><div class="field-label">Position</div><div class="field-val big">' + esc(o.title || '—') + '</div></div>' +
+        '<div><div class="field-label">Start date</div><div class="field-val big">' + fmtDate(o.start_date) + '</div></div>' +
+        '<div><div class="field-label">Pay</div><div class="field-val big">' + esc(fmtUsd(o.pay_rate_cents, o.pay_period)) + '</div></div>' +
+        '<div><div class="field-label">Employment</div><div class="field-val">' + esc(o.employment_type || '—') + ' · ' + esc(o.work_mode || '—') + '</div></div>' +
+        '<div><div class="field-label">Location</div><div class="field-val">' + esc(o.location || '—') + '</div></div>' +
+        (o.target_role ? '<div><div class="field-label">Role family</div><div class="field-val">' + esc(o.target_role) + '</div></div>' : '') +
+        (o.sign_on_bonus_cents ? '<div><div class="field-label">Sign-on bonus</div><div class="field-val gold">' + esc(fmtUsd(o.sign_on_bonus_cents)) + '</div></div>' : '') +
+      '</div>' +
+      '<div class="accept-row">' +
+        '<div class="stamp">By clicking Accept, you confirm you have read the offer letter and agree to the terms above. HR will follow up within 24 hours to schedule your first day.' +
+          (expiryMsg ? '<br><em>' + esc(expiryMsg) + '</em>' : '') +
+        '</div>' +
+        '<button class="accept-btn" id="acceptBtn">✓ Accept this offer</button>' +
+      '</div>' +
+      '<div id="acceptStatus"></div>' +
+    '</div>' +
+    '<p class="small">Not ready, or need to negotiate? Reply to the email you got from LYMX and we will work it out before you commit. Do not click Accept until you are sure — clicking is binding.</p>';
+  $('acceptBtn').addEventListener('click', onAccept);
+}
+
+async function onAccept() {
+  const btn = $('acceptBtn');
+  if (!confirm('Accept this offer? Clicking OK is binding — your start date and pay are locked in, and HR will email next steps within 24 hours.')) return;
+  btn.disabled = true; btn.textContent = 'Accepting…';
+  const tok = getToken();
+  try {
+    const result = await rpc('fn_offer_accept_by_token', { p_token: tok });
+    if (!result || !result.ok) {
+      const errKey = (result && result.error) || 'unknown';
+      const human = {
+        no_token: 'The link is missing a token. Re-open the link from your email exactly.',
+        token_not_found: 'This link is no longer valid — it may have been used or rescinded. Reply to the email if this is unexpected.',
+        token_expired: 'This link has expired. Reply to the email and HR will issue a fresh one.',
+        offer_status_not_sent: 'This offer is no longer pending — it may have already been accepted, declined, or rescinded. Reply to the email if this is unexpected.'
+      }[errKey] || ('Could not accept: ' + errKey);
+      $('acceptStatus').innerHTML = '<div class="alert err" style="margin-top:14px">' + esc(human) + '</div>';
+      btn.disabled = false; btn.textContent = '✓ Accept this offer';
+      return;
+    }
+    $('content').innerHTML =
+      '<div class="card success-card"><h2>🎉 Welcome to LYMX!</h2><p>' + esc(result.message || 'Offer accepted.') + '</p></div>' +
+      '<p class="small">You will get a welcome email from <code>kenny@getlymx.com</code> within 24 hours with your @getlymx.com address, sign-in link, and your first-day onboarding checklist. You do not need to do anything else right now.</p>' +
+      '<p class="small">Bookmark <a href="/login.html" style="color:var(--accent);font-weight:700">getlymx.com/login</a> — that is where you will sign in once HR sets you up.</p>';
+  } catch (e) {
+    console.warn('[accept-offer] accept failed', e);
+    $('acceptStatus').innerHTML = '<div class="alert err" style="margin-top:14px">Could not accept right now — please retry. Error: ' + esc(e.message || 'unknown') + '</div>';
+    btn.disabled = false; btn.textContent = '✓ Accept this offer';
+  }
+}
+
+(async function init() {
+  const tok = getToken();
+  if (!tok) {
+    renderError('Missing token', 'This page needs the magic-link URL from the email LYMX sent you. Open the link from your inbox exactly as it was sent.');
+    return;
+  }
+  try {
+    await loadAnonKey();
+    if (!_anonKey) {
+      renderError('Configuration error', 'Could not load the API key. Try refreshing in a minute.');
+      return;
+    }
+    const o = await rpc('fn_offer_resolve_by_token', { p_token: tok });
+    if (!o || !o.ok) {
+      const errKey = (o && o.error) || 'unknown';
+      const human = {
+        no_token: 'No token in the URL.',
+        token_not_found: 'This link is invalid or has already been used. If you already accepted, you will have an email from HR — check your inbox.',
+        token_expired: 'This link expired. Reply to the email LYMX sent you and we will issue a fresh one.',
+        offer_status_not_sent: 'This offer is no longer pending. Check your email for the latest status.'
+      }[errKey] || ('Could not load the offer: ' + errKey);
+      renderError('Cannot open this offer', human, errKey === 'token_expired');
+      return;
+    }
+    renderOffer(o);
+  } catch (e) {
+    console.warn('[accept-offer] init failed', e);
+    renderError('Something went wrong', e.message || 'Unknown error. Please try again in a moment.');
+  }
+})();
+</script>
+</body>
+</html>
