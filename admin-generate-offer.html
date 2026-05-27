@@ -330,7 +330,13 @@ $('genBtn').addEventListener('click', async () => {
 
   const sb = window.LYMX.sb;
   const { data: { session } } = await sb.auth.getSession();
-  const supaUrl = (window.LYMX.SUPABASE_URL || '').replace(/\/$/, '');
+  // 2026-05-27 #2 (Helen) root cause: this page read window.LYMX.SUPABASE_URL /
+  // window.LYMX.SUPABASE_ANON_KEY, which lymx-auth.js never sets on the LYMX
+  // object (it exposes .sb and .config). The empty URL made the offer POST hit
+  // a relative /functions/v1/... path on getlymx.com, returning the HTML 404
+  // page; r.json() then threw and the user saw "Failed". The canonical config
+  // object every other page uses is window.LYMX_CONFIG.
+  const supaUrl = (window.LYMX_CONFIG.SUPABASE_URL || '').replace(/\/$/, '');
 
   const payload = {
     application_id: appId,
@@ -355,7 +361,7 @@ $('genBtn').addEventListener('click', async () => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + session.access_token,
-        'apikey': window.LYMX.SUPABASE_ANON_KEY
+        'apikey': window.LYMX_CONFIG.SUPABASE_ANON_KEY
       },
       body: JSON.stringify(payload)
     });
