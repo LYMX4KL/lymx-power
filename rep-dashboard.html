@@ -1,1216 +1,328 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="LYMX Partner dashboard — Multi-Generation Compensation, referral tree, commissions, leaderboard." />
-<title>Partner Dashboard · LYMX</title>
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://getlymx.com/rep-dashboard" />
-<meta property="og:title" content="Partner Dashboard · LYMX" />
-<meta property="og:description" content="LYMX Partner dashboard — Multi-Generation Compensation, referral tree, commissions, leaderboard." />
-<meta property="og:image" content="https://getlymx.com/og-image.png" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta property="og:site_name" content="LYMX" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Partner Dashboard · LYMX" />
-<meta name="twitter:description" content="LYMX Partner dashboard — Multi-Generation Compensation, referral tree, commissions, leaderboard." />
-<meta name="twitter:image" content="https://getlymx.com/og-image.png" />
-<link rel="canonical" href="https://getlymx.com/rep-dashboard" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MGC Partner Dashboard · LYMX</title>
 <style>
-  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
+  :root{
+    --ink:#0e1116; --muted:#6b7280; --line:#e5e7eb; --bg:#f7f8fa; --card:#fff;
+    --accent:#0a84ff; --ok:#13a26b; --warn:#f0a020; --gold:#b48a3c;
+    --side:#0b1020; --side2:#121a32; --sideText:#c7ced9;
+  }
   *{box-sizing:border-box}
-  /* T4 [d6420793] 2026-05-27 - overflow-x:hidden on root prevents any
-     horizontal page scroll regardless of what's inside. Rachel reported
-     "has to scroll or pan around the screen" on rep-dashboard at mobile
-     widths. Defensive cap; the @media block at the bottom of this stylesheet
-     also fixes the actual min-width offenders so wrap behaves correctly. */
-  html,body{margin:0;padding:0;background:var(--bg-soft);overflow-x:hidden}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
-  img{max-width:100%;display:block}
+  html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;color:var(--ink);background:var(--bg)}
   a{color:inherit;text-decoration:none}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
-
-  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
-  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800}
-  .brand img{height:44px;width:auto}
-  .role-tag{background:rgba(212,175,55,.16);color:#86670c;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
-  .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--ink-2)}
-  .nav-links a:hover{color:var(--accent)}
-  .nav-links a.on{color:var(--accent);font-weight:700}
-  .nav-cta{display:flex;gap:10px;align-items:center}
-  .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:10px;font-weight:600;font-size:14.5px;border:1px solid transparent;cursor:pointer;transition:.15s}
-  .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
-  .btn-ghost:hover{border-color:var(--ink-2)}
-  .btn-primary{background:var(--ink);color:#fff}
-  .btn-primary:hover{background:#000}
-  .btn-sm{padding:7px 14px;font-size:13px;border-radius:8px}
-  .rep-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
-  @media(max-width:880px){.nav-links{display:none}}
-
-  .page{padding:32px 0 64px}
-  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:24px;flex-wrap:wrap}
-  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
-  .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
-
-  /* Earnings hero */
-  .earn-hero{
-    background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;
-    border-radius:var(--radius);padding:32px;position:relative;overflow:hidden;margin-bottom:18px;
-  }
-  .earn-hero::after{content:"";position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);right:-150px;top:-150px}
-  .earn-hero .row1{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:24px;align-items:end;position:relative}
-  @media(max-width:780px){.earn-hero .row1{grid-template-columns:1fr;gap:18px}}
-  .earn-hero .lab{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:#9aa3b0;font-weight:700;margin-bottom:6px}
-  .earn-hero .big{font-size:50px;font-weight:800;letter-spacing:-.02em;line-height:1}
-  .earn-hero .big small{font-size:15px;color:#9aa3b0;font-weight:600;margin-left:6px}
-  .earn-hero .sub{font-size:13.5px;color:#9aa3b0;margin-top:8px}
-  .earn-hero .mini{display:flex;flex-direction:column;gap:4px}
-  .earn-hero .mini .v{font-size:24px;font-weight:800;color:#fff}
-  .earn-hero .mini .v.gold{color:#f5d172}
-  .earn-hero .actions{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap;position:relative}
-  .earn-hero .btn-w{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.3);padding:9px 16px;border-radius:9px;font-weight:600;font-size:13.5px;cursor:pointer}
-  .earn-hero .btn-w:hover{background:rgba(255,255,255,.28)}
-  .earn-hero .btn-w.solid{background:#fff;color:var(--ink);border-color:#fff}
-  .earn-hero .btn-w.gold{background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff;border:0}
-
-  .grid{display:grid;grid-template-columns:1fr 360px;gap:20px}
-  @media(max-width:1000px){.grid{grid-template-columns:1fr}}
-  .col{display:flex;flex-direction:column;gap:18px}
-
-  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px}
-  .card-h{display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:14px;flex-wrap:wrap}
-  .card-h h2{margin:0;font-size:17px;font-weight:800}
-  .card-h .more{color:var(--accent-2);font-weight:600;font-size:13.5px}
-  .card-h .count{font-size:12px;color:var(--muted);font-weight:500}
-
-  /* Founding Partner banner */
-  .founding-banner{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:var(--radius);padding:18px 24px;margin-bottom:18px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;position:relative;overflow:hidden}
-  .founding-banner::after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.22),transparent 70%);right:-100px;top:-100px}
-  .founding-banner .badge{background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:5px 12px;border-radius:999px;flex-shrink:0;position:relative}
-  .founding-banner .body{flex:1;min-width:260px;position:relative}
-  .founding-banner .body .head{font-size:16px;font-weight:800;color:#fff}
-  .founding-banner .body .body-text{font-size:13.5px;color:#c6ccd4;margin-top:3px}
-  .founding-banner .body .body-text strong{color:#f5d172}
-  .founding-banner .counter{font-size:13px;color:#c6ccd4;text-align:right;font-weight:600;position:relative;min-width:120px}
-  .founding-banner .counter strong{display:block;font-size:24px;color:#f5d172;font-weight:800;letter-spacing:-.01em;line-height:1}
-  .founding-banner .btn-apply{background:#fff;color:var(--ink);padding:9px 18px;border-radius:9px;font-weight:800;font-size:13.5px;position:relative}
-  .founding-banner .btn-apply:hover{background:#eaeaea}
-
-  /* Tier ladder */
-  .tier-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin-bottom:18px;display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center}
-  @media(max-width:780px){.tier-card{grid-template-columns:1fr;text-align:center}}
-  .tier-badge{width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;letter-spacing:.06em;text-transform:uppercase;flex-shrink:0;margin:0 auto;position:relative;background:linear-gradient(135deg,#d4af37,#b88a2e);box-shadow:0 6px 16px rgba(212,175,55,.35)}
-  .tier-badge.bronze{background:linear-gradient(135deg,#cd7f32,#a05a23)}
-  .tier-badge.silver{background:linear-gradient(135deg,#a3a3a3,#7a7a7a)}
-  .tier-badge.gold{background:linear-gradient(135deg,#d4af37,#b88a2e)}
-  .tier-badge.platinum{background:linear-gradient(135deg,#7c7c7c,#3e3e3e);box-shadow:0 6px 16px rgba(50,50,50,.35)}
-  .tier-info .lbl{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
-  .tier-info .name{font-size:22px;font-weight:800;letter-spacing:-.005em;margin-top:2px}
-  .tier-info .progress-line{font-size:13.5px;color:var(--muted);margin-top:4px}
-  .tier-info .bar{margin-top:10px;height:8px;background:var(--bg-soft);border-radius:4px;overflow:hidden}
-  .tier-info .bar .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--ok));border-radius:4px;transition:width .4s}
-  .tier-info .pct{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
-  .tier-perks{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--ink-2);min-width:240px}
-  .tier-perks .perks-h{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:2px}
-  .tier-perks ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px}
-  .tier-perks ul li{display:flex;align-items:start;gap:6px}
-  .tier-perks ul li::before{content:"→";color:var(--accent);font-weight:800;flex-shrink:0}
-
-  /* Commission breakdown */
-  .com-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px;gap:14px}
-  .com-row:last-child{border-bottom:0}
-  .com-row .lbl{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
-  .com-row .ico{width:32px;height:32px;border-radius:8px;background:var(--bg-soft);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-  .com-row .ico.g1{background:rgba(10,132,255,.10)}
-  .com-row .ico.g2{background:rgba(19,162,107,.10)}
-  .com-row .ico.g3{background:rgba(240,160,32,.10)}
-  .com-row .ico.bonus{background:rgba(212,175,55,.16)}
-  .com-row .ico.lymx{background:rgba(155,89,182,.10)}
-  .com-row .nm{font-weight:700}
-  .com-row .ds{font-size:12.5px;color:var(--muted)}
-  .com-row .amt{font-weight:800;font-variant-numeric:tabular-nums}
-  .com-row .amt.lymx{color:#7a4ab8}
-
-  /* Tree visualization */
-  .tree{display:flex;flex-direction:column;gap:10px;font-size:13.5px}
-  .tree-row{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;position:relative}
-  .tree-row.you{background:linear-gradient(135deg,#fff8e0,#fff5d0);border-color:#e6c66a}
-  .tree-row.g1{margin-left:24px}
-  .tree-row.g2{margin-left:48px;background:var(--bg-soft)}
-  .tree-row.g3{margin-left:72px;background:var(--bg-soft);opacity:.92}
-  .tree-row::before{content:"";position:absolute;left:-12px;top:50%;width:12px;height:1px;background:var(--line)}
-  .tree-row.you::before{display:none}
-  .tree-row.g1::before{left:-12px}
-  .tree-row.g2::before{left:-12px}
-  .tree-row.g3::before{left:-12px}
-  .tree-row .av{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--bg-soft);flex-shrink:0}
-  .tree-row.you .av{background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff;font-weight:700;font-size:14px}
-  .tree-row .body{flex:1;min-width:0}
-  .tree-row .nm{font-weight:700;font-size:14px}
-  .tree-row .ds{font-size:12px;color:var(--muted)}
-  .tree-row .pay{font-weight:800;font-size:14px;color:var(--ok);font-variant-numeric:tabular-nums;text-align:right}
-  .tree-row .pay .sub{display:block;font-size:11.5px;color:var(--muted);font-weight:500}
-  .tree-row .gen-pill{font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;background:var(--ink);color:#fff;letter-spacing:.04em}
-  .tree-row.g1 .gen-pill{background:var(--accent)}
-  .tree-row.g2 .gen-pill{background:var(--ok)}
-  .tree-row.g3 .gen-pill{background:var(--warn);color:#3a2400}
-
-  /* Leaderboard */
-  .lb-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
-  .lb-row:last-child{border-bottom:0}
-  .lb-row .rk{width:24px;height:24px;border-radius:50%;background:var(--bg-soft);color:var(--muted);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0}
-  .lb-row.top1 .rk{background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff}
-  .lb-row.top2 .rk{background:#a3a3a3;color:#fff}
-  .lb-row.top3 .rk{background:#cd7f32;color:#fff}
-  .lb-row.you{background:rgba(10,132,255,.04);margin:0 -10px;padding:10px;border-radius:8px;border:1px solid rgba(10,132,255,.2)}
-  .lb-row .nm{flex:1;font-weight:700}
-  .lb-row .nm small{font-weight:500;color:var(--muted);font-size:11.5px;display:block}
-  .lb-row .vol{font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
-  .lb-row .vol .sub{display:block;font-size:11px;color:var(--muted);font-weight:500}
-
-  /* Share card */
-  .share-card{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;border:0}
-  .share-card h2{color:#fff;font-size:17px;margin:0 0 6px}
-  .share-card .sub{font-size:13.5px;color:rgba(255,255,255,.85);margin:0 0 14px}
-  .share-card .url{background:rgba(0,0,0,.22);border:1px dashed rgba(255,255,255,.3);border-radius:10px;padding:11px 14px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:10px}
-  .share-card .copy{background:rgba(255,255,255,.22);color:#fff;border:0;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer}
-  .share-card .copy:hover{background:rgba(255,255,255,.32)}
-  .share-card .channels{display:flex;gap:8px;margin-top:14px}
-  .share-card .ch{flex:1;background:rgba(255,255,255,.16);color:#fff;border-radius:8px;padding:9px;text-align:center;font-size:12.5px;font-weight:700;cursor:pointer}
-  .share-card .ch:hover{background:rgba(255,255,255,.26)}
-
-  /* Payout */
-  .payout-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
-  .payout-row:last-child{border-bottom:0}
-  .payout-row .k{color:var(--muted)}
-  .payout-row .v{font-weight:700}
-
-  /* Activity */
-  .act-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:13.5px}
-  .act-row:last-child{border-bottom:0}
-  .act-row .ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-  .act-row .ic.act{background:rgba(19,162,107,.12)}
-  .act-row .ic.tx{background:rgba(10,132,255,.10)}
-  .act-row .ic.pay{background:rgba(212,175,55,.18)}
-  .act-row .body{flex:1;min-width:0}
-  .act-row .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-  .act-row .nm{font-weight:700;font-size:14px}
-  .act-row .delta{font-weight:800;color:var(--ok);font-size:14px}
-  .act-row .sub{font-size:12px;color:var(--muted);margin-top:2px}
-
-  /* Footer */
-  footer{padding:36px 0 32px;color:var(--muted);font-size:13px;text-align:center}
-  footer .disc{max-width:780px;margin:8px auto 0;font-size:11.5px;line-height:1.55}
-
-  /* T4 [d6420793] 2026-05-27 - mobile-overflow root-cause fix.
-     Rachel reported the partner dashboard "shifts and isn't stable" on mobile
-     and that users have to "scroll or pan around the screen". Audit found
-     several flex children with hardcoded min-widths that summed past a
-     <=480px viewport, plus header items that didn't shrink. Each rule below
-     addresses a SPECIFIC overflow source identified via the layout audit -
-     none of them are blanket suppression. */
-  @media (max-width: 480px) {
-    /* Founding-25 banner - body had min-width:260, counter had min-width:120,
-       summed with badge + button + gaps they overflow. Null both so wrap behaves. */
-    .founding-banner{padding:14px 16px;gap:12px}
-    .founding-banner .body{min-width:0}
-    .founding-banner .counter{min-width:0;text-align:left;font-size:12.5px}
-    .founding-banner .counter strong{font-size:20px}
-    /* Tier-perks min-width:240 was fine when tier-card grid collapsed to
-       1fr at 780px, but the 240 still forces wrap-content >240. Null it. */
-    .tier-perks{min-width:0}
-    /* mySponsorStrip inline min-width:220 on first child (line 358). The
-       attribute selector targets it without needing to edit every inline. */
-    #mySponsorStrip > div[style*="min-width:220px"],
-    #mySponsorStrip > div{min-width:0}
-    /* Header - at <=880px nav-links is already display:none. At <=480px the
-       lang chip + Help button + avatar + role-tag can still overflow. Tighten
-       the wrap padding (24->14) and shrink the Help chip to icon-only feel. */
-    .wrap{padding:0 14px}
-    .nav-cta{gap:6px}
-    .nav-cta .btn-sm{padding:6px 10px;font-size:12.5px}
-    .role-tag{font-size:10px;padding:2px 6px;margin-left:4px}
-    /* .earn-hero numbers can break to next line if wrap kicks in - tighten
-       gaps so the layout reflows cleanly instead of leaving a wide row. */
-    .earn-hero .row1{gap:12px}
-  }
+  .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+  .side{background:var(--side);color:var(--sideText);padding:18px 14px;position:sticky;top:0;height:100vh;overflow:auto}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 18px;border-bottom:1px solid #1c2340;margin-bottom:14px}
+  .brand img{height:26px}
+  .role{background:linear-gradient(135deg,#b48a3c,#8a6627);border-radius:10px;padding:12px;margin-bottom:16px;color:#fff}
+  .role .tag{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.8;font-weight:600}
+  .role .nm{font-weight:700;font-size:14px;margin-top:3px}
+  .role .lvl{font-size:12px;opacity:.9;margin-top:2px}
+  .navsec h4{font-size:11px;color:#8a93a2;text-transform:uppercase;letter-spacing:.08em;margin:14px 8px 6px;font-weight:600}
+  .navitem{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:13.5px;color:var(--sideText);cursor:pointer;margin-bottom:2px}
+  .navitem:hover{background:#1b2028;color:#fff}
+  .navitem.active{background:#1e2746;color:#fff}
+  .navitem .dot{margin-left:auto;background:#0a84ff;color:#fff;font-size:10.5px;padding:2px 7px;border-radius:10px;font-weight:600}
+  .main{display:flex;flex-direction:column}
+  .topbar{background:#fff;border-bottom:1px solid var(--line);padding:14px 28px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:4}
+  .hello{font-weight:600}
+  .hello small{color:var(--muted);font-weight:400;margin-left:8px}
+  .period{margin-left:auto;background:#f3f4f6;border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:13px}
+  .body{padding:24px 28px 60px;max-width:1280px;width:100%}
+  .banner{background:linear-gradient(135deg,#0b1020,#1e2746);color:#fff;border-radius:14px;padding:22px 24px;display:flex;align-items:center;gap:22px;margin-bottom:22px}
+  .banner .big{font-size:34px;font-weight:700;letter-spacing:-.5px}
+  .banner .eq{opacity:.85;font-size:13px;margin-top:4px}
+  .banner .grow{margin-left:auto;display:flex;gap:10px}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#0a84ff;font-weight:600;padding:10px 16px;border-radius:8px;font-size:13.5px;border:0;cursor:pointer}
+  .btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
+  .btn.gold{background:linear-gradient(135deg,#b48a3c,#8a6627);color:#fff}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .kpi .label{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+  .kpi .val{font-size:22px;font-weight:700;margin-top:4px}
+  .kpi .hint{font-size:12px;color:var(--muted);margin-top:2px}
+  .kpi .hint .up{color:var(--ok);font-weight:600}
+  .grid{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:18px}
+  .card h3{margin:0 0 4px;font-size:15px}
+  .card .sub{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-weight:600;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid var(--line)}
+  td{padding:12px 10px;border-bottom:1px solid var(--line)}
+  tr:last-child td{border-bottom:0}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;font-weight:600}
+  .tag.active{background:#e6f6ee;color:var(--ok)}
+  .tag.pend{background:#fff5e6;color:var(--warn)}
+  .tag.off{background:#f1f3f5;color:var(--muted)}
+  .tag.g1{background:#e7f0ff;color:var(--accent)}
+  .tag.g2{background:#efe9ff;color:#6d4ed3}
+  .tag.g3{background:#ffeef5;color:#c83670}
+  /* tree */
+  .tree{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+  .gen{background:#f7f8fa;border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+  .gen .lbl{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+  .gen .n{font-size:20px;font-weight:700;margin-top:4px}
+  .gen .r{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .gen .pct{display:inline-block;margin-top:6px;font-size:11px;padding:2px 8px;border-radius:999px;font-weight:600}
+  .gen.g1 .pct{background:#e7f0ff;color:var(--accent)}
+  .gen.g2 .pct{background:#efe9ff;color:#6d4ed3}
+  .gen.g3 .pct{background:#ffeef5;color:#c83670}
+  /* link card */
+  .refer{background:linear-gradient(135deg,#0a84ff,#0860c2);color:#fff;border-radius:12px;padding:18px;margin-bottom:18px}
+  .refer h3{margin:0;font-size:15px}
+  .refer p{font-size:12.5px;opacity:.95;margin:6px 0 12px}
+  .refer .code{display:flex;gap:8px}
+  .refer input{flex:1;background:rgba(255,255,255,.15);border:1px dashed rgba(255,255,255,.5);color:#fff;padding:8px 12px;border-radius:8px;font-weight:700;font-size:13px;outline:0;letter-spacing:.05em}
+  .refer button{background:#fff;color:#0a84ff;border:0;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px}
+  .sbreak{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px}
+  .sbreak .k{color:var(--muted)}
+  .sbreak .v{text-align:right;font-weight:600}
+  .next{background:linear-gradient(135deg,#13a26b,#0f7d51);color:#fff;border-radius:12px;padding:18px}
+  .next .amt{font-size:28px;font-weight:700;margin-top:4px}
+  .next .d{font-size:12px;opacity:.85;margin-top:4px}
+  .footer{padding:28px;font-size:11.5px;color:var(--muted);text-align:center;border-top:1px solid var(--line);background:#fff;line-height:1.5}
+  @media (max-width:980px){.app{grid-template-columns:1fr}.side{position:static;height:auto}.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.tree{grid-template-columns:1fr}}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="lymx-config.js"></script>
-<script src="lymx-auth.js"></script>
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="manifest" href="manifest.webmanifest" />
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
-<meta name="theme-color" content="#0a84ff" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="LYMX" />
-<meta name="mobile-web-app-capable" content="yes" />
 </head>
-<body data-role-required="partner">
+<body>
+<div class="app">
+  <aside class="side">
+    <a class="brand" href="index.html"><img src="logo.png" alt="LYMX" /></a>
+    <div class="role">
+      <div class="tag">Marketing Growth Consultant</div>
+      <div class="nm">Kenny Lin</div>
+      <div class="lvl">Tier 2 · 14 direct recruits</div>
+    </div>
+    <div class="navsec">
+      <h4>Earnings</h4>
+      <div class="navitem active"><span>◆</span> Overview</div>
+      <div class="navitem"><span>$</span> Commissions</div>
+      <div class="navitem"><span>◎</span> LYMX bonuses</div>
+      <div class="navitem"><span>▤</span> Payout history</div>
+    </div>
+    <div class="navsec">
+      <h4>Network</h4>
+      <div class="navitem"><span>⇊</span> My downline <span class="dot">47</span></div>
+      <div class="navitem"><span>➕</span> Recruit a business</div>
+      <div class="navitem"><span>◈</span> Leaderboard</div>
+    </div>
+    <div class="navsec">
+      <h4>Tools</h4>
+      <div class="navitem"><span>🔗</span> Referral links</div>
+      <div class="navitem"><span>◱</span> Marketing kit</div>
+      <div class="navitem"><span>♪</span> Training</div>
+    </div>
+    <div class="navsec">
+      <h4>Account</h4>
+      <div class="navitem"><span>⚙</span> Settings</div>
+      <div class="navitem"><span>▤</span> Tax documents</div>
+    </div>
+  </aside>
 
-<div id="auth-banner" style="display:none;background:#eef5ff;border-bottom:1px solid #c8def8;color:#0050c7;font-size:13px;padding:8px 16px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,Helvetica,Arial,sans-serif;line-height:1.5">
-  Loading your Partner dashboard…
-</div>
+  <div class="main">
+    <div class="topbar">
+      <div class="hello">Welcome back, Kenny <small>· Monday, April 13, 2026</small></div>
+      <div class="period">Last 30 days ▾</div>
+    </div>
 
-<header class="nav">
-  <div class="wrap nav-inner">
-    <a class="brand" href="index.html"><img src="logo.png" alt="LYMX logo" /><span class="role-tag">Partner</span></a>
-    <nav class="nav-links">
-      <a href="rep-dashboard.html" class="on">Dashboard</a>
-      <a href="contacts.html">Contacts</a>
-      <a href="partner-leaderboard.html">Leaderboard</a>
-      <a href="partner-crm.html">CRM</a>
-      <a href="partner-tree.html">Downline</a>
-      <a href="partner-resources.html">Toolkit</a>
-      <a href="partner-academy.html">Academy</a>
-      <a href="partner-mentor.html">Mentor</a>
-      <a href="partner-events.html">Events</a>
-      <a href="partner-social-kit.html">Social</a>
-      <a href="partner-payouts.html">Payouts</a>
-    </nav>
-    <div class="nav-cta">
-      <a class="btn btn-ghost btn-sm" href="support.html">Help</a>
-      <!-- 2026-05-19 #08efcd06 - was: duplicate Sign Out button; the avatar dropdown injected by lymx-nav.js already has Sign Out. Removed the in-nav button to declutter. -->
-      <div class="rep-avatar" id="repAvatar" title="Loading…">··</div>
-    </div>
-  </div>
-</header>
-
-<div class="wrap page">
-  <div class="page-head">
-    <div>
-      <h1 id="repWelcome">Welcome back 👋</h1>
-      <p>Your MGC tree, commissions, and the next payout — all in one place.</p>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <a class="btn btn-ghost" href="business.html#earn">Read MGC rules</a>
-      <a class="btn btn-ghost" href="projection.html">📊 Project my income</a>
-      <a class="btn btn-primary" href="#share">Share my code →</a>
-    </div>
-  </div>
-
-  <!-- 2026-05-20 #8ae35834 — new-partner first-5-actions panel.
-       Shows only for partners with 0 activations + 0 downline AND created < 30 days ago.
-       Self-hides on subsequent visits once any activation lands. -->
-  <div id="newPartnerOnboarding" style="display:none;background:linear-gradient(135deg,#fff8e1,#ffeec4);border:1px solid #f5d172;border-radius:14px;padding:22px 24px;margin:20px 0">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-      <span style="font-size:22px">🎉</span>
-      <h2 style="margin:0;font-size:18px;font-weight:800;color:#78350f">Welcome, Partner. Your first 5 actions:</h2>
-    </div>
-    <p style="margin:0 0 14px;color:#78350f;font-size:13.5px;opacity:.85">Knock these out in the first 48 hours and you're already ahead of 90% of new partners. Each one moves you closer to your $500 activation bonus.</p>
-    <ol id="onboardingSteps" style="margin:0;padding-left:22px;font-size:14px;line-height:1.8;color:#1a1f27">
-      <li><b>Copy your partner link</b> and DM it to 3 friends right now. <a href="#share" style="color:#0050c7;font-weight:700;text-decoration:underline">Jump to share section →</a></li>
-      <li><b>Finish your Gmail Send-mail-as setup</b> so emails you send to prospects come from your @getlymx.com address. <a href="#emailSetupCard" style="color:#0050c7;font-weight:700;text-decoration:underline">Open setup card →</a></li>
-      <li><b>Walk into 1 local Business this week</b> with the pitch deck. <a href="partner-resources.html" style="color:#0050c7;font-weight:700;text-decoration:underline">Download materials →</a></li>
-      <li><b>Book a 30-min 1-on-1</b> with Rachel (partner concierge) to map your local list. <a href="book-onboarding-call.html?for=partner" style="color:#0050c7;font-weight:700;text-decoration:underline">Pick a time →</a></li>
-      <li><b>Sign your first Business</b> and earn the $500 activation bonus.</li>
-    </ol>
-    <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(212,175,55,.4);font-size:12.5px;color:#78350f;opacity:.85">
-      You can dismiss this panel anytime by clicking <a href="#" id="dismissOnboarding" style="color:#0050c7;font-weight:700;text-decoration:underline">here</a>.
-      It auto-hides once you land your first activation.
-    </div>
-  </div>
-
-  <!-- Earnings hero -->
-  <div class="earn-hero">
-    <div class="row1">
-      <div>
-        <div class="lab">This month earnings</div>
-        <div class="big" id="repEarningsMonth">$0.00<small id="repLymxBalance"></small></div>
-        <div class="sub" id="repEarningsSub"><span id="repPendingHeroAmt">$0.00</span> pending in your next payout · <a href="partner-payouts.html" style="color:#f5d172;font-weight:700;text-decoration:underline">view ledger →</a></div>
-      </div>
-      <div class="mini">
-        <span class="lab">Active tree</span>
-        <span class="v" id="repTreeCount">0 businesses</span>
-        <span class="sub" style="margin-top:0;color:#9aa3b0;font-size:12px">across 3 generations</span>
-      </div>
-      <div class="mini">
-        <span class="lab">Lifetime earned</span>
-        <span class="v gold" id="repLifetime">$0.00</span>
-        <span class="sub" style="margin-top:0;color:#9aa3b0;font-size:12px" id="repLifetimeLymx">0 LYMX since join</span>
-      </div>
-    </div>
-    <div class="actions">
-      <a class="btn-w gold" href="#share">📤 Share recruiter link</a>
-      <a class="btn-w" href="https://www.irs.gov/pub/irs-pdf/fw9.pdf" target="_blank" rel="noopener" title="Download blank W-9 from IRS">Download W-9 / 1099</a>
-      <a class="btn-w" href="partner-resources.html">Materials &amp; pitch deck</a>
-    </div>
-  </div>
-
-  <!-- Founding Partner promo banner -->
-  <div class="founding-banner">
-    <span class="badge">★ Founding 25 Program</span>
     <div class="body">
-      <div class="head">Earn your way in. First 25 Partners to hit <span style="color:#f5d172">5 Direct activations</span> get lifetime perks.</div>
-      <div class="body-text">1.5× sign-up bonuses (<strong>$750</strong>) on activations beyond your 5th · <strong>+2% override forever</strong> on Direct (11% total) · Lifetime quarterly summit invite · Direct WhatsApp line to founder. Status locks when claimed — earned, not bought.</div>
-      <!-- 2026-05-20 #8ae35834 — Personal progress bar (hidden if already Founding) -->
-      <div id="foundingPersonalProgress" style="display:none;margin-top:14px;padding:14px 16px;background:rgba(255,255,255,.06);border:1px solid rgba(245,209,114,.32);border-radius:11px;position:relative"></div>
-      <!-- 2026-05-20 #8ae35834 — Global spots-remaining live indicator -->
-      <div id="foundingGlobalRemaining" style="margin-top:10px;font-size:12.5px;color:#cbd5e1;position:relative">— spots open globally · loading…</div>
-    </div>
-    <div class="counter"><strong id="repFoundingRank">— / 25</strong><span id="repFoundingLabel">Partners qualified</span></div>
-    <a class="btn-apply" href="projection.html">Project my 5 →</a>
-  </div>
-  <script>
-  // 2026-05-20 #8ae35834 — Global Founding 25 spots-remaining live indicator.
-  // Polls the partners table for is_founding_25=true count and updates the
-  // banner so Helen sees the urgency: "23 spots remaining" vs "—".
-  (async function () {
-    try {
-      if (!window.LYMX_CONFIG) return;
-      const r = await fetch(window.LYMX_CONFIG.SUPABASE_URL + '/rest/v1/partners?is_founding_25=eq.true&select=id', {
-        headers: { apikey: window.LYMX_CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + window.LYMX_CONFIG.SUPABASE_ANON_KEY, Prefer: 'count=exact' }
-      });
-      let claimed = 0;
-      const range = r.headers.get('content-range');
-      if (range) {
-        const m = range.match(/\/(\d+)$/);
-        if (m) claimed = parseInt(m[1], 10);
-      }
-      const remaining = Math.max(0, 25 - claimed);
-      const el = document.getElementById('foundingGlobalRemaining');
-      if (el) {
-        if (remaining === 0) {
-          el.innerHTML = '<strong style="color:#f5d172">All 25 Founding spots are filled.</strong> Future cohorts may open — stay close to Kenny.';
-        } else if (remaining <= 5) {
-          el.innerHTML = '<strong style="color:#f5d172">Only ' + remaining + ' Founding 25 spots remaining.</strong> ' + claimed + ' Partners have already locked theirs.';
-        } else {
-          el.innerHTML = remaining + ' of 25 Founding spots still open · ' + claimed + ' claimed so far.';
-        }
-      }
-    } catch (e) { console.warn('[founding25-global] poll failed', e); }
-  })();
-  </script>
 
-  <!-- 2026-05-20 #8ae35834 — My Sponsor strip.
-       Shows the partner who sponsored this user (sponsor_partner_id) so they
-       know who to ask for help. Hidden if no sponsor (rare). -->
-  <div id="mySponsorStrip" style="display:none;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:20px 0 0;align-items:center;gap:14px;flex-wrap:wrap">
-    <div style="flex:1;min-width:220px;display:flex;align-items:center;gap:12px">
-      <div id="mySponsorAvatar" style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#a01644,#6e0e2f);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;overflow:hidden;position:relative">·</div>
-      <div>
-        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700">Your Sponsor</div>
-        <div style="font-weight:800;font-size:15.5px;margin-top:1px"><span id="mySponsorName">Loading…</span> <span id="mySponsorCode" style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--muted);font-weight:600;margin-left:6px"></span></div>
-      </div>
-    </div>
-    <a id="mySponsorMsgBtn" href="my-conversations.html" style="padding:9px 16px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-weight:700;font-size:13.5px;text-decoration:none">\u{1F4AC} Message sponsor</a>
-  </div>
-
-  <!-- 2026-05-20 #8ae35834 — My Activations widget.
-       Shows every business that signed up using THIS partner's referral code.
-       Empty state encourages first activation. Auto-loads on dashboard mount. -->
-  <div class="card" id="myActivationsCard" style="margin:20px 0 0">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:14px;flex-wrap:wrap">
-      <div>
-        <h2 style="margin:0 0 4px;font-size:18px;font-weight:800">My Activations</h2>
-        <p style="margin:0;color:var(--muted);font-size:13.5px">Businesses that signed up using your referral code.</p>
-      </div>
-      <div id="myActivationsCount" style="font-size:13px;color:var(--muted);font-weight:600">Loading…</div>
-    </div>
-    <div id="myActivationsList">
-      <div style="padding:24px;text-align:center;color:var(--muted);font-size:13.5px">Loading…</div>
-    </div>
-  </div>
-
-  <!-- Company email + SMTP setup card -->
-  <div id="emailSetupCard" style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;margin:20px 0 0;display:none">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:16px">
-      <div>
-        <h2 style="margin:0 0 4px;font-size:18px;font-weight:800">📧 Your company email</h2>
-        <p style="margin:0;color:var(--muted);font-size:13.5px">Send and receive from a branded LYMX address.</p>
-      </div>
-      <div id="repEmailAddress" style="font-family:'SF Mono','Menlo',monospace;font-size:15px;font-weight:700;background:#f0f5ff;color:#0050c7;padding:8px 14px;border-radius:8px">loading…</div>
-    </div>
-
-    <details style="margin-top:8px">
-      <summary style="cursor:pointer;font-weight:700;font-size:14px;color:var(--accent-2);user-select:none;list-style:none">How to send from this address in Gmail (5 min, one-time setup) ▾</summary>
-      <div style="margin-top:14px;padding:18px;background:var(--bg-soft);border-radius:10px;font-size:13.5px;line-height:1.65">
-        <ol style="margin:0;padding-left:20px">
-          <li>Open Gmail → ⚙️ gear → <strong>See all settings</strong> → <strong>Accounts and Import</strong>.</li>
-          <li>In the <strong>"Send mail as"</strong> section, click <strong>Add another email address</strong>.</li>
-          <li>Name: <code style="background:#fff;padding:2px 6px;border-radius:4px">your full name</code> · Email: <code id="repEmailCopy" style="background:#fff;padding:2px 6px;border-radius:4px">your @getlymx.com</code> · Uncheck "Treat as alias". Click <strong>Next Step</strong>.</li>
-          <li>SMTP Server: <code style="background:#fff;padding:2px 6px;border-radius:4px">email-smtp.us-east-1.amazonaws.com</code> · Port: <code style="background:#fff;padding:2px 6px;border-radius:4px">587</code></li>
-          <li>Username + Password: <strong>find them in your welcome email</strong> from <code>LYMX &lt;hello@getlymx.com&gt;</code> — search Gmail for "Send mail as" or your @getlymx.com address. They'll be in a table near the bottom.</li>
-          <li>Connection: <strong>Secured connection using TLS</strong> (default). Click <strong>Add Account</strong>.</li>
-          <li>Gmail sends a verification email to your @getlymx.com address. Because of LYMX's email forwarding, it lands in your regular Gmail inbox in seconds. Click the verification link.</li>
-          <li>Done. When composing, the <strong>From:</strong> dropdown lets you pick your @getlymx.com address.</li>
-        </ol>
-        <p style="margin:14px 0 0;color:var(--muted);font-size:12.5px"><strong>Lost the welcome email?</strong> Search Gmail for: <code style="background:#fff;padding:2px 6px;border-radius:4px">from:hello@getlymx.com Welcome</code> · Or contact <a href="support.html">support</a> to re-send.</p>
-      </div>
-    </details>
-  </div>
-
-  <!-- Tier ladder -->
-  <div class="tier-card">
-    <div class="tier-badge" id="repTierBadge" style="background:#eef0f4;color:#6b7280">Starter</div>
-    <div class="tier-info">
-      <div class="lbl">Current Partner tier</div>
-      <div class="name" id="repTierName">Starter</div>
-      <div class="progress-line"><span id="repDirectCount">0</span> Direct Businesses active · <strong><span id="repToNextTier">5 activations to Bronze</span></strong></div>
-      <div class="bar"><div class="fill" id="repTierFill" style="width:0%"></div></div>
-      <div class="pct"><span>0 / Bronze threshold</span><span>40 / Platinum</span></div>
-    </div>
-    <div class="tier-perks">
-      <div class="perks-h">Tier benefits unlock as you grow</div>
-      <ul>
-        <li>Bronze (5 activations) — Featured on getlymx.com Partners</li>
-        <li>Silver (15) — +1% override boost on Direct (10% total)</li>
-        <li>Gold (25) — Custom email + Partner Council seat</li>
-        <li>Platinum (40) — Founder summit invite + revenue share</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="grid">
-    <!-- LEFT COLUMN -->
-    <div class="col">
-
-      <!-- Commission breakdown -->
-      <div class="card">
-        <div class="card-h">
-          <h2>This month's commission breakdown</h2>
-          <span class="count">cash + LYMX</span>
+      <div class="banner">
+        <div>
+          <div style="font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:.08em;font-weight:600">Pending commissions</div>
+          <div class="big">$2,847.20</div>
+          <div class="eq">+ 14,235 LYMX bonuses · Next payout May 1, 2026</div>
         </div>
-        <div id="commissionBreakdown">
-          <div style="padding:40px 24px;text-align:center;color:var(--muted)">
-            <div style="font-size:36px;margin-bottom:8px">💵</div>
-            <div style="font-weight:700;color:var(--ink);font-size:15px;margin-bottom:4px">No commissions yet</div>
-            <div style="font-size:13.5px;line-height:1.55">Activate your first Business and you'll start earning $100 sign-up bonus + 9% recurring monthly. Your commission breakdown lands here automatically.</div>
-            <a href="biz-signup.html?ref=" id="commissionSignupLink" style="display:inline-block;margin-top:14px;padding:9px 18px;background:var(--ink);color:#fff;border-radius:9px;font-weight:700;font-size:13.5px;text-decoration:none">Activate a Business →</a>
-          </div>
+        <div class="grow">
+          <button class="btn gold">Recruit a business →</button>
+          <button class="btn ghost">Copy referral link</button>
         </div>
       </div>
 
-      <!-- 3-Gen tree -->
-      <div class="card">
-        <div class="card-h">
-          <h2>Your 3-generation tree</h2>
-          <a href="partner-tree.html" class="more">Full tree →</a>
-        </div>
-        <div class="tree" id="repTree">
-          <div class="tree-row you">
-            <div class="av" id="repTreeYouAv">·</div>
-            <div class="body">
-              <div class="nm" id="repTreeYouName">You <span class="gen-pill" style="background:linear-gradient(135deg,#d4af37,#b88a2e)">YOU</span></div>
-              <div class="ds" id="repTreeYouSub">No tree yet — your downline will appear here as you recruit</div>
+      <div class="kpis">
+        <div class="kpi"><div class="label">Active recruits</div><div class="val">14</div><div class="hint"><span class="up">▲ 3</span> new this month</div></div>
+        <div class="kpi"><div class="label">Downstream businesses</div><div class="val">47</div><div class="hint">Across 3 generations</div></div>
+        <div class="kpi"><div class="label">This month's earnings</div><div class="val">$2,847</div><div class="hint"><span class="up">▲ 22%</span> vs March</div></div>
+        <div class="kpi"><div class="label">Lifetime commissions</div><div class="val">$18,420</div><div class="hint">Since Sep 2025</div></div>
+      </div>
+
+      <div class="grid">
+        <div>
+
+          <div class="card">
+            <h3>Generation overrides</h3>
+            <div class="sub">Your network's structure and override rates</div>
+            <div class="tree">
+              <div class="gen g1">
+                <div class="lbl">Generation 1 · Direct</div>
+                <div class="n">14</div>
+                <div class="r">businesses</div>
+                <div class="pct">9% ongoing + 3% override</div>
+              </div>
+              <div class="gen g2">
+                <div class="lbl">Generation 2</div>
+                <div class="n">22</div>
+                <div class="r">businesses</div>
+                <div class="pct">2% override</div>
+              </div>
+              <div class="gen g3">
+                <div class="lbl">Generation 3</div>
+                <div class="n">11</div>
+                <div class="r">businesses</div>
+                <div class="pct">1% override</div>
+              </div>
             </div>
-            <div class="pay" id="repTreeYouPay">$0 <span class="sub">this month</span></div>
+            <div style="margin-top:14px;font-size:12px;color:var(--muted);padding:10px;background:#f7f8fa;border-radius:8px">
+              On top of overrides you earn <b>9% LYMX bonuses</b> on direct referrals and <b>3 / 2 / 1%</b> LYMX downstream. Sign-up bonuses are <b>$100 flat</b> per activated business.
+            </div>
           </div>
-          <div style="padding:32px 24px;text-align:center;color:var(--muted)">
-            <div style="font-size:36px;margin-bottom:8px">🌳</div>
-            <div style="font-weight:700;color:var(--ink);font-size:15px;margin-bottom:4px">Your tree is empty</div>
-            <div style="font-size:13.5px;line-height:1.55">Activate Businesses or recruit Partners using your referral link below. Each one becomes a node in your 3-generation tree — and pays you ongoing.</div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Recent activity -->
-      <div class="card">
-        <div class="card-h">
-          <h2>Recent activity</h2>
-          <a href="partner-activity.html" class="more">See all →</a>
-        </div>
-        <div id="repActivity">
-          <div style="padding:40px 24px;text-align:center;color:var(--muted)">
-            <div style="font-size:36px;margin-bottom:8px">📜</div>
-            <div style="font-weight:700;color:var(--ink);font-size:15px;margin-bottom:4px">No activity yet</div>
-            <div style="font-size:13.5px;line-height:1.55">Activations, commission posts, LYMX credits, and payouts will appear here automatically.</div>
+          <div class="card">
+            <h3>Recent downline activity</h3>
+            <div class="sub">New signups, commissions earned, status changes</div>
+            <table>
+              <tr>
+                <th>Business</th><th>Gen</th><th>Plan</th><th>Status</th><th>Joined</th><th style="text-align:right">Your share</th>
+              </tr>
+              <tr>
+                <td><b>Avery Hair Studio</b><div style="font-size:11px;color:var(--muted)">Midtown Sacramento</div></td>
+                <td><span class="tag g1">G1</span></td>
+                <td>Pro · $49</td>
+                <td><span class="tag active">Active</span></td>
+                <td>Apr 10</td>
+                <td style="text-align:right"><b>$104.41</b><div style="font-size:11px;color:var(--muted)">+ 441 LYMX</div></td>
+              </tr>
+              <tr>
+                <td><b>Paws & Tails Grooming</b><div style="font-size:11px;color:var(--muted)">Land Park</div></td>
+                <td><span class="tag g1">G1</span></td>
+                <td>Basic · $19</td>
+                <td><span class="tag active">Active</span></td>
+                <td>Apr 6</td>
+                <td style="text-align:right"><b>$101.71</b><div style="font-size:11px;color:var(--muted)">+ 171 LYMX</div></td>
+              </tr>
+              <tr>
+                <td><b>Summit Fitness</b><div style="font-size:11px;color:var(--muted)">Downtown</div></td>
+                <td><span class="tag g2">G2</span></td>
+                <td>Pro · $49</td>
+                <td><span class="tag active">Active</span></td>
+                <td>Apr 4</td>
+                <td style="text-align:right"><b>$0.98</b><div style="font-size:11px;color:var(--muted)">+ 98 LYMX</div></td>
+              </tr>
+              <tr>
+                <td><b>Delta HVAC</b><div style="font-size:11px;color:var(--muted)">East Sac</div></td>
+                <td><span class="tag g1">G1</span></td>
+                <td>Enterprise · $199</td>
+                <td><span class="tag pend">Onboarding</span></td>
+                <td>Apr 2</td>
+                <td style="text-align:right;color:var(--muted)">Pending</td>
+              </tr>
+              <tr>
+                <td><b>Riverstone Grill</b><div style="font-size:11px;color:var(--muted)">River District</div></td>
+                <td><span class="tag g2">G2</span></td>
+                <td>Pro · $49</td>
+                <td><span class="tag active">Active</span></td>
+                <td>Mar 28</td>
+                <td style="text-align:right"><b>$0.98</b><div style="font-size:11px;color:var(--muted)">+ 98 LYMX</div></td>
+              </tr>
+              <tr>
+                <td><b>Lumière Bakery</b><div style="font-size:11px;color:var(--muted)">Oak Park</div></td>
+                <td><span class="tag g3">G3</span></td>
+                <td>Basic · $19</td>
+                <td><span class="tag active">Active</span></td>
+                <td>Mar 20</td>
+                <td style="text-align:right"><b>$0.19</b><div style="font-size:11px;color:var(--muted)">+ 19 LYMX</div></td>
+              </tr>
+              <tr>
+                <td><b>The Alder Room</b><div style="font-size:11px;color:var(--muted)">Midtown</div></td>
+                <td><span class="tag g1">G1</span></td>
+                <td>Basic · $19</td>
+                <td><span class="tag off">Cancelled</span></td>
+                <td>Feb 12</td>
+                <td style="text-align:right;color:var(--muted)">—</td>
+              </tr>
+            </table>
           </div>
+
+          <div class="card">
+            <h3>Commission breakdown · April</h3>
+            <div class="sub">How your pending $2,847.20 was earned</div>
+            <div class="sbreak">
+              <div class="k">Sign-up bonuses (3 × $100)</div><div class="v">$300.00</div>
+              <div class="k">9% ongoing · G1 subscriptions</div><div class="v">$64.26</div>
+              <div class="k">3% override · G1 transaction volume</div><div class="v">$1,982.00</div>
+              <div class="k">2% override · G2 transaction volume</div><div class="v">$412.40</div>
+              <div class="k">1% override · G3 transaction volume</div><div class="v">$88.54</div>
+              <div class="k" style="border-top:1px solid var(--line);padding-top:10px;margin-top:6px;font-weight:700;color:var(--ink)">Total cash commissions</div>
+              <div class="v" style="border-top:1px solid var(--line);padding-top:10px;margin-top:6px;font-size:15px">$2,847.20</div>
+              <div class="k" style="color:var(--gold);font-weight:600">LYMX bonuses (9 / 3 / 2 / 1%)</div>
+              <div class="v" style="color:var(--gold)">+ 14,235 LYMX</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div>
+
+          <div class="next">
+            <div style="font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:.08em;font-weight:600">Next payout</div>
+            <div class="amt">$2,847.20</div>
+            <div class="d">May 1, 2026 · Direct deposit to Chase ••4218</div>
+            <div style="margin-top:14px;padding:10px;background:rgba(255,255,255,.12);border-radius:8px;font-size:12px">
+              + 14,235 LYMX credited to your LYMX wallet the same day
+            </div>
+          </div>
+
+          <div class="refer" style="margin-top:18px">
+            <h3>Your recruiter link</h3>
+            <p>Share this with any business owner. When they sign up through your link, they land in your G1.</p>
+            <div class="code">
+              <input value="getlymx.com/r/kenny-lin" readonly />
+              <button>Copy</button>
+            </div>
+            <div style="display:flex;gap:18px;margin-top:14px;font-size:12px">
+              <div><b style="display:block;font-size:17px">128</b>Clicks · 30d</div>
+              <div><b style="display:block;font-size:17px">9</b>Signups started</div>
+              <div><b style="display:block;font-size:17px">3</b>Activated</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Leaderboard · April</h3>
+            <div class="sub">Top MGC partners this month</div>
+            <table>
+              <tr><td>1. Dana Reyes</td><td style="text-align:right;font-weight:600">$4,210</td></tr>
+              <tr style="background:#fffbe8"><td><b>2. Kenny Lin · you</b></td><td style="text-align:right;font-weight:700">$2,847</td></tr>
+              <tr><td>3. Marcus Wu</td><td style="text-align:right;font-weight:600">$2,614</td></tr>
+              <tr><td>4. Priya Shah</td><td style="text-align:right;font-weight:600">$2,102</td></tr>
+              <tr><td>5. Teo Alvarez</td><td style="text-align:right;font-weight:600">$1,888</td></tr>
+            </table>
+            <div style="margin-top:10px;font-size:12px;color:var(--muted);text-align:center">You're $1,363 behind #1 · 18 days left</div>
+          </div>
+
+          <div class="card" style="margin-bottom:0">
+            <h3>Tools to close more</h3>
+            <div class="sub">Pick-up-and-send marketing assets</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px"><b>1-page LYMX overview.pdf</b><div style="color:var(--muted);font-size:11.5px">For first conversations</div></div>
+              <div style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px"><b>Plan comparison deck.pdf</b><div style="color:var(--muted);font-size:11.5px">Basic / Pro / Enterprise</div></div>
+              <div style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px"><b>Demo video link</b><div style="color:var(--muted);font-size:11.5px">2-min walkthrough of the partner dashboard</div></div>
+            </div>
+          </div>
+
         </div>
       </div>
 
     </div>
 
-    <!-- RIGHT COLUMN -->
-    <div class="col">
-
-      <!-- Share card -->
-      <div class="card share-card" id="share">
-        <h2>Share your recruiter link</h2>
-        <p class="sub">Earn <strong>$750 sign-up + 11% recurring</strong> for every Business that activates through your link (Founding 25 rate). Plus 3-generation overrides — you earn from your downline's activations too. Plus 100 LYMX when anyone signs up as a customer through your link.</p>
-        <div class="url">
-          <span id="repShareLinkText" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">https://getlymx.com/welcome.html?ref=loading…</span>
-          <button class="copy" id="repShareLinkCopy">Copy</button>
-        </div>
-        <div class="channels">
-          <a class="ch" id="repShareEmail" href="#">📧 Email</a>
-          <a class="ch" id="repShareSms" href="#">📱 Text</a>
-          <a class="ch" id="repShareTwitter" href="#" target="_blank">🐦 Post</a>
-          <!-- 2026-05-24 #60378b9a — root-cause: was admin-invite-friends.html which lymx-nav.js enforceAdminGuard bounces non-admins back to customer-dashboard. share-hub.html is the universal partner-safe equivalent shipped 2026-05-24. -->
-          <a class="ch" href="share-hub.html">📲 Invite tool</a>
-        </div>
-      </div>
-
-      <!-- Next payout -->
-      <div class="card">
-        <div class="card-h"><h2>Next payout</h2></div>
-        <div style="text-align:center;padding:6px 0 14px;border-bottom:1px solid var(--line);margin-bottom:6px">
-          <div style="font-size:32px;font-weight:800;letter-spacing:-.01em" id="repNextPayoutAmt">$0.00</div>
-          <div style="font-size:13px;color:var(--muted)" id="repNextPayoutDate">No payout scheduled</div>
-        </div>
-        <div class="payout-row"><span class="k">Method</span><span class="v" id="repPayoutMethod">Not set up</span></div>
-        <div class="payout-row"><span class="k">Tax form</span><span class="v">1099-NEC (Jan 2027)</span></div>
-        <div class="payout-row"><span class="k">YTD earnings</span><span class="v" id="repYtdEarnings">$0.00</span></div>
-        <a class="btn btn-ghost" href="partner-payouts.html" style="width:100%;margin-top:14px;justify-content:center">Set up payout method</a>
-      </div>
-
-      <!-- Leaderboard -->
-      <div class="card">
-        <div class="card-h">
-          <h2>Top recruiters this month</h2>
-          <span class="count">network-wide</span>
-        </div>
-        <div id="repLeaderboard">
-          <div style="padding:32px 18px;text-align:center;color:var(--muted)">
-            <div style="font-size:36px;margin-bottom:8px">🏆</div>
-            <div style="font-weight:700;color:var(--ink);font-size:15px;margin-bottom:4px">Leaderboard launching soon</div>
-            <div style="font-size:13px;line-height:1.5">Once 5+ Partners are active, we'll start the monthly ranking. Top 3 each month earn 250 LYMX bonus + recognition.</div>
-          </div>
-        </div>
-      </div>
-
+    <div class="footer">
+      LYMX is a promotional credit unit used exclusively within the Enterprise ecosystem. LYMX is not cash, not cryptocurrency, and not a stored monetary balance.<br/>
+      Commissions and LYMX bonuses are paid per the current MGC Partner Agreement. Figures on this page are illustrative.<br/>
+      © 2026 LYMX · <a href="index.html">Home</a> · <a href="business.html">For business</a>
     </div>
   </div>
 </div>
-
-<footer>
-  <div class="wrap">
-    <div>© <span id="yr"></span> LYMX · <a href="business.html#earn" style="color:var(--accent-2)">MGC rules</a> · <a href="support.html" style="color:var(--accent-2)">Support</a> · <a href="#" style="color:var(--accent-2)">Privacy</a></div>
-    <div class="disc">LYMX is a promotional credit unit used exclusively within the Enterprise ecosystem. LYMX is not cash, not cryptocurrency, and not a stored monetary balance. MGC commissions paid in cash and LYMX. 1099 forms issued in January for the prior tax year.</div>
-  </div>
-</footer>
-<script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
-
-<script>
-  // ---------- Partner dashboard wiring ----------
-  (async function init() {
-    if (!window.LYMX) {
-      const b = document.getElementById('auth-banner');
-      b.style.display = 'block';
-      b.innerHTML = '<strong>Auth client failed to load.</strong>';
-      return;
-    }
-
-    const user = await LYMX.requireAuth();
-    if (!user) return;
-
-    const { data: partner, error: pErr } = await LYMX.fetchMyPartner();
-    if (pErr || !partner) {
-      const b = document.getElementById('auth-banner');
-      b.style.display = 'block';
-      b.innerHTML = 'You are signed in but no Partner profile is linked to this account. <a href="partner-signup.html" style="color:#0050c7;font-weight:700">Apply as a Partner</a>.';
-      return;
-    }
-
-    // Welcome heading + avatar
-    const fullName = partner.display_name || partner.legal_name || 'Partner';
-    const firstName = fullName.split(' ')[0];
-    // 2026-05-25 root-cause fix: `initials` was declared inside the `if (av)` block
-    // (block-scoped const), but referenced again at line ~835 to paint the tree-row
-    // avatar. That second reference threw `ReferenceError: initials is not defined`,
-    // killing every async statement after it (tree count load, founding 25 status,
-    // partner_emails card). Hoisting the declaration here makes it available to
-    // every reader and stops the silent abort.
-    const initials = fullName.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'P';
-    document.getElementById('repWelcome').textContent = 'Welcome back, ' + firstName + ' 👋';
-    const av = document.getElementById('repAvatar');
-    if (av) {
-      // 2026-05-24 #38d2f693 - root-cause fix: previously `av.textContent = initials`
-      // wiped any <img> child that lymx-nav.js's paintAvatarImage had appended,
-      // while the lymxAvImg='1' flag stayed set so paint never retried. Result:
-      // partner photo silently vanished from the navbar.
-      // (1) Put initials in a dedicated <span> so they coexist with img siblings.
-      // (2) Self-paint from partner.avatar_url (already in scope) instead of
-      //     depending on lymx-nav.js's async DB lookup that races with this code.
-      let initialsNode = av.querySelector('.rep-avatar-initials');
-      if (!initialsNode) {
-        initialsNode = document.createElement('span');
-        initialsNode.className = 'rep-avatar-initials';
-        initialsNode.style.position = 'relative';
-        initialsNode.style.zIndex = '1';
-        av.insertBefore(initialsNode, av.firstChild);
-      }
-      initialsNode.textContent = initials;
-      av.title = fullName;
-      if (partner.avatar_url) {
-        av.dataset.lymxAvImg = ''; // reset flag so paintAvatarOn proceeds
-        if (window.LYMX && window.LYMX.paintAvatarOn) {
-          window.LYMX.paintAvatarOn(av, partner.avatar_url);
-        } else {
-          const img = document.createElement('img');
-          img.className = 'lymx-av-img';
-          img.src = partner.avatar_url;
-          img.alt = '';
-          img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;pointer-events:none;z-index:2';
-          av.appendChild(img);
-        }
-      }
-    }
-
-    // Earnings + balance — wired to partner_commissions + settlements
-    try {
-      const fmtUsd = (n) => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      const startMo = new Date(); startMo.setDate(1); startMo.setHours(0,0,0,0);
-      const startYr = new Date(new Date().getFullYear(), 0, 1);
-
-      const { data: allComms } = await LYMX.sb.from('partner_commissions')
-        .select('amount, type, generation, source_partner_id, settlement_id, created_at')
-        .eq('partner_id', partner.id);
-      const comms = allComms || [];
-      const sum = (arr) => arr.reduce((s, c) => s + Number(c.amount || 0), 0);
-
-      const thisMonth = comms.filter(c => c.created_at >= startMo.toISOString());
-      const thisYear  = comms.filter(c => c.created_at >= startYr.toISOString());
-      const lifetime  = sum(comms);
-      const ytd       = sum(thisYear);
-      const monthAmt  = sum(thisMonth);
-      const overrideThisMo = sum(thisMonth.filter(c => c.type === 'override' || (c.source_partner_id && c.source_partner_id !== partner.id)));
-
-      document.getElementById('repEarningsMonth').firstChild.textContent = fmtUsd(monthAmt);
-      const lymxEl = document.getElementById('repLymxBalance');
-      if (lymxEl) lymxEl.textContent = '';
-      document.getElementById('repLifetime').textContent = fmtUsd(lifetime);
-      const ytdEl = document.getElementById('repYtdEarnings');
-      if (ytdEl) ytdEl.textContent = fmtUsd(ytd);
-      const treePayEl = document.getElementById('repTreeYouPay');
-      if (treePayEl) treePayEl.innerHTML = fmtUsd(overrideThisMo) + ' <span class="sub">this month</span>';
-
-      // Next payout — open settlement (unsettled commissions)
-      const pendingComms = comms.filter(c => !c.settlement_id);
-      const pendingAmt = sum(pendingComms);
-      const nextEl = document.getElementById('repNextPayoutAmt');
-      if (nextEl) nextEl.textContent = fmtUsd(pendingAmt);
-      // 2026-05-20 #8ae35834 — Mirror pending amount in the hero so Helen sees it at-a-glance
-      const heroPendingEl = document.getElementById('repPendingHeroAmt');
-      if (heroPendingEl) heroPendingEl.textContent = fmtUsd(pendingAmt);
-      // If nothing pending AND nothing this month, restore the original encouragement
-      const subEl = document.getElementById('repEarningsSub');
-      if (subEl && pendingAmt === 0 && monthAmt === 0) {
-        subEl.innerHTML = 'Activate your first Business to start earning · <a href="partner-resources.html" style="color:#f5d172;font-weight:700;text-decoration:underline">open the Sales Toolkit</a>';
-      }
-
-      // Commission breakdown — replace the empty state if we have any
-      if (thisMonth.length) {
-        const breakdownEl = document.getElementById('commissionBreakdown');
-        if (breakdownEl) {
-          const byType = {};
-          thisMonth.forEach(c => {
-            const key = c.type || 'other';
-            byType[key] = (byType[key] || 0) + Number(c.amount || 0);
-          });
-          breakdownEl.innerHTML = Object.entries(byType).map(([t, amt]) =>
-            '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px"><span style="font-weight:600;text-transform:capitalize">' + t.replace(/_/g, ' ') + '</span><span style="font-weight:800;color:var(--ok)">' + fmtUsd(amt) + '</span></div>'
-          ).join('');
-        }
-      }
-    } catch (e) {
-      console.warn('[rep-dashboard] earnings wire failed', e);
-      document.getElementById('repEarningsMonth').firstChild.textContent = '$0.00';
-      document.getElementById('repLifetime').textContent = '$0.00';
-    }
-
-    // Wire the share link to the partner's actual ref ID
-    const shareUrl = 'https://getlymx.com/welcome.html?ref=' + partner.id;
-    const shareEl = document.getElementById('repShareLinkText');
-    if (shareEl) shareEl.textContent = shareUrl;
-    const copyBtn = document.getElementById('repShareLinkCopy');
-    if (copyBtn) copyBtn.addEventListener('click', () => {
-      navigator.clipboard?.writeText(shareUrl);
-      copyBtn.textContent = 'Copied!';
-      setTimeout(() => copyBtn.textContent = 'Copy', 1500);
-    });
-    const emailLink = document.getElementById('repShareEmail');
-    if (emailLink) emailLink.href = 'mailto:?subject=' + encodeURIComponent('Try LYMX with me') + '&body=' + encodeURIComponent('Sign up here and we both get 100 LYMX: ' + shareUrl);
-    const smsLink = document.getElementById('repShareSms');
-    if (smsLink) smsLink.href = 'sms:?body=' + encodeURIComponent('Join me on LYMX — we both get 100 LYMX when you sign up: ' + shareUrl);
-
-    // 2026-05-20 #8ae35834 — Sponsor widget loader.
-    try {
-      if (partner && partner.sponsor_partner_id) {
-        const { data: sp } = await LYMX.sb.from('partners')
-          .select('id, legal_name, display_name, partner_code, contact_email, avatar_url')
-          .eq('id', partner.sponsor_partner_id).maybeSingle();
-        if (sp) {
-          const strip = document.getElementById('mySponsorStrip');
-          const av = document.getElementById('mySponsorAvatar');
-          const nm = document.getElementById('mySponsorName');
-          const cd = document.getElementById('mySponsorCode');
-          const btn = document.getElementById('mySponsorMsgBtn');
-          const sponsorName = sp.display_name || sp.legal_name || 'Sponsor';
-          const initials = sponsorName.split(/\s+/).filter(Boolean).slice(0,2).map(s => (s[0]||'').toUpperCase()).join('') || 'S';
-          if (av) {
-            if (sp.avatar_url) {
-              av.innerHTML = '<img src="' + sp.avatar_url + '" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">';
-            } else {
-              av.textContent = initials;
-            }
-          }
-          if (nm) nm.textContent = sponsorName;
-          if (cd && sp.partner_code) cd.textContent = '\u00b7 ' + sp.partner_code;
-          if (btn && sp.contact_email) {
-            btn.href = 'my-conversations.html?to=' + encodeURIComponent(sp.contact_email) + '&name=' + encodeURIComponent(sponsorName);
-          }
-          if (strip) strip.style.display = 'flex';
-        }
-      }
-    } catch (e) { console.warn('[rep-dashboard] sponsor widget load failed', e); }
-
-    // 2026-05-20 #8ae35834 — My Activations loader.
-    // Pulls businesses signed_up_by_partner_id = partner.id.
-    let myActivationCount = 0;
-    try {
-      const r = await LYMX.sb
-        .from('businesses')
-        .select('id, display_name, business_kind, created_at, archived_at, verified_at, application_status')
-        .eq('signed_up_by_partner_id', partner.id)
-        .is('archived_at', null)
-        .order('created_at', { ascending: false })
-        .limit(50);
-      const rows = (r && r.data) || [];
-      myActivationCount = rows.length;
-      // 2026-05-20 #8ae35834 — Update Founding 25 progress counter with REAL count
-      // (the existing logic referenced an undefined `activations` variable.)
-      const fr2 = document.getElementById('repFoundingRank');
-      const fl2 = document.getElementById('repFoundingLabel');
-      if (fr2 && fl2 && !partner.is_founding_25) {
-        fr2.textContent = myActivationCount + ' / 5';
-        fl2.textContent = myActivationCount >= 5
-          ? 'Eligible — admin will lock you in shortly'
-          : (5 - myActivationCount) + ' more to lock Founding 25';
-      }
-      // Render the Founding 25 personal progress widget
-      try {
-        const fp = document.getElementById('foundingPersonalProgress');
-        if (fp && !partner.is_founding_25) {
-          const pct = Math.min(100, Math.round((myActivationCount / 5) * 100));
-          const remaining = Math.max(0, 5 - myActivationCount);
-          const motivational = remaining === 0
-            ? "You've hit 5. Admin is locking your Founding 25 rank — keep the activations coming, every one beyond 5 pays $750 instead of $500."
-            : remaining === 1
-              ? 'One more activation locks your Founding 25 rank forever.'
-              : remaining + ' more activations and you lock Founding 25 — lifetime $750 sign-ups, +2% override on Direct, summit invite.';
-          fp.innerHTML =
-            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><strong style="font-size:14.5px">Your Founding 25 progress</strong><span style="font-family:ui-monospace,Menlo,monospace;font-weight:700;font-size:13.5px">' + myActivationCount + ' / 5</span></div>' +
-            '<div style="width:100%;height:9px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden"><div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#d4af37,#f5d172);transition:width .35s"></div></div>' +
-            '<div style="margin-top:8px;font-size:12.5px;color:#cbd5e1">' + motivational + '</div>';
-          fp.style.display = '';
-        }
-      } catch (e) { console.warn('[founding25-progress] paint failed', e); }
-      const countEl = document.getElementById('myActivationsCount');
-      const listEl  = document.getElementById('myActivationsList');
-      if (countEl) countEl.textContent = rows.length === 0 ? 'No activations yet' : (rows.length + ' total');
-      if (!listEl) return;
-      if (rows.length === 0) {
-        listEl.innerHTML =
-          '<div style="padding:32px 18px;text-align:center;border:2px dashed var(--line);border-radius:11px;background:var(--bg-soft)">' +
-          '<div style="font-size:30px;margin-bottom:8px">\u{1F3AF}</div>' +
-          '<div style="font-weight:800;font-size:15px;margin-bottom:4px">No activations yet — let’s land your first one.</div>' +
-          '<div style="font-size:13px;color:var(--muted);margin-bottom:14px">Send your referral link to a local Business and they’ll be credited to you automatically when they sign up.</div>' +
-          '<a href="#share" style="display:inline-block;padding:9px 18px;background:var(--ink);color:#fff;border-radius:9px;font-weight:700;font-size:13.5px;text-decoration:none">Copy my link →</a>' +
-          ' <a href="partner-resources.html" style="display:inline-block;padding:9px 18px;background:#fff;border:1px solid var(--line);color:var(--ink);border-radius:9px;font-weight:700;font-size:13.5px;text-decoration:none;margin-left:6px">Open Sales Toolkit</a>' +
-          '</div>';
-      } else {
-        listEl.innerHTML = rows.map(function (b) {
-          var when = new Date(b.created_at);
-          var ageDays = Math.max(0, Math.floor((Date.now() - when.getTime()) / 86400000));
-          var ageLbl = ageDays === 0 ? 'today' : ageDays === 1 ? 'yesterday' : ageDays + ' days ago';
-          var statusPill = '';
-          if (b.archived_at) statusPill = '<span style="background:#eef0f4;color:#6b7280;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700">Archived</span>';
-          else if (b.verified_at) statusPill = '<span style="background:#e6f5ee;color:#0a6e44;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700">✓ Verified</span>';
-          else if (b.application_status === 'pending') statusPill = '<span style="background:#fff3d4;color:#92400e;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700">Pending review</span>';
-          else statusPill = '<span style="background:#e6f0ff;color:#1e3a8a;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700">Active</span>';
-          var kindLbl = b.business_kind === 'self_employed' ? 'Self-employed' : 'Storefront';
-          var name = (b.display_name || 'Unnamed Business').replace(/[<>]/g,'');
-          return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:#fff">' +
-            '<div style="width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#0a84ff,#13a26b);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">' + name.slice(0,2).toUpperCase() + '</div>' +
-            '<div style="flex:1;min-width:0">' +
-              '<div style="font-weight:700;font-size:14.5px;color:var(--ink);text-overflow:ellipsis;overflow:hidden;white-space:nowrap">' + name + '</div>' +
-              '<div style="font-size:12px;color:var(--muted);margin-top:1px">' + kindLbl + ' · signed up ' + ageLbl + '</div>' +
-            '</div>' +
-            statusPill +
-          '</div>';
-        }).join('');
-      }
-    } catch (e) {
-      console.warn('[rep-dashboard] My Activations load failed', e);
-      var listEl2 = document.getElementById('myActivationsList');
-      if (listEl2) listEl2.innerHTML = '<div style="padding:18px;text-align:center;color:var(--muted);font-size:13px">Could not load activations — refresh to retry.</div>';
-    }
-
-    // 2026-05-20 #8ae35834 — new-partner onboarding panel logic.
-    try {
-      var dismissed = false;
-      try { dismissed = localStorage.getItem('LYMX_dismiss_new_partner_onboarding_' + partner.id) === '1'; } catch (e) { console.warn('[onboarding] localStorage read', e); }
-      var createdAt = partner.created_at ? new Date(partner.created_at) : null;
-      var ageDays   = createdAt ? Math.floor((Date.now() - createdAt.getTime()) / 86400000) : 0;
-      var hasActivations = (partner.activation_count || partner.downline_count || 0) > 0;
-      if (!dismissed && !hasActivations && ageDays < 30) {
-        var panel = document.getElementById('newPartnerOnboarding');
-        if (panel) panel.style.display = '';
-      }
-      var dismissBtn = document.getElementById('dismissOnboarding');
-      if (dismissBtn) {
-        dismissBtn.addEventListener('click', function (e) {
-          e.preventDefault();
-          try { localStorage.setItem('LYMX_dismiss_new_partner_onboarding_' + partner.id, '1'); } catch (ee) { console.warn('[onboarding] localStorage write', ee); }
-          var p = document.getElementById('newPartnerOnboarding');
-          if (p) p.style.display = 'none';
-        });
-      }
-    } catch (e) { console.warn('[onboarding] panel logic failed', e); }
-    const twLink = document.getElementById('repShareTwitter');
-    if (twLink) twLink.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Earn rewards anywhere on the LYMX network. Sign up free → ' + shareUrl);
-
-    // Also wire the "Activate a Business" button on the empty commission card
-    const csl = document.getElementById('commissionSignupLink');
-    if (csl) csl.href = 'biz-signup.html?ref=' + partner.id;
-
-    // Update the "you" row in tree with real name + initials
-    const treeNameEl = document.getElementById('repTreeYouName');
-    if (treeNameEl) treeNameEl.innerHTML = (fullName || 'You') + ' <span class="gen-pill" style="background:linear-gradient(135deg,#d4af37,#b88a2e)">YOU</span>';
-    const treeAvEl = document.getElementById('repTreeYouAv');
-    if (treeAvEl) treeAvEl.textContent = initials;
-
-    // Tree count = downline + activations
-    const [{ count: downline }, { count: activations }] = await Promise.all([
-      LYMX.fetchMyDownlineCount(partner.id),
-      LYMX.fetchMyActivationsCount(partner.id),
-    ]);
-    const tree = (downline || 0) + (activations || 0);
-    const treeEl = document.getElementById('repTreeCount');
-    if (treeEl) treeEl.textContent = tree + ' ' + (tree === 1 ? 'business' : 'businesses');
-
-    // Show company email card if a @getlymx.com address has been provisioned
-    try {
-      const { data: pe } = await LYMX.sb.from('partner_emails').select('full_email, status').eq('partner_id', partner.id).eq('status', 'active').maybeSingle();
-      if (pe && pe.full_email) {
-        const card = document.getElementById('emailSetupCard');
-        if (card) card.style.display = '';
-        const addr = document.getElementById('repEmailAddress');
-        if (addr) addr.textContent = pe.full_email;
-        const copy = document.getElementById('repEmailCopy');
-        if (copy) copy.textContent = pe.full_email;
-      }
-    } catch (e) { console.warn('partner_emails fetch', e); }
-
-    // Founding 25 status
-    const fr = document.getElementById('repFoundingRank');
-    const fl = document.getElementById('repFoundingLabel');
-    if (partner.is_founding_25 && partner.founding_25_rank) {
-      if (fr) fr.textContent = '#' + partner.founding_25_rank + ' / 25';
-      if (fl) fl.textContent = 'Founding rank';
-    } else {
-      // Show progress toward Founding 25 (need 5 activations to qualify)
-      if (fr) fr.textContent = (activations || 0) + ' / 5';
-      if (fl) fl.textContent = 'Activations toward Founding 25';
-    }
-  })();
-</script>
-
-<script>
-// Recent activity widget — pulls last 7 days of leads + bookings for this partner.
-(function () {
-  function $(id) { return document.getElementById(id); }
-  function esc(s) { return String(s == null ? "" : s).replace(/[<>&"]/g, c => ({ "<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;" }[c])); }
-  function timeAgo(iso) {
-    if (!iso) return "";
-    var d = new Date(iso); var s = Math.round((Date.now() - d) / 1000);
-    if (s < 60) return "just now"; if (s < 3600) return Math.round(s/60) + "m ago";
-    if (s < 86400) return Math.round(s/3600) + "h ago"; if (s < 604800) return Math.round(s/86400) + "d ago";
-    return d.toLocaleDateString();
-  }
-  async function load() {
-    if (!window.LYMX || !window.LYMX.sb || !window.LYMX.user) {
-      setTimeout(load, 250);
-      return;
-    }
-    // 2026-05-24 #40a28497 - root-cause fix: original had `} catch (e)` at the
-    // bottom with no matching `try {`, so the whole inline <script> failed to
-    // parse with SyntaxError and Recent Activity never even ran. Wrap load()'s
-    // body in try so the existing catch matches.
-    try {
-    var sb = window.LYMX.sb;
-    var userId = window.LYMX.user.id;
-    var weekAgo = new Date(Date.now() - 7 * 86400 * 1000).toISOString();
-
-    // Find my team_calendar (if any) so I can also surface bookings on it
-    var calIds = [];
-    try {
-      var c = await sb.from("team_calendars").select("id").eq("user_id", userId);
-      if (c.data) calIds = c.data.map(x => x.id);
-    } catch (e) { console.warn('[rep-dashboard.html:L641] silent error', e); }
-
-    // Parallel queries for the three event types
-    var pNewLeads = sb.from("leads")
-      .select("id, full_name, email, source, created_at, stage")
-      .eq("owner_user_id", userId)
-      .gte("created_at", weekAgo)
-      .order("created_at", { ascending: false })
-      .limit(12);
-
-    var pClosedLeads = sb.from("leads")
-      .select("id, full_name, stage, stage_changed_at")
-      .eq("owner_user_id", userId)
-      .in("stage", ["won", "lost"])
-      .gte("stage_changed_at", weekAgo)
-      .order("stage_changed_at", { ascending: false })
-      .limit(12);
-
-    var pBookings = (calIds.length
-      ? sb.from("bookings")
-          .select("id, starts_at, booker_name, status")
-          .in("team_calendar_id", calIds)
-          .gte("starts_at", weekAgo)
-          .order("starts_at", { ascending: false })
-          .limit(12)
-      : Promise.resolve({ data: [] }));
-
-    var results = await Promise.all([pNewLeads, pClosedLeads, pBookings]);
-    var events = [];
-    (results[0].data || []).forEach(function (l) {
-      events.push({ at: l.created_at, icon: "➕", title: "New lead", who: l.full_name || l.email || "—", sub: l.source || "" });
-    });
-    (results[1].data || []).forEach(function (l) {
-      events.push({ at: l.stage_changed_at, icon: l.stage === "won" ? "🎉" : "❌", title: l.stage === "won" ? "Won" : "Lost", who: l.full_name || "—", sub: "" });
-    });
-    (results[2].data || []).forEach(function (b) {
-      var icon = b.status === "completed" ? "✅" : b.status === "no_show" ? "🙁" : "📅";
-      events.push({ at: b.starts_at, icon: icon, title: b.status === "completed" ? "Call done" : b.status === "no_show" ? "No-show" : "Call scheduled", who: b.booker_name || "—", sub: "" });
-    });
-    events.sort(function (a, b) { return (b.at || "").localeCompare(a.at || ""); });
-    events = events.slice(0, 12);
-
-    var el = document.getElementById("repActivity");
-    if (!el) return;
-    if (!events.length) {
-      el.innerHTML = '<div style="padding:18px;color:#5b6472;font-size:13.5px">No recent activity yet. Add a lead or activate a Business to see things here.</div>';
-      return;
-    }
-    el.innerHTML = events.map(function (e) {
-      var when = new Date(e.at).toLocaleDateString([], { month: "short", day: "numeric" });
-      return '<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;align-items:center"><span style="font-size:18px">' + e.icon + '</span>'
-        + '<div style="flex:1;min-width:0"><div style="font-weight:700">' + e.title + ' · ' + String(e.who).replace(/[<>]/g, '') + '</div>'
-        + (e.sub ? '<div style="font-size:12px;color:#5b6472;margin-top:1px">' + String(e.sub).replace(/[<>]/g, '') + '</div>' : '')
-        + '</div>'
-        + '<span style="font-size:11.5px;color:#5b6472;font-weight:600;white-space:nowrap">' + when + '</span></div>';
-    }).join('');
-  } catch (e) {
-    console.warn('[rep-dashboard] activity widget failed', e);
-  }
-  }
-  // 2026-05-24 #40a28497 - second root-cause: load() was defined but never
-  // invoked. Kick it now; the function self-defers via setTimeout(load, 250)
-  // until window.LYMX.sb + .user are ready.
-  load();
-})();
-</script>
-<script>
-// 2026-05-27 #e5dd5d72 — Tree-render: was a hard-coded "Your tree is empty"
-// placeholder with no JS behind it. Now queries the partners table 3 levels
-// deep via sponsor_partner_id, plus the partner's own activated businesses.
-// Renders tree rows under the YOU row when downline exists; keeps the empty
-// state when there's nothing yet.
-(function () {
-  function renderTreeRow(p, gen) {
-    var name = (p.display_name || p.legal_name || (p.contact_email || '').split('@')[0] || 'Partner');
-    var initials = name.split(/\s+/).filter(Boolean).slice(0,2).map(s => (s[0]||'').toUpperCase()).join('') || 'P';
-    var thisMo = p._thisMonthOverride || 0;
-    var payHtml = '$' + thisMo.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }) + ' <span class="sub">this month</span>';
-    var genLabel = gen === 1 ? 'G1' : gen === 2 ? 'G2' : 'G3';
-    return '<div class="tree-row g' + gen + '">' +
-      '<div class="av">' + initials + '</div>' +
-      '<div class="body">' +
-        '<div class="nm">' + name.replace(/[<>]/g,'') + ' <span class="gen-pill">' + genLabel + '</span></div>' +
-        '<div class="ds">' + (p._meta || 'Partner') + '</div>' +
-      '</div>' +
-      '<div class="pay">' + payHtml + '</div>' +
-    '</div>';
-  }
-
-  async function renderTree() {
-    if (!window.LYMX || !window.LYMX.sb || !window.LYMX.user) {
-      setTimeout(renderTree, 250);
-      return;
-    }
-    var sb = window.LYMX.sb;
-    try {
-      // Resolve the partner row for the signed-in user
-      var pme = await sb.from('partners')
-        .select('id, display_name, legal_name, contact_email')
-        .eq('user_id', window.LYMX.user.id).maybeSingle();
-      if (!pme.data) return;
-      var myPartnerId = pme.data.id;
-
-      // G1: partners with sponsor_partner_id = mine
-      var g1 = await sb.from('partners')
-        .select('id, display_name, legal_name, contact_email, created_at')
-        .eq('sponsor_partner_id', myPartnerId)
-        .order('created_at', { ascending: false }).limit(30);
-      var g1Rows = g1.data || [];
-      var g1Ids = g1Rows.map(r => r.id);
-
-      // G2: partners with sponsor in g1Ids
-      var g2Rows = [];
-      if (g1Ids.length) {
-        var g2 = await sb.from('partners')
-          .select('id, display_name, legal_name, contact_email, sponsor_partner_id, created_at')
-          .in('sponsor_partner_id', g1Ids)
-          .order('created_at', { ascending: false }).limit(60);
-        g2Rows = g2.data || [];
-      }
-      var g2Ids = g2Rows.map(r => r.id);
-
-      // G3
-      var g3Rows = [];
-      if (g2Ids.length) {
-        var g3 = await sb.from('partners')
-          .select('id, display_name, legal_name, contact_email, sponsor_partner_id, created_at')
-          .in('sponsor_partner_id', g2Ids)
-          .order('created_at', { ascending: false }).limit(120);
-        g3Rows = g3.data || [];
-      }
-
-      // Compute this-month commission per partner from partner_commissions table.
-      // The override on a child partner is what the parent earns FROM them.
-      var startMo = new Date(); startMo.setDate(1); startMo.setHours(0,0,0,0);
-      var allChildIds = [].concat(g1Ids, g2Ids, g3Rows.map(r => r.id));
-      var commByChild = {};
-      if (allChildIds.length) {
-        var cr = await sb.from('partner_commissions')
-          .select('source_partner_id, amount')
-          .eq('partner_id', myPartnerId)
-          .in('source_partner_id', allChildIds)
-          .gte('created_at', startMo.toISOString());
-        (cr.data || []).forEach(c => {
-          if (!c.source_partner_id) return;
-          commByChild[c.source_partner_id] = (commByChild[c.source_partner_id] || 0) + Number(c.amount || 0);
-        });
-      }
-      [g1Rows, g2Rows, g3Rows].forEach(rows => rows.forEach(r => { r._thisMonthOverride = commByChild[r.id] || 0; }));
-
-      var totalRows = g1Rows.length + g2Rows.length + g3Rows.length;
-      if (!totalRows) return;  // keep the empty state
-
-      // Build markup — keep the existing YOU row, replace the empty-state div
-      var treeEl = document.getElementById('repTree');
-      if (!treeEl) return;
-      var youRow = treeEl.querySelector('.tree-row.you');
-      var youHtml = youRow ? youRow.outerHTML : '';
-      var rowsHtml = g1Rows.map(r => renderTreeRow(r, 1)).join('') +
-                     g2Rows.map(r => renderTreeRow(r, 2)).join('') +
-                     g3Rows.map(r => renderTreeRow(r, 3)).join('');
-      treeEl.innerHTML = youHtml + rowsHtml;
-    } catch (e) {
-      console.warn('[rep-dashboard] tree render failed', e);
-    }
-  }
-  renderTree();
-})();
-</script>
-
-<script>
-// 2026-05-27 #b679f887 — Recent Activity extension: original widget pulled
-// leads + closed leads + bookings only. Tester reported "empty" because
-// commission posts and Business activations (the real partner-side events)
-// weren't represented. Adding three more event types: commission credit,
-// Business activation, customer referral. Merged with existing event types
-// into one sorted feed.
-(function () {
-  function $(id) { return document.getElementById(id); }
-  function esc(s) { return String(s == null ? '' : s).replace(/[<>&"]/g, c => ({ '<':'&lt;', '>':'&gt;', '&':'&amp;', '"':'&quot;' }[c])); }
-  function timeAgo(iso) {
-    if (!iso) return '';
-    var d = new Date(iso); var s = Math.round((Date.now() - d) / 1000);
-    if (s < 60) return 'just now'; if (s < 3600) return Math.round(s/60) + 'm ago';
-    if (s < 86400) return Math.round(s/3600) + 'h ago'; if (s < 604800) return Math.round(s/86400) + 'd ago';
-    return d.toLocaleDateString();
-  }
-  async function loadExtra() {
-    if (!window.LYMX || !window.LYMX.sb || !window.LYMX.user) { setTimeout(loadExtra, 250); return; }
-    try {
-      var sb = window.LYMX.sb;
-      var weekAgo = new Date(Date.now() - 14 * 86400 * 1000).toISOString();
-      // Need partner.id from the partners table
-      var pme = await sb.from('partners').select('id').eq('user_id', window.LYMX.user.id).maybeSingle();
-      if (!pme.data) return;
-      var partnerId = pme.data.id;
-
-      // 3 new event types in parallel
-      var pComms = sb.from('partner_commissions')
-        .select('id, amount, type, generation, created_at')
-        .eq('partner_id', partnerId)
-        .gte('created_at', weekAgo)
-        .order('created_at', { ascending: false }).limit(20);
-      var pActivations = sb.from('businesses')
-        .select('id, display_name, created_at')
-        .eq('signed_up_by_partner_id', partnerId)
-        .gte('created_at', weekAgo)
-        .order('created_at', { ascending: false }).limit(20);
-      var pRefs = sb.from('referrals')
-        .select('id, status, invitee_user_id, inviter_bonus_amount, created_at')
-        .eq('inviter_user_id', window.LYMX.user.id)
-        .gte('created_at', weekAgo)
-        .order('created_at', { ascending: false }).limit(20);
-
-      var r = await Promise.all([pComms, pActivations, pRefs]);
-      var events = [];
-      (r[0].data || []).forEach(c => events.push({
-        at: c.created_at, icon: '💰',
-        title: 'Commission · $' + Number(c.amount||0).toFixed(2) + (c.generation ? ' (G' + c.generation + ')' : ''),
-        who: (c.type || '').replace(/_/g, ' '), sub: ''
-      }));
-      (r[1].data || []).forEach(b => events.push({
-        at: b.created_at, icon: '🏪',
-        title: 'Business activated', who: b.display_name || '—', sub: ''
-      }));
-      (r[2].data || []).forEach(ref => events.push({
-        at: ref.created_at, icon: ref.status === 'credited' ? '🎁' : '⏳',
-        title: ref.status === 'credited' ? ('Referral credited · +' + (ref.inviter_bonus_amount || 0) + ' LYMX') : 'Referral pending',
-        who: '', sub: ''
-      }));
-      if (!events.length) return;
-      events.sort((a,b) => (b.at || '').localeCompare(a.at || ''));
-      events = events.slice(0, 20);
-
-      var el = document.getElementById('repActivity');
-      if (!el) return;
-      var rendered = events.map(e => {
-        var when = new Date(e.at).toLocaleDateString([], { month: 'short', day: 'numeric' });
-        return '<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;align-items:center"><span style="font-size:18px">' + e.icon + '</span>'
-          + '<div style="flex:1;min-width:0"><div style="font-weight:700">' + esc(e.title) + (e.who ? ' · ' + esc(e.who) : '') + '</div>'
-          + (e.sub ? '<div style="font-size:12px;color:#5b6472;margin-top:1px">' + esc(e.sub) + '</div>' : '')
-          + '</div>'
-          + '<span style="font-size:11.5px;color:#5b6472;font-weight:600;white-space:nowrap">' + when + '</span></div>';
-      }).join('');
-      // Prepend to whatever leads/bookings widget loaded — but only if that
-      // widget left the empty state. If it loaded real events, append at the top.
-      var existingEmpty = el.innerHTML.indexOf('No activity yet') >= 0 || el.innerHTML.indexOf('No recent activity yet') >= 0;
-      if (existingEmpty) {
-        el.innerHTML = rendered;
-      } else {
-        // Insert above existing children
-        var holder = document.createElement('div');
-        holder.innerHTML = rendered;
-        while (holder.firstChild) el.insertBefore(holder.firstChild, el.firstChild);
-      }
-    } catch (e) {
-      console.warn('[rep-dashboard] extra activity feed failed', e);
-    }
-  }
-  loadExtra();
-})();
-</script>
-
-<script src="lymx-feedback.js" defer></script>
-<script src="lymx-sidebar.js" defer></script>
-<script src="lymx-app.js" defer></script>
-<script src="lymx-role-gate.js" defer></script>
 </body>
 </html>
