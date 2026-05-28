@@ -214,16 +214,19 @@
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
 
-  // Admin gate — staff_roles.role IN (admin,tech,support) sees this.
-  // 2026-05-25 root-cause: removed hardcoded Kenny-UUID fast path. Migration
-  // 015 seeds Kenny in staff_roles so the canonical lookup below now passes
-  // for Kenny too AND for Helen / any future admin. Previously this gate
-  // worked for Kenny only.
+  // Admin gate — staff_roles.role IN (admin, tech, support) sees this.
+  // 2026-05-28 — removed the hardcoded Kenny UUID fast-path. Admin status now
+  // reads from sessionStorage cache populated by lymx-nav.js's am_i_admin()
+  // RPC call. If the cache is missing (first session load), the staff_roles
+  // query below still gates correctly; it just costs one extra round-trip.
   let isAdmin = false;
-  try {
-    const { data: sr } = await sb.from('staff_roles').select('role').eq('user_id', session.user.id).maybeSingle();
-    if (sr && ['admin','tech','support'].includes(sr.role)) isAdmin = true;
-  } catch (e) { console.warn('[admin-partners] staff_roles lookup', e); }
+  try { isAdmin = sessionStorage.getItem('LYMX_is_admin') === '1'; } catch (e) { console.warn('[admin-partners] sessionStorage probe', e); }
+  if (!isAdmin) {
+    try {
+      const { data: sr } = await sb.from('staff_roles').select('role').eq('user_id', session.user.id).maybeSingle();
+      if (sr && ['admin','tech','support'].includes(sr.role)) isAdmin = true;
+    } catch (e) { console.warn('[admin-partners] staff_roles lookup', e); }
+  }
   if (!isAdmin) { location.href = '/not-authorized.html'; return; }
 
   document.getElementById('userInitial').textContent = (session.user.email || 'A').split(/[\s@]+/)[0].slice(0,2).toUpperCase();

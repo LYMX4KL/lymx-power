@@ -805,17 +805,11 @@
       var parts = tok.split('.');
       if (parts.length !== 3) return;
       var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-      // Route to the right dashboard based on user role hints.
-      // 2026-05-28 — removed the hardcoded admin UUID (only worked for Kenny;
-      // any other staff_roles admin would have landed on rep-dashboard). Now
-      // reads the sessionStorage cache populated by lymx-nav.js's
-      // ensureAdminCache() on any previously-visited page in this session;
-      // first-ever index hit falls back to email-suffix routing (admins land
-      // on rep-dashboard for a moment, then any nav click flips to the cached
-      // admin route). The router is single-source-of-truth via am_i_admin().
+      // 2026-05-28 — same fix as index.html: removed hardcoded admin UUID,
+      // read sessionStorage admin cache populated by lymx-nav.js am_i_admin().
       var dest = 'customer-dashboard.html';
       var isAdmin = false;
-      try { isAdmin = sessionStorage.getItem('LYMX_is_admin') === '1'; } catch (e) { console.warn('[index] sessionStorage probe', e); }
+      try { isAdmin = sessionStorage.getItem('LYMX_is_admin') === '1'; } catch (e) { console.warn('[index (1)] sessionStorage probe', e); }
       if (isAdmin) dest = 'admin-dashboard.html';
       else if ((payload.email || '').endsWith('@lymxpower.com') || (payload.email || '').endsWith('@getlymx.com')) dest = 'rep-dashboard.html';
       var guest = document.getElementById('navCtaGuest');

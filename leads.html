@@ -170,9 +170,9 @@
     const { data: { user } } = await sb.auth.getUser();
     if (!user) { location.href = '/login.html?next=/leads.html'; return; }
     me = user;
-    // 2026-05-25 root-cause: dropped hardcoded Kenny-UUID OR clause.
-    // Migration 015 seeds Kenny in staff_roles so the lookup below is sufficient.
     const { data: staff } = await sb.from('staff_roles').select('user_id').eq('user_id', me.id).maybeSingle();
+    // 2026-05-28 — removed hardcoded Kenny UUID OR-bypass. amIAdmin reads
+    // staff_roles only; any admin in staff_roles can use leads.
     amIAdmin = !!staff;
 
     // Pre-select "My leads" filter when ?owner=me in the URL (prospects.html redirects here with this param)

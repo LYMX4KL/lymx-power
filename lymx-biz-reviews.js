@@ -152,8 +152,9 @@
       return;
     }
     list.innerHTML = rows.slice(0, 20).map(function (r) {
-      var verified = r.verification_status === 'verified';
       var av = initials(r.reviewer_user_id);
+      // Only verified reviews are returned to the public list (RLS enforces),
+      // so the badge is always "Verified visit" here.
       return (
         '<div class="review-card">' +
           '<div class="head">' +
@@ -164,9 +165,7 @@
                 '<div class="when">' + escHtml(relTime(r.created_at)) + '</div>' +
               '</div>' +
             '</div>' +
-            (verified
-              ? '<span class="badge-verified">✓ Verified visit</span>'
-              : '<span class="badge-verified" style="background:rgba(91,100,114,.12);color:#5b6472">Pending verification</span>') +
+            '<span class="badge-verified">✓ Verified visit</span>' +
           '</div>' +
           '<div class="stars-row">' + starsText(r.rating) + '</div>' +
           '<p class="quote">' + escHtml(r.body) + '</p>' +
@@ -179,11 +178,15 @@
     if (!window.LYMX_CONFIG || !slug) return;
     var cfg = window.LYMX_CONFIG;
     try {
-      // Pull pending + verified; pending count toward total but get a lighter
-      // visual treatment in the list. Rejected reviews never display.
+      // Public surfaces (browse, biz pages) only display VERIFIED reviews.
+      // The RLS policy reviews_public_read (migration 031) enforces this for
+      // anon callers anyway; querying for eq.verified makes the intent explicit
+      // and keeps the count consistent across browse + biz pages (both query
+      // the same verified-only set). Reviewers see their own pending reviews
+      // through a separate "my pending reviews" surface (v_my_pending_reviews).
       var url = cfg.SUPABASE_URL + '/rest/v1/reviews?business_slug=eq.' +
         encodeURIComponent(slug) +
-        '&verification_status=in.(verified,pending)' +
+        '&verification_status=eq.verified' +
         '&select=id,rating,body,created_at,reviewer_user_id,verification_status' +
         '&order=created_at.desc&limit=200';
       var r = await fetch(url, { headers: { apikey: cfg.SUPABASE_ANON_KEY } });
@@ -321,7 +324,7 @@
       try {
         var r = await fetch(
           cfg.SUPABASE_URL + '/rest/v1/reviews?business_slug=eq.' + encodeURIComponent(slug) +
-            '&verification_status=in.(verified,pending)&select=id',
+            '&verification_status=eq.verified&select=id',
           { headers: { apikey: cfg.SUPABASE_ANON_KEY, Prefer: 'count=exact' } }
         );
         if (!r.ok) return null;

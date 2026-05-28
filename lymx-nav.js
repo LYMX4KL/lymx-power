@@ -51,12 +51,59 @@
       return JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
     } catch (e) { return null; }
   }
+  // 2026-05-28 — admin role lookup is now session-cached via ensureAdminCache()
+  // below. The cache is populated by a real am_i_admin() RPC call at boot, so
+  // routeFor and fallbackDashboardForRole no longer special-case Kenny's UUID.
+  // Any user whose am_i_admin() returns true gets routed to admin-dashboard.html;
+  // the previous hardcoded UUID OR-bypass only worked for one user and silently
+  // misrouted every other admin (e.g. Helen) to customer-dashboard.
+  function isAdminCached() {
+    try { return sessionStorage.getItem('LYMX_is_admin') === '1'; } catch (e) { return false; }
+  }
+  function setAdminCached(yes) {
+    try { sessionStorage.setItem('LYMX_is_admin', yes ? '1' : '0'); } catch (e) { console.warn('[lymx-nav] sessionStorage write', e); }
+  }
   function routeFor(payload) {
     if (!payload) return 'customer-dashboard.html';
-    if (payload.sub === '1405bb50-2c97-48dd-bfa5-31f32320de9b') return 'admin-dashboard.html';
+    if (isAdminCached()) return 'admin-dashboard.html';
     var em = (payload.email || '').toLowerCase();
     if (em.endsWith('@lymxpower.com') || em.endsWith('@getlymx.com')) return 'rep-dashboard.html';
     return 'customer-dashboard.html';
+  }
+
+  // Populate the admin cache by asking the server once per session.
+  // Uses the canonical am_i_admin() RPC (migration 102) so any role check
+  // anywhere in the app stays single-source-of-truth.
+  async function ensureAdminCache(payload) {
+    if (!payload || !payload.sub) return;
+    try {
+      if (sessionStorage.getItem('LYMX_is_admin') !== null) return;
+    } catch (e) { console.warn('[lymx-nav] sessionStorage probe', e); }
+    if (!window.LYMX_CONFIG) return;
+    var cfg = window.LYMX_CONFIG;
+    var tok = readToken();
+    if (!tok) return;
+    try {
+      var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/rpc/am_i_admin', {
+        method: 'POST',
+        headers: {
+          apikey: cfg.SUPABASE_ANON_KEY,
+          Authorization: 'Bearer ' + tok,
+          'Content-Type': 'application/json'
+        },
+        body: '{}'
+      });
+      if (!r.ok) {
+        console.warn('[lymx-nav] am_i_admin RPC failed', r.status);
+        setAdminCached(false);
+        return;
+      }
+      var v = await r.json();
+      setAdminCached(v === true);
+    } catch (e) {
+      console.warn('[lymx-nav] am_i_admin RPC error', e);
+      setAdminCached(false);
+    }
   }
 
   // ---- 1) Redirect signed-in users away from signup / welcome pages -------
@@ -441,9 +488,10 @@
     var path = (location.pathname || '').toLowerCase();
     var isAdminPage = /\/admin-[^/]*\.html$/.test(path) || /\/admin-[^/]+$/.test(path);
     if (!isAdminPage) return;
-    var KENNY_ADMIN = '1405bb50-2c97-48dd-bfa5-31f32320de9b';
-    // Fast path: Kenny (hardcoded admin)
-    if (payload && payload.sub === KENNY_ADMIN) return;
+    // 2026-05-28 — removed the Kenny-UUID fast path. Admin check now goes through
+    // am_i_admin() RPC for every user, so any staff_roles admin (Helen, etc.)
+    // gets through and any non-admin (including a former admin whose role was
+    // revoked) gets kicked. Result is cached in sessionStorage by ensureAdminCache.
     // Server check: does this user have an admin row in staff_roles?
     try {
       var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
@@ -454,12 +502,14 @@
       if (!r.ok) { location.replace('/login.html?return=' + encodeURIComponent(path)); return; }
       var rows = await r.json();
       var ok = rows && rows.length && (rows[0].role === 'admin' || rows[0].is_cfo || rows[0].is_hr);
+      setAdminCached(!!ok);
       if (!ok) {
         // Not an admin — kick them to their own dashboard
         var dest = routeFor(payload);
         location.replace(dest);
       }
     } catch (e) {
+      console.warn('[lymx-nav] enforceAdminGuard failed', e);
       location.replace('/login.html?return=' + encodeURIComponent(path));
     }
   }
@@ -774,7 +824,7 @@
     // Mirrors routeFor()'s decision tree so the fallback is consistent with
     // the rest of the nav (sign-in redirect, swap-guest-buttons, avatar menu).
     if (!payload) return 'home.html';
-    if (payload.sub === '1405bb50-2c97-48dd-bfa5-31f32320de9b') return 'admin-dashboard.html';
+    if (isAdminCached()) return 'admin-dashboard.html';
     var em = (payload.email || '').toLowerCase();
     if (em.endsWith('@lymxpower.com') || em.endsWith('@getlymx.com')) return 'rep-dashboard.html';
     var role = (payload.user_metadata && payload.user_metadata.role)
@@ -845,6 +895,13 @@
         injectBackChip(null);
         return;
       }
+      // 2026-05-28 — populate admin cache in the background so subsequent
+      // routeFor / fallbackDashboardForRole calls have the truth without each
+      // page making its own RPC. First page load on a new session may route by
+      // email-suffix fallback until the RPC returns; enforceAdminGuard below
+      // also updates the cache as a side effect when an admin lands directly
+      // on /admin-*.html.
+      ensureAdminCache(payload);
       redirectIfSignedIn(payload);
       swapGuestButtons(payload);
       wireAvatar(payload);

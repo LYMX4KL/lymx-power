@@ -487,10 +487,11 @@
     if (!user) { window.location.href = "login.html?next="+encodeURIComponent(location.pathname); return; }
     me = user;
 
-    // 2026-05-25 root-cause: dropped the hardcoded Kenny-UUID OR clause.
-    // Migration 015 seeds Kenny in staff_roles as admin so the canonical row
-    // check below is sufficient and works identically for every admin.
     const { data: staff } = await sb.from("staff_roles").select("user_id").eq("user_id", me.id).maybeSingle();
+    // 2026-05-28 — removed hardcoded Kenny UUID OR-bypass. amIAdmin is now
+    // derived from staff_roles only (canonical source). Any admin in
+    // staff_roles can manage conversations; the prior bypass only worked
+    // for Kenny so other admins like Helen got silently blocked.
     amIAdmin = !!staff;
 
     if (!amIAdmin) { document.body.innerHTML = '<div style="padding:40px;text-align:center"><h2>Admins only</h2></div>'; return; }
