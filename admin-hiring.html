@@ -145,14 +145,7 @@
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <a href="admin-generate-offer.html" class="btn btn-ghost">📄 Generate offer</a>
-        <!-- 2026-05-27 #03/#13 — restored the "+ Add applicant" button but this
-             time it's backed by the real public.job_applications table (NOT
-             localStorage). Opens a modal that captures name/email/phone/role/source,
-             POSTs the row, then routes to admin-generate-offer.html?app=<new_id>
-             so the new applicant is pre-selected in the offer dropdown. The 2026-05-26
-             deletion of the previous mock modal was correct; this replacement is
-             the real backed version it should have been. -->
-        <button class="btn btn-primary" id="openAddApplicantBtn" type="button" style="border:0;font-family:inherit">+ Add applicant</button>
+        <button class="btn btn-primary" onclick="openAdd()">+ Add applicant</button>
       </div>
     </div>
 
@@ -179,12 +172,39 @@
   </div>
 </main>
 
-<!-- Add applicant modal removed 2026-05-26 #b39ad14a (Helen): was
-     localStorage-only mock with a hardcoded role enum that excluded
-     "concierge support". The real new-candidate path is the
-     "+ Generate offer for new candidate" CTA above, which routes to
-     admin-generate-offer.html (backed by jobs + job_applications tables
-     with free-text role title). -->
+<!-- Add applicant modal -->
+<div class="modal" id="add-modal" onclick="if(event.target===this)closeAdd()">
+  <div class="modal-card">
+    <div class="modal-h"><h3>Add applicant</h3></div>
+    <div class="modal-body">
+      <div class="field"><label>Name</label><input class="input" id="a-name" /></div>
+      <div class="field"><label>Email</label><input class="input" type="email" id="a-email" /></div>
+      <div class="field">
+        <label>Role</label>
+        <select id="a-role">
+          <option value="frontend">Frontend / PWA Engineer</option>
+          <option value="ops">Founding Operations</option>
+          <option value="design">Brand &amp; Content Designer</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Source</label>
+        <select id="a-source">
+          <option>Direct application</option>
+          <option>LinkedIn</option>
+          <option>Referral</option>
+          <option>Recruiter</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Notes</label><textarea id="a-notes" placeholder="Anything from initial review"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeAdd()">Cancel</button>
+      <button class="btn btn-primary" onclick="addApplicant()">Add to pipeline</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -215,7 +235,7 @@
   })();
   function saveCandidates(){
     try { localStorage.setItem('lymx_hiring_candidates', JSON.stringify(candidates)); }
-    catch (e) { console.warn("[admin-hiring.html:238] caught:", e); }
+    catch (e) { console.warn('[admin-hiring] localStorage save best-effort', e); }
   }
   /* legacy-mock-disabled
     {id:'c1', name:'Maya Reyes',     role:'frontend', stage:'applied',  applied:'2 days ago', source:'LinkedIn',     av:'MR'},
@@ -304,9 +324,22 @@
     showToast(`${c.name} advanced to ${stages[idx + 1]}`, 'success');
   }
 
-  // openAdd / closeAdd / addApplicant functions removed 2026-05-26 #b39ad14a
-  // (Helen): were paired with the "+ Add applicant" modal that wrote to
-  // localStorage only. New candidate flow lives at admin-generate-offer.html.
+  function openAdd(){ document.getElementById('add-modal').classList.add('on'); }
+  function closeAdd(){ document.getElementById('add-modal').classList.remove('on'); }
+  function addApplicant(){
+    const name = document.getElementById('a-name').value.trim();
+    if (!name){ showToast('Enter a name'); return; }
+    const role = document.getElementById('a-role').value;
+    const source = document.getElementById('a-source').value;
+    const initials = name.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
+    candidates.push({id:'c'+Date.now(), name, role, stage:'applied', applied:'just now', source, av:initials});
+    closeAdd();
+    document.getElementById('a-name').value = '';
+    document.getElementById('a-email').value = '';
+    document.getElementById('a-notes').value = '';
+    render();
+    showToast(`${name} added to pipeline`, 'success');
+  }
 
   function exportCSV(){
     let csv = 'Name,Role,Stage,Applied,Source\n';
@@ -334,99 +367,5 @@
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
 <script src="lymx-role-gate.js" defer></script>
-
-<!-- 2026-05-27 #03/#13 — Add Applicant modal -->
-<div id="addApplicantOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#fff;border-radius:14px;padding:24px;width:480px;max-width:100%;box-shadow:0 20px 50px rgba(0,0,0,.25);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif">
-    <h3 style="margin:0 0 6px;font-size:18px">Add applicant</h3>
-    <p style="margin:0 0 14px;font-size:13px;color:#5b6472">Adds a real row to <code>job_applications</code>, then jumps you to the offer-letter form with this applicant pre-selected.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <label style="display:block;font-size:11.5px;font-weight:700;color:#5b6472">First name<input id="appFirstName" type="text" style="width:100%;padding:9px 11px;margin-top:3px;border:1px solid #e6e8ec;border-radius:7px;font:inherit;font-size:13.5px" /></label>
-      <label style="display:block;font-size:11.5px;font-weight:700;color:#5b6472">Last name<input id="appLastName" type="text" style="width:100%;padding:9px 11px;margin-top:3px;border:1px solid #e6e8ec;border-radius:7px;font:inherit;font-size:13.5px" /></label>
-    </div>
-    <label style="display:block;font-size:11.5px;font-weight:700;color:#5b6472;margin-top:10px">Email<input id="appEmail" type="email" style="width:100%;padding:9px 11px;margin-top:3px;border:1px solid #e6e8ec;border-radius:7px;font:inherit;font-size:13.5px" /></label>
-    <label style="display:block;font-size:11.5px;font-weight:700;color:#5b6472;margin-top:10px">Phone (optional)<input id="appPhone" type="tel" style="width:100%;padding:9px 11px;margin-top:3px;border:1px solid #e6e8ec;border-radius:7px;font:inherit;font-size:13.5px" /></label>
-    <label style="display:block;font-size:11.5px;font-weight:700;color:#5b6472;margin-top:10px">Source<select id="appSource" style="width:100%;padding:9px 11px;margin-top:3px;border:1px solid #e6e8ec;border-radius:7px;font:inherit;font-size:13.5px;background:#fff"><option value="direct_outreach">Direct outreach</option><option value="careers_page">Careers page</option><option value="partner_referral">Partner referral</option><option value="linkedin">LinkedIn</option><option value="indeed">Indeed</option><option value="other">Other</option></select></label>
-    <div style="font-size:12px;color:#5b6472;margin-top:10px;padding:9px 11px;background:#f6f7f9;border-radius:7px;line-height:1.4">You'll pick the role + pay terms on the next screen (Generate Offer). This step just records the person as an applicant.</div>
-    <div id="appAddStatus" style="margin-top:10px;font-size:13px"></div>
-    <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
-      <button type="button" id="appAddCancel" style="padding:9px 16px;border:1px solid #e6e8ec;background:#fff;border-radius:8px;cursor:pointer;font-weight:600;font-size:13.5px">Cancel</button>
-      <button type="button" id="appAddSubmit" style="padding:9px 16px;border:0;background:#0e1116;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;font-size:13.5px">Save + continue to offer</button>
-    </div>
-  </div>
-</div>
-
-<script>
-(function () {
-  'use strict';
-  const $ = id => document.getElementById(id);
-  const ov = $('addApplicantOverlay');
-  const openBtn = $('openAddApplicantBtn');
-  if (!openBtn || !ov) return;
-
-  function open() {
-    ov.style.display = 'flex';
-    $('appAddStatus').innerHTML = '';
-    setTimeout(() => $('appFirstName').focus(), 60);
-  }
-  function close() { ov.style.display = 'none'; }
-
-  openBtn.addEventListener('click', open);
-  $('appAddCancel').addEventListener('click', close);
-  ov.addEventListener('click', (e) => { if (e.target === ov) close(); });
-
-  $('appAddSubmit').addEventListener('click', async () => {
-    const first = ($('appFirstName').value || '').trim();
-    const last  = ($('appLastName').value  || '').trim();
-    const email = ($('appEmail').value     || '').trim();
-    const phone = ($('appPhone').value     || '').trim() || null;
-    const source = ($('appSource').value   || 'direct').trim();
-    const status = $('appAddStatus');
-
-    if (!first) { status.innerHTML = '<span style="color:#b81324">First name required.</span>'; return; }
-    if (!last)  { status.innerHTML = '<span style="color:#b81324">Last name required (the schema needs both).</span>'; return; }
-    if (!email || !email.includes('@')) { status.innerHTML = '<span style="color:#b81324">Valid email required.</span>'; return; }
-
-    const btn = $('appAddSubmit');
-    btn.disabled = true; btn.textContent = 'Saving…';
-    status.innerHTML = '<span style="color:#5b6472">Inserting into job_applications…</span>';
-
-    try {
-      // Wait for the auth module to be ready.
-      let tries = 0;
-      while ((!window.LYMX || !window.LYMX.sb) && tries < 50) { await new Promise(r => setTimeout(r, 100)); tries++; }
-      if (!window.LYMX || !window.LYMX.sb) throw new Error('Auth not ready — refresh and try again.');
-      const sb = window.LYMX.sb;
-      // RLS policy 'japps_public_insert' (migration 056) allows the INSERT for
-      // any authenticated user; admin Helen has it by default.
-      // 2026-05-27 #13 schema audit: job_applications columns per migration 056
-      // are first_name (NOT NULL), last_name (NOT NULL), email, phone, source
-      // (constrained enum: careers_page|partner_referral|direct_outreach|linkedin|indeed|other),
-      // status (default 'new'). No role_label column exists — role intent gets
-      // captured on the NEXT screen (Generate Offer) where it belongs on the
-      // jobs/offers row.
-      const payload = {
-        first_name: first,
-        last_name: last,
-        email: email,
-        phone: phone,
-        source: source,
-        status: 'new'
-      };
-      const { data, error } = await sb.from('job_applications').insert(payload).select('id').single();
-      if (error) throw new Error(error.message || 'insert failed');
-      if (!data || !data.id) throw new Error('insert returned no id');
-      status.innerHTML = '<span style="color:#0a7a4d">✓ Applicant added. Opening offer-letter form…</span>';
-      // Route to Generate Offer with the new application_id pre-selected.
-      setTimeout(() => { location.href = '/admin-generate-offer.html?app=' + encodeURIComponent(data.id); }, 600);
-    } catch (e) {
-      console.warn('[hiring] add applicant failed', e);
-      status.innerHTML = '<span style="color:#b81324">Could not save: ' + (e && e.message ? e.message : 'unknown error') + '</span>';
-      btn.disabled = false; btn.textContent = 'Save + continue to offer';
-    }
-  });
-})();
-</script>
-
 </body>
 </html>
