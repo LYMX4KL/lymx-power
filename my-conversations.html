@@ -559,7 +559,7 @@
   document.addEventListener("DOMContentLoaded", function(){
     var bk = document.getElementById("threadBackBtn");
     if (bk) bk.addEventListener("click", function(){
-      try { if (history.state && history.state.lymxConvOpen) { history.back(); return; } } catch(e){}
+      try { if (history.state && history.state.lymxConvOpen) { history.back(); return; } } catch(e){ console.warn('[my-conversations] best-effort', e); }
       closeThreadPane();
     });
     window.addEventListener("popstate", function(){
@@ -568,11 +568,4 @@
       var layout = document.getElementById("layout");
       if (layout && layout.classList.contains("show-thread")
           && !(history.state && history.state.lymxConvOpen)) {
-        closeThreadPane();
-      }
-    });
-  });
-})();
-</script>
-</body>
-</html>
+    

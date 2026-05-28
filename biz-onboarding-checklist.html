@@ -267,7 +267,7 @@
   try { done = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ done = {}; }
   let filter = 'all';
 
-  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); } catch (e) { console.warn("[biz-onboarding-checklist.html:270] web-storage op failed (private mode? quota?):", e); } }
+  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); } catch(e){ console.warn('[biz-onboarding-checklist] best-effort', e); } }
 
   function toggle(id){
     done[id] = !done[id];

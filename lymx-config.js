@@ -132,22 +132,22 @@ window.LYMX_CONFIG = {
     try {
       var ss = sessionStorage.getItem(REF_KEY);
       if (ss) return clean(ss);
-    } catch (e) { console.warn("[lymx-config.js:135] caught:", e); }
+    } catch (_) { console.warn('[lymx-config] best-effort', _); }
     try {
       var raw = localStorage.getItem(REF_KEY);
       if (raw) {
         var p = JSON.parse(raw);
         if (p && p.v && (Date.now() - (p.t || 0) < REF_TTL_MS)) return clean(p.v);
-        if (p) { try { localStorage.removeItem(REF_KEY); } catch (_) { console.warn("[lymx-config.js:141] web-storage op failed (private mode? quota?):", _); } }
+        if (p) { try { localStorage.removeItem(REF_KEY); } catch (_) { console.warn('[lymx-config] best-effort', _); } }
       }
-    } catch (e) { console.warn("[lymx-config.js:143] caught:", e); }
+    } catch (_) { console.warn('[lymx-config] best-effort', _); }
     return null;
   }
   function writeRef(val) {
     var v = clean(val);
     if (!v) return;
-    try { sessionStorage.setItem(REF_KEY, v); } catch (_) { console.warn("[lymx-config.js:149] web-storage op failed (private mode? quota?):", _); }
-    try { localStorage.setItem(REF_KEY, JSON.stringify({ v: v, t: Date.now() })); } catch (_) { console.warn("[lymx-config.js:150] web-storage op failed (private mode? quota?):", _); }
+    try { sessionStorage.setItem(REF_KEY, v); } catch (_) { console.warn('[lymx-config] best-effort', _); }
+    try { localStorage.setItem(REF_KEY, JSON.stringify({ v: v, t: Date.now() })); } catch (_) { console.warn('[lymx-config] best-effort', _); }
   }
 
   // Public helper — signup pages can call window.LYMX_getRef() if they want
@@ -156,7 +156,7 @@ window.LYMX_CONFIG = {
     try {
       var u = new URLSearchParams(location.search).get('ref');
       if (u) return clean(u);
-    } catch (e) { console.warn("[lymx-config.js:159] caught:", e); }
+    } catch (_) { console.warn('[lymx-config] best-effort', _); }
     return readStoredRef();
   };
 

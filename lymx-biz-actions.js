@@ -141,7 +141,7 @@
         } else {
           // Need the user's uid for the INSERT; pull from the JWT payload
           var parts = tok.split('.'); var uid = null;
-          try { uid = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))).sub; } catch (e) {}
+          try { uid = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))).sub; } catch (e) { console.warn('[lymx-biz-actions] best-effort', e); }
           if (!uid) throw new Error('no uid in session');
           var ir = await fetch(cfg.SUPABASE_URL + '/rest/v1/saved_businesses', {
             method: 'POST',
@@ -263,7 +263,7 @@
           uid = payload.sub;
           bookerEmail = payload.email || '';
           bookerName = (payload.user_metadata && (payload.user_metadata.full_name || payload.user_metadata.name)) || bookerEmail.split('@')[0] || '';
-        } catch (e) {}
+        } catch (e) { console.warn('[lymx-biz-actions] best-effort', e); }
       }
       if (!bookerName) {
         bookerName = prompt('Your name for the reservation:', '') || '';
@@ -324,9 +324,4 @@
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function(){ boot(); bootExt(); });
   } else {
-    // The page's inline scripts have already run and set window.toggleSave.
-    // Boot synchronously so we override before the user can click.
-    boot();
-    bootExt();
-  }
-})();
+    // The page's inline scripts have already run and set window.t

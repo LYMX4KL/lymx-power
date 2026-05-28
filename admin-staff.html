@@ -239,25 +239,45 @@ document.getElementById('addStaffBtn').addEventListener('click', () => document.
 document.getElementById('aCancel').addEventListener('click', () => document.getElementById('addModal').classList.remove('on'));
 
 document.getElementById('aSave').addEventListener('click', async () => {
-  const email = document.getElementById('aEmail').value.trim().toLowerCase();
+  const input = document.getElementById('aEmail').value.trim().toLowerCase();
   const role  = document.getElementById('aRole').value;
   const notes = document.getElementById('aNotes').value.trim() || null;
-  if (!email) return alert('Email required');
+  if (!input) return alert('Email required');
 
-  // Look up user_id by email — needs an admin RPC, simulate by asking Kenny to find it
-  // Quick path: use Supabase's GoTrue admin via the admin REST helper, but that's service-role only.
-  // Workaround: tell user to enter user_id directly for now.
-  // For v1, accept either email OR uuid; if email, try to find via auth.admin (won't work from client)
+  // 2026-05-28 — removed the manual user_id paste workaround (was: confirm() +
+  // prompt() asking the admin to look up the UUID in the Supabase Auth dashboard,
+  // which Helen and other non-developer admins could not do). Now: call the
+  // admin_list_user_emails() RPC (migration 060) and resolve email -> user_id
+  // automatically. Still accepts a raw UUID for the dev-flow path.
+  const isUuid = /^[0-9a-f-]{36}$/.test(input);
+  if (isUuid) { return saveStaff(input, role, notes); }
 
-  // We'll use a temporary path: tell user to copy the user_id from Supabase auth dashboard
-  const isUuid = /^[0-9a-f-]{36}$/.test(email);
-  if (!isUuid) {
-    if (!confirm('Adding staff by email requires looking up their user_id in Supabase. Paste the user_id from the Supabase Auth dashboard for ' + email + '. (Click OK to enter user_id.)')) return;
-    const uid = prompt('Paste the user_id (UUID) for ' + email + ':');
-    if (!uid || !/^[0-9a-f-]{36}$/.test(uid)) { setStatus('Invalid user_id', 'err'); return; }
-    return saveStaff(uid, role, notes, email);
+  const btn = document.getElementById('aSave');
+  btn.disabled = true; btn.dataset._t = btn.textContent; btn.textContent = 'Looking up…';
+  try {
+    const r = await authedFetch('/rest/v1/rpc/admin_list_user_emails', {
+      method: 'POST',
+      body: '{}'
+    });
+    if (!r.ok) {
+      setStatus('Could not look up users: ' + r.status + '. You need admin role to add staff.', 'err');
+      btn.disabled = false; btn.textContent = btn.dataset._t || 'Save';
+      return;
+    }
+    const rows = await r.json();
+    const match = (rows || []).find(u => (u.email || '').toLowerCase() === input);
+    if (!match) {
+      setStatus('No LYMX account exists with email ' + input + '. They need to sign up first (any role) before being added as staff.', 'err');
+      btn.disabled = false; btn.textContent = btn.dataset._t || 'Save';
+      return;
+    }
+    btn.textContent = 'Saving…';
+    return saveStaff(match.user_id, role, notes, input);
+  } catch (e) {
+    console.warn('[admin-staff] email lookup failed', e);
+    setStatus('Lookup error — try again or paste the UUID directly.', 'err');
+    btn.disabled = false; btn.textContent = btn.dataset._t || 'Save';
   }
-  saveStaff(email, role, notes);
 });
 
 async function saveStaff(userId, role, notes, emailHint) {

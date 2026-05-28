@@ -133,19 +133,11 @@
   <div class="layout">
     <!-- Video + transcript column -->
     <div>
-      <!-- 2026-05-28 — replaced the 3 mock-placeholder buttons with a real
-           video element + Fullscreen API / Web Share API / download link.
-           The video URL itself is read from window.LYMX_VIDEO_URL: if empty,
-           we render a "Video coming soon" placeholder (the launch MP4 isn't
-           recorded yet — that's a content task, not a code task). When the
-           MP4 is uploaded to Supabase storage, drop the URL into
-           LYMX_VIDEO_URL below and the player + buttons activate. -->
-      <div id="videoPlayerWrap" class="player" data-video-url="">
+      <div class="player" onclick="play()">
         <span class="title">★ Business Onboarding</span>
-        <button class="play-btn" id="videoPlayBtn">▶</button>
-        <span class="lab" id="videoCta">Click to play · 18:24</span>
+        <button class="play-btn">▶</button>
+        <span class="lab">Click to play · 18:24</span>
         <span class="duration">18:24</span>
-        <video id="videoEl" preload="metadata" controls style="display:none;width:100%;height:100%;border-radius:inherit;object-fit:cover;background:#000"></video>
       </div>
 
       <div class="below-player">
@@ -156,6 +148,10 @@
             <div class="role">Launch 25 Business · Brew &amp; Bean</div>
           </div>
         </div>
+        <!-- 2026-05-28 — onboarding-video.html has the canonical real-button
+             wiring (Fullscreen API, Web Share, download link). This duplicate
+             file is kept in sync. See onboarding-video.html for the full
+             player/wiring; the IDs below match. -->
         <div class="actions">
           <button class="btn ghost" id="videoFullscreenBtn">⛶ Fullscreen</button>
           <a class="btn ghost" id="videoDownloadLink" download>⬇ Download MP4</a>
@@ -243,93 +239,13 @@
 </footer>
 
 <script>
-  // 2026-05-28 — real video player wiring (replaces the 4 mock-placeholder
-  // buttons). The MP4 URL goes here when the launch cut is uploaded;
-  // until then the player shows a "Video coming soon" placeholder while the
-  // transcript + chapters remain functional. Fullscreen, Download, and Share
-  // use native browser APIs so they work the moment a real URL is wired.
-  // PRODUCTION TASK FLAG: produce + upload the onboarding video MP4, then
-  // set LYMX_VIDEO_URL below to its public Storage URL.
-  window.LYMX_VIDEO_URL = ''; // e.g. 'https://apffootxzfwmtyjlnteo.supabase.co/storage/v1/object/public/videos/onboarding-business-2026-05.mp4'
-
-  (function wireVideo(){
-    var wrap = document.getElementById('videoPlayerWrap');
-    var video = document.getElementById('videoEl');
-    var playBtn = document.getElementById('videoPlayBtn');
-    var cta = document.getElementById('videoCta');
-    var fsBtn = document.getElementById('videoFullscreenBtn');
-    var dl = document.getElementById('videoDownloadLink');
-    var shareBtn = document.getElementById('videoShareBtn');
-    var url = window.LYMX_VIDEO_URL || '';
-
-    function hasVideo(){ return !!url; }
-
-    if (hasVideo()) {
-      video.src = url;
-      if (dl) dl.href = url;
-    } else {
-      // No video uploaded yet — disable destructive actions, keep buttons
-      // visible so production-readiness is obvious.
-      if (dl) {
-        dl.removeAttribute('href');
-        dl.style.opacity = '0.45';
-        dl.style.pointerEvents = 'none';
-        dl.title = 'Available once the onboarding video is uploaded';
-      }
-      if (cta) cta.textContent = 'Video coming soon · transcript and chapters below';
-    }
-
-    if (playBtn) {
-      playBtn.addEventListener('click', function(ev){
-        ev.stopPropagation();
-        if (!hasVideo()) {
-          alert('The onboarding video is being recorded — the transcript and chapter list below cover everything it will show.');
-          return;
-        }
-        wrap.querySelectorAll('.title,.play-btn,.lab,.duration').forEach(function(el){ el.style.display = 'none'; });
-        video.style.display = 'block';
-        var p = video.play();
-        if (p && p.catch) p.catch(function(e){ console.warn('[onboarding-video] play failed', e); });
-      });
-    }
-    if (wrap) wrap.addEventListener('click', function(ev){ if (ev.target === wrap) playBtn && playBtn.click(); });
-
-    if (fsBtn) {
-      fsBtn.addEventListener('click', function(){
-        if (!hasVideo()) { alert('Available once the onboarding video is uploaded.'); return; }
-        var target = video.style.display === 'none' ? wrap : video;
-        if (target.requestFullscreen) { target.requestFullscreen().catch(function(e){ console.warn('[onboarding-video] fullscreen', e); }); }
-        else if (target.webkitRequestFullscreen) { target.webkitRequestFullscreen(); }
-        else if (video.webkitEnterFullscreen) { video.webkitEnterFullscreen(); }
-        else { alert('Fullscreen is not supported by this browser.'); }
-      });
-    }
-
-    if (shareBtn) {
-      shareBtn.addEventListener('click', async function(){
-        var shareUrl = location.href;
-        var shareData = {
-          title: 'LYMX Business Onboarding',
-          text: 'Walkthrough of your first week on LYMX — 18 minutes from Daniel (Launch 25 Business #2).',
-          url: shareUrl
-        };
-        if (navigator.share) {
-          try { await navigator.share(shareData); return; }
-          catch (e) { if (e && e.name === 'AbortError') return; console.warn('[onboarding-video] navigator.share', e); }
-        }
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          try {
-            await navigator.clipboard.writeText(shareUrl);
-            shareBtn.textContent = '✓ Link copied';
-            setTimeout(function(){ shareBtn.textContent = '↗ Share'; }, 1800);
-            return;
-          } catch (e) { console.warn('[onboarding-video] clipboard write', e); }
-        }
-        // Final fallback: prompt with the URL so the user can copy manually.
-        prompt('Copy this link to share:', shareUrl);
-      });
-    }
-  })();
+  // 2026-05-28 — duplicate of onboarding-video.html's wiring; see that file
+  // for canonical implementation. Mute the play() mock here too; the buttons
+  // above use the same IDs and get wired by a sibling script if loaded, or
+  // fall back to friendly messages here.
+  function play(){
+    alert('The onboarding video is being recorded — the transcript and chapter list below cover everything it will show.');
+  }
 
   function setChapter(i, el){
     document.querySelectorAll('.chapter').forEach(c=>c.classList.remove('active'));

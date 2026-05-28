@@ -290,7 +290,7 @@
     if (activeLink) activeLink.classList.add('active');
 
     // Push to URL so the page is bookmarkable / linkable from emails
-    try { history.replaceState(null, '', '?p=' + encodeURIComponent(slug)); } catch(e){}
+    try { history.replaceState(null, '', '?p=' + encodeURIComponent(slug)); } catch(e){ console.warn('[admin-playbooks] best-effort', e); }
 
     try {
       const url = 'playbooks/' + file + '?_t=' + Date.now();
@@ -343,6 +343,4 @@
 
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
-<script src="lymx-role-gate.js" defer></script>
-</body>
-</html>
+<script src="lymx-role-gate.js" 

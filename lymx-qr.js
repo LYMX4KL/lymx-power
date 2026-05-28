@@ -322,8 +322,8 @@
 
       function cleanup() {
         stopped = true;
-        try { if (stream) stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
-        try { overlay.remove(); } catch (e) {}
+        try { if (stream) stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) { console.warn('[lymx-qr] best-effort', e); }
+        try { overlay.remove(); } catch (e) { console.warn('[lymx-qr] best-effort', e); }
       }
 
       overlay.querySelector('[data-cancel]').onclick = function () { cleanup(); reject(new Error('cancelled')); };
@@ -400,7 +400,7 @@
           sourceUrl: raw
         };
       }
-    } catch (e) {}
+    } catch (e) { console.warn('[lymx-qr] best-effort', e); }
     return null;
   }
 
@@ -451,7 +451,4 @@
     resolveToken: resolveToken,
     submitCustomerClaim: submitCustomerClaim,
     approveCustomerClaim: approveCustomerClaim,
-    bizScanIssueDirect: bizScanIssueDirect,
-    buildScanUrl: buildScanUrl
-  };
-})();
+    bizScanIssueD

@@ -99,13 +99,13 @@
   // cache on every mount and refreshes the sidebar if the first paint
   // was wrong.
   function _stashActiveRole(role) {
-    try { sessionStorage.setItem('lymx_active_role', role); } catch (e) {}
+    try { sessionStorage.setItem('lymx_active_role', role); } catch (e) { console.warn('[lymx-sidebar] best-effort', e); }
   }
   function _readActiveRole() {
     try { return sessionStorage.getItem('lymx_active_role'); } catch (e) { return null; }
   }
   function _stashDbRole(role) {
-    try { sessionStorage.setItem('lymx_db_role', role); } catch (e) {}
+    try { sessionStorage.setItem('lymx_db_role', role); } catch (e) { console.warn('[lymx-sidebar] best-effort', e); }
   }
   function _readDbRole() {
     try { return sessionStorage.getItem('lymx_db_role'); } catch (e) { return null; }
@@ -631,11 +631,11 @@
           var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/partners?user_id=eq.' + uid + '&select=partner_code&limit=1', {
             headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + tok }
           });
-          if (!r.ok) { try { sessionStorage.setItem(cacheKey, '__none__'); } catch (e) {} return; }
+          if (!r.ok) { try { sessionStorage.setItem(cacheKey, '__none__'); } catch (e) { console.warn('[lymx-sidebar] best-effort', e); } return; }
           var rows = await r.json();
           code = (rows && rows[0] && rows[0].partner_code) || null;
-          if (!code) { try { sessionStorage.setItem(cacheKey, '__none__'); } catch (e) {} return; }
-          try { sessionStorage.setItem(cacheKey, code); } catch (e) {}
+          if (!code) { try { sessionStorage.setItem(cacheKey, '__none__'); } catch (e) { console.warn('[lymx-sidebar] best-effort', e); } return; }
+          try { sessionStorage.setItem(cacheKey, code); } catch (e) { console.warn('[lymx-sidebar] best-effort', e); }
         }
         // 2026-05-21 #b2458da0 - also paint the canonical display_name in the bold slot
         try {
@@ -668,22 +668,4 @@
             setTimeout(function () { el.textContent = orig; }, 1200);
           } catch (e) { console.warn('[sidebar] copy failed', e); }
         });
-      } catch (e) { console.warn('[sidebar] partner_code loader', e); }
-    })();
-  }
-
-  window.LymxSidebar = {
-    refresh: function () {
-      var existing = document.querySelector('.lymx-sb');
-      if (existing) existing.remove();
-      document.body.classList.remove('lymx-sb-pushed');
-      mount();
-    }
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', mount);
-  } else {
-    mount();
-  }
-})();
+      } catch (e) { console.warn('[side

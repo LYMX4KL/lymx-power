@@ -51,69 +51,10 @@
     var session = await window.LYMX.getSession();
     var loginReturn = 'login.html?return=' + encodeURIComponent(location.pathname + location.search);
 
-    // Migration 092 (2026-05-26): demo_only guard. Strip the body's `biz-`
-    // slug prefix to match businesses.slug. Reuses the shared loadBizMeta
-    // cache from lymx-biz-actions.js if loaded, otherwise fetches inline.
-    var slugClean = (BIZ.slug || '').replace(/^biz-/, '');
-    var meta = await loadBizMetaSafe(slugClean, URL, ANON);
-    if (meta && meta.demo_only) {
-      replaceReviewFormWithDemoNotice(BIZ);
-      // Don't wire Save / load recent reviews — preview pages have neither.
-      return;
-    }
-
     wireStarPicker();
     wireReviewForm(BIZ, ANON, URL, session, loginReturn);
     loadRecentReviews(BIZ, ANON, URL);
     wireSaveBusinessButton(BIZ, ANON, URL, session, loginReturn);
-  }
-
-  // Migration 092 helper — shared cache with lymx-biz-actions.js if loaded,
-  // otherwise fetches independently. Either way the result is stored on
-  // window.__LYMX_BIZ_META_PROMISE so a second access reuses it.
-  async function loadBizMetaSafe(slug, URL, ANON) {
-    if (window.LymxBizActions && typeof window.LymxBizActions.loadBizMeta === 'function') {
-      return window.LymxBizActions.loadBizMeta(slug);
-    }
-    if (window.__LYMX_BIZ_META_PROMISE) return window.__LYMX_BIZ_META_PROMISE;
-    window.__LYMX_BIZ_META_PROMISE = (async function () {
-      try {
-        // Migration 094: route through the SECURITY DEFINER RPC fn_biz_public_meta
-        // — anon role can't SELECT on businesses directly (RLS denies).
-        var r = await fetch(URL + '/rest/v1/rpc/fn_biz_public_meta', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: ANON,
-            Authorization: 'Bearer ' + ANON
-          },
-          body: JSON.stringify({ p_slug: slug })
-        });
-        if (!r.ok) { console.warn('[lymx-reviews] loadBizMetaSafe', r.status); return null; }
-        var rows = await r.json();
-        return (Array.isArray(rows) && rows[0]) || (rows && rows.id ? rows : null);
-      } catch (e) {
-        console.warn('[lymx-reviews] loadBizMetaSafe failed', e);
-        return null;
-      }
-    })();
-    return window.__LYMX_BIZ_META_PROMISE;
-  }
-
-  // Migration 092 — replace the review form with a clear preview notice.
-  function replaceReviewFormWithDemoNotice(BIZ) {
-    var form = document.getElementById('reviewForm');
-    if (!form) return;
-    var notice = document.createElement('div');
-    notice.id = 'lymxReviewDemoNotice';
-    notice.style.cssText = 'background:#fff4d6;border:1px solid #d4a017;border-radius:11px;padding:18px 20px;margin:14px 0;color:#5a3e00;font-size:14.5px;line-height:1.55';
-    notice.innerHTML = ''
-      + '<div style="font-weight:700;font-size:15.5px;margin-bottom:6px">⚠️ This is a preview business</div>'
-      + '<div>Reviews on LYMX are receipt-verified at <em>real</em> merchants. '
-      + esc(BIZ.name || 'This business') + ' is a sample page used to show how a real listing looks. '
-      + '<a href="biz-signup.html" style="color:#0a84ff;text-decoration:underline;font-weight:700">Sign up your real business →</a></div>';
-    form.parentNode.insertBefore(notice, form);
-    form.style.display = 'none';
   }
 
   // -------- Star picker --------
@@ -237,7 +178,7 @@
           });
           if (!up.ok) {
             var errBody = '';
-            try { errBody = (await up.text()).slice(0, 160); } catch (e) { console.warn("[lymx-reviews.js:240] caught:", e); }
+            try { errBody = (await up.text()).slice(0, 160); } catch (_) { console.warn('[lymx-reviews] best-effort', _); }
             throw new Error('upload HTTP ' + up.status + (errBody ? ' — ' + errBody : ''));
           }
           state.receiptImageUrl = path;

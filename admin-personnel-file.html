@@ -697,7 +697,7 @@ async function saveManageModal(){
       msgEl.textContent = 'Saved. Reloading…';
     }
     // Bust sidebar cache for THIS staff member so their next page load picks up the new flag
-    try { sessionStorage.removeItem('LYMX_is_staff_' + profileId); } catch (e) { console.warn("[admin-personnel-file.html:700] web-storage op failed (private mode? quota?):", e); }
+    try { sessionStorage.removeItem('LYMX_is_staff_' + profileId); } catch (e) { console.warn('[admin-personnel-file] best-effort', e); }
     setTimeout(() => location.reload(), 700);
   } catch (e) {
     console.warn('[admin-personnel-file] manage save failed:', e);

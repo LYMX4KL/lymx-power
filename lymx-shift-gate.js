@@ -35,7 +35,7 @@
     } catch (e) { return null; }
   }
   function writeCache(value) {
-    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), value: value })); } catch (e) {}
+    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), value: value })); } catch (e) { console.warn('[lymx-shift-gate] best-effort', e); }
   }
 
   function go(verdict) {
@@ -89,8 +89,4 @@
 
   // Run after auth has had a chance to load
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(check, 150); });
-  } else {
-    setTimeout(check, 150);
-  }
-})();
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(chec

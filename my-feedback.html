@@ -164,8 +164,6 @@
       <button class="chip" data-f="open">Open</button>
       <button class="chip" data-f="awaiting">Awaiting your verify</button>
       <button class="chip" data-f="resolved">Resolved</button>
-      <!-- 2026-05-27 #01 (Helen) — admin users see ALL feedback rows via v_my_feedback; this chip filters to just submissions where user_id = auth.uid(). For non-admins the view already scopes to their own tickets and this chip is a no-op. -->
-      <button class="chip" data-f="mine">👤 My submissions</button>
       <button class="chip" data-f="bug">🐛 Bugs</button>
       <button class="chip" data-f="suggestion">💡 Ideas</button>
       <button class="chip" data-f="question">🆘 Questions</button>
@@ -279,24 +277,7 @@ function fmtAgo(iso) {
   return new Date(iso).toLocaleDateString();
 }
 
-// 2026-05-27 #01 — for the 'mine' filter we also pull a thin list of ticket IDs
-// scoped to user_id = auth.uid(), then filter ALL_ITEMS client-side. v_my_feedback
-// doesn't expose user_id so we can't WHERE on the view; querying public.feedback
-// directly works because RLS lets self-read.
-let MINE_IDS = new Set();
-async function loadMineIds() {
-  try {
-    const s = await window.LYMX.getSession();
-    if (!s || !s.user || !s.user.id) return;
-    const r = await authedFetch('/rest/v1/feedback?user_id=eq.' + encodeURIComponent(s.user.id) + '&select=id&limit=500');
-    if (!r.ok) return;
-    const rows = await r.json();
-    MINE_IDS = new Set(rows.map(x => x.id));
-  } catch (e) { console.warn('[my-feedback] mine-id lookup failed', e); }
-}
-
 async function loadList() {
-  await loadMineIds();
   const r = await authedFetch('/rest/v1/v_my_feedback?select=*&order=created_at.desc&limit=500');
   if (!r.ok) {
     document.getElementById('list').innerHTML = '<div class="empty">Could not load your feedback. Try signing in again.</div>';
@@ -309,11 +290,7 @@ async function loadList() {
   // can show "you said: still broken — admin re-asked" instead of just
   // "awaiting your verify" which hides the user's prior action.
   try {
-    // 2026-05-27 — also enrich non-awaiting in_progress tickets so a ticket the
-    // user reopened by clicking "Still broken" in their email shows that their
-    // response registered, instead of a bare "in progress" that reads as "still
-    // pending" (ticket: "Resolved Feedbacks Still Showing as Pending").
-    const needLookup = ALL_ITEMS.filter(function(i){ return (i.awaiting_verification && i.verification_token) || i.status === 'in_progress'; }).map(function(i){ return i.id; });
+    const needLookup = ALL_ITEMS.filter(function(i){ return i.awaiting_verification && i.verification_token; }).map(function(i){ return i.id; });
     if (needLookup.length) {
       const rr = await authedFetch(
         '/rest/v1/feedback_replies' +
@@ -399,7 +376,6 @@ function applySearch(items) {
 function applyFilter(items) {
   var base;
   if (CUR_FILTER === 'all')           base = items;
-  else if (CUR_FILTER === 'mine')     base = items.filter(function(i){ return MINE_IDS.has(i.id); });
   else if (CUR_FILTER === 'open')     base = items.filter(function(i){ return i.status === 'new' || i.status === 'in_progress'; });
   else if (CUR_FILTER === 'awaiting') base = items.filter(function(i){ return i.awaiting_verification; });
   else if (CUR_FILTER === 'resolved') base = items.filter(function(i){ return i.status === 'resolved' && !i.awaiting_verification; });
@@ -438,11 +414,6 @@ function renderList() {
       } else {
         displayStatusLabel = 'awaiting your verify';
       }
-    } else if (i.status === 'in_progress' && i._last_submitter_kind === 'still_broken') {
-      // 2026-05-27 — user clicked "Still broken" in their email, which correctly
-      // reopened the ticket. Surface that their response registered instead of a
-      // bare "in progress" that reads to them as "still pending".
-      displayStatusLabel = 'reopened (you said: still broken)';
     } else {
       displayStatusLabel = i.status.replace('_', ' ');
     }
@@ -838,7 +809,7 @@ if (_legacyFab) _legacyFab.addEventListener('click', function() {
     if (!el) return;
     var val = el.getAttribute('data-copy') || el.textContent.trim();
     if (!val) return;
-    if (navigator.clipboard) navigator.clipboard.writeText(val).catch(() => { /* user cancelled native share */ return null; });
+    if (navigator.clipboard) navigator.clipboard.writeText(val).catch(function(err){ if (err && err.name !== 'AbortError') console.warn('[my-feedback] best-effort .catch', err); });
     el.classList.add('copied');
     var orig = el.textContent;
     el.textContent = 'Copied!';
