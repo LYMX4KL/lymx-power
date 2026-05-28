@@ -309,7 +309,11 @@ async function loadList() {
   // can show "you said: still broken — admin re-asked" instead of just
   // "awaiting your verify" which hides the user's prior action.
   try {
-    const needLookup = ALL_ITEMS.filter(function(i){ return i.awaiting_verification && i.verification_token; }).map(function(i){ return i.id; });
+    // 2026-05-27 — also enrich non-awaiting in_progress tickets so a ticket the
+    // user reopened by clicking "Still broken" in their email shows that their
+    // response registered, instead of a bare "in progress" that reads as "still
+    // pending" (ticket: "Resolved Feedbacks Still Showing as Pending").
+    const needLookup = ALL_ITEMS.filter(function(i){ return (i.awaiting_verification && i.verification_token) || i.status === 'in_progress'; }).map(function(i){ return i.id; });
     if (needLookup.length) {
       const rr = await authedFetch(
         '/rest/v1/feedback_replies' +
@@ -434,6 +438,11 @@ function renderList() {
       } else {
         displayStatusLabel = 'awaiting your verify';
       }
+    } else if (i.status === 'in_progress' && i._last_submitter_kind === 'still_broken') {
+      // 2026-05-27 — user clicked "Still broken" in their email, which correctly
+      // reopened the ticket. Surface that their response registered instead of a
+      // bare "in progress" that reads to them as "still pending".
+      displayStatusLabel = 'reopened (you said: still broken)';
     } else {
       displayStatusLabel = i.status.replace('_', ' ');
     }
