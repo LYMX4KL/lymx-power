@@ -308,4 +308,21 @@
   };
 
   window.LYMX = LYMX;
+
+  // ---------- Bootstrap window.LYMX.user ----------
+  // 2026-05-27 #b679f887 #e5dd5d72 - root-cause for "Recent Activity empty"
+  // and "3-Gen Tree empty" on rep-dashboard, plus any other widget that
+  // gates synchronously on `window.LYMX.user`. The property was referenced
+  // by 3 IIFEs on rep-dashboard but never assigned anywhere - every widget's
+  // setTimeout(retry, 250) loop ran forever. Now bootstrap once at startup
+  // from the existing Supabase session, and refresh on every auth state
+  // change so sign-in / sign-out is reflected. Widgets keep their polling
+  // shape and just succeed once this resolves (typically <100ms).
+  sb.auth.getSession().then(function (res) {
+    var s = res && res.data && res.data.session;
+    if (s && s.user) LYMX.user = s.user;
+  }).catch(function (e) { console.warn('[LYMX] initial getSession bootstrap failed', e); });
+  sb.auth.onAuthStateChange(function (_event, session) {
+    LYMX.user = (session && session.user) ? session.user : null;
+  });
 })();

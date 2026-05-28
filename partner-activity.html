@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Activity history · LYMX Partner</title>
+<meta name="description" content="Full activity history for your LYMX Partner account — commissions, LYMX credits, downline recruits, business activations, customer referrals, leads, bookings, payouts.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--muted:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+
+  /* canonical nav scaffold — lymx-nav.js enhances */
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em;color:var(--ink)}
+  .role-tag{font-size:11px;background:#f3e8fd;color:#5b3697;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .nav-links a.on{color:var(--accent)}
+
+  .wrap{max-width:980px;margin:0 auto;padding:28px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:32px;margin:0 0 8px;letter-spacing:-.02em}
+  .lead{color:var(--mute);font-size:15px;max-width:680px;margin:0 0 24px}
+
+  /* controls */
+  .controls{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:18px;display:flex;flex-direction:column;gap:12px}
+  .ctrl-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .ctrl-label{font-size:12px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;margin-right:6px;align-self:center}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:13px;cursor:pointer;color:var(--ink);font-weight:600;transition:background .12s,border-color .12s}
+  .chip:hover{background:#f5f6f9}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .ct{font-size:11px;color:var(--mute);font-weight:600;background:#eef0f4;padding:1px 6px;border-radius:999px;margin-left:2px}
+  .chip.on .ct{color:#fff;background:rgba(255,255,255,.18)}
+
+  /* feed */
+  .feed-card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .day-head{padding:14px 18px 8px;background:#fbfbfd;border-bottom:1px solid var(--line);font-size:13px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;position:sticky;top:60px;z-index:5}
+  .row{display:flex;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);align-items:center}
+  .row:last-child{border-bottom:0}
+  .row .icon{font-size:22px;width:30px;text-align:center;flex-shrink:0}
+  .row .body{flex:1;min-width:0}
+  .row .title{font-weight:700;font-size:14.5px;color:var(--ink)}
+  .row .sub{font-size:12.5px;color:var(--mute);margin-top:2px}
+  .row .amt{font-weight:700;font-size:14px;color:var(--ok);white-space:nowrap;margin-left:8px}
+  .row .amt.neg{color:var(--warn)}
+  .row .when{font-size:12px;color:var(--mute);white-space:nowrap;font-weight:600}
+
+  .empty{padding:48px 24px;text-align:center;color:var(--mute)}
+  .empty .em{font-size:42px;margin-bottom:10px}
+  .empty .et{font-weight:700;color:var(--ink);font-size:16px;margin-bottom:4px}
+  .empty .es{font-size:13.5px;line-height:1.55;max-width:380px;margin:0 auto}
+
+  .more-btn{display:block;width:100%;padding:14px;border:0;border-top:1px solid var(--line);background:#fbfbfd;font-weight:700;font-size:13.5px;color:var(--accent);cursor:pointer}
+  .more-btn:hover{background:#f0f5ff}
+  .more-btn:disabled{color:var(--mute);cursor:default;background:#fbfbfd}
+
+  .skel{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center}
+  .skel .sb{height:14px;background:linear-gradient(90deg,#eef0f4 0,#f7f8fb 50%,#eef0f4 100%);background-size:200% 100%;border-radius:5px;animation:sk 1.2s linear infinite}
+  @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+  footer{max-width:980px;margin:48px auto 0;padding:24px;color:var(--mute);font-size:12.5px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body data-role-required="partner">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="rep-dashboard.html"><img src="logo.png" alt="LYMX logo" /><span class="role-tag">Partner</span></a>
+    <nav class="nav-links">
+      <a href="rep-dashboard.html">Dashboard</a>
+      <a href="partner-activity.html" class="on">Activity</a>
+      <a href="partner-tree.html">Downline</a>
+      <a href="partner-payouts.html">Payouts</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="crumb"><a href="rep-dashboard.html">Dashboard</a> · Activity history</div>
+  <h1>Your activity history</h1>
+  <p class="lead">Every commission, LYMX credit, recruit, business activation, customer referral, lead, booking, and payout tied to your account.</p>
+
+  <div class="controls">
+    <div class="ctrl-row">
+      <span class="ctrl-label">Type</span>
+      <button class="chip on" data-type="all">All <span class="ct" id="ct-all">0</span></button>
+      <button class="chip" data-type="commission">Commissions <span class="ct" id="ct-commission">0</span></button>
+      <button class="chip" data-type="lymx">LYMX credits <span class="ct" id="ct-lymx">0</span></button>
+      <button class="chip" data-type="recruit">Recruits <span class="ct" id="ct-recruit">0</span></button>
+      <button class="chip" data-type="activation">Activations <span class="ct" id="ct-activation">0</span></button>
+      <button class="chip" data-type="referral">Referrals <span class="ct" id="ct-referral">0</span></button>
+      <button class="chip" data-type="lead">Leads <span class="ct" id="ct-lead">0</span></button>
+      <button class="chip" data-type="booking">Bookings <span class="ct" id="ct-booking">0</span></button>
+      <button class="chip" data-type="payout">Payouts <span class="ct" id="ct-payout">0</span></button>
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">Range</span>
+      <button class="chip" data-range="7">Last 7 days</button>
+      <button class="chip on" data-range="30">Last 30 days</button>
+      <button class="chip" data-range="90">Last 90 days</button>
+      <button class="chip" data-range="all">All time</button>
+    </div>
+  </div>
+
+  <div id="feedHost">
+    <div class="feed-card" id="feedSkel">
+      <div class="skel"><div class="sb" style="width:28px;height:28px;border-radius:50%"></div><div style="flex:1"><div class="sb" style="width:60%;margin-bottom:6px"></div><div class="sb" style="width:30%"></div></div></div>
+      <div class="skel"><div class="sb" style="width:28px;height:28px;border-radius:50%"></div><div style="flex:1"><div class="sb" style="width:75%;margin-bottom:6px"></div><div class="sb" style="width:40%"></div></div></div>
+      <div class="skel"><div class="sb" style="width:28px;height:28px;border-radius:50%"></div><div style="flex:1"><div class="sb" style="width:50%;margin-bottom:6px"></div><div class="sb" style="width:25%"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="rep-dashboard.html" style="color:#5a6373">Back to dashboard</a> · <a href="support.html" style="color:#5a6373">Tech support</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// ============================================================================
+// partner-activity.html — full paginated partner activity history
+// 2026-05-27 #3bfe01be — root-cause build for "See All page displays empty
+// data": this is the destination for the dashboard's "See all →" link.
+// Queries all 7 partner activity sources, renders day-grouped, with type +
+// date-range filter chips. Auto-loads more as the user scrolls.
+// ============================================================================
+(function () {
+  var state = {
+    rangeDays: 30,            // 7 | 30 | 90 | 'all'
+    typeFilter: 'all',
+    events: [],               // full pulled list (already date-range filtered)
+    visibleCount: 50,         // pagination cursor
+    loaded: false,
+  };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[<>&"]/g, function (c) {
+      return ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' })[c];
+    });
+  }
+
+  function fmtUSD(n) {
+    var x = Number(n || 0);
+    return '$' + x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function fmtLYMX(n) {
+    var x = Math.abs(Number(n || 0));
+    return x.toLocaleString('en-US') + ' LYMX';
+  }
+
+  function dayKey(iso) {
+    if (!iso) return 'unknown';
+    var d = new Date(iso);
+    var today = new Date(); today.setHours(0,0,0,0);
+    var yest = new Date(today); yest.setDate(yest.getDate() - 1);
+    var dd = new Date(d); dd.setHours(0,0,0,0);
+    if (dd.getTime() === today.getTime()) return 'Today';
+    if (dd.getTime() === yest.getTime()) return 'Yesterday';
+    // Same week
+    var diff = (today - dd) / 86400000;
+    if (diff < 7) return d.toLocaleDateString([], { weekday: 'long' });
+    if (d.getFullYear() === today.getFullYear()) return d.toLocaleDateString([], { month: 'long', day: 'numeric' });
+    return d.toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+
+  function timeOf(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+
+  // ---------------- Data loader ----------------
+  async function loadAll() {
+    var sb = window.LYMX && window.LYMX.sb;
+    if (!sb) { setTimeout(loadAll, 200); return; }
+
+    // Resolve user
+    var sess = await sb.auth.getSession();
+    var user = sess && sess.data && sess.data.session ? sess.data.session.user : null;
+    if (!user) {
+      // not signed in — role-gate handles redirect
+      return;
+    }
+    var uid = user.id;
+
+    // Resolve partner row
+    var pme = await sb.from('partners')
+      .select('id, display_name, legal_name')
+      .eq('user_id', uid).maybeSingle();
+    if (!pme.data) {
+      renderEmpty('No partner record found for your account. If this is wrong, please file a ticket via Help.');
+      return;
+    }
+    var partnerId = pme.data.id;
+
+    // Date range
+    var fromISO = null;
+    if (state.rangeDays !== 'all') {
+      var days = Number(state.rangeDays);
+      fromISO = new Date(Date.now() - days * 86400 * 1000).toISOString();
+    }
+
+    function rng(q) { return fromISO ? q.gte('created_at', fromISO) : q; }
+
+    // Parallel queries — keep limits high so the page is comprehensive
+    var qLeads = rng(sb.from('leads')
+      .select('id, full_name, email, source, created_at, stage')
+      .eq('owner_user_id', uid))
+      .order('created_at', { ascending: false }).limit(200);
+
+    var qLeadsClosed = rng(sb.from('leads')
+      .select('id, full_name, stage, stage_changed_at')
+      .eq('owner_user_id', uid).in('stage', ['won','lost']))
+      .order('stage_changed_at', { ascending: false }).limit(200);
+
+    // Bookings — need calendar IDs
+    var qBookings = (async function () {
+      var c = await sb.from('team_calendars').select('id').eq('user_id', uid);
+      var ids = (c.data || []).map(function (x) { return x.id; });
+      if (!ids.length) return { data: [] };
+      var bq = sb.from('bookings')
+        .select('id, starts_at, booker_name, status, created_at')
+        .in('team_calendar_id', ids);
+      if (fromISO) bq = bq.gte('created_at', fromISO);
+      return await bq.order('starts_at', { ascending: false }).limit(200);
+    })();
+
+    var qCommissions = rng(sb.from('partner_commissions')
+      .select('id, amount, type, generation, created_at, source_business_id, source_partner_id')
+      .eq('partner_id', partnerId))
+      .order('created_at', { ascending: false }).limit(300);
+
+    var qLymxIssuances = rng(sb.from('lymx_issuances')
+      .select('id, amount_lymx, reason, business_id, created_at')
+      .eq('recipient_user_id', uid))
+      .order('created_at', { ascending: false }).limit(300);
+
+    var qRecruits = rng(sb.from('partners')
+      .select('id, display_name, legal_name, contact_email, created_at')
+      .eq('sponsor_partner_id', partnerId))
+      .order('created_at', { ascending: false }).limit(200);
+
+    var qActivations = rng(sb.from('businesses')
+      .select('id, display_name, legal_name, created_at, approval_status')
+      .eq('signed_up_by_partner_id', partnerId))
+      .order('created_at', { ascending: false }).limit(200);
+
+    // Referrals (customer signups via my link) — table is referrals on inviter_user_id
+    var qReferrals = rng(sb.from('referrals')
+      .select('id, status, inviter_bonus_amount, invitee_email, created_at')
+      .eq('inviter_user_id', uid))
+      .order('created_at', { ascending: false }).limit(300);
+
+    // Settlements / payouts
+    var qSettlements = sb.from('settlements')
+      .select('id, total_amount, period_start, period_end, status, paid_at, created_at')
+      .eq('partner_id', partnerId)
+      .order('created_at', { ascending: false }).limit(100);
+
+    var results = await Promise.all([
+      qLeads, qLeadsClosed, qBookings, qCommissions, qLymxIssuances,
+      qRecruits, qActivations, qReferrals, qSettlements
+    ]);
+
+    var events = [];
+    function pushEvent(type, at, fields) {
+      if (!at) return;
+      events.push(Object.assign({ type: type, at: at }, fields));
+    }
+
+    (results[0].data || []).forEach(function (l) {
+      pushEvent('lead', l.created_at, {
+        icon: '➕',
+        title: 'New lead',
+        sub: (l.full_name || l.email || '—') + (l.source ? ' · from ' + l.source : ''),
+      });
+    });
+    (results[1].data || []).forEach(function (l) {
+      pushEvent('lead', l.stage_changed_at, {
+        icon: l.stage === 'won' ? '🎉' : '❌',
+        title: l.stage === 'won' ? 'Lead won' : 'Lead lost',
+        sub: l.full_name || '—',
+      });
+    });
+    (results[2].data || []).forEach(function (b) {
+      var icon = b.status === 'completed' ? '✅' : b.status === 'no_show' ? '🙁' : '📅';
+      var title = b.status === 'completed' ? 'Call done' : b.status === 'no_show' ? 'No-show' : 'Call scheduled';
+      pushEvent('booking', b.starts_at || b.created_at, {
+        icon: icon,
+        title: title,
+        sub: b.booker_name || '—',
+      });
+    });
+    (results[3].data || []).forEach(function (c) {
+      var genLabel = c.generation === 0 ? 'Production' : c.generation ? 'G' + c.generation : '';
+      var typeLabel = (c.type || '').replace(/_/g, ' ');
+      pushEvent('commission', c.created_at, {
+        icon: '💰',
+        title: 'Commission' + (genLabel ? ' · ' + genLabel : '') + (typeLabel ? ' · ' + typeLabel : ''),
+        amount: fmtUSD(c.amount),
+        amountClass: 'ok',
+      });
+    });
+    (results[4].data || []).forEach(function (li) {
+      var isRedemption = li.reason === 'redemption' || Number(li.amount_lymx) < 0;
+      pushEvent('lymx', li.created_at, {
+        icon: isRedemption ? '🔻' : '✨',
+        title: isRedemption ? 'LYMX spent' : 'LYMX credited',
+        sub: (li.reason || '').replace(/_/g, ' '),
+        amount: fmtLYMX(li.amount_lymx),
+        amountClass: isRedemption ? 'neg' : 'ok',
+      });
+    });
+    (results[5].data || []).forEach(function (p) {
+      pushEvent('recruit', p.created_at, {
+        icon: '🤝',
+        title: 'New direct recruit',
+        sub: p.display_name || p.legal_name || (p.contact_email ? p.contact_email.split('@')[0] : 'Partner'),
+      });
+    });
+    (results[6].data || []).forEach(function (b) {
+      pushEvent('activation', b.created_at, {
+        icon: '🏪',
+        title: b.approval_status === 'approved' ? 'Business activated' : 'Business signed up (pending review)',
+        sub: b.display_name || b.legal_name || '—',
+      });
+    });
+    (results[7].data || []).forEach(function (r) {
+      var credited = r.status === 'credited';
+      pushEvent('referral', r.created_at, {
+        icon: credited ? '🎁' : '⏳',
+        title: credited ? 'Referral credited' : 'Referral pending',
+        sub: r.invitee_email || '—',
+        amount: r.inviter_bonus_amount ? fmtLYMX(r.inviter_bonus_amount) : null,
+        amountClass: 'ok',
+      });
+    });
+    (results[8].data || []).forEach(function (s) {
+      var paid = s.status === 'paid';
+      pushEvent('payout', s.paid_at || s.created_at, {
+        icon: paid ? '🏦' : '🕒',
+        title: paid ? 'Payout sent' : ('Payout ' + s.status),
+        sub: s.period_start + ' → ' + s.period_end,
+        amount: fmtUSD(s.total_amount),
+        amountClass: 'ok',
+      });
+    });
+
+    events.sort(function (a, b) {
+      return (b.at || '').localeCompare(a.at || '');
+    });
+
+    state.events = events;
+    state.loaded = true;
+    state.visibleCount = 50;
+    updateCounts();
+    render();
+  }
+
+  // ---------------- Render ----------------
+  function updateCounts() {
+    var counts = { all: state.events.length };
+    state.events.forEach(function (e) {
+      counts[e.type] = (counts[e.type] || 0) + 1;
+    });
+    ['all','commission','lymx','recruit','activation','referral','lead','booking','payout'].forEach(function (k) {
+      var el = document.getElementById('ct-' + k);
+      if (el) el.textContent = String(counts[k] || 0);
+    });
+  }
+
+  function visibleEvents() {
+    var filtered = state.typeFilter === 'all'
+      ? state.events
+      : state.events.filter(function (e) { return e.type === state.typeFilter; });
+    return filtered.slice(0, state.visibleCount);
+  }
+
+  function renderEmpty(msg) {
+    var host = document.getElementById('feedHost');
+    host.innerHTML = '<div class="feed-card"><div class="empty">'
+      + '<div class="em">📜</div>'
+      + '<div class="et">No activity to show</div>'
+      + '<div class="es">' + esc(msg || 'Nothing in this range or type. Try a wider date range, or change the type filter.') + '</div>'
+      + '</div></div>';
+  }
+
+  function rowHTML(e) {
+    var amtHTML = e.amount
+      ? '<div class="amt' + (e.amountClass === 'neg' ? ' neg' : '') + '">' + esc(e.amount) + '</div>'
+      : '';
+    var subHTML = e.sub ? '<div class="sub">' + esc(e.sub) + '</div>' : '';
+    return '<div class="row">'
+      + '<div class="icon">' + esc(e.icon) + '</div>'
+      + '<div class="body"><div class="title">' + esc(e.title) + '</div>' + subHTML + '</div>'
+      + amtHTML
+      + '<div class="when">' + esc(timeOf(e.at)) + '</div>'
+      + '</div>';
+  }
+
+  function render() {
+    var host = document.getElementById('feedHost');
+    var rows = visibleEvents();
+    if (!rows.length) {
+      renderEmpty(state.typeFilter === 'all'
+        ? 'No activity in this date range yet.'
+        : 'No "' + state.typeFilter + '" events in this date range.');
+      return;
+    }
+
+    // Group by day
+    var html = '<div class="feed-card">';
+    var curDay = null;
+    rows.forEach(function (e) {
+      var k = dayKey(e.at);
+      if (k !== curDay) {
+        html += '<div class="day-head">' + esc(k) + '</div>';
+        curDay = k;
+      }
+      html += rowHTML(e);
+    });
+
+    var totalForFilter = state.typeFilter === 'all'
+      ? state.events.length
+      : state.events.filter(function (x) { return x.type === state.typeFilter; }).length;
+    if (state.visibleCount < totalForFilter) {
+      html += '<button class="more-btn" id="loadMoreBtn">Show more ('
+        + (totalForFilter - state.visibleCount) + ' more)</button>';
+    } else {
+      html += '<div style="padding:14px;text-align:center;color:var(--mute);font-size:12.5px;border-top:1px solid var(--line);background:#fbfbfd">— End of history —</div>';
+    }
+    html += '</div>';
+    host.innerHTML = html;
+
+    var btn = document.getElementById('loadMoreBtn');
+    if (btn) btn.addEventListener('click', function () {
+      state.visibleCount += 50;
+      render();
+    });
+  }
+
+  // ---------------- Wire chips ----------------
+  function wireChips() {
+    var typeChips = document.querySelectorAll('.chip[data-type]');
+    typeChips.forEach(function (c) {
+      c.addEventListener('click', function () {
+        typeChips.forEach(function (x) { x.classList.remove('on'); });
+        c.classList.add('on');
+        state.typeFilter = c.getAttribute('data-type');
+        state.visibleCount = 50;
+        render();
+      });
+    });
+    var rangeChips = document.querySelectorAll('.chip[data-range]');
+    rangeChips.forEach(function (c) {
+      c.addEventListener('click', function () {
+        rangeChips.forEach(function (x) { x.classList.remove('on'); });
+        c.classList.add('on');
+        var v = c.getAttribute('data-range');
+        state.rangeDays = (v === 'all') ? 'all' : Number(v);
+        // re-fetch (date range changes the query)
+        document.getElementById('feedHost').innerHTML =
+          '<div class="feed-card">'
+          + '<div class="skel"><div class="sb" style="width:28px;height:28px;border-radius:50%"></div><div style="flex:1"><div class="sb" style="width:60%;margin-bottom:6px"></div><div class="sb" style="width:30%"></div></div></div>'
+          + '<div class="skel"><div class="sb" style="width:28px;height:28px;border-radius:50%"></div><div style="flex:1"><div class="sb" style="width:75%;margin-bottom:6px"></div><div class="sb" style="width:40%"></div></div></div>'
+          + '</div>';
+        loadAll();
+      });
+    });
+  }
+
+  wireChips();
+  loadAll();
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-nav.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>
