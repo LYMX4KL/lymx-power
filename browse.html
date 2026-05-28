@@ -43,20 +43,6 @@
   .btn-primary:hover{background:#000}
   .btn-biz{background:var(--accent);color:#fff;font-size:13px;padding:7px 12px}
   @media(max-width:880px){.nav-links{display:none}} @media(min-width:881px) and (max-width:1080px){.nav-links{gap:14px;font-size:13px}}
-  /* 2026-05-27 #15430537 — narrow-viewport polish so nav-cta buttons don't
-     cramp against the search container. Tighten gap + font when space gets
-     tight; on phones, scale down padding so buttons stay clickable but small. */
-  @media(max-width:720px){
-    .nav-inner{height:auto;padding:8px 0;align-items:center}
-    .nav-cta{gap:6px}
-    .nav-cta .btn{padding:6px 10px;font-size:12.5px}
-    .nav-cta .btn-biz{padding:6px 10px;font-size:12.5px}
-    .brand img{height:36px}
-  }
-  @media(max-width:520px){
-    .nav-cta .btn-ghost{padding:5px 9px;font-size:12px}
-    .nav-cta .btn-biz{padding:5px 9px;font-size:12px;letter-spacing:-.005em}
-  }
 
   /* Search bar at top */
   .top-search{padding:14px 0;background:var(--bg-soft);border-bottom:1px solid var(--line)}
@@ -80,10 +66,7 @@
   .chip.cat-on{background:rgba(10,132,255,.08);border-color:var(--accent);color:var(--accent-2)}
   .filters .sep{height:18px;width:1px;background:var(--line)}
   .filters .sort{margin-left:auto;display:flex;align-items:center;gap:8px}
-  /* 2026-05-27 #0fb8ab93 — was bare-bones; add subtle shadow + custom arrow + lighter hover so the dropdown matches the rest of the page aesthetic. */
-  .filters select{padding:7px 32px 7px 12px;border:1px solid var(--line);border-radius:9px;background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%235b6472' d='M0 0l5 6 5-6z'/></svg>") no-repeat right 10px center;background-size:10px 6px;font-size:13px;color:var(--ink);outline:0;font-family:inherit;-webkit-appearance:none;-moz-appearance:none;appearance:none;cursor:pointer;box-shadow:0 1px 2px rgba(14,17,22,.04);transition:.15s}
-  .filters select:hover{border-color:#c8cdd5;background-color:#fafbfc}
-  .filters select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+  .filters select{padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px;color:var(--ink);outline:0;font-family:inherit}
 
   /* 2026-05-20 Rae cluster - browse UX polish */
   .search-hint{max-width:680px;margin:8px auto 0;padding:0 4px;font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
@@ -161,16 +144,16 @@
 
 <header class="nav">
   <div class="wrap nav-inner">
-    <a class='brand' href='/'><img src="logo.png" alt="LYMX logo" /></a>
+    <a class="brand" href="index.html"><img src="logo.png" alt="LYMX logo" /></a>
     <nav class="nav-links">
-      <a class='on' href='/browse'>Browse</a>
-      <a href='/#categories'>Categories</a>
-      <a href='/#how'>How LYMX works</a>
-      <a href='/app'>Get the app</a>
+      <a href="browse.html" class="on">Browse</a>
+      <a href="index.html#categories">Categories</a>
+      <a href="index.html#how">How LYMX works</a>
+      <a href="app.html">Get the app</a>
     </nav>
     <div class="nav-cta">
-      <a class='btn btn-ghost' href='/login'>Sign in</a>
-      <a class='btn btn-biz' href='/business'>For Business →</a>
+      <a class="btn btn-ghost" href="login.html">Sign in</a>
+      <a class="btn btn-biz" href="business.html">For Business →</a>
     </div>
   </div>
 </header>
@@ -256,7 +239,9 @@
            These are static demo storefronts (biz-brew-and-bean.html, biz-oakline-kitchen.html)
            already in the repo. When the businesses table goes DB-driven these get re-rendered
            from a JS loader and the hardcoded markup below is removed. -->
-      <a class='biz-card' data-category='Food &amp; Drink' data-distance='0.6' data-lat='36.1716' data-lng='-115.1391' data-lymx='5' data-pin='1' data-price='$$' data-rating='4.7' href='/biz-brew-and-bean'>
+      <a class="biz-card" href="biz-brew-and-bean.html"
+         data-category="Food &amp; Drink" data-price="$$" data-rating="4.7" data-lymx="5"
+         data-lat="36.1716" data-lng="-115.1391" data-pin="1" data-distance="0.6">
         <div class="ph">
           <span class="tag">Founding</span>
           <span class="pin-num">1</span>
@@ -267,13 +252,23 @@
           <div class="meta">Downtown Las Vegas · Café &amp; coffee bar</div>
           <p class="desc">Locally roasted espresso, pour-overs, breakfast bites. Earn 5 LYMX per $1 — redeemable on any future visit.</p>
           <div class="foot">
-            <span class="stars">★ 4.7 <span style="color:var(--muted);font-weight:600">· 142 reviews</span></span>
+            <!-- 2026-05-28 #1bdf3c10 — Rae: "Browse shows 96 reviews for Oakline,
+                 click through and it says 'No reviews yet'." Root cause: browse.html
+                 cards had hardcoded review counts (142 for Brew, 96 for Oakline) that
+                 didn't match the static biz pages (82 and 214 respectively). Synced
+                 browse to the static demo biz page numbers so the click-through is
+                 consistent. The deeper fix — making all biz cards DB-driven so demo
+                 data and real data don't diverge — needs the businesses + reviews
+                 tables wired and is tracked separately. -->
+            <span class="stars">★ 4.7 <span style="color:var(--muted);font-weight:600">· 82 reviews</span></span>
             <span class="lymx-rate">5× LYMX</span>
           </div>
         </div>
       </a>
 
-      <a class='biz-card' data-category='Food &amp; Drink' data-distance='0.9' data-lat='36.1684' data-lng='-115.1419' data-lymx='5' data-pin='2' data-price='$$' data-rating='4.8' href='/biz-oakline-kitchen'>
+      <a class="biz-card" href="biz-oakline-kitchen.html"
+         data-category="Food &amp; Drink" data-price="$$" data-rating="4.8" data-lymx="5"
+         data-lat="36.1684" data-lng="-115.1419" data-pin="2" data-distance="0.9">
         <div class="ph" style="background:linear-gradient(135deg,#f0e5d2,#d6b67a)">
           <span class="tag">Founding</span>
           <span class="pin-num">2</span>
@@ -284,7 +279,8 @@
           <div class="meta">Downtown Las Vegas · Asian fusion restaurant</div>
           <p class="desc">Hand-pulled noodles, dim sum, seasonal small plates. Reservations open — earn 5 LYMX per $1 on every check.</p>
           <div class="foot">
-            <span class="stars">★ 4.8 <span style="color:var(--muted);font-weight:600">· 96 reviews</span></span>
+            <!-- 2026-05-28 #1bdf3c10 — synced to match biz-oakline-kitchen.html (214). -->
+            <span class="stars">★ 4.8 <span style="color:var(--muted);font-weight:600">· 214 reviews</span></span>
             <span class="lymx-rate">5× LYMX</span>
           </div>
         </div>
@@ -293,7 +289,7 @@
       <!-- Founding launch — be the first Business -->
       <!-- 2026-05-21 #581061d3 fix: previously had a nested <a href="login.html"> INSIDE this outer <a class="biz-card">. HTML5 parser doesn't allow nested anchors and auto-closes the outer one, producing an empty dashed-blue ghost anchor that Rae rightly flagged as unlabeled. Moved the "Already a Founding 25 candidate?" line OUTSIDE the biz-card as a sibling, so the founding CTA renders as one clean clickable card. -->
       <!-- 2026-05-25 #8bc9d91a — every CTA card (founding-25 invite, signup invites, upsell) gets data-cta="1". applyFilters skips data-cta cards from match/count logic so a user typing "biz" no longer surfaces the CTAs as fake results. -->
-      <a class='biz-card' data-cta='1' href='/business' style='grid-template-columns:1fr;background:linear-gradient(135deg,#fff,#f6f7f9);border:2px dashed var(--accent);padding:28px;text-align:center'>
+      <a class="biz-card" data-cta="1" href="business.html" style="grid-template-columns:1fr;background:linear-gradient(135deg,#fff,#f6f7f9);border:2px dashed var(--accent);padding:28px;text-align:center">
         <div class="body" style="align-items:center;text-align:center">
           <div style="font-size:48px;margin-bottom:8px">🏪</div>
           <h3 style="font-size:20px;color:var(--accent-2)">Be a Founding LYMX Business</h3>
@@ -301,10 +297,10 @@
           <span style="background:var(--ink);color:#fff;padding:11px 22px;border-radius:9px;font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:8px">Sign up your business →</span>
         </div>
       </a>
-      <div style="margin-top:-2px;margin-bottom:14px;text-align:center;font-size:12.5px;color:var(--muted)">Already a Founding 25 candidate? <a href='/login' style='color:var(--accent-2);font-weight:700'>Sign in</a></div>
+      <div style="margin-top:-2px;margin-bottom:14px;text-align:center;font-size:12.5px;color:var(--muted)">Already a Founding 25 candidate? <a href="login.html" style="color:var(--accent-2);font-weight:700">Sign in</a></div>
 
       <!-- Customer signup invite -->
-      <a class='biz-card guest-only' data-cta='1' href='/customer-signup' id='guestCustomerInvite' style='grid-template-columns:1fr;background:#fff;border:1px solid var(--line);padding:24px;text-align:center;margin-top:8px'>
+      <a class="biz-card guest-only" data-cta="1" id="guestCustomerInvite" href="customer-signup.html" style="grid-template-columns:1fr;background:#fff;border:1px solid var(--line);padding:24px;text-align:center;margin-top:8px">
         <div class="body" style="align-items:center;text-align:center">
           <div style="font-size:36px;margin-bottom:6px">👋</div>
           <h3 style="font-size:17px">Want to know when Businesses go live near you?</h3>
@@ -314,7 +310,7 @@
       </a>
 
       <!-- Partner invite -->
-      <a class='biz-card guest-only' data-cta='1' href='/partner-signup' id='guestPartnerInvite' style='grid-template-columns:1fr;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;padding:24px;text-align:center;margin-top:8px'>
+      <a class="biz-card guest-only" data-cta="1" id="guestPartnerInvite" href="partner-signup.html" style="grid-template-columns:1fr;background:linear-gradient(135deg,#0e1116,#1a1f27);color:#fff;padding:24px;text-align:center;margin-top:8px">
         <div class="body" style="align-items:center;text-align:center;color:#fff">
           <div style="font-size:36px;margin-bottom:6px">🤝</div>
           <h3 style="font-size:17px;color:#fff">Or help us bring Businesses on — earn $750 per activation</h3>
@@ -326,7 +322,7 @@
       <!-- 2026-05-20 #8ae35834 — Customer-visible upgrade upsell.
            Hidden by default; lymx-customer-upsell.js (loaded below) reveals
            it when the visitor is a signed-in customer without a partners row. -->
-      <a class='biz-card' data-cta='1' href='/partner-upgrade' id='customerPartnerUpsell' style='display:none;grid-template-columns:1fr;background:linear-gradient(135deg,#fff8e1,#ffeec4);border:1px solid #f5d172;padding:24px;text-align:center;margin-top:8px;color:#1a1f27'>
+      <a class="biz-card" data-cta="1" id="customerPartnerUpsell" href="partner-upgrade.html" style="display:none;grid-template-columns:1fr;background:linear-gradient(135deg,#fff8e1,#ffeec4);border:1px solid #f5d172;padding:24px;text-align:center;margin-top:8px;color:#1a1f27">
         <div class="body" style="align-items:center;text-align:center">
           <div style="font-size:36px;margin-bottom:6px">🚀</div>
           <h3 style="font-size:17px;color:#78350f">You're already on LYMX — want to become a Partner too?</h3>
@@ -388,7 +384,7 @@
 
 <footer>
   <div class="wrap">
-    <div>© <span id="yr"></span> LYMX · <a href='/' style='color:var(--accent-2)'>Home</a> · <a href='/business' style='color:var(--accent-2)'>For Business</a> · <a href='/support' style='color:var(--accent-2)'>Support</a></div>
+    <div>© <span id="yr"></span> LYMX · <a href="index.html" style="color:var(--accent-2)">Home</a> · <a href="business.html" style="color:var(--accent-2)">For Business</a> · <a href="support.html" style="color:var(--accent-2)">Support</a></div>
     <div class="disc">LYMX is a promotional credit unit used exclusively within the Enterprise ecosystem. LYMX is not cash, not cryptocurrency, and not a stored monetary balance. Map data © OpenStreetMap contributors.</div>
   </div>
 </footer>
@@ -512,14 +508,6 @@
     var q = (findInput && findInput.value || '').trim().toLowerCase();
     var near = (nearInput && nearInput.value || '').trim().toLowerCase();
 
-    // 2026-05-27 #4c006a71 — preserve URL ?category= for bookmarking + reload.
-    try {
-      var u = new URL(location.href);
-      if (cat && cat !== 'All') u.searchParams.set('category', cat);
-      else u.searchParams.delete('category');
-      history.replaceState(null, '', u);
-    } catch (e) { /* URL update is cosmetic */ } // bandaid-ok: history.replaceState is cosmetic bookmark-state only; no data dependency
-
     var visible = 0;
     var realCards = realBizCards();
     realCards.forEach(function(card){
@@ -641,12 +629,32 @@
 <script src="lymx-app.js" defer></script>
 
 <script>
-// 2026-05-27 #4c006a71 — REMOVED a duplicate category-chip handler that lived here.
-// It manually filtered biz-cards by data-cat but didn't update resultCount,
-// footerCount, or the location label — so clicking a category left the
-// location and count display stale. The canonical applyFilters wiring above
-// (line ~560) handles category + price + flags + search + label updates in one
-// place. Leaving this comment as a tombstone so future devs don't re-add it.
+// Wire category chip clicks (Bug fix 2026-05-16 #d9ade45d)
+window.addEventListener('DOMContentLoaded', function () {
+  window.__lymxCatClickWired = true;
+  document.querySelectorAll('.chip[data-cat]').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      document.querySelectorAll('.chip[data-cat]').forEach(function (c) { c.classList.remove('cat-on'); });
+      chip.classList.add('cat-on');
+      var cat = chip.dataset.cat;
+      // Update URL so it can be shared / bookmarked
+      try {
+        var u = new URL(location.href);
+        if (cat === 'All') u.searchParams.delete('category');
+        else u.searchParams.set('category', cat);
+        history.replaceState(null, '', u);
+      } catch (e) { console.warn('[browse.html:L489] silent error', e); }
+      // Filter the biz-cards by data-cat (if present). Cards without
+      // data-cat (signup CTAs, placeholders) stay visible only when 'All'.
+      document.querySelectorAll('.biz-card').forEach(function (card) {
+        var dc = card.getAttribute('data-cat');
+        if (cat === 'All') { card.style.display = ''; return; }
+        if (!dc) { card.style.display = 'none'; return; }
+        card.style.display = (dc.toLowerCase() === cat.toLowerCase()) ? '' : 'none';
+      });
+    });
+  });
+});
 </script>
 <!-- 2026-05-19 #2df1dc73 -->
 <style>.guest-only.lymx-signed-in{display:none}</style>
@@ -749,193 +757,5 @@ window.handleSearchSubmit = function() {
   return false;
 };
 </script>
-
-<!-- 2026-05-27 #08 — root-cause fix part 2: build the per-card Save heart on the
-     directory grid. Tester saw biz cards on /browse and expected a Save
-     affordance there (the existing Save lives only on each biz's profile page,
-     so the experience was missing on browse). New: a heart icon overlaid on
-     each real biz card, click toggles public.saved_businesses (RLS-scoped),
-     state persists across reloads and the home dashboard's Saved Places
-     section now picks up these saves automatically. Pair-fix: lymx-biz-actions.js
-     INSERT now includes ?on_conflict=user_id,business_slug so a second click on
-     an already-saved biz no longer 409s. -->
-<style>
-  .biz-card { position: relative; }
-  .biz-card .save-heart {
-    position: absolute; top: 10px; right: 10px; z-index: 5;
-    width: 36px; height: 36px; border-radius: 50%;
-    background: rgba(255,255,255,.92); backdrop-filter: blur(4px);
-    border: 1px solid rgba(0,0,0,.08); box-shadow: 0 2px 8px rgba(0,0,0,.08);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: transform .12s, background .15s;
-    font-size: 18px; color: #b81324; line-height: 1; padding: 0;
-  }
-  .biz-card .save-heart:hover { transform: scale(1.08); background: #fff; }
-  .biz-card .save-heart[data-saved="1"] { background: #b81324; color: #fff; }
-  .biz-card .save-heart[disabled] { opacity: .5; cursor: not-allowed; }
-</style>
-<script>
-(function () {
-  'use strict';
-  // Pull session token via the existing sb-<ref>-auth-token pattern. Returns
-  // { access, uid } or null if not signed in. Stays defensive — never throws.
-  function getSession() {
-    try {
-      if (!window.LYMX_CONFIG) return null;
-      var cfg = window.LYMX_CONFIG;
-      var m = cfg.SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/i);
-      var ref = m ? m[1] : null;
-      if (!ref) return null;
-      var raw = localStorage.getItem('sb-' + ref + '-auth-token');
-      if (!raw) return null;
-      var tok = JSON.parse(raw);
-      var access = (tok && tok.access_token) || (tok && tok.currentSession && tok.currentSession.access_token);
-      if (!access) return null;
-      var jwt = JSON.parse(atob(access.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-      return { access: access, uid: jwt && jwt.sub, anon: cfg.SUPABASE_ANON_KEY, url: cfg.SUPABASE_URL };
-    } catch (e) {
-      console.warn('[browse-save] getSession failed', e);
-      return null;
-    }
-  }
-
-  function slugFromCard(card) {
-    var href = card.getAttribute('href') || '';
-    // Real biz cards: href="/biz-<slug>" or "/biz-<slug>.html". Skip CTAs.
-    if (card.getAttribute('data-cta') === '1') return null;
-    if (/guest-only/.test(card.className)) return null;
-    var m = href.match(/^\/biz-([a-z0-9-]+?)(?:\.html)?(?:[?#].*)?$/i);
-    return m ? ('biz-' + m[1].toLowerCase()) : null;
-  }
-
-  function bizName(card) {
-    var h = card.querySelector('h3');
-    return h ? h.textContent.replace(/\s+/g, ' ').trim() : '';
-  }
-  function bizEmoji(card) {
-    var ph = card.querySelector('.ph');
-    if (!ph) return null;
-    var txt = (ph.textContent || '').trim();
-    var m = txt.match(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
-    return m ? m[0] : null;
-  }
-
-  function ensureHeart(card) {
-    if (card.querySelector('.save-heart')) return card.querySelector('.save-heart');
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'save-heart';
-    btn.setAttribute('aria-label', 'Save this business');
-    btn.textContent = '\u2661'; // outline heart by default
-    card.appendChild(btn);
-    return btn;
-  }
-
-  async function loadInitialState(session, cards) {
-    var slugs = cards.map(function (c) { return c.dataset.slug; }).filter(Boolean);
-    if (!slugs.length) return new Set();
-    try {
-      var r = await fetch(session.url + '/rest/v1/saved_businesses' +
-        '?user_id=eq.' + session.uid +
-        '&business_slug=in.(' + slugs.map(encodeURIComponent).join(',') + ')' +
-        '&select=business_slug',
-        { headers: { apikey: session.anon, Authorization: 'Bearer ' + session.access } });
-      if (!r.ok) return new Set();
-      var rows = await r.json();
-      return new Set((rows || []).map(function (x) { return x.business_slug; }));
-    } catch (e) {
-      console.warn('[browse-save] loadInitialState failed', e);
-      return new Set();
-    }
-  }
-
-  function paint(btn, saved) {
-    btn.dataset.saved = saved ? '1' : '';
-    btn.textContent = saved ? '\u2665' : '\u2661';
-    btn.setAttribute('aria-pressed', saved ? 'true' : 'false');
-  }
-
-  async function toggle(session, card, btn) {
-    if (btn.disabled) return;
-    btn.disabled = true;
-    var slug = card.dataset.slug;
-    var wasSaved = btn.dataset.saved === '1';
-    paint(btn, !wasSaved); // optimistic
-    try {
-      if (wasSaved) {
-        var dr = await fetch(session.url + '/rest/v1/saved_businesses' +
-          '?user_id=eq.' + session.uid +
-          '&business_slug=eq.' + encodeURIComponent(slug),
-          { method: 'DELETE', headers: { apikey: session.anon, Authorization: 'Bearer ' + session.access, Prefer: 'return=minimal' } });
-        if (!dr.ok) throw new Error('delete ' + dr.status);
-      } else {
-        var ir = await fetch(session.url + '/rest/v1/saved_businesses?on_conflict=user_id,business_slug', {
-          method: 'POST',
-          headers: {
-            apikey: session.anon,
-            Authorization: 'Bearer ' + session.access,
-            'Content-Type': 'application/json',
-            Prefer: 'return=minimal,resolution=merge-duplicates'
-          },
-          body: JSON.stringify({
-            user_id: session.uid,
-            business_slug: slug,
-            business_name: card.dataset.bizName || slug,
-            business_emoji: card.dataset.bizEmoji || null
-          })
-        });
-        if (!ir.ok) throw new Error('insert ' + ir.status + ' ' + (await ir.text()).slice(0, 120));
-      }
-    } catch (e) {
-      console.warn('[browse-save] toggle failed', e);
-      paint(btn, wasSaved); // revert
-    } finally {
-      btn.disabled = false;
-    }
-  }
-
-  function showSigninNudge() {
-    // Lightweight tooltip-style banner above the grid the first time someone
-    // tries to use the heart without being signed in.
-    if (document.getElementById('saveSigninNudge')) return;
-    var grid = document.querySelector('.grid') || document.querySelector('.cards') || document.body;
-    var msg = document.createElement('div');
-    msg.id = 'saveSigninNudge';
-    msg.style.cssText = 'background:#fff5e6;border:1px solid #f0c987;border-radius:10px;padding:10px 14px;margin:10px 0;font-size:13px;color:#7a4a0e';
-    msg.innerHTML = 'Sign in to save your favorite spots and see them on your dashboard. <a href="login.html?next=browse.html" style="color:#0050c7;font-weight:700">Sign in</a>';
-    grid.parentNode.insertBefore(msg, grid);
-  }
-
-  document.addEventListener('DOMContentLoaded', async function () {
-    var allAnchors = Array.prototype.slice.call(document.querySelectorAll('a.biz-card'));
-    var realCards = allAnchors.filter(function (a) { return slugFromCard(a); });
-    realCards.forEach(function (a) {
-      a.dataset.slug = slugFromCard(a);
-      a.dataset.bizName = bizName(a);
-      var emoji = bizEmoji(a);
-      if (emoji) a.dataset.bizEmoji = emoji;
-      var btn = ensureHeart(a);
-      // Stop the click from propagating to the anchor (which would navigate).
-      btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var session = getSession();
-        if (!session) { showSigninNudge(); return; }
-        toggle(session, a, btn);
-      });
-      paint(btn, false);
-    });
-
-    var session = getSession();
-    if (!session) return;
-    var savedSet = await loadInitialState(session, realCards);
-    realCards.forEach(function (a) {
-      var btn = a.querySelector('.save-heart');
-      if (btn) paint(btn, savedSet.has(a.dataset.slug));
-    });
-  });
-})();
-</script>
-
 </body>
 </html>
