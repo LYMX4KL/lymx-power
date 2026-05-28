@@ -477,7 +477,7 @@ let __bizUserToken = null;
         if (raw) {
           const o = JSON.parse(raw);
           tk = o.access_token || (o.currentSession && o.currentSession.access_token);
-          if (tk && !email) { try { const pl = JSON.parse(atob((tk.split('.')[1]||'').replace(/-/g,'+').replace(/_/g,'/'))); email = pl.email; } catch(_){} }
+          if (tk && !email) { try { const pl = JSON.parse(atob((tk.split('.')[1]||'').replace(/-/g,'+').replace(/_/g,'/'))); email = pl.email; } catch(_e){ console.warn('[biz-signup] jwt email decode (display-only) failed', _e); } }
         }
       }
     }

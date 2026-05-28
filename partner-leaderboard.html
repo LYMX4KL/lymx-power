@@ -192,7 +192,7 @@
   </div>
 
   <div class="privacy-note">
-    <strong>🔒 Privacy:</strong> When the leaderboard goes live, most Partners appear anonymized as "Anonymous-[Tier]". You can opt-in to be named in <a href="customer-settings.html">Settings → Privacy</a>.
+    <strong>🔒 Privacy:</strong> Your name is shown on this leaderboard by default. You can hide it (appear as "Anonymous · [Tier]") anytime in <a href="customer-settings.html#privacy">Settings → Privacy</a>.
   </div>
 </div>
 
@@ -386,7 +386,7 @@
     // 1) Load partners (everyone we can see — RLS may filter)
     const { data: partners, error: pErr } = await sb
       .from('partners')
-      .select('id, legal_name, display_name, partner_code, is_founding_25, founding_25_rank, archived_at, avatar_url, country_code')
+      .select('id, legal_name, display_name, partner_code, is_founding_25, founding_25_rank, archived_at, avatar_url, country_code, show_on_leaderboard')
       .is('archived_at', null)
       .limit(200);
     if (pErr) throw pErr;
@@ -441,11 +441,13 @@
         const medals = ['#f5d172', '#cbd5e1', '#d49a5a'];
         const ranks = ['1st', '2nd', '3rd'];
         podiumEl.innerHTML = topActivators.map((p, i) => {
-          const initials = initialsFor(p.display_name || p.legal_name);
-          const avHtml = p.avatar_url
+          // #1 - hidden partners show as Anonymous (no name, no avatar photo).
+          const phidden = (p.show_on_leaderboard === false);
+          const initials = phidden ? 'A' : initialsFor(p.display_name || p.legal_name);
+          const avHtml = (!phidden && p.avatar_url)
             ? '<img src="' + esc(p.avatar_url) + '" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">'
             : esc(initials);
-          const name = (p.display_name || p.legal_name || 'Anonymous').split(/\s+/)[0];
+          const name = phidden ? 'Anonymous' : (p.display_name || p.legal_name || 'Anonymous').split(/\s+/)[0];
           return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px">' +
             '<div style="position:relative;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;overflow:hidden;border:3px solid ' + medals[i] + '">' + avHtml + '</div>' +
             '<div style="font-size:13px;font-weight:700">' + esc(name) + '</div>' +
@@ -463,8 +465,9 @@
         body.innerHTML = '<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--muted)">No Partners yet — be the first.</td></tr>';
       } else {
         body.innerHTML = top25.map((p, idx) => {
-          const initials = initialsFor(p.display_name || p.legal_name);
-          const name = (p.display_name || p.legal_name || 'Anonymous-Partner');
+          const hidden = (p.show_on_leaderboard === false);
+          const initials = hidden ? 'A' : initialsFor(p.display_name || p.legal_name);
+          const name = hidden ? ('Anonymous · ' + (p.is_founding_25 ? 'Founding 25' : 'Active')) : (p.display_name || p.legal_name || 'Anonymous-Partner');
           const tier = p.is_founding_25 ? 'Founding 25 · #' + (p.founding_25_rank || '?') : 'Active';
           const pct = Math.min(100, Math.round((p.activations / 5) * 100));
           const remainingForFounding = Math.max(0, 5 - p.activations);
@@ -475,7 +478,7 @@
               : remainingForFounding + ' more to lock';
           return '<tr>' +
             '<td style="font-weight:800">' + (idx + 1) + '</td>' +
-            '<td><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + esc(initials) + '</div><div><div style="font-weight:700;white-space:nowrap">' + esc(name) + '</div><div style="font-size:11.5px;color:var(--muted);font-family:ui-monospace,Menlo,monospace">' + esc(p.partner_code || '—') + '</div></div></div></td>' +
+            '<td><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + esc(initials) + '</div><div><div style="font-weight:700;white-space:nowrap">' + esc(name) + '</div><div style="font-size:11.5px;color:var(--muted);font-family:ui-monospace,Menlo,monospace">' + esc(hidden ? '—' : (p.partner_code || '—')) + '</div></div></div></td>' +
             '<td><span style="font-size:12px;font-weight:700;color:' + (p.is_founding_25 ? '#86670c' : 'var(--muted)') + '">' + esc(tier) + '</span></td>' +
             '<td class="num" style="font-weight:800;font-size:15px">' + p.activations + '</td>' +
             '<td><div style="display:flex;align-items:center;gap:10px"><div style="width:120px;height:7px;background:var(--bg-soft);border-radius:99px;overflow:hidden;flex-shrink:0"><div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#d4af37,#f5d172)"></div></div><span style="font-size:12px;color:var(--ink-2)">' + progressLabel + '</span></div></td>' +

@@ -215,7 +215,7 @@
     </div>
 
     <!-- Privacy -->
-    <div class="sec-h">Privacy</div>
+    <div class="sec-h" id="privacy">Privacy</div>
     <div class="group">
       <div class="item" onclick="togglePref(this)" data-pref-key="privacy_show_reviews">
         <div class="ic">👁️</div>
@@ -230,6 +230,15 @@
         <div class="body">
           <div class="h">Location while browsing</div>
           <div class="d">Used to find nearby Businesses</div>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+      <!-- #1 partner-only: hidden until initPartnerLbToggle() confirms a partner row -->
+      <div class="item" id="partnerLbVisItem" onclick="togglePartnerLeaderboard(this)" style="display:none">
+        <div class="ic">🏆</div>
+        <div class="body">
+          <div class="h">Show my name on the Partner leaderboard</div>
+          <div class="d">When off, you appear as “Anonymous · [Tier]” to other Partners</div>
         </div>
         <div class="toggle on"></div>
       </div>
@@ -442,6 +451,49 @@
       console.warn('togglePref failed', key, e);
     }
   }
+
+  // #1 — partner-only leaderboard name visibility. Separate from togglePref
+  // because it writes to partners.show_on_leaderboard via a SECURITY DEFINER
+  // RPC (not customers.preferences). The item stays hidden for non-partners.
+  async function togglePartnerLeaderboard(row){
+    const t = row.querySelector('.toggle');
+    const sb = window.LYMX && window.LYMX.sb;
+    if (!t || !sb) { showToast('Still loading — try again in a sec', false); return; }
+    let user = null;
+    try { const { data } = await sb.auth.getUser(); user = data && data.user; } catch (e) { console.warn('[partnerLb] auth', e); }
+    if (!user) { showToast('Sign in to save preferences', false); return; }
+    const prevOn = t.classList.contains('on');
+    const newOn = !prevOn;
+    t.classList.toggle('on', newOn);
+    try {
+      const { error } = await sb.rpc('set_partner_leaderboard_visibility', { p_show: newOn });
+      if (error) throw error;
+      showToast(newOn ? 'Your name will show on the leaderboard — saved' : 'You are now anonymous on the leaderboard — saved', true);
+    } catch (e) {
+      t.classList.toggle('on', prevOn);
+      showToast('Could not save: ' + (e && e.message ? e.message : 'unknown error'), false);
+      console.warn('togglePartnerLeaderboard failed', e);
+    }
+  }
+
+  (async function initPartnerLbToggle(){
+    try {
+      const sb = window.LYMX && window.LYMX.sb;
+      if (!sb) { return setTimeout(initPartnerLbToggle, 300); }
+      const { data: u } = await sb.auth.getUser();
+      const user = u && u.user;
+      if (!user) return;
+      // Only partners have a row here; non-partners leave the toggle hidden.
+      const { data: prow, error } = await sb.from('partners').select('show_on_leaderboard').eq('user_id', user.id).maybeSingle();
+      if (error || !prow) return;
+      const item = document.getElementById('partnerLbVisItem');
+      if (item) {
+        item.style.display = 'flex';
+        const t = item.querySelector('.toggle');
+        if (t) t.classList.toggle('on', prow.show_on_leaderboard !== false);
+      }
+    } catch (e) { console.warn('[partner-lb-toggle] init', e); }
+  })();
 
   function openEdit(title, sub, body){
     document.getElementById('edit-title').textContent = title;

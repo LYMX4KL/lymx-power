@@ -123,12 +123,15 @@ const COMMON_REQUIRED = [
     "contact_email",
 ] as const;
 
-function validateCommon(body: SignupBody): string | null {
+function validateCommon(body: SignupBody, hasAuthedUser = false): string | null {
     for (const k of COMMON_REQUIRED) {
+        // #20: owner_email / owner_password are NOT required when an already
+        // authenticated user is attaching a business to their existing account.
+        if (hasAuthedUser && (k === "owner_email" || k === "owner_password")) continue;
         const v = (body as Record<string, unknown>)[k];
         if (v == null || v === "") return `Missing required field: ${k}`;
     }
-    if (typeof body.owner_password === "string" && body.owner_password.length < 10) {
+    if (!hasAuthedUser && typeof body.owner_password === "string" && body.owner_password.length < 10) {
         return "owner_password must be at least 10 characters";
     }
     return null;
@@ -194,7 +197,29 @@ serve(async (req) => {
         );
     }
 
-    const commonErr = validateCommon(body);
+    // #20 — detect an already-signed-in caller (existing customer/partner) so
+    // they can attach a business to their EXISTING account instead of hitting
+    // "email already exists". Anonymous callers (anon key) leave existingUser null.
+    let existingUser: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null = null;
+    {
+        const authHeader = req.headers.get("Authorization") || "";
+        const bearer = authHeader.replace(/^Bearer\s+/i, "").trim();
+        if (bearer && bearer !== Deno.env.get("SUPABASE_ANON_KEY")) {
+            try {
+                const userClient = createClient(
+                    Deno.env.get("SUPABASE_URL")!,
+                    Deno.env.get("SUPABASE_ANON_KEY")!,
+                    { global: { headers: { Authorization: "Bearer " + bearer } }, auth: { persistSession: false } },
+                );
+                const { data: ud } = await userClient.auth.getUser();
+                if (ud && ud.user && ud.user.id) {
+                    existingUser = { id: ud.user.id, email: ud.user.email, user_metadata: ud.user.user_metadata as Record<string, unknown> };
+                }
+            } catch (_e) { /* not a valid user token — treat as anonymous new signup */ }
+        }
+    }
+
+    const commonErr = validateCommon(body, !!existingUser);
     if (commonErr) return errorResponse(commonErr, 400);
 
     const modeErr = kind === "storefront"
@@ -210,18 +235,33 @@ serve(async (req) => {
     );
 
     // ── Step 1: create the auth user ───────────────────────────────────────
-    const { data: userData, error: userErr } = await supabase.auth.admin
-        .createUser({
-            email: body.owner_email,
-            password: body.owner_password,
-            email_confirm: true,
-            user_metadata: { role: "business_owner", business_kind: kind },
-        });
-
-    if (userErr || !userData.user) {
-        return errorResponse(`Auth creation failed: ${userErr?.message}`, 400);
+    // #20 — if an authenticated existing user is present, attach the business to
+    // THEIR account (skip auth-user creation) so existing customers/partners are
+    // not blocked by "email already exists". Otherwise create a fresh owner.
+    let userId: string;
+    if (existingUser) {
+        userId = existingUser.id;
+        try {
+            const meta = existingUser.user_metadata || {};
+            await supabase.auth.admin.updateUserById(userId, {
+                user_metadata: { ...meta, role: meta.role || "business_owner", business_kind: kind },
+            });
+        } catch (e) {
+            console.warn("[business-signup] could not update existing-user metadata", e);
+        }
+    } else {
+        const { data: userData, error: userErr } = await supabase.auth.admin
+            .createUser({
+                email: body.owner_email,
+                password: body.owner_password,
+                email_confirm: true,
+                user_metadata: { role: "business_owner", business_kind: kind },
+            });
+        if (userErr || !userData.user) {
+            return errorResponse(`Auth creation failed: ${userErr?.message}`, 400);
+        }
+        userId = userData.user.id;
     }
-    const userId = userData.user.id;
 
     // ── Step 2: resolve partner_referral_code → partner_id ────────────────
     // Accept either a friendly P-NNNNNN partner code OR a raw UUID. Partners
