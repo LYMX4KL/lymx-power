@@ -445,7 +445,7 @@
               var b = document.getElementById('lymxNavMsgBadge');
               if (b) { b.textContent = total; b.style.display = 'inline-block'; }
             }
-          }).catch(function(err){ if (err && err.name !== 'AbortError') console.warn('[lymx-nav] best-effort .catch', err); });
+          }).catch(function(){});
       }
     } catch (e) { console.warn('[lymx-nav.js:L280] silent error', e); }
     document.body.appendChild(menu);
@@ -477,7 +477,7 @@
         var ref = projectRef();
         if (ref) localStorage.removeItem('sb-' + ref + '-auth-token');
       }
-    } catch (e) { console.warn('[lymx-nav] best-effort', e); }
+    } catch (e) {}
     location.href = '/login.html';
   }
 
@@ -866,4 +866,115 @@
     chip.addEventListener('click', function (ev) {
       ev.preventDefault();
       var ref = document.referrer || '';
-      var sameOrigin 
+      var sameOrigin = ref && ref.indexOf(location.origin) === 0;
+      if (sameOrigin && window.history.length > 1) {
+        window.history.back();
+      } else {
+        location.href = fallbackDashboardForRole(payload);
+      }
+    });
+    document.body.appendChild(chip);
+  }
+
+
+  // ---- Auth payload helper -------------------------------------------------
+  function getAuthPayload() {
+    return decode(readToken());
+  }
+
+  // ---- Run on DOMContentLoaded ---------------------------------------------
+  function boot() {
+    // Brand normalization runs first, in both signed-in and signed-out paths.
+    // It does not depend on Supabase config, so it runs synchronously.
+    normalizeBrand();
+    waitForConfig(function () {
+      var payload = getAuthPayload();
+      if (!payload) {
+        injectSignInChip();
+        injectMobileHamburger();
+        injectBackChip(null);
+        return;
+      }
+      // 2026-05-28 — populate admin cache in the background so subsequent
+      // routeFor / fallbackDashboardForRole calls have the truth without each
+      // page making its own RPC. First page load on a new session may route by
+      // email-suffix fallback until the RPC returns; enforceAdminGuard below
+      // also updates the cache as a side effect when an admin lands directly
+      // on /admin-*.html.
+      ensureAdminCache(payload);
+      redirectIfSignedIn(payload);
+      swapGuestButtons(payload);
+      wireAvatar(payload);
+      enforceAdminGuard(payload);
+      injectMobileHamburger();
+      injectBackChip(payload);
+      hideGetAppInPwa();
+    });
+  }
+
+  // 2026-05-20 #d220c320 — When the page is running as an installed PWA
+  // (standalone display-mode on Android/Chrome, navigator.standalone on iOS),
+  // hide every "Get the app" / "Install app" CTA across the site. Per-page
+  // detection existed on customer-dashboard but nowhere else, so the same
+  // user kept seeing the same prompt on every other page.
+  function hideGetAppInPwa() {
+    try {
+      var standalone =
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+        window.navigator.standalone === true ||
+        (document.referrer && document.referrer.indexOf('android-app://') === 0);
+      if (!standalone) return;
+      var selectors = ['#getAppCta', '#navGetApp', '.get-app-cta', '.install-app-cta', '[data-lymx-hide-in-pwa]'];
+      selectors.forEach(function (sel) {
+        document.querySelectorAll(sel).forEach(function (el) { el.style.display = 'none'; });
+      });
+      // Catch-all by visible text — covers any "Get the app" / "Install app"
+      // anchor that's not tagged with one of the IDs/classes above.
+      var anchors = document.querySelectorAll('a, button');
+      var rx = /^(?:\s*)?(get the app|install (?:the )?app|download (?:the )?app)(?:\s*)?$/i;
+      anchors.forEach(function (a) {
+        var txt = (a.textContent || '').trim();
+        if (rx.test(txt)) a.style.display = 'none';
+      });
+    } catch (e) { console.warn('[lymx-nav] PWA hide-getapp failed', e); }
+  }
+
+  // 2026-05-20 #a461daa8 — expose avatar helpers so pages with custom avatar
+  // markup (.profile .av, .av-lg, custom IDs) can paint without re-fetching.
+  window.LYMX = window.LYMX || {};
+  window.LYMX.lookupAvatarUrl = lookupAvatarUrl;
+  window.LYMX.paintAvatarOn = function (el, url) {
+    if (!el || !url) return;
+    if (el.dataset.lymxAvImg === '1') return;
+    el.dataset.lymxAvImg = '1';
+    el.style.position = el.style.position || 'relative';
+    el.style.overflow = el.style.overflow || 'hidden';
+    var img = document.createElement('img');
+    img.src = url; img.alt = '';
+    img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;pointer-events:none';
+    // 2026-05-20 #a461daa8 - only hide initials AFTER successful load.
+    img.onload = function () {
+      Array.prototype.forEach.call(el.childNodes, function (n) {
+        if (n.nodeType === 3) { n.textContent = ''; }
+      });
+    };
+    img.onerror = function () {
+      img.remove();
+      el.dataset.lymxAvImg = '';
+      try {
+        Object.keys(sessionStorage || {}).forEach(function (k) {
+          if (k.indexOf('LYMX_avatar_url_') === 0 && sessionStorage.getItem(k) === url) {
+            sessionStorage.removeItem(k);
+          }
+        });
+      } catch (e) { console.warn('[lymx-nav] cache purge after onerror', e); }
+    };
+    el.appendChild(img);
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();

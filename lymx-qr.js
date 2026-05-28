@@ -70,7 +70,7 @@
         qr.addData(text);
         qr.make();
         return _toSvg(qr.getModuleCount(), function (r, c) { return qr.isDark(r, c); });
-      } catch (e) { console.warn('[lymx-qr] qrcode-lib path failed, falling through to inline builder', e); }
+      } catch (e) { console.warn("[lymx-qr.js:73] caught (fall through):", e); }
     }
     return _buildQRInline(text);
   }
@@ -322,8 +322,8 @@
 
       function cleanup() {
         stopped = true;
-        try { if (stream) stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) { console.warn('[lymx-qr] best-effort', e); }
-        try { overlay.remove(); } catch (e) { console.warn('[lymx-qr] best-effort', e); }
+        try { if (stream) stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) { console.warn("[lymx-qr.js:325] caught:", e); }
+        try { overlay.remove(); } catch (e) { console.warn("[lymx-qr.js:326] caught:", e); }
       }
 
       overlay.querySelector('[data-cancel]').onclick = function () { cleanup(); reject(new Error('cancelled')); };
@@ -400,7 +400,7 @@
           sourceUrl: raw
         };
       }
-    } catch (e) { console.warn('[lymx-qr] best-effort', e); }
+    } catch (e) { console.warn("[lymx-qr.js:403] caught:", e); }
     return null;
   }
 
@@ -451,4 +451,7 @@
     resolveToken: resolveToken,
     submitCustomerClaim: submitCustomerClaim,
     approveCustomerClaim: approveCustomerClaim,
-    bizScanIssueD
+    bizScanIssueDirect: bizScanIssueDirect,
+    buildScanUrl: buildScanUrl
+  };
+})();
