@@ -241,10 +241,13 @@
         <div class="num" id="balanceLymx">— LYMX</div>
         <div class="usd" id="balanceUsd">Loading…</div>
         <div class="stat-row">
-          <div class="stat"><div class="v" id="statThisMo">—</div><div class="k">This month</div></div>
-          <div class="stat"><div class="v" id="statSpentMo">—</div><div class="k">Spent (mo)</div></div>
-          <div class="stat"><div class="v" id="statLifetime">—</div><div class="k">Lifetime visits</div></div>
+          <div class="stat" style="cursor:pointer" data-d="This month: LYMX you have earned since the 1st of this month." onclick="lymxStatDetail(this)"><div class="v" id="statThisMo">—</div><div class="k">This month</div></div>
+          <div class="stat" style="cursor:pointer" data-d="Spent this month: LYMX you redeemed at Businesses since the 1st." onclick="lymxStatDetail(this)"><div class="v" id="statSpentMo">—</div><div class="k">Spent (mo)</div></div>
+          <div class="stat" style="cursor:pointer" data-d="Lifetime visits: your total receipt-verified redemptions, all-time." onclick="lymxStatDetail(this)"><div class="v" id="statLifetime">—</div><div class="k">Lifetime visits</div></div>
         </div>
+        <!-- #14 - tap a stat to expand what it means -->
+        <div class="stat-detail" id="statDetail" style="display:none;margin-top:10px;font-size:12px;color:rgba(255,255,255,.92);background:rgba(255,255,255,.14);border-radius:8px;padding:9px 12px;line-height:1.45"></div>
+        <script>function lymxStatDetail(el){var d=document.getElementById('statDetail');if(!d)return;var txt=el.getAttribute('data-d');if(d.style.display!=='none'&&d.textContent===txt){d.style.display='none';return;}d.textContent=txt;d.style.display='block';}</script>
         <div class="actions">
           <!-- 2026-05-19 #1339a282 + #d220c320 -->
           <a class='btn-w solid' href='/browse'>Spend my LYMX →</a>
