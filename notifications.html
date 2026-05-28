@@ -72,12 +72,38 @@
   .empty .ic{font-size:42px;margin-bottom:8px;opacity:.6}
 
   /* Bottom nav */
-  /* 2026-05-27 #87485d22 — was flex-shrink:0 but the .feed kept growing past the device height, pushing botnav off-screen. Sticky positioning keeps the tabs anchored at the bottom of the device viewport. */
-  .botnav{background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 0 14px;flex-shrink:0;position:sticky;bottom:0;z-index:5}
+  .botnav{background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 0 14px;flex-shrink:0}
   .botnav a{text-align:center;padding:6px 0;font-size:11px;color:var(--muted);font-weight:700;position:relative}
   .botnav a.on{color:var(--accent-2)}
   .botnav a .b{font-size:18px;display:block;margin-bottom:1px}
   .botnav a .badge{position:absolute;top:2px;right:30%;width:7px;height:7px;background:var(--danger,#e0413e);border-radius:50%}
+
+  /* 2026-05-28 #87485d22 — Dave: "Navigation Tabs Are Hidden on Notifications Page."
+     Root cause: the page is a mobile-style .device card with only a back arrow +
+     bottom-nav. There was no header.nav markup, so lymx-nav.js's normalizeBrand,
+     swapGuestButtons, avatar menu, and back chip all had nothing to attach to.
+     Partners arriving on desktop saw a 430px column floating with no way back to
+     the rest of the app. Fix: add a real header.nav with the standard brand +
+     nav-links above the device wrapper. lymx-nav.js handles the rest (brand mark,
+     avatar dropdown, mobile hamburger). The device card stays for the inbox UI.
+     On narrow mobile we hide the header so the page reads as a single mobile
+     card; on tablet/desktop the standard partner nav shows above the inbox. */
+  header.nav{background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:40}
+  header.nav .nav-inner{max-width:1180px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+  header.nav .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--ink)}
+  header.nav .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--ink-2)}
+  header.nav .nav-links a:hover{color:var(--accent)}
+  header.nav .nav-links a.on{color:var(--accent);font-weight:700}
+  header.nav .nav-cta{display:flex;gap:10px;align-items:center}
+  header.nav .btn{display:inline-flex;align-items:center;justify-content:center;padding:9px 16px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid transparent;text-decoration:none}
+  header.nav .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
+  /* Hide the standard nav on the smallest screens — the .device card already
+     looks correct as a phone-shaped page there, and the bottom-nav covers the
+     primary actions. */
+  @media(max-width:480px){ header.nav{display:none} }
+  /* When the standard header is shown, drop the device's top margin so it sits
+     directly under the nav. */
+  @media(min-width:481px){ .device{margin:24px auto} }
 </style>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
@@ -92,6 +118,26 @@
 <meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
+
+<!-- 2026-05-28 #87485d22 — standard header so lymx-nav.js renders the brand
+     mark + avatar menu + back chip. On desktop partners see the same Dashboard /
+     CRM / Tree / Payouts / Help links as everywhere else in the app. Hidden on
+     viewports <=480px (mobile uses the .device card's own top bar). -->
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">LYMX</a>
+    <nav class="nav-links">
+      <a href="customer-wallet.html">Wallet</a>
+      <a href="browse.html">Browse</a>
+      <a href="customer-history.html">History</a>
+      <a href="notifications.html" class="on">Notifications</a>
+      <a href="my-feedback.html">Feedback</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="support.html">Help</a>
+    </div>
+  </div>
+</header>
 
 <div class="device">
   <div class="top">
@@ -231,22 +277,8 @@
   }
 
   function markAllRead(){
-    // Sprint 3 follow-up (2026-05-27 ticket #18eba1c4): persist mark-read for
-    // partner_notifications rows that have a _pnId. Customer-side activity-log
-    // rows (earn/spend/referral, no _pnId) stay in-memory-only by design —
-    // they're an activity log, not a true inbox, and have no backing row to
-    // update. The mark-all batch fires fire-and-forget; rendering proceeds
-    // optimistically. If the DB write fails the next page-load will show the
-    // row as unread again (which is the correct fail-closed behavior).
-    var pnIds = notifications.filter(function (n) { return n._pnId && n.unread; }).map(function (n) { return n._pnId; });
-    notifications.forEach(function (n) { n.unread = false; });
+    notifications.forEach(n => n.unread = false);
     render();
-    if (pnIds.length && window.LYMX && window.LYMX.sb) {
-      pnIds.forEach(function (id) {
-        window.LYMX.sb.rpc('fn_mark_notification_read', { p_notification_id: id })
-          .then(function (r) { if (r.error) console.warn('[notifications] markAllRead persist', r.error); });
-      });
-    }
   }
 
   render();
@@ -264,29 +296,34 @@
     const sb = window.LYMX.sb;
 
     const day14ago = new Date(Date.now() - 14*24*60*60*1000).toISOString();
-    // 2026-05-26 Module 5 unification: single source = lymx_issuances. Earn rows
-    // (positive amount_lymx) AND redemption rows (negative amount_lymx with
-    // reason='redemption') both appear in one query. The deprecated
-    // wallets+transactions chain is gone.
-    const [issRes, refRes] = await Promise.all([
+    // 2026-05-20 audit fix - transactions has no `customer_id` (linked via wallet_id → wallets.customer_id) and referrals has no `invitee_email` (only invitee_user_id). Notifications panel for redemptions + referrals was silently empty before this fix. (Audit Pass 3)
+    const { data: custForNotif } = await sb.from('customers').select('id').eq('user_id', user.id).maybeSingle();
+    const custIdN = custForNotif && custForNotif.id;
+    let myWalletIdsN = [];
+    if (custIdN) {
+      const { data: walletsArrN } = await sb.from('wallets').select('id').eq('customer_id', custIdN);
+      myWalletIdsN = (walletsArrN || []).map(w => w.id);
+    }
+    const [issRes, txRes, refRes] = await Promise.all([
       sb.from('lymx_issuances')
         .select('id, amount_lymx, reason, created_at, businesses(display_name)')
         .eq('recipient_user_id', user.id)
         .gte('created_at', day14ago)
-        .order('created_at', { ascending: false }).limit(120),
+        .order('created_at', { ascending: false }).limit(60),
+      myWalletIdsN.length === 0
+        ? Promise.resolve({ data: [] })
+        : sb.from('transactions')
+            .select('id, lymx_amount, type, created_at, businesses(display_name)')
+            .in('wallet_id', myWalletIdsN)
+            .eq('type', 'redemption')
+            .gte('created_at', day14ago)
+            .order('created_at', { ascending: false }).limit(60),
       sb.from('referrals')
         .select('id, status, invitee_user_id, created_at, inviter_bonus_amount')
         .eq('inviter_user_id', user.id)
         .gte('created_at', day14ago)
         .order('created_at', { ascending: false }).limit(30)
     ]);
-    // Split iss rows into earnings + redemptions for the existing render code
-    const issRows = (issRes.data || []).filter(r => (r.reason !== 'redemption') && Number(r.amount_lymx || 0) > 0);
-    const txRows  = (issRes.data || []).filter(r => r.reason === 'redemption' || Number(r.amount_lymx || 0) < 0)
-      .map(r => ({ id: r.id, lymx_amount: Math.abs(Number(r.amount_lymx || 0)), type: 'redemption', created_at: r.created_at, businesses: r.businesses }));
-    // Shape-compat: notifications.html below reads issRes.data and txRes.data
-    issRes.data = issRows;
-    const txRes = { data: txRows };
 
     function dayLabel(iso) {
       const d = new Date(iso);
@@ -340,77 +377,19 @@
       });
     });
 
-    // Sprint 3 (2026-05-27) — partner_notifications feed. Adds commission /
-    // activation / settlement / system events for the signed-in user IF they
-    // have a partners row. Customers without a partners row skip silently
-    // (no error — the .from() select just returns []). The kind→type mapping
-    // routes each event to the existing visual class so the feed renders
-    // consistently across customer + partner flavors.
-    //
-    // Mark-read goes through fn_mark_notification_read (RLS-safe). We
-    // store the real DB row id on _pnId so readOne() can pick it back up.
-    try {
-      const pnRes = await sb.from('partner_notifications')
-        .select('id, kind, title, body, target_url, is_read, created_at, related_entity_type, related_entity_id')
-        .order('created_at', { ascending: false })
-        .limit(60);
-      const KIND_TO_TYPE = {
-        commission_earned:  'earn',
-        settlement_paid:    'earn',
-        direct_activation:  'referral',
-        downline_signup:    'referral',
-        qualifier_progress: 'promo',
-        system:             'system',
-      };
-      (pnRes.data || []).forEach(n => {
-        notifications.push({
-          id: nextId++,
-          _pnId: n.id,
-          _target: n.target_url || null,
-          type: KIND_TO_TYPE[n.kind] || 'system',
-          day: dayLabel(n.created_at), time: timeLabel(n.created_at),
-          title: n.title,
-          desc: n.body || '',
-          unread: n.is_read === false,
-          v: '', vClass: 'muted',
-          _ts: n.created_at,
-        });
-      });
-    } catch (e) { console.warn('[notifications] partner_notifications fetch', e); }
-
-    // Sprint 3 — wrap the in-memory readOne (defined above as a vanilla
-    // unread=false setter) 
-    // setter) so partner-notification rows ALSO call fn_mark_notification_read
-    // to persist read state across reloads. Customer earn/spend rows (no _pnId)
-    // keep the existing in-memory behavior since they don't have a backing
-    // notification row to update.
-    if (typeof readOne === 'function') {
-      const _origReadOne = readOne;
-      readOne = function (id) {
-        const n = notifications.find(x => x.id === id);
-        if (n && n._pnId) {
-          sb.rpc('fn_mark_notification_read', { p_notification_id: n._pnId })
-            .then(r => { if (r.error) console.warn('[notifications] mark-read', r.error); });
-          if (n._target) {
-            setTimeout(function () { location.href = n._target; }, 80);
-          }
-        }
-        _origReadOne(id);
-      };
-    }
-
     notifications.sort((a, b) => (b._ts || '').localeCompare(a._ts || ''));
     if (typeof render === 'function') render();
 
     const feed = document.getElementById('feed');
     if (feed && notifications.length === 0) {
+      // 2026-05-24 #f45a94ab (Rae) - empty-state with actionable shortcuts so users don't have to navigate to find Invite/Browse. Primary CTA = share-hub (universal across roles). Secondary CTA = browse rewards.
       feed.innerHTML = '<div class="empty">'
-        + '<div class="ic">\u{1F4ED}</div>'
+        + '<div class="ic">📭</div>'
         + '<div style="font-weight:700;color:#1a1f27;font-size:15.5px;margin-bottom:6px">No notifications yet</div>'
         + '<div style="font-size:13.5px;line-height:1.5;color:#5b6472;margin-bottom:18px;max-width:320px;margin-left:auto;margin-right:auto">Earn, spend, or invite a friend and updates will show up here.</div>'
         + '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'
-        +   '<a href="share-hub.html" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:9px;font-weight:700;font-size:13.5px;background:#0e1116;color:#fff;text-decoration:none">\u{1F4E4} Invite a friend</a>'
-        +   '<a href="browse.html" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:9px;font-weight:700;font-size:13.5px;background:#f6f7f9;color:#0e1116;text-decoration:none;border:1px solid #e6e8ec">\u{1F50E} Browse rewards</a>'
+        +   '<a href="share-hub.html" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:9px;font-weight:700;font-size:13.5px;background:#0e1116;color:#fff;text-decoration:none">📤 Invite a friend</a>'
+        +   '<a href="browse.html" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:9px;font-weight:700;font-size:13.5px;background:#f6f7f9;color:#0e1116;text-decoration:none;border:1px solid #e6e8ec">🔎 Browse rewards</a>'
         + '</div>'
         + '</div>';
     }
