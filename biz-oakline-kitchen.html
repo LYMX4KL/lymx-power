@@ -310,85 +310,21 @@
       <div class="sec" id="reviews">
         <h2>Reviews</h2>
 
+        <!-- 2026-05-28 #1bdf3c10 + #95c3b6ad — removed all hardcoded review
+             counts, ratings, and demo review cards. The summary + list below
+             are populated from public.reviews via lymx-biz-reviews.js at page
+             load. Empty state shows "Be the first to review" + the write form. -->
         <div class="review-summary">
           <div>
-            <div class="big">4.8</div>
-            <div class="stars-big-2">★★★★★</div>
-            <div class="big-sub">214 reviews</div>
+            <div class="big" id="reviewsAvg">—</div>
+            <div class="stars-big-2" id="reviewsAvgStars">☆☆☆☆☆</div>
+            <div class="big-sub" id="reviewsCount">Loading…</div>
           </div>
-          <div class="breakdown">
-            <div class="bar"><span>5★</span><div class="track"><div class="fill" style="width:78%"></div></div><span style="text-align:right">167</span></div>
-            <div class="bar"><span>4★</span><div class="track"><div class="fill" style="width:15%"></div></div><span style="text-align:right">32</span></div>
-            <div class="bar"><span>3★</span><div class="track"><div class="fill" style="width:5%"></div></div><span style="text-align:right">11</span></div>
-            <div class="bar"><span>2★</span><div class="track"><div class="fill" style="width:1%"></div></div><span style="text-align:right">3</span></div>
-            <div class="bar"><span>1★</span><div class="track"><div class="fill" style="width:1%"></div></div><span style="text-align:right">1</span></div>
-          </div>
+          <div class="breakdown" id="reviewsHistogram"></div>
         </div>
 
-        <div class="review-list">
-          <div class="review-card">
-            <div class="head">
-              <div class="author">
-                <div class="avatar">DK</div>
-                <div>
-                  <div class="name">Daniel K.</div>
-                  <div class="when">3 days ago · 22 reviews</div>
-                </div>
-              </div>
-              <span class="badge-verified">✓ Verified visit</span>
-            </div>
-            <div class="stars-row">★★★★★</div>
-            <p class="quote">The hand-pulled beef noodle is the best in Las Vegas, full stop. Took my parents and they didn't talk for 10 minutes after the first bite. Bartender suggested the smoked old fashioned — perfect call. Used 950 LYMX off the bill, walked out feeling like a winner.</p>
-            <div class="photos-mini">
-              <div class="pmini a">🍜</div>
-              <div class="pmini b">🥢</div>
-            </div>
-            <div class="badges">
-              <span class="badge-earned">+100 LYMX earned</span>
-              <span class="badge-helpful">👍 41 helpful</span>
-            </div>
-          </div>
-
-          <div class="review-card">
-            <div class="head">
-              <div class="author">
-                <div class="avatar">PS</div>
-                <div>
-                  <div class="name">Priya S.</div>
-                  <div class="when">1 week ago · 9 reviews</div>
-                </div>
-              </div>
-              <span class="badge-verified">✓ Verified visit</span>
-            </div>
-            <div class="stars-row">★★★★★</div>
-            <p class="quote">Date-night spot. Lighting is gorgeous, plates are share-sized, the dumplings are dangerous. Reservations needed on Friday/Saturday — booked through LYMX, no problems.</p>
-            <div class="badges">
-              <span class="badge-earned">+50 LYMX earned</span>
-              <span class="badge-helpful">👍 18 helpful</span>
-            </div>
-          </div>
-
-          <div class="review-card">
-            <div class="head">
-              <div class="author">
-                <div class="avatar">JT</div>
-                <div>
-                  <div class="name">Jordan T.</div>
-                  <div class="when">2 weeks ago · 7 reviews</div>
-                </div>
-              </div>
-              <span class="badge-verified">✓ Verified visit</span>
-            </div>
-            <div class="stars-row">★★★★☆</div>
-            <p class="quote">Came for happy hour, stayed for the black cod. The 2× LYMX rate during 4-6 makes the bar tab feel almost free. Star off because it gets loud after 7 — bring a friend you can lean across the table to hear.</p>
-            <div class="photos-mini">
-              <div class="pmini b">🍶</div>
-            </div>
-            <div class="badges">
-              <span class="badge-earned">+100 LYMX earned</span>
-              <span class="badge-helpful">👍 11 helpful</span>
-            </div>
-          </div>
+        <div class="review-list" id="reviewsList">
+          <div style="padding:24px;text-align:center;color:var(--muted)">Loading reviews…</div>
         </div>
 
         <div class="write-form" id="write-review">
@@ -397,7 +333,11 @@
             <span class="lymx-pill">Earn up to 100 LYMX</span>
           </div>
 
-          <form onsubmit="event.preventDefault(); alert('Thanks for the review! In the live version, this will save your review and credit 100 LYMX to your balance.');">
+          <!-- 2026-05-28 #95c3b6ad + band-aid debt — replaced inline mock-alert
+               onsubmit (which let empty submissions "succeed") with a real form
+               wired by lymx-biz-reviews.js. Validation: rating >= 1 AND body
+               >= 30 chars. Insert goes to public.reviews. -->
+          <form id="writeReviewForm">
             <div class="field-group">
               <label>How was your visit?</label>
               <div style="display:flex;align-items:center">
@@ -657,5 +597,10 @@
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
 <script src="lymx-biz-actions.js" defer></script><!-- 2026-05-25 #026db35c #6abf510e #b78e5ae6 — wires Save+Share+Reserve to real tables (replaces alert() stub) -->
+<!-- 2026-05-28 #1bdf3c10 + #95c3b6ad — page config + dynamic reviews module.
+     The module replaces hardcoded summary/list/form with public.reviews-backed
+     versions, and validates rating + body length before allowing submit. -->
+<script>window.LYMX_BIZ_PAGE = { slug: 'biz-oakline-kitchen', name: 'Oakline Kitchen' };</script>
+<script src="lymx-biz-reviews.js" defer></script>
 </body>
 </html>

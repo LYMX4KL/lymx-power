@@ -252,15 +252,13 @@
           <div class="meta">Downtown Las Vegas · Café &amp; coffee bar</div>
           <p class="desc">Locally roasted espresso, pour-overs, breakfast bites. Earn 5 LYMX per $1 — redeemable on any future visit.</p>
           <div class="foot">
-            <!-- 2026-05-28 #1bdf3c10 — Rae: "Browse shows 96 reviews for Oakline,
-                 click through and it says 'No reviews yet'." Root cause: browse.html
-                 cards had hardcoded review counts (142 for Brew, 96 for Oakline) that
-                 didn't match the static biz pages (82 and 214 respectively). Synced
-                 browse to the static demo biz page numbers so the click-through is
-                 consistent. The deeper fix — making all biz cards DB-driven so demo
-                 data and real data don't diverge — needs the businesses + reviews
-                 tables wired and is tracked separately. -->
-            <span class="stars">★ 4.7 <span style="color:var(--muted);font-weight:600">· 82 reviews</span></span>
+            <!-- 2026-05-28 #1bdf3c10 — replaced hardcoded review count with a
+                 placeholder filled at runtime by lymx-biz-reviews.js so browse
+                 always shows the real count from public.reviews and never drifts
+                 vs. the biz page. The star rating stays as a static display
+                 number for now; making it DB-driven needs an aggregate over
+                 the reviews table per slug, tracked separately. -->
+            <span class="stars">★ 4.7 <span class="biz-reviews-count" data-biz-slug="biz-brew-and-bean" style="color:var(--muted);font-weight:600"></span></span>
             <span class="lymx-rate">5× LYMX</span>
           </div>
         </div>
@@ -279,8 +277,7 @@
           <div class="meta">Downtown Las Vegas · Asian fusion restaurant</div>
           <p class="desc">Hand-pulled noodles, dim sum, seasonal small plates. Reservations open — earn 5 LYMX per $1 on every check.</p>
           <div class="foot">
-            <!-- 2026-05-28 #1bdf3c10 — synced to match biz-oakline-kitchen.html (214). -->
-            <span class="stars">★ 4.8 <span style="color:var(--muted);font-weight:600">· 214 reviews</span></span>
+            <span class="stars">★ 4.8 <span class="biz-reviews-count" data-biz-slug="biz-oakline-kitchen" style="color:var(--muted);font-weight:600"></span></span>
             <span class="lymx-rate">5× LYMX</span>
           </div>
         </div>
@@ -627,6 +624,34 @@
 <script src="lymx-auth.js"></script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
+<!-- 2026-05-28 #1bdf3c10 — biz-reviews module exposes getCountForSlug used
+     below to populate the per-card review counts from public.reviews. -->
+<script src="lymx-biz-reviews.js" defer></script>
+<script>
+// 2026-05-28 #1bdf3c10 — populate each .biz-reviews-count placeholder on the
+// browse cards with the real review count for that slug. Runs after the
+// reviews module has loaded; falls back to silent empty text on error so the
+// card never displays a misleading number. Once businesses are DB-driven,
+// this loop will iterate over real biz rows rendered by the loader.
+window.addEventListener('DOMContentLoaded', function () {
+  function fillCounts() {
+    if (!window.LYMX_BizReviews) { setTimeout(fillCounts, 200); return; }
+    document.querySelectorAll('.biz-reviews-count').forEach(async function (el) {
+      var slug = el.dataset.bizSlug;
+      if (!slug) return;
+      try {
+        var n = await window.LYMX_BizReviews.getCountForSlug(slug);
+        if (n == null) { el.textContent = ''; return; }
+        el.textContent = ' · ' + n + (n === 1 ? ' review' : ' reviews');
+      } catch (e) {
+        console.warn('[browse] review count for ' + slug, e);
+        el.textContent = '';
+      }
+    });
+  }
+  fillCounts();
+});
+</script>
 
 <script>
 // Wire category chip clicks (Bug fix 2026-05-16 #d9ade45d)
