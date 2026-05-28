@@ -1,5 +1,11 @@
 [build]
   publish = "."
+  functions = "netlify/functions"
+
+# 2026-05-27 — Cold outreach via Mailgun lives in netlify/functions/.
+# See LYMX Backend/LYMX-COLD-OUTREACH-SETUP.md for env var setup.
+[functions]
+  node_bundler = "esbuild"
 
 [[headers]]
   for = "/*"

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Cold Outreach · LYMX Admin</title>
+<meta name="description" content="LYMX admin — manage cold outreach lead lists and campaigns sent via joinlymx.com (Mailgun).">
+<meta name="lymx-feature-key" content="admin_outreach">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--muted:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--ok:#13a26b;--warn:#d97706;--danger:#dc2626;--purple:#5b3697}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+
+  /* canonical nav scaffold — lymx-nav.js enhances */
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em;color:var(--ink)}
+  .role-tag{font-size:11px;background:#fee2e2;color:#991b1b;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .nav-links a.on{color:var(--accent)}
+
+  .wrap{max-width:1200px;margin:0 auto;padding:24px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:8px}
+  h1{font-size:28px;margin:0 0 6px;letter-spacing:-.02em}
+  .lead{color:var(--mute);font-size:14.5px;max-width:780px;margin:0 0 20px}
+
+  /* Summary tiles */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+  .tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .tile .lbl{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:4px}
+  .tile .val{font-size:24px;font-weight:800;letter-spacing:-.02em}
+  .tile .sub{font-size:12px;color:var(--mute);margin-top:2px}
+
+  /* Tabs */
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin-bottom:18px}
+  .tab{padding:10px 16px;font-size:14px;font-weight:600;color:var(--mute);cursor:pointer;border-bottom:2px solid transparent;background:none;border-left:0;border-right:0;border-top:0}
+  .tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+  .tab .ct{display:inline-block;font-size:11px;background:#eef0f4;color:var(--mute);padding:1px 7px;border-radius:999px;margin-left:6px;font-weight:600}
+  .tab.on .ct{background:#dbeafe;color:var(--accent)}
+
+  .panel{display:none}
+  .panel.on{display:block}
+
+  /* Cards / table */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0;overflow:hidden;margin-bottom:18px}
+  .card-h{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .card-h h2{margin:0;font-size:16px;font-weight:700}
+  .card-h .actions{display:flex;gap:8px}
+
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:11.5px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;padding:10px 16px;background:#fbfbfd;border-bottom:1px solid var(--line)}
+  td{padding:12px 16px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+  tr:last-child td{border-bottom:0}
+  tr.row-link{cursor:pointer}
+  tr.row-link:hover{background:#fafbfd}
+
+  .pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:700;letter-spacing:.02em}
+  .pill.draft{background:#eef0f4;color:#475569}
+  .pill.scheduled{background:#dbeafe;color:#1e40af}
+  .pill.sending{background:#fef3c7;color:#92400e}
+  .pill.sent{background:#dcfce7;color:#166534}
+  .pill.paused{background:#f3f4f6;color:#6b7280}
+  .pill.archived{background:#f3f4f6;color:#6b7280}
+  .pill.audience-business_prospect{background:#dbeafe;color:#1e40af}
+  .pill.audience-partner_prospect{background:#f3e8fd;color:#5b3697}
+  .pill.audience-customer_prospect{background:#dcfce7;color:#166534}
+  .pill.audience-other{background:#eef0f4;color:#475569}
+
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 14px;border-radius:8px;font-size:13.5px;font-weight:700;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);transition:background .12s,border-color .12s}
+  .btn:hover{background:#f5f6f9}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-primary:hover{background:#076ad9}
+  .btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+  .btn-sm{padding:5px 10px;font-size:12.5px}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+
+  /* Form */
+  .form{padding:18px}
+  .form-row{margin-bottom:14px}
+  .form-row label{display:block;font-size:12px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+  .form-row input, .form-row select, .form-row textarea{width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--line);border-radius:8px;background:#fff;font-family:inherit}
+  .form-row textarea{font-family:-apple-system,monospace;min-height:120px;resize:vertical}
+  .form-row .hint{font-size:11.5px;color:var(--mute);margin-top:4px;line-height:1.45}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+  .empty{padding:48px 24px;text-align:center;color:var(--mute)}
+  .empty .em{font-size:42px;margin-bottom:10px}
+  .empty .et{font-weight:700;color:var(--ink);font-size:16px;margin-bottom:4px}
+  .empty .es{font-size:13.5px;line-height:1.55;max-width:380px;margin:0 auto}
+
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(15,17,22,.55);display:none;align-items:flex-start;justify-content:center;z-index:200;padding:60px 16px;overflow-y:auto}
+  .modal-bg.on{display:flex}
+  .modal{background:var(--card);border-radius:14px;max-width:560px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.18)}
+  .modal-h{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .modal-h h3{margin:0;font-size:17px}
+  .modal-h .close{cursor:pointer;color:var(--mute);font-size:22px;background:none;border:0}
+  .modal-f{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+
+  /* Toast */
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-size:13.5px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:300;opacity:0;transform:translateY(8px);transition:.18s ease}
+  .toast.on{opacity:1;transform:translateY(0)}
+  .toast.err{background:var(--danger)}
+  .toast.ok{background:var(--ok)}
+
+  footer{max-width:1200px;margin:48px auto 0;padding:24px;color:var(--mute);font-size:12.5px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body data-role-required="admin">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="admin-dashboard.html"><img src="logo.png" alt="LYMX logo" /><span class="role-tag">Admin</span></a>
+    <nav class="nav-links">
+      <a href="admin-dashboard.html">Dashboard</a>
+      <a href="admin-tech-support.html">Tech Support</a>
+      <a href="admin-outreach.html" class="on">Cold Outreach</a>
+      <a href="admin-business-applications.html">Biz Applications</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="crumb"><a href="admin-dashboard.html">Admin</a> · Cold outreach</div>
+  <h1>Cold outreach</h1>
+  <p class="lead">Outbound cold prospecting via <strong>joinlymx.com</strong> (Mailgun). Replies route back to <strong>getlymx.com</strong> per the Two-Lane Rule. Manage lead lists, draft campaigns, and queue them for delivery.</p>
+
+  <div class="tiles">
+    <div class="tile"><div class="lbl">Active leads</div><div class="val" id="tile-active-leads">—</div><div class="sub">across all lists</div></div>
+    <div class="tile"><div class="lbl">Lead lists</div><div class="val" id="tile-lists">—</div><div class="sub">non-archived</div></div>
+    <div class="tile"><div class="lbl">Campaigns sending</div><div class="val" id="tile-sending">—</div><div class="sub">status = sending/scheduled</div></div>
+    <div class="tile"><div class="lbl">Sent (last 30d)</div><div class="val" id="tile-sent-30d">—</div><div class="sub">delivered or sent</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="lists">Lead lists <span class="ct" id="ct-lists">0</span></button>
+    <button class="tab" data-tab="campaigns">Campaigns <span class="ct" id="ct-campaigns">0</span></button>
+  </div>
+
+  <!-- ─── Lead lists panel ─── -->
+  <div class="panel on" data-panel="lists">
+    <div class="card">
+      <div class="card-h">
+        <h2>Lead lists</h2>
+        <div class="actions">
+          <button class="btn btn-sm" id="btnImportCsv">Import CSV</button>
+          <button class="btn btn-primary btn-sm" id="btnNewList">+ New list</button>
+        </div>
+      </div>
+      <div id="listsHost">
+        <div class="empty"><div class="em">📋</div><div class="et">Loading lead lists…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Campaigns panel ─── -->
+  <div class="panel" data-panel="campaigns">
+    <div class="card">
+      <div class="card-h">
+        <h2>Campaigns</h2>
+        <div class="actions">
+          <button class="btn btn-primary btn-sm" id="btnNewCampaign">+ New campaign</button>
+        </div>
+      </div>
+      <div id="campaignsHost">
+        <div class="empty"><div class="em">📨</div><div class="et">Loading campaigns…</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── New list modal ─── -->
+<div class="modal-bg" id="modal-new-list">
+  <div class="modal">
+    <div class="modal-h"><h3>Create lead list</h3><button class="close" data-close>×</button></div>
+    <div class="form">
+      <div class="form-row">
+        <label>Name</label>
+        <input id="nl-name" type="text" placeholder="e.g. LV restaurants 2026-Q3" />
+      </div>
+      <div class="form-row">
+        <label>Audience type</label>
+        <select id="nl-audience">
+          <option value="business_prospect">Business prospect</option>
+          <option value="partner_prospect">Partner prospect</option>
+          <option value="customer_prospect">Customer prospect</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Description (optional)</label>
+        <input id="nl-desc" type="text" placeholder="Where these came from, why we're pitching them" />
+      </div>
+    </div>
+    <div class="modal-f">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn btn-primary" id="nl-save">Create list</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Import CSV modal ─── -->
+<div class="modal-bg" id="modal-import">
+  <div class="modal">
+    <div class="modal-h"><h3>Import leads from CSV</h3><button class="close" data-close>×</button></div>
+    <div class="form">
+      <div class="form-row">
+        <label>Target list</label>
+        <select id="ic-list">
+          <option value="">— Create new list during import —</option>
+        </select>
+      </div>
+      <div id="ic-newlist-fields">
+        <div class="form-row">
+          <label>New list name</label>
+          <input id="ic-list-name" type="text" placeholder="e.g. LV salons 2026-Q3" />
+        </div>
+        <div class="form-row">
+          <label>Audience</label>
+          <select id="ic-audience">
+            <option value="business_prospect">Business prospect</option>
+            <option value="partner_prospect">Partner prospect</option>
+            <option value="customer_prospect">Customer prospect</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Source tag</label>
+        <input id="ic-source" type="text" placeholder="e.g. biz_directory_scraper, manual_csv" value="manual_csv" />
+      </div>
+      <div class="form-row">
+        <label>CSV content</label>
+        <textarea id="ic-csv" placeholder="email,first_name,last_name,business_name,business_city,business_state&#10;owner@example.com,Jane,Doe,Joe's Pizza,Las Vegas,NV"></textarea>
+        <div class="hint">Required column: <code>email</code>. Recognized: first_name, last_name, phone, business_name, business_city, business_state, business_zip, business_category, notes. Max 5,000 rows per import.</div>
+      </div>
+    </div>
+    <div class="modal-f">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn" id="ic-dryrun">Dry-run</button>
+      <button class="btn btn-primary" id="ic-import">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── New campaign modal ─── -->
+<div class="modal-bg" id="modal-new-campaign">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-h"><h3>New campaign</h3><button class="close" data-close>×</button></div>
+    <div class="form">
+      <div class="form-row">
+        <label>Name (internal)</label>
+        <input id="nc-name" type="text" placeholder="e.g. LV restaurants — Q3 first touch" />
+      </div>
+      <div class="form-row">
+        <label>Lead list</label>
+        <select id="nc-list"></select>
+      </div>
+      <div class="form-row">
+        <label>Audience</label>
+        <select id="nc-audience">
+          <option value="business_prospect">Business prospect</option>
+          <option value="partner_prospect">Partner prospect</option>
+          <option value="customer_prospect">Customer prospect</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>From address</label>
+          <input id="nc-from-addr" type="email" placeholder="kenny@joinlymx.com" />
+        </div>
+        <div class="form-row">
+          <label>From display name</label>
+          <input id="nc-from-name" type="text" placeholder="Kenny Lin · LYMX" />
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Reply-To address</label>
+        <input id="nc-replyto" type="email" placeholder="kenny@joinlymx.com" />
+        <div class="hint">Per the Two-Lane Rule: keep Reply-To on the cold domain (joinlymx.com). Cloudflare Email Routing forwards replies to the matching getlymx.com address.</div>
+      </div>
+      <div class="form-row">
+        <label>Subject template</label>
+        <input id="nc-subject" type="text" placeholder="Hi {first_name} — LYMX rewards idea for {business_name}" />
+        <div class="hint">Tokens: {first_name}, {last_name}, {business_name}, {business_city}, {business_state}, {business_zip}, {business_category}, {unsubscribe_url}</div>
+      </div>
+      <div class="form-row">
+        <label>Body (HTML)</label>
+        <textarea id="nc-html" placeholder="<p>Hi {first_name},</p>&#10;<p>We help {business_category} businesses like {business_name} in {business_city} grow with the LYMX rewards network …</p>"></textarea>
+        <div class="hint">If you don't include <code>{unsubscribe_url}</code> we'll auto-append a footer with it.</div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Daily send cap</label>
+          <input id="nc-daily" type="number" value="250" min="1" />
+        </div>
+        <div class="form-row">
+          <label>Suppression window (days)</label>
+          <input id="nc-supp" type="number" value="90" min="1" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-f">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn" id="nc-save-draft">Save draft</button>
+      <button class="btn btn-primary" id="nc-save-queue">Save & queue all</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>© 2026 LYMX Power · Las Vegas, NV · <a href="admin-dashboard.html" style="color:#5a6373">Admin home</a></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// ============================================================================
+// admin-outreach.html
+// 2026-05-27 — minimal MVP admin UI for the LYMX cold lane (joinlymx.com).
+// Two panels (Lead Lists, Campaigns), 3 modals (new list, CSV import, new
+// campaign). Talks to outreach_* tables directly for reads, and to two
+// Netlify Functions for actions:
+//   - /.netlify/functions/import-leads-csv
+//   - /.netlify/functions/queue-outreach-campaign
+// ============================================================================
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[<>&"]/g, function (c) {
+      return ({ '<':'&lt;', '>':'&gt;', '&':'&amp;', '"':'&quot;' })[c];
+    });
+  }
+  function toast(msg, kind) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.className = 'toast on ' + (kind || '');
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(function () { t.className = 'toast ' + (kind || ''); }, 3000);
+  }
+  function fmtDate(s) {
+    if (!s) return '—';
+    return new Date(s).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+  function fmtDay(s) {
+    if (!s) return '—';
+    return new Date(s).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  var sb, user, token;
+  var state = { lists: [], campaigns: [] };
+
+  async function init() {
+    if (!window.LYMX || !window.LYMX.sb) { setTimeout(init, 200); return; }
+    sb = window.LYMX.sb;
+    var sess = await sb.auth.getSession();
+    var s = sess && sess.data && sess.data.session;
+    if (!s) { window.location.href = 'login.html?next=' + encodeURIComponent(location.pathname); return; }
+    user = s.user;
+    token = s.access_token;
+
+    wireTabs();
+    wireModals();
+
+    loadAll();
+  }
+
+  function wireTabs() {
+    document.querySelectorAll('.tab').forEach(function (t) {
+      t.addEventListener('click', function () {
+        document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('on'); });
+        t.classList.add('on');
+        var name = t.getAttribute('data-tab');
+        document.querySelectorAll('.panel').forEach(function (p) {
+          p.classList.toggle('on', p.getAttribute('data-panel') === name);
+        });
+      });
+    });
+  }
+
+  function wireModals() {
+    // Close handlers
+    document.querySelectorAll('[data-close]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        b.closest('.modal-bg').classList.remove('on');
+      });
+    });
+
+    // New list
+    $('btnNewList').addEventListener('click', function () { $('modal-new-list').classList.add('on'); });
+    $('nl-save').addEventListener('click', saveNewList);
+
+    // CSV import
+    $('btnImportCsv').addEventListener('click', function () {
+      populateListPicker($('ic-list'), { includeBlank: '— Create new list during import —' });
+      toggleImportNewListFields();
+      $('modal-import').classList.add('on');
+    });
+    $('ic-list').addEventListener('change', toggleImportNewListFields);
+    $('ic-dryrun').addEventListener('click', function () { importCsv(true); });
+    $('ic-import').addEventListener('click', function () { importCsv(false); });
+
+    // New campaign
+    $('btnNewCampaign').addEventListener('click', function () {
+      if (!state.lists.length) { toast('Create a lead list first', 'err'); return; }
+      populateListPicker($('nc-list'), {});
+      $('modal-new-campaign').classList.add('on');
+    });
+    $('nc-save-draft').addEventListener('click', function () { saveCampaign(false); });
+    $('nc-save-queue').addEventListener('click', function () { saveCampaign(true); });
+  }
+
+  async function loadAll() {
+    await Promise.all([loadLists(), loadCampaigns(), loadTiles()]);
+  }
+
+  async function loadLists() {
+    var { data, error } = await sb
+      .from('outreach_lead_lists')
+      .select('id, name, description, audience_type, lead_count, active_lead_count, created_at')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+    if (error) { toast('Lead lists: ' + error.message, 'err'); return; }
+    state.lists = data || [];
+    $('ct-lists').textContent = state.lists.length;
+    renderLists();
+  }
+
+  function renderLists() {
+    var host = $('listsHost');
+    if (!state.lists.length) {
+      host.innerHTML = '<div class="empty"><div class="em">📋</div><div class="et">No lead lists yet</div><div class="es">Create one with the "+ New list" button or import a CSV.</div></div>';
+      return;
+    }
+    var rows = state.lists.map(function (l) {
+      return '<tr>'
+        + '<td><strong>' + esc(l.name) + '</strong>'
+        + (l.description ? '<div style="font-size:12.5px;color:var(--mute);margin-top:2px">' + esc(l.description) + '</div>' : '')
+        + '</td>'
+        + '<td><span class="pill audience-' + esc(l.audience_type) + '">' + esc(l.audience_type.replace(/_/g, ' ')) + '</span></td>'
+        + '<td><strong>' + (l.active_lead_count || 0) + '</strong> <span style="color:var(--mute);font-size:12px">/ ' + (l.lead_count || 0) + '</span></td>'
+        + '<td style="color:var(--mute);font-size:12.5px">' + fmtDay(l.created_at) + '</td>'
+        + '</tr>';
+    }).join('');
+    host.innerHTML = '<table><thead><tr>'
+      + '<th>Name</th><th>Audience</th><th>Active / total</th><th>Created</th>'
+      + '</tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  async function loadCampaigns() {
+    var { data, error } = await sb
+      .from('outreach_campaigns')
+      .select('id, name, audience_type, status, lead_list_id, scheduled_at, started_at, total_queued, total_sent, total_delivered, total_bounced, total_unsubscribed, daily_send_cap, created_at')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (error) { toast('Campaigns: ' + error.message, 'err'); return; }
+    state.campaigns = data || [];
+    $('ct-campaigns').textContent = state.campaigns.length;
+    renderCampaigns();
+  }
+
+  function renderCampaigns() {
+    var host = $('campaignsHost');
+    if (!state.campaigns.length) {
+      host.innerHTML = '<div class="empty"><div class="em">📨</div><div class="et">No campaigns yet</div><div class="es">Click "+ New campaign" to draft your first cold-outreach campaign.</div></div>';
+      return;
+    }
+    var rows = state.campaigns.map(function (c) {
+      var listName = (state.lists.find(function (l) { return l.id === c.lead_list_id; }) || {}).name || '—';
+      var stats = (c.total_sent || 0) + ' sent';
+      if (c.total_bounced)      stats += ' · ' + c.total_bounced + ' bounced';
+      if (c.total_unsubscribed) stats += ' · ' + c.total_unsubscribed + ' unsub';
+      return '<tr>'
+        + '<td><strong>' + esc(c.name) + '</strong>'
+        + '<div style="font-size:12.5px;color:var(--mute);margin-top:2px">List: ' + esc(listName) + '</div></td>'
+        + '<td><span class="pill ' + esc(c.status) + '">' + esc(c.status) + '</span></td>'
+        + '<td><span class="pill audience-' + esc(c.audience_type) + '">' + esc(c.audience_type.replace(/_/g, ' ')) + '</span></td>'
+        + '<td>' + stats + '</td>'
+        + '<td style="color:var(--mute);font-size:12.5px">' + fmtDay(c.created_at) + '</td>'
+        + '</tr>';
+    }).join('');
+    host.innerHTML = '<table><thead><tr>'
+      + '<th>Campaign</th><th>Status</th><th>Audience</th><th>Stats</th><th>Created</th>'
+      + '</tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  async function loadTiles() {
+    // Tile 1: active leads (status='active', deleted_at null)
+    var l = await sb.from('outreach_leads').select('id', { count: 'exact', head: true })
+      .eq('status', 'active').is('deleted_at', null);
+    $('tile-active-leads').textContent = (l.count != null ? l.count : 0).toLocaleString();
+
+    // Tile 2: lists (non-deleted)
+    var ls = await sb.from('outreach_lead_lists').select('id', { count: 'exact', head: true })
+      .is('deleted_at', null);
+    $('tile-lists').textContent = (ls.count != null ? ls.count : 0).toLocaleString();
+
+    // Tile 3: campaigns sending/scheduled
+    var cs = await sb.from('outreach_campaigns').select('id', { count: 'exact', head: true })
+      .in('status', ['scheduled', 'sending']);
+    $('tile-sending').textContent = (cs.count != null ? cs.count : 0).toLocaleString();
+
+    // Tile 4: sent last 30 days
+    var thirtyAgo = new Date(Date.now() - 30 * 86400 * 1000).toISOString();
+    var ss = await sb.from('outreach_sends').select('id', { count: 'exact', head: true })
+      .in('status', ['sent', 'delivered'])
+      .gte('sent_at', thirtyAgo);
+    $('tile-sent-30d').textContent = (ss.count != null ? ss.count : 0).toLocaleString();
+  }
+
+  function populateListPicker(el, opts) {
+    el.innerHTML = '';
+    if (opts.includeBlank) {
+      var blank = document.createElement('option');
+      blank.value = '';
+      blank.textContent = opts.includeBlank;
+      el.appendChild(blank);
+    }
+    state.lists.forEach(function (l) {
+      var o = document.createElement('option');
+      o.value = l.id;
+      o.textContent = l.name + ' (' + (l.active_lead_count || 0) + ' active)';
+      el.appendChild(o);
+    });
+  }
+
+  function toggleImportNewListFields() {
+    var selected = $('ic-list').value;
+    $('ic-newlist-fields').style.display = selected ? 'none' : 'block';
+  }
+
+  async function saveNewList() {
+    var name = $('nl-name').value.trim();
+    if (!name) { toast('Name required', 'err'); return; }
+    var { error } = await sb.from('outreach_lead_lists').insert({
+      name: name,
+      description: $('nl-desc').value.trim() || null,
+      audience_type: $('nl-audience').value,
+      created_by_user_id: user.id
+    });
+    if (error) { toast('Create list failed: ' + error.message, 'err'); return; }
+    $('modal-new-list').classList.remove('on');
+    $('nl-name').value = ''; $('nl-desc').value = '';
+    toast('List created', 'ok');
+    loadLists();
+  }
+
+  async function importCsv(dryRun) {
+    var csv = $('ic-csv').value;
+    if (!csv || csv.length < 5) { toast('Paste a CSV first', 'err'); return; }
+    var body = {
+      csv: csv,
+      lead_list_id: $('ic-list').value || null,
+      list_name:    $('ic-list-name').value.trim() || undefined,
+      list_audience_type: $('ic-audience').value,
+      source: $('ic-source').value.trim() || 'manual_csv',
+      dry_run: !!dryRun
+    };
+    try {
+      var r = await fetch('/.netlify/functions/import-leads-csv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify(body)
+      });
+      var json = await r.json();
+      if (!r.ok || !json.ok) { toast('Import failed: ' + (json.error || r.status), 'err'); return; }
+      var msg = dryRun
+        ? 'Dry-run: ' + json.valid_rows + ' valid / ' + (json.skipped_invalid || 0) + ' invalid'
+        : 'Imported: ' + json.new_leads + ' new · ' + json.updated_leads + ' updated · ' + json.added_to_list + ' added to list';
+      toast(msg, 'ok');
+      if (!dryRun) {
+        $('modal-import').classList.remove('on');
+        $('ic-csv').value = ''; $('ic-list-name').value = '';
+        loadLists();
+      }
+    } catch (e) {
+      toast('Import error: ' + (e.message || e), 'err');
+    }
+  }
+
+  async function saveCampaign(queueAfter) {
+    var name      = $('nc-name').value.trim();
+    var listId    = $('nc-list').value;
+    var audience  = $('nc-audience').value;
+    var fromAddr  = $('nc-from-addr').value.trim();
+    var fromName  = $('nc-from-name').value.trim();
+    var replyTo   = $('nc-replyto').value.trim();
+    var subject   = $('nc-subject').value.trim();
+    var html      = $('nc-html').value;
+    var dailyCap  = parseInt($('nc-daily').value, 10);
+    var suppDays  = parseInt($('nc-supp').value, 10);
+
+    if (!name || !listId || !fromAddr || !fromName || !replyTo || !subject || !html) {
+      toast('Fill every required field', 'err'); return;
+    }
+    if (!/\b@joinlymx\.com$/i.test(fromAddr)) {
+      toast('From address must be @joinlymx.com (cold lane)', 'err'); return;
+    }
+
+    var { data, error } = await sb.from('outreach_campaigns').insert({
+      name:                  name,
+      lead_list_id:          listId,
+      audience_type:         audience,
+      from_address:          fromAddr,
+      from_display_name:     fromName,
+      reply_to_address:      replyTo,
+      subject_template:      subject,
+      body_html_template:    html,
+      daily_send_cap:        isNaN(dailyCap) ? 250 : dailyCap,
+      resend_suppression_days: isNaN(suppDays) ? 90 : suppDays,
+      provider:              'mailgun',
+      status:                'draft',
+      created_by_user_id:    user.id
+    }).select('id').single();
+    if (error || !data) { toast('Save failed: ' + (error && error.message), 'err'); return; }
+    var campaignId = data.id;
+
+    if (queueAfter) {
+      try {
+        var r = await fetch('/.netlify/functions/queue-outreach-campaign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ campaign_id: campaignId })
+        });
+        var json = await r.json();
+        if (!r.ok || !json.ok) { toast('Save OK; queue failed: ' + (json.error || r.status), 'err'); }
+        else { toast('Queued ' + json.queued + ' sends · ' + (json.skipped_already_suppressed || 0) + ' skipped', 'ok'); }
+      } catch (e) {
+        toast('Queue error: ' + (e.message || e), 'err');
+      }
+    } else {
+      toast('Campaign saved as draft', 'ok');
+    }
+
+    $('modal-new-campaign').classList.remove('on');
+    // Clear form
+    ['nc-name','nc-from-addr','nc-from-name','nc-replyto','nc-subject','nc-html'].forEach(function (id) { $(id).value = ''; });
+    loadCampaigns();
+    loadTiles();
+  }
+
+  init();
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-nav.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>
