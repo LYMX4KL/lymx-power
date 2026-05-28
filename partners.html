@@ -189,18 +189,16 @@
 <script>
   document.getElementById('yr').textContent = new Date().getFullYear();
 
-  const partners = [
-    {id:'kenny-lin',  name:'Kenny Lin',     city:'Las Vegas, NV',    tier:'gold',     direct:12, tree:28, founding:true,  av:'KL', avBg:'linear-gradient(135deg,#d4af37,#b88a2e)'},
-    {id:'mike-chen',  name:'Mike Chen',     city:'Las Vegas, NV',    tier:'gold',     direct:8,  tree:14, founding:true,  av:'MC', avBg:'linear-gradient(135deg,#0a84ff,#0050c7)'},
-    {id:'sarah-lee',  name:'Sarah Lee',     city:'Henderson, NV',    tier:'silver',   direct:5,  tree:8,  founding:true,  av:'SL', avBg:'linear-gradient(135deg,#13a26b,#0d7d51)'},
-    {id:'lisa-park',  name:'Lisa Park',     city:'Las Vegas, NV',    tier:'gold',     direct:6,  tree:10, founding:true,  av:'LP', avBg:'linear-gradient(135deg,#8b5cf6,#6d28d9)'},
-    {id:'tom-vega',   name:'Tom Vega',      city:'Henderson, NV',    tier:'silver',   direct:3,  tree:5,  founding:false, av:'TV', avBg:'linear-gradient(135deg,#ef4444,#dc2626)'},
-    {id:'jordan-faye',name:'Jordan Faye',   city:'Las Vegas, NV',    tier:'bronze',   direct:2,  tree:2,  founding:false, av:'JF', avBg:'linear-gradient(135deg,#f59e0b,#d97706)'},
-    {id:'nina-patel', name:'Nina Patel',    city:'Las Vegas, NV',    tier:'silver',   direct:4,  tree:7,  founding:false, av:'NP', avBg:'linear-gradient(135deg,#10b981,#059669)'},
-    {id:'chris-vega', name:'Chris Vega',    city:'Las Vegas, NV',    tier:'bronze',   direct:1,  tree:1,  founding:false, av:'CV', avBg:'linear-gradient(135deg,#0891b2,#0e7490)'},
-    {id:'maya-cole',  name:'Maya Cole',     city:'Las Vegas, NV',    tier:'bronze',   direct:1,  tree:1,  founding:false, av:'MC', avBg:'linear-gradient(135deg,#a01644,#6e0e2f)'},
-    {id:'alex-kim',   name:'Alex Kim',      city:'Las Vegas, NV',    tier:'platinum', direct:14, tree:42, founding:false, av:'AK', avBg:'linear-gradient(135deg,#7c3aed,#5b21b6)'},
-  ];
+  // 2026-05-28 #1f900a54 + #2632ad1d + #cf3523ac — was: hardcoded 10-partner
+  // demo array, every card linked to partner-profile.html with no partner code,
+  // so every click landed on Kenny's hardcoded profile. Dave's complaint:
+  // "Registered Partner is not displayed in directory." Rae's complaint: "All
+  // cards lead to the same (Kenny's) profile." Root cause fix: fetch real
+  // partners from public.partners and route each card to
+  // partner-profile.html?p={partner_code} so the per-partner profile loader
+  // can render the right person. Empty array is replaced by the async fetch
+  // below; while it loads we show a skeleton.
+  let partners = [];
 
   let currentFilter = 'all';
 
@@ -226,7 +224,7 @@
       return;
     }
     grid.innerHTML = rows.map(p => `
-      <a class="pcard ${p.founding ? 'founding' : ''}" href="${p.id === 'kenny-lin' ? 'partner-profile.html' : 'partner-profile.html'}">
+      <a class="pcard ${p.founding ? 'founding' : ''}" href="partner-profile.html?p=${encodeURIComponent(p.id)}">
         ${p.founding ? '<div class="badge">★ Founding</div>' : ''}
         <div class="top">
           <div class="av" style="background:${p.avBg}">${p.av}</div>
@@ -245,7 +243,89 @@
     `).join('');
   }
 
-  render();
+  // 2026-05-28 — DB-driven partner directory loader.
+  // Maps public.partners rows to the same shape the render() function expects
+  // so the hardcoded shape stays as the contract. Avatar gradients are picked
+  // from a stable palette by hashing the partner_code so colours are
+  // deterministic per partner instead of arbitrary per render.
+  const _avPalette = [
+    'linear-gradient(135deg,#0a84ff,#0050c7)',
+    'linear-gradient(135deg,#13a26b,#0d7d51)',
+    'linear-gradient(135deg,#8b5cf6,#6d28d9)',
+    'linear-gradient(135deg,#ef4444,#dc2626)',
+    'linear-gradient(135deg,#f59e0b,#d97706)',
+    'linear-gradient(135deg,#10b981,#059669)',
+    'linear-gradient(135deg,#0891b2,#0e7490)',
+    'linear-gradient(135deg,#a01644,#6e0e2f)',
+    'linear-gradient(135deg,#7c3aed,#5b21b6)',
+    'linear-gradient(135deg,#d4af37,#b88a2e)'
+  ];
+  function _avBgForCode(code) {
+    var s = String(code || ''), h = 0;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+    return _avPalette[Math.abs(h) % _avPalette.length];
+  }
+  function _tierForRow(row) {
+    if (row.is_founding_25) return 'gold';
+    // Future: derive tier from production / downline counts via partner_stats RPC.
+    return 'bronze';
+  }
+  function _cityForRow(row) {
+    // partners table has country_code only; show country with a "—" fallback so
+    // the directory reads consistently even when city isn't captured yet.
+    return row.country_code ? ('Country: ' + row.country_code) : '—';
+  }
+  function _initialsFor(row) {
+    var src = row.display_name || row.legal_name || 'P';
+    var parts = src.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return src.slice(0, 2).toUpperCase();
+  }
+  async function loadPartners() {
+    if (!window.LYMX_CONFIG) {
+      // No config — render empty grid with a friendly note.
+      partners = [];
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '<div class="empty">Partner directory is loading…</div>';
+      return;
+    }
+    const cfg = window.LYMX_CONFIG;
+    try {
+      const r = await fetch(
+        cfg.SUPABASE_URL + '/rest/v1/partners?archived_at=is.null&select=id,partner_code,display_name,legal_name,is_founding_25,founding_25_rank,country_code&order=created_at.asc&limit=200',
+        { headers: { apikey: cfg.SUPABASE_ANON_KEY } }
+      );
+      if (!r.ok) {
+        console.warn('[partners.html] partners fetch failed', r.status);
+        partners = [];
+        document.getElementById('grid').innerHTML =
+          '<div class="empty">Partner directory is loading. Refresh in a moment, or <a href="partner-signup.html" style="color:var(--accent-2);font-weight:700">become a Partner</a> if you don\'t see one yet.</div>';
+        return;
+      }
+      const rows = await r.json();
+      partners = rows.map(function (row) {
+        return {
+          id: row.partner_code || row.id,
+          name: row.display_name || row.legal_name || 'LYMX Partner',
+          city: _cityForRow(row),
+          tier: _tierForRow(row),
+          direct: 0, // production count needs a separate RPC; show 0 until wired.
+          tree: 0,
+          founding: !!row.is_founding_25,
+          av: _initialsFor(row),
+          avBg: _avBgForCode(row.partner_code || row.id)
+        };
+      });
+      render();
+    } catch (e) {
+      console.warn('[partners.html] partners load failed', e);
+      partners = [];
+      document.getElementById('grid').innerHTML =
+        '<div class="empty">Partner directory is unavailable right now. Please refresh in a moment.</div>';
+    }
+  }
+
+  loadPartners();
 </script>
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
