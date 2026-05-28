@@ -148,8 +148,8 @@
       <div class="l">Last month</div>
     </div>
     <div class="stat">
-      <div class="n">—</div>
-      <div class="l">Rank change</div>
+      <div class="n">0</div>
+      <div class="l">Activations</div>
     </div>
   </div>
 </div>
@@ -174,6 +174,7 @@
     </div>
   </div>
 
+  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
   <table>
     <thead>
       <tr>
@@ -188,6 +189,7 @@
       <tr><td colspan="5" style="padding:40px;text-align:center;color:var(--muted)">Loading partners…</td></tr>
     </tbody>
   </table>
+  </div>
 
   <div class="privacy-note">
     <strong>🔒 Privacy:</strong> When the leaderboard goes live, most Partners appear anonymized as "Anonymous-[Tier]". You can opt-in to be named in <a href="customer-settings.html">Settings → Privacy</a>.
@@ -318,7 +320,12 @@
       if (c.created_at >= monthAgoIso) byId[c.partner_id].lastMonthEarnings += amt;
     });
 
-    const ranked = Object.values(byId).sort((a,b) => b.lifetimeEarnings - a.lifetimeEarnings || b.downlineCount - a.downlineCount || b.ownProduction - a.ownProduction);
+    // 2026-05-27 root-cause fix (ticket: "#1 with 0 activations"). The hero
+    // card used to rank by lifetimeEarnings while the table below ranks by
+    // activations, so a partner with 0 activations could show as "#1". Rank
+    // the card by activations (ownProduction) too, mirroring the live table
+    // sort, so the card and the table always agree.
+    const ranked = Object.values(byId).sort((a,b) => b.ownProduction - a.ownProduction || (a.is_founding_25===b.is_founding_25?0:(a.is_founding_25?-1:1)) || b.downlineCount - a.downlineCount);
     const myEntry = me ? ranked.find(p => p.id === me.id) : null;
     const myRank = myEntry ? (ranked.indexOf(myEntry) + 1) : null;
     const fmtUsd = (n) => '$' + Math.round(Number(n||0)).toLocaleString('en-US');
@@ -331,42 +338,30 @@
         const bodyP  = myRankBox.querySelector('.body p');
         const stats  = myRankBox.querySelectorAll('.stat .n');
         const firstName = (me.display_name || me.legal_name || (user.email || '').split('@')[0] || 'You').split(/\s+/)[0];
-        if (rkEl) rkEl.textContent = partnerCount >= 5 ? ('#' + myRank) : '—';
+        // 2026-05-27 root-cause fix: show a rank number only once the partner
+        // has at least one activation. The old partnerCount>=5 gate showed
+        // "#1 with 0 activations", which confused testers because rank is
+        // activation-based. stat[1] now shows the partner's activation count
+        // (real data) instead of a perpetually-blank "Rank change".
+        const myActivations = myEntry.ownProduction || 0;
+        if (rkEl) rkEl.textContent = myActivations >= 1 ? ('#' + myRank) : '—';
         if (bodyH3) bodyH3.textContent = firstName + (me.is_founding_25 ? ' · Founding 25' : '');
-        if (bodyP) bodyP.textContent = partnerCount >= 5
+        if (bodyP) bodyP.textContent = myActivations >= 1
           ? ('You are #' + myRank + ' of ' + partnerCount + ' partners')
-          : 'Your rank appears here once 5+ Partners are active in the network.';
+          : 'Get your first activation to climb the leaderboard.';
         if (stats[0]) stats[0].textContent = fmtUsd(myEntry.lastMonthEarnings);
-        if (stats[1]) stats[1].textContent = '—';
+        if (stats[1]) stats[1].textContent = String(myActivations);
       }
     }
 
-    if (partnerCount < 5) return;
-    const podium = document.querySelector('.wrap > div[style*="🏆"]');
-    if (podium) podium.style.display = 'none';
-
-    const tbody = document.querySelector('.leaderboard tbody');
-    if (tbody) {
-      const top25 = ranked.slice(0, 25);
-      tbody.innerHTML = top25.map((p, i) => {
-        const rank = i + 1;
-        const tier = p.is_founding_25 ? 'Founding 25' : (p.ownProduction >= 10 ? 'Master' : p.ownProduction >= 3 ? 'Active' : 'Side');
-        const isMe = me && p.id === me.id;
-        const anon = isMe ? (p.display_name || (p.legal_name || 'You').split(' ')[0]) : ('Partner-' + p.id.slice(0,4).toUpperCase());
-        return '<tr' + (isMe ? ' class="you"' : '') + '>'
-          + '<td class="rk' + (rank===1?' gold':rank===2?' silver':rank===3?' bronze':'') + '"><span class="pos">' + rank + '</span></td>'
-          + '<td>' + anon + (isMe ? ' <span class="badge master">YOU</span>' : '') + '</td>'
-          + '<td>' + tier + '</td>'
-          + '<td style="color:#5d6470">—</td>'
-          + '<td class="num">' + p.ownProduction + '</td>'
-          + '<td class="num">' + p.g1Count + '</td>'
-          + '<td class="num">' + p.downlineCount + '</td>'
-          + '</tr>';
-      }).join('');
-    }
-
-    const tableH2 = document.querySelector('.leaderboard-h h2');
-    if (tableH2) tableH2.textContent = 'Top ' + Math.min(25, ranked.length) + ' Partners — All time';
+    // 2026-05-27 root-cause fix (tickets: name wrapping + last column pushed
+    // off-screen). This block used to render the leaderboard table with SEVEN
+    // <td> cells into a FIVE-column <thead>, racing the live activations-based
+    // renderer below (#8ae35834) on the same #leaderboardBody. When this stale
+    // 7-column version won the race, the extra columns overflowed (last column
+    // cut off) and the cramped Partner column wrapped names like "Rachel Ann".
+    // The live renderer is now the single source of truth for the table; this
+    // script only populates the "my rank" hero card above.
 
   } catch (e) {
     console.warn('[leaderboard] wire failed', e);
@@ -480,7 +475,7 @@
               : remainingForFounding + ' more to lock';
           return '<tr>' +
             '<td style="font-weight:800">' + (idx + 1) + '</td>' +
-            '<td><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + esc(initials) + '</div><div><div style="font-weight:700">' + esc(name) + '</div><div style="font-size:11.5px;color:var(--muted);font-family:ui-monospace,Menlo,monospace">' + esc(p.partner_code || '—') + '</div></div></div></td>' +
+            '<td><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + esc(initials) + '</div><div><div style="font-weight:700;white-space:nowrap">' + esc(name) + '</div><div style="font-size:11.5px;color:var(--muted);font-family:ui-monospace,Menlo,monospace">' + esc(p.partner_code || '—') + '</div></div></div></td>' +
             '<td><span style="font-size:12px;font-weight:700;color:' + (p.is_founding_25 ? '#86670c' : 'var(--muted)') + '">' + esc(tier) + '</span></td>' +
             '<td class="num" style="font-weight:800;font-size:15px">' + p.activations + '</td>' +
             '<td><div style="display:flex;align-items:center;gap:10px"><div style="width:120px;height:7px;background:var(--bg-soft);border-radius:99px;overflow:hidden;flex-shrink:0"><div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#d4af37,#f5d172)"></div></div><span style="font-size:12px;color:var(--ink-2)">' + progressLabel + '</span></div></td>' +
