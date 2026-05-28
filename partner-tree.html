@@ -513,14 +513,18 @@
     //     profile is built, surface "Message this partner" instead — that gives the user
     //     something they CAN do with the contact, routed by partner_id so the recipient
     //     lands in the right thread.
+    // 2026-05-28 #df6b9c82 follow-up — fall back to node.id when partnerId
+     // isn't set (older first-loader uses partnerId; second loader uses id; either
+     // way we have a partner UUID to route the message to).
+    const targetPartnerId = node.partnerId || node.id || null;
     let actionHtml;
     if (node.generation === 'me') {
       actionHtml = '<a class="btn" href="rep-dashboard.html">Open dashboard</a>';
-    } else if (node.partnerId) {
-      actionHtml = '<a class="btn" href="my-conversations.html?with=' + encodeURIComponent(node.partnerId) + '">Message this partner</a>';
+    } else if (targetPartnerId) {
+      actionHtml = '<a class="btn" href="my-conversations.html?with=' + encodeURIComponent(targetPartnerId) + '">Message this partner</a>';
     } else {
-      // No partnerId resolved (placeholder data) — show only Close so we don't promise
-      // an action that has no target to route to.
+      // No partner id resolved at all (placeholder data) — show only Close so we don't
+      // promise an action that has no target to route to.
       actionHtml = '';
     }
     m.innerHTML = `
@@ -628,8 +632,13 @@
       return;
     }
 
+    // 2026-05-28 #df6b9c82 follow-up — second loader was building nodes with
+    // only `id`, while the modal action button reads `node.partnerId`. Result:
+    // every downline node fell into the "no partnerId" branch and the modal
+    // showed only Close. Set BOTH fields consistently so the modal can route
+    // the Message action regardless of which loader populated the tree.
     const partnerById = {};
-    partnerById[me.id] = { id: me.id, generation: 'me', children: [],
+    partnerById[me.id] = { id: me.id, partnerId: me.id, generation: 'me', children: [],
       name: me.display_name || (me.legal_name || 'You').split(' ')[0] || 'You',
       tier: me.is_founding_25 ? 'Founding 25' : 'Starter',
       production: 0, productionIncome: 0 };
@@ -641,7 +650,7 @@
       const kids = await get('/rest/v1/partners?sponsor_partner_id=in.' + ids + '&select=id,display_name,legal_name,is_founding_25,sponsor_partner_id&limit=500');
       if (!kids || !kids.length) break;
       kids.forEach(k => {
-        partnerById[k.id] = { id: k.id, generation: genLabels[g], children: [],
+        partnerById[k.id] = { id: k.id, partnerId: k.id, generation: genLabels[g], children: [],
           name: k.display_name || (k.legal_name || 'Partner').split(' ')[0],
           tier: k.is_founding_25 ? 'Founding 25' : 'Starter',
           production: 0, productionIncome: 0 };
