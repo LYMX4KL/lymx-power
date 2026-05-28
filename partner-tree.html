@@ -502,6 +502,27 @@
     const genLabel = {me:'You',g1:'G1 (your direct recruit)',g2:'G2',g3:'G3'}[node.generation];
     const pctText = node.generation === 'me' ? '9% on your own production' : (OVERRIDE_PCT[node.generation]*100) + '% override to you';
     const m = document.getElementById('modal-body');
+    // 2026-05-28 #df6b9c82 — Dave: "Partner Tree Modal Uses 'Open Dashboard' instead
+    // of viewing Partner profile." Root cause: the button label said "Open dashboard"
+    // and linked to rep-dashboard.html, which opens the SIGNED-IN user's own dashboard
+    // regardless of which downline node was clicked. Honest fix:
+    //   - For the "me" node (own self): keep "Open dashboard" — that IS your own page.
+    //   - For downline nodes: there's no per-partner profile page yet (partner-profile.html
+    //     is currently hardcoded as Kenny's profile, so routing every node there would
+    //     show every clicker the same fake page — a worse band-aid). Until the per-partner
+    //     profile is built, surface "Message this partner" instead — that gives the user
+    //     something they CAN do with the contact, routed by partner_id so the recipient
+    //     lands in the right thread.
+    let actionHtml;
+    if (node.generation === 'me') {
+      actionHtml = '<a class="btn" href="rep-dashboard.html">Open dashboard</a>';
+    } else if (node.partnerId) {
+      actionHtml = '<a class="btn" href="my-conversations.html?with=' + encodeURIComponent(node.partnerId) + '">Message this partner</a>';
+    } else {
+      // No partnerId resolved (placeholder data) — show only Close so we don't promise
+      // an action that has no target to route to.
+      actionHtml = '';
+    }
     m.innerHTML = `
       <h3>${node.name}</h3>
       <p>${node.tier} · ${genLabel}</p>
@@ -514,7 +535,7 @@
       <p style="font-size:12.5px;color:var(--muted);margin:8px 0 0">${pctText}.</p>
       <div class="m-actions">
         <button class="btn ghost" onclick="closeDetail()">Close</button>
-        <a class="btn" href="rep-dashboard.html">Open dashboard</a>
+        ${actionHtml}
       </div>
     `;
     document.getElementById('ovr').classList.add('on');

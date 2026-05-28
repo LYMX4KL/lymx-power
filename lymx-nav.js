@@ -53,23 +53,7 @@
   }
   function routeFor(payload) {
     if (!payload) return 'customer-dashboard.html';
-    // 2026-05-25 root-cause: replaced hardcoded Kenny-UUID with cached
-    // staff_roles admin flag (refreshed on every page load in boot()).
-    // Migration 015 seeds Kenny as admin in staff_roles so this still routes
-    // him correctly, and also routes Helen + any future admin correctly.
-    if (window.LYMX && window.LYMX.isAdminCached && window.LYMX.isAdminCached()) return 'admin-dashboard.html';
-    // 2026-05-25 (Cluster A ticket: 'My Account redirects partner to customer'):
-    // read the cached DB role lymx-sidebar.js writes on every page load. If
-    // partner, send them to rep-dashboard. Falls back to email-domain check
-    // (rep-dashboard for staff aliases) and then customer-dashboard for the
-    // genuine customer case. First-load papercut: same as admin cache — the
-    // very first navigation after sign-in may briefly land on customer-
-    // dashboard before the sidebar refreshes the cache; next click is right.
-    try {
-      var dbRole = sessionStorage.getItem('lymx_db_role');
-      if (dbRole === 'partner') return 'rep-dashboard.html';
-      if (dbRole === 'business') return 'biz-dashboard.html';
-    } catch (e) { /* bandaid-ok: sessionStorage may be blocked in private mode — fall through to email-domain check */ }
+    if (payload.sub === '1405bb50-2c97-48dd-bfa5-31f32320de9b') return 'admin-dashboard.html';
     var em = (payload.email || '').toLowerCase();
     if (em.endsWith('@lymxpower.com') || em.endsWith('@getlymx.com')) return 'rep-dashboard.html';
     return 'customer-dashboard.html';
@@ -97,12 +81,6 @@
     ];
     var partnerEntryPages = ['/partner-signup.html', '/partner-signup'];
     if (/[?&]force=1/.test(location.search)) return; // explicit override
-    // 2026-05-27 #464e3e08 — also skip the redirect when ?ref= is on the URL.
-    // A signed-in user landing on /welcome.html?ref=XYZ is either a partner
-    // testing their own share link or following someone else's link mid-session.
-    // In both cases, sending them to their dashboard is wrong — they want to
-    // see the welcome flow.
-    if (/[?&]ref=/.test(location.search)) return;
 
     // 1a. /partner-signup.html — route signed-in users to upgrade flow,
     //     UNLESS they're already a partner (then send to their dashboard).
@@ -411,22 +389,16 @@
       var URL2  = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
       var tok2  = readToken();
       if (URL2 && ANON2 && tok2) {
-        // 2026-05-27 #29eedbfd — was summing per-conversation unread counts
-        // (so the badge showed e.g. 77 when there were 25 conversations with a
-        // few unread each). my-conversations.html shows CONVERSATIONS with
-        // unread, not raw messages, so the badge and page disagreed. Switching
-        // badge to count conversations with unread so the two metrics line up.
-        // Per-message detail is still available inside each thread.
-        fetch(URL2 + '/rest/v1/conversations?select=id&unread_count_subject=gt.0',
+        fetch(URL2 + '/rest/v1/conversations?select=unread_count_subject&unread_count_subject=gt.0',
               { headers: { apikey: ANON2, Authorization: 'Bearer ' + tok2 } })
           .then(function (r) { return r.ok ? r.json() : []; })
           .then(function (rows) {
-            var convoCount = (rows || []).length;
-            if (convoCount > 0) {
+            var total = (rows || []).reduce(function (s, r) { return s + (r.unread_count_subject || 0); }, 0);
+            if (total > 0) {
               var b = document.getElementById('lymxNavMsgBadge');
-              if (b) { b.textContent = convoCount; b.style.display = 'inline-block'; }
+              if (b) { b.textContent = total; b.style.display = 'inline-block'; }
             }
-          }).catch(function (e) { console.warn('[lymx-nav] msg badge', e); });
+          }).catch(function(){});
       }
     } catch (e) { console.warn('[lymx-nav.js:L280] silent error', e); }
     document.body.appendChild(menu);
@@ -458,7 +430,7 @@
         var ref = projectRef();
         if (ref) localStorage.removeItem('sb-' + ref + '-auth-token');
       }
-    } catch (e) { console.warn("[lymx-nav.js:449] caught:", e); }
+    } catch (e) {}
     location.href = '/login.html';
   }
 
@@ -469,11 +441,9 @@
     var path = (location.pathname || '').toLowerCase();
     var isAdminPage = /\/admin-[^/]*\.html$/.test(path) || /\/admin-[^/]+$/.test(path);
     if (!isAdminPage) return;
-    // 2026-05-25 root-cause: removed hardcoded Kenny-UUID fast path. The
-    // server staff_roles check below now runs for EVERY user requesting an
-    // admin-* page (Kenny is seeded as admin in migration 015, so the check
-    // passes for him too). Previously, the fast path masked breakages in the
-    // staff_roles query that locked Helen #d785fe0e out of admin pages.
+    var KENNY_ADMIN = '1405bb50-2c97-48dd-bfa5-31f32320de9b';
+    // Fast path: Kenny (hardcoded admin)
+    if (payload && payload.sub === KENNY_ADMIN) return;
     // Server check: does this user have an admin row in staff_roles?
     try {
       var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
@@ -547,6 +517,42 @@
       brand.style.alignItems    = 'center';
       brand.style.gap           = '8px';
       brand.style.textDecoration = 'none';
+      // 2026-05-28 #b01254fb — Dave reported "Navbar logo not clickable on partner-signup".
+      // Root cause: many pages use <div class="brand"><a href="index.html">LYMX</a></div>.
+      // normalizeBrand() above replaces innerHTML, which DELETES the inner <a>. The wordmark
+      // span isn't an anchor, so clicks land on a dead <div>. Fix: if the brand element
+      // itself isn't an <a>, mark it clickable + wire navigation to index.html (or the
+      // role-appropriate dashboard if the user is signed-in — payload param passed in by
+      // boot()). Either way: brand always navigates somewhere.
+      if (brand.tagName !== 'A') {
+        brand.style.cursor = 'pointer';
+        brand.setAttribute('role', 'link');
+        brand.setAttribute('tabindex', brand.getAttribute('tabindex') || '0');
+        brand.setAttribute('aria-label', 'LYMX home');
+        if (!brand.dataset.lymxBrandClickWired) {
+          brand.dataset.lymxBrandClickWired = '1';
+          var go = function () {
+            // Default to public home; if a signed-in user has a cached dashboard route,
+            // honor it so the brand acts like a "home" link consistent with the rest of nav.
+            var dest = 'index.html';
+            try {
+              var token = readToken();
+              var p = decode(token);
+              if (p) dest = routeFor(p);
+            } catch (e) { console.warn('[lymx-nav] brand-click route lookup failed, falling back to index.html', e); }
+            location.href = dest;
+          };
+          brand.addEventListener('click', function (e) {
+            // If user clicked on a child anchor that already has its own href, let it through
+            if (e.target.closest && e.target.closest('a[href]')) return;
+            e.preventDefault();
+            go();
+          });
+          brand.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+          });
+        }
+      }
       brand.dataset.lymxBrandNormalized = '1';
     });
   }
@@ -768,14 +774,7 @@
     // Mirrors routeFor()'s decision tree so the fallback is consistent with
     // the rest of the nav (sign-in redirect, swap-guest-buttons, avatar menu).
     if (!payload) return 'home.html';
-    // 2026-05-25 root-cause: same swap as routeFor() above.
-    if (window.LYMX && window.LYMX.isAdminCached && window.LYMX.isAdminCached()) return 'admin-dashboard.html';
-    // 2026-05-25 Cluster A: same partner/business routing as routeFor.
-    try {
-      var fbRole = sessionStorage.getItem('lymx_db_role');
-      if (fbRole === 'partner') return 'rep-dashboard.html';
-      if (fbRole === 'business') return 'biz-dashboard.html';
-    } catch (e) { /* bandaid-ok: sessionStorage best-effort */ }
+    if (payload.sub === '1405bb50-2c97-48dd-bfa5-31f32320de9b') return 'admin-dashboard.html';
     var em = (payload.email || '').toLowerCase();
     if (em.endsWith('@lymxpower.com') || em.endsWith('@getlymx.com')) return 'rep-dashboard.html';
     var role = (payload.user_metadata && payload.user_metadata.role)
@@ -803,8 +802,8 @@
         + '#lymxBackChip{position:fixed;top:14px;left:260px;z-index:99989;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;color:#0e1116;border:1px solid #e6e8ec;border-radius:999px;font-weight:700;font-size:13.5px;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;box-shadow:0 4px 12px rgba(14,17,22,.10);cursor:pointer;line-height:1}'
         + '#lymxBackChip:hover{background:#f6f7f9;border-color:#d1d5db}'
         + '#lymxBackChip .arr{font-size:15px;line-height:1;margin-top:-1px}'
-        + '@media (max-width:880px){#lymxBackChip{left:14px;top:74px;background:rgba(255,255,255,.96);backdrop-filter:saturate(180%) blur(8px)}}'
-        + 'body:not([data-role-required]):not([data-lymx-sidebar="force"]) #lymxBackChip{left:14px;top:96px}'
+        + '@media (max-width:880px){#lymxBackChip{left:14px;top:60px}}'
+        + 'body:not([data-role-required]):not([data-lymx-sidebar="force"]) #lymxBackChip{left:14px;top:84px}'
         + '@media print{#lymxBackChip{display:none}}';
       document.head.appendChild(s);
     }
@@ -846,13 +845,6 @@
         injectBackChip(null);
         return;
       }
-      // 2026-05-25 root-cause: refresh the LYMX_is_admin localStorage flag on
-      // every page load so routeFor() / fallbackDashboardForRole() (sync) read
-      // an accurate value. Fire-and-forget: we don't block routing on the
-      // RPC round-trip; cache is good enough for the next page load.
-      if (window.LYMX && window.LYMX.refreshIsAdminCache) {
-        try { window.LYMX.refreshIsAdminCache(); } catch (e) { console.warn('[lymx-nav] refreshIsAdminCache threw', e); }
-      }
       redirectIfSignedIn(payload);
       swapGuestButtons(payload);
       wireAvatar(payload);
@@ -874,19 +866,7 @@
         (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
         window.navigator.standalone === true ||
         (document.referrer && document.referrer.indexOf('android-app://') === 0);
-      // 2026-05-27 #da1d7396 — also hide for any signed-in user. They're already
-      // using LYMX; the install nudge is for new visitors, not authenticated
-      // users. Signal: there's a Supabase session in localStorage. This
-      // function runs inside the post-session callback, so by the time it's
-      // called the session check has already resolved.
-      var signedIn = false;
-      try {
-        for (var i = 0; i < window.localStorage.length; i++) {
-          var k = window.localStorage.key(i);
-          if (k && k.indexOf('sb-') === 0 && k.indexOf('-auth-token') > 0) { signedIn = true; break; }
-        }
-      } catch (e) { /* localStorage blocked — fall back to standalone-only */ } // bandaid-ok: localStorage feature-detect; private-mode browsers throw, fall-through is intentional
-      if (!standalone && !signedIn) return;
+      if (!standalone) return;
       var selectors = ['#getAppCta', '#navGetApp', '.get-app-cta', '.install-app-cta', '[data-lymx-hide-in-pwa]'];
       selectors.forEach(function (sel) {
         document.querySelectorAll(sel).forEach(function (el) { el.style.display = 'none'; });

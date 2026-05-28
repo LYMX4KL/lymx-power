@@ -99,13 +99,13 @@
   // cache on every mount and refreshes the sidebar if the first paint
   // was wrong.
   function _stashActiveRole(role) {
-    try { sessionStorage.setItem('lymx_active_role', role); } catch (e) { console.warn("[lymx-sidebar.js:102] web-storage op failed (private mode? quota?):", e); }
+    try { sessionStorage.setItem('lymx_active_role', role); } catch (e) {}
   }
   function _readActiveRole() {
     try { return sessionStorage.getItem('lymx_active_role'); } catch (e) { return null; }
   }
   function _stashDbRole(role) {
-    try { sessionStorage.setItem('lymx_db_role', role); } catch (e) { console.warn("[lymx-sidebar.js:108] web-storage op failed (private mode? quota?):", e); }
+    try { sessionStorage.setItem('lymx_db_role', role); } catch (e) {}
   }
   function _readDbRole() {
     try { return sessionStorage.getItem('lymx_db_role'); } catch (e) { return null; }
@@ -155,33 +155,12 @@
       if (!uid) return null;
 
       try {
-        // 2026-05-26 root-cause fix for Rachel's blink-loop tickets
-        // (#b4304da7 customer-dashboard blink, #d1c9cb75 menu items blink,
-        // #f35538b9 clock icon blink, #a088daa2 "page is for Admin").
-        // Previously this query selected `role` only and ANY staff_roles row
-        // painted the admin sidebar via `if (sroles.length) return 'admin'`.
-        // That band-aid disagreed with lymx-nav.js:474's correct predicate
-        // (role==='admin' || is_cfo || is_hr), so non-admin staff like Rachel
-        // (role='marketing') got the admin menu, clicked an admin-* link,
-        // got bounced by enforceAdminGuard, landed back on a page whose
-        // sidebar still showed admin links - the blink loop.
-        // Fix: select the same fields enforceAdminGuard reads and use the
-        // SAME predicate. Non-admin staff fall through to the partners/
-        // businesses/customer resolver and get the menu matching their
-        // actual product role.
-        var sr = await fetch(cfg.SUPABASE_URL + '/rest/v1/staff_roles?user_id=eq.' + uid + '&select=role,is_cfo,is_hr&limit=5', {
+        var sr = await fetch(cfg.SUPABASE_URL + '/rest/v1/staff_roles?user_id=eq.' + uid + '&select=role&limit=5', {
           headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
         });
         if (sr.ok) {
           var sroles = await sr.json();
-          if (Array.isArray(sroles) && sroles.length) {
-            var hasAdminRow = sroles.some(function (s) {
-              return s.role === 'admin' || s.is_cfo === true || s.is_hr === true;
-            });
-            if (hasAdminRow) return 'admin';
-            // else: staff but not admin-tier; fall through so their sidebar
-            // matches their actual product role (customer / partner / business).
-          }
+          if (Array.isArray(sroles) && sroles.length) return 'admin';
         }
       } catch (e) { console.warn('[sidebar] staff_roles probe', e); }
 
@@ -218,21 +197,13 @@
       { href: 'customer-dashboard.html', icon: '\u{1F3E0}', label: 'Dashboard' },
       { href: 'customer-wallet.html',    icon: '\u{1F4B0}', label: 'My LYMX Wallet' },
       { href: 'browse.html',             icon: '\u{1F50D}', label: 'Browse Businesses' },
-      // 2026-05-27 Sprint 5 — full network directory (vs the curated browse.html)
-      { href: 'browse-all.html',         icon: '\u{1F4DA}', label: 'All businesses' },
       { section: 'Network' },
       { href: 'refer.html',              icon: '\u{1F4E8}', label: 'Refer Friends' },
       { href: 'share-hub.html',          icon: '\u{1F4E3}', label: 'Share hub' },
       { href: 'my-bookings.html',        icon: '\u{1F4C5}', label: 'My bookings' },
-      // 2026-05-26 #8a0a4296 (Dave) — my-rsvps.html existed but was unreachable
-      // from any nav. Wiring directly into customer + business + partner menus.
-      // Page lists user's RSVPs to LYMX-hosted events (launch-event, etc.).
-      { href: 'my-rsvps.html',           icon: '\u{1F39F}', label: 'My RSVPs' },
       { href: 'my-reviews.html',         icon: '⭐',    label: 'My Reviews' },
       { href: 'my-saved-places.html',   icon: '\u{1F4CC}', label: 'Saved Places' },
       { href: 'customer-charity.html',   icon: '\u{1F49D}', label: 'Donate LYMX' },
-      { section: 'Help' },
-      { href: 'playbooks.html',          icon: '\u{1F4D6}', label: 'Playbooks' },
       { section: 'Account' },
       { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
@@ -246,18 +217,12 @@
       { href: 'biz-customer-data.html',  icon: '\u{1F465}', label: 'My Customers' },
       { section: 'Operations' },
       { href: 'biz-staff-roles.html',    icon: '\u{1FAAA}', label: 'Staff' },
-      // 2026-05-27 Sprint 4 — biz-side reservation inbox (table_reservations,
-      // mig 085 + 104). Pairs with customer-side my-reservations.html.
-      { href: 'biz-reservations.html',  icon: '\u{1F4C5}', label: 'Reservations' },
       { href: 'biz-promo-planner.html',  icon: '\u{1F381}', label: 'Promo Planner' },
       { href: 'share-hub.html',          icon: '\u{1F4E3}', label: 'Share hub' },
       { href: 'biz-cashflow.html',       icon: '\u{1F4B5}', label: 'Cashflow' },
       { href: 'biz-payouts.html',        icon: '\u{1F3E6}', label: 'Payouts (Stripe)' },
       { href: 'biz-pos-comparison.html', icon: '\u{1F50C}', label: 'POS / Integrations' },
       { href: 'my-bookings.html',        icon: '\u{1F4C5}', label: 'My bookings' },
-      { href: 'my-rsvps.html',           icon: '\u{1F39F}', label: 'My RSVPs' },
-      { section: 'Help' },
-      { href: 'playbooks.html',          icon: '\u{1F4D6}', label: 'Playbooks' },
       { section: 'Account' },
       { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
@@ -268,16 +233,8 @@
       { section: 'Partner' },
       { href: 'rep-dashboard.html',      icon: '\u{1F4CA}', label: 'Dashboard' },
       { href: 'partner-tree.html',       icon: '\u{1F333}', label: 'My Tree' },
-      // 2026-05-27 #37bb73c1 — surfaced new recruit-links hub. Partners had
-      // no single place to grab all 4 signup links (customer / partner /
-      // business / biz-invite). Now one sidebar entry covers them all.
-      { href: 'partner-recruit-links.html', icon: '\u{1F517}', label: 'Recruitment links' },
       { href: 'partner-leaderboard.html', icon: '\u{1F3C6}', label: 'Leaderboard' },
       { href: 'partner-payouts.html',    icon: '\u{1F4B8}', label: 'Payouts' },
-      // 2026-05-26 #7bfc73c8 (Rachel) — Comp Plan page now exists at /comp-plan.html.
-      // Sidebar entry sits in the Partner section so partners can find it on every
-      // page, not just from the share-hub "see comp plan" link that used to 404.
-      { href: 'comp-plan.html',          icon: '\u{1F4B5}', label: 'Comp Plan' },
       { href: 'prospects.html',          icon: '\u{1F3AF}', label: 'My Prospects' },
       // 2026-05-25 #6df906ba — partners had no direct sidebar entry to the
       // Sales Toolkit (the page reachable from the "Open pitch toolkit" empty-
@@ -286,28 +243,6 @@
       { href: 'partner-resources.html',  icon: '\u{1F4BC}', label: 'Sales Toolkit' },
       { href: 'team-calendar.html',      icon: '\u{1F4C5}', label: 'My Calendar' },
       { href: 'my-bookings.html',        icon: '\u{1F4DD}', label: 'My bookings' },
-      { href: 'my-rsvps.html',           icon: '\u{1F39F}', label: 'My RSVPs' },
-      // 2026-05-25 Cluster A — Dave (P-000100) filed 3 tickets that all reduce
-      // to 'these pages exist but partners can't find them in the sidebar':
-      //   - Notifications feature
-      //   - My LYMX Wallet feature
-      //   - My Reviews feature
-      // Wiring them in directly here. Each page already supports the partner
-      // role (no requireRole restrictions). Wallet links to customer-dashboard
-      // because partners earn LYMX as customers do (separate from commissions),
-      // and customer-dashboard renders the balance card from lymx_issuances
-      // keyed on the user_id — which works for any role.
-      { href: 'notifications.html',      icon: '\u{1F514}', label: 'Notifications' },
-      { href: 'customer-dashboard.html#wallet', icon: '\u{1F4B0}', label: 'My LYMX Wallet' },
-      { href: 'my-reviews.html',         icon: '\u2B50',    label: 'My Reviews' },
-      // 2026-05-27 Sprint 6 — partner network surfaces.
-      // partner-my-reviews: reviews on businesses I recruited.
-      // partner-my-customers: customers who signed up via my referral link.
-      // Closes tickets 7d044c5e + b37214f3.
-      { href: 'partner-my-reviews.html',   icon: '\u{1F4DD}', label: 'Recruited Reviews' },
-      { href: 'partner-my-customers.html', icon: '\u{1F46A}', label: 'Recruited Customers' },
-      { section: 'Help' },
-      { href: 'playbooks.html',          icon: '\u{1F4D6}', label: 'Playbooks' },
       // 2026-05-20 #dd9468cc - Removed static Team section (Clock In, My Schedule,
       // My Time-off) from partner menu. These are STAFF-only pages and were
       // showing for every partner, causing 'This page isn't for you' rejections.
@@ -320,7 +255,12 @@
       // they had "Invite Friends" (bulk outreach) but no personal share link.
       // Added explicit "Refer a Friend" → refer.html mirroring the customer menu.
       { href: 'refer.html',              icon: '\u{1F381}', label: 'Refer a Friend' },
-      { href: 'admin-invite-friends.html', icon: '\u{1F4E8}', label: 'Invite Friends' },
+      // 2026-05-28 #fe0fded7 — REMOVED partner "Invite Friends" entry. It pointed at
+      // admin-invite-friends.html (admin-only), whose role guard bounced every partner
+      // back to rep-dashboard. Dave's exact symptom: "clicking Invite Friends redirects
+      // to Partner Dashboard." Root-cause: partners get the personal share link via
+      // "Refer a Friend" and the bulk share via "Share hub" below; an admin-only
+      // bulk-outreach tool shouldn't live in the partner menu at all.
       { href: 'share-hub.html',            icon: '\u{1F4E3}', label: 'Share hub' },
       { href: 'contacts.html',           icon: '\u{1F4C7}', label: 'Contacts' },
       { href: 'my-feedback.html',        icon: '\u{1F4DD}', label: 'My Feedback' }
@@ -339,11 +279,6 @@
       { section: 'Network' },
       { href: 'leads.html',              icon: '\u{1F4CC}', label: 'Leads' },
       { href: 'admin-bookings.html',     icon: '\u{1F4CB}', label: 'All bookings' },
-      // 2026-05-27 Sprint 1 — admin queue page for monthly clearing-house
-      // settlement (business_settlements ledger). Gated by feature_catalog
-      // key 'admin_run_settlements' (migration 106) but admin always passes
-      // via am_i_admin() short-circuit, so no extra guard here.
-      { href: 'admin-settlements.html', icon: '\u{1F4B0}', label: 'Settlements' },
       { href: 'admin-businesses.html',   icon: '\u{1F3E2}', label: 'Businesses' },
       { href: 'admin-business-applications.html', icon: '\u{1F4DD}', label: 'Biz Applications' },
       { href: 'admin-business-transfer.html', icon: '\u{1F504}', label: 'Transfer ownership' },
@@ -358,37 +293,16 @@
       { href: 'admin-fraud-flags.html',  icon: '\u{1F6A8}', label: 'Fraud flags' },
       { section: 'Team' },
       { href: 'admin-staff.html',           icon: '\u{1FAAA}', label: 'Staff Roles' },
-      // 2026-05-26 — Sprint 0 shipped admin-manage-permissions.html (the
-      // feature-permission matrix from migration 104) but never wired a
-      // sidebar entry, so admins couldn't find it. Adding under Team since
-      // it pairs naturally with Staff Roles: Staff Roles assigns the role,
-      // Feature Permissions grants the specific capability keys gated by
-      // ARCHITECTURE-RULES Rule 1.
-      { href: 'admin-manage-permissions.html', icon: '\u{1F511}', label: 'Feature Permissions' },
       { href: 'admin-personnel-records.html', icon: '\u{1F4C7}', label: 'Personnel Records' },
       { href: 'admin-schedule.html',        icon: '\u{1F4C5}', label: 'Schedule Builder' },
       { href: 'admin-schedule-requests.html', icon: '\u{1F4DD}', label: 'Schedule Weeks' },
       { href: 'admin-time-off.html',        icon: '\u{1F334}', label: 'Time-off' },
       { href: 'admin-team-roster.html',     icon: '\u{1F5C2}', label: 'Roster' },
       { section: 'HR & Payroll' },
-      // 2026-05-27 #01/#25 — was missing: HR admins (Helen) had no place to
-      // see who is currently on the clock vs on break vs out. v_team_roster
-      // showed last_clock_in only; timesheets was historical. The new
-      // admin-clock-in-now.html computes the latest event per user from
-      // clock_events and buckets into IN / ON BREAK / OUT live with a 30s
-      // auto-refresh.
-      { href: 'admin-clock-in-now.html',        icon: '\u{23F1}',  label: "Who's clocked in" },
       { href: 'admin-staff-locations.html',     icon: '\u{1F4CD}', label: 'Clock-in Locations' },
       { href: 'admin-clock-in-permissions.html', icon: '\u{1F510}', label: 'Clock-in Permissions' },
       { href: 'admin-clock-in-requests.html',    icon: '\u{1F4E5}', label: 'Pending Requests' },
-      { href: 'admin-timesheets.html',           icon: '\u{23F1}',  label: 'Timesheets (raw events)' },
-      // 2026-05-27 — Kenny request: accounting/admin need to backfill or fix
-      // a daily timesheet line (missed clock-outs, system glitches, retro
-      // adjustments). admin-timesheet-edit.html works on timesheet_lines
-      // (the payroll-bound daily summary), keeps clock_events untouched, and
-      // every save auto-stamps edited_by_* + locked=true so the next recompute
-      // doesn't blow it away.
-      { href: 'admin-timesheet-edit.html',       icon: '\u{270F}\u{FE0F}',  label: 'Edit timesheet lines' },
+      { href: 'admin-timesheets.html',           icon: '\u{23F1}',  label: 'Timesheets' },
       { href: 'admin-payroll-reconciliation.html', icon: '\u{1F4B0}', label: 'Payroll Run' },
       { href: 'admin-generate-offer.html',       icon: '\u{1F4E8}', label: 'Generate Offer' },
       { href: 'admin-counter-offer-queue.html',  icon: '\u{1F501}', label: 'Counter Offers' },
@@ -397,14 +311,10 @@
       { href: 'admin-outstanding-property.html', icon: '\u{1F6A9}', label: 'Outstanding Property' },
       { href: 'admin-send-hr-launch.html',       icon: '\u{1F44B}', label: 'Send Welcome Email' },
       { section: 'Outreach' },
-      // 2026-05-27 — events backed by public.events + public.event_speakers
-      // (migration 122). admin-events lists all; clicking opens admin-event-edit
-      // where Helen invites speakers via magic-link.
-      { href: 'admin-events.html',         icon: '\u{1F39F}\u{FE0F}',  label: 'Events' },
       { href: 'admin-invite-friends.html', icon: '\u{1F4E8}', label: 'Invite Friends' },
       { href: 'contacts.html',           icon: '\u{1F4C7}', label: 'Contacts' },
       { section: 'Knowledge' },
-      { href: 'playbooks.html',          icon: '\u{1F4D6}', label: 'Playbooks' },
+      { href: 'admin-playbooks.html',    icon: '\u{1F4D6}', label: 'Playbooks' },
       { section: 'Account' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
       { href: 'my-feedback.html',        icon: '\u{1F4DD}', label: 'My Feedback' }
@@ -721,11 +631,11 @@
           var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/partners?user_id=eq.' + uid + '&select=partner_code&limit=1', {
             headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + tok }
           });
-          if (!r.ok) { try { sessionStorage.setItem(cacheKey, '__none__'); } catch (e) { console.warn("[lymx-sidebar.js:648] web-storage op failed (private mode? quota?):", e); } return; }
+          if (!r.ok) { try { sessionStorage.setItem(cacheKey, '__none__'); } catch (e) {} return; }
           var rows = await r.json();
           code = (rows && rows[0] && rows[0].partner_code) || null;
-          if (!code) { try { sessionStorage.setItem(cacheKey, '__none__'); } catch (e) { console.warn("[lymx-sidebar.js:651] web-storage op failed (private mode? quota?):", e); } return; }
-          try { sessionStorage.setItem(cacheKey, code); } catch (e) { console.warn("[lymx-sidebar.js:652] web-storage op failed (private mode? quota?):", e); }
+          if (!code) { try { sessionStorage.setItem(cacheKey, '__none__'); } catch (e) {} return; }
+          try { sessionStorage.setItem(cacheKey, code); } catch (e) {}
         }
         // 2026-05-21 #b2458da0 - also paint the canonical display_name in the bold slot
         try {
@@ -756,7 +666,7 @@
             var orig = el.textContent;
             el.textContent = 'copied!';
             setTimeout(function () { el.textContent = orig; }, 1200);
-          } catch (e) {  console.warn('[sidebar] copy failed', e); }
+          } catch (e) { console.warn('[sidebar] copy failed', e); }
         });
       } catch (e) { console.warn('[sidebar] partner_code loader', e); }
     })();
