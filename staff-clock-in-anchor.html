@@ -188,7 +188,7 @@ window.submitRequest = async () => {
     userName = meta.full_name || meta.name || (email.split('@')[0] || '');
     const cached = sessionStorage.getItem('lymx_db_role');
     userRole = cached || 'staff';
-  } catch (e) { console.warn("[staff-clock-in-anchor.html:191] caught (non-fatal):", e); }
+  } catch (e) { console.warn('[staff-clock-in-anchor] user-metadata read non-fatal', e); }
 
   const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/clock_in_permissions', {
     method: 'POST',

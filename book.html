@@ -179,7 +179,7 @@
           </div>
         </a>`;
       }).join('');
-    } catch (_e) { console.warn("[book.html:182] caught (no-op):", _e); }
+    } catch(_e) { console.warn('[book.html] alt-pages render no-op', _e); }
   }
   if (!handle) { return showNotFound(); }
 
@@ -233,7 +233,7 @@
           }
         }).join('');
       }
-    } catch (_e) { console.warn("[book.html:236] caught (non-fatal):", _e); }
+    } catch (_e) { console.warn('[book.html] intake-form render non-fatal', _e); }
 
 
     // Reschedule mode: show banner + prefill name/email/phone/company/message from the old booking
@@ -251,7 +251,7 @@
           if ($('fName')) $('fName').value = oldRows[0].booker_name || '';
           if ($('fEmail')) $('fEmail').value = oldRows[0].booker_email || '';
         }
-      } catch (_e) { console.warn("[book.html:254] caught (prefill is best-effort):", _e); }
+      } catch(_e) { console.warn('[book.html] reschedule prefill best-effort', _e); }
     }
 
     renderDays();
@@ -330,7 +330,7 @@
       });
       const gbJ = await gbR.json();
       if (gbJ.ok && gbJ.busy) googleBusy = gbJ.busy;
-    } catch (_e) { console.warn("[book.html:333] caught (swallow):", _e); }
+    } catch(_e){ console.warn('[book.html] google-busy fetch swallowed', _e); }
 
     function isConflict(slotStart){
       const slotEnd = new Date(slotStart.getTime() + duration*60000);

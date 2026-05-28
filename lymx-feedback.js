@@ -70,7 +70,7 @@
           if (tok) return { token: tok, source: 'localStorage' };
         }
       }
-    } catch (e) { console.warn("[lymx-feedback.js:73] caught:", e); }
+    } catch (e) {}
     // 3) Anything else our supabase-js client may have stashed (legacy keys)
     try {
       for (var i = 0; i < localStorage.length; i++) {
@@ -83,7 +83,7 @@
           if (t) return { token: t, source: 'localStorage-fallback' };
         }
       }
-    } catch (e) { console.warn("[lymx-feedback.js:86] caught:", e); }
+    } catch (e) {}
     // 4) Anon — submission will be attributed to nobody
     return { token: window.LYMX_CONFIG.SUPABASE_ANON_KEY, source: 'anon' };
   }
@@ -191,11 +191,11 @@
     + '<div class="ai-tips" id="lymx-fb-ai-tips"></div>'
     + '<div class="shot-box"><div class="shot-row"><label>📸 Screenshot / attachments</label>'
     +   '<div class="shot-btns">'
-    +   '<button type="button" class="shot-btn" id="lymx-fb-shot-auto">📸 Capture screenshot</button>'
+    +   '<button type="button" class="shot-btn" id="lymx-fb-shot-auto">↻ Recapture</button>'
     +   '<button type="button" class="shot-btn" id="lymx-fb-shot-region">✂️ Crop screenshot</button>'
     +   '<button type="button" class="shot-btn" id="lymx-fb-shot-upload">📎 Add file</button></div></div>'
     + '<input type="file" id="lymx-fb-shot-file" accept="image/*,application/pdf,.txt,.log,.csv,.xlsx,.docx" multiple style="display:none" />'
-    + '<div class="shot-preview" id="lymx-fb-shot-preview"><span id="lymx-fb-shot-status" style="color:#5b6472;font-size:12.5px">No screenshot attached. Tap 📸 Capture screenshot, ✂️ Crop, or 📎 Add file if you want to include one.</span></div>'
+    + '<div class="shot-preview" id="lymx-fb-shot-preview"><span id="lymx-fb-shot-status">Capturing page…</span></div>'
     + '<div class="file-list" id="lymx-fb-file-list"></div></div>'
     + '<div class="actions"><a href="/my-feedback.html" class="my-link">📋 View my submissions</a>'
     + '<div class="actions-right">'
@@ -355,36 +355,19 @@
       baseCanvas = canvas;
       overlay.style.visibility = 'visible';
       var picker = document.createElement('div');
-      // 2026-05-26 root-cause fix for Rachel's tickets #a1936ddc (Crop
-      // unresponsive) + #e40f6add (X-icon stuck). Previously the picker only
-      // listened for mousedown/move/up so taps did NOTHING on touch devices,
-      // leaving mobile users trapped under the picker overlay with no Esc key
-      // to reach. Now: pointer events (covers mouse AND touch in one API),
-      // touch-action:none so the browser doesn't steal the gesture for
-      // scrolling, and a visible Cancel chip top-right so mobile users have
-      // a reachable exit even if the gesture path fails.
-      picker.style.cssText = 'position:fixed;inset:0;z-index:100000;cursor:crosshair;background:rgba(14,17,22,.4);touch-action:none;user-select:none;-webkit-user-select:none';
+      picker.style.cssText = 'position:fixed;inset:0;z-index:100000;cursor:crosshair;background:rgba(14,17,22,.4)';
       var hint = document.createElement('div');
-      hint.textContent = 'Drag (or touch-drag) to crop the screenshot';
-      hint.style.cssText = 'position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#0e1116;color:#fff;padding:8px 16px;border-radius:999px;font:600 13px sans-serif;pointer-events:none;max-width:calc(100% - 140px);text-align:center';
-      var cancelChip = document.createElement('button');
-      cancelChip.type = 'button';
-      cancelChip.textContent = '✕ Cancel';
-      cancelChip.style.cssText = 'position:absolute;top:14px;right:14px;background:#fff;color:#0e1116;border:0;padding:8px 14px;border-radius:999px;font:700 13px sans-serif;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);touch-action:manipulation';
+      hint.textContent = 'Drag to crop the screenshot — Esc to cancel';
+      hint.style.cssText = 'position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#0e1116;color:#fff;padding:8px 16px;border-radius:999px;font:600 13px sans-serif;pointer-events:none';
       var sel = document.createElement('div');
-      sel.style.cssText = 'position:absolute;border:2px dashed #FBBF24;background:rgba(251,191,36,.18);display:none;pointer-events:none';
-      picker.appendChild(hint); picker.appendChild(cancelChip); picker.appendChild(sel);
+      sel.style.cssText = 'position:absolute;border:2px dashed #FBBF24;background:rgba(251,191,36,.18);display:none';
+      picker.appendChild(hint); picker.appendChild(sel);
       overlay.style.display = 'none';
       document.body.appendChild(picker);
-      var startX = 0, startY = 0, dragging = false, activePointerId = null;
+      var startX = 0, startY = 0, dragging = false;
       function done(canceled, rect) {
-        try { if (activePointerId !== null && picker.releasePointerCapture) picker.releasePointerCapture(activePointerId); } catch (e) { /* bandaid-ok: pointer-capture release is best-effort; some browsers throw if id already released */ }
         picker.remove();
-        // Restore to class-controlled visibility -- the .on class is still
-        // present here, so clearing the inline display lets the stylesheet
-        // (.on{display:flex}) show the modal again. Do NOT pin an inline 'flex'
-        // here: it would survive a later close() and keep the overlay visible.
-        overlay.style.display = '';
+        overlay.style.display = 'flex';
         document.removeEventListener('keydown', onEsc);
         if (canceled || !rect || rect.w < 6 || rect.h < 6) return;
         // 2026-05-20 #c40f06e2 - was missing scroll offset. The picker uses
@@ -415,41 +398,24 @@
       }
       function onEsc(e) { if (e.key === 'Escape') done(true); }
       document.addEventListener('keydown', onEsc);
-      cancelChip.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); done(true); });
-      // pointerdown fires for mouse, touch, and pen — single code path.
-      picker.addEventListener('pointerdown', function (e) {
-        // Ignore taps on the Cancel chip (its own click handler runs first).
-        if (e.target === cancelChip || cancelChip.contains(e.target)) return;
-        e.preventDefault();
-        dragging = true;
-        activePointerId = e.pointerId;
-        startX = e.clientX; startY = e.clientY;
+      picker.addEventListener('mousedown', function (e) {
+        dragging = true; startX = e.clientX; startY = e.clientY;
         sel.style.display = 'block'; sel.style.left = startX + 'px'; sel.style.top = startY + 'px';
         sel.style.width = '0px'; sel.style.height = '0px';
-        // Lock pointer to picker so finger/mouse can leave the element and
-        // we still get move/up events.
-        try { picker.setPointerCapture(e.pointerId); } catch (err) { /* bandaid-ok: setPointerCapture not supported on all browsers — events still bubble via the picker */ }
       });
-      picker.addEventListener('pointermove', function (e) {
-        if (!dragging || e.pointerId !== activePointerId) return;
-        e.preventDefault();
+      picker.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
         var x = Math.min(startX, e.clientX), y = Math.min(startY, e.clientY);
         var w = Math.abs(e.clientX - startX), h = Math.abs(e.clientY - startY);
         sel.style.left = x+'px'; sel.style.top = y+'px';
         sel.style.width = w+'px'; sel.style.height = h+'px';
       });
-      function finishPointer(e) {
-        if (!dragging || e.pointerId !== activePointerId) return;
+      picker.addEventListener('mouseup', function (e) {
+        if (!dragging) return;
         dragging = false;
         var x = Math.min(startX, e.clientX), y = Math.min(startY, e.clientY);
         var w = Math.abs(e.clientX - startX), h = Math.abs(e.clientY - startY);
         done(false, { x: x, y: y, w: w, h: h });
-      }
-      picker.addEventListener('pointerup', finishPointer);
-      picker.addEventListener('pointercancel', function (e) {
-        if (!dragging || e.pointerId !== activePointerId) return;
-        dragging = false;
-        done(true);
       });
     }).catch(function (e) {
       overlay.style.visibility = 'visible';
@@ -553,7 +519,7 @@
       };
       if (!draft.message || !draft.message.trim()) localStorage.removeItem(FB_DRAFT_KEY);
       else localStorage.setItem(FB_DRAFT_KEY, JSON.stringify(draft));
-    } catch (e) { console.warn("[lymx-feedback.js:522] caught:", e); }
+    } catch (e) {}
   }
   function loadDraft() {
     try {
@@ -570,9 +536,9 @@
         document.getElementById('lymx-fb-message').value = d.message;
         notice('↻ Draft restored from before you navigated away.', 'ok');
       }
-    } catch (e) { console.warn("[lymx-feedback.js:539] caught:", e); }
+    } catch (e) {}
   }
-  function clearDraft() { try { localStorage.removeItem(FB_DRAFT_KEY); } catch (e) { console.warn("[lymx-feedback.js:541] web-storage op failed (private mode? quota?):", e); } }
+  function clearDraft() { try { localStorage.removeItem(FB_DRAFT_KEY); } catch (e) {} }
 
   function updateWhoLabel() {
     var who = document.getElementById('lymx-fb-who');
@@ -684,16 +650,16 @@
       if (pb) pb.textContent = shortPath();
     } catch (e) { console.warn('[lymx-feedback.js:L627] silent error', e); }
     notice(null);
-    resetSendButton();
     loadDraft();
     updateWhoLabel();
-    // 2026-05-27 #4b738066 — screenshot is now opt-in. Auto-capture was on by
-    // default but testers reported a privacy concern (capturing the page without
-    // being asked) and added bandwidth on every submission. Users who want a
-    // screenshot tap 📸 Capture screenshot, ✂️ Crop, or 📎 Add file. The prior
-    // captureAuto-on-open call has been removed.
-    shotBlob = null; shotKind = 'none';
-    renderShotPreview('reset');
+    // 2026-05-21 #440f1159 — re-enable auto-capture on modal open. The prior
+    // bug (#22ad49e8 — form looked like it disappeared) was caused by hiding
+    // the overlay during capture. captureAuto() now uses html2canvas's
+    // ignoreElements option to omit the overlay from the canvas without
+    // hiding it visually, so the user keeps seeing the modal the whole time.
+    var preview = document.getElementById('lymx-fb-shot-preview');
+    if (preview) preview.innerHTML = '<span style="color:#5b6472;font-size:12.5px">Capturing page screenshot…</span>';
+    setTimeout(function () { captureAuto(); }, 100);
     setTimeout(function () {
       var msg = document.getElementById('lymx-fb-message');
       if (msg && !msg.value) msg.focus();
@@ -701,31 +667,7 @@
   }
   function close() {
     overlay.classList.remove('on');
-    // 2026-05-27 root-cause fix (tickets: Cancel/X/backdrop unresponsive after
-    // using the Crop screenshot tool). captureRegion() hides the modal with an
-    // inline overlay.style.display='none' and used to restore it with ='flex'.
-    // An inline display value overrides the stylesheet rule
-    // #lymx-fb-overlay{display:none}, so removing the .on class alone could not
-    // hide the overlay -- the form stayed open and every close path (X, Cancel,
-    // backdrop, Esc) looked dead. close() now clears the inline display and
-    // visibility so it is the single authoritative reset, regardless of what
-    // the capture flow left behind.
-    overlay.style.display = '';
-    overlay.style.visibility = '';
     document.body.style.overflow = '';
-  }
-  // 2026-05-26 root-cause fix for Helen's "Feedback box frozen" ticket
-  // (#a6e69703): if a previous submit() hung at the fetch step (no network
-  // timeout was set, so a stalled DNS/TLS handshake or cold-start Edge
-  // Function could leave the modal forever in "Sending…" disabled state),
-  // the next open() of the widget showed the stuck button and looked
-  // unresponsive. The submit() flow now has a 30s AbortController +
-  // try/finally that always resets state, but we ALSO reset here on every
-  // open() as defense-in-depth so the widget is always usable regardless
-  // of what happened in a previous session.
-  function resetSendButton() {
-    var sendBtn = document.getElementById('lymx-fb-send');
-    if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send Feedback'; }
   }
   function notice(text, kind) {
     var n = document.getElementById('lymx-fb-notice');
@@ -766,7 +708,7 @@
         var f = attachedFiles[i];
         var data = await blobToDataURL(f);
         attachments.push({ name: f.name, type: f.type || 'application/octet-stream', size: f.size, data_url: data });
-      } catch (e) { console.warn("[lymx-feedback.js:725] caught (skip):", e); }
+      } catch (e) { console.warn('[lymx-feedback] attachment encode skipped', e); }
     }
 
     var payload = {
@@ -785,19 +727,6 @@
     };
 
     var auth = await resolveAccessToken();
-    // 2026-05-26 root-cause fix for "Feedback box frozen" (Helen #a6e69703):
-    // a stalled fetch (DNS, TLS handshake, Edge Function cold-start) used to
-    // leave sendBtn forever in "Sending…" disabled state because nothing
-    // re-enabled it. AbortController gives every submit a hard 30s ceiling,
-    // and the try/finally below guarantees the button returns to a clickable
-    // state no matter how the request resolves (success, HTTP error, network
-    // error, timeout, or unexpected exception in the success-side cleanup).
-    var ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    // AbortController.abort() is idempotent per spec — safe to call even if
-    // the signal is already aborted (e.g. user closed the modal before timeout
-    // fires). No try/catch needed.
-    var timeoutId = ac ? setTimeout(function () { ac.abort(); }, 30000) : null;
-    var didSucceed = false;
     try {
       var res = await fetch(
         window.LYMX_CONFIG.SUPABASE_URL + '/functions/v1/feedback-submit',
@@ -808,14 +737,15 @@
             'apikey': window.LYMX_CONFIG.SUPABASE_ANON_KEY,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(payload),
-          signal: ac ? ac.signal : undefined
+          body: JSON.stringify(payload)
         }
       );
       var data = null;
       try { data = await res.json(); } catch (e) { console.warn('[lymx-feedback.js:L720] silent error', e); }
       if (!res.ok) {
         notice((data && data.error) || ('Submit failed: ' + res.status), 'err');
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Feedback';
         return;
       }
       notice('Thanks! Sent. We\'ll dig in shortly.', 'ok');
@@ -826,30 +756,15 @@
       shotBlob = null; shotKind = 'none';
       attachedFiles = [];
       renderFileList();
-      // Only mark success after all cleanup completed without throwing —
-      // ensures the finally block's auto-close + reset only runs on a
-      // genuinely clean success, not a half-cleaned-up state.
-      didSucceed = true;
+      setTimeout(function () {
+        close();
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Feedback';
+      }, 1400);
     } catch (err) {
-      if (err && err.name === 'AbortError') {
-        notice('Submit timed out after 30 seconds. Check your connection and try again.', 'err');
-      } else {
-        notice('Network error: ' + (err.message || err), 'err');
-      }
-    } finally {
-      if (timeoutId) clearTimeout(timeoutId);
-      // On success we briefly show "Sent ✓" then close the modal; the
-      // success-side delay also returns the button to "Send Feedback".
-      // On any failure path we reset the button immediately so the user
-      // can retry without reopening the modal.
-      if (didSucceed) {
-        setTimeout(function () {
-          close();
-          resetSendButton();
-        }, 1400);
-      } else {
-        resetSendButton();
-      }
+      notice('Network error: ' + (err.message || err), 'err');
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send Feedback';
     }
   }
 

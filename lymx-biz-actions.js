@@ -1,5 +1,5 @@
 // =============================================================================
-// LYMX biz-page action wiring — Save + Share + Reserve with real DB persistence.
+// LYMX biz-page action wiring — Save + Share with real DB persistence.
 // =============================================================================
 // Loaded by lymx-app.js on every page. Activates ONLY on /biz-*.html pages.
 //
@@ -12,15 +12,6 @@
 //   - #shareBtn — keeps the existing navigator.share -> clipboard -> toast
 //                 fallback chain but standardizes the implementation so every
 //                 biz page behaves identically. Centralizes T-B78E5A.
-//   - Reserve a Table — POST to public.table_reservations (2026-05-25 #026db35c).
-//
-// 2026-05-26 (migration 092 / Phase 0 of biz-onboarding roadmap):
-//   Added a single `loadBizMeta(slug)` lookup that fetches `id + demo_only`
-//   once per page and caches the Promise. Save / Reserve / Reviews all `await`
-//   it before writing. When `demo_only=true`, a PREVIEW banner is prepended to
-//   the page and every transactional action refuses with a clear toast. This
-//   replaces the old slug→id-only reservation lookup so the demo-only path
-//   shares the same cache as the other actions.
 //
 // Falls back gracefully when the user is signed out (Save becomes a sign-in
 // nudge, Share still works via clipboard). Never throws.
@@ -32,9 +23,14 @@
   window.__LYMX_BIZ_ACTIONS_LOADED__ = true;
 
   // ----- Page-applicability gate ---------------------------------------------
+  // Only run on biz profile pages. The convention is /biz-<slug>.html or
+  // /biz-<slug> (Netlify strips .html). Excludes admin/dashboard pages that
+  // happen to start with "biz-" like /biz-dashboard.html, /biz-signup.html,
+  // /biz-profile.html, /biz-conversations.html, etc.
   function isBizProfilePage() {
     var path = (location.pathname || '').toLowerCase();
     if (!/^\/biz-/.test(path)) return false;
+    // Skip the non-profile pages that share the prefix
     var notProfile = [
       'biz-dashboard', 'biz-signup', 'biz-profile', 'biz-conversations',
       'biz-analytics', 'biz-cashflow', 'biz-customer-data', 'biz-data-export',
@@ -44,6 +40,8 @@
   }
 
   // ----- Slug detection ------------------------------------------------------
+  // /biz-brew-and-bean.html -> "brew-and-bean"
+  // /biz-brew-and-bean      -> "brew-and-bean"
   function getBizSlug() {
     var path = (location.pathname || '').toLowerCase();
     var m = path.match(/^\/biz-([a-z0-9-]+?)(?:\.html)?$/);
@@ -51,9 +49,13 @@
   }
 
   // ----- Display name + emoji from the page itself ---------------------------
+  // Pulled from the <h1> and the first emoji-looking element. We persist these
+  // alongside the slug so "Saved" lists don't have to re-fetch every biz to
+  // show its name. (Matches the schema in migration 030.)
   function getBizDisplay() {
     var h1 = document.querySelector('h1');
     var name = h1 ? h1.textContent.replace(/\s+/g, ' ').trim() : (document.title || '').split('·')[0].trim();
+    // Heuristic: first single-character "emoji" inside h1 or the brand
     var emoji = '';
     var matches = (h1 ? h1.textContent : '').match(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
     if (matches) emoji = matches[0];
@@ -74,10 +76,7 @@
       return (obj && obj.access_token)
           || (obj && obj.currentSession && obj.currentSession.access_token)
           || null;
-    } catch (e) {
-      console.warn('[lymx-biz-actions] readToken failed', e);
-      return null;
-    }
+    } catch (e) { return null; }
   }
 
   // ----- Toast (shared with existing inline UI) ------------------------------
@@ -90,94 +89,6 @@
     setTimeout(function () { t.remove(); }, 2300);
   }
 
-  // ----- Tiny HTML escape ----------------------------------------------------
-  function esc(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
-  // ----- Business metadata cache (id + demo_only) ----------------------------
-  // Migration 092 (2026-05-26) added `demo_only` to public.businesses so the
-  // static visual-prop pages (biz-brew-and-bean.html / biz-oakline-kitchen.html)
-  // can have real rows without polluting real merchant data. loadBizMeta
-  // returns {id, demo_only, display_name}, cached for the page lifetime.
-  // Save / Reserve / Reviews all await it and refuse to write on demo rows.
-  // Window-scoped so lymx-reviews.js can reuse the cache.
-  if (!window.LymxBizActions) window.LymxBizActions = {};
-  window.LymxBizActions.loadBizMeta = function (slug) {
-    if (window.__LYMX_BIZ_META_PROMISE) return window.__LYMX_BIZ_META_PROMISE;
-    var cfg = getCfg();
-    if (!cfg || !slug) {
-      window.__LYMX_BIZ_META_PROMISE = Promise.resolve(null);
-      return window.__LYMX_BIZ_META_PROMISE;
-    }
-    window.__LYMX_BIZ_META_PROMISE = (async function () {
-      try {
-        // Migration 094: route through the SECURITY DEFINER RPC fn_biz_public_meta
-        // instead of a direct table SELECT. The anon role cannot read businesses
-        // directly (RLS denies, returns 401) — see 094 root-cause comment.
-        var r = await fetch(
-          cfg.SUPABASE_URL + '/rest/v1/rpc/fn_biz_public_meta',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              apikey: cfg.SUPABASE_ANON_KEY,
-              Authorization: 'Bearer ' + cfg.SUPABASE_ANON_KEY
-            },
-            body: JSON.stringify({ p_slug: slug })
-          }
-        );
-        if (!r.ok) {
-          console.warn('[lymx-biz-actions] loadBizMeta', r.status);
-          return null;
-        }
-        var rows = await r.json();
-        return (Array.isArray(rows) && rows[0]) || (rows && rows.id ? rows : null);
-      } catch (e) {
-        console.warn('[lymx-biz-actions] loadBizMeta failed', e);
-        return null;
-      }
-    })();
-    return window.__LYMX_BIZ_META_PROMISE;
-  };
-  function loadBizMeta(slug) { return window.LymxBizActions.loadBizMeta(slug); }
-
-  // ----- Demo banner injection (migration 092) -------------------------------
-  function injectDemoBanner(displayName) {
-    if (document.getElementById('lymxBizDemoBanner')) return;
-    var banner = document.createElement('div');
-    banner.id = 'lymxBizDemoBanner';
-    banner.style.cssText = ''
-      + 'position:relative;z-index:60;'
-      + 'background:linear-gradient(135deg,#fff4d6,#ffe9a8);'
-      + 'border-bottom:1px solid #d4a017;'
-      + 'color:#5a3e00;'
-      + 'font-family:inherit;font-size:14px;font-weight:600;'
-      + 'padding:10px 18px;text-align:center;line-height:1.5;';
-    banner.innerHTML = ''
-      + '<span style="font-size:16px">⚠️</span> '
-      + '<strong>PREVIEW</strong> — '
-      + esc(displayName || 'this listing')
-      + ' is a sample page used to show how a real business looks on LYMX. '
-      + 'It is not a real merchant. '
-      + '<a href="biz-signup.html" style="color:#0a84ff;text-decoration:underline;font-weight:700">'
-      + 'Sign up your real business →</a>';
-    if (document.body.firstChild) {
-      document.body.insertBefore(banner, document.body.firstChild);
-    } else {
-      document.body.appendChild(banner);
-    }
-    document.body.dataset.bizDemo = '1';
-  }
-
-  function demoBlockedToast() {
-    toast('This is a preview business — Save / Reserve / Review only work on real LYMX merchants. Sign up your real business at /biz-signup.html.');
-  }
-  // Expose for lymx-reviews.js
-  window.LymxBizActions.demoBlockedToast = demoBlockedToast;
-
   // ----- Save button: persisted state ----------------------------------------
   function setSavedUi(btn, isSaved) {
     if (!btn) return;
@@ -188,7 +99,7 @@
 
   async function loadSavedState(slug, btn) {
     var cfg = getCfg(); var tok = readToken();
-    if (!cfg || !tok) { setSavedUi(btn, false); return; }
+    if (!cfg || !tok) { setSavedUi(btn, false); return; } // signed-out users see the empty heart
     try {
       var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/saved_businesses?business_slug=eq.' + encodeURIComponent(slug) + '&select=id&limit=1', {
         headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
@@ -205,17 +116,18 @@
   function bindSaveButton(btn, slug, display) {
     if (!btn || btn.dataset.lymxSaveWired === '1') return;
     btn.dataset.lymxSaveWired = '1';
+    // Override any inline toggleSave the page may have set — we want DB-backed.
+    // The button's HTML onclick="toggleSave(this)" will still call window.toggleSave,
+    // so we replace that with the persisted version.
     window.toggleSave = async function (b) {
       b = b || btn;
       var cfg = getCfg(); var tok = readToken();
       if (!cfg || !tok) {
         toast('Sign in to save businesses to your favorites.');
+        // After 1s, route to sign-in with a return URL so they land back here
         setTimeout(function () { location.href = '/login.html?return=' + encodeURIComponent(location.pathname); }, 900);
         return;
       }
-      // Demo-biz guard (migration 092)
-      var meta = await loadBizMeta(slug);
-      if (meta && meta.demo_only) { demoBlockedToast(); return; }
       var isSaved = b.dataset.saved === '1';
       try {
         if (isSaved) {
@@ -227,22 +139,11 @@
           setSavedUi(b, false);
           toast('Removed from saved');
         } else {
+          // Need the user's uid for the INSERT; pull from the JWT payload
           var parts = tok.split('.'); var uid = null;
-          try {
-            uid = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))).sub;
-          } catch (e) {
-            console.warn('[lymx-biz-actions] toggleSave JWT parse failed', e);
-          }
+          try { uid = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))).sub; } catch (e) {}
           if (!uid) throw new Error('no uid in session');
-          // 2026-05-27 #08 — PostgREST upsert needs the on_conflict query param
-          // pointing at the unique constraint (user_id, business_slug). Without it,
-          // a duplicate save returns HTTP 409 even though the request asked for
-          // merge-duplicates resolution. Symptom: clicking Save a second time on
-          // an already-saved biz threw "duplicate key value violates unique
-          // constraint saved_businesses_user_id_business_slug_key" and the toast
-          // showed "Could not update saved". Adding on_conflict makes the second
-          // click a true no-op upsert and keeps the UI consistent.
-          var ir = await fetch(cfg.SUPABASE_URL + '/rest/v1/saved_businesses?on_conflict=user_id,business_slug', {
+          var ir = await fetch(cfg.SUPABASE_URL + '/rest/v1/saved_businesses', {
             method: 'POST',
             headers: {
               apikey: cfg.SUPABASE_ANON_KEY,
@@ -277,14 +178,17 @@
       var url = location.href;
       var h1 = document.querySelector('h1');
       var title = (h1 && h1.textContent.trim()) || document.title || 'LYMX business';
+      // Try native share first — best mobile UX
       if (navigator.share) {
         try { await navigator.share({ title: title, url: url }); return; }
-        catch (e) { console.warn("[lymx-biz-actions.js:274] caught (user cancelled or permission denied — fall through to clipboard):", e); }
+        catch (e) { if (e && e.name !== 'AbortError') console.warn('[lymx-biz-actions] navigator.share, falling through to clipboard', e); }
       }
+      // Clipboard fallback
       if (navigator.clipboard && navigator.clipboard.writeText) {
         try { await navigator.clipboard.writeText(url); toast('Link copied to clipboard', true); return; }
-        catch (e) { console.warn("[lymx-biz-actions.js:278] caught (fall through):", e); }
+        catch (e) { console.warn('[lymx-biz-actions] clipboard.writeText, falling through to textarea', e); }
       }
+      // Last-resort textarea select+execCommand
       try {
         var ta = document.createElement('textarea');
         ta.value = url; ta.style.position = 'fixed'; ta.style.left = '-9999px';
@@ -303,14 +207,6 @@
     if (!slug) return;
     var display = getBizDisplay();
 
-    // Kick off demo_only / id lookup once for the whole page. If demo_only,
-    // inject the PREVIEW banner. Don't await — handlers await independently.
-    loadBizMeta(slug).then(function (meta) {
-      if (meta && meta.demo_only) {
-        injectDemoBanner(meta.display_name || display.name || slug);
-      }
-    });
-
     var saveBtn = document.getElementById('saveBtn');
     var shareBtn = document.getElementById('shareBtn');
     if (saveBtn) {
@@ -322,30 +218,43 @@
     }
   }
 
-  // ----- Reserve a Table (2026-05-25 #026db35c) ------------------------------
+  // ----- Reserve a Table (2026-05-25 #026db35c) --------------------------------
+  // Inserts a row into public.table_reservations. RLS allows anon+authenticated
+  // insert (the biz owner sees them in their dashboard queue). Pattern mirrors
+  // bindSaveButton — wires window.submitReservation that any biz page can call.
   function bindReservationButton(btn, slug, display) {
     if (!btn || btn.dataset.lymxResWired === '1') return;
     btn.dataset.lymxResWired = '1';
     window.submitReservation = async function (b) {
       b = b || btn;
       var cfg = getCfg(); if (!cfg) { toast('Config not loaded'); return; }
-      // Resolve business meta from slug (shared cache via loadBizMeta).
-      // Returns id (for INSERT) and demo_only (for the guard).
-      var meta = await loadBizMeta(slug);
-      if (!meta) { toast('Business not found.'); return; }
-      if (meta.demo_only) { demoBlockedToast(); return; }
-      var bizId = meta.id;
-      b.dataset.businessId = bizId;
+      // Resolve business_id from slug
+      var bizId = b.dataset.businessId || null;
+      if (!bizId) {
+        try {
+          var pr = await fetch(cfg.SUPABASE_URL + '/rest/v1/businesses?slug=eq.' + encodeURIComponent(slug.replace(/^biz-/, '')) + '&select=id&limit=1', {
+            headers: { apikey: cfg.SUPABASE_ANON_KEY }
+          });
+          if (pr.ok) {
+            var rows = await pr.json();
+            if (rows && rows[0]) { bizId = rows[0].id; b.dataset.businessId = bizId; }
+          }
+        } catch (e) { console.warn('[lymx-biz-actions] biz lookup', e); }
+      }
+      if (!bizId) { toast('Business not found.'); return; }
 
+      // Collect selected date + time + party from the page (data-res-date, data-res-time, data-res-party)
       var selectedDate = (document.querySelector('.reserve-card .ip.sel[data-res-date]') || {}).dataset && (document.querySelector('.reserve-card .ip.sel[data-res-date]') || {}).dataset.resDate || '';
       var selectedTime = (document.querySelector('.reserve-card .ip.sel[data-res-time]') || {}).dataset && (document.querySelector('.reserve-card .ip.sel[data-res-time]') || {}).dataset.resTime || '';
       var party = parseInt(b.dataset.partySize || '2', 10);
       if (!selectedDate || !selectedTime) { toast('Pick a date and time'); return; }
 
+      // Compute timestamptz from selected date + time
       var dt;
       try { dt = new Date(selectedDate + 'T' + selectedTime); } catch (e) { dt = null; }
       if (!dt || isNaN(dt.getTime())) { toast('Invalid date/time'); return; }
 
+      // Pull user identity (logged-in OR prompt for name+email)
       var tok = readToken();
       var bookerName = '', bookerEmail = '', uid = null;
       if (tok) {
@@ -354,11 +263,7 @@
           uid = payload.sub;
           bookerEmail = payload.email || '';
           bookerName = (payload.user_metadata && (payload.user_metadata.full_name || payload.user_metadata.name)) || bookerEmail.split('@')[0] || '';
-        } catch (e) {
-          // JWT payload occasionally has padding/encoding edges that throw.
-          // Non-fatal: the prompt() fallbacks below collect the missing fields.
-          console.warn('[lymx-biz-actions] reserve: JWT payload parse failed; using prompt fallback', e);
-        }
+        } catch (e) {}
       }
       if (!bookerName) {
         bookerName = prompt('Your name for the reservation:', '') || '';
@@ -406,6 +311,7 @@
     };
   }
 
+  // ----- Boot ----------------------------------------------------------------
   function bootExt() {
     if (!isBizProfilePage()) return;
     var slug = getBizSlug();
@@ -416,8 +322,10 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { boot(); bootExt(); });
+    document.addEventListener('DOMContentLoaded', function(){ boot(); bootExt(); });
   } else {
+    // The page's inline scripts have already run and set window.toggleSave.
+    // Boot synchronously so we override before the user can click.
     boot();
     bootExt();
   }
