@@ -211,11 +211,18 @@ serve(async (req) => {
                     Deno.env.get("SUPABASE_ANON_KEY")!,
                     { global: { headers: { Authorization: "Bearer " + bearer } }, auth: { persistSession: false } },
                 );
-                const { data: ud } = await userClient.auth.getUser();
-                if (ud && ud.user && ud.user.id) {
+                const { data: ud, error: ue } = await userClient.auth.getUser();
+                if (ue) {
+                    // Invalid/missing/expired token → expected anonymous-signup path. No log noise.
+                } else if (ud?.user?.id) {
                     existingUser = { id: ud.user.id, email: ud.user.email, user_metadata: ud.user.user_metadata as Record<string, unknown> };
                 }
-            } catch (_e) { /* not a valid user token — treat as anonymous new signup */ }
+            } catch (e) {
+                // Network or transport failure during auth.getUser — surface so flakes are
+                // visible in EF logs, but still fall through to anonymous signup so a
+                // legitimate anonymous caller is never blocked by a transient probe error.
+                console.warn(`[business-signup] auth.getUser threw, falling back to anonymous signup: ${e instanceof Error ? e.message : String(e)}`);
+            }
         }
     }
 
