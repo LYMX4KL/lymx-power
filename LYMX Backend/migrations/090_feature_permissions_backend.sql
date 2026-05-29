@@ -91,6 +91,29 @@ create policy user_permissions_admin_write
     with check (public.am_i_admin());
 
 -- ---------------------------------------------------------------------------
+-- 2b. Drop ANY pre-existing overloads of these functions.
+--     Some were created OUT OF BAND with mismatched signatures, which made
+--     PostgREST throw PGRST203 ("could not choose the best candidate function")
+--     when the UI called grant_permission/revoke_permission — that's why the
+--     toggles never saved. We wipe every overload, then recreate ONE canonical
+--     signature for each below. Idempotent + re-runnable.
+-- ---------------------------------------------------------------------------
+do $$
+declare r record;
+begin
+  for r in
+    select 'public.' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')' as sig
+      from pg_proc p
+      join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'public'
+       and p.proname in ('grant_permission','revoke_permission','has_feature',
+                         'my_features','admin_set_staff_role','admin_resolve_user_by_email')
+  loop
+    execute 'drop function if exists ' || r.sig || ' cascade';
+  end loop;
+end $$;
+
+-- ---------------------------------------------------------------------------
 -- 3. grant_permission — admin sets an explicit Grant (true) or Deny (false)
 -- ---------------------------------------------------------------------------
 create or replace function public.grant_permission(
