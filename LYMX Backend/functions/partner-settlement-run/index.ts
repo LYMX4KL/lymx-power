@@ -25,9 +25,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-// 2026-05-26 — admin/finance gate moved to staff_roles-only (see below).
-// Migration 015 seeds Kenny as admin so removing the UUID short-circuit
-// doesn't lock him out, and Helen/future admins get through correctly.
+// Admin is resolved via staff_roles (role='admin'); no hardcoded UUID bypass.
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -61,16 +59,13 @@ serve(async (req) => {
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Admin gate: staff_roles role IN (admin, finance). Applies uniformly to
-    // every signed-in user including Kenny — no UUID special-case.
-    const { data: staff, error: staffErr } = await supabase.from("staff_roles")
-        .select("role").eq("user_id", userId).maybeSingle();
-    if (staffErr) {
-        console.warn(`[partner-settlement-run] staff_roles lookup failed for ${userId}:`, staffErr.message);
-        return err("Admin check failed. Please try again.", 503);
-    }
-    if (!staff || !["admin", "finance"].includes(staff.role)) {
-        return err("Admin only.", 403);
+    // Admin gate
+    {
+        const { data: staff } = await supabase.from("staff_roles")
+            .select("role").eq("user_id", userId).maybeSingle();
+        if (!staff || !["admin", "accounting"].includes(staff.role)) {
+            return err("Admin only.", 403);
+        }
     }
 
     let body: { partner_id?: string; period_end?: string };

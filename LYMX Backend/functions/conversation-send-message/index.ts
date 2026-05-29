@@ -150,17 +150,11 @@ serve(async (req) => {
     if (!conversationId) return err("conversation_id resolution failed", 500);
 
     // ----- Determine if sender is admin (for sender_type) -----
-    // 2026-05-26 root-cause: removed `|| senderUserId === KENNY_ID` literal-UUID
-    // bypass. Migration 015 seeds Kenny as admin in staff_roles, so the
-    // staff_roles lookup covers Kenny + Helen + every future admin uniformly.
-    const { data: staffRow, error: staffErr } = await supabase
+    const { data: staffRow } = await supabase
         .from("staff_roles")
         .select("user_id")
         .eq("user_id", senderUserId)
         .maybeSingle();
-    if (staffErr) {
-        console.warn(`[conversation-send-message] staff_roles lookup failed for ${senderUserId}:`, staffErr.message);
-    }
     const isAdmin = !!staffRow;
 
     let senderType: string;
