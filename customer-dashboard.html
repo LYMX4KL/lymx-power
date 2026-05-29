@@ -65,9 +65,8 @@
   /* 2026-05-21 #4e62be7c + 2026-05-25 #4e62be7c follow-up: even after the +28px margin, marketing testers still felt the headline was crowded against the sticky nav. Doubling the breathing room. */
   .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-top:48px;margin-bottom:24px;flex-wrap:wrap}
   .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
-  /* 2026-05-21 + 2026-05-25 + 2026-05-27 #17ec1753 follow-up x3: even -0.14em wasn't enough across Windows / Android system fonts. Root cause: emoji glyphs have inconsistent baseline metrics across font stacks, and vertical-align alone can't compensate. Combining vertical-align with position:relative top nudge so it visually lands on the same line as the headline text regardless of font. */
-  /* 2026-05-27 #17 — emoji was floating high relative to text baseline; switched to vertical-align:middle + small font/top tweak so the wave centers with the cap-height of the name. */
-  .wave-emoji{display:inline-block;vertical-align:middle;line-height:1;font-size:0.85em;position:relative;top:-0.05em}
+  /* 2026-05-21 + 2026-05-25 #17ec1753 follow-up: -0.08em wasn't enough — emoji still rendered above the name baseline on common system fonts. Pushing to -0.14em + explicit font-size match. */
+  .wave-emoji{display:inline-block;vertical-align:-0.14em;line-height:1;font-size:0.92em}
   .page-head p{margin:4px 0 0;color:var(--muted);font-size:15px}
 
   /* Layout */
@@ -236,18 +235,31 @@
     <div class="col">
 
       <!-- Balance card -->
+      <!-- 2026-05-28 #c1496da9 + #c91a754f + #4133cddb — Rae: "the balance and
+           the stat boxes (Spent, This month, etc.) should be clickable so I can
+           see where my LYMX went." Wrapping the balance numeric area in an
+           anchor to customer-wallet.html (full balance + recent transactions)
+           and each sub-stat in an anchor to customer-history.html scoped to the
+           relevant view (?view=earned / ?view=spent / ?view=visits) so the click
+           lands on a filtered list, not just the same dashboard. Visual styling
+           uses inherit so the cards look unchanged. -->
       <div class="balance-card">
-        <div class="lab">Your LYMX balance</div>
-        <div class="num" id="balanceLymx">— LYMX</div>
-        <div class="usd" id="balanceUsd">Loading…</div>
+        <a href="customer-wallet.html" style="display:block;color:inherit;text-decoration:none;cursor:pointer" aria-label="Open your LYMX wallet">
+          <div class="lab">Your LYMX balance</div>
+          <div class="num" id="balanceLymx">— LYMX</div>
+          <div class="usd" id="balanceUsd">Loading…</div>
+        </a>
         <div class="stat-row">
-          <div class="stat" style="cursor:pointer" data-d="This month: LYMX you have earned since the 1st of this month." onclick="lymxStatDetail(this)"><div class="v" id="statThisMo">—</div><div class="k">This month</div></div>
-          <div class="stat" style="cursor:pointer" data-d="Spent this month: LYMX you redeemed at Businesses since the 1st." onclick="lymxStatDetail(this)"><div class="v" id="statSpentMo">—</div><div class="k">Spent (mo)</div></div>
-          <div class="stat" style="cursor:pointer" data-d="Lifetime visits: your total receipt-verified redemptions, all-time." onclick="lymxStatDetail(this)"><div class="v" id="statLifetime">—</div><div class="k">Lifetime visits</div></div>
+          <a class="stat" href="customer-history.html?view=earned" style="color:inherit;text-decoration:none;cursor:pointer" aria-label="View what you earned this month">
+            <div class="v" id="statThisMo">—</div><div class="k">This month</div>
+          </a>
+          <a class="stat" href="customer-history.html?view=spent" style="color:inherit;text-decoration:none;cursor:pointer" aria-label="View what you spent this month">
+            <div class="v" id="statSpentMo">—</div><div class="k">Spent (mo)</div>
+          </a>
+          <a class="stat" href="customer-history.html?view=visits" style="color:inherit;text-decoration:none;cursor:pointer" aria-label="View your lifetime visits">
+            <div class="v" id="statLifetime">—</div><div class="k">Lifetime visits</div>
+          </a>
         </div>
-        <!-- #14 - tap a stat to expand what it means -->
-        <div class="stat-detail" id="statDetail" style="display:none;margin-top:10px;font-size:12px;color:rgba(255,255,255,.92);background:rgba(255,255,255,.14);border-radius:8px;padding:9px 12px;line-height:1.45"></div>
-        <script>function lymxStatDetail(el){var d=document.getElementById('statDetail');if(!d)return;var txt=el.getAttribute('data-d');if(d.style.display!=='none'&&d.textContent===txt){d.style.display='none';return;}d.textContent=txt;d.style.display='block';}</script>
         <div class="actions">
           <!-- 2026-05-19 #1339a282 + #d220c320 -->
           <a class='btn-w solid' href='/browse'>Spend my LYMX →</a>
@@ -374,22 +386,39 @@
       </div>
 
       <!-- Pending reviews -->
-      <!-- 2026-05-26 root-cause fix (#98fcfa23): page used to ship with hardcoded
-           "3 visits waiting" + 3 fake businesses, then TWO competing JS handlers
-           tried to scrub them — one with a wrong selector that left the count
-           pill stale forever ("3 visits waiting · earn up to 300 LYMX" persisting
-           even for users with 0 visits). The root cause was: don't render a lie
-           and then clean it up. Now: HTML ships an honest "Loading…" scaffold,
-           and a single handler at the bottom of the page (Module 8) queries
-           v_my_pending_reviews and replaces the scaffold with real rows or the
-           empty state. One source of truth, no scrubbing race. -->
-      <div class="card" id="pendingReviewsCard">
+      <div class="card">
         <div class="card-h">
           <h2>Pending reviews</h2>
-          <span class="count" id="pendingReviewsCount">Loading…</span>
+          <span class="count">3 visits waiting · earn up to 300 LYMX</span>
         </div>
-        <div class="pending-list" id="pendingReviewsList">
-          <div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px">Loading…</div>
+        <div class="pending-list">
+          <div class="pending-row">
+            <div class="biz-ph">☕</div>
+            <div class="body">
+              <div class="name">Brew &amp; Bean Café</div>
+              <div class="when">Visited yesterday · $12.50 · earned 63 LYMX</div>
+            </div>
+            <span class="reward">+100 LYMX</span>
+            <a class='write' href='/biz-brew-and-bean#write-review'>Write review</a>
+          </div>
+          <div class="pending-row">
+            <div class="biz-ph b">🔌</div>
+            <div class="body">
+              <div class="name">EverGrid Hub</div>
+              <div class="when">Visited 3 days ago · charge session · earned 240 LYMX</div>
+            </div>
+            <span class="reward">+100 LYMX</span>
+            <a class="write" href="#">Write review</a>
+          </div>
+          <div class="pending-row">
+            <div class="biz-ph c">🏠</div>
+            <div class="body">
+              <div class="name">InvestPro Realty</div>
+              <div class="when">Rent paid 5 days ago · earned 1,800 LYMX</div>
+            </div>
+            <span class="reward">+100 LYMX</span>
+            <a class="write" href="#">Write review</a>
+          </div>
         </div>
       </div>
 
@@ -796,31 +825,20 @@
       const startMo = new Date(); startMo.setDate(1); startMo.setHours(0,0,0,0);
       const startIso = startMo.toISOString();
       const headers = { apikey: ANON, Authorization: 'Bearer ' + tok };
-      // 2026-05-26 Module 5 unification: read from customer_redemptions (view on
-      // lymx_issuances WHERE reason='redemption') instead of the deprecated
-      // wallets+transactions tables. Single hop — no customer→wallet lookup chain.
-      // Pre-Module-5 reads silently returned 0 because both lookups landed on
-      // empty tables. Now they hit the real ledger.
+      // Earned this month
       let earnedMo = 0, spentMo = 0, lifetime = 0;
-
-      // Earned this month — POSITIVE issuances since the 1st
       try {
-        const r = await fetch(URL + '/rest/v1/lymx_issuances?recipient_user_id=eq.' + userId + '&created_at=gte.' + encodeURIComponent(startIso) + '&amount_lymx=gt.0&select=amount_lymx', { headers });
+        const r = await fetch(URL + '/rest/v1/lymx_issuances?recipient_user_id=eq.' + userId + '&created_at=gte.' + encodeURIComponent(startIso) + '&select=amount_lymx', { headers });
         if (r.ok) { const rows = await r.json(); earnedMo = rows.reduce((s, x) => s + (Number(x.amount_lymx) || 0), 0); }
-      } catch (e) { console.warn('[customer-dashboard] earned-this-month load failed', e); }
-
-      // Spent this month — Module 5 customer_redemptions view (lymx_amount is positive)
+      } catch (e) { console.warn('[customer-dashboard.html:L663] silent error', e); }
       try {
-        const r = await fetch(URL + '/rest/v1/customer_redemptions?customer_user_id=eq.' + userId + '&created_at=gte.' + encodeURIComponent(startIso) + '&select=lymx_amount', { headers });
-        if (r.ok) { const rows = await r.json(); spentMo = rows.reduce((s, x) => s + (Number(x.lymx_amount) || 0), 0); }
-      } catch (e) { console.warn('[customer-dashboard] spent-this-month load failed', e); }
-
-      // Lifetime visits — number of redemption events all-time
+        const r = await fetch(URL + '/rest/v1/customer_redemptions?customer_user_id=eq.' + userId + '&created_at=gte.' + encodeURIComponent(startIso) + '&select=amount', { headers });
+        if (r.ok) { const rows = await r.json(); spentMo = rows.reduce((s, x) => s + (Number(x.amount) || 0), 0); }
+      } catch (e) { console.warn('[customer-dashboard.html:L667] silent error', e); }
       try {
-        const r = await fetch(URL + '/rest/v1/customer_redemptions?customer_user_id=eq.' + userId + '&select=id', { headers });
+        const r = await fetch(URL + '/rest/v1/customer_redemptions?customer_user_id=eq.' + userId + '&select=id', { headers, method: 'GET' });
         if (r.ok) { const rows = await r.json(); lifetime = rows.length; }
-      } catch (e) { console.warn('[customer-dashboard] lifetime visits load failed', e); }
-
+      } catch (e) { console.warn('[customer-dashboard.html:L671] silent error', e); }
       function fmt(n, prefix) {
         if (!n) return '0';
         const s = Math.abs(Math.round(n)).toLocaleString();
@@ -909,19 +927,17 @@ window.addEventListener('DOMContentLoaded', function () {
     if (/See all\s*\(/i.test(a.textContent)) a.textContent = 'See all →';
   });
 
-  // 2026-05-26 root-cause fix (#98fcfa23): removed the Pending Reviews
-  // list scrub here. The HTML no longer ships fake rows, so there is
-  // nothing to scrub. The Module 8 handler at the bottom of the page is
-  // the single source of truth for that card.
+  // Pending reviews list
+  var pending = document.querySelector('.pending-list');
+  if (pending) pending.innerHTML = '<div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">⏳</div>No visits waiting to review yet. Visit a LYMX business and your pending reviews will show up here.</div>';
   // Recent activity list
   var activity = document.getElementById('activityList');
   if (activity) activity.innerHTML = '<div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">📊</div>No activity yet. Your LYMX earnings, redemptions, and reviews will appear here.</div>';
-  // 2026-05-26 root-cause fix (#98fcfa23): removed the Pending Reviews
-  // count update here. Its selector picked the FIRST .card-h .count on the
-  // page (Wallet/Recent activity, not Pending reviews), and its regex
-  // guard then bailed because that card's count didn't say "visits waiting"
-  // — so the Pending count pill stayed stuck on the hardcoded "3 visits
-  // waiting" forever. The Module 8 handler at the bottom owns the count.
+  // Update pending review count text
+  var pendCount = document.querySelector('.card-h .count');
+  if (pendCount && /visits waiting/i.test(pendCount.textContent)) {
+    pendCount.textContent = '0 pending';
+  }
   // Friends Joined counter (find anchor that mentions Friends Joined)
   document.querySelectorAll('.stat, .stat-card, .kpi, [class*="friend"], [class*="invite"]').forEach(function (el) {
     if (/friends?\s*joined/i.test(el.textContent) || /invited\s*friends?/i.test(el.textContent)) {
@@ -1199,129 +1215,5 @@ window.addEventListener('DOMContentLoaded', async function () {
   setInterval(function () { if (document.visibilityState === 'visible') loadMyClaims(); }, 30000);
 })();
 </script>
-
-<script>
-// =============================================================================
-// Module 8 - Pending Reviews (real backend, no more fake rows)
-// =============================================================================
-// 2026-05-26 #98fcfa23 - Rachel reported the Pending Reviews card was empty
-// even when she had visits she could review. Root cause: the page had
-// hardcoded fake rows that the placeholder-clearing script unconditionally
-// replaced with an empty state - meaning every customer saw "no visits
-// waiting" forever, regardless of real history.
-//
-// Fix: query the new v_my_pending_reviews view (migration 103). The view
-// returns one row per (current user, business) pair where the user has
-// earned LYMX from a real visit but has not yet written a review. We
-// render those rows into the existing .pending-list, update the count
-// pill, and wire each "Write review" link to /biz-<slug>.html#write-review.
-//
-// If the user has no pending reviews, we leave the existing empty state
-// in place (already wired in the earlier DOMContentLoaded handler).
-//
-// Ordering: this script runs after DOMContentLoaded fires, so by the time
-// our fetch resolves the empty state is already painted. If we got rows
-// back, we overwrite it. If not, the empty state stays.
-// =============================================================================
-window.addEventListener('DOMContentLoaded', async function () {
-  if (!window.LYMX || !window.LYMX.getSession) { setTimeout(arguments.callee, 100); return; }
-  const session = await window.LYMX.getSession();
-  if (!session) {
-    // Signed out — paint empty state instead of leaving the "Loading…" scaffold.
-    const c = document.getElementById('pendingReviewsCount');
-    const l = document.getElementById('pendingReviewsList');
-    if (c) c.textContent = 'Sign in to see your pending reviews';
-    if (l) l.innerHTML = '<div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><a href="/login.html" style="color:#0050c7;font-weight:600;text-decoration:none">Sign in</a> to track pending reviews and earn 100 LYMX for each one.</div>';
-    return;
-  }
-
-  const ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
-  const URL  = window.LYMX_CONFIG.SUPABASE_URL;
-  const headers = { apikey: ANON, Authorization: 'Bearer ' + session.access_token };
-
-  function esc(x) {
-    return String(x == null ? '' : x).replace(/[&<>"']/g, c => (
-      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
-    ));
-  }
-  function timeAgo(iso) {
-    if (!iso) return '';
-    const ms = Date.now() - new Date(iso).getTime();
-    const sec = Math.max(0, Math.floor(ms / 1000));
-    if (sec < 60) return 'just now';
-    const min = Math.floor(sec / 60);
-    if (min < 60) return min + ' min ago';
-    const hr = Math.floor(min / 60);
-    if (hr < 24) return hr + (hr === 1 ? ' hour ago' : ' hours ago');
-    const day = Math.floor(hr / 24);
-    if (day === 1) return 'yesterday';
-    if (day < 7) return day + ' days ago';
-    const wk = Math.floor(day / 7);
-    if (wk < 5) return wk + (wk === 1 ? ' week ago' : ' weeks ago');
-    const mo = Math.floor(day / 30);
-    if (mo < 12) return mo + (mo === 1 ? ' month ago' : ' months ago');
-    return new Date(iso).toLocaleDateString();
-  }
-
-  let rows = [];
-  try {
-    const r = await fetch(URL + '/rest/v1/v_my_pending_reviews?select=business_id,business_slug,business_name,business_emoji,category,visit_count,last_visit_at,lymx_earned_here,potential_reward_lymx&order=last_visit_at.desc&limit=8', { headers });
-    if (r.ok) {
-      rows = await r.json();
-    } else {
-      console.warn('[customer-dashboard.html v_my_pending_reviews] fetch failed', r.status);
-      const c = document.getElementById('pendingReviewsCount');
-      const l = document.getElementById('pendingReviewsList');
-      if (c) c.textContent = 'Could not load';
-      if (l) l.innerHTML = '<div style="padding:20px;text-align:center;color:#b81324;font-size:13.5px">Could not load pending reviews right now. Reload the page or try again in a moment.</div>';
-      return;
-    }
-  } catch (e) {
-    console.warn('[customer-dashboard.html v_my_pending_reviews] fetch error', e);
-    const c = document.getElementById('pendingReviewsCount');
-    const l = document.getElementById('pendingReviewsList');
-    if (c) c.textContent = 'Could not load';
-    if (l) l.innerHTML = '<div style="padding:20px;text-align:center;color:#b81324;font-size:13.5px">Could not load pending reviews right now. Reload the page or try again in a moment.</div>';
-    return;
-  }
-
-  // The HTML scaffolds the card with #pendingReviewsCount + #pendingReviewsList
-  // (no more competing selectors, no more guessing which card to update).
-  const pendingCardCount = document.getElementById('pendingReviewsCount');
-  const pendingList = document.getElementById('pendingReviewsList');
-
-  if (!Array.isArray(rows) || rows.length === 0) {
-    if (pendingCardCount) pendingCardCount.textContent = '0 pending';
-    if (pendingList) {
-      pendingList.innerHTML = '<div style="padding:20px;text-align:center;color:#5b6472;font-size:14px;background:#f6f7f9;border-radius:9px"><div style="font-size:28px;margin-bottom:6px">⏳</div>No visits waiting to review yet. Visit a LYMX business and your pending reviews will show up here.</div>';
-    }
-    return;
-  }
-
-  if (pendingCardCount) {
-    const totalReward = rows.reduce(function (s, r) { return s + (r.potential_reward_lymx || 100); }, 0);
-    pendingCardCount.textContent = rows.length + (rows.length === 1 ? ' visit waiting - earn ' : ' visits waiting - earn up to ') + totalReward + ' LYMX';
-  }
-
-  if (pendingList) {
-    pendingList.innerHTML = rows.map(function (r) {
-      const emoji = r.business_emoji || '\u{1F3EA}';
-      const writeHref = '/biz-' + encodeURIComponent((r.business_slug || '').replace(/^biz-/, '')) + '.html#write-review';
-      const visitWord = (r.visit_count > 1) ? (r.visit_count + ' visits - last ') : 'Visited ';
-      return ''
-        + '<div class="pending-row">'
-        +   '<div class="biz-ph">' + esc(emoji) + '</div>'
-        +   '<div class="body">'
-        +     '<div class="name">' + esc(r.business_name || 'Business') + '</div>'
-        +     '<div class="when">' + esc(visitWord) + esc(timeAgo(r.last_visit_at)) + ' - earned ' + esc(String(r.lymx_earned_here || 0)) + ' LYMX</div>'
-        +   '</div>'
-        +   '<span class="reward">+' + esc(String(r.potential_reward_lymx || 100)) + ' LYMX</span>'
-        +   '<a class="write" href="' + esc(writeHref) + '">Write review</a>'
-        + '</div>';
-    }).join('');
-  }
-});
-</script>
-
 </body>
 </html>

@@ -138,7 +138,16 @@
       <a href="territory-program.html">Territory</a>
       <a href="partner-payouts.html">Payouts</a>
     </nav>
-    <a href="partner-spotlight.html" class="btn ghost">Master spotlight</a>
+    <!-- 2026-05-28 #17e7756d — Rae: "the 🌐 EN language chip overlaps the
+         Master spotlight text." Root cause: lymx-i18n.js docks the chip
+         INSIDE a header .nav-cta when one exists, but this page placed the
+         Master spotlight button as a direct child of .nav-inner (no .nav-cta
+         wrapper). The chip fell back to fixed positioning at right:220px and
+         landed on top of the button. Wrapping in .nav-cta lets the chip dock
+         inline with the button so they never overlap. -->
+    <div class="nav-cta">
+      <a href="partner-spotlight.html" class="btn ghost">Master spotlight</a>
+    </div>
   </div>
 </header>
 

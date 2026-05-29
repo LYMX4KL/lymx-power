@@ -112,7 +112,8 @@
 <nav class="nav">
   <div class="nav-inner">
     <a href="index.html" class="logo">LYMX <span>Power</span></a>
-    <a href="business.html" class="btn">List your Business →</a>
+    <a href="biz-signup.html" class="btn">List your Business →</a><!-- 2026-05-28 #a89d3cc3 — was business.html (marketing page); now routes directly to the signup form so the CTA does what its label says. -->
+
   </div>
 </nav>
 
@@ -207,7 +208,8 @@
       <div class="br-row"><span class="l">Subscription</span><span class="v cost" id="bSubscription">−$199</span></div>
     </div>
 
-    <a href="business.html" class="out-cta">List my Business →</a>
+    <a href="biz-signup.html" class="out-cta">List my Business →</a><!-- 2026-05-28 #a89d3cc3 — same fix as nav button above. -->
+
   </div>
 </div>
 
@@ -355,7 +357,20 @@
     document.getElementById('referral').value = referral;
     document.getElementById('retention').value = retention;
     recalc();
-    document.querySelector('.input-card').scrollIntoView({behavior:'smooth',block:'start'});
+    // 2026-05-28 #e8b316d3 — was: scrollIntoView('.input-card') which always
+    // jumped to the top of the page. Rae's complaint: "Clicking a scenario
+    // box scrolls to the top instead of staying in place." Replaced with a
+    // brief flash on the input card so the user knows the inputs updated,
+    // without losing their scroll position. The output card stays visible.
+    try {
+      var card = document.querySelector('.input-card');
+      if (card) {
+        card.style.transition = 'box-shadow .4s';
+        var prevShadow = card.style.boxShadow;
+        card.style.boxShadow = '0 0 0 4px rgba(10,132,255,.35)';
+        setTimeout(function(){ card.style.boxShadow = prevShadow || ''; }, 900);
+      }
+    } catch (e) { console.warn('[biz-revenue-calc] scenario flash', e); }
   }
 
   recalc();
