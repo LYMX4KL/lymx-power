@@ -160,7 +160,13 @@
         });
         if (sr.ok) {
           var sroles = await sr.json();
-          if (Array.isArray(sroles) && sroles.length) return 'admin';
+          // 2026-05-29 — only role='admin' grants the admin menu, matching the
+          // server-side am_i_admin() (role='admin' only) and lymx-role-gate.js.
+          // Previously ANY staff_roles row (marketing/support/hr/etc.) returned
+          // 'admin', so non-admin staff saw the full admin menu but every admin
+          // page bounced them via am_i_admin()=false — the root cause of the
+          // Cluster A "loads 1-2s then redirects to dashboard" tickets.
+          if (Array.isArray(sroles) && sroles.some(function (r) { return r && r.role === 'admin'; })) return 'admin';
         }
       } catch (e) { console.warn('[sidebar] staff_roles probe', e); }
 
