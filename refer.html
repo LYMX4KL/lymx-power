@@ -27,8 +27,16 @@
   .btn-primary:hover{background:#000}
   .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
   .btn-secondary:hover{border-color:var(--ink)}
-  .share-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:10px}
-  .share-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#f6f7f9;border:1px solid var(--line);border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink)}
+  /* 2026-05-28 #08316d07 — Rae: "share buttons on Refer a friend look misaligned."
+     auto-fit + minmax(140px,1fr) lets the columns re-flow at every viewport
+     width so the 4 buttons sometimes land 4-up, sometimes 3+1, sometimes 2x2,
+     and each button has a different content width (emoji + label). Fixed
+     column counts at standard breakpoints keep the grid aligned: 4-up on
+     desktop, 2x2 on mobile. min-height + white-space:nowrap keep buttons the
+     same size whether the label wraps or not. */
+  .share-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+  @media(max-width:640px){.share-grid{grid-template-columns:repeat(2,1fr)}}
+  .share-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 10px;background:#f6f7f9;border:1px solid var(--line);border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink);min-height:46px;white-space:nowrap}
   .share-btn:hover{background:#eef4ff;border-color:var(--accent)}
   .pcode{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:24px;font-weight:800;letter-spacing:.04em;color:var(--accent-2);background:#EEF6FF;padding:10px 18px;border-radius:9px;display:inline-block;margin-top:6px}
   .reward{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid var(--gold);border-radius:12px;padding:18px;margin-bottom:18px}
