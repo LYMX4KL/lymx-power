@@ -267,6 +267,12 @@
 
   function fmtDate(d){ return d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' }); }
   function fmtTime(d){ return d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit', hour12:true }); }
+  // 2026-05-30 (S2e) - LOCAL date string (YYYY-MM-DD). Was d.toISOString().slice(0,10),
+  // which is UTC: for users AHEAD of UTC (e.g. PH/UTC+8) local midnight is the PREVIOUS
+  // UTC day, so the day button's weekday (computed local) and its stored date string
+  // (computed UTC) disagreed by a day -> renderSlots matched the wrong weekday and showed
+  // "No availability that day" on every weekday. Use local Y-M-D so both agree.
+  function ymdLocal(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
 
   function renderDays(){
     const out = [];
@@ -275,7 +281,7 @@
       const d = new Date(start.getTime() + i*86400000);
       const dow = d.getDay();
       const hasRule = rules.some(r => r.day_of_week === dow);
-      const dateStr = d.toISOString().slice(0,10);
+      const dateStr = ymdLocal(d);
       const blocked = overrides.some(o => o.override_date === dateStr && o.is_blocked && !o.start_time);
       if (!hasRule || blocked) continue;
       out.push({ date: d, dateStr });
