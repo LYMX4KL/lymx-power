@@ -352,10 +352,34 @@
     $('bench-wrap').style.display = '';
   }
 
+  // ---------- load category economics from DB (Rule 5: one tunable source) ----------
+  async function loadCategories() {
+    try {
+      var cfg = window.LYMX_CONFIG;
+      if (!cfg || !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return;
+      var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/rpc/current_category_benchmarks', {
+        method: 'POST',
+        headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + cfg.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+        body: '{}'
+      });
+      if (!r.ok) return;
+      var rows = await r.json();
+      if (!Array.isArray(rows) || !rows.length) return;
+      rows.forEach(function (row) {
+        var c = CATS.find(function (x) { return x.key === row.key; });
+        if (c) { c.name = row.name || c.name; c.icon = row.icon || c.icon; c.sub = row.sub || c.sub; c.iss = Number(row.lymx_issued) || c.iss; c.red = Number(row.lymx_redeemed) || c.red; }
+        else { CATS.push({ key: row.key, icon: row.icon || '🏬', name: row.name || row.key, sub: row.sub || '', iss: Number(row.lymx_issued) || 0, red: Number(row.lymx_redeemed) || 0 });
+               if (state.counts[row.key] == null) state.counts[row.key] = 0; }
+      });
+      renderCats(); renderOutputs();
+    } catch (e) { console.warn('[projector] category benchmarks load failed; using built-in estimates', e); }
+  }
+
   // ---------- init ----------
   function init() {
     applyCfg();
     renderCats(); renderTeam(); renderOutputs(); bindEvents();
+    loadCategories();
     if (window.LYMXComp && window.LYMXComp.ready) {
       window.LYMXComp.ready.then(function () { applyCfg(); renderTeam(); renderOutputs(); });
     }
