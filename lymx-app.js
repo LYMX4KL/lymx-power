@@ -19,6 +19,18 @@
 // =============================================================================
 
 (function () {
+  // ---------------------------------------------------------------------------
+  // lymxLocalDate(d) — calendar date 'YYYY-MM-DD' in the USER'S local timezone.
+  // Use this instead of `new Date().toISOString().slice(0,10)`: toISOString() is UTC,
+  // so for US users after ~4-7pm it returns TOMORROW's date (the S2e off-by-one bug).
+  // Pass a Date (or a date-ish value); omit for today. Defined before the idempotency
+  // guard so it's always available even on a re-load.
+  window.lymxLocalDate = function (d) {
+    d = (d instanceof Date) ? d : (d ? new Date(d) : new Date());
+    if (isNaN(d.getTime())) d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  };
+
   if (window.__LYMX_APP_LOADED__) return;
   window.__LYMX_APP_LOADED__ = true;
 
