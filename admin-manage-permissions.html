@@ -92,9 +92,13 @@
       <p>Each LYMX feature has a permission key. Grant it to a member to enable both the capability and the page-level playbook chip that teaches it. Defaults are inherited from the member's role; overrides win.</p>
     </div>
 
+    <div class="view-switch" style="margin:0 0 14px;display:flex;gap:6px">
+      <button type="button" id="viewMembers" class="vs-btn active">Members</button>
+      <button type="button" id="viewRoleDefaults" class="vs-btn">Role Defaults</button>
+    </div>
     <div class="err-banner" id="errBanner"></div>
 
-    <div class="pane">
+    <div class="pane" id="paneMembers">
       <aside class="member-list">
         <input class="member-search" id="memberSearch" type="text" placeholder="Search by name or email…" />
         <div class="ml-tabs" id="mlTabs"></div>
@@ -107,6 +111,7 @@
         <div class="empty">Pick a member on the left to view + edit their feature permissions.</div>
       </article>
     </div>
+    <section class="role-defaults" id="roleDefaults" style="display:none"></section>
   </div>
 </main>
 
@@ -172,6 +177,7 @@
   var activeTab = 'all';       // 'all' / 'customers' / 'partners' / 'staff'
   var selectedUser = null;     // { user_id, display_name, email, roles[] }
   var userPerms = null;        // jsonb perms map for selected user
+  var activeView = 'members';   // 'members' | 'roledefaults'
 
   // ----- load feature catalog -----
   var fc = await sb.from('feature_catalog')
@@ -384,6 +390,76 @@
     renderEditor();
     showToast(mode === 'default' ? 'Reset to default' : (mode === 'grant' ? 'Granted' : 'Denied'));
   }
+
+  // ===========================================================================
+  // Role Defaults view (audience role TEMPLATES). 2026-05-30 / ARCHITECTURE-RULES
+  // Rule 1a: audience roles (customer/partner/business_owner) are role-based —
+  // every member inherits the role's default set. Paid staff are per-person
+  // (the Members tab). This matrix edits feature_catalog.default_for_roles, which
+  // applies to ALL members of that role immediately. Admin-writable via RLS.
+  // ===========================================================================
+  var ROLE_COLS = [
+    { key:'customer',       label:'Customer' },
+    { key:'partner',        label:'Partner' },
+    { key:'business_owner', label:'Business' },
+    { key:'staff',          label:'Staff' },
+    { key:'anonymous',      label:'Anonymous' },
+    { key:'authenticated',  label:'Signed-in' }
+  ];
+  (function injectRdStyles(){
+    var st = document.createElement('style');
+    st.textContent = '.vs-btn{padding:7px 14px;border:1px solid #e6e8ec;background:#fff;border-radius:8px;font:600 13px/1 inherit;cursor:pointer;color:#1a1f27}.vs-btn.active{background:#0e1116;color:#fff;border-color:#0e1116}.rd-table{width:100%;border-collapse:collapse;font-size:13px}.rd-table th,.rd-table td{padding:7px 9px;border-bottom:1px solid #eef0f3;text-align:left;vertical-align:top}.rd-table thead th{background:#f7f8fa;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#5b6472}.rd-cat td{background:#f0f4ff;font-weight:800;color:#0050c7;font-size:11px;text-transform:uppercase;letter-spacing:.05em}.rd-table code{font-size:11px;color:#7a8190}.rd-label{font-weight:600}.rd-note{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:10px 12px;border-radius:8px;font-size:12.5px;margin-bottom:12px;line-height:1.45}.rd-box{width:17px;height:17px;cursor:pointer}';
+    document.head.appendChild(st);
+  })();
+
+  function renderRoleDefaults(){
+    var cats = Object.keys(featuresByCategory).sort();
+    var html = '<div class="rd-note"><b>Role-based defaults.</b> Every member of an audience role inherits these automatically. <b>Staff get nothing here</b> — they are granted per person on the Members tab. Toggling a box changes the default for <b>all</b> members of that role immediately. Admin always has everything.</div>';
+    html += '<table class="rd-table"><thead><tr><th>Feature</th>' + ROLE_COLS.map(function(c){ return '<th style="text-align:center">'+escapeHtml(c.label)+'</th>'; }).join('') + '</tr></thead><tbody>';
+    cats.forEach(function(cat){
+      html += '<tr class="rd-cat"><td colspan="'+(ROLE_COLS.length+1)+'">'+escapeHtml(cat)+'</td></tr>';
+      featuresByCategory[cat].forEach(function(fe){
+        var defs = fe.default_for_roles || [];
+        html += '<tr data-feat="'+escapeHtml(fe.feature_key)+'"><td><div class="rd-label">'+escapeHtml(fe.label)+'</div><code>'+escapeHtml(fe.feature_key)+'</code></td>'
+          + ROLE_COLS.map(function(c){
+              var on = defs.indexOf(c.key)!==-1;
+              return '<td style="text-align:center"><input type="checkbox" class="rd-box" data-role="'+c.key+'"'+(on?' checked':'')+'></td>';
+            }).join('') + '</tr>';
+      });
+    });
+    html += '</tbody></table>';
+    $('roleDefaults').innerHTML = html;
+    Array.prototype.forEach.call($('roleDefaults').querySelectorAll('input.rd-box'), function(box){
+      box.addEventListener('change', function(){
+        var tr = box.closest('tr');
+        setRoleDefault(tr.getAttribute('data-feat'), box.getAttribute('data-role'), box.checked, box);
+      });
+    });
+  }
+
+  async function setRoleDefault(featKey, role, on, box){
+    var feat = features.find(function(f){ return f.feature_key === featKey; });
+    if (!feat) return;
+    var defs = (feat.default_for_roles || []).slice();
+    var i = defs.indexOf(role);
+    if (on && i === -1) defs.push(role);
+    if (!on && i !== -1) defs.splice(i, 1);
+    var r = await sb.from('feature_catalog').update({ default_for_roles: defs }).eq('feature_key', featKey);
+    if (r && r.error){ showError('Could not update role default: ' + r.error.message); box.checked = !on; return; }
+    feat.default_for_roles = defs;
+    showToast(on ? ('Granted to ' + role + ' by default') : ('Removed from ' + role + ' default'));
+  }
+
+  function setView(v){
+    activeView = v;
+    $('viewMembers').classList.toggle('active', v === 'members');
+    $('viewRoleDefaults').classList.toggle('active', v === 'roledefaults');
+    $('paneMembers').style.display = (v === 'members') ? '' : 'none';
+    $('roleDefaults').style.display = (v === 'roledefaults') ? '' : 'none';
+    if (v === 'roledefaults') renderRoleDefaults();
+  }
+  $('viewMembers').addEventListener('click', function(){ setView('members'); });
+  $('viewRoleDefaults').addEventListener('click', function(){ setView('roledefaults'); });
 })();
 </script>
 
