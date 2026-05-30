@@ -7,20 +7,25 @@
  *   <script src="lymx-role-gate.js" defer></script>
  *
  * Supported values for data-role-required:
- *   - "partner"   → must be in public.partners (archived_at is null)
- *   - "business"  → must own a public.businesses row (owner_user_id = me)
- *   - "admin"     → must be admin via am_i_admin() helper (RLS-driven check)
- *   - "staff"     → must be in public.staff_roles
+ *   - "partner"        -> must be in public.partners (archived_at is null)
+ *   - "business"       -> must own a public.businesses row (owner_user_id = me)
+ *   - "admin"          -> must be admin via am_i_admin() helper (RLS-driven check)
+ *   - "staff"          -> must be in public.staff_roles
+ *   - "perm:<key>"     -> must have has_permission('<key>') === true (or be admin).
+ *                         This is the toggler-driven gate (migration 104): an admin
+ *                         grants a feature key to a person via Manage Permissions,
+ *                         and the page enforces it here. FAIL-CLOSED.
  *
  * Behaviour:
- *   - Anyone not signed in → redirect to /login.html?next=<current>
- *   - Signed in but wrong role → redirect to /not-authorized.html?role=<required>
+ *   - Anyone not signed in -> redirect to /login.html?next=<current>
+ *   - Signed in but wrong role -> redirect to /not-authorized.html?role=<required>
  *   - Admins always pass (admins can read everything)
  *
  * Cached for 60s in sessionStorage to avoid hammering the DB on every nav.
  *
  * Built 2026-05-18 to fix the cluster of "X page is accessible to customer
- * accounts" bug reports.
+ * accounts" bug reports. 2026-05-30 - added "perm:<key>" mode to wire the
+ * Manage-Permissions toggler to real page enforcement (ARCHITECTURE-RULES Rule 1).
  */
 (function () {
   if (window.__lymxRoleGated) return;
@@ -70,7 +75,7 @@
     var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
     var headers = { apikey: ANON, Authorization: 'Bearer ' + s.access_token };
 
-    // Admin bypass — call am_i_admin RPC. If it returns true, allow on every gated page.
+    // Admin bypass - call am_i_admin RPC. If it returns true, allow on every gated page.
     try {
       var aRes = await fetch(SUPA + '/rest/v1/rpc/am_i_admin', { method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}' });
       if (aRes.ok) {
@@ -78,6 +83,32 @@
         if (isAdmin === true) { writeCache({ tag: cacheTag, ok: true }); return; }
       }
     } catch (e) { console.warn('[lymx-role-gate.js:L80] silent error', e); }
+
+    // 2026-05-30 - permission-gated page:  data-role-required="perm:<feature_key>"
+    // Passes if am_i_admin() (handled above) OR has_permission(<feature_key>) is
+    // true. This is how the Manage-Permissions toggler (migration 104) actually
+    // enforces access: an admin grants a feature key to a person, and the page
+    // checks that key here. FAIL-CLOSED - any error or a non-true result denies
+    // access (ARCHITECTURE-RULES Rule 1). Unlike the legacy role checks below
+    // (which fail open on a DB blip), a permission must be positively confirmed.
+    if (required.indexOf('perm:') === 0) {
+      var featKey = required.slice(5);
+      var okPerm = false;
+      try {
+        var pRes = await fetch(SUPA + '/rest/v1/rpc/has_permission', {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ p_feature_key: featKey })
+        });
+        if (pRes.ok) { okPerm = (await pRes.json()) === true; }
+      } catch (e) {
+        console.warn('[role-gate] has_permission check failed; denying (fail-closed)', e);
+        okPerm = false;
+      }
+      writeCache({ tag: cacheTag, ok: okPerm });
+      if (!okPerm) gotoNotAuthorized();
+      return;
+    }
 
     var ok = false;
 

@@ -57,7 +57,7 @@
   .pill-kind.single_day{background:#fff3d8;color:#7a4a08}
 </style>
 </head>
-<body>
+<body data-role-required="perm:hr_admin">
 <script src="lymx-config.js"></script>
 <script src="lymx-app.js"></script>
 <script src="lymx-nav.js" defer></script>
@@ -307,5 +307,6 @@ async function patchRow(id, patch) {
   if (!r.ok) banner('err','Save failed: ' + await r.text(), false);
 }
 </script>
+  <script src="lymx-role-gate.js" defer></script>
 </body>
 </html>

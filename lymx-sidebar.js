@@ -133,7 +133,26 @@
     // 'customer' for a few hundred ms on cold sessions; async refresh fixes it.
     // Unambiguous path wins (mode toggle for multi-role users).
     var pathRole = _rolePathOnly();
-    if (pathRole) { _stashActiveRole(pathRole); return pathRole; }
+    if (pathRole) {
+      // 2026-05-30 — FAIL-CLOSED ADMIN MENU (ARCHITECTURE-RULES Rule 1).
+      // The admin menu is a privilege, not a view-mode a non-admin can toggle
+      // into by visiting an /admin-* URL. The old behaviour painted the full
+      // admin menu from the URL path alone, so any non-admin who reached an
+      // admin page saw all ~30 admin links and clicked through them — every
+      // click then bounced via am_i_admin()=false. That was the root cause of
+      // the Cluster-1 "loads 1-2s then bounces" tickets (e.g. P-000103, the
+      // marketing/partner QA account that is NOT role='admin'). Only honour an
+      // 'admin' path when the DB-confirmed role cache actually says admin; for a
+      // real admin whose cache isn't warm yet, confirmRoleFromDb() below upgrades
+      // and refreshes the menu. Non-admin (partner/business/customer) path roles
+      // are unchanged — they remain a legitimate mode toggle.
+      if (pathRole === 'admin' && _readDbRole() !== 'admin') {
+        // fall through to the user's real cached role below — never paint admin.
+      } else {
+        _stashActiveRole(pathRole);
+        return pathRole;
+      }
+    }
     // Shared page: prefer DB-cached role, then legacy active-mode cache.
     var dbCached = _readDbRole();
     if (dbCached) return dbCached;
@@ -558,6 +577,75 @@
     } catch (e) { console.warn('[sidebar] staff-section inject failed', e); }
   }
 
+  // 2026-05-30 - append an "HR Admin" section for NON-admin users who have been
+  // granted the hr_admin permission via Manage Permissions (e.g. Rachel, who
+  // onboards/tests the HR module). True admins already see HR inside the full
+  // admin menu, so skip them to avoid duplicate links. Mirrors
+  // maybeInjectStaffSection: positive has_permission('hr_admin') check, cached.
+  async function maybeInjectHrAdminSection(asideEl) {
+    if (!asideEl) return;
+    try {
+      if (_readDbRole() === 'admin') return; // admins already have the HR menu
+      var cfg = window.LYMX_CONFIG;
+      var tok = readStoredToken();
+      if (!cfg || !tok) return;
+      var payload = decodeJwt(tok);
+      var uid = payload && payload.sub;
+      if (!uid) return;
+      var cacheKey = 'LYMX_hr_admin_' + uid;
+      var cached = null;
+      try { cached = sessionStorage.getItem(cacheKey); } catch (e) { console.warn('[sidebar] hr_admin cache read', e); }
+      if (cached === 'no') return;
+      if (cached !== 'yes') {
+        var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/rpc/has_permission', {
+          method: 'POST',
+          headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ p_feature_key: 'hr_admin' })
+        });
+        if (!r.ok) { try { sessionStorage.setItem(cacheKey, 'no'); } catch (e) { console.warn('[sidebar] hr_admin cache write', e); } return; }
+        var val = await r.json();
+        var ans = (val === true) ? 'yes' : 'no';
+        try { sessionStorage.setItem(cacheKey, ans); } catch (e) { console.warn('[sidebar] hr_admin cache write', e); }
+        if (ans === 'no') return;
+      }
+      if (asideEl.querySelector('a[href="admin-personnel-records.html"]')) return;
+      var here = (location.pathname.split('/').pop() || '').toLowerCase();
+      function aHTML(href, icon, label) {
+        var active = href.toLowerCase() === here ? ' active' : '';
+        return '<a class="' + active.trim() + '" href="' + href + '"><span class="lymx-sb-icon">' + icon + '</span><span>' + label + '</span></a>';
+      }
+      var insertHTML =
+        '<h3>HR Admin</h3>' +
+        aHTML('admin-staff.html', '\u{1FAAA}', 'Staff Roles') +
+        aHTML('admin-personnel-records.html', '\u{1F4C7}', 'Personnel Records') +
+        aHTML('admin-hiring.html', '\u{1F4E8}', 'Hiring') +
+        aHTML('admin-schedule.html', '\u{1F4C5}', 'Schedule Builder') +
+        aHTML('admin-schedule-requests.html', '\u{1F4DD}', 'Schedule Weeks') +
+        aHTML('admin-time-off.html', '\u{1F334}', 'Time-off') +
+        aHTML('admin-team-roster.html', '\u{1F5C2}', 'Roster') +
+        aHTML('admin-staff-locations.html', '\u{1F4CD}', 'Clock-in Locations') +
+        aHTML('admin-clock-in-permissions.html', '\u{1F510}', 'Clock-in Permissions') +
+        aHTML('admin-clock-in-requests.html', '\u{1F4E5}', 'Clock-in Requests') +
+        aHTML('admin-clock-in-now.html', '\u{23F0}', 'Clock-in Now') +
+        aHTML('admin-timesheets.html', '\u{23F1}', 'Timesheets') +
+        aHTML('admin-payroll-reconciliation.html', '\u{1F4B0}', 'Payroll Run') +
+        aHTML('admin-generate-offer.html', '\u{1F4E8}', 'Generate Offer') +
+        aHTML('admin-counter-offer-queue.html', '\u{1F501}', 'Counter Offers') +
+        aHTML('admin-bulk-policy-assign.html', '\u{1F4D1}', 'Bulk Policy Assign') +
+        aHTML('admin-inventory.html', '\u{1F4E6}', 'Inventory') +
+        aHTML('admin-outstanding-property.html', '\u{1F6A9}', 'Outstanding Property') +
+        aHTML('admin-send-hr-launch.html', '\u{1F44B}', 'Send Welcome Email');
+      var signout = asideEl.querySelector('#lymx-sb-signout');
+      if (signout) {
+        var wrap = document.createElement('div');
+        wrap.innerHTML = insertHTML;
+        while (wrap.firstChild) asideEl.insertBefore(wrap.firstChild, signout);
+      } else {
+        asideEl.insertAdjacentHTML('beforeend', insertHTML);
+      }
+    } catch (e) { console.warn('[sidebar] hr-admin-section inject failed', e); }
+  }
+
   function mount() {
     if (!document.body) return setTimeout(mount, 50);
     if (document.querySelector('.lymx-sb')) return;
@@ -611,7 +699,22 @@
           }
         } catch (e) { console.warn('[sidebar] role-tag in-place update', e); }
         var pathRole = _rolePathOnly();
-        if (pathRole) return;
+        // 2026-05-30 — pair to the fail-closed admin menu in detectRole(). On a
+        // path-disambiguated page we normally keep the path menu (intentional
+        // mode toggle for multi-role users), so we return early. EXCEPTION: an
+        // /admin-* page where the first paint did NOT show admin (because admin
+        // wasn't confirmed yet). If the DB now confirms admin, refresh so a real
+        // admin gets their menu; if it confirms non-admin, the page's role-gate
+        // handles the bounce — leave the correct non-admin menu in place and
+        // never paint admin.
+        if (pathRole && pathRole !== 'admin') return;
+        if (pathRole === 'admin') {
+          if (dbRole === 'admin' && role !== 'admin' &&
+              window.LymxSidebar && typeof window.LymxSidebar.refresh === 'function') {
+            window.LymxSidebar.refresh();
+          }
+          return;
+        }
         if (dbRole !== role && window.LymxSidebar && typeof window.LymxSidebar.refresh === 'function') {
           window.LymxSidebar.refresh();
         }
@@ -620,6 +723,7 @@
 
     // 2026-05-20 #4aa8c795 - async append "My Work" section for staff users.
     maybeInjectStaffSection(sidebar);
+    maybeInjectHrAdminSection(sidebar);
     // 2026-05-20 #631935ae - hydrate the partner_code chip in who-mini header.
     (async function loadPartnerCode() {
       try {
@@ -643,7 +747,7 @@
           if (!code) { try { sessionStorage.setItem(cacheKey, '__none__'); } catch (e) { console.warn('[lymx-sidebar] partner_code none cache', e); } return; }
           try { sessionStorage.setItem(cacheKey, code); } catch (e) { console.warn('[lymx-sidebar] partner_code cache write', e); }
         }
-        // 2026-05-21 #b2458da0 - also paint the canonical display_name in the bold slot
+// 2026-05-21 #b2458da0 - also paint the canonical display_name in the bold slot
         try {
           var nameEl = document.getElementById('lymxWhoMiniName');
           if (nameEl) {
