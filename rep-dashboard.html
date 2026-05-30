@@ -56,8 +56,10 @@
     border-radius:var(--radius);padding:32px;position:relative;overflow:hidden;margin-bottom:18px;
   }
   .earn-hero::after{content:"";position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);right:-150px;top:-150px}
+  /* 2026-05-28 — bumped from 780 → 900 so the 3-column hero stops trying to
+     squeeze into a narrow column when the main grid collapses to single column. */
   .earn-hero .row1{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:24px;align-items:end;position:relative}
-  @media(max-width:780px){.earn-hero .row1{grid-template-columns:1fr;gap:18px}}
+  @media(max-width:900px){.earn-hero .row1{grid-template-columns:1fr;gap:18px}}
   .earn-hero .lab{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:#9aa3b0;font-weight:700;margin-bottom:6px}
   .earn-hero .big{font-size:50px;font-weight:800;letter-spacing:-.02em;line-height:1}
   .earn-hero .big small{font-size:15px;color:#9aa3b0;font-weight:600;margin-left:6px}
@@ -71,8 +73,19 @@
   .earn-hero .btn-w.solid{background:#fff;color:var(--ink);border-color:#fff}
   .earn-hero .btn-w.gold{background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff;border:0}
 
+  /* 2026-05-28 #33f46a0b + #ed116b11 — Rae: "I'm unable to scroll or swipe to
+     the right on Partner Dashboard" + "content is compressed into a single line
+     and centered." Root cause: three different responsive breakpoints fought each
+     other. The sidebar hides at <=1100px but THIS grid collapsed at <=1000px, so
+     in the 1001–1100px band (iPad landscape / small laptop) the page had: sidebar
+     visible (260px padding-left), 2-col main grid still active, 360px right rail —
+     leaving the left column with ~330px width. The 3-column .earn-hero .row1 then
+     squeezed inside that, producing the cramped "single line" look. Fix: collapse
+     the main grid at the SAME breakpoint the sidebar hides at, so above 1100px we
+     have sidebar + 2 cols, and at/below 1100px we have no sidebar + 1 col with the
+     full content width. The earn-hero collapse breakpoint is bumped to match below. */
   .grid{display:grid;grid-template-columns:1fr 360px;gap:20px}
-  @media(max-width:1000px){.grid{grid-template-columns:1fr}}
+  @media(max-width:1100px){.grid{grid-template-columns:1fr}}
   .col{display:flex;flex-direction:column;gap:18px}
 
   .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px}
@@ -988,6 +1001,87 @@
   // 2026-05-24 #40a28497 - second root-cause: load() was defined but never
   // invoked. Kick it now; the function self-defers via setTimeout(load, 250)
   // until window.LYMX.sb + .user are ready.
+  load();
+})();
+</script>
+<script>
+// 2026-05-30 (S2a) - render the 3-generation downline into #repTree. ROOT CAUSE:
+// the dashboard updated the "You" row + a downline COUNT but never queried/rendered
+// the actual downline nodes, so the "Your tree is empty" placeholder always showed
+// even for partners WITH downline (e.g. P-000100 has 2 G1). Mirrors the canonical
+// G1/G2/G3 walk in partner-tree.html (partners.sponsor_partner_id; name from
+// display_name||legal_name). Only replaces the placeholder when downline exists;
+// genuinely-empty partners keep the helpful empty state.
+(function () {
+  function esc(x){ return String(x==null?'':x).replace(/[<>&"]/g,function(c){return ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'})[c];}); }
+  function firstName(p){ return String(p.display_name || p.legal_name || 'Partner').split(/\s+/)[0]; }
+  function initialOf(p){ var n=(p.display_name||p.legal_name||'P').trim(); return (n[0]||'P').toUpperCase(); }
+  async function load(){
+    if (!window.LYMX || !window.LYMX.sb || !window.LYMX.user) { setTimeout(load, 250); return; }
+    try {
+      var sb = window.LYMX.sb;
+      var meR = await sb.from('partners').select('id').eq('user_id', window.LYMX.user.id).maybeSingle();
+      var me = meR && meR.data;
+      if (!me) return; // not a partner -> keep starter
+      var g1R = await sb.from('partners')
+        .select('id, legal_name, display_name, partner_code, is_founding_25, founding_25_rank')
+        .eq('sponsor_partner_id', me.id).is('archived_at', null);
+      var g1 = g1R.data || [];
+      if (!g1.length) return; // genuinely no downline -> keep empty state
+      var g1Ids = g1.map(function(p){ return p.id; });
+      var g2 = [];
+      if (g1Ids.length) {
+        var g2R = await sb.from('partners').select('id, legal_name, display_name, partner_code, sponsor_partner_id')
+          .in('sponsor_partner_id', g1Ids).is('archived_at', null);
+        g2 = g2R.data || [];
+      }
+      var g2Ids = g2.map(function(p){ return p.id; });
+      var g3 = [];
+      if (g2Ids.length) {
+        var g3R = await sb.from('partners').select('id, legal_name, display_name, partner_code, sponsor_partner_id')
+          .in('sponsor_partner_id', g2Ids).is('archived_at', null);
+        g3 = g3R.data || [];
+      }
+      // production (business activations) per downline partner, for the $ column
+      var allIds = g1Ids.concat(g2Ids).concat(g3.map(function(p){return p.id;}));
+      var prodById = {};
+      if (allIds.length) {
+        var bz = await sb.from('businesses').select('signed_up_by_partner_id').in('signed_up_by_partner_id', allIds).is('archived_at', null);
+        (bz.data || []).forEach(function(b){ prodById[b.signed_up_by_partner_id] = (prodById[b.signed_up_by_partner_id]||0)+1; });
+      }
+      function rowHTML(p, gen){
+        var prod = prodById[p.id] || 0;
+        var tier = p.is_founding_25 ? ('Founding #'+(p.founding_25_rank||'?')) : 'Active';
+        var pill = gen.toUpperCase();
+        return '<div class="tree-row '+gen+'">'
+          + '<div class="av">'+esc(initialOf(p))+'</div>'
+          + '<div class="body"><div class="nm">'+esc(firstName(p))+' <span class="gen-pill">'+pill+'</span></div>'
+          + '<div class="ds">'+esc(tier)+(p.partner_code?(' · '+esc(p.partner_code)):'')+'</div></div>'
+          + '<div class="pay">$'+(prod*500).toLocaleString()+' <span class="sub">prod</span></div>'
+          + '</div>';
+      }
+      // build nested order: each G1, then its G2 children, then their G3 children
+      var html = '';
+      g1.forEach(function(p1){
+        html += rowHTML(p1, 'g1');
+        g2.filter(function(p2){ return p2.sponsor_partner_id === p1.id; }).forEach(function(p2){
+          html += rowHTML(p2, 'g2');
+          g3.filter(function(p3){ return p3.sponsor_partner_id === p2.id; }).forEach(function(p3){
+            html += rowHTML(p3, 'g3');
+          });
+        });
+      });
+      var tree = document.getElementById('repTree');
+      if (!tree) return;
+      // keep the "You" row, drop the empty-state placeholder, append real downline
+      Array.prototype.slice.call(tree.children).forEach(function(ch){
+        if (!ch.classList || !ch.classList.contains('tree-row')) ch.remove();
+      });
+      var youSub = document.getElementById('repTreeYouSub');
+      if (youSub) youSub.textContent = g1.length + ' direct · ' + (g1.length+g2.length+g3.length) + ' across 3 gens';
+      tree.insertAdjacentHTML('beforeend', html);
+    } catch (e) { console.warn('[rep-dashboard] downline tree render failed', e); }
+  }
   load();
 })();
 </script>
