@@ -152,6 +152,10 @@
 
     <label>Display name <span style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0">(how you're shown to others)</span></label>
     <input id="displayName" type="text" />
+    <div id="bioWrap" style="display:none;margin-top:12px">
+      <label>Bio <span style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0">(shown on your public partner profile)</span></label>
+      <textarea id="bio" rows="3" maxlength="500" placeholder="A line or two prospects see on your profile - how you help businesses." style="width:100%;padding:10px;border:1px solid var(--line,#e6e8ec);border-radius:8px;font:inherit;resize:vertical"></textarea>
+    </div>
 
     <label>Email</label>
     <input id="email" type="email" />
@@ -297,6 +301,8 @@ function fillForm() {
     document.getElementById('lastName').value = parts.slice(1).join(' ');
     document.getElementById('displayName').value = r.display_name || '';
     document.getElementById('email').value = r.contact_email || myUser.email || '';
+    var _bio=document.getElementById('bio'); if(_bio){ _bio.value = r.bio || ''; }
+    var _bw=document.getElementById('bioWrap'); if(_bw){ _bw.style.display=''; }
     document.getElementById('phone').value = r.contact_phone || '';
     document.getElementById('country').value = r.country_code || 'US';
     document.getElementById('zip').value = '';
@@ -378,6 +384,7 @@ async function save() {
     patch = {
       legal_name: fullName || display || (myRow && myRow.legal_name) || display,
       display_name: display || firstName,
+      bio: (document.getElementById('bio') ? document.getElementById('bio').value.trim() : null) || null,
       contact_phone: phone,
       country_code: country,
       preferred_locale: preferredLocale,

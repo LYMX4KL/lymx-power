@@ -331,7 +331,7 @@
     try {
       var r = await fetch(
         cfg.SUPABASE_URL + '/rest/v1/partners?' + field + '=eq.' + encodeURIComponent(value) +
-          '&archived_at=is.null&select=id,partner_code,display_name,legal_name,contact_email,country_code,is_founding_25,founding_25_rank,avatar_url',
+          '&archived_at=is.null&select=id,partner_code,display_name,legal_name,contact_email,country_code,is_founding_25,founding_25_rank,avatar_url,bio',
         { headers: { apikey: cfg.SUPABASE_ANON_KEY } }
       );
       if (!r.ok) { console.warn('[partner-profile] fetch failed', r.status); return; }
@@ -378,7 +378,9 @@
       // Bio — the partners table doesn't carry a bio field today, so show a
       // generic-but-honest line. Future work: add a bio column + edit UI.
       _setText('.hero .bio',
-        displayName + ' is a LYMX Partner. Reach out to them about joining the LYMX network as a Business, signing up under their referral code, or scheduling a 1-on-1.');
+        (p.bio && p.bio.trim())
+          ? p.bio
+          : displayName + ' is a LYMX Partner. Reach out to them about joining the LYMX network as a Business, signing up under their referral code, or scheduling a 1-on-1.');
 
       // CTA buttons — re-wire the email + ref-code so signups credit this partner.
       var emailBtn = document.querySelector('.hero .actions a[href^="mailto:"]');
