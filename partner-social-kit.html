@@ -466,7 +466,7 @@ Disclosure: I get paid if you sign up.`
       const sizeLabel = p.size === 'feed' ? '1080×1080 (Feed)' : p.size === 'story' ? '1080×1920 (Story)' : '1200×628 (Banner)';
       const pillCls = p.cat;
       return `<div class="post">
-        <div class="post-img ${p.size} ${p.bg}">
+        <div class="post-img ${p.size} ${p.bg}" data-gid="${p.id}">
           <span class="platform">${sizeLabel}</span>
           <span class="lymx-logo">LYMX</span>
           <div>
@@ -483,7 +483,7 @@ Disclosure: I get paid if you sign up.`
           <div class="caption">${escapeHTML(p.caption)}</div>
           <div class="post-actions">
             <button onclick="copyCaption('${p.id}', this)">📋 Copy caption</button>
-            <button onclick="downloadGraphic('${p.id}')">📥 Save graphic</button>
+            <button onclick="downloadGraphic('${p.id}', this)">📥 Save graphic</button>
           </div>
         </div>
       </div>`;
@@ -499,11 +499,39 @@ Disclosure: I get paid if you sign up.`
       setTimeout(()=>{ btn.textContent = '📋 Copy caption'; btn.classList.remove('copied'); }, 1800);
     });
   }
-  // 2026-05-20 audit fix - was mock alert. Graphics aren't built yet, so this opens an email request to the LYMX team for the specific asset, with pre-filled subject/body. Real downloads land after the Q3 print-kit batch.
-  function downloadGraphic(id){
-    const subject = encodeURIComponent('Social kit asset request: ' + id);
-    const body = encodeURIComponent('Hi LYMX team,\n\nPlease send me the high-res file for "' + id + '" from the partner social kit. I\'ll use it for partner outreach.\n\nThanks!');
-    location.href = 'mailto:partners@lymxpower.com?subject=' + subject + '&body=' + body;
+  // 2026-05-30 (S2f) - ROOT-CAUSE FIX. Was a mailto: placeholder ("graphics aren't
+  // built yet") so "Save graphic" opened an email client - the button label lied.
+  // The graphic IS the on-screen .post-img card (CSS gradient + headline + logo), so
+  // we render that element to a PNG with html2canvas and download it. Real, usable
+  // asset; no more email detour.
+  async function downloadGraphic(id, btn){
+    var sel = (window.CSS && CSS.escape) ? CSS.escape(id) : id;
+    var el = document.querySelector('.post-img[data-gid="' + sel + '"]');
+    if (!el) { console.warn('[social-kit] graphic element not found for', id); return; }
+    if (typeof html2canvas !== 'function') { console.warn('[social-kit] html2canvas not loaded yet'); return; }
+    var orig = btn && btn.textContent;
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+    try {
+      var canvas = await html2canvas(el, { scale: 2, backgroundColor: null, useCORS: true, logging: false });
+      await new Promise(function (resolve) {
+        canvas.toBlob(function (blob) {
+          if (blob) {
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'lymx-social-' + id + '.png';
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+          }
+          resolve();
+        }, 'image/png');
+      });
+      if (btn) { btn.textContent = 'Saved'; }
+    } catch (e) {
+      console.warn('[social-kit] graphic export failed', e);
+      if (btn) { btn.textContent = 'Try again'; }
+    } finally {
+      if (btn) { setTimeout(function () { btn.disabled = false; btn.textContent = orig; }, 1600); }
+    }
   }
   function copyDisclosure(){
     const text = "I'm a LYMX Partner — I get paid if you sign up through my link.";
@@ -540,5 +568,6 @@ Disclosure: I get paid if you sign up.`
 <script src="lymx-config.js"></script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 </body>
 </html>

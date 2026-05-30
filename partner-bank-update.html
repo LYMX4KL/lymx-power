@@ -99,10 +99,18 @@
   // Pull partner row + any stripe_connect fields
   let partner = null;
   try {
-    const { data } = await sb.from('partners')
-      .select('id, display_name, legal_name, contact_email, stripe_connect_account_id, payout_method, bank_last4, bank_name')
-      .eq('user_id', user.id).maybeSingle();
+    const SEL = 'id, display_name, legal_name, contact_email, stripe_connect_account_id, payout_method, bank_last4, bank_name';
+    const { data } = await sb.from('partners').select(SEL).eq('user_id', user.id).maybeSingle();
     partner = data;
+    // 2026-05-30 (S2f) - fallback to contact_email match (mirrors lymx-role-gate.js).
+    // Some partner rows have a null/mismatched user_id but a valid contact_email; without
+    // this fallback the page wrongly showed "not registered as a Partner" AND returned
+    // early so the Update-via-Stripe button was never wired (looked dead). One cause, two tickets.
+    if (!partner && user.email) {
+      const { data: byEmail } = await sb.from('partners').select(SEL)
+        .ilike('contact_email', user.email.toLowerCase()).limit(1);
+      if (byEmail && byEmail.length) partner = byEmail[0];
+    }
   } catch (e) { console.warn('[partner-bank-update] partner load', e); }
 
   if (!partner) {
