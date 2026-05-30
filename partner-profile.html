@@ -325,18 +325,18 @@
     if (bizSec) bizSec.style.display = 'none';
   }
 
-  async function _loadAndRender(code) {
+  async function _loadAndRender(field, value) {
     if (!window.LYMX_CONFIG) return;
     var cfg = window.LYMX_CONFIG;
     try {
       var r = await fetch(
-        cfg.SUPABASE_URL + '/rest/v1/partners?partner_code=eq.' + encodeURIComponent(code) +
+        cfg.SUPABASE_URL + '/rest/v1/partners?' + field + '=eq.' + encodeURIComponent(value) +
           '&archived_at=is.null&select=id,partner_code,display_name,legal_name,contact_email,country_code,is_founding_25,founding_25_rank,avatar_url',
         { headers: { apikey: cfg.SUPABASE_ANON_KEY } }
       );
       if (!r.ok) { console.warn('[partner-profile] fetch failed', r.status); return; }
       var rows = await r.json();
-      if (!rows.length) { _showNotFound(code); return; }
+      if (!rows.length) { _showNotFound(value); return; }
       var p = rows[0];
 
       // Hide the "Example partner profile" banner — this IS a real profile now.
@@ -437,8 +437,9 @@
   }
 
   var params = new URLSearchParams(location.search);
-  var code = params.get('p');
-  if (code) _loadAndRender(code);
+  var pid = params.get('id'), code = params.get('p');
+  if (pid) _loadAndRender('id', pid);
+  else if (code) _loadAndRender('partner_code', code);
   // No ?p= — leave the template + banner so the page reads as an honest layout demo.
 })();
 </script>

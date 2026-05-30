@@ -547,7 +547,8 @@
     if (node.generation === 'me') {
       actionHtml = '<a class="btn" href="rep-dashboard.html">Open dashboard</a>';
     } else if (targetPartnerId) {
-      actionHtml = '<a class="btn" href="my-conversations.html?with=' + encodeURIComponent(targetPartnerId) + '">Message this partner</a>';
+      actionHtml = '<a class="btn" href="partner-profile.html?id=' + encodeURIComponent(targetPartnerId) + '">View profile</a>'
+                 + ' <a class="btn ghost" href="my-conversations.html?with=' + encodeURIComponent(targetPartnerId) + '">Message</a>';
     } else {
       // No partner id resolved at all (placeholder data) — show only Close so we don't
       // promise an action that has no target to route to.
