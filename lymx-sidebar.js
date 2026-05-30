@@ -226,6 +226,7 @@
       { href: 'refer.html',              icon: '\u{1F4E8}', label: 'Refer Friends' },
       { href: 'share-hub.html',          icon: '\u{1F4E3}', label: 'Share hub' },
       { href: 'my-bookings.html',        icon: '\u{1F4C5}', label: 'My bookings' },
+      { href: 'my-rsvps.html',           icon: '\u{1F39F}', label: 'My RSVPs' },
       { href: 'my-reviews.html',         icon: '⭐',    label: 'My Reviews' },
       { href: 'my-saved-places.html',   icon: '\u{1F4CC}', label: 'Saved Places' },
       { href: 'customer-charity.html',   icon: '\u{1F49D}', label: 'Donate LYMX' },
@@ -249,6 +250,7 @@
       { href: 'biz-payouts.html',        icon: '\u{1F3E6}', label: 'Payouts (Stripe)' },
       { href: 'biz-pos-comparison.html', icon: '\u{1F50C}', label: 'POS / Integrations' },
       { href: 'my-bookings.html',        icon: '\u{1F4C5}', label: 'My bookings' },
+      { href: 'my-rsvps.html',           icon: '\u{1F39F}', label: 'My RSVPs' },
       { section: 'Account' },
       { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
       { href: 'notifications.html',     icon: '\u{1F514}', label: 'Notifications' },
@@ -262,6 +264,8 @@
       { href: 'partner-tree.html',       icon: '\u{1F333}', label: 'My Tree' },
       { href: 'partner-leaderboard.html', icon: '\u{1F3C6}', label: 'Leaderboard' },
       { href: 'partner-payouts.html',    icon: '\u{1F4B8}', label: 'Payouts' },
+      { href: 'income-statement.html',   icon: '\u{1F9FE}', label: 'Income Statement' },
+      { href: 'comp-plan.html',          icon: '\u{1F4B5}', label: 'Comp Plan' },
       { href: 'prospects.html',          icon: '\u{1F3AF}', label: 'My Prospects' },
       // 2026-05-25 #6df906ba — partners had no direct sidebar entry to the
       // Sales Toolkit (the page reachable from the "Open pitch toolkit" empty-
@@ -270,6 +274,7 @@
       { href: 'partner-resources.html',  icon: '\u{1F4BC}', label: 'Sales Toolkit' },
       { href: 'team-calendar.html',      icon: '\u{1F4C5}', label: 'My Calendar' },
       { href: 'my-bookings.html',        icon: '\u{1F4DD}', label: 'My bookings' },
+      { href: 'my-rsvps.html',           icon: '\u{1F39F}', label: 'My RSVPs' },
       // 2026-05-20 #dd9468cc - Removed static Team section (Clock In, My Schedule,
       // My Time-off) from partner menu. These are STAFF-only pages and were
       // showing for every partner, causing 'This page isn't for you' rejections.

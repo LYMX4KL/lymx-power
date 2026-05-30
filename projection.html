@@ -267,6 +267,14 @@
 
     <!-- RIGHT: OUTPUTS -->
     <div>
+      <div class="out-hero" id="real-wrap" style="display:none;border:1px solid var(--accent-2);background:linear-gradient(180deg,rgba(245,209,114,.10),transparent)">
+        <div class="sub-h">Your income so far — actual, from your ledger</div>
+        <div class="big">
+          <span id="real-cash">$0</span>
+          <span class="lymx" id="real-lymx">+0 LYMX</span>
+        </div>
+        <div class="meta">Lifetime earned and accrued · <strong id="real-pending" style="color:#9aa3b0">$0</strong> cash pending in your next payout · <span style="color:#9aa3b0">compare with the projection below to see where more effort takes you →</span></div>
+      </div>
       <div class="out-hero">
         <div class="sub-h">Monthly total — projection</div>
         <div class="big">
@@ -546,8 +554,44 @@
 
   render();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
+<script>
+// Real current income (vs the what-if projection above). Authenticated partners
+// only; the calculator stays fully usable when signed out. Reads the authoritative
+// ledger via partner_income_summary (cash and LYMX kept in their own units).
+(async function loadRealIncome(){
+  try {
+    if (!window.LYMX || !window.LYMX.getSession) return;
+    const sess = await window.LYMX.getSession();
+    if (!sess) return;
+    const sb = window.LYMX.sb;
+    let pid = null;
+    const { data: pr } = await sb.from('partners').select('id').eq('user_id', sess.user.id).limit(1);
+    if (pr && pr.length) pid = pr[0].id;
+    if (!pid && sess.user.email) {
+      const { data: pr2 } = await sb.from('partners').select('id').ilike('contact_email', sess.user.email.toLowerCase()).limit(1);
+      if (pr2 && pr2.length) pid = pr2[0].id;
+    }
+    if (!pid) return;
+    const { data: sum, error } = await sb.rpc('partner_income_summary', { p_partner_id: pid });
+    if (error || !sum) return;
+    // Pending CASH only (unpaid_total mixes units; recompute clean from the ledger).
+    let pendingCash = 0;
+    const { data: openRows } = await sb.from('partner_commissions')
+      .select('amount, payout_kind, settlement_id').eq('partner_id', pid).is('settlement_id', null);
+    (openRows || []).forEach(r => { if (r.payout_kind !== 'lymx') pendingCash += Number(r.amount || 0); });
+    const fmt = (n) => '$' + Math.round(Number(n || 0)).toLocaleString('en-US');
+    const fmtL = (n) => '+' + Math.round(Number(n || 0)).toLocaleString('en-US') + ' LYMX';
+    document.getElementById('real-cash').textContent = fmt(sum.cash_total);
+    document.getElementById('real-lymx').textContent = fmtL(sum.lymx_total);
+    document.getElementById('real-pending').textContent = fmt(pendingCash);
+    document.getElementById('real-wrap').style.display = '';
+  } catch (e) { console.warn('[projection] real income load failed', e); }
+})();
+</script>
 </body>
 </html>

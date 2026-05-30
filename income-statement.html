@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Partner — your income statement: every commission line item and where it came from." />
+<title>Income Statement · LYMX Partner</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1180px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(10,132,255,.12);color:var(--accent-2);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px}
+  .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-links a.on{color:var(--accent);font-weight:700}
+  .rep-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  main.page{padding:26px 0 60px}
+  .page-head h1{font-size:28px;margin:0 0 4px;letter-spacing:-.02em}
+  .page-head p{margin:0;color:var(--muted)}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow)}
+  .card .lab{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+  .card .big{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:6px}
+  .card .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .gold{color:var(--gold)} .green{color:var(--ok)} .lymxc{color:#b88a2e}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
+  .chip{padding:7px 14px;background:#fff;border:1px solid var(--line);border-radius:99px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .tablecard{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  table.st{width:100%;border-collapse:collapse}
+  table.st th{text-align:left;padding:11px 16px;border-bottom:2px solid var(--line);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg-soft)}
+  table.st td{padding:12px 16px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+  table.st tr:last-child td{border-bottom:none}
+  .num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+  .tag{display:inline-block;padding:3px 9px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .tag.activation{background:rgba(212,175,55,.15);color:#8a6d10}
+  .tag.transaction_fee{background:rgba(10,132,255,.12);color:var(--accent-2)}
+  .tag.monthly_fee{background:rgba(19,162,107,.14);color:var(--ok)}
+  .tag.other{background:#eef0f3;color:var(--muted)}
+  .pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700}
+  .pill.paid{background:rgba(19,162,107,.14);color:var(--ok)} .pill.pending{background:rgba(240,160,32,.16);color:#9a6500}
+  .empty{padding:48px 20px;text-align:center;color:var(--muted)}
+  .lymxval{color:#b88a2e}
+  @media(max-width:760px){.cards{grid-template-columns:1fr}.nav-links{display:none}}
+</style>
+</head>
+<body data-role-required="partner">
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><a href="index.html">LYMX</a><span class="role-tag">Partner</span></div>
+    <nav class="nav-links">
+      <a href="rep-dashboard.html">Dashboard</a>
+      <a href="projection.html">Projection</a>
+      <a href="partner-payouts.html">Payouts</a>
+      <a href="income-statement.html" class="on">Statement</a>
+    </nav>
+    <div class="rep-avatar" id="repAvatar">·</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>Income statement</h1>
+      <p>Every commission line, and exactly where it came from. Cash and LYMX network rewards are shown in their own units.</p>
+    </div>
+
+    <div class="cards">
+      <div class="card"><div class="lab">Lifetime cash</div><div class="big gold" id="cCash">$0.00</div><div class="sub" id="cPending">$0.00 pending payout</div></div>
+      <div class="card"><div class="lab">Lifetime LYMX rewards</div><div class="big lymxc" id="cLymx">0 LYMX</div><div class="sub">Spendable across the network</div></div>
+      <div class="card"><div class="lab">This month</div><div class="big green" id="cMonth">$0.00</div><div class="sub" id="cMonthLymx">+0 LYMX</div></div>
+    </div>
+
+    <div class="filters" id="filters">
+      <button class="chip on" data-f="all">All</button>
+      <button class="chip" data-f="activation">Activation bonus</button>
+      <button class="chip" data-f="transaction_fee">Transaction-fee</button>
+      <button class="chip" data-f="monthly_fee">Monthly-fee</button>
+    </div>
+
+    <div class="tablecard">
+      <table class="st">
+        <thead>
+          <tr><th>Date</th><th>Source</th><th>Stream</th><th>Gen</th><th>Status</th><th class="num">Amount</th></tr>
+        </thead>
+        <tbody id="rows">
+          <tr><td colspan="6" class="empty">Loading your statement…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+(async function () {
+  try {
+    if (!window.LYMX || !window.LYMX.getSession) return;
+    const sess = await window.LYMX.getSession();
+    if (!sess) return;
+    const sb = window.LYMX.sb;
+
+    // Resolve my partner id
+    let pid = null;
+    const { data: pr } = await sb.from('partners').select('id, display_name, legal_name').eq('user_id', sess.user.id).limit(1);
+    if (pr && pr.length) pid = pr[0].id;
+    if (!pid && sess.user.email) {
+      const { data: pr2 } = await sb.from('partners').select('id, display_name, legal_name').ilike('contact_email', sess.user.email.toLowerCase()).limit(1);
+      if (pr2 && pr2.length) { pid = pr2[0].id; pr && (pr[0] = pr2[0]); }
+    }
+    const me = (pr && pr[0]) || {};
+    const initials = (me.display_name || me.legal_name || 'P').split(' ').map(x => x[0]).slice(0,2).join('').toUpperCase();
+    document.getElementById('repAvatar').textContent = initials;
+    if (!pid) { document.getElementById('rows').innerHTML = '<tr><td colspan="6" class="empty">No partner profile found for your account.</td></tr>'; return; }
+
+    const { data: items, error } = await sb.rpc('fn_partner_income_statement', { p_partner_id: pid, p_limit: 1000 });
+    if (error) { console.warn('[statement] rpc error', error); document.getElementById('rows').innerHTML = '<tr><td colspan="6" class="empty">Could not load your statement right now.</td></tr>'; return; }
+    const rows = items || [];
+
+    const fmt = (n) => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtL = (n) => Math.round(Number(n || 0)).toLocaleString('en-US') + ' LYMX';
+    const isLymx = (r) => r.payout_kind === 'lymx';
+
+    // Summaries (cash vs LYMX kept apart — never mixed)
+    const startMo = new Date(); startMo.setDate(1); startMo.setHours(0,0,0,0);
+    let lifeCash = 0, lifeLymx = 0, pendCash = 0, moCash = 0, moLymx = 0;
+    rows.forEach(r => {
+      const amt = Number(r.amount || 0);
+      if (isLymx(r)) lifeLymx += amt; else { lifeCash += amt; if (!r.settled) pendCash += amt; }
+      if (new Date(r.created_at) >= startMo) { if (isLymx(r)) moLymx += amt; else moCash += amt; }
+    });
+    document.getElementById('cCash').textContent = fmt(lifeCash);
+    document.getElementById('cPending').textContent = fmt(pendCash) + ' pending payout';
+    document.getElementById('cLymx').textContent = fmtL(lifeLymx);
+    document.getElementById('cMonth').textContent = fmt(moCash);
+    document.getElementById('cMonthLymx').textContent = '+' + fmtL(moLymx);
+
+    const labelFor = (k) => ({activation:'Activation bonus', transaction_fee:'Transaction-fee', monthly_fee:'Monthly-fee'})[k] || (k || 'other').replace(/_/g,' ');
+    const genTxt = (g) => g === 0 ? 'Direct' : ('G' + g);
+
+    let filter = 'all';
+    function draw() {
+      const view = rows.filter(r => filter === 'all' || r.source_kind === filter);
+      const tb = document.getElementById('rows');
+      if (!view.length) { tb.innerHTML = '<tr><td colspan="6" class="empty">No line items in this view yet.</td></tr>'; return; }
+      tb.innerHTML = view.map(r => {
+        const k = r.source_kind || 'other';
+        const amt = isLymx(r) ? ('<span class="lymxval">+' + fmtL(r.amount) + '</span>') : fmt(r.amount);
+        const status = r.settled ? '<span class="pill paid">Paid</span>' : '<span class="pill pending">Pending</span>';
+        return '<tr><td>' + new Date(r.created_at).toLocaleDateString() + '</td>' +
+               '<td>' + (r.business_name || '—') + '</td>' +
+               '<td><span class="tag ' + (['activation','transaction_fee','monthly_fee'].includes(k)?k:'other') + '">' + labelFor(k) + '</span></td>' +
+               '<td>' + genTxt(r.generation) + '</td>' +
+               '<td>' + status + '</td>' +
+               '<td class="num">' + amt + '</td></tr>';
+      }).join('');
+    }
+    document.querySelectorAll('#filters .chip').forEach(c => c.addEventListener('click', () => {
+      document.querySelectorAll('#filters .chip').forEach(x => x.classList.remove('on'));
+      c.classList.add('on'); filter = c.dataset.f; draw();
+    }));
+    draw();
+  } catch (e) { console.warn('[income-statement] load failed', e); }
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

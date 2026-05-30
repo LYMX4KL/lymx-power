@@ -654,53 +654,67 @@
       const startYr = new Date(new Date().getFullYear(), 0, 1);
 
       const { data: allComms } = await LYMX.sb.from('partner_commissions')
-        .select('amount, type, generation, source_partner_id, settlement_id, created_at')
+        .select('amount, type, source_kind, generation, payout_kind, source_partner_id, settlement_id, created_at')
         .eq('partner_id', partner.id);
       const comms = allComms || [];
-      const sum = (arr) => arr.reduce((s, c) => s + Number(c.amount || 0), 0);
+      // Engine writes BOTH cash rows (activation, monthly-fee) and LYMX-unit rows
+      // (transaction-fee), distinguished by payout_kind. NEVER add LYMX units into
+      // a USD total — they are different units and LYMX is not cash-convertible.
+      const isLymx = (c) => c.payout_kind === 'lymx';
+      const sumCash = (arr) => arr.filter(c => c.payout_kind !== 'lymx').reduce((s, c) => s + Number(c.amount || 0), 0);
+      const sumLymx = (arr) => arr.filter(isLymx).reduce((s, c) => s + Number(c.amount || 0), 0);
+      const fmtLymx = (n) => Math.round(Number(n || 0)).toLocaleString('en-US') + ' LYMX';
 
       const thisMonth = comms.filter(c => c.created_at >= startMo.toISOString());
       const thisYear  = comms.filter(c => c.created_at >= startYr.toISOString());
-      const lifetime  = sum(comms);
-      const ytd       = sum(thisYear);
-      const monthAmt  = sum(thisMonth);
-      const overrideThisMo = sum(thisMonth.filter(c => c.type === 'override' || (c.source_partner_id && c.source_partner_id !== partner.id)));
 
-      document.getElementById('repEarningsMonth').firstChild.textContent = fmtUsd(monthAmt);
+      const monthCash = sumCash(thisMonth);
+      const monthLymx = sumLymx(thisMonth);
+      const lifeCash  = sumCash(comms);
+      const lifeLymx  = sumLymx(comms);
+      const ytdCash   = sumCash(thisYear);
+      const overrideCashMo = sumCash(thisMonth.filter(c => c.type === 'override' || (c.source_partner_id && c.source_partner_id !== partner.id)));
+
+      document.getElementById('repEarningsMonth').firstChild.textContent = fmtUsd(monthCash);
       const lymxEl = document.getElementById('repLymxBalance');
-      if (lymxEl) lymxEl.textContent = '';
-      document.getElementById('repLifetime').textContent = fmtUsd(lifetime);
+      if (lymxEl) lymxEl.textContent = monthLymx ? ('  ·  ' + fmtLymx(monthLymx) + ' this month') : '';
+      document.getElementById('repLifetime').textContent = fmtUsd(lifeCash);
+      const lifeLymxEl = document.getElementById('repLifetimeLymx');
+      if (lifeLymxEl) lifeLymxEl.textContent = (lifeLymx ? fmtLymx(lifeLymx) : '0 LYMX') + ' since join';
       const ytdEl = document.getElementById('repYtdEarnings');
-      if (ytdEl) ytdEl.textContent = fmtUsd(ytd);
+      if (ytdEl) ytdEl.textContent = fmtUsd(ytdCash);
       const treePayEl = document.getElementById('repTreeYouPay');
-      if (treePayEl) treePayEl.innerHTML = fmtUsd(overrideThisMo) + ' <span class="sub">this month</span>';
+      if (treePayEl) treePayEl.innerHTML = fmtUsd(overrideCashMo) + ' <span class="sub">this month</span>';
 
-      // Next payout — open settlement (unsettled commissions)
-      const pendingComms = comms.filter(c => !c.settlement_id);
-      const pendingAmt = sum(pendingComms);
+      // Next payout — open settlement (unsettled CASH only; LYMX is network credit, not ACH)
+      const pendingCash = sumCash(comms.filter(c => !c.settlement_id));
       const nextEl = document.getElementById('repNextPayoutAmt');
-      if (nextEl) nextEl.textContent = fmtUsd(pendingAmt);
+      if (nextEl) nextEl.textContent = fmtUsd(pendingCash);
       // 2026-05-20 #8ae35834 — Mirror pending amount in the hero so Helen sees it at-a-glance
       const heroPendingEl = document.getElementById('repPendingHeroAmt');
-      if (heroPendingEl) heroPendingEl.textContent = fmtUsd(pendingAmt);
-      // If nothing pending AND nothing this month, restore the original encouragement
+      if (heroPendingEl) heroPendingEl.textContent = fmtUsd(pendingCash);
+      // If nothing pending AND nothing earned this month, restore the original encouragement
       const subEl = document.getElementById('repEarningsSub');
-      if (subEl && pendingAmt === 0 && monthAmt === 0) {
+      if (subEl && pendingCash === 0 && monthCash === 0 && monthLymx === 0) {
         subEl.innerHTML = 'Activate your first Business to start earning · <a href="partner-resources.html" style="color:#f5d172;font-weight:700;text-decoration:underline">open the Sales Toolkit</a>';
       }
 
-      // Commission breakdown — replace the empty state if we have any
+      // Commission breakdown — by stream (source_kind), cash + LYMX in their own units
       if (thisMonth.length) {
         const breakdownEl = document.getElementById('commissionBreakdown');
         if (breakdownEl) {
-          const byType = {};
+          const labelFor = (k) => ({activation:'Activation bonus', speed_bonus:'Speed bonus', transaction_fee:'Transaction-fee override', monthly_fee:'Monthly-fee override'})[k] || String(k || 'other').replace(/_/g, ' ');
+          const byKind = {};
           thisMonth.forEach(c => {
-            const key = c.type || 'other';
-            byType[key] = (byType[key] || 0) + Number(c.amount || 0);
+            const k = c.source_kind || c.type || 'other';
+            if (!byKind[k]) byKind[k] = { cash: 0, lymx: 0 };
+            if (isLymx(c)) byKind[k].lymx += Number(c.amount || 0);
+            else byKind[k].cash += Number(c.amount || 0);
           });
-          breakdownEl.innerHTML = Object.entries(byType).map(([t, amt]) =>
-            '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px"><span style="font-weight:600;text-transform:capitalize">' + t.replace(/_/g, ' ') + '</span><span style="font-weight:800;color:var(--ok)">' + fmtUsd(amt) + '</span></div>'
-          ).join('');
+          breakdownEl.innerHTML = Object.entries(byKind).map(([k, v]) => {
+            const val = [v.cash ? fmtUsd(v.cash) : '', v.lymx ? fmtLymx(v.lymx) : ''].filter(Boolean).join(' · ') || fmtUsd(0);
+            return '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px"><span style="font-weight:600">' + labelFor(k) + '</span><span style="font-weight:800;color:var(--ok)">' + val + '</span></div>';
+          }).join('');
         }
       }
     } catch (e) {
@@ -1088,6 +1102,7 @@
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
+<script src="lymx-momentum.js" defer></script>
 <script src="lymx-role-gate.js" defer></script>
 </body>
 </html>
