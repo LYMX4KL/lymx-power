@@ -577,7 +577,16 @@ async function saveProspect(){
 }
 
 // ---------- Wire up form, filters, search ----------
-$('btn-add').addEventListener('click', () => addForm.classList.toggle('shown'));
+$('btn-add').addEventListener('click', () => {
+  addForm.classList.toggle('shown');
+  // 2026-05-30 (S3) - the add-prospect form opens below the fold; scroll it into
+  // view + focus the first field so users don't think nothing happened.
+  if (addForm.classList.contains('shown')) {
+    addForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    var _ff = addForm.querySelector('input, textarea, select');
+    if (_ff) setTimeout(function () { _ff.focus(); }, 120);
+  }
+});
 $('btn-cancel').addEventListener('click', () => addForm.classList.remove('shown'));
 $('btn-save').addEventListener('click', saveProspect);
 

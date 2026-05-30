@@ -728,6 +728,9 @@ async function verifyFix(feedbackId, token, action) {
   });
   if (!r.ok) { alert('Could not record your response: ' + r.status); return; }
   alert(action === 'confirm' ? 'Thanks — marked as resolved.' : 'Got it — we\'ll keep looking.');
+  // 2026-05-30 (S3) - auto-close the detail modal after a verify response so the user
+  // isn't left on the now-acted-on ticket (requested: "auto-close after Yes, it works").
+  var _m = document.getElementById('modal'); if (_m) _m.classList.remove('on');
   loadList();
 }
 
