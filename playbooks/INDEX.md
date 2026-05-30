@@ -17,6 +17,7 @@
 | Slug | Title | Role | Feature | Status |
 |---|---|---|---|---|
 | [comp-plan-partner-walkthrough](comp-plan-partner-walkthrough.md) | Understand the LYMX Partner Comp Plan | Partner | partner_view_comp_plan | ✅ Verified 2026-05-26 |
+| [income-projector-walkthrough](income-projector-walkthrough.md) | Use the Income Projector to plan & hit your income goal | Partner | partner_view_comp_plan | ✅ Shipped 2026-05-30 |
 | [commission-engine-verification](commission-engine-verification.md) | How partner commissions are calculated (and how to verify them) | Admin | admin_settlements | 🚧 Shipped 2026-05-30; awaiting verification by Helen/Dave |
 
 ## Customer onboarding

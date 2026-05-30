@@ -3,637 +3,207 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="LYMX income projection calculator — adjust your direct Businesses, Partner generations, and volume; see how your monthly cash and LYMX change in real time. Decide where to invest your effort." />
-<title>Income Projection · LYMX Partner</title>
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://getlymx.com/projection" />
-<meta property="og:title" content="Income Projection · LYMX Partner" />
-<meta property="og:description" content="Adjust your direct Businesses, Partner generations, and volume; see how your monthly cash and LYMX change in real time." />
-<meta property="og:image" content="https://getlymx.com/og-image.png" />
-<meta property="og:site_name" content="LYMX" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:image" content="https://getlymx.com/og-image.png" />
-<link rel="canonical" href="https://getlymx.com/projection" />
+<meta name="description" content="LYMX income projector — model your income by the business categories you recruit and the team you build. See where the same effort earns you the most." />
+<title>Income Projector · LYMX Partner</title>
 <style>
-  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--gold:#d4af37;--lymx-purple:#7a4ab8;--coral:#dc6e3a;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1200px}
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:var(--bg-soft)}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
-  img{max-width:100%;display:block}
+  html,body{margin:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;color:var(--ink);line-height:1.55}
   a{color:inherit;text-decoration:none}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
-  button,input,select{font-family:inherit}
-
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
   header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
   .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800}
-  .brand img{height:44px;width:auto}
-  .role-tag{background:rgba(212,175,55,.16);color:#86670c;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
-  .nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
-  .nav-links a:hover{color:var(--accent)}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:19px}
+  .role-tag{background:rgba(10,132,255,.12);color:var(--accent-2);font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px}
+  .nav-links{display:flex;gap:20px;font-size:14px;color:var(--ink-2)}
   .nav-links a.on{color:var(--accent);font-weight:700}
-  .btn{display:inline-flex;align-items:center;justify-content:center;padding:9px 16px;border-radius:9px;font-weight:600;font-size:13.5px;border:1px solid transparent;cursor:pointer;transition:.15s}
-  .btn-ghost{border-color:var(--line);color:var(--ink-2);background:#fff}
-  .btn-ghost:hover{border-color:var(--ink-2)}
-  .btn-primary{background:var(--ink);color:#fff}
-  .btn-primary:hover{background:#000}
-  .rep-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#d4af37,#b88a2e);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
-  @media(max-width:880px){.nav-links{display:none}}
-
-  .page{padding:32px 0 64px}
-  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:8px;flex-wrap:wrap}
-  .page-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.01em}
-  .page-head .crumb{font-size:13.5px;color:var(--muted);margin-bottom:6px}
-  .page-head .crumb a{color:var(--accent-2);font-weight:600}
-  .page-head p{margin:6px 0 0;color:var(--muted);font-size:15px;max-width:720px}
-
-  .grid{display:grid;grid-template-columns:1fr 1.1fr;gap:18px;margin-top:22px}
-  @media(max-width:1000px){.grid{grid-template-columns:1fr}}
-
-  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px}
-  .card h2{margin:0 0 4px;font-size:16px;font-weight:800;letter-spacing:-.005em}
-  .card .sub{margin:0 0 18px;font-size:13px;color:var(--muted)}
-
-  .group{padding:14px 0;border-bottom:1px solid var(--line)}
-  .group:last-child{border-bottom:0}
-  .group-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:8px;flex-wrap:wrap}
-  .group-h .lbl{font-weight:700;font-size:14px}
-  .group-h .gen-pill{font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:4px;color:#fff;letter-spacing:.04em}
-  .group-h .gen-pill.direct{background:var(--accent)}
-  .group-h .gen-pill.pg1{background:var(--ok)}
-  .group-h .gen-pill.pg2{background:var(--warn);color:#3a2400}
-  .group-h .gen-pill.pg3{background:var(--coral)}
-  .group-h .gen-pill.bonus{background:var(--gold)}
-  .input-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;margin-bottom:10px}
-  .input-row .lab{font-size:13px;color:var(--muted)}
-  .input-row .ctl{display:flex;align-items:center;gap:10px}
-  .input-row input[type=range]{width:160px;-webkit-appearance:none;appearance:none;height:5px;background:var(--line);border-radius:3px;outline:0}
-  .input-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-  .input-row input[type=number]{width:90px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;text-align:right;font-variant-numeric:tabular-nums}
-  .input-row input[type=number]:focus{border-color:var(--accent);outline:0;box-shadow:0 0 0 3px rgba(10,132,255,.12)}
-
-  .out-hero{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;padding:28px;border-radius:var(--radius);position:relative;overflow:hidden;margin-bottom:18px}
-  .out-hero::after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.18),transparent 70%);right:-100px;top:-100px}
-  .out-hero .sub-h{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#9aa3b0;font-weight:700;margin-bottom:6px;position:relative}
-  .out-hero .big{font-size:44px;font-weight:800;letter-spacing:-.02em;line-height:1;position:relative}
-  .out-hero .big .lymx{color:#f5d172;font-size:34px;display:inline-block;margin-left:8px}
-  .out-hero .meta{font-size:13.5px;color:#9aa3b0;margin-top:10px;position:relative}
-  .out-hero .delta{display:inline-block;margin-left:12px;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:800;background:rgba(255,255,255,.18)}
-  .out-hero .delta.up{background:rgba(164,255,229,.22);color:#a4ffe5}
-  .out-hero .delta.down{background:rgba(255,180,180,.18);color:#ffb4b4}
-  .out-hero .bonus-split{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px;font-size:12px;color:#c6ccd4;position:relative}
-  .out-hero .bonus-split span{background:rgba(255,255,255,.08);padding:4px 10px;border-radius:999px;font-weight:600}
-
-  .breakdown{display:flex;flex-direction:column}
-  .b-row{display:grid;grid-template-columns:1fr auto auto;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:13.5px;align-items:center}
-  .b-row:last-child{border-bottom:0}
-  .b-row .ico{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;font-size:14px;flex-shrink:0;margin-right:8px}
-  .b-row .ico.direct{background:rgba(10,132,255,.10);color:var(--accent-2)}
-  .b-row .ico.pg1{background:rgba(19,162,107,.10);color:var(--ok)}
-  .b-row .ico.pg2{background:rgba(240,160,32,.12);color:#7a4a0e}
-  .b-row .ico.pg3{background:rgba(220,110,58,.12);color:var(--coral)}
-  .b-row .ico.bonus{background:rgba(212,175,55,.16);color:#86670c}
-  .b-row .ico.lymx{background:rgba(122,74,184,.10);color:var(--lymx-purple)}
-  .b-row .lab{display:flex;align-items:center}
-  .b-row .lab strong{font-weight:700;font-size:14px}
-  .b-row .lab .dt{display:block;font-size:11.5px;color:var(--muted);margin-top:1px;margin-left:36px}
-  .b-row .amt{font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
-  .b-row .amt .lymx{color:var(--lymx-purple)}
-  .b-row.total{border-top:2px solid var(--line);padding-top:14px;font-size:15px}
-  .b-row.total .amt{font-size:16px}
-
-  .scenarios-card{margin-top:18px}
-  .preset-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
-  .preset{padding:8px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:12.5px;font-weight:600;color:var(--ink-2);cursor:pointer;transition:.15s}
-  .preset:hover{border-color:var(--ink-2);background:var(--bg-soft)}
-
-  .lever-table{margin-top:18px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
-  .lever-table table{width:100%;border-collapse:collapse;font-size:13.5px}
-  .lever-table th{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:10px 14px;background:var(--bg-soft);border-bottom:1px solid var(--line)}
-  .lever-table th.num{text-align:right}
-  .lever-table td{padding:11px 14px;border-bottom:1px solid var(--line)}
-  .lever-table td.num{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
-  .lever-table tr:last-child td{border-bottom:0}
-  .lever-table .gen-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:middle}
-  .lever-table .gen-dot.direct{background:var(--accent)}
-  .lever-table .gen-dot.pg1{background:var(--ok)}
-  .lever-table .gen-dot.pg2{background:var(--warn)}
-  .lever-table .gen-dot.pg3{background:var(--coral)}
-
-  .insight{background:linear-gradient(135deg,#0a84ff,#0050c7);color:#fff;padding:18px 22px;border-radius:12px;margin-top:18px;display:flex;align-items:center;gap:14px;font-size:14px}
-  .insight .ico{font-size:24px;flex-shrink:0}
-  .insight strong{font-weight:800}
-
-  .reset-row{display:flex;justify-content:flex-end;margin-top:12px}
-  .reset-row button{background:transparent;border:0;color:var(--muted);font-size:12.5px;font-weight:600;cursor:pointer;padding:6px 10px}
-  .reset-row button:hover{color:var(--ink)}
-
-  footer{padding:36px 0 32px;color:var(--muted);font-size:13px;text-align:center}
-  footer .disc{max-width:780px;margin:8px auto 0;font-size:11.5px;line-height:1.55}
+  main{padding:24px 0 70px}
+  h1{font-size:27px;margin:0 0 4px;letter-spacing:-.02em}
+  .lead{color:var(--muted);margin:0 0 18px;max-width:760px}
+  .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:20px;align-items:start}
+  @media(max-width:920px){.grid{grid-template-columns:1fr}.nav-links{display:none}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin-bottom:18px}
+  .card h2{font-size:16px;margin:0 0 3px}
+  .card .hint{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+  .step{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent-2);font-weight:800}
+  .catrow{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .catrow:last-child{border-bottom:none}
+  .caticon{font-size:22px;width:30px;text-align:center}
+  .catname{flex:1;font-weight:700;font-size:14px}
+  .catname small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
+  .stepper{display:flex;align-items:center;gap:7px}
+  .stepper button{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:#fff;font-weight:800;cursor:pointer;font-size:15px;color:var(--ink)}
+  .stepper input{width:46px;text-align:center;border:1px solid var(--line);border-radius:7px;padding:5px;font:inherit;font-weight:700}
+  .edit-toggle{font-size:11px;color:var(--accent);cursor:pointer;background:none;border:none;padding:0;font-family:inherit}
+  .catedit{display:none;gap:10px;padding:6px 0 4px 42px;flex-wrap:wrap}
+  .catedit.open{display:flex}
+  .catedit label{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+  .catedit input{width:90px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;font:inherit;font-size:12.5px}
+  .teamrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+  .teamrow:last-child{border-bottom:none}
+  .teamrow .tl{font-weight:700;font-size:14px}
+  .teamrow .tl small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
+  .teamrow .f{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--muted)}
+  .teamrow .f input{width:64px;border:1px solid var(--line);border-radius:6px;padding:5px;font:inherit;font-weight:700;text-align:center}
+  .out-hero{background:linear-gradient(135deg,#1a1f27,#0e1116);color:#fff;border-radius:var(--radius);padding:20px 22px;margin-bottom:16px}
+  .out-hero .sub-h{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#9aa3b0;font-weight:700}
+  .out-hero .big{font-size:34px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+  .out-hero .lymx{color:#f5d172;font-size:18px;font-weight:800;margin-left:8px}
+  .out-hero .meta{font-size:12.5px;color:#9aa3b0;margin-top:8px}
+  .brk{display:flex;justify-content:space-between;padding:7px 0;font-size:13.5px;border-bottom:1px solid var(--line)}
+  .brk:last-child{border-bottom:none}
+  .brk .v{font-weight:800}
+  .brk .vl{color:#9a7b1e;font-weight:800}
+  .focus-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--bg-soft)}
+  .focus-item.top{border-color:var(--gold);background:rgba(245,209,114,.1)}
+  .focus-item .fl{font-weight:700;font-size:13.5px}
+  .focus-item .fv{font-weight:800;font-size:13.5px;text-align:right;white-space:nowrap}
+  .focus-item .fv small{display:block;font-weight:600;color:#9a7b1e;font-size:11.5px}
+  .pathwrap{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .path{border:1px solid var(--line);border-radius:11px;padding:14px}
+  .path h3{margin:0 0 4px;font-size:14px}
+  .path .pv{font-size:24px;font-weight:800;margin:6px 0 2px}
+  .path .pd{font-size:11.5px;color:var(--muted)}
+  .bench{display:flex;flex-direction:column;gap:10px}
+  .bench .b{}
+  .bench .blabel{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-bottom:3px}
+  .bench .blabel .you{color:var(--accent-2)}
+  .bar{height:9px;border-radius:99px;background:#eef0f3;position:relative;overflow:hidden}
+  .bar .fill{position:absolute;left:0;top:0;height:100%;border-radius:99px;background:linear-gradient(90deg,#0a84ff,#0050c7)}
+  .bar .avg{position:absolute;top:-3px;width:2px;height:15px;background:#0e1116}
+  .bench .bsub{font-size:11px;color:var(--muted);margin-top:3px}
+  .disc{font-size:11.5px;color:var(--muted);margin-top:6px}
+  .preset-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .preset{padding:7px 12px;border:1px solid var(--line);border-radius:99px;font-size:12.5px;font-weight:700;color:var(--muted);background:#fff;cursor:pointer;font-family:inherit}
 </style>
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
-<link rel="manifest" href="manifest.webmanifest" />
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
-<meta name="theme-color" content="#0a84ff" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="LYMX" />
-<meta name="mobile-web-app-capable" content="yes" />
 </head>
-<body>
-
+<body data-playbook-slug="income-projector-walkthrough">
 <header class="nav">
   <div class="wrap nav-inner">
-    <a class="brand" href="index.html"><img src="logo.png" alt="LYMX logo" /><span class="role-tag">Partner</span></a>
+    <div class="brand"><a href="index.html">LYMX</a><span class="role-tag">Partner</span></div>
     <nav class="nav-links">
       <a href="rep-dashboard.html">Dashboard</a>
-      <a href="projection.html" class="on">Projection</a>
-      <a href="partner-crm.html">CRM</a>
-      <a href="content-hub.html">Content</a>
-      <a href="territory-program.html">Territory</a>
-      <a href="partner-payouts.html">Payouts</a>
+      <a href="projection.html" class="on">Projector</a>
+      <a href="income-statement.html">Statement</a>
+      <a href="comp-plan.html">Comp Plan</a>
     </nav>
-    <div style="display:flex;gap:10px;align-items:center">
-      <a class="btn btn-ghost" href="rep-dashboard.html">← Back to dashboard</a>
-      <div class="rep-avatar" title="Kenny Lin">KL</div>
-    </div>
   </div>
 </header>
 
-<div class="wrap page">
-  <div class="page-head">
-    <div>
-      <div class="crumb"><a href="rep-dashboard.html">Dashboard</a> · Income projection</div>
-      <h1>Where should you spend your time?</h1>
-      <p>Adjust the inputs on the left. The right side shows what your monthly cash, LYMX, and annualized income become. Use preset scenarios to compare common moves side-by-side with your current state.</p>
-    </div>
-  </div>
-
-  <div class="grid">
-
-    <!-- LEFT: INPUTS -->
-    <div class="card">
-      <h2>Your tree right now</h2>
-      <p class="sub">Four income layers: <strong>Your production</strong> (Businesses you personally recruited — 9% override + $500 sign-up). <strong>G1 / G2 / G3 Partners' production</strong> (Businesses recruited by your downline Partners, 1/2/3 generations deep — 3% / 2% / 1% override). Generations track <em>Partners</em>, not Businesses. LYMX commission rates apply to <strong>the revenue LYMX earns selling units to Businesses</strong>. <span style="color:var(--accent-2);font-weight:600">LYMX earned is spendable across the partner network — not convertible to cash.</span></p>
-
-      <div class="group">
-        <div class="group-h"><span class="lbl">New activations this month</span><span class="gen-pill bonus">$500 each ($250 d-7 + $250 d-30)</span></div>
-        <div class="input-row">
-          <span class="lab">Businesses you sign up directly</span>
-          <span class="ctl">
-            <input type="range" min="0" max="20" step="1" id="r-new" />
-            <input type="number" min="0" max="100" step="1" id="n-new" />
-          </span>
-        </div>
-      </div>
-
-      <div class="group">
-        <div class="group-h"><span class="lbl">Your production (Businesses you signed up)</span><span class="gen-pill direct">9% / 9%</span></div>
-        <div class="input-row">
-          <span class="lab"># of Businesses in your own production</span>
-          <span class="ctl">
-            <input type="range" min="0" max="40" step="1" id="r-dirN" />
-            <input type="number" min="0" max="200" step="1" id="n-dirN" />
-          </span>
-        </div>
-        <div class="input-row">
-          <span class="lab">Avg LYMX issued / Business / mo</span>
-          <span class="ctl">
-            <input type="range" min="0" max="100000" step="1000" id="r-dirIss" />
-            <input type="number" min="0" max="500000" step="500" id="n-dirIss" />
-          </span>
-        </div>
-        <div class="input-row">
-          <span class="lab">Avg LYMX redeemed / Business / mo</span>
-          <span class="ctl">
-            <input type="range" min="0" max="100000" step="1000" id="r-dirRed" />
-            <input type="number" min="0" max="500000" step="500" id="n-dirRed" />
-          </span>
-        </div>
-      </div>
-
-      <div class="group">
-        <div class="group-h"><span class="lbl">G1 Partners' production (Businesses your direct-recruit Partners signed up)</span><span class="gen-pill pg1">3% / 3%</span></div>
-        <div class="input-row">
-          <span class="lab"># of Businesses signed up by all your G1 Partners</span>
-          <span class="ctl">
-            <input type="range" min="0" max="100" step="1" id="r-pg1N" />
-            <input type="number" min="0" max="500" step="1" id="n-pg1N" />
-          </span>
-        </div>
-        <div class="input-row">
-          <span class="lab">Avg LYMX issued / Business / mo</span>
-          <span class="ctl">
-            <input type="range" min="0" max="100000" step="1000" id="r-pg1Iss" />
-            <input type="number" min="0" max="500000" step="500" id="n-pg1Iss" />
-          </span>
-        </div>
-        <div class="input-row">
-          <span class="lab">Avg LYMX redeemed / Business / mo</span>
-          <span class="ctl">
-            <input type="range" min="0" max="100000" step="1000" id="r-pg1Red" />
-            <input type="number" min="0" max="500000" step="500" id="n-pg1Red" />
-          </span>
-        </div>
-      </div>
-
-      <div class="group">
-        <div class="group-h"><span class="lbl">G2 Partners' production (Businesses signed up by G1 Partners' recruits)</span><span class="gen-pill pg2">2% / 2%</span></div>
-        <div class="input-row">
-          <span class="lab"># of Businesses signed up by all G2 Partners</span>
-          <span class="ctl">
-            <input type="range" min="0" max="200" step="1" id="r-pg2N" />
-            <input type="number" min="0" max="1000" step="1" id="n-pg2N" />
-          </span>
-        </div>
-        <div class="input-row">
-          <span class="lab">Avg LYMX issued / Business / mo</span>
-          <span class="ctl">
-            <input type="range" min="0" max="100000" step="1000" id="r-pg2Iss" />
-            <input type="number" min="0" max="500000" step="500" id="n-pg2Iss" />
-          </span>
-        </div>
-        <div class="input-row">
-          <span class="lab">Avg LYMX redeemed / Business / mo</span>
-          <span class="ctl">
-            <input type="range" min="0" max="100000" step="1000" id="r-pg2Red" />
-            <input type="number" min="0" max="500000" step="500" id="n-pg2Red" />
-          </span>
-        </div>
-      </div>
-
-      <div class="group">
-        <div class="group-h"><span class="lbl">G3 Partners' production (Businesses signed up by G2 Partners' recruits)</span><span class="gen-pill pg3">1% / 1%</span></div>
-        <div class="input-row">
-          <span class="lab"># of Businesses signed up by all G3 Partners</span>
-          <span class="ctl">
-            <input type="range" min="0" max="500" step="1" id="r-pg3N" />
-            <input type="number" min="0" max="2000" step="1" id="n-pg3N" />
-          </span>
-        </div>
-        <div class="input-row">
-          <span class="lab">Avg LYMX issued / Business / mo</span>
-          <span class="ctl">
-            <input type="range" min="0" max="100000" step="1000" id="r-pg3Iss" />
-            <input type="number" min="0" max="500000" step="500" id="n-pg3Iss" />
-          </span>
-        </div>
-        <div class="input-row">
-          <span class="lab">Avg LYMX redeemed / Business / mo</span>
-          <span class="ctl">
-            <input type="range" min="0" max="100000" step="1000" id="r-pg3Red" />
-            <input type="number" min="0" max="500000" step="500" id="n-pg3Red" />
-          </span>
-        </div>
-      </div>
-
-      <div class="reset-row"><button id="btn-reset">↺ Reset to current state</button></div>
-    </div>
-
-    <!-- RIGHT: OUTPUTS -->
-    <div>
-      <div class="out-hero" id="real-wrap" style="display:none;border:1px solid var(--accent-2);background:linear-gradient(180deg,rgba(245,209,114,.10),transparent)">
-        <div class="sub-h">Your income so far — actual, from your ledger</div>
-        <div class="big">
-          <span id="real-cash">$0</span>
-          <span class="lymx" id="real-lymx">+0 LYMX</span>
-        </div>
-        <div class="meta">Lifetime earned and accrued · <strong id="real-pending" style="color:#9aa3b0">$0</strong> cash pending in your next payout · <span style="color:#9aa3b0">compare with the projection below to see where more effort takes you →</span></div>
-      </div>
-      <div class="out-hero">
-        <div class="sub-h">Monthly total — projection</div>
-        <div class="big">
-          <span id="o-cash">$0</span>
-          <span class="lymx" id="o-lymx">+0 LYMX</span>
-          <span class="delta" id="o-delta">—</span>
-        </div>
-        <div class="meta">Annualized: <strong id="o-annual" style="color:#fff">$0</strong> cash + <strong id="o-annual-lymx" style="color:#f5d172">0 LYMX</strong> · current state was <strong id="o-baseline" style="color:#9aa3b0">$0</strong></div>
-        <div class="bonus-split">
-          <span id="o-d7">Day 7 payout: $0</span>
-          <span id="o-d30">Day 30 payout: $0</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Where the money comes from</h2>
-        <p class="sub">Live breakdown of your monthly income at the inputs you've set.</p>
-        <div class="breakdown">
-          <div class="b-row">
-            <div class="lab"><span class="ico bonus">💵</span><div><strong>Sign-up bonuses</strong><span class="dt">$500 × new activations · split $250 day-7 + $250 day-30</span></div></div>
-            <div class="amt" id="b-bonus">$0</div>
-            <div class="amt" style="min-width:40px"></div>
-          </div>
-          <div class="b-row">
-            <div class="lab"><span class="ico direct">🎯</span><div><strong>Production cash — 9% of monthly subscription</strong><span class="dt">9% × $199 × Businesses in your production</span></div></div>
-            <div class="amt" id="b-dirC">$0</div>
-            <div class="amt" style="min-width:40px"></div>
-          </div>
-          <div class="b-row">
-            <div class="lab"><span class="ico pg1">🔁</span><div><strong>Partner G1 override — 3% of monthly sub</strong><span class="dt">3% × $199 × PG1 Businesses</span></div></div>
-            <div class="amt" id="b-pg1C">$0</div>
-            <div class="amt" style="min-width:40px"></div>
-          </div>
-          <div class="b-row">
-            <div class="lab"><span class="ico pg2">⏬</span><div><strong>Partner G2 override — 2% of monthly sub</strong><span class="dt">2% × $199 × PG2 Businesses</span></div></div>
-            <div class="amt" id="b-pg2C">$0</div>
-            <div class="amt" style="min-width:40px"></div>
-          </div>
-          <div class="b-row">
-            <div class="lab"><span class="ico pg3">⏬</span><div><strong>Partner G3 override — 1% of monthly sub</strong><span class="dt">1% × $199 × PG3 Businesses</span></div></div>
-            <div class="amt" id="b-pg3C">$0</div>
-            <div class="amt" style="min-width:40px"></div>
-          </div>
-          <div class="b-row">
-            <div class="lab"><span class="ico lymx">💎</span><div><strong>LYMX commissions across all 4 layers</strong><span class="dt">9/3/2/1% × LYMX unit-sale revenue from your tree · spendable in the network, not cash</span></div></div>
-            <div class="amt" style="min-width:40px"></div>
-            <div class="amt"><span class="lymx" id="b-lymx">+0 LYMX</span></div>
-          </div>
-          <div class="b-row total">
-            <div class="lab"><strong>Monthly total</strong></div>
-            <div class="amt" id="b-cash-total">$0</div>
-            <div class="amt"><span class="lymx" id="b-lymx-total">+0 LYMX</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card scenarios-card">
-        <h2>Try a what-if scenario</h2>
-        <p class="sub">Click a preset to apply it on top of your current state. The right side updates live so you see the delta.</p>
-        <div class="preset-row">
-          <button class="preset" data-scenario="add-1-direct">+1 Direct Business</button>
-          <button class="preset" data-scenario="add-3-direct">+3 Direct</button>
-          <button class="preset" data-scenario="add-5-pg1">+5 Partner G1</button>
-          <button class="preset" data-scenario="add-10-pg2">+10 Partner G2</button>
-          <button class="preset" data-scenario="double-direct-vol">Double Direct volume</button>
-          <button class="preset" data-scenario="full-tree">Mature tree (15 / 30 / 60 / 100)</button>
-        </div>
-
-        <div class="lever-table">
-          <table>
-            <thead>
-              <tr>
-                <th>If you...</th>
-                <th class="num">+ Cash/mo</th>
-                <th class="num">+ LYMX/mo</th>
-                <th class="num">+ Annualized</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><span class="gen-dot direct"></span>Add <strong>1 Direct Business</strong> at avg Direct volume</td>
-                <td class="num" id="lv-direct-c">$0</td>
-                <td class="num" id="lv-direct-l">0 LYMX</td>
-                <td class="num" id="lv-direct-y">$0</td>
-              </tr>
-              <tr>
-                <td><span class="gen-dot pg1"></span>Add <strong>1 Partner G1 Business</strong> at avg PG1 volume</td>
-                <td class="num" id="lv-pg1-c">$0</td>
-                <td class="num" id="lv-pg1-l">0 LYMX</td>
-                <td class="num" id="lv-pg1-y">$0</td>
-              </tr>
-              <tr>
-                <td><span class="gen-dot pg2"></span>Add <strong>1 Partner G2 Business</strong> at avg PG2 volume</td>
-                <td class="num" id="lv-pg2-c">$0</td>
-                <td class="num" id="lv-pg2-l">0 LYMX</td>
-                <td class="num" id="lv-pg2-y">$0</td>
-              </tr>
-              <tr>
-                <td><span class="gen-dot pg3"></span>Add <strong>1 Partner G3 Business</strong> at avg PG3 volume</td>
-                <td class="num" id="lv-pg3-c">$0</td>
-                <td class="num" id="lv-pg3-l">0 LYMX</td>
-                <td class="num" id="lv-pg3-y">$0</td>
-              </tr>
-              <tr>
-                <td><span class="gen-dot direct"></span>Increase <strong>Direct avg volume by 25%</strong></td>
-                <td class="num" id="lv-vol-c">$0</td>
-                <td class="num" id="lv-vol-l">0 LYMX</td>
-                <td class="num" id="lv-vol-y">$0</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="insight" id="insight">
-          <span class="ico">💡</span>
-          <span><strong>Insight:</strong> <span id="insight-text">Adjust inputs to see where each dollar of effort goes furthest.</span></span>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<footer>
+<main>
   <div class="wrap">
-    <div>© <span id="yr"></span> LYMX · <a href="rep-dashboard.html" style="color:var(--accent-2)">Dashboard</a> · <a href="business.html#earn" style="color:var(--accent-2)">MGC rules</a> · <a href="support.html" style="color:var(--accent-2)">Support</a></div>
-    <div class="disc">LYMX is a promotional credit unit issued, sold to, and bought back by LYMX exclusively within the partner ecosystem. <strong>LYMX commission earned by Partners is spendable across the partner network, not convertible to cash.</strong> LYMX is not cryptocurrency and not a stored monetary balance. Sign-up bonus and monthly subscription overrides are paid in cash. Projections are estimates based on inputs and current MGC rates; actual earnings may differ. Sign-up bonus is paid as $250 at day 7 + $250 at day 30 (anti-fraud).</div>
+    <h1>Income projector</h1>
+    <p class="lead">Two ways to grow: <strong>recruit businesses</strong> (you earn the direct rate + sign-up bonus) or <strong>build a team</strong> (you earn overrides on what your downline recruits). Different categories earn different LYMX. Model your plan below and see where the <em>same effort</em> pays you the most.</p>
+
+    <!-- Real income + benchmark (logged-in partners only) -->
+    <div class="card" id="real-wrap" style="display:none;border-color:var(--accent-2)">
+      <div class="step">Where you are today — actual</div>
+      <div style="display:flex;gap:26px;flex-wrap:wrap;margin-top:8px">
+        <div><div class="hint" style="margin:0">Lifetime cash</div><div style="font-size:24px;font-weight:800" id="real-cash">$0</div></div>
+        <div><div class="hint" style="margin:0">Lifetime LYMX</div><div style="font-size:24px;font-weight:800;color:#9a7b1e" id="real-lymx">0 LYMX</div></div>
+        <div><div class="hint" style="margin:0">Pending payout</div><div style="font-size:24px;font-weight:800" id="real-pending">$0</div></div>
+      </div>
+    </div>
+
+    <div class="card" id="bench-wrap" style="display:none">
+      <div class="step">You vs the network</div>
+      <p class="hint">The black tick is the network average. Aim to clear it where you're short.</p>
+      <div class="bench" id="bench"></div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: inputs -->
+      <div>
+        <div class="card">
+          <h2>1 · Recruit businesses</h2>
+          <p class="hint">Pick how many of each type you'll bring on. Each type earns LYMX differently — tap <em>edit</em> to tune the monthly LYMX volume to your market (estimates).</p>
+          <div id="cats"></div>
+          <div class="preset-row">
+            <button class="preset" data-preset="clear">Clear</button>
+            <button class="preset" data-preset="cafes5">5 cafés</button>
+            <button class="preset" data-preset="mix">Balanced mix</button>
+            <button class="preset" data-preset="fullservice3">3 full-service</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>2 · Build your team</h2>
+          <p class="hint">Partners you recruit (G1) and their recruits (G2/G3). You earn an override on every business they activate. Set how many partners per layer and the avg businesses each brings.</p>
+          <div id="team"></div>
+          <div class="catedit open" style="padding-left:0;margin-top:10px">
+            <label>Downline avg LYMX issued / biz / mo<input type="number" id="t-gIss" min="0" step="500"></label>
+            <label>Downline avg LYMX redeemed / biz / mo<input type="number" id="t-gRed" min="0" step="500"></label>
+            <label>Avg monthly subscription ($)<input type="number" id="t-fee" min="0" step="10"></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: outputs -->
+      <div>
+        <div class="out-hero">
+          <div class="sub-h">Projected monthly income (steady state)</div>
+          <div class="big"><span id="o-cash">$0</span><span class="lymx" id="o-lymx">+0 LYMX</span></div>
+          <div class="meta">Annualized <strong id="o-annual" style="color:#fff">$0</strong> cash + <strong id="o-annual-lymx" style="color:#f5d172">0 LYMX</strong> · plus <strong id="o-onetime" style="color:#fff">$0</strong> one-time sign-up bonuses while you build it</div>
+        </div>
+
+        <div class="card" style="border-color:var(--gold)">
+          <h2>🤖 Goal planner</h2>
+          <p class="hint">Tell me your monthly cash target — I'll show the fastest way there from your plan above.</p>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+            <span style="font-weight:800;font-size:18px">$</span>
+            <input type="number" id="goal-input" min="0" step="100" placeholder="5000" style="width:120px;border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit;font-weight:800">
+            <span style="color:var(--muted);font-size:13px">/ month in cash</span>
+            <button class="preset" id="goal-go" style="background:var(--accent);color:#fff;border-color:var(--accent)">Plan it →</button>
+            <button class="preset" id="goal-save">★ Set as my goal</button>
+          </div>
+          <div id="goal-meter" style="display:none;margin-bottom:12px"></div>
+          <div id="goal-out"></div>
+        </div>
+
+        <div class="card">
+          <h2>Where the income comes from</h2>
+          <div id="breakdown"></div>
+        </div>
+
+        <div class="card">
+          <h2>Where to focus next</h2>
+          <p class="hint">Your highest-yield next action, given your current plan. Same effort, ranked by monthly cash added.</p>
+          <div id="focus"></div>
+        </div>
+
+        <div class="card">
+          <h2>Your path: Hunter vs Builder</h2>
+          <p class="hint">12 months of the same weekly effort, two styles. Pick the one that fits your strengths.</p>
+          <div class="pathwrap">
+            <div class="path">
+              <h3>🎯 Hunter</h3>
+              <div class="pd">Recruit 1 business / month yourself</div>
+              <div class="pv" id="hunter-cash">$0</div>
+              <div class="pd">cash after 12 mo · <span id="hunter-lymx">0 LYMX</span></div>
+            </div>
+            <div class="path">
+              <h3>🌳 Builder</h3>
+              <div class="pd">Recruit 1 partner / month (each brings <span id="builder-b">2</span> biz)</div>
+              <div class="pv" id="builder-cash">$0</div>
+              <div class="pd">cash after 12 mo · <span id="builder-lymx">0 LYMX</span></div>
+            </div>
+          </div>
+          <p class="disc" id="path-note"></p>
+        </div>
+      </div>
+    </div>
+
+    <p class="disc">LYMX commission is spendable across the partner network, not convertible to cash. Sign-up bonus + monthly-subscription overrides are paid in cash. Category LYMX volumes are editable estimates — calibrate them to your market. Projections use the live MGC rates and are estimates; actual earnings vary.</p>
   </div>
-</footer>
+</main>
 
-<script>
-  document.getElementById('yr').textContent=new Date().getFullYear();
-
-  let FEE = 199;
-  let DIRECT_FEE_RATE = 0.09;
-  let PG1_FEE_RATE = 0.03;
-  let PG2_FEE_RATE = 0.02;
-  let PG3_FEE_RATE = 0.01;
-  let DIRECT_LYMX_RATE = 0.09;
-  let PG1_LYMX_RATE = 0.03;
-  let PG2_LYMX_RATE = 0.02;
-  let PG3_LYMX_RATE = 0.01;
-  let PLATFORM_FEE_RATE = 0.03; // 3% transaction fee charged SEPARATELY on LYMX issued and on LYMX redeemed
-                                  // (engine: transaction_fee_pct on issued+redeemed volume). Applied to each side below.
-  let SIGNUP_BONUS = 500;
-  const LYMX_USD = 0.01;
-  function applyCompCfg(){
-    var C = (window.LYMXComp && window.LYMXComp.cfg) || {};
-    if (C.direct_pct_regular != null) { DIRECT_FEE_RATE = DIRECT_LYMX_RATE = C.direct_pct_regular/100; }
-    if (C.g1_pct != null) { PG1_FEE_RATE = PG1_LYMX_RATE = C.g1_pct/100; }
-    if (C.g2_pct != null) { PG2_FEE_RATE = PG2_LYMX_RATE = C.g2_pct/100; }
-    if (C.g3_pct != null) { PG3_FEE_RATE = PG3_LYMX_RATE = C.g3_pct/100; }
-    if (C.transaction_fee_pct != null) { PLATFORM_FEE_RATE = C.transaction_fee_pct/100; }
-    if (C.activation_bonus_regular_cents != null) { SIGNUP_BONUS = C.activation_bonus_regular_cents/100; }
-  }
-
-  // Defaults loosely based on Kenny's current tree
-  const DEFAULTS = {
-    new: 3,
-    dirN: 8,    dirIss: 21000, dirRed: 21000,
-    pg1N: 3,    pg1Iss: 7000,  pg1Red: 7000,
-    pg2N: 1,    pg2Iss: 3000,  pg2Red: 3000,
-    pg3N: 0,    pg3Iss: 0,     pg3Red: 0
-  };
-
-  const fields = ['new','dirN','dirIss','dirRed','pg1N','pg1Iss','pg1Red','pg2N','pg2Iss','pg2Red','pg3N','pg3Iss','pg3Red'];
-
-  let state = {...DEFAULTS};
-  let baseline = compute({...DEFAULTS});
-
-  fields.forEach(k => {
-    const r = document.getElementById('r-' + k);
-    const n = document.getElementById('n-' + k);
-    r.value = DEFAULTS[k];
-    n.value = DEFAULTS[k];
-    r.addEventListener('input', () => { n.value = r.value; state[k] = +r.value; render(); });
-    n.addEventListener('input', () => { r.value = n.value; state[k] = +n.value; render(); });
-  });
-
-  document.getElementById('btn-reset').addEventListener('click', () => {
-    state = {...DEFAULTS};
-    fields.forEach(k => { document.getElementById('r-'+k).value = DEFAULTS[k]; document.getElementById('n-'+k).value = DEFAULTS[k]; });
-    render();
-  });
-
-  document.querySelectorAll('.preset').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const s = btn.dataset.scenario;
-      let next = {...state};
-      if (s === 'add-1-direct')      next.dirN = state.dirN + 1;
-      if (s === 'add-3-direct')      next.dirN = state.dirN + 3;
-      if (s === 'add-5-pg1')         next.pg1N = state.pg1N + 5;
-      if (s === 'add-10-pg2')        next.pg2N = state.pg2N + 10;
-      if (s === 'double-direct-vol') { next.dirIss = state.dirIss * 2; next.dirRed = state.dirRed * 2; }
-      if (s === 'full-tree')         next = {...state, dirN: 15, pg1N: 30, pg2N: 60, pg3N: 100};
-      state = next;
-      fields.forEach(k => { document.getElementById('r-'+k).value = state[k]; document.getElementById('n-'+k).value = state[k]; });
-      render();
-    });
-  });
-
-  function compute(s){
-    const bonus = s.new * SIGNUP_BONUS;
-    const dirC = s.dirN * FEE * DIRECT_FEE_RATE;
-    const pg1C = s.pg1N * FEE * PG1_FEE_RATE;
-    const pg2C = s.pg2N * FEE * PG2_FEE_RATE;
-    const pg3C = s.pg3N * FEE * PG3_FEE_RATE;
-    const cash = bonus + dirC + pg1C + pg2C + pg3C;
-    // LYMX commission = % × (unit-sale revenue from Business)
-    // LYMX collects 3% issuer + 3% receiver = 6% per round-trip; Partner earns their cut OF that fee, not of raw activity.
-    // Platform fee = 3% on issued + 3% on redeemed = PLATFORM_FEE_RATE × (issued + redeemed).
-    // Partner earns their MGC override % of that fee, paid in LYMX.
-    const lymx = (s.dirN * (s.dirIss + s.dirRed) * PLATFORM_FEE_RATE * DIRECT_LYMX_RATE)
-               + (s.pg1N * (s.pg1Iss + s.pg1Red) * PLATFORM_FEE_RATE * PG1_LYMX_RATE)
-               + (s.pg2N * (s.pg2Iss + s.pg2Red) * PLATFORM_FEE_RATE * PG2_LYMX_RATE)
-               + (s.pg3N * (s.pg3Iss + s.pg3Red) * PLATFORM_FEE_RATE * PG3_LYMX_RATE);
-    return {bonus, dirC, pg1C, pg2C, pg3C, cash, lymx};
-  }
-
-  const fmt = n => '$' + Math.round(n).toLocaleString();
-  const fmtL = n => Math.round(n).toLocaleString() + ' LYMX';
-  const fmtSigned = n => (n >= 0 ? '+' : '−') + '$' + Math.abs(Math.round(n)).toLocaleString();
-  const fmtSignedL = n => (n >= 0 ? '+' : '−') + Math.abs(Math.round(n)).toLocaleString() + ' LYMX';
-
-  function render(){
-    const r = compute(state);
-    document.getElementById('o-cash').textContent = fmt(r.cash);
-    document.getElementById('o-lymx').textContent = '+ ' + fmtL(r.lymx);
-    document.getElementById('o-annual').textContent = fmt(r.cash * 12);
-    document.getElementById('o-annual-lymx').textContent = fmtL(r.lymx * 12);
-    document.getElementById('o-baseline').textContent = fmt(baseline.cash) + ' / ' + fmtL(baseline.lymx);
-
-    // Bonus split — half on day 7, half on day 30 of each new activation
-    const halfBonus = r.bonus / 2;
-    const ongoing = r.cash - r.bonus;
-    document.getElementById('o-d7').textContent = 'Day 7 payout: ' + fmt(halfBonus);
-    document.getElementById('o-d30').textContent = 'Day 30 payout: ' + fmt(halfBonus + ongoing) + ' (incl. ongoing)';
-
-    const dCash = r.cash - baseline.cash;
-    const dEl = document.getElementById('o-delta');
-    if (Math.abs(dCash) < 0.5 && Math.abs(r.lymx - baseline.lymx) < 1) {
-      dEl.textContent = 'baseline';
-      dEl.className = 'delta';
-    } else {
-      dEl.textContent = (dCash >= 0 ? '+' : '−') + fmt(Math.abs(dCash)) + '/mo';
-      dEl.className = 'delta ' + (dCash >= 0 ? 'up' : 'down');
-    }
-
-    document.getElementById('b-bonus').textContent = fmt(r.bonus);
-    document.getElementById('b-dirC').textContent = fmt(r.dirC);
-    document.getElementById('b-pg1C').textContent = fmt(r.pg1C);
-    document.getElementById('b-pg2C').textContent = fmt(r.pg2C);
-    document.getElementById('b-pg3C').textContent = fmt(r.pg3C);
-    document.getElementById('b-lymx').textContent = '+' + fmtL(r.lymx);
-    document.getElementById('b-cash-total').textContent = fmt(r.cash);
-    document.getElementById('b-lymx-total').textContent = '+' + fmtL(r.lymx);
-
-    // Levers — marginal income from each move
-    const addDirect = compute({...state, dirN: state.dirN + 1});
-    const addPG1    = compute({...state, pg1N: state.pg1N + 1});
-    const addPG2    = compute({...state, pg2N: state.pg2N + 1});
-    const addPG3    = compute({...state, pg3N: state.pg3N + 1});
-    const upVol     = compute({...state, dirIss: Math.round(state.dirIss * 1.25), dirRed: Math.round(state.dirRed * 1.25)});
-
-    setLever('lv-direct', addDirect.cash - r.cash, addDirect.lymx - r.lymx);
-    setLever('lv-pg1',    addPG1.cash - r.cash,    addPG1.lymx - r.lymx);
-    setLever('lv-pg2',    addPG2.cash - r.cash,    addPG2.lymx - r.lymx);
-    setLever('lv-pg3',    addPG3.cash - r.cash,    addPG3.lymx - r.lymx);
-    setLever('lv-vol',    upVol.cash - r.cash,     upVol.lymx - r.lymx);
-
-    const levers = [
-      {name: 'recruiting one more Direct Business', delta: addDirect.cash - r.cash + (addDirect.lymx - r.lymx) * LYMX_USD},
-      {name: 'helping a Partner you recruited add one PG1 Business', delta: addPG1.cash - r.cash + (addPG1.lymx - r.lymx) * LYMX_USD},
-      {name: 'helping your tree go 2 levels deep with one PG2 Business', delta: addPG2.cash - r.cash + (addPG2.lymx - r.lymx) * LYMX_USD},
-      {name: 'helping your tree go 3 levels deep with one PG3 Business', delta: addPG3.cash - r.cash + (addPG3.lymx - r.lymx) * LYMX_USD},
-      {name: 'getting your existing Direct Businesses to do 25% more volume', delta: upVol.cash - r.cash + (upVol.lymx - r.lymx) * LYMX_USD}
-    ];
-    levers.sort((a,b) => b.delta - a.delta);
-    document.getElementById('insight-text').textContent =
-      'Right now your highest-leverage move is ' + levers[0].name + ' — that adds $' + Math.round(levers[0].delta).toLocaleString() + '/mo of total income (cash + LYMX value).';
-  }
-
-  function setLever(prefix, dCash, dLymx){
-    document.getElementById(prefix + '-c').textContent = fmtSigned(dCash);
-    document.getElementById(prefix + '-l').textContent = fmtSignedL(dLymx);
-    const annual = dCash * 12 + dLymx * LYMX_USD * 12;
-    document.getElementById(prefix + '-y').textContent = fmtSigned(annual);
-  }
-
-  render();
-</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
 <script src="lymx-comp-config.js"></script>
-<script>window.LYMXComp && LYMXComp.ready.then(function(){ applyCompCfg(); baseline = compute({...DEFAULTS}); render(); });</script>
-<script src="lymx-auth.js"></script>
+<script src="lymx-projector.js"></script>
 <script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
 <script src="lymx-app.js" defer></script>
-<script>
-// Real current income (vs the what-if projection above). Authenticated partners
-// only; the calculator stays fully usable when signed out. Reads the authoritative
-// ledger via partner_income_summary (cash and LYMX kept in their own units).
-(async function loadRealIncome(){
-  try {
-    if (!window.LYMX || !window.LYMX.getSession) return;
-    const sess = await window.LYMX.getSession();
-    if (!sess) return;
-    const sb = window.LYMX.sb;
-    let pid = null;
-    const { data: pr } = await sb.from('partners').select('id').eq('user_id', sess.user.id).limit(1);
-    if (pr && pr.length) pid = pr[0].id;
-    if (!pid && sess.user.email) {
-      const { data: pr2 } = await sb.from('partners').select('id').ilike('contact_email', sess.user.email.toLowerCase()).limit(1);
-      if (pr2 && pr2.length) pid = pr2[0].id;
-    }
-    if (!pid) return;
-    const { data: sum, error } = await sb.rpc('partner_income_summary', { p_partner_id: pid });
-    if (error || !sum) return;
-    // Pending CASH only (unpaid_total mixes units; recompute clean from the ledger).
-    let pendingCash = 0;
-    const { data: openRows } = await sb.from('partner_commissions')
-      .select('amount, payout_kind, settlement_id').eq('partner_id', pid).is('settlement_id', null);
-    (openRows || []).forEach(r => { if (r.payout_kind !== 'lymx') pendingCash += Number(r.amount || 0); });
-    const fmt = (n) => '$' + Math.round(Number(n || 0)).toLocaleString('en-US');
-    const fmtL = (n) => '+' + Math.round(Number(n || 0)).toLocaleString('en-US') + ' LYMX';
-    document.getElementById('real-cash').textContent = fmt(sum.cash_total);
-    document.getElementById('real-lymx').textContent = fmtL(sum.lymx_total);
-    document.getElementById('real-pending').textContent = fmt(pendingCash);
-    document.getElementById('real-wrap').style.display = '';
-  } catch (e) { console.warn('[projection] real income load failed', e); }
-})();
-</script>
 </body>
 </html>
