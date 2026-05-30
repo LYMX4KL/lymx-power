@@ -195,16 +195,29 @@
     if (role && rec.roles.indexOf(role) === -1) rec.roles.push(role);
   }
 
-  var [custQ, partQ, staffQ, ownerQ] = await Promise.all([
+  var [custQ, partQ, staffQ, ownerQ, nameQ] = await Promise.all([
     sb.from('customers').select('user_id,display_name,email').order('display_name', { ascending: true }).limit(500),
-    sb.from('partners').select('user_id,display_name,email,partner_code').order('display_name', { ascending: true }).limit(500),
+    sb.from('partners').select('user_id,legal_name,display_name,contact_email,partner_code').order('display_name', { ascending: true }).limit(500),
     sb.from('staff_roles').select('user_id,role').limit(500),
-    sb.from('businesses').select('owner_user_id,name').not('owner_user_id', 'is', null).limit(500)
+    sb.from('businesses').select('owner_user_id,name').not('owner_user_id', 'is', null).limit(500),
+    sb.rpc('admin_list_user_emails')
   ]);
   if (custQ.data) custQ.data.forEach(function(r){ upsertMember(r.user_id, r.display_name, r.email, 'customer'); });
-  if (partQ.data) partQ.data.forEach(function(r){ upsertMember(r.user_id, r.display_name, r.email, 'partner'); });
+  if (partQ.data) partQ.data.forEach(function(r){ upsertMember(r.user_id, r.legal_name || r.display_name, r.contact_email, 'partner'); });
   if (staffQ.data) staffQ.data.forEach(function(r){ upsertMember(r.user_id, null, null, r.role || 'staff'); });
   if (ownerQ.data) ownerQ.data.forEach(function(r){ upsertMember(r.owner_user_id, null, null, 'business_owner'); });
+
+  // 2026-05-30 - canonical identity (ARCHITECTURE-RULES Rule 1a): the authoritative
+  // name comes from the single source of truth (auth.users full_name, populated from
+  // hiring via admin_list_user_emails), NOT from a role table. This override ensures
+  // the list never falls back to a uid hash. full_name is "real name OR email"; only
+  // use it as the display name when it is an actual name, else keep email for fallback.
+  if (nameQ && nameQ.data) nameQ.data.forEach(function(r){
+    var rec = memberMap[r.user_id];
+    if (!rec) return;
+    if (r.email) rec.email = r.email;
+    if (r.full_name && r.full_name.indexOf('@') === -1) rec.display_name = r.full_name;
+  });
 
   members = Object.values(memberMap).sort(function(a,b){
     return (a.display_name||a.email||'').localeCompare(b.display_name||b.email||'');
