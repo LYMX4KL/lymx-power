@@ -582,68 +582,62 @@
   // onboards/tests the HR module). True admins already see HR inside the full
   // admin menu, so skip them to avoid duplicate links. Mirrors
   // maybeInjectStaffSection: positive has_permission('hr_admin') check, cached.
-  async function maybeInjectHrAdminSection(asideEl) {
+  async function maybeInjectGrantedAdminSection(asideEl) {
+    // 2026-05-30 (S1c-nav) - permission-driven admin nav. For NON-admin users,
+    // render the admin menu items they are actually GRANTED (list_my_permissions:
+    // admin shortcut -> explicit grant -> role default). HR pages share the single
+    // hr_admin key, so a derived 'admin_<slug>' not present in the perms map means
+    // it is an HR page -> fall back to 'hr_admin'. True admins already get the full
+    // admin menu from buildSidebar and are skipped. Supersedes the HR-only injection.
     if (!asideEl) return;
     try {
-      if (_readDbRole() === 'admin') return; // admins already have the HR menu
+      if (_readDbRole() === 'admin') return;
+      if (asideEl.getAttribute('data-granted-admin') === '1') return;
       var cfg = window.LYMX_CONFIG;
       var tok = readStoredToken();
       if (!cfg || !tok) return;
-      var payload = decodeJwt(tok);
-      var uid = payload && payload.sub;
-      if (!uid) return;
-      var cacheKey = 'LYMX_hr_admin_' + uid;
-      var cached = null;
-      try { cached = sessionStorage.getItem(cacheKey); } catch (e) { console.warn('[sidebar] hr_admin cache read', e); }
-      if (cached === 'no') return;
-      if (cached !== 'yes') {
-        var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/rpc/has_permission', {
-          method: 'POST',
-          headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ p_feature_key: 'hr_admin' })
-        });
-        if (!r.ok) { try { sessionStorage.setItem(cacheKey, 'no'); } catch (e) { console.warn('[sidebar] hr_admin cache write', e); } return; }
-        var val = await r.json();
-        var ans = (val === true) ? 'yes' : 'no';
-        try { sessionStorage.setItem(cacheKey, ans); } catch (e) { console.warn('[sidebar] hr_admin cache write', e); }
-        if (ans === 'no') return;
+      var r = await fetch(cfg.SUPABASE_URL + '/rest/v1/rpc/list_my_permissions', {
+        method: 'POST',
+        headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+        body: '{}'
+      });
+      if (!r.ok) return;
+      var perms = await r.json();
+      if (!perms || typeof perms !== 'object') return;
+      function keyForHref(href) {
+        var slug = String(href).replace(/^\//, '').replace(/\.html$/, '');
+        var k = 'admin_' + slug.replace(/^admin-/, '').replace(/-/g, '_');
+        return Object.prototype.hasOwnProperty.call(perms, k) ? k : 'hr_admin';
       }
-      if (asideEl.querySelector('a[href="admin-personnel-records.html"]')) return;
       var here = (location.pathname.split('/').pop() || '').toLowerCase();
       function aHTML(href, icon, label) {
         var active = href.toLowerCase() === here ? ' active' : '';
         return '<a class="' + active.trim() + '" href="' + href + '"><span class="lymx-sb-icon">' + icon + '</span><span>' + label + '</span></a>';
       }
-      var insertHTML =
-        '<h3>HR Admin</h3>' +
-        aHTML('admin-staff.html', '\u{1FAAA}', 'Staff Roles') +
-        aHTML('admin-personnel-records.html', '\u{1F4C7}', 'Personnel Records') +
-        aHTML('admin-hiring.html', '\u{1F4E8}', 'Hiring') +
-        aHTML('admin-schedule.html', '\u{1F4C5}', 'Schedule Builder') +
-        aHTML('admin-schedule-requests.html', '\u{1F4DD}', 'Schedule Weeks') +
-        aHTML('admin-time-off.html', '\u{1F334}', 'Time-off') +
-        aHTML('admin-team-roster.html', '\u{1F5C2}', 'Roster') +
-        aHTML('admin-staff-locations.html', '\u{1F4CD}', 'Clock-in Locations') +
-        aHTML('admin-clock-in-permissions.html', '\u{1F510}', 'Clock-in Permissions') +
-        aHTML('admin-clock-in-requests.html', '\u{1F4E5}', 'Clock-in Requests') +
-        aHTML('admin-clock-in-now.html', '\u{23F0}', 'Clock-in Now') +
-        aHTML('admin-timesheets.html', '\u{23F1}', 'Timesheets') +
-        aHTML('admin-payroll-reconciliation.html', '\u{1F4B0}', 'Payroll Run') +
-        aHTML('admin-generate-offer.html', '\u{1F4E8}', 'Generate Offer') +
-        aHTML('admin-counter-offer-queue.html', '\u{1F501}', 'Counter Offers') +
-        aHTML('admin-bulk-policy-assign.html', '\u{1F4D1}', 'Bulk Policy Assign') +
-        aHTML('admin-inventory.html', '\u{1F4E6}', 'Inventory') +
-        aHTML('admin-outstanding-property.html', '\u{1F6A9}', 'Outstanding Property') +
-        aHTML('admin-send-hr-launch.html', '\u{1F44B}', 'Send Welcome Email');
+      var adminItems = MENUS.admin || [];
+      var html = '';
+      var pendingSection = null, sectionOpen = false, anyShown = false;
+      adminItems.forEach(function (it) {
+        if (it.section) { pendingSection = it.section; sectionOpen = false; return; }
+        if (!it.href) return;
+        var key = keyForHref(it.href);
+        if (perms[key] === true) {
+          if (pendingSection && !sectionOpen) { html += '<h3>' + pendingSection + '</h3>'; sectionOpen = true; }
+          html += aHTML(it.href, it.icon || '', it.label || it.href);
+          anyShown = true;
+        }
+      });
+      if (!anyShown) return;
+      asideEl.setAttribute('data-granted-admin', '1');
       var signout = asideEl.querySelector('#lymx-sb-signout');
       if (signout) {
         var wrap = document.createElement('div');
-        wrap.innerHTML = insertHTML;
+        wrap.innerHTML = html;
         while (wrap.firstChild) asideEl.insertBefore(wrap.firstChild, signout);
       } else {
-        asideEl.insertAdjacentHTML('beforeend', insertHTML);
+        asideEl.insertAdjacentHTML('beforeend', html);
       }
-    } catch (e) { console.warn('[sidebar] hr-admin-section inject failed', e); }
+    } catch (e) { console.warn('[sidebar] granted-admin inject failed', e); }
   }
 
   function mount() {
@@ -723,7 +717,7 @@
 
     // 2026-05-20 #4aa8c795 - async append "My Work" section for staff users.
     maybeInjectStaffSection(sidebar);
-    maybeInjectHrAdminSection(sidebar);
+    maybeInjectGrantedAdminSection(sidebar);
     // 2026-05-20 #631935ae - hydrate the partner_code chip in who-mini header.
     (async function loadPartnerCode() {
       try {
