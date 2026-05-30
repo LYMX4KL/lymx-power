@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — import an Excel/CSV timesheet into payroll (pre-approved lines)." />
+<title>Import Timesheet · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1100px}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:26px 24px 70px}
+  h1{font-size:26px;margin:0 0 4px;letter-spacing:-.02em}
+  p.sub{margin:0 0 18px;color:var(--muted)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);margin-bottom:18px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;font-weight:700;font-size:14.5px;border:1px solid transparent;cursor:pointer;font-family:inherit}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-outline{background:#fff;border-color:var(--line);color:var(--ink)}
+  .btn-success{background:var(--ok);color:#fff}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .step{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent-2);font-weight:800;margin-bottom:8px}
+  input[type=file]{font:inherit}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:12px}
+  th{text-align:left;padding:9px 12px;border-bottom:2px solid var(--line);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--bg-soft)}
+  td{padding:9px 12px;border-bottom:1px solid var(--line)}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .pill{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:800;text-transform:uppercase}
+  .pill.ok{background:rgba(19,162,107,.14);color:var(--ok)} .pill.bad{background:rgba(224,65,62,.12);color:var(--danger)}
+  .banner{padding:11px 14px;border-radius:10px;margin:10px 0;font-size:14px;font-weight:600;display:none}
+  .banner.info{display:block;background:rgba(10,132,255,.1);color:var(--accent-2)}
+  .banner.ok{display:block;background:rgba(19,162,107,.12);color:var(--ok)}
+  .banner.err{display:block;background:rgba(224,65,62,.12);color:var(--danger)}
+  code{background:var(--bg-soft);padding:1px 6px;border-radius:5px;font-size:12.5px}
+  .muted{color:var(--muted);font-size:13px}
+</style>
+</head>
+<body data-role-required="perm:hr_admin">
+<main>
+  <div class="wrap">
+    <h1>Import timesheet from Excel</h1>
+    <p class="sub">For paying hourly staff when clock-in data isn't available. Each row becomes a <strong>pre-approved</strong> timesheet line, ready for the payroll run. Re-importing the same person+date safely overwrites (never duplicates), and locked/paid days are never touched.</p>
+
+    <div class="card">
+      <div class="step">Step 1 · Get the template</div>
+      <p class="muted">Columns: <code>email</code>, <code>work_date</code> (YYYY-MM-DD), <code>regular_hours</code>, <code>ot_hours</code>, <code>hourly_rate</code>. Email must match how the staff member signs in. Leave <code>hourly_rate</code> blank to use their profile rate. OT is paid at 1.5×.</p>
+      <button class="btn btn-outline" id="tmplBtn">⬇ Download Excel template</button>
+    </div>
+
+    <div class="card">
+      <div class="step">Step 2 · Upload your file</div>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" />
+      <div id="parseBanner" class="banner"></div>
+    </div>
+
+    <div class="card" id="previewCard" style="display:none">
+      <div class="step">Step 3 · Review</div>
+      <div id="previewWrap"></div>
+      <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+        <button class="btn btn-primary" id="importBtn">Import valid rows</button>
+        <span class="muted" id="previewSummary"></span>
+      </div>
+      <div id="importBanner" class="banner"></div>
+    </div>
+
+    <div class="card" id="doneCard" style="display:none">
+      <div class="step">Step 4 · Run payroll</div>
+      <p class="muted">Hours are now in the system as approved lines. Open the payroll page, pick the pay period that covers these dates, review, then lock &amp; mark paid.</p>
+      <a class="btn btn-success" href="admin-payroll-reconciliation.html">Go to Payroll reconciliation →</a>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+(function () {
+  var rows = [];
+  function $(id){ return document.getElementById(id); }
+  function banner(el, kind, msg){ el.className = 'banner ' + kind; el.textContent = msg; }
+
+  // --- template ---
+  $('tmplBtn').addEventListener('click', function () {
+    var ws = XLSX.utils.aoa_to_sheet([
+      ['email','work_date','regular_hours','ot_hours','hourly_rate'],
+      ['dave@example.com','2026-05-26',8,0,25],
+      ['rachel@example.com','2026-05-26',7.5,1.5,22]
+    ]);
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Timesheet');
+    XLSX.writeFile(wb, 'lymx-timesheet-template.xlsx');
+  });
+
+  // --- header auto-map ---
+  var MAP = {
+    email:['email','staff_email','e-mail','staff email'],
+    work_date:['work_date','date','day','work date','shift_date'],
+    regular_hours:['regular_hours','regular','hours','reg_hours','reg','hrs'],
+    ot_hours:['ot_hours','overtime','ot','overtime_hours'],
+    hourly_rate:['hourly_rate','rate','pay_rate','hourly rate','wage']
+  };
+  function keyFor(h){
+    var n = String(h||'').trim().toLowerCase();
+    for (var k in MAP){ if (MAP[k].indexOf(n) >= 0) return k; }
+    return null;
+  }
+  function toYmd(v){
+    if (v == null || v === '') return '';
+    if (v instanceof Date && !isNaN(v)) {
+      return v.getFullYear() + '-' + String(v.getMonth()+1).padStart(2,'0') + '-' + String(v.getDate()).padStart(2,'0');
+    }
+    var s = String(v).trim();
+    var m = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+    if (m) return m[1] + '-' + m[2].padStart(2,'0') + '-' + m[3].padStart(2,'0');
+    var d = new Date(s);
+    if (!isNaN(d)) return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    return '';
+  }
+  function num(v){ var n = parseFloat(String(v).replace(/[$,]/g,'')); return isNaN(n) ? null : n; }
+
+  $('fileInput').addEventListener('change', function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function (ev) {
+      try {
+        var wb = XLSX.read(ev.target.result, { type: 'array', cellDates: true });
+        var ws = wb.Sheets[wb.SheetNames[0]];
+        var aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, blankrows: false });
+        if (!aoa.length) { banner($('parseBanner'),'err','That sheet looks empty.'); return; }
+        var headers = aoa[0].map(keyFor);
+        if (headers.indexOf('email') < 0 || headers.indexOf('work_date') < 0) {
+          banner($('parseBanner'),'err','Could not find an "email" and a "work_date" column. Download the template and match the headers.'); return;
+        }
+        rows = [];
+        for (var i = 1; i < aoa.length; i++) {
+          var r = aoa[i]; if (!r || !r.length) continue;
+          var rec = {};
+          headers.forEach(function (k, idx) { if (k) rec[k] = r[idx]; });
+          if (rec.email == null && rec.work_date == null) continue;
+          var rowObj = {
+            email: String(rec.email||'').trim(),
+            work_date: toYmd(rec.work_date),
+            regular_hours: num(rec.regular_hours) || 0,
+            ot_hours: num(rec.ot_hours) || 0,
+            hourly_rate: rec.hourly_rate == null || rec.hourly_rate === '' ? null : num(rec.hourly_rate)
+          };
+          rowObj.valid = !!rowObj.email && /\S+@\S+/.test(rowObj.email) && !!rowObj.work_date && (rowObj.regular_hours > 0 || rowObj.ot_hours > 0);
+          rows.push(rowObj);
+        }
+        renderPreview();
+        banner($('parseBanner'),'ok','Parsed ' + rows.length + ' row(s).');
+      } catch (err) {
+        console.warn(err); banner($('parseBanner'),'err','Could not read that file: ' + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(f);
+  });
+
+  function renderPreview(){
+    var valid = rows.filter(function(r){ return r.valid; }).length;
+    $('previewCard').style.display = '';
+    $('previewSummary').textContent = valid + ' of ' + rows.length + ' rows valid';
+    $('importBtn').disabled = valid === 0;
+    $('previewWrap').innerHTML =
+      '<table><thead><tr><th>Email</th><th>Date</th><th class="num">Reg hrs</th><th class="num">OT hrs</th><th class="num">Rate</th><th>Status</th></tr></thead><tbody>' +
+      rows.map(function(r){
+        return '<tr><td>' + (r.email||'—') + '</td><td>' + (r.work_date||'—') + '</td>' +
+          '<td class="num">' + r.regular_hours + '</td><td class="num">' + r.ot_hours + '</td>' +
+          '<td class="num">' + (r.hourly_rate==null?'(profile)':r.hourly_rate) + '</td>' +
+          '<td>' + (r.valid?'<span class="pill ok">ready</span>':'<span class="pill bad">skip</span>') + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+
+  $('importBtn').addEventListener('click', async function () {
+    var sb = window.LYMX && window.LYMX.sb;
+    if (!sb) { banner($('importBanner'),'err','Not signed in.'); return; }
+    $('importBtn').disabled = true;
+    banner($('importBanner'),'info','Importing…');
+    var ok = 0, fail = 0, errs = [];
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i]; if (!r.valid) continue;
+      try {
+        var res = await sb.rpc('fn_import_timesheet_line', {
+          p_email: r.email, p_work_date: r.work_date,
+          p_regular_hours: r.regular_hours, p_ot_hours: r.ot_hours, p_hourly_rate: r.hourly_rate
+        });
+        if (res.error) { fail++; errs.push(r.email + ' ' + r.work_date + ': ' + res.error.message); }
+        else if (res.data && res.data.ok === false) { fail++; errs.push(r.email + ' ' + r.work_date + ': ' + res.data.error); }
+        else ok++;
+      } catch (e) { fail++; errs.push(r.email + ': ' + e.message); }
+    }
+    if (fail === 0) { banner($('importBanner'),'ok','Imported ' + ok + ' line(s). All good.'); }
+    else { banner($('importBanner'),'err','Imported ' + ok + ', skipped ' + fail + '. ' + errs.slice(0,5).join(' · ')); }
+    if (ok > 0) $('doneCard').style.display = '';
+    $('importBtn').disabled = false;
+  });
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>
