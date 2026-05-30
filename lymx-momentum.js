@@ -73,12 +73,12 @@
       if (!window.LYMX || !window.LYMX.getSession) return;
       var sess = await window.LYMX.getSession(); if (!sess) return;
       var sb = window.LYMX.sb;
-      var pid = null, founding = false;
-      var pr = await sb.from('partners').select('id, is_founding_25, display_name').eq('user_id', sess.user.id).limit(1);
-      if (pr.data && pr.data.length) { pid = pr.data[0].id; founding = !!pr.data[0].is_founding_25; }
+      var pid = null, founding = false, joinedAt = null;
+      var pr = await sb.from('partners').select('id, is_founding_25, display_name, created_at').eq('user_id', sess.user.id).limit(1);
+      if (pr.data && pr.data.length) { pid = pr.data[0].id; founding = !!pr.data[0].is_founding_25; joinedAt = pr.data[0].created_at; }
       if (!pid && sess.user.email) {
-        var pr2 = await sb.from('partners').select('id, is_founding_25').ilike('contact_email', sess.user.email.toLowerCase()).limit(1);
-        if (pr2.data && pr2.data.length) { pid = pr2.data[0].id; founding = !!pr2.data[0].is_founding_25; }
+        var pr2 = await sb.from('partners').select('id, is_founding_25, created_at').ilike('contact_email', sess.user.email.toLowerCase()).limit(1);
+        if (pr2.data && pr2.data.length) { pid = pr2.data[0].id; founding = !!pr2.data[0].is_founding_25; joinedAt = pr2.data[0].created_at; }
       }
       if (!pid) return;
 
@@ -87,9 +87,10 @@
         .eq('partner_id', pid);
       var rows = cr.data || [];
       var stats = { activations:0, lifeCash:0 };
-      var latestAct = null;
+      var latestAct = null, speedEarned = false;
       rows.forEach(function(r){
         if (r.payout_kind !== 'lymx') stats.lifeCash += Number(r.amount||0);
+        if (r.source_kind === 'speed_bonus') speedEarned = true;
         if (r.source_kind === 'activation' && r.generation === 0) {
           stats.activations++;
           if (!latestAct || new Date(r.created_at) > new Date(latestAct.created_at)) latestAct = r;
@@ -108,6 +109,21 @@
       }
 
       // Build the card
+      // Founding-25 $1,000 speed bonus countdown (5 activations within 3 months of joining)
+      var speedHtml = '';
+      if (founding && joinedAt && !speedEarned) {
+        var windowEnd = new Date(joinedAt); windowEnd.setMonth(windowEnd.getMonth() + 3);
+        var daysLeft = Math.ceil((windowEnd.getTime() - Date.now()) / 86400000);
+        var actsInWindow = rows.filter(function(r){ return r.source_kind==='activation' && r.generation===0 && new Date(r.created_at) <= windowEnd; }).length;
+        var need = Math.max(0, 5 - actsInWindow);
+        if (daysLeft > 0 && need > 0) {
+          speedHtml = '<div style="margin-top:12px;padding:12px 14px;border:1px dashed #d4af37;border-radius:10px;background:rgba(245,209,114,.08)">'+
+            '<div style="font-weight:800;font-size:13.5px">\uD83D\uDE80 $1,000 Founding speed bonus</div>'+
+            '<div style="font-size:12.5px;color:#5b6472;margin-top:2px">'+actsInWindow+' of 5 activations \u00b7 <strong>'+need+'</strong> more in <strong>'+daysLeft+'</strong> day'+(daysLeft===1?'':'s')+' to earn it.</div></div>';
+        } else if (daysLeft <= 0 && need > 0) {
+          speedHtml = '';
+        }
+      }
       var goal = nextGoal(stats);
       var pct = goal ? Math.min(100, Math.round((goal.cur/goal.target)*100)) : 100;
       var goalHtml = goal
@@ -121,7 +137,7 @@
       card.innerHTML =
         '<div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#5b6472;font-weight:700;margin-bottom:12px">Your momentum</div>'+
         '<div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:16px">'+badgesHtml(stats)+'</div>'+
-        goalHtml +
+        goalHtml + speedHtml +
         '<div id="lymxRankNudge" style="font-size:12.5px;color:#5b6472;margin-top:10px"></div>';
 
       var host = document.querySelector('main') || document.body;
