@@ -231,6 +231,7 @@
       { href: 'customer-charity.html',   icon: '\u{1F49D}', label: 'Donate LYMX' },
       { section: 'Account' },
       { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
+      { href: 'notifications.html',     icon: '\u{1F514}', label: 'Notifications' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
       { href: 'contacts.html',           icon: '\u{1F4C7}', label: 'Contacts' },
       { href: 'my-feedback.html',        icon: '\u{1F4DD}', label: 'My Feedback' }
@@ -250,6 +251,7 @@
       { href: 'my-bookings.html',        icon: '\u{1F4C5}', label: 'My bookings' },
       { section: 'Account' },
       { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
+      { href: 'notifications.html',     icon: '\u{1F514}', label: 'Notifications' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
       { href: 'contacts.html',           icon: '\u{1F4C7}', label: 'Contacts' },
       { href: 'my-feedback.html',        icon: '\u{1F4DD}', label: 'My Feedback' }
@@ -275,6 +277,7 @@
       // an hr_employees row (i.e. partners who are ALSO hired as staff).
       { section: 'Account' },
       { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
+      { href: 'notifications.html',     icon: '\u{1F514}', label: 'Notifications' },
       { href: 'profile.html',            icon: '\u{1F464}', label: 'Profile' },
       // 2026-05-22 #2547e13e — partners couldn't find a refer-a-friend page;
       // they had "Invite Friends" (bulk outreach) but no personal share link.

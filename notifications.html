@@ -278,6 +278,8 @@
 
   function markAllRead(){
     notifications.forEach(n => n.unread = false);
+    // persist so the read state survives refresh (see read_until note in the DB loader)
+    try { localStorage.setItem('lymx_notif_read_until', String(Date.now())); } catch (e) { console.warn('[notifications] read_until write', e); }
     render();
   }
 
@@ -378,6 +380,18 @@
     });
 
     notifications.sort((a, b) => (b._ts || '').localeCompare(a._ts || ''));
+
+    // 2026-05-30 (S2d) - persist read state. Notifications are SYNTHESIZED client-side
+    // from issuances/transactions/referrals (there is no notifications table), so read
+    // state lives in localStorage as a "read_until" timestamp: anything at/older than it
+    // counts as read. Fixes "Mark all read doesn't work" + "read status doesn't persist
+    // after refresh" without inventing a table for an ephemeral derived feed.
+    var _readUntil = 0;
+    try { _readUntil = parseInt(localStorage.getItem('lymx_notif_read_until') || '0', 10) || 0; } catch (e) { console.warn('[notifications] read_until parse', e); }
+    notifications.forEach(function (n) {
+      if (n._ts) n.unread = new Date(n._ts).getTime() > _readUntil;
+    });
+
     if (typeof render === 'function') render();
 
     const feed = document.getElementById('feed');
