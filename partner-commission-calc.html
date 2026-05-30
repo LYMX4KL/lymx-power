@@ -301,11 +301,17 @@
     document.getElementById('vG3').textContent = g3;
     document.getElementById('vSpend').textContent = '$' + spend;
 
-    // commission math
-    const ownProd = biz * spend * 0.09;
-    const g1Prod = g1 * g1b * spend * 0.03;
-    const g2Prod = g2 * g1b * spend * 0.02;
-    const g3Prod = g3 * g1b * spend * 0.01;
+    // commission math — rates from the live commission_rate_config (one source of truth).
+    // Regular (non-founding) direct rate is the baseline a new partner earns.
+    const C = (window.LYMXComp && window.LYMXComp.cfg) || {};
+    const rDir = (C.direct_pct_regular != null ? C.direct_pct_regular : 9) / 100;
+    const rG1  = (C.g1_pct != null ? C.g1_pct : 3) / 100;
+    const rG2  = (C.g2_pct != null ? C.g2_pct : 2) / 100;
+    const rG3  = (C.g3_pct != null ? C.g3_pct : 1) / 100;
+    const ownProd = biz * spend * rDir;
+    const g1Prod = g1 * g1b * spend * rG1;
+    const g2Prod = g2 * g1b * spend * rG2;
+    const g3Prod = g3 * g1b * spend * rG3;
     const total = ownProd + g1Prod + g2Prod + g3Prod;
 
     const fmt = (n) => '$' + Math.round(n).toLocaleString();
@@ -331,6 +337,8 @@
 </script>
 
 <script src="lymx-config.js"></script>
+<script src="lymx-comp-config.js"></script>
+<script>window.LYMXComp && LYMXComp.ready.then(function(){ if (typeof recalc === 'function') recalc(); });</script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
 <!-- Cluster B 2026-05-24 T-7F12DB / T-D9ACD8 -- sticky Print / Save as PDF affordance.
