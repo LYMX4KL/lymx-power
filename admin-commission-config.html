@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — edit commission rates + projector category benchmarks (the single source of truth, no redeploy)." />
+<title>Commission Config · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--gold:#d4af37;--radius:14px;--shadow:0 10px 30px rgba(14,17,22,.08);--maxw:1080px}
+  *{box-sizing:border-box} html,body{margin:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:26px 22px 70px}
+  h1{font-size:26px;margin:0 0 4px;letter-spacing:-.02em} p.sub{margin:0 0 18px;color:var(--muted)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);margin-bottom:18px}
+  .card h2{font-size:17px;margin:0 0 3px} .hint{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px 18px}
+  @media(max-width:640px){.grid{grid-template-columns:1fr}}
+  label{display:flex;flex-direction:column;gap:3px;font-size:12.5px;font-weight:700;color:var(--ink)}
+  label small{font-weight:500;color:var(--muted)}
+  .inp{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:8px;padding:0 10px;background:#fff}
+  .inp span{color:var(--muted);font-weight:700;font-size:13px}
+  .inp input{border:0;outline:0;padding:9px 0;font:inherit;font-weight:700;width:100%;background:transparent}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:8px}
+  th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--line);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--bg-soft)}
+  td{padding:6px 10px;border-bottom:1px solid var(--line)}
+  td input{width:100%;border:1px solid var(--line);border-radius:6px;padding:6px;font:inherit}
+  td input.num{text-align:right;font-variant-numeric:tabular-nums}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:10px;font-weight:800;font-size:14.5px;border:1px solid transparent;cursor:pointer;font-family:inherit}
+  .btn-primary{background:var(--accent);color:#fff} .btn:disabled{opacity:.5;cursor:not-allowed}
+  .banner{padding:11px 14px;border-radius:10px;margin:12px 0 0;font-size:14px;font-weight:600;display:none}
+  .banner.ok{display:block;background:rgba(19,162,107,.12);color:var(--ok)}
+  .banner.err{display:block;background:rgba(224,65,62,.12);color:var(--danger)}
+  .banner.info{display:block;background:rgba(10,132,255,.1);color:var(--accent-2)}
+  .warnbar{background:rgba(240,160,32,.12);color:#9a6500;border:1px solid var(--warn);border-radius:10px;padding:11px 14px;font-size:13px;margin-bottom:16px}
+</style>
+</head>
+<body data-role-required="admin">
+<main>
+  <div class="wrap">
+    <h1>Commission rates &amp; categories</h1>
+    <p class="sub">The single source of truth for the whole income system — engine, projector, comp plan, calculator all read these. Edit here; no redeploy needed.</p>
+    <div class="warnbar">⚠️ Rate changes affect <strong>future</strong> accruals only — already-settled commissions are immutable. Changes take effect on the next commission run / page load.</div>
+
+    <div class="card">
+      <h2>Commission rates</h2>
+      <p class="hint">Bonuses in dollars, overrides &amp; fee in percent. The transaction fee is charged per side (issued + redeemed).</p>
+      <div class="grid" id="rates"></div>
+      <label style="margin-top:14px">Change note (optional)<input id="cfg-notes" class="num" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:9px" placeholder="why you changed it"></label>
+      <div style="margin-top:14px"><button class="btn btn-primary" id="saveRates">Save rates</button></div>
+      <div id="ratesBanner" class="banner"></div>
+    </div>
+
+    <div class="card">
+      <h2>Projector category benchmarks</h2>
+      <p class="hint">Avg LYMX issued &amp; redeemed per business per month, by business type. Drives the income projector's category economics. Estimates — tune to real market data.</p>
+      <table>
+        <thead><tr><th>Icon</th><th>Category</th><th>Sub</th><th class="num">Issued/mo</th><th class="num">Redeemed/mo</th><th class="num">Sort</th><th>Active</th></tr></thead>
+        <tbody id="cats"></tbody>
+      </table>
+      <div style="margin-top:14px"><button class="btn btn-primary" id="saveCats">Save categories</button></div>
+      <div id="catsBanner" class="banner"></div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+(function () {
+  var sb, cfg = null, cats = [];
+  // field def: key, label, kind (usd=cents<->$, pct, int)
+  var FIELDS = [
+    ['activation_bonus_regular_cents','Regular activation bonus','usd'],
+    ['activation_bonus_founding_cents','Founding activation bonus','usd'],
+    ['founding_speed_bonus_cents','Founding speed bonus','usd'],
+    ['founding_speed_count','Speed bonus — # activations','int'],
+    ['founding_speed_window_months','Speed bonus — window (months)','int'],
+    ['transaction_fee_pct','Transaction fee % (per side)','pct'],
+    ['direct_pct_regular','Direct override % (regular)','pct'],
+    ['direct_pct_founding','Direct override % (founding)','pct'],
+    ['g1_pct','G1 override %','pct'],
+    ['g2_pct','G2 override %','pct'],
+    ['g3_pct','G3 override %','pct'],
+    ['monthly_fee_free_months','Monthly fee — free months','int']
+  ];
+  function $(id){ return document.getElementById(id); }
+  function banner(el,k,m){ el.className='banner '+k; el.textContent=m; }
+
+  function renderRates(){
+    $('rates').innerHTML = FIELDS.map(function(f){
+      var key=f[0], lbl=f[1], kind=f[2], raw=cfg[key];
+      var val = kind==='usd' ? (Number(raw||0)/100) : Number(raw||0);
+      var pre = kind==='usd' ? '$' : '', post = kind==='pct' ? '%' : '';
+      return '<label>'+lbl+
+        '<div class="inp">'+(pre?'<span>'+pre+'</span>':'')+
+        '<input type="number" min="0" step="'+(kind==='pct'?'0.001':kind==='usd'?'1':'1')+'" id="r-'+key+'" value="'+val+'">'+
+        (post?'<span>'+post+'</span>':'')+'</div></label>';
+    }).join('');
+  }
+  function renderCats(){
+    $('cats').innerHTML = cats.map(function(c,i){
+      return '<tr>'+
+        '<td><input id="c-icon-'+i+'" value="'+(c.icon||'')+'" style="width:48px;text-align:center"></td>'+
+        '<td><input id="c-name-'+i+'" value="'+(c.name||'').replace(/"/g,'&quot;')+'"></td>'+
+        '<td><input id="c-sub-'+i+'" value="'+(c.sub||'').replace(/"/g,'&quot;')+'"></td>'+
+        '<td><input class="num" type="number" min="0" id="c-iss-'+i+'" value="'+(c.lymx_issued||0)+'"></td>'+
+        '<td><input class="num" type="number" min="0" id="c-red-'+i+'" value="'+(c.lymx_redeemed||0)+'"></td>'+
+        '<td><input class="num" type="number" min="0" id="c-sort-'+i+'" value="'+(c.sort_order||0)+'" style="width:56px"></td>'+
+        '<td style="text-align:center"><input type="checkbox" id="c-act-'+i+'" '+(c.active?'checked':'')+'></td>'+
+      '</tr>';
+    }).join('');
+  }
+
+  async function load(){
+    if (!window.LYMX || !window.LYMX.getSession) return;
+    var s = await window.LYMX.getSession(); if (!s) return;
+    sb = window.LYMX.sb;
+    var cr = await sb.from('commission_rate_config').select('*').eq('is_current', true).limit(1);
+    if (cr.error || !cr.data || !cr.data.length){ banner($('ratesBanner'),'err','Could not load current config: '+(cr.error&&cr.error.message||'no current row')); return; }
+    cfg = cr.data[0]; renderRates();
+    var cc = await sb.from('category_benchmarks').select('*').order('sort_order');
+    if (!cc.error && cc.data){ cats = cc.data; renderCats(); }
+  }
+
+  $('saveRates').addEventListener('click', async function(){
+    if (!cfg) return;
+    var patch = {}; var bad=null;
+    FIELDS.forEach(function(f){
+      var v = parseFloat($('r-'+f[0]).value);
+      if (isNaN(v) || v<0) { bad=f[1]; return; }
+      if (f[2]==='pct' && v>100) { bad=f[1]+' (must be ≤ 100)'; return; }
+      patch[f[0]] = f[2]==='usd' ? Math.round(v*100) : (f[2]==='int' ? Math.round(v) : v);
+    });
+    if (bad){ banner($('ratesBanner'),'err','Invalid value: '+bad); return; }
+    patch.notes = $('cfg-notes').value || cfg.notes;
+    $('saveRates').disabled=true; banner($('ratesBanner'),'info','Saving…');
+    var r = await sb.from('commission_rate_config').update(patch).eq('id', cfg.id);
+    $('saveRates').disabled=false;
+    if (r.error){ banner($('ratesBanner'),'err','Save failed: '+r.error.message); }
+    else { Object.assign(cfg,patch); banner($('ratesBanner'),'ok','Rates saved. New accruals + projector/comp pages use these now.'); }
+  });
+
+  $('saveCats').addEventListener('click', async function(){
+    if (!cats.length) return;
+    $('saveCats').disabled=true; banner($('catsBanner'),'info','Saving…');
+    var ok=0, fail=0, err='';
+    for (var i=0;i<cats.length;i++){
+      var patch = {
+        icon: $('c-icon-'+i).value, name: $('c-name-'+i).value, sub: $('c-sub-'+i).value,
+        lymx_issued: Math.max(0, parseInt($('c-iss-'+i).value)||0),
+        lymx_redeemed: Math.max(0, parseInt($('c-red-'+i).value)||0),
+        sort_order: Math.max(0, parseInt($('c-sort-'+i).value)||0),
+        active: $('c-act-'+i).checked, updated_at: new Date().toISOString()
+      };
+      var r = await sb.from('category_benchmarks').update(patch).eq('key', cats[i].key);
+      if (r.error){ fail++; err=r.error.message; } else { ok++; Object.assign(cats[i],patch); }
+    }
+    $('saveCats').disabled=false;
+    if (fail) banner($('catsBanner'),'err','Saved '+ok+', failed '+fail+'. '+err);
+    else banner($('catsBanner'),'ok','Saved '+ok+' categories. The projector picks these up on next open.');
+  });
+
+  load();
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

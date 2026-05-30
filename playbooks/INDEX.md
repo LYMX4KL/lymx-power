@@ -74,6 +74,7 @@
 | Slug | Title | Role | Feature | Status |
 |---|---|---|---|---|
 | [hr-onboarding-end-to-end](hr-onboarding-end-to-end.md) | Onboard a new staff member end-to-end (offer → first day) | Admin / HR | manage_hr_onboarding | ✅ Verified 2026-05-25 |
+| [edit-commission-rates](edit-commission-rates.md) | Edit commission rates & projector categories (no code) | Admin | manage_hr_onboarding | ✅ Shipped 2026-05-30 |
 | [pay-hourly-staff-today](pay-hourly-staff-today.md) | Pay hourly staff today (onboard → Excel timesheet → payroll) | Admin / HR | manage_hr_onboarding | ✅ Shipped 2026-05-30 |
 
 ## Admin

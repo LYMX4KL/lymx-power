@@ -317,6 +317,7 @@
       { href: 'admin-business-transfer.html', icon: '\u{1F504}', label: 'Transfer ownership' },
       { href: 'admin-customers.html',    icon: '\u{1F465}', label: 'Customers' },
       { href: 'admin-partners.html',     icon: '\u{1F91D}', label: 'Partners' },
+      { href: 'admin-commission-config.html', icon: '\u{2699}\uFE0F', label: 'Commission Config' },
       { href: 'admin-promos.html',       icon: '\u{1F381}', label: 'Promos' },
       { href: 'admin-approvals.html',    icon: '✅',    label: 'Approvals' },
       { href: 'admin-reviews.html',      icon: '⭐',    label: 'Review Verification' },
