@@ -78,7 +78,7 @@
   .err-banner.show{display:block}
 </style>
 </head>
-<body data-role-required="admin" data-feature-key="admin_manage_permissions">
+<body data-role-required="perm:admin_manage_permissions" data-feature-key="admin_manage_permissions">
 
 <script src="lymx-config.js"></script>
 <script src="lymx-sidebar.js" defer></script>
@@ -323,6 +323,11 @@
              +     '<div class="eh-roles">' + selectedUser.roles.map(function(r){
                      return '<span class="role-pill' + (r === 'admin' ? ' admin' : '') + '">' + escapeHtml(r) + '</span>';
                    }).join('') + '</div>'
+             +     '<div class="eh-bulk" style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">'
+             +       '<button type="button" id="bulkAll" class="vs-btn">Grant all</button>'
+             +       '<button type="button" id="bulkExHr" class="vs-btn">Grant all except HR</button>'
+             +       '<button type="button" id="bulkReset" class="vs-btn">Reset all to default</button>'
+             +     '</div>'
              +   '</div>'
              + '</div>';
 
@@ -367,6 +372,40 @@
         b.addEventListener('click', function(){ setPermission(key, b.dataset.set); });
       });
     });
+    var bA=$('bulkAll'), bE=$('bulkExHr'), bR=$('bulkReset');
+    if(bA) bA.addEventListener('click', function(){ bulkSet('all'); });
+    if(bE) bE.addEventListener('click', function(){ bulkSet('except_hr'); });
+    if(bR) bR.addEventListener('click', function(){ bulkSet('reset'); });
+  }
+
+  // Bulk apply for the selected member. 'all' grants every feature; 'except_hr'
+  // grants everything but the hr_admin key (which gates the whole HR module) -
+  // the one-click way to onboard a non-admin like Dave to all-except-HR;
+  // 'reset' clears every explicit override back to role defaults.
+  async function bulkSet(mode){
+    if(!selectedUser) return;
+    var uid=selectedUser.user_id;
+    var who=selectedUser.display_name||selectedUser.email||uid;
+    var label = mode==='all' ? 'grant ALL features'
+              : (mode==='except_hr' ? 'grant ALL features EXCEPT the HR module' : 'reset ALL overrides to role defaults');
+    if(!window.confirm('For '+who+':\n\n'+label+'?')) return;
+    showToast('Applying...');
+    var ops=[];
+    if(mode==='reset'){
+      Object.keys(userPerms||{}).forEach(function(k){ ops.push(sb.rpc('revoke_permission',{p_user_id:uid,p_feature_key:k})); });
+    } else {
+      features.forEach(function(fe){
+        if(mode==='except_hr' && fe.feature_key==='hr_admin') return;
+        ops.push(sb.rpc('grant_permission',{p_user_id:uid,p_feature_key:fe.feature_key,p_value:true}));
+      });
+    }
+    var res=await Promise.all(ops);
+    var bad=res.find(function(r){ return r && r.error; });
+    if(bad){ showError('Bulk update had an error: '+bad.error.message); }
+    var up=await sb.from('user_permissions').select('perms').eq('user_id',uid).maybeSingle();
+    userPerms=(up.data&&up.data.perms)||{};
+    renderEditor();
+    showToast(mode==='reset'?'Reset to defaults':'Applied');
   }
 
   async function setPermission(featKey, mode){

@@ -65,7 +65,7 @@
   .err{color:var(--danger);font-size:13px;margin-top:8px}
 </style>
 </head>
-<body data-role-required="admin">
+<body data-role-required="perm:hr_admin">
 <script src="lymx-config.js"></script>
 <script src="lymx-app.js"></script>
 <script src="lymx-nav.js" defer></script>
@@ -215,7 +215,7 @@
 <script>
 // 2026-05-27 — admin/HR timesheet editor. RLS policy tsl_hr_write (migration 084
 // line 384) lets am_i_hr_or_admin() OR am_i_cfo() INSERT/UPDATE/DELETE on
-// timesheet_lines. Page is gated by data-role-required="admin" + lymx-role-gate.js.
+// timesheet_lines. Page is gated by data-role-required="perm:hr_admin" + lymx-role-gate.js.
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
 function banner(t, m) {
