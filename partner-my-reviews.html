@@ -53,6 +53,9 @@
 
 <script>
 (async function () {
+  // 2026-05-30 (S2a) - outer try/catch so an unexpected throw fails VISIBLY instead
+  // of leaving the spinner stuck forever ("My ... stuck on Loading").
+  try {
   while (!window.LYMX_CONFIG || !window.LYMX || !window.LYMX.getSession) await new Promise(function (r) { setTimeout(r, 100); });
   var ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
   var URL_ = window.LYMX_CONFIG.SUPABASE_URL;
@@ -71,7 +74,7 @@
   if (!pr.ok) { listEl.innerHTML = '<div class="empty">Could not load your partner record.</div>'; return; }
   var pRows = await pr.json();
   if (!Array.isArray(pRows) || !pRows.length) {
-    listEl.innerHTML = '<div class="empty">You don\\'t have a partner account. <a href="partner-signup.html">Apply here</a>.</div>';
+    listEl.innerHTML = '<div class="empty">You don\'t have a partner account. <a href="partner-signup.html">Apply here</a>.</div>';
     return;
   }
   var partnerId = pRows[0].id;
@@ -92,7 +95,7 @@
   // Pull all reviews for the recruited businesses (matched by slug)
   var slugs = bizRows.map(function (b) { return b.slug; }).filter(Boolean);
   if (!slugs.length) {
-    listEl.innerHTML = '<div class="empty">Your recruited businesses don\\'t have public slugs yet.</div>';
+    listEl.innerHTML = '<div class="empty">Your recruited businesses don\'t have public slugs yet.</div>';
     return;
   }
   var rr = await fetch(URL_ + "/rest/v1/reviews?business_slug=in.(" + slugs.map(encodeURIComponent).join(",") + ")&select=id,business_slug,business_name,rating,body,has_photo,created_at,reviewer_user_id&order=created_at.desc&limit=500", { headers: H });
@@ -134,6 +137,11 @@
       + reviewsHtml
       + '</div>';
   }).join("");
+  } catch (e) {
+    console.warn("[partner-my-reviews] load failed", e);
+    var le = document.getElementById("list");
+    if (le) le.innerHTML = '<div class="empty">Couldn\'t load your reviews right now. Please refresh \u2014 if it keeps happening, let us know.</div>';
+  }
 })();
 </script>
 

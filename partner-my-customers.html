@@ -84,18 +84,20 @@
     return;
   }
 
-  // Hydrate display_names (best-effort) by joining to customers table on user_id
-  var ids = Array.from(new Set(rows.map(function (r) { return r.invitee_user_id; }))).filter(Boolean);
+  // 2026-05-30 (S2a) - resolve invitee names via the canonical resolver (mig 136).
+  // RLS blocks a partner from reading invitees' customers rows directly, which is
+  // why names showed as "customer …<id>". my_referral_invitee_names() is a
+  // SECURITY DEFINER RPC scoped to the caller's own referrals; it returns the
+  // canonical full_name (auth metadata, populated from hiring by mig 134) with
+  // customers.display_name then email as fallbacks.
   var nameMap = {};
-  if (ids.length) {
-    try {
-      var cr = await fetch(URL_ + "/rest/v1/customers?user_id=in.(" + ids.join(",") + ")&select=user_id,display_name", { headers: H });
-      if (cr.ok) {
-        var crows = await cr.json();
-        crows.forEach(function (c) { nameMap[c.user_id] = c.display_name; });
-      }
-    } catch (e) { console.warn("[partner-my-customers] name hydrate", e); }
-  }
+  try {
+    var nr = await fetch(URL_ + "/rest/v1/rpc/my_referral_invitee_names", { method: "POST", headers: H, body: "{}" });
+    if (nr.ok) {
+      var nrows = await nr.json();
+      (nrows || []).forEach(function (c) { nameMap[c.invitee_user_id] = c.full_name; });
+    }
+  } catch (e) { console.warn("[partner-my-customers] name resolve", e); }
 
   var thead = '<thead><tr><th>Customer</th><th>Status</th><th>Bonus</th><th>Source</th><th>When</th></tr></thead>';
   var tbody = rows.map(function (r) {
