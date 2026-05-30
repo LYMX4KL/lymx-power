@@ -349,6 +349,16 @@
         children: (g1 || []).map(p => nodeFor(p, 'g1')),
       };
 
+      // Real per-generation income from the engine ledger (own rows; RLS-readable) —
+      // gen 0 = my production, 1/2/3 = G1/G2/G3. This replaces the client-side estimate
+      // for the headline per-layer numbers (Rule 4: one source of truth).
+      try {
+        const cr = await sb.from('partner_commissions').select('generation, amount, payout_kind').eq('partner_id', me.id);
+        const rg = {0:{c:0,l:0},1:{c:0,l:0},2:{c:0,l:0},3:{c:0,l:0}};
+        (cr.data||[]).forEach(function(r){ var g=(r.generation||0); if(!rg[g]) rg[g]={c:0,l:0}; if(r.payout_kind==='lymx') rg[g].l+=Number(r.amount||0); else rg[g].c+=Number(r.amount||0); });
+        window.REAL_GEN = rg;
+      } catch(e){ console.warn('[partner-tree] real income fetch failed', e); }
+
       // Re-render with the real tree
       if (typeof renderTree === 'function') renderTree();
     } catch (e) { console.warn('[partner-tree] real-data hydration failed', e); }
@@ -456,6 +466,22 @@
     document.getElementById('g-g2-inc').textContent = '$' + overrideToMe.g2.toLocaleString();
     document.getElementById('g-g3-ct').firstChild.nodeValue = counts.g3;
     document.getElementById('g-g3-inc').textContent = '$' + overrideToMe.g3.toLocaleString();
+
+    // REAL ledger override — replace the modeled per-generation income with the
+    // partner's actual earned commissions by generation (cash; LYMX shown in the sub).
+    if (window.REAL_GEN) {
+      var rg = window.REAL_GEN, usd = function(n){ return '$' + Math.round(n||0).toLocaleString(); };
+      document.getElementById('g-prod-inc').textContent = usd(rg[0].c);
+      document.getElementById('g-g1-inc').textContent = usd(rg[1].c);
+      document.getElementById('g-g2-inc').textContent = usd(rg[2].c);
+      document.getElementById('g-g3-inc').textContent = usd(rg[3].c);
+      var realTotal = rg[0].c + rg[1].c + rg[2].c + rg[3].c;
+      var mInc = document.getElementById('m-income');
+      mInc.textContent = usd(realTotal);
+      if (mInc.previousElementSibling) mInc.previousElementSibling.textContent = 'Total cash earned (real)';
+      var lymxTotal = rg[0].l + rg[1].l + rg[2].l + rg[3].l;
+      if (mInc.nextElementSibling) mInc.nextElementSibling.textContent = lymxTotal ? ('Production + G1/G2/G3 · +' + Math.round(lymxTotal).toLocaleString() + ' LYMX') : 'Production + all 3 generations (real ledger)';
+    }
 
     // Top contributors
     const flat = [];
