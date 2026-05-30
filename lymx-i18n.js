@@ -223,12 +223,32 @@
     // thread header. Dock it INSIDE .nav-cta (header) when one exists so it lives
     // inline with the other nav buttons and can never overlap content. Pages without
     // a header (login, signup) fall back to the legacy fixed-positioned floater.
-    var navCta = document.querySelector('header .nav-cta, header[class*="nav"] .nav-cta');
-    if (navCta) {
+    // 2026-05-30 (S2c) - dock the chip into the nav so it never overlaps. Broadened
+    // the target (header .nav-cta -> any .nav-cta / right cluster) AND added a retry:
+    // lymx-nav.js injects the header AFTER this runs on some pages (profile.html),
+    // so on first paint there is no .nav-cta and the chip floated fixed at right:220px,
+    // overlapping nav elements (profile.html, partner-social-kit tickets). We now
+    // retry for a short window and dock as soon as the nav appears, dropping the
+    // floating positioning so it can never overlap.
+    function _findLangDock() {
+      return document.querySelector('header .nav-cta, .nav-cta, header[class*="nav"] .nav-right, header[class*="nav"] .nav-actions');
+    }
+    function _dockInto(d) {
       wrap.classList.add('lymx-lang-chip-docked');
-      navCta.insertBefore(wrap, navCta.firstChild);
+      d.insertBefore(wrap, d.firstChild);
+    }
+    var navCta = _findLangDock();
+    if (navCta) {
+      _dockInto(navCta);
     } else {
-      document.body.appendChild(wrap);
+      document.body.appendChild(wrap); // float as fallback (e.g. login/signup with no nav)
+      var _dockTries = 0;
+      var _dockIv = setInterval(function () {
+        _dockTries++;
+        var d = _findLangDock();
+        if (d) { clearInterval(_dockIv); _dockInto(d); }
+        else if (_dockTries > 25) { clearInterval(_dockIv); } // ~5s: keep float fallback
+      }, 200);
     }
 
     var menu = document.createElement('div');

@@ -123,22 +123,41 @@
 <meta name="apple-mobile-web-app-title" content="LYMX" />
 <meta name="mobile-web-app-capable" content="yes" />
 </head>
-<body class="mode-storefront" data-playbook-slug="business-onboarding-02-signup">
+<body class="mode-storefront">
 
 <header class="nav">
   <div class="nav-inner">
-    <a class='brand' href='/'>
-      <span class="logo">L</span>
-      <span>LYMX</span>
+    <a class="brand" href="index.html">
+      <img src="logo.png" alt="LYMX logo" style="height:44px;width:auto;display:block" />
     </a>
-    <a class='nav-back' href='/'>← Back to home</a>
+    <a class="nav-back" href="index.html">← Back to home</a>
   </div>
 </header>
 
 <main class="page">
 
+  <!-- 2026-05-28 #7a415eb3 — Rae: "When someone who's already registered their
+       business clicks 'Join the Network Now,' they're taken to the business
+       registration form again. Instead, users who have completed registration
+       should see a confirmation page." Added an early panel that fires when the
+       signed-in user already has a public.businesses row as owner. The panel
+       replaces the hero+form so the user doesn't re-fill the entire signup.
+       Default is hidden; the script at the bottom of this page flips it on
+       and hides #biz-form when the businesses query returns >=1 row. -->
+  <section class="hero" id="alreadyRegisteredPanel" style="display:none;text-align:center">
+    <div style="font-size:64px;margin-bottom:8px">✅</div>
+    <h1>You're already on LYMX</h1>
+    <p style="max-width:540px;margin:0 auto 18px">We found a business registered under your account. Pick up where you left off — no need to fill the form again.</p>
+    <div id="alreadyRegisteredBizList" style="display:flex;flex-direction:column;gap:10px;max-width:520px;margin:0 auto 20px"></div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <a id="alreadyOpenBiz" class="btn-primary" href="biz-dashboard.html" style="background:#0e1116;color:#fff;padding:12px 22px;border-radius:10px;font-weight:800;text-decoration:none;display:inline-block">Open my Business dashboard →</a>
+      <button type="button" id="alreadyAddAnother" class="btn-secondary" style="background:#fff;border:1px solid #e6e8ec;padding:12px 22px;border-radius:10px;font-weight:700;cursor:pointer">Add another business</button>
+    </div>
+    <div style="margin-top:14px;font-size:13px;color:#5b6472">Operating multiple locations? Click "Add another business" to sign up an additional one under the same account.</div>
+  </section>
+
   <!-- Hero -->
-  <section class="hero">
+  <section class="hero" id="signupHero">
     <h1>Sign up your business</h1>
     <p>Add your business to the LYMX network in about 3 minutes. We'll review and approve within 1 business day.</p>
     <div class="perks">
@@ -149,8 +168,6 @@
   </section>
 
   <form id="biz-form" novalidate>
-  <!-- Migration 093: invite banner (populated by JS if ?invite_token= is valid) -->
-  <div id="inviteBanner" style="display:none;background:linear-gradient(135deg,#e6f1ff,#cfe3ff);border:1px solid #a8c8f0;border-radius:11px;padding:14px 18px;margin-bottom:18px;color:#0e1116;font-size:14px"></div>
 
     <!-- 1. Mode selector -->
     <section class="card">
@@ -193,28 +210,8 @@
         </div>
         <div class="field">
           <label>Create password <span class="req">*</span></label>
-          <!-- 2026-05-26 #d854fdca - eye toggle so business owners can verify
-               their typed password before submit. Same pattern as welcome.html
-               line 156-168 (shipped 2026-05-19 #68fa5d98). Consistency across
-               every signup surface. -->
-          <div style="position:relative">
-            <input class="input" id="ownerPassword" name="owner_password" type="password" required minlength="10" autocomplete="new-password" style="padding-right:42px">
-            <button type="button" id="ownerPwToggle" aria-label="Show password" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;font-size:18px;padding:4px">&#x1F441;&#xFE0F;</button>
-          </div>
+          <input class="input" name="owner_password" type="password" required minlength="10" autocomplete="new-password">
           <div class="helper">10 characters minimum.</div>
-          <script>
-            (function () {
-              var t = document.getElementById('ownerPwToggle');
-              if (!t) return;
-              t.addEventListener('click', function () {
-                var el = document.getElementById('ownerPassword');
-                var hidden = el.type === 'password';
-                el.type = hidden ? 'text' : 'password';
-                this.innerHTML = hidden ? '&#x1F648;' : '&#x1F441;&#xFE0F;';
-                this.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
-              });
-            })();
-          </script>
         </div>
       </div>
     </section>
@@ -413,7 +410,7 @@
     <section class="card">
       <label class="check">
         <input type="checkbox" id="tos" required>
-        <span>I'm authorized to sign on behalf of the business and I accept the <a href='/biz-tos' target='_blank'>Business Terms</a> and <a href='/privacy' target='_blank'>Privacy Policy</a>.</span>
+        <span>I'm authorized to sign on behalf of the business and I accept the <a href="biz-tos.html" target="_blank">Business Terms</a> and <a href="privacy.html" target="_blank">Privacy Policy</a>.</span>
       </label>
       <div class="cta-row">
         <button type="submit" class="cta" id="submit">Submit application</button>
@@ -439,13 +436,13 @@
         <div style="flex:1;min-width:200px">
           <div style="font-weight:800;font-size:17px;color:#0e1116;margin-bottom:4px">Want to chat with a real human first?</div>
           <div style="font-size:14px;color:#1a1f27;margin-bottom:14px;line-height:1.5">Book a free 30-minute 1-on-1 with <strong>Rachel</strong>, our onboarding lead. She'll walk you through everything live and answer any questions before payouts go live — no pressure, no upsell.</div>
-          <a href='/book-onboarding-call' style='display:inline-flex;align-items:center;gap:8px;padding:12px 22px;background:#0e1116;color:#fff;border-radius:10px;font-weight:700;font-size:14.5px;text-decoration:none'>Book a 1-on-1 onboarding call →</a>
+          <a href="book-onboarding-call.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;background:#0e1116;color:#fff;border-radius:10px;font-weight:700;font-size:14.5px;text-decoration:none">Book a 1-on-1 onboarding call →</a>
         </div>
       </div>
     </div>
   </section>
 
-  <p class="footer">© LYMX · <a href='/biz-faq'>Business FAQ</a> · <a href="mailto:hello@getlymx.com">Contact</a></p>
+  <p class="footer">© LYMX · <a href="biz-faq.html">Business FAQ</a> · <a href="mailto:hello@getlymx.com">Contact</a></p>
 </main>
 
 <script src="lymx-config.js"></script>
@@ -456,46 +453,6 @@
 // Use the shared window.LYMX_CONFIG loaded by lymx-config.js above — that
 // way rotating the anon key is a single-file change.
 const LYMX_CONFIG = window.LYMX_CONFIG || { SUPABASE_URL: '', SUPABASE_ANON_KEY: '' };
-
-// 2026-05-27 #20 — existing-user attach. If the visitor is already signed in
-// (an existing customer or partner), let them attach a business to their
-// account instead of creating a second one. We pass their JWT to the
-// business-signup EF, prefill + lock their email, and drop the password field.
-let __bizUserToken = null;
-(async function detectSignedInOwner(){
-  try {
-    let tk = null, email = null;
-    if (window.LYMX && typeof window.LYMX.getSession === 'function') {
-      const sess = await window.LYMX.getSession();
-      if (sess && sess.access_token) { tk = sess.access_token; email = sess.user && sess.user.email; }
-    }
-    if (!tk) {
-      const m = (LYMX_CONFIG.SUPABASE_URL || '').match(/https:\/\/([^.]+)\.supabase\.co/i);
-      const ref = m ? m[1] : null;
-      if (ref) {
-        const raw = localStorage.getItem('sb-' + ref + '-auth-token');
-        if (raw) {
-          const o = JSON.parse(raw);
-          tk = o.access_token || (o.currentSession && o.currentSession.access_token);
-          if (tk && !email) { try { const pl = JSON.parse(atob((tk.split('.')[1]||'').replace(/-/g,'+').replace(/_/g,'/'))); email = pl.email; } catch(_e){ console.warn('[biz-signup] jwt email decode (display-only) failed', _e); } }
-        }
-      }
-    }
-    if (!tk) return; // not signed in — normal new-account flow
-    __bizUserToken = tk;
-    const emailEl = document.querySelector('[name="owner_email"]');
-    if (emailEl) { if (email) emailEl.value = email; emailEl.readOnly = true; emailEl.style.background = '#f3f4f6'; emailEl.removeAttribute('required'); }
-    const pwEl = document.getElementById('ownerPassword');
-    if (pwEl) { pwEl.required = false; pwEl.removeAttribute('required'); const fw = pwEl.closest('.field'); if (fw) fw.style.display = 'none'; }
-    const ownerH2 = Array.from(document.querySelectorAll('section.card h2')).find(h => /owner account/i.test(h.textContent || ''));
-    if (ownerH2) {
-      const note = document.createElement('div');
-      note.style.cssText = 'background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44;border-radius:9px;padding:10px 13px;font-size:13px;margin:8px 0 4px';
-      note.textContent = "You're signed in" + (email ? ' as ' + email : '') + ' — this business will attach to your existing LYMX account. No new password needed.';
-      ownerH2.parentNode.insertBefore(note, ownerH2.nextSibling);
-    }
-  } catch (e) { console.warn('[biz-signup] signed-in detect failed', e); }
-})();
 
 // Mode toggle ───────────────────────────────────────────────────────────
 const body = document.body;
@@ -605,8 +562,6 @@ function buildPayload(form){
     contact_email:  (fd.get('contact_email')  || '').trim(),
     contact_phone:  (fd.get('contact_phone')  || '').trim() || null,
     partner_referral_code: (fd.get('partner_referral_code') || '').trim() || undefined,
-    // Migration 093: pass invite_token through if biz-signup.html was opened with ?invite_token=
-    invite_token: (window.__LYMX_INVITE_TOKEN || null),
     // 2026-05-24 audit additions — legal/tax + ops
     intake: {
       entity_type:             (fd.get('entity_type')             || '').trim() || null,
@@ -648,11 +603,8 @@ function buildPayload(form){
 
 // Client-side validation ────────────────────────────────────────────────
 function validatePayload(p){
-  if (!__bizUserToken) {
-    // Only require new-account credentials when the visitor is NOT already signed in (#20).
-    if (!p.owner_email || !/.+@.+\..+/.test(p.owner_email)) return 'Please enter a valid email.';
-    if (!p.owner_password || p.owner_password.length < 10) return 'Password must be at least 10 characters.';
-  }
+  if (!p.owner_email || !/.+@.+\..+/.test(p.owner_email)) return 'Please enter a valid email.';
+  if (!p.owner_password || p.owner_password.length < 10) return 'Password must be at least 10 characters.';
   if (!p.legal_name)    return 'Legal business name is required.';
   if (!p.display_name)  return 'Display name is required.';
   if (!p.contact_email) return 'Business contact email is required.';
@@ -682,68 +634,6 @@ function validatePayload(p){
   return null;
 }
 
-// ── Migration 093 — invite-token prefill ──────────────────────────────
-// If biz-signup.html?invite_token=… is opened, validate via RPC and prefill
-// the form fields with whatever the inviter knew. The RPC also marks the
-// invite as 'clicked' (first call only).
-(async function consumeInviteToken(){
-  try {
-    const params = new URLSearchParams(location.search);
-    const token = (params.get('invite_token') || '').trim();
-    if (!token || token.length < 16) return;
-    const r = await fetch(`${LYMX_CONFIG.SUPABASE_URL}/rest/v1/rpc/fn_validate_invitation_token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': LYMX_CONFIG.SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + LYMX_CONFIG.SUPABASE_ANON_KEY
-      },
-      body: JSON.stringify({ p_token: token })
-    });
-    if (!r.ok) return;
-    const rows = await r.json();
-    const meta = Array.isArray(rows) ? rows[0] : rows;
-    if (!meta || !meta.valid) {
-      // Surface a friendly note when token is expired/revoked/used
-      if (meta && meta.reason && meta.reason !== 'not_found') {
-        const b = document.getElementById('inviteBanner');
-        if (b) {
-          b.style.display = 'block';
-          b.style.background = 'linear-gradient(135deg,#fff4d6,#ffe9a8)';
-          b.style.borderColor = '#d4a017';
-          b.style.color = '#5a3e00';
-          const niceReason = { expired:'expired', revoked:'been revoked', already_used:'already been used', malformed_token:'malformed' }[meta.reason] || meta.reason;
-          b.textContent = '⚠ This invite link has ' + niceReason + '. You can still fill out the form below to sign up.';
-        }
-      }
-      return;
-    }
-    // Stash for inclusion in payload
-    window.__LYMX_INVITE_TOKEN = token;
-    // Show success banner
-    const b = document.getElementById('inviteBanner');
-    if (b) {
-      b.style.display = 'block';
-      const inviterTxt = meta.has_partner ? 'a LYMX Partner' : 'the LYMX team';
-      b.innerHTML = '<strong>You were invited by ' + inviterTxt + '.</strong> We\'ve pre-filled what we know — finish the form below to activate ' + (meta.prospect_business_name || 'your business') + ' on LYMX.';
-    }
-    // Prefill form fields (only if currently empty)
-    function setIfEmpty(name, val){
-      if (!val) return;
-      const el = document.querySelector('[name="' + name + '"]');
-      if (el && !el.value) el.value = val;
-    }
-    setIfEmpty('owner_name',      meta.prospect_owner_name);
-    setIfEmpty('owner_email',     meta.prospect_contact_email);
-    setIfEmpty('contact_email',   meta.prospect_contact_email);
-    setIfEmpty('contact_phone',   meta.prospect_contact_phone);
-    setIfEmpty('display_name',    meta.prospect_business_name);
-    setIfEmpty('legal_name',      meta.prospect_business_name);
-  } catch (e) {
-    console.warn('[biz-signup] invite_token consume failed', e);
-  }
-})();
-
 // Submit ───────────────────────────────────────────────────────────────
 const form = document.getElementById('biz-form');
 const submitBtn = document.getElementById('submit');
@@ -771,24 +661,14 @@ form.addEventListener('submit', async (e) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // #20 — when signed in, send the user's JWT so the EF attaches the
-        // business to their existing account; apikey stays the anon key.
-        'Authorization': `Bearer ${__bizUserToken || LYMX_CONFIG.SUPABASE_ANON_KEY}`,
+        'Authorization': `Bearer ${LYMX_CONFIG.SUPABASE_ANON_KEY}`,
         'apikey': LYMX_CONFIG.SUPABASE_ANON_KEY
       },
       body: JSON.stringify(payload)
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok){
-      // 2026-05-27 #eb909f5b — translate the "email already exists" raw EF
-      // error into actionable copy. Most testers hit this because they already
-      // created a customer or partner account with the same email earlier,
-      // not because biz signup is broken. Tell them what to do next.
-      let msg = data.error || `Sign-up failed (${res.status}). Please check your details and try again.`;
-      if (/already.{0,5}exist|already.{0,5}registered|duplicate.{0,5}key|already.{0,5}user/i.test(msg)) {
-        msg = "This email already has a LYMX account (most likely from a customer or partner signup). Sign in first at /login.html, then come back to /biz-signup.html — your business application will attach to your existing account. Or use a different email if this is a new Business with separate ownership.";
-      }
-      showStatus(msg);
+      showStatus(data.error || `Sign-up failed (${res.status}). Please check your details and try again.`);
       submitBtn.disabled = false;
       submitBtn.textContent = 'Submit application';
       return;
@@ -814,6 +694,5 @@ form.addEventListener('submit', async (e) => {
 </script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
-<script src="lymx-playbook-help.js" defer></script>
 </body>
 </html>
