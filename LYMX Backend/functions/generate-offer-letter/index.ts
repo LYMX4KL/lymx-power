@@ -128,6 +128,8 @@ serve(async (req: Request) => {
         manager_name: body.manager_name,
         manager_title: body.manager_title || "Founder & CEO",
         custom_notes_md: body.custom_notes_md || null,
+        duties_md: body.duties_md || null,
+        benefit_overrides: (body.benefit_overrides && typeof body.benefit_overrides === "object") ? body.benefit_overrides : {},
         policy,
         today,
     });
@@ -157,6 +159,8 @@ serve(async (req: Request) => {
         work_mode: body.work_mode || "hybrid",
         benefits_policy_id: policy.id,
         custom_notes_md: body.custom_notes_md || null,
+        duties_md: body.duties_md || null,
+        benefit_overrides: (body.benefit_overrides && typeof body.benefit_overrides === "object") ? body.benefit_overrides : {},
         offer_letter_html: html,
         status: existing?.status === "sent" ? "sent" : "draft",
     };
@@ -220,6 +224,8 @@ function renderOfferLetter(p: {
     manager_name: string;
     manager_title: string;
     custom_notes_md: string | null;
+    duties_md: string | null;
+    benefit_overrides: Record<string, any>;
     policy: Record<string, any>;
     today: string;
 }): string {
@@ -232,6 +238,14 @@ function renderOfferLetter(p: {
     const ptoDays = p.employment_type === "full_time" ? p.policy.pto_days_full_time : Math.round((p.policy.pto_days_full_time || 0) / 2);
     const sickDays = p.policy.sick_days_full_time || 5;
     const holidays: string[] = Array.isArray(p.policy.paid_holidays) ? p.policy.paid_holidays : [];
+    // 2026-05-30 (S1d) per-offer benefit overrides — overseas hires drop US benefits.
+    const ov = p.benefit_overrides || {};
+    const effPto = (ov.pto_days != null) ? ov.pto_days : ptoDays;
+    const effSick = (ov.sick_days != null) ? ov.sick_days : sickDays;
+    const effWait = (ov.eligibility_wait_days != null) ? ov.eligibility_wait_days : p.policy.eligibility_wait_days;
+    const effHealth = (typeof ov.offers_health === "boolean") ? ov.offers_health : p.policy.offers_health;
+    const effRetire = (typeof ov.offers_retirement === "boolean") ? ov.offers_retirement : p.policy.offers_retirement;
+    const showHolidays = ov.hide_holidays !== true;
     const holidayList = holidays.length
         ? '<ul style="margin:.25rem 0 .75rem 1.2rem;padding:0">' + holidays.map(h => `<li>${esc(h)}</li>`).join("") + "</ul>"
         : '<p style="margin:0;color:#6B7280;font-style:italic">No paid holidays defined yet.</p>';
@@ -285,24 +299,25 @@ function renderOfferLetter(p: {
   <tr><td>Reports to</td><td>${esc(p.manager_name)} (${esc(p.manager_title)})</td></tr>
 </table>
 
+${p.duties_md ? `<h2>Key Responsibilities</h2><div class="notes-box">${esc(p.duties_md).replace(/\n/g, "<br>")}</div>` : ""}
+
 <h2>Paid Time Off (PTO)</h2>
 <table>
-  <tr><td>Vacation / PTO</td><td>${ptoDays} days per year (${esc((p.policy.pto_accrual_method || "lump_annual").replace(/_/g, " "))} accrual)</td></tr>
-  <tr><td>Sick leave</td><td>${sickDays} days per year</td></tr>
-  <tr><td>Eligibility waiting period</td><td>${p.policy.eligibility_wait_days} days from start date before PTO/benefits kick in</td></tr>
+  <tr><td>Vacation / PTO</td><td>${effPto} days per year (${esc((p.policy.pto_accrual_method || "lump_annual").replace(/_/g, " "))} accrual)</td></tr>
+  <tr><td>Sick leave</td><td>${effSick} days per year</td></tr>
+  <tr><td>Eligibility waiting period</td><td>${effWait} days from start date before PTO/benefits kick in</td></tr>
 </table>
 
-<h2>Paid Holidays</h2>
-${holidayList}
+${showHolidays ? `<h2>Paid Holidays</h2>${holidayList}` : ""}
 
 <h2>Health &amp; Retirement</h2>
 <table>
-  ${p.policy.offers_health
-        ? `<tr><td>Health insurance</td><td>Offered after the ${p.policy.eligibility_wait_days}-day waiting period. ${p.policy.health_employee_share_pct ? "Employee share: " + Number(p.policy.health_employee_share_pct).toFixed(0) + "%." : ""}</td></tr>`
-        : '<tr><td>Health insurance</td><td>Not currently offered.</td></tr>'}
-  ${p.policy.offers_retirement
+  ${effHealth
+        ? `<tr><td>Health insurance</td><td>${ov.health_note ? esc(ov.health_note) : `Offered after the ${effWait}-day waiting period.${p.policy.health_employee_share_pct ? " Employee share: " + Number(p.policy.health_employee_share_pct).toFixed(0) + "%." : ""}`}</td></tr>`
+        : `<tr><td>Health insurance</td><td>${ov.health_note ? esc(ov.health_note) : "Not offered with this position."}</td></tr>`}
+  ${effRetire
         ? '<tr><td>Retirement plan</td><td>Offered. Details available from HR after eligibility period.</td></tr>'
-        : '<tr><td>Retirement plan</td><td>Not currently offered.</td></tr>'}
+        : '<tr><td>Retirement plan</td><td>Not offered with this position.</td></tr>'}
 </table>
 
 ${p.policy.notes ? `<h2>Additional Policy Terms</h2><div class="notes-box">${esc(p.policy.notes).replace(/\n/g, "<br>")}</div>` : ""}

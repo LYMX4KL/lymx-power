@@ -168,6 +168,31 @@
         </div>
       </div>
 
+      <div class="form-row full">
+        <div class="field">
+          <label>Key responsibilities / duties (markdown, optional)</label>
+          <textarea id="duties" rows="4" placeholder="- Run daily partner onboarding calls&#10;- Keep the CRM pipeline current&#10;- Hit the monthly activation target"></textarea>
+        </div>
+      </div>
+
+      <div class="form-row full">
+        <div class="field">
+          <label>Benefits for this offer</label>
+          <div style="font-size:12.5px;color:#5b6472;margin:-2px 0 8px">Defaults come from the current benefits policy. Override per offer &mdash; e.g. overseas hires usually don't get US benefits like health insurance.</div>
+          <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:6px">
+            <label style="display:flex;gap:6px;align-items:center;font-weight:600"><input type="checkbox" id="ovHealth" /> Health insurance</label>
+            <label style="display:flex;gap:6px;align-items:center;font-weight:600"><input type="checkbox" id="ovRetire" /> Retirement plan</label>
+            <label style="display:flex;gap:6px;align-items:center;font-weight:600"><input type="checkbox" id="ovHideHolidays" /> Hide US paid holidays</label>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>PTO days (blank = policy)</label><input type="number" id="ovPto" min="0" /></div>
+            <div class="field"><label>Sick days (blank = policy)</label><input type="number" id="ovSick" min="0" /></div>
+            <div class="field"><label>Eligibility wait days (blank = policy)</label><input type="number" id="ovWait" min="0" /></div>
+          </div>
+          <div class="field" style="margin-top:6px"><label>Health note (optional &mdash; e.g. local stipend in lieu of US plan)</label><input type="text" id="ovHealthNote" /></div>
+        </div>
+      </div>
+
       <div class="actions">
         <a href="admin-hiring.html" class="btn btn-secondary">Cancel</a>
         <button class="btn btn-primary" id="genBtn">📄 Generate &amp; save offer</button>
@@ -223,6 +248,14 @@ async function init(){
   } else {
     banner.classList.add('warn');
     banner.innerHTML = '⚠ No current benefits policy. Seed one via migration 055 or HR admin first.';
+  }
+  // 2026-05-30 (S1d) - default the per-offer benefit toggles/placeholders to the current policy.
+  if (currentPolicy) {
+    $('ovHealth').checked = !!currentPolicy.offers_health;
+    $('ovRetire').checked = !!currentPolicy.offers_retirement;
+    if (currentPolicy.pto_days_full_time != null) $('ovPto').placeholder = String(currentPolicy.pto_days_full_time);
+    if (currentPolicy.sick_days_full_time != null) $('ovSick').placeholder = String(currentPolicy.sick_days_full_time);
+    if (currentPolicy.eligibility_wait_days != null) $('ovWait').placeholder = String(currentPolicy.eligibility_wait_days);
   }
 
   // Pull applications (most recent first, exclude hired/rejected for cleaner picking)
@@ -318,6 +351,17 @@ $('genBtn').addEventListener('click', async () => {
   const managerName = $('managerName').value.trim();
   const managerTitle = $('managerTitle').value.trim() || 'Founder & CEO';
   const customNotes = $('customNotes').value.trim() || null;
+  const duties = $('duties').value.trim() || null;
+  const _ovPto = $('ovPto').value.trim(), _ovSick = $('ovSick').value.trim(), _ovWait = $('ovWait').value.trim(), _ovHealthNote = $('ovHealthNote').value.trim();
+  const benefitOverrides = {
+    offers_health: $('ovHealth').checked,
+    offers_retirement: $('ovRetire').checked,
+    hide_holidays: $('ovHideHolidays').checked
+  };
+  if (_ovPto !== '') benefitOverrides.pto_days = parseInt(_ovPto, 10);
+  if (_ovSick !== '') benefitOverrides.sick_days = parseInt(_ovSick, 10);
+  if (_ovWait !== '') benefitOverrides.eligibility_wait_days = parseInt(_ovWait, 10);
+  if (_ovHealthNote) benefitOverrides.health_note = _ovHealthNote;
 
   if (!appId)         { status.innerHTML = '<div class="status-msg err">Pick an applicant first.</div>'; return; }
   if (!title)         { status.innerHTML = '<div class="status-msg err">Position title required.</div>'; return; }
@@ -351,7 +395,9 @@ $('genBtn').addEventListener('click', async () => {
     location,
     manager_name: managerName,
     manager_title: managerTitle,
-    custom_notes_md: customNotes
+    custom_notes_md: customNotes,
+    duties_md: duties,
+    benefit_overrides: benefitOverrides
   };
 
   let result;
