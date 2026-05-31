@@ -378,7 +378,7 @@
   async function suspendPartner(id) {
     if (!confirm('Suspend this partner? Their @getlymx.com email forwarding stops and they lose Partner Dashboard access. Customer wallet stays intact. Reactivation is one click.')) return;
     try {
-      const { error } = await sb.from('partners').update({ archived_at: new Date().toISOString() }).eq('id', id);
+      const { error } = await sb.rpc('admin_archive_partner', { p_partner_id: id, p_archived: true });
       if (error) throw error;
       try { await sb.from('partner_emails').update({ status: 'suspended', suspended_at: new Date().toISOString() }).eq('partner_id', id); } catch (e) { console.warn('[admin-partners] partner_emails update failed', e); }
       toast('Suspended.');
@@ -391,7 +391,7 @@
 
   async function reactivatePartner(id) {
     try {
-      const { error } = await sb.from('partners').update({ archived_at: null }).eq('id', id);
+      const { error } = await sb.rpc('admin_archive_partner', { p_partner_id: id, p_archived: false });
       if (error) throw error;
       try { await sb.from('partner_emails').update({ status: 'active', suspended_at: null }).eq('partner_id', id); } catch (e) { console.warn('[admin-partners] partner_emails update failed', e); }
       toast('Reactivated.');

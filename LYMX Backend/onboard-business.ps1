@@ -20,7 +20,7 @@ Write-Host "===== LYMX Business Onboarding =====" -ForegroundColor Cyan
 Write-Host ""
 
 # --- Pull anon key from lymx-config.js (so we don't have to paste it) -------
-$configPath = "C:\Users\Kenny\Desktop\Gemini\LYMX Power\lymx-config.js"
+$configPath = "C:\Users\Kenny\Gemini\Gemini\2-LYMX Power\LYMX Power\lymx-config.js"
 if (-not (Test-Path $configPath)) {
     Write-Host "ERROR: lymx-config.js not found at $configPath" -ForegroundColor Red
     Read-Host "Press Enter to close"

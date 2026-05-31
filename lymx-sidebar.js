@@ -339,6 +339,7 @@
       { href: 'admin-timesheets.html',           icon: '\u{23F1}',  label: 'Timesheets' },
       { href: 'admin-payroll-reconciliation.html', icon: '\u{1F4B0}', label: 'Payroll Run' },
       { href: 'admin-timesheet-import.html',     icon: '\u{1F4E5}', label: 'Import Timesheet (Excel)' },
+      { href: 'admin-benefits-policy.html',      icon: '\u{1FA7A}', label: 'Benefits Policy' },
       { href: 'admin-generate-offer.html',       icon: '\u{1F4E8}', label: 'Generate Offer' },
       { href: 'admin-counter-offer-queue.html',  icon: '\u{1F501}', label: 'Counter Offers' },
       { href: 'admin-bulk-policy-assign.html',   icon: '\u{1F4D1}', label: 'Bulk Policy Assign' },

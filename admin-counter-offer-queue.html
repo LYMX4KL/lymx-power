@@ -180,13 +180,18 @@ function paintList() {
     const letterBtn = o.offer_letter_path
       ? '<a class="btn btn-outline" target="_blank" rel="noopener" href="' + esc(letterUrl(o.offer_letter_path)) + '">View letter</a>'
       : '';
+    const editBtn = o.application_id
+      ? '<a class="btn btn-outline" href="admin-generate-offer.html?app=' + encodeURIComponent(o.application_id) + '">✏️ Edit terms</a>'
+      : '';
     if (s === 'draft') {
       acts = '<button class="btn btn-primary" onclick="sendToCandidate(\'' + o.id + '\')">Send to candidate</button>' +
+             editBtn +
              letterBtn +
              '<button class="btn btn-danger" onclick="setStatus(\'' + o.id + '\',\'rescinded\')">Rescind</button>';
     } else if (s === 'sent') {
       acts = '<button class="btn btn-success" onclick="markAccepted(\'' + o.id + '\')">Mark accepted</button>' +
              '<button class="btn btn-outline" onclick="markDeclined(\'' + o.id + '\')">Mark declined</button>' +
+             editBtn +
              letterBtn +
              '<button class="btn btn-danger" onclick="setStatus(\'' + o.id + '\',\'rescinded\')">Rescind</button>';
     } else if (s === 'accepted') {

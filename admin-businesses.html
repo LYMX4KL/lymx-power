@@ -249,6 +249,21 @@ function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;
 function fmtUsd(c) { return '$' + ((c || 0) / 100).toFixed(2); }
 function fmtTime(iso) { return new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); }
 
+async function toggleBiz(id, makeActive, name) {
+  const verb = makeActive ? 'reactivate' : 'deactivate';
+  if (!makeActive && !confirm('Deactivate ' + (name || 'this business') + "? It'll be hidden from the active business roster. You can reactivate it anytime.")) return;
+  const r = await authedFetch('/rest/v1/business_partners?id=eq.' + encodeURIComponent(id), {
+    method: 'PATCH',
+    headers: { 'Prefer': 'return=representation' },
+    body: JSON.stringify({ active: makeActive })
+  });
+  let rows = [];
+  try { rows = await r.json(); } catch (e) { console.warn('[admin-businesses] toggle parse failed', e); }
+  if (!r.ok) { alert('Could not ' + verb + ' the business (HTTP ' + r.status + ').'); return; }
+  if (!Array.isArray(rows) || rows.length === 0) { alert('No change saved — you may not have permission to ' + verb + ' this business.'); return; }
+  await loadAll();
+}
+
 async function loadAll() {
   const r = await authedFetch('/rest/v1/v_business_summary?select=*&order=display_name.asc');
   if (!r.ok) {
@@ -285,10 +300,17 @@ async function loadAll() {
         '<td class="num" style="text-align:right">' + (b.total_signups || 0) + '</td>' +
         '<td class="num" style="text-align:right">' + (b.total_lymx_issued||0).toLocaleString() + '</td>' +
         '<td class="num" style="text-align:right">' + fmtUsd(b.unbilled_cents || 0) + '</td>' +
-        '<td><span class="pill ' + (b.active ? 'active' : 'inactive') + '">' + (b.active ? 'Active' : 'Inactive') + '</span></td>' +
+        '<td><span class="pill ' + (b.active ? 'active' : 'inactive') + '">' + (b.active ? 'Active' : 'Inactive') + '</span>' +
+          ' <button class="btn btn-secondary" style="padding:3px 8px;font-size:11px;margin-left:6px" data-biz-toggle="' + b.id + '" data-biz-active="' + (b.active ? '1' : '0') + '" data-biz-name="' + escapeHtml(b.display_name || '') + '">' + (b.active ? 'Deactivate' : 'Reactivate') + '</button></td>' +
         '</tr>';
     }).join('');
   }
+
+  document.querySelectorAll('[data-biz-toggle]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      toggleBiz(btn.getAttribute('data-biz-toggle'), btn.getAttribute('data-biz-active') === '0', btn.getAttribute('data-biz-name'));
+    });
+  });
 
   const pr = await authedFetch('/rest/v1/lymx_issuances?admin_status=eq.pending_review&select=*,business_partners(slug,display_name)&order=created_at.desc&limit=50');
   if (pr.ok) {

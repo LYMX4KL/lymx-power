@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — edit the company Benefits Policy. Each save creates a new version that drives all future offer letters." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Benefits Policy · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:880px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .page{padding:28px 0 64px}
+  .page-head h1{margin:0;font-size:24px;font-weight:800}
+  .page-head p{margin:6px 0 14px;color:var(--muted);font-size:14px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:14px}
+  .card h2{margin:0 0 12px;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .policy-banner{background:linear-gradient(135deg,#eef5ff,#dbeafe);border:1px solid #c5dffb;border-radius:10px;padding:12px 16px;color:#1d4ed8;font-size:13.5px;margin-bottom:14px}
+  .policy-banner.warn{background:#fff8e1;border-color:#fce696;color:#92400e}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+  .form-row.full{grid-template-columns:1fr}
+  @media(max-width:560px){.form-row{grid-template-columns:1fr}}
+  .field label{display:block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+  .field input,.field select,.field textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;font-family:inherit;background:#fff}
+  .field textarea{min-height:64px;resize:vertical}
+  .checkrow{display:flex;align-items:center;gap:9px;padding:9px 0}
+  .checkrow input{width:auto}
+  .checkrow label{font-size:13.5px;font-weight:600;color:var(--ink);text-transform:none;letter-spacing:0;margin:0}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .holichip{display:inline-flex;align-items:center;gap:6px;background:#eef4ff;color:#1d4ed8;border:1px solid #c5dffb;border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:600;margin:0 6px 6px 0}
+  .holichip button{appearance:none;border:0;background:transparent;color:#1d4ed8;cursor:pointer;font-size:14px;line-height:1;padding:0}
+  .add-holi{display:flex;gap:8px;margin-top:8px}
+  .add-holi input{flex:1}
+  .btn{padding:10px 18px;border-radius:9px;font-weight:700;font-size:14px;border:0;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-outline{background:transparent;border:1px solid var(--line);color:var(--ink);padding:6px 12px;font-size:12.5px;border-radius:7px}
+  .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+  .status-msg{padding:10px 14px;border-radius:8px;font-size:13.5px;margin-top:12px}
+  .status-msg.ok{background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44}
+  .status-msg.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
+  table.hist{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  table.hist th,table.hist td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+  table.hist th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+  .pill-current{background:#dff8ec;color:#0c6940;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px}
+</style>
+</head>
+<body data-role-required="perm:hr_admin">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="admin-dashboard.html">LYMX <span class="role-tag">Admin</span></a>
+    <a href="admin-generate-offer.html" style="font-size:13px;color:var(--muted)">Generate offer →</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>🩺 Benefits Policy</h1>
+      <p>This is the company-wide benefits policy that every new offer letter pulls from. Saving creates a new version and makes it current — future offers reflect it immediately. Offers already generated keep the version they were issued under.</p>
+    </div>
+
+    <div class="policy-banner" id="policyBanner">Loading current policy…</div>
+
+    <form id="policyForm" onsubmit="return false;">
+      <div class="card">
+        <h2>Paid Time Off & Sick Leave</h2>
+        <div class="form-row">
+          <div class="field">
+            <label for="ptoDays">Full-time PTO days / year</label>
+            <input id="ptoDays" type="number" min="0" step="1" />
+          </div>
+          <div class="field">
+            <label for="ptoMethod">PTO accrual method</label>
+            <select id="ptoMethod">
+              <option value="lump_annual">Lump annual</option>
+              <option value="per_pay_period">Per pay period</option>
+              <option value="tenure_tiered">Tenure-tiered</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="sickDays">Full-time sick days / year</label>
+            <input id="sickDays" type="number" min="0" step="1" />
+          </div>
+          <div class="field">
+            <label for="sickMethod">Sick accrual method</label>
+            <select id="sickMethod">
+              <option value="lump_annual">Lump annual</option>
+              <option value="per_pay_period">Per pay period</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="waitDays">Eligibility waiting period (days)</label>
+            <input id="waitDays" type="number" min="0" step="1" />
+            <div class="hint">Days before PTO / health benefits start.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Health & Retirement</h2>
+        <div class="checkrow">
+          <input id="offersHealth" type="checkbox" />
+          <label for="offersHealth">Offer health insurance</label>
+        </div>
+        <div class="checkrow">
+          <input id="offersRetire" type="checkbox" />
+          <label for="offersRetire">Offer a retirement plan</label>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="healthShare">Employee share of health premium (%)</label>
+            <input id="healthShare" type="number" min="0" max="100" step="0.01" placeholder="e.g. 30" />
+            <div class="hint">Leave blank if no health plan / not applicable.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Paid Holidays</h2>
+        <div id="holidayList"></div>
+        <div class="add-holi">
+          <input id="newHoliday" type="text" placeholder="Add a holiday (e.g. Veterans Day)" />
+          <button type="button" class="btn btn-secondary" id="addHolidayBtn">+ Add</button>
+        </div>
+        <div class="hint">These appear on every offer letter. Press Add or Enter to include one.</div>
+      </div>
+
+      <div class="card">
+        <h2>Notes (optional)</h2>
+        <div class="field">
+          <textarea id="notes" placeholder="Internal note about this version — e.g. why it changed."></textarea>
+        </div>
+      </div>
+
+      <div id="statusMsg"></div>
+
+      <div class="actions">
+        <a href="admin-hiring.html" class="btn btn-secondary">Cancel</a>
+        <button type="button" class="btn btn-primary" id="saveBtn">💾 Save as new version</button>
+      </div>
+    </form>
+
+    <div class="card">
+      <h2>Version history</h2>
+      <table class="hist">
+        <thead><tr><th>Version</th><th>PTO</th><th>Sick</th><th>Wait</th><th>Health</th><th>Effective</th><th></th></tr></thead>
+        <tbody id="histBody"><tr><td colspan="7" style="color:var(--muted)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+let me = null;
+let holidays = [];
+
+function renderHolidays(){
+  const wrap = $('holidayList');
+  if (!holidays.length){ wrap.innerHTML = '<span class="hint">No paid holidays set.</span>'; return; }
+  wrap.innerHTML = holidays.map((h, i) =>
+    '<span class="holichip">' + esc(h) + '<button type="button" data-i="' + i + '" aria-label="Remove">×</button></span>'
+  ).join('');
+  wrap.querySelectorAll('button[data-i]').forEach(b => {
+    b.addEventListener('click', () => { holidays.splice(Number(b.getAttribute('data-i')), 1); renderHolidays(); });
+  });
+}
+function addHoliday(){
+  const v = ($('newHoliday').value || '').trim();
+  if (!v) return;
+  if (!holidays.some(h => h.toLowerCase() === v.toLowerCase())) holidays.push(v);
+  $('newHoliday').value = '';
+  renderHolidays();
+}
+
+function fillForm(p){
+  $('ptoDays').value     = p.pto_days_full_time;
+  $('ptoMethod').value   = p.pto_accrual_method || 'lump_annual';
+  $('sickDays').value    = p.sick_days_full_time;
+  $('sickMethod').value  = p.sick_accrual_method || 'lump_annual';
+  $('waitDays').value    = p.eligibility_wait_days;
+  $('offersHealth').checked = !!p.offers_health;
+  $('offersRetire').checked = !!p.offers_retirement;
+  $('healthShare').value = (p.health_employee_share_pct == null ? '' : p.health_employee_share_pct);
+  holidays = Array.isArray(p.paid_holidays) ? p.paid_holidays.slice() : [];
+  $('notes').value = '';   // notes are per-version; start blank for the new version
+  renderHolidays();
+}
+
+function showStatus(msg, kind){
+  const el = $('statusMsg');
+  el.className = 'status-msg ' + (kind || 'ok');
+  el.innerHTML = msg;
+  el.scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+async function loadHistory(sb){
+  const { data, error } = await sb.from('benefits_policy')
+    .select('version,is_current,pto_days_full_time,sick_days_full_time,eligibility_wait_days,offers_health,effective_from,effective_until')
+    .order('version', { ascending:false });
+  const body = $('histBody');
+  if (error){ body.innerHTML = '<tr><td colspan="7" style="color:var(--danger)">Could not load history.</td></tr>'; console.warn('[benefits-policy] history load failed', error); return; }
+  if (!data || !data.length){ body.innerHTML = '<tr><td colspan="7" style="color:var(--muted)">No versions yet.</td></tr>'; return; }
+  body.innerHTML = data.map(r =>
+    '<tr><td>v' + r.version + (r.is_current ? ' <span class="pill-current">current</span>' : '') + '</td>' +
+    '<td>' + r.pto_days_full_time + 'd</td>' +
+    '<td>' + r.sick_days_full_time + 'd</td>' +
+    '<td>' + r.eligibility_wait_days + 'd</td>' +
+    '<td>' + (r.offers_health ? 'Yes' : 'No') + '</td>' +
+    '<td>' + (r.effective_from ? new Date(r.effective_from).toLocaleDateString() : '—') +
+      (r.effective_until ? ' → ' + new Date(r.effective_until).toLocaleDateString() : '') + '</td>' +
+    '<td></td></tr>'
+  ).join('');
+}
+
+async function init(){
+  if (!window.LYMX || !window.LYMX.requireAuth) return;
+  const user = await window.LYMX.requireAuth();
+  if (!user) return;
+  me = user;
+  const sb = window.LYMX.sb;
+
+  const banner = $('policyBanner');
+  const { data: policy, error } = await sb.from('benefits_policy').select('*').eq('is_current', true).maybeSingle();
+  if (error){
+    banner.classList.add('warn');
+    banner.textContent = 'Could not load the current policy. Refresh to try again.';
+    console.warn('[benefits-policy] current load failed', error);
+  } else if (policy){
+    banner.classList.remove('warn');
+    banner.innerHTML = 'Current: <strong>Benefits Policy v' + policy.version + '</strong> (effective ' +
+      new Date(policy.effective_from).toLocaleDateString() + '). Edit below and save to publish v' + (policy.version + 1) + '.';
+    fillForm(policy);
+  } else {
+    banner.classList.add('warn');
+    banner.innerHTML = 'No current policy found — fill in the fields below to publish version 1.';
+    fillForm({ pto_days_full_time:10, pto_accrual_method:'lump_annual', sick_days_full_time:5, sick_accrual_method:'lump_annual', eligibility_wait_days:90, offers_health:false, offers_retirement:false, health_employee_share_pct:null, paid_holidays:[] });
+  }
+
+  await loadHistory(sb);
+
+  $('addHolidayBtn').addEventListener('click', addHoliday);
+  $('newHoliday').addEventListener('keydown', (e) => { if (e.key === 'Enter'){ e.preventDefault(); addHoliday(); } });
+  $('saveBtn').addEventListener('click', () => save(sb));
+}
+
+async function save(sb){
+  const btn = $('saveBtn');
+  const shareRaw = ($('healthShare').value || '').trim();
+  const payload = {
+    p_pto_days_full_time:        parseInt($('ptoDays').value, 10),
+    p_pto_accrual_method:        $('ptoMethod').value,
+    p_sick_days_full_time:       parseInt($('sickDays').value, 10),
+    p_sick_accrual_method:       $('sickMethod').value,
+    p_paid_holidays:             holidays,
+    p_eligibility_wait_days:     parseInt($('waitDays').value, 10),
+    p_offers_health:             $('offersHealth').checked,
+    p_offers_retirement:         $('offersRetire').checked,
+    p_health_employee_share_pct: shareRaw === '' ? null : Number(shareRaw),
+    p_notes:                     $('notes').value || null
+  };
+
+  if (Number.isNaN(payload.p_pto_days_full_time) || Number.isNaN(payload.p_sick_days_full_time) || Number.isNaN(payload.p_eligibility_wait_days)){
+    showStatus('PTO, sick, and waiting-period days are all required and must be numbers.', 'err');
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const { data, error } = await sb.rpc('upsert_benefits_policy', payload);
+  btn.disabled = false; btn.textContent = '💾 Save as new version';
+
+  if (error){
+    showStatus('Could not save: ' + esc(error.message || 'unknown error') + '. Nothing was changed.', 'err');
+    console.warn('[benefits-policy] upsert failed', error);
+    return;
+  }
+  const row = Array.isArray(data) ? data[0] : data;
+  const v = row && row.version ? row.version : '?';
+  showStatus('✓ Saved. Benefits Policy v' + esc(v) + ' is now current — all new offers will use it.', 'ok');
+  $('policyBanner').classList.remove('warn');
+  $('policyBanner').innerHTML = 'Current: <strong>Benefits Policy v' + esc(v) + '</strong>. Edit below and save to publish v' + (Number(v) + 1) + '.';
+  await loadHistory(sb);
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

@@ -54,7 +54,7 @@
   <div class="wrap">
     <div class="page-head">
       <h1>📄 Generate offer letter</h1>
-      <p>Pulls live values from the current Benefits Policy. Edit the policy → all future offers reflect the change.</p>
+      <p>Pulls live values from the current Benefits Policy. <a href="admin-benefits-policy.html" style="color:var(--accent);text-decoration:underline">Edit the policy</a> → all future offers reflect the change.</p>
     </div>
 
     <div class="policy-banner" id="policyBanner">Loading current policy…</div>
@@ -218,6 +218,56 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;
 let currentPolicy = null;
 let me = null;
 
+async function loadExistingOffer(appId){
+  try {
+    const sb = window.LYMX.sb;
+    const { data, error } = await sb.from('offers')
+      .select('id,title,target_role,employment_type,work_mode,pay_type,pay_period,pay_rate_cents,sign_on_bonus_cents,start_date,location,custom_notes_md,duties_md,benefit_overrides,status')
+      .eq('application_id', appId)
+      .in('status', ['draft','sent'])
+      .order('created_at', { ascending:false })
+      .limit(1)
+      .maybeSingle();
+    if (error){ console.warn('[generate-offer] existing offer load failed', error); return; }
+    if (!data) return; // no existing offer -> fresh generate
+    const o = data;
+    if (o.title) $('title').value = o.title;
+    if (o.target_role){
+      const trSel = $('targetRole');
+      const has = Array.from(trSel.options).some(op => op.value === o.target_role);
+      if (has){ trSel.value = o.target_role; }
+      else { trSel.value = '__custom__'; trSel.dispatchEvent(new Event('change')); const c=$('targetRoleCustom'); if(c) c.value = o.target_role; }
+    }
+    if (o.employment_type) $('employmentType').value = o.employment_type;
+    if (o.work_mode) $('workMode').value = o.work_mode;
+    if (o.pay_type) $('payType').value = o.pay_type;
+    if (o.pay_period) $('payPeriod').value = o.pay_period;
+    if (o.pay_rate_cents != null) $('payRate').value = (o.pay_rate_cents/100);
+    if (o.sign_on_bonus_cents != null && o.sign_on_bonus_cents > 0) $('signOnBonus').value = (o.sign_on_bonus_cents/100);
+    if (o.start_date) $('startDate').value = o.start_date;
+    if (o.location) $('location').value = o.location;
+    if (o.custom_notes_md) $('customNotes').value = o.custom_notes_md;
+    if (o.duties_md) $('duties').value = o.duties_md;
+    const ov = o.benefit_overrides || {};
+    if (typeof ov.offers_health === 'boolean') $('ovHealth').checked = ov.offers_health;
+    if (typeof ov.offers_retirement === 'boolean') $('ovRetire').checked = ov.offers_retirement;
+    if (typeof ov.hide_holidays === 'boolean') $('ovHideHolidays').checked = ov.hide_holidays;
+    if (ov.pto_days != null) $('ovPto').value = ov.pto_days;
+    if (ov.sick_days != null) $('ovSick').value = ov.sick_days;
+    if (ov.eligibility_wait_days != null) $('ovWait').value = ov.eligibility_wait_days;
+    if (ov.health_note) $('ovHealthNote').value = ov.health_note;
+    const pb = $('policyBanner');
+    if (pb && pb.parentNode){
+      const editNote = document.createElement('div');
+      editNote.className = 'policy-banner';
+      editNote.style.cssText = 'background:#fff8e1;border:1px solid #fce696;color:#92400e';
+      editNote.innerHTML = '✏️ Editing the existing <strong>' + esc(o.status) + '</strong> offer for this applicant. Saving updates it in place' + (o.status==='sent' ? ' (it stays Sent).' : '.');
+      pb.parentNode.insertBefore(editNote, pb.nextSibling);
+    }
+    const gb = $('genBtn'); if (gb) gb.textContent = '💾 Update & save offer';
+  } catch(e){ console.warn('[generate-offer] loadExistingOffer error', e); }
+}
+
 async function init(){
   if (!window.LYMX || !window.LYMX.requireAuth) return;
   const user = await window.LYMX.requireAuth();
@@ -283,6 +333,7 @@ async function init(){
       if (sel.value === wantApp) {
         sel.dispatchEvent(new Event('change'));
       }
+      await loadExistingOffer(wantApp);
     }
   } catch (e) { console.warn('[generate-offer] app pre-select failed', e); }
 

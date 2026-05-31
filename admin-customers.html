@@ -79,6 +79,7 @@
   .status.active{background:rgba(19,162,107,.14);color:var(--ok)}
   .status.flagged{background:rgba(240,160,32,.14);color:#a06a0c}
   .status.suspended{background:rgba(208,32,84,.14);color:#a01644}
+  .status.closed{background:rgba(208,32,84,.14);color:#a01644}
 
   /* Detail card */
   .detail{position:sticky;top:84px;display:flex;flex-direction:column;gap:14px}
@@ -397,7 +398,7 @@
           <button onclick="resendCode('${c.id}')">📱 Resend SMS code</button>
           <button onclick="exportTx('${c.id}')">⬇ Export history</button>
           <button class="warn" onclick="flag('${c.id}')">🚩 ${c.status === 'flagged' ? 'Unflag' : 'Flag for review'}</button>
-          <button class="danger" onclick="suspend('${c.id}')">⛔ ${c.status === 'suspended' ? 'Reinstate' : 'Suspend account'}</button>
+          <button class="danger" onclick="suspend('${c.id}')">${c.archived ? '♻️ Reopen account' : '⛔ Close account'}</button>
         </div>
       </div>
 
@@ -441,12 +442,19 @@
     select(id);
     showToast(c.status === 'flagged' ? `${c.name} flagged for review` : `${c.name} unflagged`, c.status === 'flagged' ? 'warn' : 'success');
   }
-  function suspend(id){
+  async function suspend(id){
     const c = customers.find(x => x.id === id);
-    if (c.status !== 'suspended' && !confirm(`Suspend ${c.name}? They lose wallet access.`)) return;
-    c.status = c.status === 'suspended' ? 'active' : 'suspended';
+    if (!c) return;
+    const closing = !c.archived;
+    if (closing && !confirm(`Close ${c.name}'s account? They'll be archived and removed from the active roster. You can reopen it later.`)) return;
+    if (!window.LYMX || !window.LYMX.sb) { showToast('Not signed in — refresh and try again.', 'warn'); return; }
+    const { error } = await window.LYMX.sb.rpc('admin_archive_customer', { p_customer_id: id, p_archived: closing });
+    if (error) { showToast('Could not ' + (closing ? 'close' : 'reopen') + ' account: ' + (error.message || 'unknown error'), 'warn'); console.warn('[admin-customers] archive failed', error); return; }
+    c.archived = closing;
+    c.status = closing ? 'closed' : 'active';
     select(id);
-    showToast(c.status === 'suspended' ? `${c.name} suspended` : `${c.name} reinstated`, c.status === 'suspended' ? 'warn' : 'success');
+    render();
+    showToast(closing ? `${c.name}'s account closed` : `${c.name}'s account reopened`, closing ? 'warn' : 'success');
   }
   function resetPassword(id){ showToast('Password reset email sent', 'success'); }
   function resendCode(id){ showToast('SMS verification code resent', 'success'); }
@@ -475,7 +483,6 @@
 
     const { data: rows, error } = await sb.from('customers')
       .select('id, user_id, display_name, phone, email, home_zip, created_at, archived_at')
-      .is('archived_at', null)
       .order('created_at', { ascending: false })
       .limit(500);
     if (error || !rows) return;
@@ -525,7 +532,9 @@
         earned: earnedMap[r.id] || 0,
         lastActivity: relTime(lastActMap[r.id]),
         joined: r.created_at ? r.created_at.slice(0, 10) : '',
-        status: 'active',
+        user_id: r.user_id || null,
+        archived: !!r.archived_at,
+        status: r.archived_at ? 'closed' : 'active',
         referrer: null
       });
     });
