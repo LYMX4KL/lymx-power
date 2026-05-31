@@ -179,6 +179,12 @@
         <div class="field">
           <label>Benefits for this offer</label>
           <div style="font-size:12.5px;color:#5b6472;margin:-2px 0 8px">Defaults come from the current benefits policy. Override per offer &mdash; e.g. overseas hires usually don't get US benefits like health insurance.</div>
+          <label style="display:flex;gap:8px;align-items:flex-start;font-weight:700;background:#fff8e1;border:1px solid #fce696;border-radius:8px;padding:10px 12px;margin-bottom:10px;cursor:pointer">
+            <input type="checkbox" id="ovOverseas" style="margin-top:2px" />
+            <span>Overseas hire (works outside the US)
+              <span style="display:block;font-weight:500;font-size:12px;color:#92400e;margin-top:2px">Uses the international offer template: drops the US I-9 work-eligibility clause and the Nevada at-will language, and suggests removing US benefits below. You can still fine-tune each item.</span>
+            </span>
+          </label>
           <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:6px">
             <label style="display:flex;gap:6px;align-items:center;font-weight:600"><input type="checkbox" id="ovHealth" /> Health insurance</label>
             <label style="display:flex;gap:6px;align-items:center;font-weight:600"><input type="checkbox" id="ovRetire" /> Retirement plan</label>
@@ -253,6 +259,7 @@ async function loadExistingOffer(appId){
     if (typeof ov.offers_health === 'boolean') $('ovHealth').checked = ov.offers_health;
     if (typeof ov.offers_retirement === 'boolean') $('ovRetire').checked = ov.offers_retirement;
     if (typeof ov.hide_holidays === 'boolean') $('ovHideHolidays').checked = ov.hide_holidays;
+    if (ov.is_overseas === true) $('ovOverseas').checked = true; // 2026-05-31 #0/#15 restore overseas template on Edit-terms
     if (ov.pto_days != null) $('ovPto').value = ov.pto_days;
     if (ov.sick_days != null) $('ovSick').value = ov.sick_days;
     if (ov.eligibility_wait_days != null) $('ovWait').value = ov.eligibility_wait_days;
@@ -308,6 +315,21 @@ async function init(){
     if (currentPolicy.sick_days_full_time != null) $('ovSick').placeholder = String(currentPolicy.sick_days_full_time);
     if (currentPolicy.eligibility_wait_days != null) $('ovWait').placeholder = String(currentPolicy.eligibility_wait_days);
   }
+  // 2026-05-31 #0/#15 — when "Overseas hire" is ticked, suggest the international
+  // benefit posture (no US health/retirement, hide US holidays). Admin can still
+  // re-tick any item; this only seeds sensible defaults, it doesn't lock them.
+  const ovOverseas = $('ovOverseas');
+  if (ovOverseas) ovOverseas.addEventListener('change', () => {
+    if (ovOverseas.checked) {
+      $('ovHealth').checked = false;
+      $('ovRetire').checked = false;
+      $('ovHideHolidays').checked = true;
+    } else if (currentPolicy) {
+      $('ovHealth').checked = !!currentPolicy.offers_health;
+      $('ovRetire').checked = !!currentPolicy.offers_retirement;
+      $('ovHideHolidays').checked = false;
+    }
+  });
 
   // Pull applications (most recent first, exclude hired/rejected for cleaner picking)
   const { data: apps } = await sb.from('job_applications')
@@ -408,7 +430,8 @@ $('genBtn').addEventListener('click', async () => {
   const benefitOverrides = {
     offers_health: $('ovHealth').checked,
     offers_retirement: $('ovRetire').checked,
-    hide_holidays: $('ovHideHolidays').checked
+    hide_holidays: $('ovHideHolidays').checked,
+    is_overseas: $('ovOverseas').checked  // 2026-05-31 #0/#15 — drives the international letter template (no I-9, no NV at-will)
   };
   if (_ovPto !== '') benefitOverrides.pto_days = parseInt(_ovPto, 10);
   if (_ovSick !== '') benefitOverrides.sick_days = parseInt(_ovSick, 10);

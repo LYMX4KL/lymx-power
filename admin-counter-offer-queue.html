@@ -234,7 +234,17 @@ async function viewLetter(path) {
     if (!r.ok) { alert('Could not open the offer letter (storage error ' + r.status + ').'); return; }
     const j = await r.json();
     if (!j || !j.signedURL) { alert('Could not open the offer letter (no signed URL returned).'); return; }
-    window.open(cfg.SUPABASE_URL + '/storage/v1' + j.signedURL, '_blank', 'noopener');
+    // 2026-05-31 #2 ROOT CAUSE: letters in storage carry content-type text/plain
+    // (older uploads), so opening the signed URL directly shows the RAW HTML source
+    // instead of the rendered letter. Fix: fetch the object and re-open it as an
+    // HTML Blob so the browser always RENDERS it, regardless of stored content-type.
+    // Works for old and new offers alike.
+    const obj = await fetch(cfg.SUPABASE_URL + '/storage/v1' + j.signedURL);
+    if (!obj.ok) { alert('Could not open the offer letter (load error ' + obj.status + ').'); return; }
+    const htmlText = await obj.text();
+    const blobUrl = URL.createObjectURL(new Blob([htmlText], { type: 'text/html' }));
+    window.open(blobUrl, '_blank', 'noopener');
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
   } catch (e) {
     console.warn('[offer-queue] viewLetter failed', e);
     alert('Could not open the offer letter. Please try again.');

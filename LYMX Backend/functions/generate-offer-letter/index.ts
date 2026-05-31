@@ -247,6 +247,18 @@ function renderOfferLetter(p: {
     const effHealth = (typeof ov.offers_health === "boolean") ? ov.offers_health : p.policy.offers_health;
     const effRetire = (typeof ov.offers_retirement === "boolean") ? ov.offers_retirement : p.policy.offers_retirement;
     const showHolidays = ov.hide_holidays !== true;
+    // 2026-05-31 #0/#15 — domestic vs overseas template. Overseas hires (working
+    // outside the US) must NOT get the US-specific I-9 work-eligibility clause or
+    // the Nevada at-will framing. is_overseas rides inside benefit_overrides so no
+    // schema change is needed; the form sets it and Edit-terms restores it.
+    const isOverseas = ov.is_overseas === true;
+    const eligibilityClause = isOverseas
+        ? "your providing documentation establishing your legal eligibility to work in your country of residence"
+        : "your providing documentation establishing your eligibility to work in the United States (I-9)";
+    const employmentLawLine = isOverseas
+        ? "Your employment with LYMX Power, LLC is governed by the applicable employment laws of your country of residence."
+        : "Your employment with LYMX Power, LLC is at-will under Nevada law, meaning either party may terminate the employment relationship at any time, with or without cause or notice.";
+    const employmentHeading = isOverseas ? "Employment Terms" : "At-Will Employment (Nevada)";
     const holidayList = holidays.length
         ? '<ul style="margin:.25rem 0 .75rem 1.2rem;padding:0">' + holidays.map(h => `<li>${esc(h)}</li>`).join("") + "</ul>"
         : '<p style="margin:0;color:#6B7280;font-style:italic">No paid holidays defined yet.</p>';
@@ -325,8 +337,8 @@ ${p.policy.notes ? `<h2>Additional Policy Terms</h2><div class="notes-box">${esc
 
 ${p.custom_notes_md ? `<h2>Specific Notes for This Offer</h2><div class="notes-box">${esc(p.custom_notes_md).replace(/\n/g, "<br>")}</div>` : ""}
 
-<h2>At-Will Employment (Nevada)</h2>
-<p style="font-size:.92rem;color:#475569">Your employment with LYMX Power, LLC is at-will under Nevada law, meaning either party may terminate the employment relationship at any time, with or without cause or notice. This offer is contingent upon (a) successful completion of any background check we may run, (b) verification of references, and (c) your providing documentation establishing your eligibility to work in the United States (I-9).</p>
+<h2>${employmentHeading}</h2>
+<p style="font-size:.92rem;color:#475569">${employmentLawLine} This offer is contingent upon (a) successful completion of any background check we may run, (b) verification of references, and (c) ${eligibilityClause}.</p>
 
 <p>If you accept this offer, please sign below and return a copy to <strong>hr@lymxpower.com</strong> by ${responseBy}. We're excited about the opportunity to have you join the LYMX team.</p>
 
