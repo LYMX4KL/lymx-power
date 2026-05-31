@@ -84,3 +84,4 @@
 | admin-manage-permissions | Toggle feature permissions per member (matrix UI) | Admin | admin_manage_permissions | 🚧 In progress (page shipped 2026-05-26; playbook pending) |
 | [admin-settlement-run](admin/settlement-run.md) | Run a monthly business settlement batch (Sprint 1) | Admin | admin_run_settlements | 🚧 Shipped 2026-05-27; awaiting browser-verify |
 | [admin-clock-in-now](admin/clock-in-now.md) | Live view of who is currently clocked in / on break / ou
+- [Collapsible role-group sidebar](collapsible-role-sidebar.md) — multi-role nav: collapsible groups, no mode switching (Rule 10 / Module 13).
