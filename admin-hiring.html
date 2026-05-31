@@ -141,7 +141,7 @@
     <div class="page-head">
       <div>
         <h1>Hiring pipeline</h1>
-        <p>Applicants from <a href="careers.html" style="color:var(--accent-2);font-weight:700">careers.html</a> · drag candidates between stages.</p>
+        <p>Applicants from <a href="careers.html" style="color:var(--accent-2);font-weight:700">careers.html</a> · track candidates from application to hire.</p>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <a href="admin-generate-offer.html" class="btn btn-ghost">📄 Generate offer</a>
@@ -150,20 +150,15 @@
     </div>
 
     <div class="strip">
-      <div class="stat"><div class="lab">Total in pipeline</div><div class="v">12</div><div class="sub">Across 3 open roles</div></div>
-      <div class="stat"><div class="lab">New this week</div><div class="v warn">4</div><div class="sub">Awaiting first review</div></div>
-      <div class="stat"><div class="lab">In active interview</div><div class="v">3</div><div class="sub">Phone or onsite stage</div></div>
-      <div class="stat"><div class="lab">Avg time to offer</div><div class="v">12d</div><div class="sub">Last 30 days</div></div>
-      <div class="stat"><div class="lab">Hired this quarter</div><div class="v ok">2</div><div class="sub">Founding ops + frontend</div></div>
+      <div class="stat"><div class="lab">In pipeline</div><div class="v" id="statTotal">—</div><div class="sub">Active (not rejected)</div></div>
+      <div class="stat"><div class="lab">New this week</div><div class="v warn" id="statNew">—</div><div class="sub">Awaiting first review</div></div>
+      <div class="stat"><div class="lab">In interview</div><div class="v" id="statInterview">—</div><div class="sub">Phone or interview stage</div></div>
+      <div class="stat"><div class="lab">At offer</div><div class="v" id="statOffer">—</div><div class="sub">Offer extended</div></div>
+      <div class="stat"><div class="lab">Hired</div><div class="v ok" id="statHired">—</div><div class="sub">All-time</div></div>
     </div>
 
     <div class="head-row">
-      <div class="filter-row">
-        <button class="chip on" data-r="all" onclick="setFilter('all', this)">All roles <span class="ct">12</span></button>
-        <button class="chip" data-r="frontend" onclick="setFilter('frontend', this)">Frontend / PWA Engineer <span class="ct">5</span></button>
-        <button class="chip" data-r="ops" onclick="setFilter('ops', this)">Founding Operations <span class="ct">4</span></button>
-        <button class="chip" data-r="design" onclick="setFilter('design', this)">Brand &amp; Content Designer <span class="ct">3</span></button>
-      </div>
+      <div class="filter-row"><span style="font-size:12.5px;color:var(--muted)">Live applications from careers.html — newest first.</span></div>
       <button class="btn btn-ghost" onclick="exportCSV()">⬇ Export CSV</button>
     </div>
 
@@ -180,12 +175,8 @@
       <div class="field"><label>Name</label><input class="input" id="a-name" /></div>
       <div class="field"><label>Email</label><input class="input" type="email" id="a-email" /></div>
       <div class="field">
-        <label>Role</label>
-        <select id="a-role">
-          <option value="frontend">Frontend / PWA Engineer</option>
-          <option value="ops">Founding Operations</option>
-          <option value="design">Brand &amp; Content Designer</option>
-        </select>
+        <label>Role / title (optional)</label>
+        <input class="input" id="a-role" placeholder="e.g. Founding Operations" />
       </div>
       <div class="field">
         <label>Source</label>
@@ -211,159 +202,136 @@
 <footer>
   <div class="wrap">
     <div>LYMX Admin · Internal use only · All edits logged to audit trail</div>
-    <div style="margin-top:8px;font-size:11.5px;color:#5b6472">© <span id="yr"></span> LYMX. Prototype with mock data.</div>
+    <div style="margin-top:8px;font-size:11.5px;color:#5b6472">© <span id="yr"></span> LYMX. Internal use only.</div>
   </div>
 </footer>
 
 <script>
   document.getElementById('yr').textContent = new Date().getFullYear();
 
-  const stages = [
-    { key:'applied',  label:'Applied' },
-    { key:'phone',    label:'Phone screen' },
-    { key:'onsite',   label:'On-site' },
-    { key:'offer',    label:'Offer' },
-    { key:'hired',    label:'Hired' },
-    { key:'rejected', label:'Rejected' },
+  // Live hiring pipeline backed by public.job_applications (statuses:
+  // new -> phone_screen -> interview -> offer -> hired; rejected/withdrew/ghosted).
+  const COLS = [
+    { key:'new',          label:'New' },
+    { key:'phone_screen', label:'Phone screen' },
+    { key:'interview',    label:'Interview' },
+    { key:'offer',        label:'Offer' },
+    { key:'hired',        label:'Hired' },
+    { key:'rejected',     label:'Rejected' }
   ];
+  const ADVANCE  = ['new','phone_screen','interview','offer','hired'];
+  const REJECTED = ['rejected','withdrew','ghosted'];
 
-  // Hiring pipeline — persisted to localStorage so admin's tracking survives.
-  // Mock candidates wrapped 2026-05-18 so admin doesn't see fake Maya Reyes etc.
-  let candidates = (function(){
-    try { return JSON.parse(localStorage.getItem('lymx_hiring_candidates') || '[]'); }
-    catch (e) { return []; }
-  })();
-  function saveCandidates(){
-    try { localStorage.setItem('lymx_hiring_candidates', JSON.stringify(candidates)); }
-    catch (e) { console.warn('[admin-hiring] localStorage save best-effort', e); }
+  let apps = [];
+  let sb = null;
+
+  function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fullName(a){ return [(a.first_name||'').trim(),(a.last_name||'').trim()].filter(Boolean).join(' ') || (a.email||'').split('@')[0] || 'Applicant'; }
+  function inits(a){ return fullName(a).split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+  function relTime(iso){ if(!iso) return ''; const ms=Date.now()-new Date(iso).getTime(), d=864e5; if(ms<d) return 'today'; if(ms<2*d) return 'yesterday'; return Math.floor(ms/d)+' days ago'; }
+  function colOf(st){ return REJECTED.indexOf(st)>=0 ? 'rejected' : st; }
+  function showToast(msg,type){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast on '+(type||''); setTimeout(()=>t.classList.remove('on'),2400); }
+
+  async function loadApps(){
+    const { data, error } = await sb.from('job_applications')
+      .select('id,first_name,last_name,email,phone,job_id,source,status,submitted_at,cover_letter')
+      .order('submitted_at',{ ascending:false })
+      .limit(500);
+    if (error){ console.warn('[admin-hiring] load failed', error); showToast('Could not load applicants — '+(error.message||''),'warn'); apps=[]; }
+    else apps = data || [];
+    renderStats(); render();
   }
-  /* legacy-mock-disabled
-    {id:'c1', name:'Maya Reyes',     role:'frontend', stage:'applied',  applied:'2 days ago', source:'LinkedIn',     av:'MR'},
-    {id:'c2', name:'Jordan Park',    role:'frontend', stage:'applied',  applied:'3 days ago', source:'Direct',       av:'JP'},
-    {id:'c3', name:'Emma Wilson',    role:'ops',      stage:'applied',  applied:'4 days ago', source:'Direct',       av:'EW'},
-    {id:'c4', name:'Carlos Rivera',  role:'design',   stage:'applied',  applied:'5 days ago', source:'Referral',     av:'CR'},
 
-    {id:'c5', name:'Alex Lin',       role:'frontend', stage:'phone',    applied:'8 days ago', source:'LinkedIn',     av:'AL'},
-    {id:'c6', name:'Priya Mehta',    role:'ops',      stage:'phone',    applied:'10 days ago',source:'Direct',       av:'PM'},
-
-    {id:'c7', name:'Sam Drew',       role:'frontend', stage:'onsite',   applied:'14 days ago',source:'Recruiter',    av:'SD'},
-
-    {id:'c8', name:'Devon Hayes',    role:'design',   stage:'offer',    applied:'18 days ago',source:'Direct',       av:'DH'},
-
-    {id:'c9', name:'Ben Lopez',      role:'frontend', stage:'hired',    applied:'45 days ago',source:'Direct',       av:'BL'},
-    {id:'c10',name:'Talia Kim',      role:'ops',      stage:'hired',    applied:'62 days ago',source:'Referral',     av:'TK'},
-
-    {id:'c11',name:'Riley Brooks',   role:'ops',      stage:'rejected', applied:'18 days ago',source:'LinkedIn',     av:'RB'},
-    {id:'c12',name:'Casey Vega',     role:'design',   stage:'rejected', applied:'21 days ago',source:'Direct',       av:'CV'},
-  ];
-  end-legacy-mock-disabled */
-
-  let currentRole = 'all';
-
-  function setFilter(r, btn){
-    currentRole = r;
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
-    btn.classList.add('on');
-    render();
+  function renderStats(){
+    const now=Date.now(), wk=7*864e5;
+    const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+    set('statTotal', apps.filter(a=>REJECTED.indexOf(a.status)<0).length);
+    set('statNew', apps.filter(a=>a.status==='new' && (now-new Date(a.submitted_at).getTime())<wk).length);
+    set('statInterview', apps.filter(a=>a.status==='phone_screen'||a.status==='interview').length);
+    set('statOffer', apps.filter(a=>a.status==='offer').length);
+    set('statHired', apps.filter(a=>a.status==='hired').length);
   }
 
   function render(){
-    const kanban = document.getElementById('kanban');
-    let html = '';
-    stages.forEach(stage => {
-      let people = candidates.filter(c => c.stage === stage.key);
-      if (currentRole !== 'all') people = people.filter(c => c.role === currentRole);
-      html += `
-        <div class="col ${stage.key}">
-          <div class="col-h">
-            <div class="nm">${stage.label}</div>
-            <div class="ct">${people.length}</div>
-          </div>
-          <div class="col-body">
-            ${people.length === 0 ? '<div class="empty-col">No candidates</div>' : people.map(c => `
-              <div class="candidate" onclick="advance('${c.id}')">
-                <div class="top">
-                  <div class="av">${c.av}</div>
-                  <div class="body">
-                    <div class="nm">${c.name}</div>
-                    <div class="role">${roleLabel(c.role)}</div>
-                  </div>
-                </div>
-                <div class="meta">
-                  <span class="when">${c.applied}</span>
-                  <span class="source">${c.source}</span>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    });
-    document.getElementById('kanban').innerHTML = html;
+    const kanban=document.getElementById('kanban');
+    kanban.innerHTML = COLS.map(col=>{
+      const people = apps.filter(a=>colOf(a.status)===col.key);
+      const cards = people.length===0 ? '<div class="empty-col">No candidates</div>' : people.map(a=>{
+        const i = ADVANCE.indexOf(a.status);
+        const canAdvance = i>=0 && i<ADVANCE.length-1;
+        const nextLabel = canAdvance ? (COLS.find(c=>c.key===ADVANCE[i+1])||{}).label : '';
+        const isRej = REJECTED.indexOf(a.status)>=0;
+        return '<div class="candidate">'
+          + '<div class="top"><div class="av">'+esc(inits(a))+'</div>'
+          + '<div class="body"><div class="nm">'+esc(fullName(a))+'</div><div class="role">'+esc(a.email||'')+'</div></div></div>'
+          + '<div class="meta"><span class="when">'+esc(relTime(a.submitted_at))+'</span><span class="source">'+esc(a.source||'')+'</span></div>'
+          + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'
+          + (canAdvance ? '<button class="btn btn-ghost" style="padding:4px 9px;font-size:11px" data-adv="'+a.id+'">Move → '+esc(nextLabel)+'</button>' : '')
+          + '<a class="btn btn-ghost" style="padding:4px 9px;font-size:11px" href="admin-generate-offer.html?app='+encodeURIComponent(a.id)+'">\u{1F4C4} Offer</a>'
+          + ((!isRej && a.status!=='hired') ? '<button class="btn btn-ghost" style="padding:4px 9px;font-size:11px;color:#b91c1c" data-rej="'+a.id+'">Reject</button>' : '')
+          + '</div></div>';
+      }).join('');
+      return '<div class="col '+col.key+'"><div class="col-h"><div class="nm">'+col.label+'</div><div class="ct">'+people.length+'</div></div><div class="col-body">'+cards+'</div></div>';
+    }).join('');
+    kanban.querySelectorAll('[data-adv]').forEach(b=>b.addEventListener('click',()=>advance(b.getAttribute('data-adv'))));
+    kanban.querySelectorAll('[data-rej]').forEach(b=>b.addEventListener('click',()=>{ if(confirm('Reject this applicant?')) setStatus(b.getAttribute('data-rej'),'rejected'); }));
   }
 
-  function roleLabel(r){
-    return {
-      frontend: 'Frontend / PWA',
-      ops: 'Founding Ops',
-      design: 'Brand &amp; Content'
-    }[r] || r;
+  async function setStatus(id, status){
+    const a = apps.find(x=>x.id===id); if(!a) return;
+    const { data, error } = await sb.from('job_applications').update({ status }).eq('id', id).select('id');
+    if (error){ showToast('Update failed: '+(error.message||''),'warn'); return; }
+    if (!data || !data.length){ showToast('No change saved — you may not have permission.','warn'); return; }
+    a.status = status; renderStats(); render();
+    showToast(fullName(a)+' → '+status.replace('_',' '), 'success');
   }
-
   function advance(id){
-    const c = candidates.find(x => x.id === id);
-    if (!c) return;
-    const stages = ['applied','phone','onsite','offer','hired'];
-    const idx = stages.indexOf(c.stage);
-    if (idx === -1 || idx >= stages.length - 1){
-      showToast(`${c.name} — final stage. Use side panel to reject.`);
-      return;
-    }
-    c.stage = stages[idx + 1];
-    render();
-    showToast(`${c.name} advanced to ${stages[idx + 1]}`, 'success');
+    const a = apps.find(x=>x.id===id); if(!a) return;
+    const i = ADVANCE.indexOf(a.status);
+    if (i<0 || i>=ADVANCE.length-1){ showToast('Already at final stage'); return; }
+    setStatus(id, ADVANCE[i+1]);
   }
 
   function openAdd(){ document.getElementById('add-modal').classList.add('on'); }
   function closeAdd(){ document.getElementById('add-modal').classList.remove('on'); }
-  function addApplicant(){
-    const name = document.getElementById('a-name').value.trim();
-    if (!name){ showToast('Enter a name'); return; }
-    const role = document.getElementById('a-role').value;
-    const source = document.getElementById('a-source').value;
-    const initials = name.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
-    candidates.push({id:'c'+Date.now(), name, role, stage:'applied', applied:'just now', source, av:initials});
+  const SRCMAP = { 'Direct application':'direct_outreach','LinkedIn':'linkedin','Referral':'partner_referral','Recruiter':'other','Other':'other' };
+  async function addApplicant(){
+    const name=(document.getElementById('a-name').value||'').trim();
+    const email=(document.getElementById('a-email').value||'').trim();
+    if(!name){ showToast('Enter a name'); return; }
+    if(!email || !/@/.test(email)){ showToast('Enter a valid email'); return; }
+    const parts=name.split(/\s+/); const first=parts.shift()||name; const last=parts.join(' ')||'';
+    const roleTitle=(document.getElementById('a-role').value||'').trim();
+    const source=SRCMAP[document.getElementById('a-source').value]||'other';
+    const notes=(document.getElementById('a-notes').value||'').trim();
+    const cover=[roleTitle?('Role: '+roleTitle):'', notes].filter(Boolean).join('\n') || null;
+    const { data, error } = await sb.from('job_applications').insert({ first_name:first, last_name:last, email, source, status:'new', cover_letter:cover }).select('id');
+    if (error){ showToast('Could not add: '+(error.message||''),'warn'); return; }
     closeAdd();
-    document.getElementById('a-name').value = '';
-    document.getElementById('a-email').value = '';
-    document.getElementById('a-notes').value = '';
-    render();
-    showToast(`${name} added to pipeline`, 'success');
+    ['a-name','a-email','a-role','a-notes'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+    showToast(name+' added to pipeline','success');
+    await loadApps();
   }
 
   function exportCSV(){
-    let csv = 'Name,Role,Stage,Applied,Source\n';
-    candidates.forEach(c => {
-      csv += [c.name, roleLabel(c.role).replace(/&amp;/g,'&'), c.stage, c.applied, c.source].join(',') + '\n';
-    });
-    const blob = new Blob([csv], {type:'text/csv'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'lymx-hiring-pipeline.csv';
-    a.click();
-    showToast('Pipeline exported', 'success');
+    let csv='Name,Email,Status,Applied,Source\n';
+    apps.forEach(a=>{ csv += [JSON.stringify(fullName(a)), a.email||'', a.status, a.submitted_at||'', a.source||''].join(',')+'\n'; });
+    const blob=new Blob([csv],{type:'text/csv'}); const u=document.createElement('a');
+    u.href=URL.createObjectURL(blob); u.download='lymx-hiring-pipeline.csv'; u.click();
+    showToast('Pipeline exported','success');
   }
 
-  function showToast(msg, type){
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast on ' + (type || '');
-    setTimeout(() => t.classList.remove('on'), 2400);
+  async function init(){
+    if (!window.LYMX || !window.LYMX.requireAuth){ showToast('Auth not loaded — refresh the page','warn'); return; }
+    const user = await window.LYMX.requireAuth(); if(!user) return;
+    sb = window.LYMX.sb;
+    await loadApps();
   }
-
-  render();
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
 </script>
 <script src="lymx-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-auth.js"></script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
 <script src="lymx-role-gate.js" defer></script>

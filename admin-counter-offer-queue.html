@@ -195,7 +195,8 @@ function paintList() {
              letterBtn +
              '<button class="btn btn-danger" onclick="setStatus(\'' + o.id + '\',\'rescinded\')">Rescind</button>';
     } else if (s === 'accepted') {
-      acts = letterBtn +
+      acts = '<button class="btn btn-primary" onclick="provisionHire(\'' + o.id + '\')">Provision hire</button>' +
+             letterBtn +
              '<a class="btn btn-outline" href="/admin-personnel-records.html">Open personnel records</a>';
     } else {
       acts = letterBtn;
@@ -327,9 +328,33 @@ async function markAccepted(id) {
   const o = _offers.find(x => x.id === id);
   const a = (o && _appsById[o.application_id]) || {};
   const who = [(a.first_name||''), (a.last_name||'')].filter(Boolean).join(' ') || a.email || 'this candidate';
-  if (!confirm('Mark this offer as ACCEPTED by ' + who + '?\nThis fires the auto-onboarding trigger — it will create the staff_profiles row and seed onboarding tasks. Only confirm after the candidate has agreed in writing.')) return;
-  // accepted_at is auto-stamped by the trigger if null, but we set it explicitly for clarity.
-  await patchOffer(id, { status: 'accepted', accepted_at: new Date().toISOString() }, 'Offer accepted. Personnel record + onboarding tasks have been auto-created. Open Personnel Records to verify.');
+  if (!confirm('Mark accepted + provision ' + who + ' as a hire?\nThis creates their staff account, seeds onboarding tasks, and emails them a set-password link. Only confirm after they have agreed in writing.')) return;
+  await provisionHire(id, 'Hired ' + who + '. Staff account + onboarding tasks created.');
+}
+
+// HR-provisions-on-accept: creates/links the hire's account, accepts the offer,
+// and seeds staff_profile + onboarding (idempotent server-side via provision-hire EF).
+async function provisionHire(id, okMsg) {
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session && session.access_token;
+  if (!tok) { banner('err', 'Not signed in — refresh and try again.'); return; }
+  banner('ok', 'Provisioning hire…');
+  let res;
+  try {
+    const r = await fetch(cfg.SUPABASE_URL + '/functions/v1/provision-hire', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok, apikey: cfg.SUPABASE_ANON_KEY },
+      body: JSON.stringify({ offer_id: id })
+    });
+    res = await r.json();
+    if (!r.ok || !res.ok) throw new Error((res && res.error) ? res.error : ('HTTP ' + r.status));
+  } catch (e) {
+    banner('err', 'Provisioning failed: ' + (e.message || 'unknown'));
+    return;
+  }
+  banner('ok', (okMsg || 'Hire provisioned.') + (res.email_sent ? ' Set-password email sent.' : ' (Email not sent — send the set-password link manually.)'));
+  await load();
 }
 
 async function markDeclined(id) {

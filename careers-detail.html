@@ -313,36 +313,50 @@
     }
     const SB = window.LYMX_CONFIG;
     if (!SB || !SB.SUPABASE_URL) { show('App not loaded yet, please retry.', false); return; }
+    const roleTitle = (document.querySelector('.modal h3')?.textContent || 'role').replace(/^Apply:\s*/i,'').trim();
+    const parts = name.split(/\s+/);
+    const firstName = parts.shift() || name;
+    const lastName = parts.join(' ') || '';
+    const coverLetter = 'Role: ' + roleTitle + '\nYears: ' + years + '\nLocation: ' + loc + '\nResume: ' + resume + '\n\nShipped story:\n' + pride;
     try {
-      // 1) Log application as feedback row so it lands in admin queue
-      await fetch(SB.SUPABASE_URL + '/rest/v1/feedback', {
+      // 1) Real application -> public.job_applications (enters the hiring pipeline).
+      const appRes = await fetch(SB.SUPABASE_URL + '/rest/v1/job_applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', apikey: SB.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SB.SUPABASE_ANON_KEY, Prefer: 'return=minimal' },
         body: JSON.stringify({
-          type: 'general',
-          priority: 'high',
-          subject: 'Career application: ' + name + ' (' + (document.querySelector('.modal h3')?.textContent || 'role').replace(/^Apply:\s*/i,'') + ')',
-          message: 'Name: ' + name + '\nEmail: ' + email + '\nYears: ' + years + '\nLocation: ' + loc + '\nResume: ' + resume + '\n\nShipped story:\n' + pride,
-          page_url: location.href,
-          user_email: email,
-          user_role: 'anonymous'
+          first_name: firstName,
+          last_name: lastName,
+          email: email,
+          resume_url: resume || null,
+          cover_letter: coverLetter,
+          source: 'careers_page',
+          status: 'new'
         })
       });
-      // 2) Confirmation email
-      await fetch(SB.SUPABASE_URL + '/functions/v1/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', apikey: SB.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SB.SUPABASE_ANON_KEY },
-        body: JSON.stringify({
-          channel: 'transactional',
-          recipient_email: email,
-          recipient_name: name,
-          subject: 'LYMX - your application is in',
-          body_text: 'Hi ' + name + ',\n\nThanks for applying to LYMX. Kenny reviews every application personally and will email you within 5 business days.\n\n— LYMX Hiring',
-          template_key: 'careers_app_confirm',
-        }),
-      });
+      if (!appRes.ok) {
+        console.warn('job_applications insert failed', appRes.status, await appRes.text());
+        show('Sorry — we could not submit your application. Please email careers@getlymx.com.', false);
+        return;
+      }
+      // 2) Confirmation email (best-effort — never blocks a successful application).
+      try {
+        await fetch(SB.SUPABASE_URL + '/functions/v1/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', apikey: SB.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SB.SUPABASE_ANON_KEY },
+          body: JSON.stringify({
+            channel: 'transactional',
+            recipient_email: email,
+            recipient_name: name,
+            subject: 'LYMX - your application is in',
+            body_text: 'Hi ' + name + ',\n\nThanks for applying to LYMX. Kenny reviews every application personally and will email you within 5 business days.\n\n— LYMX Hiring',
+            template_key: 'careers_app_confirm',
+          }),
+        });
+      } catch (e) { console.warn('confirmation email failed (non-fatal)', e); }
     } catch (e) {
       console.warn('Career app submit error', e);
+      show('Sorry — something went wrong submitting your application. Please try again or email careers@getlymx.com.', false);
+      return;
     }
     show('Application received — Kenny will email you within 5 business days.', true);
     setTimeout(() => document.getElementById('ovr').classList.remove('on'), 2400);
