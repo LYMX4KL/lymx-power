@@ -237,27 +237,13 @@
   // "PARTNER MODE AVAILABLE - Open Partner Dashboard" banner for dual-role
   // users so the partner workspace is one click away. Now we explicitly
   // prefer customer-dashboard when both rows exist.
+  // 2026-05-31 (Kenny) — LYMX is a website first. EVERYONE lands on the homepage
+  // when they sign in, so the participating businesses we promote are front-and-
+  // center for every user. Their role dashboard is one click away via the avatar
+  // menu and the sidebar. Callers still honor an explicit ?next= (e.g. a deep link
+  // that bounced through login) before falling back to this.
   async function getLoginDest() {
-    try {
-      const user = await LYMX.getUser();
-      if (!user) return 'customer-dashboard.html';
-      const sb = LYMX.sb;
-      const [biz, cust, partner] = await Promise.all([
-        // 2026-05-25: businesses uses owner_user_id (not user_id). Filtering
-        // by user_id returned null silently, so biz-only owners (no customers
-        // row) were always falling through to customer-dashboard.html.
-        sb.from('businesses').select('id').eq('owner_user_id', user.id).maybeSingle(),
-        sb.from('customers').select('id').eq('user_id', user.id).maybeSingle(),
-        sb.from('partners').select('id').eq('user_id', user.id).maybeSingle()
-      ]);
-      if (biz.data)     return 'biz-dashboard.html';
-      if (cust.data)    return 'customer-dashboard.html';   // customer or customer+partner dual-role
-      if (partner.data) return 'rep-dashboard.html';        // partner-only (no customers row)
-      return 'customer-dashboard.html';
-    } catch (e) {
-      console.warn('[login] getLoginDest failed, defaulting to customer-dashboard', e);
-      return 'customer-dashboard.html';
-    }
+    return 'index.html';
   }
 
   // ---------- Show / hide password ----------
@@ -396,8 +382,8 @@
       } catch (bonusErr) {
         console.warn('Welcome bonus call failed:', bonusErr);
       }
-      showNotice('signupNotice', 'Account created! +100 LYMX welcome bonus. Redirecting to your wallet…', 'ok');
-      setTimeout(() => window.location.replace('customer-dashboard.html'), 800);
+      showNotice('signupNotice', 'Account created! +100 LYMX welcome bonus. Taking you to LYMX…', 'ok');
+      setTimeout(() => window.location.replace('index.html'), 800);
     } else {
       // Email confirmation ON — user needs to click the link
       showNotice('signupNotice', 'Account created. Check your email for the confirmation link, then sign in.', 'ok');
