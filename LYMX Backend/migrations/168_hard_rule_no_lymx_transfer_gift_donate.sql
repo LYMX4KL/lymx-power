@@ -13,21 +13,56 @@
 --   * There is NO trading, gifting, purchasing, or peer-to-peer transfer of LYMX
 --     by anyone, ever. LYMX is non-transferable between accounts (anti-fraud/AML).
 --
--- This migration makes that rule STRUCTURAL at the database layer, so it holds
--- even against a SERVICE-ROLE writer (the deleted `transfer` edge function used
--- the service-role key and bypassed RLS — a CHECK constraint does not bypass).
+-- Enforced STRUCTURALLY at the DB layer, so it holds even against a SERVICE-ROLE
+-- writer (the deleted `transfer` edge function used the service-role key and
+-- bypassed RLS — a CHECK constraint does not bypass).
 --
--- Safe to apply: prod has 0 rows in public.transactions and 0 lymx_issuances
--- rows with reason='donation' (verified 2026-05-31), so tightening the
--- constraints cannot orphan existing data.
+-- ROOT-CAUSE NOTE (v3, 2026-05-31): the gift/donate/transfer features are RETIRED.
+-- Their only on-platform footprint is leftover test data from before launch:
+-- a test donation (lymx_issuances reason='donation' + a donations row) and
+-- (defensively) any transfer rows. We REVERSE + REMOVE that test data so the
+-- ledgers conform, then add every constraint as VALID (fully enforced) — not
+-- NOT VALID, and without grandfathering 'donation' in the CHECK. Balances stay
+-- correct: lymx_issuances balances are computed from the ledger (deleting the
+-- donation row restores the balance), and transfer effects on wallets.balance
+-- are reversed explicitly before the rows are removed. The whole migration runs
+-- in one transaction — if anything is unexpected it rolls back cleanly.
 -- Idempotent.
 -- =============================================================================
 
+begin;
+
 -- -----------------------------------------------------------------------------
--- 1. Forbid customer-to-customer transfer rows on the transactions ledger.
---    transaction_type is an ENUM (transfer_in / transfer_out still defined for
---    historical compatibility) — we block them with a CHECK, which applies to
---    every writer including service-role.
+-- 1. Reverse + remove retired DONATION test data.
+--    Donation balances are computed from the lymx_issuances ledger
+--    (v_my_lymx_balance sums the rows), so removing the negative donation row
+--    restores the donor's balance automatically. Delete the child donations
+--    rows first (they FK the issuance), then the issuance rows.
+-- -----------------------------------------------------------------------------
+delete from public.donations;
+delete from public.lymx_issuances where reason = 'donation';
+
+-- -----------------------------------------------------------------------------
+-- 2. Reverse + remove any TRANSFER rows on the transactions ledger.
+--    The transfer EF updated wallets.balance directly, so undo those balance
+--    effects before deleting the rows. (Pre-launch there should be none; these
+--    statements are exact no-ops when there are zero transfer rows.)
+-- -----------------------------------------------------------------------------
+update public.wallets w
+   set balance = w.balance + t.lymx_amount
+  from public.transactions t
+ where t.wallet_id = w.id and t.type = 'transfer_out';
+
+update public.wallets w
+   set balance = w.balance - t.lymx_amount
+  from public.transactions t
+ where t.wallet_id = w.id and t.type = 'transfer_in';
+
+delete from public.transactions where type in ('transfer_out','transfer_in');
+
+-- -----------------------------------------------------------------------------
+-- 3. Now the ledgers conform — add the constraints VALID (fully enforced).
+--    A CHECK applies to every writer, service-role included.
 -- -----------------------------------------------------------------------------
 alter table public.transactions
     drop constraint if exists transactions_no_lymx_transfer;
@@ -35,18 +70,11 @@ alter table public.transactions
     add  constraint transactions_no_lymx_transfer
     check (type not in ('transfer_out','transfer_in'));
 
--- -----------------------------------------------------------------------------
--- 2. Remove 'donation' from the issuance ledger. Donating wallet LYMX (which
---    paid the nonprofit the USD equivalent) is a transfer + cash conversion and
---    is no longer permitted. Re-state the reason + amount-sign CHECKs without it.
---    (Mirror of migrations 107/160, minus 'donation'.)
--- -----------------------------------------------------------------------------
 alter table public.lymx_issuances drop constraint if exists lymx_issuances_reason_check;
 alter table public.lymx_issuances add constraint lymx_issuances_reason_check
     check (reason in (
         'signup_bonus','transaction','referral','manual','correction',
-        'promo','review','redemption',
-        'business_event'
+        'promo','review','redemption','business_event'
     ));
 
 alter table public.lymx_issuances drop constraint if exists lymx_issuances_amount_lymx_check;
@@ -57,8 +85,9 @@ alter table public.lymx_issuances add constraint lymx_issuances_amount_lymx_chec
     );
 
 -- -----------------------------------------------------------------------------
--- 3. Neutralize the donation RPC. Same signature (so PostgREST stays happy),
---    but it now refuses — donations are retired. Revoke execute as well.
+-- 4. Block the donation WRITE PATH. The donate flow went through this SECURITY
+--    DEFINER RPC (the deleted donation-create EF called it). Same signature so
+--    PostgREST stays happy; it now refuses, and EXECUTE is revoked.
 -- -----------------------------------------------------------------------------
 create or replace function public.fn_request_donation(
     p_nonprofit_id      uuid,
@@ -78,7 +107,9 @@ $fn_request_donation$;
 revoke all on function public.fn_request_donation(uuid, int, text) from public;
 revoke execute on function public.fn_request_donation(uuid, int, text) from authenticated;
 
+commit;
+
 notify pgrst, 'reload schema';
 
-do $s$ begin raise notice 'Migration 168 OK - LYMX transfer/gift/donate hard rule enforced.'; end$s$;
+do $s$ begin raise notice 'Migration 168 OK - LYMX transfer/gift/donate hard rule enforced (validated).'; end$s$;
 -- END migration 168
