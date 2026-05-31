@@ -132,17 +132,37 @@
           '<div style="font-size:11.5px;color:#5b6472;margin-top:4px">'+pct+'% there</div>'
         : '<div style="font-size:13px;color:#13a26b;font-weight:800">All milestones cleared — legend status. 👑</div>';
 
+      // Dismissable (ticket 2026-05-31 "how do I close that goal banner?").
+      // Skip building entirely if the partner already dismissed it — no flash.
+      try { if (localStorage.getItem('lymxMomentumDismissed') === '1') return; } catch (e) {}
+
       var card = document.createElement('div');
-      card.style.cssText = 'background:#fff;border:1px solid #e6e8ec;border-radius:14px;padding:18px 20px;box-shadow:0 10px 30px rgba(14,17,22,.08);margin:0 0 18px';
+      card.style.cssText = 'position:relative;background:#fff;border:1px solid #e6e8ec;border-radius:14px;padding:18px 20px;box-shadow:0 10px 30px rgba(14,17,22,.08);margin:0 0 18px';
       card.innerHTML =
+        '<button id="lymxMomentumClose" type="button" aria-label="Dismiss" title="Dismiss" style="position:absolute;top:10px;right:12px;border:0;background:transparent;font-size:20px;line-height:1;color:#9aa3b0;cursor:pointer;padding:2px 6px">&times;</button>'+
         '<div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#5b6472;font-weight:700;margin-bottom:12px">Your momentum</div>'+
         '<div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:16px">'+badgesHtml(stats)+'</div>'+
         goalHtml + speedHtml +
         '<div id="lymxRankNudge" style="font-size:12.5px;color:#5b6472;margin-top:10px"></div>';
 
+      // Insert into the MAIN CONTENT wrap — NEVER the nav's .wrap. document
+      // .querySelector('.wrap') returned the header's `.wrap.nav-inner` (a flex
+      // row), so the card was squeezed into a narrow vertical strip overlapping
+      // the dashboard ("compressed/centered, can't scroll" — tickets 2026-05-27).
       var host = document.querySelector('main') || document.body;
-      var anchor = document.querySelector('.wrap') || host;
+      var anchor = document.querySelector('.wrap.page')
+                || document.querySelector('main .wrap')
+                || Array.prototype.filter.call(document.querySelectorAll('.wrap'), function (w) {
+                     return !w.closest('header, nav') && !w.classList.contains('nav-inner');
+                   })[0]
+                || host;
       (anchor.firstElementChild ? anchor : host).insertBefore(card, (anchor.firstElementChild || null));
+
+      var closeBtn = card.querySelector('#lymxMomentumClose');
+      if (closeBtn) closeBtn.addEventListener('click', function () {
+        card.remove();
+        try { localStorage.setItem('lymxMomentumDismissed', '1'); } catch (e) {}
+      });
 
       // Leaderboard nudge — ranked by this-month business activations, which is
       // cross-partner readable (cross-partner commission rows are blocked by RLS).
