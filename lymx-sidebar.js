@@ -379,6 +379,13 @@
       + '.lymx-sb .who-mini .role-tag{display:inline-block;background:#EEF6FF;color:#0a84ff;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:999px}'
       + '.lymx-sb .signout{color:#B91C1C}'
       + '.lymx-sb-pushed{padding-left:260px}'
+      + '.lymx-sb-grp-h{display:flex;align-items:center;justify-content:space-between;width:100%;background:transparent;border:0;cursor:pointer;padding:7px 10px;margin-top:4px;font:inherit;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6b7280;border-radius:8px}'
+      + '.lymx-sb-grp-h:hover{background:#f6f7f9}'
+      + '.lymx-sb-chev{transition:transform .15s ease;font-size:15px;color:#9aa3b0}'
+      + '.lymx-sb-grp.open > .lymx-sb-grp-h .lymx-sb-chev{transform:rotate(90deg)}'
+      + '.lymx-sb-grp-body{display:none}'
+      + '.lymx-sb-grp.open > .lymx-sb-grp-body{display:block}'
+      + '.lymx-sb-shared-h{margin-top:10px;border-top:1px solid #eef0f3;padding-top:10px}'
       + '@media(max-width:1100px){.lymx-sb{display:none}.lymx-sb-pushed{padding-left:0}}';
     document.head.appendChild(style);
   }
@@ -492,19 +499,55 @@
       'Staff Roles':'sidebar.staff_roles'
     };
 
-    for (var i = 0; i < items.length; i++) {
-      var it = items[i];
-      if (it.section) {
-        var sKey = SECTION_KEY[it.section] || '';
-        html += '<h3' + (sKey ? ' data-i18n="' + sKey + '"' : '') + '>' + it.section + '</h3>';
-      } else {
-        var active = (it.href || '').toLowerCase() === here ? ' active' : '';
-        var lKey = LABEL_KEY[it.label] || '';
-        html += '<a class="' + active.trim() + '" href="' + it.href + '">'
-              + '<span class="lymx-sb-icon">' + (it.icon || '') + '</span>'
-              + '<span' + (lKey ? ' data-i18n="' + lKey + '"' : '') + '>' + it.label + '</span></a>';
+    // 2026-05-31 — collapsible role GROUPS replace page-mode switching. Show every
+    // section the user is entitled to (rank-inclusive ceiling = role); each group
+    // collapses/expands; the current page's group is expanded by default; shared
+    // account links render once at the bottom so they don't repeat per group.
+    var _RNK = { admin:4, partner:3, business:2, customer:1 };
+    var _dbCeil = (function(){ try { return sessionStorage.getItem('lymx_db_role'); } catch(e){ return null; } })();
+    var ceil = (_RNK[_dbCeil]||0) > (_RNK[role]||0) ? _dbCeil : role;
+    var groupOrder = ceil === 'admin' ? ['admin','partner','business','customer']
+                   : ceil === 'partner' ? ['partner','customer']
+                   : ceil === 'business' ? ['business','customer']
+                   : ['customer'];
+    var GROUP_LABEL = { admin:'Admin', partner:'Partner', business:'Business', customer:'Customer' };
+    var SHARED = ['profile.html','my-conversations.html','notifications.html','my-feedback.html'];
+    function _linkHtml(it) {
+      var active = (it.href || '').toLowerCase() === here ? ' active' : '';
+      var lKey = LABEL_KEY[it.label] || '';
+      return '<a class="' + active.trim() + '" href="' + it.href + '">'
+           + '<span class="lymx-sb-icon">' + (it.icon || '') + '</span>'
+           + '<span' + (lKey ? ' data-i18n="' + lKey + '"' : '') + '>' + it.label + '</span></a>';
+    }
+    var openGroup = null;
+    for (var gi = 0; gi < groupOrder.length && !openGroup; gi++) {
+      var gm = MENUS[groupOrder[gi]] || [];
+      for (var gj = 0; gj < gm.length; gj++) {
+        if (gm[gj].href && gm[gj].href.toLowerCase() === here) { openGroup = groupOrder[gi]; break; }
       }
     }
+    if (!openGroup) openGroup = groupOrder[0];
+    for (var gx = 0; gx < groupOrder.length; gx++) {
+      var g = groupOrder[gx];
+      var menu = MENUS[g] || [];
+      var links = menu.filter(function (it) { return it.href && SHARED.indexOf(it.href.toLowerCase()) === -1; });
+      if (!links.length) continue;
+      html += '<div class="lymx-sb-grp' + (g === openGroup ? ' open' : '') + '" data-grp="' + g + '">'
+            + '<button type="button" class="lymx-sb-grp-h" data-grp-toggle="1"><span>' + (GROUP_LABEL[g] || g) + '</span><span class="lymx-sb-chev">\u203A</span></button>'
+            + '<div class="lymx-sb-grp-body">';
+      for (var lx = 0; lx < links.length; lx++) html += _linkHtml(links[lx]);
+      html += '</div></div>';
+    }
+    var sharedHtml = '';
+    for (var sx = 0; sx < SHARED.length; sx++) {
+      var found = null;
+      for (var sg = 0; sg < groupOrder.length && !found; sg++) {
+        var sm = MENUS[groupOrder[sg]] || [];
+        for (var sm2 = 0; sm2 < sm.length; sm2++) { if (sm[sm2].href && sm[sm2].href.toLowerCase() === SHARED[sx]) { found = sm[sm2]; break; } }
+      }
+      if (found) sharedHtml += _linkHtml(found);
+    }
+    if (sharedHtml) html += '<h3 class="lymx-sb-shared-h">Account</h3>' + sharedHtml;
     html += '<button class="lymx-sb-act signout" id="lymx-sb-signout" type="button">'
           + '<span class="lymx-sb-icon">\u{1F6AA}</span><span data-i18n="nav.sign_out">Sign out</span></button>';
 
@@ -669,6 +712,13 @@
     var sout = document.getElementById('lymx-sb-signout');
     if (sout) sout.addEventListener('click', doSignout);
 
+    // 2026-05-31 — collapsible group toggle. Groups toggle independently so a
+    // multi-role user can open Admin + Partner + Customer at once if they want.
+    sidebar.addEventListener('click', function (e) {
+      var hd = e.target.closest && e.target.closest('.lymx-sb-grp-h');
+      if (hd && hd.parentNode) hd.parentNode.classList.toggle('open');
+    });
+
     // 2026-05-24 — async DB role confirmation. If the first paint chose the
     // wrong role (e.g. landed on /profile.html with empty sessionStorage and
     // we guessed 'customer' but the user is a partner), this refreshes the
@@ -716,7 +766,10 @@
         // admin gets their menu; if it confirms non-admin, the page's role-gate
         // handles the bounce — leave the correct non-admin menu in place and
         // never paint admin.
-        if (pathRole && pathRole !== 'admin') return;
+        if (pathRole && pathRole !== 'admin') {
+          if ((rnk[dbRole]||0) > (rnk[role]||0) && window.LymxSidebar && typeof window.LymxSidebar.refresh === 'function') window.LymxSidebar.refresh();
+          return;
+        }
         if (pathRole === 'admin') {
           if (dbRole === 'admin' && role !== 'admin' &&
               window.LymxSidebar && typeof window.LymxSidebar.refresh === 'function') {
