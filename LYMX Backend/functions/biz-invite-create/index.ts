@@ -196,13 +196,24 @@ serve(async (req: Request) => {
         return errorResponse("Failed to generate unique invitation token after 5 tries", 500);
     }
 
-    // 2026-05-27 #05 — append the assigned partner's id as ?ref so when the
-    // prospect opens the link, biz-signup.html (and downstream attribution)
-    // sees which partner sent them. Previous URL had only ?invite_token, so
-    // the partner ref was lost and the prospect's signup couldn't be
-    // attributed back. assigned_partner_id is the canonical partners.id UUID
-    // (not the human P-000xxx code); biz-signup.html resolves either format.
-    const refSuffix = resolvedAssignedPartnerId ? `&ref=${resolvedAssignedPartnerId}` : "";
+    // 2026-05-27 #05 / 2026-05-31 #efde04e2 — append the assigned partner's
+    // REFERRAL CODE (P-000xxx) as ?ref so when the prospect opens the link,
+    // biz-signup.html auto-fills the "Partner referral code" field and the
+    // signup is attributed back to the sender. ROOT CAUSE of #efde04e2: the
+    // previous version appended the partners.id UUID, but biz-signup.html fills
+    // the referral field verbatim (it does NOT resolve UUID->code) and
+    // attribution matches on the human code — so a UUID never populated/credited.
+    // Resolve the code here (fall back to the UUID only if the code is missing).
+    let refValue = "";
+    if (resolvedAssignedPartnerId) {
+        const { data: refPartner } = await supabase
+            .from("partners")
+            .select("partner_code")
+            .eq("id", resolvedAssignedPartnerId)
+            .maybeSingle();
+        refValue = (refPartner && refPartner.partner_code) ? refPartner.partner_code : resolvedAssignedPartnerId;
+    }
+    const refSuffix = refValue ? `&ref=${encodeURIComponent(refValue)}` : "";
     const inviteUrl = `${publicSiteBaseUrl()}/biz-signup.html?invite_token=${invitation_token}${refSuffix}`;
 
     // ─── Optionally dispatch email ───

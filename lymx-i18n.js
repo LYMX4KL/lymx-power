@@ -233,20 +233,33 @@
     function _findLangDock() {
       return document.querySelector('header .nav-cta, .nav-cta, header[class*="nav"] .nav-right, header[class*="nav"] .nav-actions');
     }
-    function _dockInto(d) {
+    // 2026-05-31 #31413c3b #3f5237e9 — many pages (profile, my-feedback, the
+    // self-contained partner content pages) have a <header class="nav"> with a
+    // .nav-inner row but NO dedicated CTA cluster, so the target above was never
+    // found and the chip floated fixed at right:220px ON TOP of the nav links.
+    // Fallback: dock at the END of the nav row so it sits inline and never overlaps.
+    function _findLangDockFallback() {
+      return document.querySelector('header.nav .nav-inner, header .nav-inner, header.nav nav.nav-links, header[class*="nav"] .nav-inner');
+    }
+    function _dockInto(d, atEnd) {
       wrap.classList.add('lymx-lang-chip-docked');
-      d.insertBefore(wrap, d.firstChild);
+      if (atEnd) d.appendChild(wrap); else d.insertBefore(wrap, d.firstChild);
     }
     var navCta = _findLangDock();
+    var navFallback = navCta ? null : _findLangDockFallback();
     if (navCta) {
-      _dockInto(navCta);
+      _dockInto(navCta, false);
+    } else if (navFallback) {
+      _dockInto(navFallback, true);
     } else {
       document.body.appendChild(wrap); // float as fallback (e.g. login/signup with no nav)
       var _dockTries = 0;
       var _dockIv = setInterval(function () {
         _dockTries++;
-        var d = _findLangDock();
-        if (d) { clearInterval(_dockIv); _dockInto(d); }
+        var dc = _findLangDock();
+        var df = dc ? null : _findLangDockFallback();
+        if (dc) { clearInterval(_dockIv); _dockInto(dc, false); }
+        else if (df) { clearInterval(_dockIv); _dockInto(df, true); }
         else if (_dockTries > 25) { clearInterval(_dockIv); } // ~5s: keep float fallback
       }, 200);
     }
