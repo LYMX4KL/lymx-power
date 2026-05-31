@@ -250,6 +250,7 @@ const rawBiz   = (params.get('biz') || '').toLowerCase().replace(/[^a-z0-9-]/g, 
 const bizSlug  = rawBiz || 'lymx';   // default to LYMX itself so naked ?ref= links work
 const inviterRef = (params.get('ref') || '').replace(/[^a-z0-9-]/gi, '');
 const signupToken = params.get('token') || null;
+const claimToken  = params.get('claim') || null;   // Build A — reserved-LYMX claim link
 let bizConfig = null;
 
 function setStatus(text, kind) {
@@ -429,6 +430,29 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   document.getElementById('rewLymx').textContent = bizConfig.signup_bonus_from_lymx + ' LYMX';
   document.getElementById('rewBiz').textContent  = bizConfig.signup_bonus_from_biz + ' LYMX';
 
+  // Build A — claim the reserved LYMX if this signup came from a claim link.
+  if (claimToken) {
+    try {
+      const cr = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_claim_pending_by_token', {
+        method: 'POST',
+        headers: { apikey: ANON, Authorization: 'Bearer ' + (signupRes.data.session?.access_token || ANON), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_token: claimToken })
+      });
+      const cj = await cr.json();
+      if (cj && cj.ok) {
+        try { localStorage.removeItem('lymx_pending_claim_token'); } catch (e) {}  // bandaid-ok: best-effort cache clear; claim already succeeded server-side
+        document.getElementById('successSub').textContent =
+          'You claimed ' + cj.lymx_amount + ' LYMX from ' + (cj.business_name || 'a LYMX business') + "! It's in your wallet now, along with your welcome bonus.";
+      } else if (cj && cj.error === 'email_mismatch') {
+        document.getElementById('successSub').textContent =
+          'Your account is ready. Your reserved LYMX is tied to ' + (cj.reserved_for || 'a different email') + ' \u2014 sign in with that email to claim it.';
+      } else if (cj && cj.error === 'expired') {
+        document.getElementById('successSub').textContent =
+          "Your account is ready. The reserved LYMX hold expired \u2014 reply to your invite email and we'll re-issue it.";
+      }
+    } catch (e) { console.warn('[welcome] claim failed', e); }
+  }
+
   // Show the account type clearly so the user knows what they signed up as.
   // (Bug fix 2026-05-15 #cd4e9755)
   const acctType = 'Customer account';   // welcome.html only creates customer accounts
@@ -443,6 +467,33 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
 });
 
 loadBusiness();
+
+// Build A — if this page was opened from a claim link, resolve the reserved
+// LYMX and show it, and stash the token so the wallet can finish the claim if
+// the session is not active at signup time (e.g. email confirmation required).
+(async function showClaimOffer(){
+  if (!claimToken) return;
+  try { localStorage.setItem('lymx_pending_claim_token', claimToken); } catch (e) {}  // bandaid-ok: optional wallet-fallback hint; claim works without it
+  try {
+    const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_resolve_pending_claim', {
+      method:'POST', headers:{ apikey: ANON, Authorization:'Bearer '+ANON, 'Content-Type':'application/json' },
+      body: JSON.stringify({ p_token: claimToken })
+    });
+    const j = await r.json();
+    if (!j || !j.ok) return;
+    const card = document.querySelector('.form-card') || document.body;
+    const b = document.createElement('div');
+    b.style.cssText = 'background:#FFF7E6;border:1px solid #F0D58A;border-radius:10px;padding:14px 16px;margin:0 0 18px;font-size:14px;color:#7A5E10;display:flex;align-items:center;gap:10px';
+    if (j.status === 'claimed') {
+      b.innerHTML = '<span style="font-size:24px">\u2705</span><div>This reward has already been claimed. Sign in to see it in your wallet.</div>';
+    } else if (j.expired) {
+      b.innerHTML = '<span style="font-size:24px">\u23F0</span><div>This reward hold expired. Create your account and reply to your invite email \u2014 we\'ll re-issue your ' + j.lymx_amount + ' LYMX.</div>';
+    } else {
+      b.innerHTML = '<span style="font-size:24px">🎁</span><div><strong>' + j.lymx_amount + ' LYMX (~$' + j.dollar_value + ')</strong> from ' + (j.business_name||'a LYMX business') + ' is reserved for you' + (j.reserved_for ? ' (' + j.reserved_for + ')' : '') + '.<div style="font-size:12.5px;margin-top:2px">Sign up with that same email to claim it.</div></div>';
+    }
+    card.insertBefore(b, card.firstChild);
+  } catch(e){ console.warn('[welcome] claim resolve failed', e); }
+})();
 </script>
 
 <script src="lymx-feedback.js" defer></script>

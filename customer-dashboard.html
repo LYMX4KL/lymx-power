@@ -1215,5 +1215,35 @@ window.addEventListener('DOMContentLoaded', async function () {
   setInterval(function () { if (document.visibilityState === 'visible') loadMyClaims(); }, 30000);
 })();
 </script>
+<script>
+// Build A — finish a reserved-LYMX claim if the user arrived with a stashed
+// claim token but the claim could not complete at signup (e.g. the session
+// became active only after email confirmation). The RPC enforces email match
+// and one-time claim, so this is safe + idempotent.
+window.addEventListener('DOMContentLoaded', async function () {
+  var token; try { token = localStorage.getItem('lymx_pending_claim_token'); } catch (e) { return; }
+  if (!token) return;
+  try {
+    if (!window.LYMX || !window.LYMX.getSession) return;
+    var sess = await window.LYMX.getSession();
+    if (!sess || !sess.access_token) return;
+    var U = window.LYMX_CONFIG.SUPABASE_URL, A = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+    var r = await fetch(U + '/rest/v1/rpc/fn_claim_pending_by_token', {
+      method:'POST', headers:{ apikey:A, Authorization:'Bearer '+sess.access_token, 'Content-Type':'application/json' },
+      body: JSON.stringify({ p_token: token })
+    });
+    var j = await r.json();
+    var terminal = j && (j.ok || ['email_mismatch','expired','not_found'].indexOf(j.error)>=0 || (typeof j.error==='string' && j.error.indexOf('status_')===0));
+    if (terminal) { try { localStorage.removeItem('lymx_pending_claim_token'); } catch(e){} }  // bandaid-ok: best-effort cache clear after terminal claim outcome
+    if (j && j.ok && !j.already_claimed) {
+      var t = document.createElement('div');
+      t.textContent = '\uD83C\uDF81 ' + j.lymx_amount + ' LYMX claimed from ' + (j.business_name||'a LYMX business') + '!';
+      t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0e1116;color:#fff;padding:12px 18px;border-radius:999px;font-weight:700;font-size:14px;z-index:100000;box-shadow:0 8px 24px rgba(14,17,22,.3)';
+      document.body.appendChild(t);
+      setTimeout(function(){ try{ location.reload(); }catch(e){} }, 1800);  // bandaid-ok: best-effort balance refresh after claim
+    }
+  } catch (e) { console.warn('[dashboard] claim retry failed', e); }
+});
+</script>
 </body>
 </html>

@@ -266,14 +266,39 @@ async function sendToCandidate(id) {
     return;
   }
 
-  // Show the copy-paste email body in a modal so Helen can grab it.
-  showSendModal(who, candEmail, acceptUrl, o);
+  // 2026-05-31 #0 ROOT-CAUSE: auto-send the offer email to the candidate.
+  // Previously this only showed a copy-paste body and relied on the admin to
+  // send manually, so candidates never got the offer ("offer letter never
+  // received"). Send via the existing send-email EF (Resend, transactional =>
+  // from @getlymx.com). If it fails, the copy-paste modal below is the fallback.
+  let emailSent = false, emailErr = '';
+  if (candEmail) {
+    try {
+      const composed = composeOfferEmail(who, acceptUrl, o);
+      const er = await fetch(cfg.SUPABASE_URL + '/functions/v1/send-email', {
+        method: 'POST',
+        headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channel: 'transactional', recipient_email: candEmail, recipient_name: who, subject: composed.subj, body_text: composed.body })
+      });
+      const ej = await er.json().catch(() => ({}));
+      emailSent = !!(er.ok && ej.ok);
+      if (!emailSent) emailErr = (ej && ej.error) ? ej.error : ('HTTP ' + er.status);
+    } catch (e) { emailErr = (e && e.message) || 'send failed'; }
+  } else {
+    emailErr = 'no email on file for this candidate';
+  }
+  banner(emailSent ? 'ok' : 'err',
+    emailSent ? ('Offer emailed to ' + candEmail + '.')
+              : ('Could not auto-send (' + emailErr + '). Use the copy-paste body below to send manually.'));
+
+  // Show the modal: confirmation when sent, copy-paste fallback when not.
+  showSendModal(who, candEmail, acceptUrl, o, emailSent, emailErr);
   await load();
 }
 
-function showSendModal(who, candEmail, acceptUrl, offer) {
-  // Compose a copy-paste email body. Plain language; the magic link is the
-  // call-to-action. Helen pastes this into Gmail / her client of choice.
+// Compose the offer email (subject + body). Shared by the auto-send in
+// sendToCandidate and the copy-paste fallback modal so the two never drift.
+function composeOfferEmail(who, acceptUrl, offer) {
   const subj = 'Your LYMX offer letter';
   const body =
     'Hi ' + (who.split(' ')[0] || 'there') + ',\n\n' +
@@ -285,6 +310,11 @@ function showSendModal(who, candEmail, acceptUrl, offer) {
     '• Pay: ' + (offer.pay_rate_cents != null ? '$' + (Number(offer.pay_rate_cents)/100).toLocaleString() + ' / ' + (offer.pay_period || '') : '—') + '\n\n' +
     'The accept link is valid for 14 days. Reply to this email if you want to talk through any of the terms before clicking accept.\n\n' +
     'Welcome to LYMX,\nKenny + the LYMX team';
+  return { subj, body };
+}
+
+function showSendModal(who, candEmail, acceptUrl, offer, sentOk, sentErr) {
+  const { subj, body } = composeOfferEmail(who, acceptUrl, offer);
 
   // Build a self-contained modal element so we don't depend on prefab CSS.
   const existing = document.getElementById('sendModalOv');
@@ -294,8 +324,8 @@ function showSendModal(who, candEmail, acceptUrl, offer) {
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
   ov.innerHTML =
     '<div style="background:#fff;border-radius:14px;padding:22px;width:640px;max-width:100%;max-height:92vh;overflow-y:auto;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Inter,sans-serif;line-height:1.55">' +
-      '<h3 style="margin:0 0 6px;font-size:18px">Offer sent — copy the email below</h3>' +
-      '<p style="margin:0 0 12px;font-size:13.5px;color:#5b6472">The accept link is now live and expires in 14 days. Copy-paste the body below into your email to <strong>' + (candEmail || 'the candidate') + '</strong>. (Auto-email is on the roadmap; for now the human-from-human send works better.)</p>' +
+      '<h3 style="margin:0 0 6px;font-size:18px">' + (sentOk ? 'Offer sent ✓' : 'Offer ready — send the email below') + '</h3>' +
+      '<p style="margin:0 0 12px;font-size:13.5px;color:#5b6472">The accept link is now live and expires in 14 days. ' + (sentOk ? ('We emailed the offer to <strong>' + (candEmail || 'the candidate') + '</strong> automatically. The copy below is a backup if you want to follow up personally.') : ('Auto-send did not go through' + (sentErr ? ' (' + sentErr + ')' : '') + ' — copy-paste the body below into your email to <strong>' + (candEmail || 'the candidate') + '</strong>.')) + '</p>' +
       '<div style="font-size:11px;color:#5b6472;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">To</div>' +
       '<input type="text" readonly value="' + (candEmail || '').replace(/"/g, '&quot;') + '" style="width:100%;padding:9px 11px;border:1px solid #e6e8ec;border-radius:7px;font:inherit;font-size:13.5px;margin-bottom:10px;background:#f6f7f9" />' +
       '<div style="font-size:11px;color:#5b6472;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Subject</div>' +

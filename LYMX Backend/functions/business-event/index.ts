@@ -47,7 +47,7 @@ const corsHeaders = {
 const json = (b: unknown, s = 200) =>
     new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-const INVITE_BASE = "https://getlymx.com/signup.html";
+const INVITE_BASE = "https://getlymx.com/welcome.html";  // 2026-05-31 #A: signup.html did not exist; welcome.html is the real signup
 
 serve(async (req) => {
     if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
