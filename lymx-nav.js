@@ -425,6 +425,12 @@
       '</div>';
     menu.innerHTML = headerHtml +
       '<a href="' + dest + '" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none" data-i18n="nav.dashboard">▦ Dashboard</a>' +
+      // 2026-05-31 #43/#44 - Notifications + My LYMX Wallet were absent from the universal
+      // account menu for EVERY role (not just partners). Partners reported them missing
+      // because they have no other entry point. Both pages (notifications.html,
+      // customer-wallet.html) are open to any signed-in user - added here for all roles.
+      '<a href="customer-wallet.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none" data-i18n="nav.wallet">💰 My LYMX Wallet</a>' +
+      '<a href="notifications.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none"><span>🔔 </span><span data-i18n="nav.notifications">Notifications</span></a>' +
       '<a href="my-conversations.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none">📬 <span data-i18n="nav.messages">Messages</span> <span id="lymxNavMsgBadge" style="display:none;background:#0a84ff;color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;margin-left:4px"></span></a>' +
       '<a href="profile.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none" data-i18n="nav.profile">👤 Profile</a>' +
       '<a href="customer-settings.html" style="display:block;padding:8px 10px;border-radius:6px;color:#1a1f27;text-decoration:none">⚙️ Settings &amp; Privacy</a>' +

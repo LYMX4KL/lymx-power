@@ -230,7 +230,13 @@
       // above the indicator on standard devices.
       + '@media (max-width:520px){'
       +   '#lymx-share-pill{left:12px;bottom:12px;padding:10px 14px;font-size:12.5px}'
-      + '}';
+      + '}'
+      // 2026-05-31 #2 — at >=1101px the fixed left sidebar (.lymx-sb) occupies the
+      // bottom-left corner, so the bottom-left share pill floated over its "Sign out"
+      // button. Shift the pill to the right of the sidebar ONLY when the sidebar is
+      // actually present (body.lymx-sb-pushed is added by lymx-sidebar.js), so the
+      // pill never covers Sign out and pages without the sidebar are unaffected.
+      + '@media (min-width:1101px){body.lymx-sb-pushed #lymx-share-pill{left:272px}}';
     var st = document.createElement('style');
     st.id = 'lymx-share-css';
     st.textContent = css;
@@ -246,7 +252,7 @@
   }
 
   // Wait for DOM body, then inject. We deliberately don't wait for
-  // lymx-sidebar to finish hydrating the partner_code cache — if the user
+  // lymx-sidebar to finish hydrating the partner_code cache  — if the user
   // shares before the cache lands, the URL goes out without ?ref=. That's
   // strictly better than blocking the button on a network round-trip.
   if (document.readyState === 'loading') {
