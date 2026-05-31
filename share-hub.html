@@ -203,18 +203,16 @@
       try { await navigator.clipboard.writeText(text); toast('Copied. Paste into your social / SMS / email.', 'ok'); }
       catch (err) { toast('Copy failed — long-press the text to copy manually.', 'err'); }
     }));
-    grid.querySelectorAll('[data-share]').forEach(b => b.addEventListener('click', async e => {
+    grid.querySelectorAll('[data-share]').forEach(b => b.addEventListener('click', e => {
       const card = e.currentTarget.closest('.post');
       const text = card.getAttribute('data-short');
       const url  = card.getAttribute('data-url');
-      try {
-        if (navigator.share) {
-          await navigator.share({ title: 'LYMX', text: text, url: url });
-        } else {
-          await navigator.clipboard.writeText(text);
-          toast('Copied (native share unsupported on this browser).', 'ok');
-        }
-      } catch (err) { if (err && err.name !== 'AbortError') console.warn('[share-hub] share/clipboard', err); }
+      // 2026-05-31 #65 — route through the universal share dialog (lymx-share.js)
+      // so clicking Share ALWAYS opens a working share UI (per-network + copy),
+      // instead of navigator.share silently doing nothing on desktop.
+      if (window.LYMX_share) { window.LYMX_share({ title: 'LYMX', text: text, url: url }); return; }
+      try { navigator.clipboard.writeText(text); toast('Copied — paste it anywhere to share.', 'ok'); }
+      catch (err) { toast('Copy this text to share: ' + text, 'err'); }
     }));
   }
 })();

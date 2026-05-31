@@ -151,43 +151,82 @@
   }
 
   // ----- the actual share action -------------------------------------------
+  // 2026-05-31 #65/#69 — deterministic share dialog. navigator.share is flaky
+  // on desktop (frequently rejects or does nothing), which is exactly why
+  // "Share does nothing" kept getting reported across Share Hub and business
+  // profiles. On touch devices the native sheet is still the best UX; on
+  // desktop (and any non-native case) we show an explicit dialog with
+  // per-network links + a Copy button, so a click ALWAYS does something visible.
+  function shareNetworks(url, text, title) {
+    var u = encodeURIComponent(url), t = encodeURIComponent(text || title || ''), tt = encodeURIComponent(title || 'LYMX');
+    return [
+      { label: 'X / Twitter', color: '#0f1419', href: 'https://twitter.com/intent/tweet?text=' + t + '&url=' + u },
+      { label: 'Facebook',    color: '#1877f2', href: 'https://www.facebook.com/sharer/sharer.php?u=' + u },
+      { label: 'WhatsApp',    color: '#25d366', href: 'https://wa.me/?text=' + t + '%20' + u },
+      { label: 'LinkedIn',    color: '#0a66c2', href: 'https://www.linkedin.com/sharing/share-offsite/?url=' + u },
+      { label: 'Email',       color: '#5b6472', href: 'mailto:?subject=' + tt + '&body=' + t + '%0A%0A' + u }
+    ];
+  }
+  function copyShareLink(url) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(
+        function () { toast('Link copied — paste it anywhere'); },
+        function () { window.prompt('Copy this link to share:', url); });
+    } else { window.prompt('Copy this link to share:', url); }
+  }
+  function openShareDialog(opts) {
+    opts = opts || {};
+    var url = opts.url || pageShareUrl();
+    var title = opts.title || pageShareTitle();
+    var text = opts.text || title;
+    var prev = document.getElementById('lymxShareOverlay'); if (prev) prev.remove();
+    var ov = document.createElement('div');
+    ov.id = 'lymxShareOverlay';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Share');
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(8,12,20,.5);z-index:100001;display:flex;align-items:center;justify-content:center;padding:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif';
+    var nets = shareNetworks(url, text, title).map(function (n) {
+      return '<a href="' + n.href + '" target="_blank" rel="noopener" class="lymx-share-net" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid #e6e8ec;border-radius:10px;text-decoration:none;color:#0e1116;font-weight:700;font-size:14px;background:#fff">' +
+        '<span style="width:9px;height:9px;border-radius:50%;background:' + n.color + ';flex:0 0 auto"></span>' + n.label + '</a>';
+    }).join('');
+    ov.innerHTML =
+      '<div style="background:#fff;border-radius:16px;padding:20px;width:380px;max-width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
+          '<h3 style="margin:0;font-size:17px;font-weight:800;color:#0e1116">Share</h3>' +
+          '<button type="button" id="lymxShareClose" aria-label="Close" style="appearance:none;border:0;background:#f1f3f6;width:30px;height:30px;border-radius:8px;font-size:17px;cursor:pointer;color:#5b6472;line-height:1">&times;</button>' +
+        '</div>' +
+        '<p style="margin:0 0 14px;font-size:12.5px;color:#5b6472">Pick where to share, or copy the link.</p>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">' + nets + '</div>' +
+        '<div style="display:flex;gap:8px;align-items:center">' +
+          '<input type="text" readonly id="lymxShareUrlField" value="' + String(url).replace(/"/g, '&quot;') + '" style="flex:1;min-width:0;padding:10px 11px;border:1px solid #e6e8ec;border-radius:9px;font:inherit;font-size:12.5px;background:#f6f7f9;color:#0e1116" />' +
+          '<button type="button" id="lymxShareCopyBtn" style="appearance:none;border:0;background:#0e1116;color:#fff;padding:10px 16px;border-radius:9px;cursor:pointer;font:inherit;font-size:13.5px;font-weight:700;white-space:nowrap">Copy link</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(ov);
+    var close = function () { ov.remove(); document.removeEventListener('keydown', onKey); };
+    var onKey = function (e) { if (e.key === 'Escape') close(); };
+    ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+    document.getElementById('lymxShareClose').addEventListener('click', close);
+    document.getElementById('lymxShareCopyBtn').addEventListener('click', function () { copyShareLink(url); });
+    ov.querySelectorAll('.lymx-share-net').forEach(function (a) { a.addEventListener('click', function () { setTimeout(close, 120); }); });
+    document.addEventListener('keydown', onKey);
+  }
+
   async function doShare(opts) {
     var title = (opts && opts.title) || pageShareTitle();
     var url   = (opts && opts.url)   || pageShareUrl();
-    // 2026-05-26 — per Kenny: "use the topic of that page as subject".
-    // The page topic is the share TITLE; the URL is appended by the share
-    // target naturally. Don't pre-concatenate the URL into the title.
-    var shareData = { title: title, text: title, url: url };
-
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-        return; // success on native share sheet
-      } catch (e) {
-        // AbortError = user cancelled the native share sheet on purpose.
-        // Anything else = the share API is broken on this device — fall
-        // through to clipboard so the share isn't lost. Both legitimate.
-        if (e && e.name === 'AbortError') return;
-        console.warn('[lymx-share] navigator.share failed, falling back', e);
-      }
+    var text  = (opts && opts.text)  || title;
+    var coarse = false;
+    try { coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); } catch (e) { coarse = false; }
+    // Touch devices: native sheet is the best UX. If missing or it fails for
+    // any reason other than a deliberate cancel, fall through to the dialog.
+    if (typeof navigator.share === 'function' && coarse) {
+      try { await navigator.share({ title: title, text: text, url: url }); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; }
     }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      try {
-        await navigator.clipboard.writeText(url);
-        toast('Link copied — share it anywhere');
-        return;
-      } catch (e) {
-        // clipboard.writeText rejects when the page lacks user activation /
-        // clipboard permission (older browsers, some embed contexts). Real
-        // failure mode; fall through to the prompt fallback so the share
-        // still completes.
-        console.warn('[lymx-share] clipboard write failed', e);
-      }
-    }
-    // Last-resort: visible prompt the user can copy from manually. window.prompt
-    // returns null on cancel but does not throw.
-    window.prompt('Copy this link to share:', url);
+    // Desktop / non-native: deterministic dialog — always visible and working.
+    openShareDialog({ title: title, url: url, text: text });
   }
+
 
   // Expose programmatic API for pages that want to wire their own buttons.
   // e.g. a hero CTA on /what-is-lymx can do: onclick="LYMX_share()".

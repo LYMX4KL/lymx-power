@@ -277,6 +277,10 @@
       var url = location.href;
       var h1 = document.querySelector('h1');
       var title = (h1 && h1.textContent.trim()) || document.title || 'LYMX business';
+      // 2026-05-31 #69 — route through the universal share dialog (lymx-share.js,
+      // loaded on every page via lymx-app.js) so the Share button always opens a
+      // working share UI on desktop instead of navigator.share doing nothing.
+      if (window.LYMX_share) { window.LYMX_share({ title: title, url: url }); return; }
       if (navigator.share) {
         try { await navigator.share({ title: title, url: url }); return; }
         catch (e) { console.warn("[lymx-biz-actions.js:274] caught (user cancelled or permission denied — fall through to clipboard):", e); }
