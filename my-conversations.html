@@ -154,6 +154,7 @@
   let me = null, myCustomerId = null, myBusinessId = null, myPartnerId = null;
   let activeConvId = null;
   let convCache = [];
+  let pendingPartnerTarget = null;  // set when arriving via ?with=<partnerId>
 
   const $ = id => document.getElementById(id);
   const esc = s => String(s==null?"":s).replace(/[<>&"]/g, c=>({ "<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;" }[c]));
@@ -401,7 +402,28 @@
 
   // New thread
   async function openNewModal(){ $("newModal").classList.add("show"); }
-  function closeNewModal(){ $("newModal").classList.remove("show"); $("newBanner").innerHTML=""; $("newSubject").value=""; $("newBody").value=""; }
+  function closeNewModal(){ $("newModal").classList.remove("show"); $("newBanner").innerHTML=""; $("newSubject").value=""; $("newBody").value=""; pendingPartnerTarget=null; var sel=$("newRecipientType"); if(sel){ sel.style.display=""; var l=sel.previousElementSibling; if(l&&l.tagName==="LABEL") l.style.display=""; } }
+
+  // 2026-05-31 #361c890a — open (or start) a conversation with a specific partner
+  // when arriving via my-conversations.html?with=<partnerId> (from partner-tree /
+  // My Downlines "Message"). Root cause: the link passed ?with= but this page never
+  // read it, so the thread never opened. Uses the EF's participant_user_ids so the
+  // target partner is added to the thread and sees it.
+  async function openPartnerThread(pid){
+    try {
+      const { data: tp } = await sb.from("partners").select("id, user_id, display_name, legal_name").eq("id", pid).maybeSingle();
+      if (!tp) { console.warn("[my-conversations] ?with= partner not found", pid); return; }
+      const name = tp.display_name || tp.legal_name || "partner";
+      const existing = (convCache||[]).find(c => c.subject_type === "partner" && c.subject_partner_id === pid);
+      if (existing) { openConv(existing.id); return; }
+      pendingPartnerTarget = { id: tp.id, userId: tp.user_id, name: name };
+      openNewModal();
+      var sel=$("newRecipientType"); if(sel){ sel.style.display="none"; var l=sel.previousElementSibling; if(l&&l.tagName==="LABEL") l.style.display="none"; }
+      $("newBizPickerWrap").style.display="none";
+      $("newSubject").value = "Message to " + name;
+      $("newBanner").innerHTML = '<div style="padding:8px 10px;background:#eef5ff;border:1px solid #cfe0ff;border-radius:7px;font-size:13px;color:#0a3d8f">New message to <b>'+esc(name)+'</b></div>';
+    } catch(e){ console.warn("[my-conversations] openPartnerThread failed", e); }
+  }
 
   // 2026-05-20 #d73dd292 — autocomplete upgrade per Rae: avatar circle + bold
   // highlight of matched substring + hover styling so the dropdown feels like
@@ -460,7 +482,9 @@
     if (!session) return;
 
     let payload;
-    if (recipient === "support") {
+    if (pendingPartnerTarget) {
+      payload = { subject_type: "partner", subject_id: pendingPartnerTarget.id, kind: "general", title: subject, channel: "in_app", body: bodyText, participant_user_ids: pendingPartnerTarget.userId ? [pendingPartnerTarget.userId] : [] };
+    } else if (recipient === "support") {
       // 2026-05-19 #f99eef4c - was: subject_type fell through to "none" + null id
       // when user had no customer/business/partner row yet. Now: self-heal by
       // creating a customers row if missing, so the support thread can anchor.
@@ -545,6 +569,12 @@
 
     await loadConversations();
 
+    // 2026-05-31 #361c890a — deep-link to a partner thread
+    try {
+      var withId = new URLSearchParams(location.search).get("with");
+      if (withId) await openPartnerThread(withId);
+    } catch(e){ console.warn("[my-conversations] ?with handler failed", e); }
+
     // Realtime
     sb.channel("my-conv-refresh")
       .on("postgres_changes", { event:"INSERT", schema:"public", table:"conversation_messages" }, () => {
@@ -569,3 +599,12 @@
       if (layout && layout.classList.contains("show-thread")
           && !(history.state && history.state.lymxConvOpen)) {
     
+
+          closeThreadPane();
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
