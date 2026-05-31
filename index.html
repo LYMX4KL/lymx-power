@@ -77,16 +77,16 @@
 
   /* Hero with search */
   .hero{
-    position:relative;padding:84px 0 64px;
+    position:relative;padding:44px 0 32px;
     background:
       radial-gradient(900px 450px at 80% -10%, rgba(10,132,255,.14), transparent 60%),
       radial-gradient(700px 380px at -5% 20%, rgba(19,162,107,.10), transparent 60%),
       linear-gradient(180deg,#fff,#fafbfc);
   }
   .eyebrow{display:inline-block;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-2);font-weight:700;background:rgba(10,132,255,.08);padding:6px 10px;border-radius:999px;margin-bottom:16px}
-  .hero h1{font-size:clamp(36px,5.6vw,62px);line-height:1.05;margin:0 0 18px;letter-spacing:-.02em;font-weight:800;max-width:900px}
+  .hero h1{font-size:clamp(26px,3.4vw,40px);line-height:1.08;margin:0 0 10px;letter-spacing:-.02em;font-weight:800;max-width:760px}
   .hero h1 .grad{background:linear-gradient(90deg,#0a84ff,#13a26b);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .lede{font-size:18px;color:var(--muted);max-width:680px;margin:0 0 32px}
+  .lede{font-size:14.5px;color:var(--muted);max-width:600px;margin:0 0 18px}
 
   /* Search bar */
   .search{
@@ -313,15 +313,15 @@
     <style>
       .lx-feat{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:6px 0 20px}
       @media(max-width:720px){.lx-feat{grid-template-columns:1fr}}
-      .lx-col{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 16px 10px;box-shadow:var(--shadow)}
-      .lx-col-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0 2px 10px}
-      .lx-col-h .ic{font-size:16px}
-      .lx-item{display:flex;align-items:center;gap:12px;padding:9px 8px;border-radius:11px;text-decoration:none;color:inherit;transition:.12s}
+      .lx-col{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 22px 14px;box-shadow:var(--shadow)}
+      .lx-col-h{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2);margin:0 2px 12px}
+      .lx-col-h .ic{font-size:20px}
+      .lx-item{display:flex;align-items:center;gap:14px;padding:13px 10px;border-radius:12px;text-decoration:none;color:inherit;transition:.12s}
       .lx-item:hover{background:var(--bg-soft)}
-      .lx-item .em{width:40px;height:40px;border-radius:11px;flex-shrink:0;background:linear-gradient(135deg,#fef3e0,#ffd9a8);display:flex;align-items:center;justify-content:center;font-size:21px}
+      .lx-item .em{width:54px;height:54px;border-radius:13px;flex-shrink:0;background:linear-gradient(135deg,#fef3e0,#ffd9a8);display:flex;align-items:center;justify-content:center;font-size:28px}
       .lx-item .bd{min-width:0;flex:1}
-      .lx-item .nm{font-size:14.5px;font-weight:800;letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .lx-item .ct{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .lx-item .nm{font-size:17px;font-weight:800;letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .lx-item .ct{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .lx-item .rt{flex-shrink:0;font-size:11.5px;font-weight:800;color:#7a4a08;background:rgba(240,160,32,.16);padding:2px 8px;border-radius:999px}
       .lx-item .nw{flex-shrink:0;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#0c6940;background:rgba(19,162,107,.12);padding:2px 8px;border-radius:999px}
       .lx-col .empty{padding:14px 8px;color:var(--muted);font-size:13px}
@@ -355,7 +355,7 @@
             +'<div class="bd"><div class="nm">'+esc(b.display_name)+'</div><div class="ct">'+esc(prettyCat(b.category))+'</div></div>'
             +right+'</a>';
         }
-        function fill(id,rows,kind){ var el=document.getElementById(id); if(!el)return; if(!rows.length){ el.innerHTML='<div class="empty">More businesses coming soon — <a href="browse.html">browse the network →</a></div>'; return;} el.innerHTML=rows.slice(0,5).map(function(b){return item(b,kind);}).join(''); }
+        function fill(id,rows,kind){ var el=document.getElementById(id); if(!el)return; if(!rows.length){ el.innerHTML='<div class="empty">More businesses coming soon — <a href="browse.html">browse the network →</a></div>'; return;} el.innerHTML=rows.slice(0,6).map(function(b){return item(b,kind);}).join(''); }
         var top=await rpc('fn_top_rated_local_businesses',{p_zip_prefix:null,p_limit:5});
         if(!top.length) top=await approved('&order=created_at.desc&limit=5');
         fill('lxTopRated',top,'top');
