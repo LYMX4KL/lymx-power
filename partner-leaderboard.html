@@ -376,7 +376,11 @@
 
     const tbody = document.querySelector('.leaderboard tbody');
     if (tbody) {
-      const top25 = ranked.slice(0, 25);
+      // 2026-05-31 #c6e36c73 root-cause: only rank partners with real activity
+      // (production/downline/earnings). A 0/0/0 partner sorted to #1 on tiebreakers
+      // and showed as "#1 with 0 activations". This tbody is ALSO rendered by the
+      // activation-ranked loader below (same #leaderboardBody) - both filter now.
+      const top25 = ranked.filter(p => (p.ownProduction||0) > 0 || (p.downlineCount||0) > 0 || (p.lifetimeEarnings||0) > 0).slice(0, 25);
       tbody.innerHTML = top25.map((p, i) => {
         const rank = i + 1;
         const tier = p.is_founding_25 ? 'Founding 25' : (p.ownProduction >= 10 ? 'Master' : p.ownProduction >= 3 ? 'Active' : 'Side');
@@ -492,7 +496,10 @@
     // 5) Table — top 25
     const body = document.getElementById('leaderboardBody');
     if (body) {
-      const top25 = ranked.slice(0, 25);
+      // 2026-05-31 #c6e36c73 root-cause: rank only partners who've activated a
+      // business (matches the podium's topActivators filter) so there's no
+      // "#1 with 0 activations" row; others see the empty state + my-rank explanation.
+      const top25 = ranked.filter(p => (p.activations||0) > 0).slice(0, 25);
       if (!top25.length) {
         body.innerHTML = '<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--muted)">No Partners yet — be the first.</td></tr>';
       } else {
