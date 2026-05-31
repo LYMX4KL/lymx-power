@@ -409,20 +409,34 @@
   // My Downlines "Message"). Root cause: the link passed ?with= but this page never
   // read it, so the thread never opened. Uses the EF's participant_user_ids so the
   // target partner is added to the thread and sees it.
+  function _setupPartnerCompose(tp){
+    const name = tp.display_name || tp.legal_name || "partner";
+    const existing = (convCache||[]).find(c => c.subject_type === "partner" && c.subject_partner_id === tp.id);
+    if (existing) { openConv(existing.id); return; }
+    pendingPartnerTarget = { id: tp.id, userId: tp.user_id, name: name };
+    openNewModal();
+    var sel=$("newRecipientType"); if(sel){ sel.style.display="none"; var l=sel.previousElementSibling; if(l&&l.tagName==="LABEL") l.style.display="none"; }
+    $("newBizPickerWrap").style.display="none";
+    $("newSubject").value = "Message to " + name;
+    $("newBanner").innerHTML = '<div style="padding:8px 10px;background:#eef5ff;border:1px solid #cfe0ff;border-radius:7px;font-size:13px;color:#0a3d8f">New message to <b>'+esc(name)+'</b></div>';
+  }
   async function openPartnerThread(pid){
     try {
       const { data: tp } = await sb.from("partners").select("id, user_id, display_name, legal_name").eq("id", pid).maybeSingle();
       if (!tp) { console.warn("[my-conversations] ?with= partner not found", pid); return; }
-      const name = tp.display_name || tp.legal_name || "partner";
-      const existing = (convCache||[]).find(c => c.subject_type === "partner" && c.subject_partner_id === pid);
-      if (existing) { openConv(existing.id); return; }
-      pendingPartnerTarget = { id: tp.id, userId: tp.user_id, name: name };
-      openNewModal();
-      var sel=$("newRecipientType"); if(sel){ sel.style.display="none"; var l=sel.previousElementSibling; if(l&&l.tagName==="LABEL") l.style.display="none"; }
-      $("newBizPickerWrap").style.display="none";
-      $("newSubject").value = "Message to " + name;
-      $("newBanner").innerHTML = '<div style="padding:8px 10px;background:#eef5ff;border:1px solid #cfe0ff;border-radius:7px;font-size:13px;color:#0a3d8f">New message to <b>'+esc(name)+'</b></div>';
+      _setupPartnerCompose(tp);
     } catch(e){ console.warn("[my-conversations] openPartnerThread failed", e); }
+  }
+  // 2026-05-31 #d298254c — "Message my sponsor" links here as ?to=<sponsor email>
+  // (rep-dashboard sponsor strip + dashboards). Resolve the partner by contact_email
+  // and open/create the thread, same as ?with=. Root cause: the page only handled
+  // ?with=<id>, so ?to=<email> arrivals landed on the list and "nothing happened".
+  async function openPartnerThreadByEmail(email){
+    try {
+      const { data: tp } = await sb.from("partners").select("id, user_id, display_name, legal_name").eq("contact_email", email).maybeSingle();
+      if (!tp) { console.warn("[my-conversations] ?to= sponsor not found by email", email); return; }
+      _setupPartnerCompose(tp);
+    } catch(e){ console.warn("[my-conversations] openPartnerThreadByEmail failed", e); }
   }
 
   // 2026-05-20 #d73dd292 — autocomplete upgrade per Rae: avatar circle + bold
@@ -571,9 +585,11 @@
 
     // 2026-05-31 #361c890a — deep-link to a partner thread
     try {
-      var withId = new URLSearchParams(location.search).get("with");
+      var _qp = new URLSearchParams(location.search);
+      var withId = _qp.get("with"); var toEmail = _qp.get("to");
       if (withId) await openPartnerThread(withId);
-    } catch(e){ console.warn("[my-conversations] ?with handler failed", e); }
+      else if (toEmail) await openPartnerThreadByEmail(toEmail);
+    } catch(e){ console.warn("[my-conversations] deep-link handler failed", e); }
 
     // Realtime
     sb.channel("my-conv-refresh")

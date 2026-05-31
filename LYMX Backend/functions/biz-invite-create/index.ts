@@ -206,7 +206,7 @@ serve(async (req: Request) => {
     // Resolve the code here (fall back to the UUID only if the code is missing).
     let refValue = "";
     if (resolvedAssignedPartnerId) {
-        const { data: refPartner } = await supabase
+        const { data: refPartner } = await supa
             .from("partners")
             .select("partner_code")
             .eq("id", resolvedAssignedPartnerId)
