@@ -409,6 +409,23 @@
            '/' + piece + '_' + lang + '.pdf';
   }
 
+  // 2026-05-31 #59 — the shared (non-personalized) kit lives at /ONBOARDING-KIT/{lang}/.
+  // Used as a fallback so the buttons ALWAYS download something real when no
+  // business is resolved (e.g. a partner opening the page via ?ref=, or a
+  // prospect who isn't signed in) instead of sitting dead at href="#".
+  function genericFileUrl(lang, piece) {
+    return '/ONBOARDING-KIT/' + encodeURIComponent(lang) + '/' + piece + '_' + lang + '.pdf';
+  }
+  function injectGenericBanner() {
+    var ctrl = document.querySelector('.ctrl');
+    if (!ctrl || document.getElementById('printKitGenericBanner')) return;
+    var node = document.createElement('div');
+    node.id = 'printKitGenericBanner';
+    node.style.cssText = 'background:#eef5ff;border:1px solid #c5dffb;border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:13.5px;color:#1d4ed8';
+    node.innerHTML = '<strong>Showing the standard kit.</strong> The buttons below download the ready-to-print signage. Sign in as a Business owner to get the same pieces with <strong>your</strong> QR code baked in. <a href="login.html?next=biz-print-kit.html" style="color:#0050c7;font-weight:700">Sign in</a>';
+    ctrl.parentNode.insertBefore(node, ctrl);
+  }
+
   function injectSigninBanner(reason) {
     var ctrl = document.querySelector('.ctrl');
     if (!ctrl) return;
@@ -428,10 +445,12 @@
     items.forEach(function (item, idx) {
       var piece = PIECE_FOR_CARD_INDEX[idx];
       if (!piece) return;
-      var url = fileUrl(slug, lang, piece);
+      // 2026-05-31 #59 — personalized URL when a biz is resolved, else the generic kit.
+      var url = slug ? fileUrl(slug, lang, piece) : genericFileUrl(lang, piece);
+      var dlName = piece + '_' + (slug || 'lymx') + '_' + lang + '.pdf';
       item.querySelectorAll('.btn-pdf').forEach(function (a) {
         a.setAttribute('href', url);
-        a.setAttribute('download', piece + '_' + slug + '_' + lang + '.pdf');
+        a.setAttribute('download', dlName);
         a.setAttribute('rel', 'noopener');
       });
       item.querySelectorAll('.btn-png').forEach(function (a) {
@@ -450,21 +469,19 @@
     if (!slug) {
       slug = await bizFromSignedInOwner();
     }
-    if (!slug) {
-      injectSigninBanner('not-signed-in');
-      return;
-    }
-    try {
-      var probe = await fetch(fileUrl(slug, lang, PIECE_FOR_CARD_INDEX[0]), { method: 'HEAD', cache: 'no-store' });
-      if (!probe.ok) {
-        injectSigninBanner('no-owner-biz');
-        return;
+    // 2026-05-31 #59 — if a biz resolved, verify its personalized PDFs exist;
+    // if not (or no biz at all), fall back to the GENERIC kit so the buttons
+    // ALWAYS work instead of sitting dead at href="#".
+    if (slug) {
+      try {
+        var probe = await fetch(fileUrl(slug, lang, PIECE_FOR_CARD_INDEX[0]), { method: 'HEAD', cache: 'no-store' });
+        if (!probe.ok) slug = null;
+      } catch (e) {
+        console.warn('[print-kit] HEAD probe failed, using generic kit', e);
+        slug = null;
       }
-    } catch (e) {
-      console.warn('[print-kit] HEAD probe failed', e);
-      injectSigninBanner('no-owner-biz');
-      return;
     }
+    if (!slug) injectGenericBanner();
     wireButtonsForBiz(slug, lang);
   });
 })();
