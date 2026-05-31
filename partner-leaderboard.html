@@ -374,29 +374,13 @@
     const podium = document.querySelector('.wrap > div[style*="🏆"]');
     if (podium) podium.style.display = 'none';
 
-    const tbody = document.querySelector('.leaderboard tbody');
-    if (tbody) {
-      // 2026-05-31 #c6e36c73 root-cause: only rank partners with real activity
-      // (production/downline/earnings). A 0/0/0 partner sorted to #1 on tiebreakers
-      // and showed as "#1 with 0 activations". This tbody is ALSO rendered by the
-      // activation-ranked loader below (same #leaderboardBody) - both filter now.
-      const top25 = ranked.filter(p => (p.ownProduction||0) > 0 || (p.downlineCount||0) > 0 || (p.lifetimeEarnings||0) > 0).slice(0, 25);
-      tbody.innerHTML = top25.map((p, i) => {
-        const rank = i + 1;
-        const tier = p.is_founding_25 ? 'Founding 25' : (p.ownProduction >= 10 ? 'Master' : p.ownProduction >= 3 ? 'Active' : 'Side');
-        const isMe = me && p.id === me.id;
-        const anon = isMe ? (p.display_name || (p.legal_name || 'You').split(' ')[0]) : ('Partner-' + p.id.slice(0,4).toUpperCase());
-        return '<tr' + (isMe ? ' class="you"' : '') + '>'
-          + '<td class="rk' + (rank===1?' gold':rank===2?' silver':rank===3?' bronze':'') + '"><span class="pos">' + rank + '</span></td>'
-          + '<td>' + anon + (isMe ? ' <span class="badge master">YOU</span>' : '') + '</td>'
-          + '<td>' + tier + '</td>'
-          + '<td style="color:#5d6470">—</td>'
-          + '<td class="num">' + p.ownProduction + '</td>'
-          + '<td class="num">' + p.g1Count + '</td>'
-          + '<td class="num">' + p.downlineCount + '</td>'
-          + '</tr>';
-      }).join('');
-    }
+    // 2026-05-31 #c6e36c73 root-cause dedup: the ranked TABLE is owned solely by
+    // the activation-ranked loader below — it renders #leaderboardBody to match the
+    // 5-column header (Rank / Partner / Tier / Activations / Founding-25 progress).
+    // This earnings-ranked loader previously ALSO wrote the table with a 7-column
+    // row, which both mismatched the header and RACED the other loader (whichever
+    // query resolved last won, so the table flip-flopped between two formats). It
+    // now owns only the my-rank box above; the table is single-source.
 
     const tableH2 = document.querySelector('.leaderboard-h h2');
     if (tableH2) tableH2.textContent = 'Top ' + Math.min(25, ranked.length) + ' Partners — All time';
