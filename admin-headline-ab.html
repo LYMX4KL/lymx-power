@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Headline A/B · LYMX Admin</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#f6f7f9;--card:#fff;--accent:#0a84ff;--ok:#13a26b;--gold:#d4af37}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  .wrap{max-width:1000px;margin:0 auto;padding:28px 22px 80px}
+  h1{margin:0 0 4px;font-size:25px;font-weight:800;letter-spacing:-.01em}
+  .lede{color:var(--muted);font-size:14px;margin-bottom:22px}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th{text-align:left;padding:11px 13px;background:var(--bg);font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--line)}
+  td{padding:12px 13px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  .num{font-variant-numeric:tabular-nums;text-align:right;font-weight:700}
+  .hl{font-weight:800}
+  .lead-row{background:rgba(19,162,107,.06)}
+  .pill{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:rgba(19,162,107,.14);color:#0c6940;margin-left:6px}
+  .empty{padding:48px 20px;text-align:center;color:var(--muted);background:var(--card);border:1px dashed var(--line);border-radius:12px}
+  .note{font-size:12.5px;color:var(--muted);margin-top:14px;line-height:1.6}
+</style>
+</head>
+<body data-role-required="admin">
+
+<script src="lymx-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-app.js" defer></script>
+
+<div class="wrap">
+  <h1>Hero headline A/B</h1>
+  <p class="lede">The Home page hero headline rotates across an inventory every 10 days. This shows how each variant performed — views, and the share who then searched or clicked a conversion link. Higher rates = better headline.</p>
+  <div id="out"><div class="empty">Loading…</div></div>
+  <p class="note">Variants are defined in the Home page hero script (the <code>HEADLINES</code> array). Add a new line there and it auto-joins the rotation. "Search rate" = searches ÷ views; "CTA rate" = conversion-link clicks ÷ views. Give each variant a full 10-day window before judging.</p>
+</div>
+
+<script>
+(async function () {
+  while (!window.LYMX_CONFIG || !window.LYMX || !window.LYMX.getSession) await new Promise(r => setTimeout(r, 100));
+  var URL_ = window.LYMX_CONFIG.SUPABASE_URL, ANON = window.LYMX_CONFIG.SUPABASE_ANON_KEY;
+  var out = document.getElementById('out');
+  var session = await window.LYMX.getSession();
+  if (!session) { location.href = 'login.html?next=admin-headline-ab.html'; return; }
+  var H = { apikey: ANON, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' };
+  function esc(s){ return (s==null?'':String(s)).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];}); }
+  try {
+    var r = await fetch(URL_ + '/rest/v1/rpc/headline_ab_stats', { method:'POST', headers:H, body:'{}' });
+    if (!r.ok) { out.innerHTML = '<div class="empty">Could not load stats (' + r.status + '). Make sure migration 169 is applied.</div>'; return; }
+    var rows = await r.json();
+    if (!Array.isArray(rows) || !rows.length) { out.innerHTML = '<div class="empty">No data yet — once the Home page gets traffic, variant stats appear here.</div>'; return; }
+    // best by cta_rate (fallback search_rate) among variants with enough views
+    var best = null;
+    rows.forEach(function (x) { if ((x.views||0) >= 20) { var sc = (x.cta_rate||0)*1000 + (x.search_rate||0); if (!best || sc > best._sc) { best = x; best._sc = sc; } } });
+    var thead = '<thead><tr><th>#</th><th>Headline</th><th class="num">Views</th><th class="num">Searches</th><th class="num">Search&nbsp;%</th><th class="num">CTA clicks</th><th class="num">CTA&nbsp;%</th><th>Last shown</th></tr></thead>';
+    var body = rows.map(function (x) {
+      var isBest = best && x.variant_idx === best.variant_idx;
+      return '<tr' + (isBest ? ' class="lead-row"' : '') + '>'
+        + '<td>' + x.variant_idx + '</td>'
+        + '<td class="hl">' + esc(x.variant_label || '(variant ' + x.variant_idx + ')') + (isBest ? '<span class="pill">leading</span>' : '') + '</td>'
+        + '<td class="num">' + (x.views||0) + '</td>'
+        + '<td class="num">' + (x.searches||0) + '</td>'
+        + '<td class="num">' + (x.search_rate!=null ? x.search_rate + '%' : '—') + '</td>'
+        + '<td class="num">' + (x.ctas||0) + '</td>'
+        + '<td class="num">' + (x.cta_rate!=null ? x.cta_rate + '%' : '—') + '</td>'
+        + '<td style="color:var(--muted);font-size:12.5px">' + (x.last_seen ? new Date(x.last_seen).toLocaleDateString(undefined,{month:'short',day:'numeric'}) : '—') + '</td>'
+        + '</tr>';
+    }).join('');
+    out.innerHTML = '<table>' + thead + '<tbody>' + body + '</tbody></table>';
+  } catch (e) {
+    console.warn('[headline-ab]', e);
+    out.innerHTML = '<div class="empty">Error loading stats — see console.</div>';
+  }
+})();
+</script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

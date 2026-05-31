@@ -304,6 +304,43 @@
   <div class="wrap">
     <span class="eyebrow">Powered by LYMX</span>
     <h1>Earn and redeem LYMX<br><span class="grad">at any participating business.</span></h1>
+    <script>
+    (function(){
+      // ── Hero headline INVENTORY — rotates every 10 DAYS; we log per-variant
+      //    views + conversions (see admin-headline-ab.html) to find the winner.
+      //    Add new variants as {l1, l2}; they auto-join the rotation. The static
+      //    <h1> above is the no-JS / SEO fallback (= first variant).
+      var HEADLINES = [
+        { l1:'Earn and redeem LYMX',      l2:'at any participating business.' },
+        { l1:'Earn at one business.',     l2:'Redeem at any other.' }
+      ];
+      var idx = Math.floor(Date.now() / 86400000 / 10) % HEADLINES.length; // 10-day bucket
+      var h = HEADLINES[idx];
+      var label = h.l1 + ' ' + h.l2;
+      var el = document.querySelector('.hero h1');
+      if (el && h) el.innerHTML = h.l1 + '<br><span class="grad">' + h.l2 + '</span>';
+      function log(ev){
+        try{
+          var C = window.LYMX_CONFIG || {}; if(!C.SUPABASE_URL || !C.SUPABASE_ANON_KEY) return;
+          fetch(C.SUPABASE_URL + '/rest/v1/rpc/log_headline_event', { method:'POST', keepalive:true,
+            headers:{ apikey:C.SUPABASE_ANON_KEY, Authorization:'Bearer '+C.SUPABASE_ANON_KEY, 'Content-Type':'application/json' },
+            body: JSON.stringify({ p_variant: idx, p_label: label, p_event: ev }) }).catch(function(){});
+        }catch(e){}
+      }
+      // log the view once config is ready
+      var t=0, iv=setInterval(function(){ t++; if(window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL){ clearInterval(iv); log('view'); } else if(t>80){ clearInterval(iv); } }, 100);
+      // conversion signals
+      document.addEventListener('DOMContentLoaded', function(){
+        var form=document.getElementById('heroSearchForm');
+        if(form) form.addEventListener('submit', function(){ log('search'); });
+        document.addEventListener('click', function(e){
+          var a = e.target.closest && e.target.closest('a[href]'); if(!a) return;
+          var href = (a.getAttribute('href')||'').toLowerCase();
+          if(/business\.html|partner-signup|login\.html|biz\.html\?slug=/.test(href)) log('cta');
+        });
+      });
+    })();
+    </script>
     <p class="lede">
       LYMX is the one loyalty credit that works across every Business on the network.
       Earn from a purchase, a service, even your rent — then redeem at a café, a store, or an EV charger.
