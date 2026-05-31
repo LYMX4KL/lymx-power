@@ -329,6 +329,7 @@
           email: email,
           resume_url: resume || null,
           cover_letter: coverLetter,
+          job_id: window.__JOB_ID || null,
           source: 'careers_page',
           status: 'new'
         })
@@ -363,6 +364,36 @@
   }
 </script>
 <script src="lymx-config.js"></script>
+<script>
+(function(){
+  var cfg=window.LYMX_CONFIG; if(!cfg||!cfg.SUPABASE_URL) return;
+  var id=new URLSearchParams(location.search).get('job'); if(!id) return;
+  function esc(x){ return String(x==null?'':x).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  var ET={w2_full_time:'Full-time',w2_part_time:'Part-time','1099_contractor':'Contractor',intern:'Intern'};
+  var WM={onsite:'On-site',hybrid:'Hybrid',remote:'Remote'};
+  fetch(cfg.SUPABASE_URL+'/rest/v1/jobs?id=eq.'+encodeURIComponent(id)+'&select=id,title,department,location,work_mode,employment_type,summary,description_md,pay_range_min_cents,pay_range_max_cents,pay_unit',
+    { headers:{ apikey: cfg.SUPABASE_ANON_KEY, Authorization:'Bearer '+cfg.SUPABASE_ANON_KEY } })
+    .then(function(r){ return r.ok ? r.json() : []; })
+    .then(function(rows){
+      var j = rows && rows[0]; if(!j) return;
+      window.__JOB_ID = j.id;
+      document.title = j.title + ' · LYMX Careers';
+      var h1 = document.querySelector('h1'); if(h1) h1.textContent = j.title;
+      var mh = document.querySelector('.modal h3'); if(mh) mh.textContent = 'Apply: ' + j.title;
+      if(h1){
+        function k(c){ return '$'+Math.round((c||0)/100000)+'K'; }
+        var pay=(j.pay_range_min_cents!=null||j.pay_range_max_cents!=null) ? (k(j.pay_range_min_cents)+'–'+k(j.pay_range_max_cents)+(j.pay_unit==='hour'?'/hr':'')) : '';
+        var meta=[esc(j.department||''), esc(j.location||'')+' ('+(WM[j.work_mode]||j.work_mode)+')', (ET[j.employment_type]||j.employment_type), pay].filter(Boolean).join(' · ');
+        var box=document.createElement('div'); box.style.cssText='margin:10px 0 20px';
+        box.innerHTML='<div style="color:#5b6472;font-size:14px;font-weight:600">'+meta+'</div>'
+          + (j.summary?'<p style="margin:12px 0 0;font-size:16px;line-height:1.6">'+esc(j.summary)+'</p>':'')
+          + (j.description_md?'<div style="margin-top:14px;white-space:pre-wrap;line-height:1.65">'+esc(j.description_md)+'</div>':'');
+        h1.parentNode.insertBefore(box, h1.nextSibling);
+      }
+    })
+    .catch(function(e){ console.warn('[careers-detail] job load failed', e); });
+})();
+</script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — post and manage open roles. Open jobs appear live on careers.html." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Jobs / Careers · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--muted:#5b6472;--line:#e6e8ec;--bg:#fff;--bg-soft:#f6f7f9;--accent:#0a84ff;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:920px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .page{padding:28px 0 64px}
+  .page-head h1{margin:0;font-size:24px;font-weight:800}
+  .page-head p{margin:6px 0 14px;color:var(--muted);font-size:14px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:14px}
+  .card h2{margin:0 0 12px;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+  .form-row.full{grid-template-columns:1fr}
+  @media(max-width:560px){.form-row{grid-template-columns:1fr}}
+  .field label{display:block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+  .field input,.field select,.field textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;background:#fff}
+  .field textarea{min-height:120px;resize:vertical}
+  .btn{padding:10px 18px;border-radius:9px;font-weight:700;font-size:14px;border:0;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-mini{padding:4px 9px;border-radius:7px;font-size:11.5px;font-weight:700;border:1px solid var(--line);background:#fff;cursor:pointer}
+  .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+  .status-msg{padding:10px 14px;border-radius:8px;font-size:13.5px;margin-top:12px}
+  .status-msg.ok{background:#e6f5ee;border:1px solid #a8d8c0;color:#0a6e44}
+  .status-msg.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
+  table.jobs{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.jobs th,table.jobs td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  table.jobs th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+  .pill{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;text-transform:capitalize}
+  .pill.open{background:#dff8ec;color:#0c6940}.pill.draft{background:#eef0f3;color:#5b6472}.pill.paused{background:#fff4d6;color:#92600a}.pill.filled{background:#e8eefc;color:#1d4ed8}.pill.closed{background:#fde8e6;color:#7a1a17}
+</style>
+</head>
+<body data-role-required="perm:hr_admin">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="admin-dashboard.html">LYMX <span class="role-tag">Admin</span></a>
+    <a href="careers.html" target="_blank" style="font-size:13px;color:var(--muted)">View careers page ↗</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>💼 Jobs / Careers</h1>
+      <p>Post and manage open roles. Anything set to <strong>Open</strong> appears live on careers.html and can receive applications into the hiring pipeline.</p>
+    </div>
+
+    <div class="card">
+      <h2 id="formTitle">Post a new role</h2>
+      <input type="hidden" id="jobId" />
+      <div class="form-row">
+        <div class="field"><label>Title</label><input id="f-title" placeholder="Founding Operations Lead" /></div>
+        <div class="field"><label>Department</label><input id="f-department" placeholder="Operations" /></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Location</label><input id="f-location" placeholder="Las Vegas, NV" /></div>
+        <div class="field"><label>Work mode</label>
+          <select id="f-work_mode"><option value="onsite">On-site</option><option value="hybrid" selected>Hybrid</option><option value="remote">Remote</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Employment type</label>
+          <select id="f-employment_type"><option value="w2_full_time" selected>Full-time</option><option value="w2_part_time">Part-time</option><option value="1099_contractor">Contractor (1099)</option><option value="intern">Intern</option></select>
+        </div>
+        <div class="field"><label>Target role (onboarding template key, optional)</label><input id="f-target_role" placeholder="e.g. cs_agent" /></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Pay range min</label><input id="f-pay_min" type="number" min="0" step="1" placeholder="dollars, e.g. 95000" /></div>
+        <div class="field"><label>Pay range max</label><input id="f-pay_max" type="number" min="0" step="1" placeholder="dollars, e.g. 120000" /></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Pay unit</label>
+          <select id="f-pay_unit"><option value="year" selected>per year</option><option value="hour">per hour</option></select>
+        </div>
+        <div class="field"><label>Status</label>
+          <select id="f-status"><option value="draft" selected>Draft (hidden)</option><option value="open">Open (live on careers)</option><option value="paused">Paused</option><option value="filled">Filled</option><option value="closed">Closed</option></select>
+        </div>
+      </div>
+      <div class="form-row full"><div class="field"><label>Summary (1–2 lines for the careers card)</label><input id="f-summary" placeholder="What this role is, in one sentence." /></div></div>
+      <div class="form-row full"><div class="field"><label>Full description</label><textarea id="f-description_md" placeholder="What the role exists to do, responsibilities, what you're looking for…"></textarea></div></div>
+
+      <div id="statusMsg"></div>
+      <div class="actions">
+        <button type="button" class="btn btn-secondary" id="resetBtn">Clear / new</button>
+        <button type="button" class="btn btn-primary" id="saveBtn">Save role</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>All roles</h2>
+      <table class="jobs">
+        <thead><tr><th>Title</th><th>Dept</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="jobsBody"><tr><td colspan="5" style="color:var(--muted)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+let sb=null;
+
+function showStatus(msg,kind){ const e=$('statusMsg'); e.className='status-msg '+(kind||'ok'); e.textContent=msg; e.scrollIntoView({behavior:'smooth',block:'center'}); }
+function dollarsToCents(v){ v=(v==null?'':String(v)).trim(); if(v==='') return null; const n=Number(v); return Number.isFinite(n)?Math.round(n*100):null; }
+function centsToDollars(c){ return c==null?'':String(Math.round(c/100)); }
+
+function resetForm(){
+  $('jobId').value=''; $('formTitle').textContent='Post a new role';
+  ['f-title','f-department','f-location','f-target_role','f-pay_min','f-pay_max','f-summary','f-description_md'].forEach(id=>$(id).value='');
+  $('f-work_mode').value='hybrid'; $('f-employment_type').value='w2_full_time'; $('f-pay_unit').value='year'; $('f-status').value='draft';
+}
+
+async function loadJobs(){
+  const { data, error } = await sb.from('jobs')
+    .select('id,title,department,employment_type,status,opened_at,created_at')
+    .order('created_at',{ascending:false});
+  const body=$('jobsBody');
+  if(error){ body.innerHTML='<tr><td colspan="5" style="color:var(--danger)">Could not load roles.</td></tr>'; console.warn('[admin-jobs] load',error); return; }
+  if(!data||!data.length){ body.innerHTML='<tr><td colspan="5" style="color:var(--muted)">No roles yet — post one above.</td></tr>'; return; }
+  const ET={w2_full_time:'Full-time',w2_part_time:'Part-time','1099_contractor':'Contractor',intern:'Intern'};
+  body.innerHTML=data.map(j=>{
+    const next = j.status==='open'
+      ? '<button class="btn-mini" data-set="paused" data-id="'+j.id+'">Pause</button> <button class="btn-mini" data-set="closed" data-id="'+j.id+'">Close</button>'
+      : '<button class="btn-mini" data-set="open" data-id="'+j.id+'">Open</button>';
+    return '<tr><td><strong>'+esc(j.title)+'</strong></td><td>'+esc(j.department||'—')+'</td><td>'+(ET[j.employment_type]||j.employment_type)+'</td>'
+      + '<td><span class="pill '+esc(j.status)+'">'+esc(j.status)+'</span></td>'
+      + '<td><button class="btn-mini" data-edit="'+j.id+'">Edit</button> '+next+'</td></tr>';
+  }).join('');
+  body.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>editJob(b.getAttribute('data-edit'))));
+  body.querySelectorAll('[data-set]').forEach(b=>b.addEventListener('click',()=>setStatus(b.getAttribute('data-id'),b.getAttribute('data-set'))));
+}
+
+async function editJob(id){
+  const { data:j, error } = await sb.from('jobs').select('*').eq('id',id).maybeSingle();
+  if(error||!j){ showStatus('Could not load that role.','err'); return; }
+  $('jobId').value=j.id; $('formTitle').textContent='Edit role';
+  $('f-title').value=j.title||''; $('f-department').value=j.department||''; $('f-location').value=j.location||'';
+  $('f-work_mode').value=j.work_mode||'hybrid'; $('f-employment_type').value=j.employment_type||'w2_full_time';
+  $('f-target_role').value=j.target_role||''; $('f-pay_min').value=centsToDollars(j.pay_range_min_cents); $('f-pay_max').value=centsToDollars(j.pay_range_max_cents);
+  $('f-pay_unit').value=j.pay_unit||'year'; $('f-status').value=j.status||'draft'; $('f-summary').value=j.summary||''; $('f-description_md').value=j.description_md||'';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function setStatus(id,status){
+  const patch={ status, updated_at:new Date().toISOString() };
+  if(status==='open') patch.opened_at=new Date().toISOString();
+  const { data, error } = await sb.from('jobs').update(patch).eq('id',id).select('id');
+  if(error){ showStatus('Status change failed: '+(error.message||''),'err'); return; }
+  if(!data||!data.length){ showStatus('No change saved — permission issue.','err'); return; }
+  showStatus('Status set to '+status+'.','ok'); await loadJobs();
+}
+
+async function save(){
+  const title=$('f-title').value.trim();
+  if(!title){ showStatus('Title is required.','err'); return; }
+  const status=$('f-status').value;
+  const row={
+    title, department:$('f-department').value.trim()||null, location:$('f-location').value.trim()||'Las Vegas, NV',
+    work_mode:$('f-work_mode').value, employment_type:$('f-employment_type').value,
+    target_role:$('f-target_role').value.trim()||null,
+    pay_range_min_cents:dollarsToCents($('f-pay_min').value), pay_range_max_cents:dollarsToCents($('f-pay_max').value),
+    pay_unit:$('f-pay_unit').value, summary:$('f-summary').value.trim()||null, description_md:$('f-description_md').value.trim()||null,
+    status, updated_at:new Date().toISOString()
+  };
+  if(status==='open') row.opened_at=new Date().toISOString();
+  const id=$('jobId').value;
+  const btn=$('saveBtn'); btn.disabled=true; btn.textContent='Saving…';
+  let res;
+  if(id){ res=await sb.from('jobs').update(row).eq('id',id).select('id'); }
+  else { row.posted_by_id=(window.LYMX.user&&window.LYMX.user.id)||null; res=await sb.from('jobs').insert(row).select('id'); }
+  btn.disabled=false; btn.textContent='Save role';
+  if(res.error){ showStatus('Could not save: '+(res.error.message||''),'err'); console.warn('[admin-jobs] save',res.error); return; }
+  if(!res.data||!res.data.length){ showStatus('No row saved — you may not have permission.','err'); return; }
+  showStatus('✓ Saved'+(status==='open'?' and live on careers.html.':' (draft — set Open to publish).'),'ok');
+  resetForm(); await loadJobs();
+}
+
+async function init(){
+  if(!window.LYMX||!window.LYMX.requireAuth){ showStatus('Auth not loaded — refresh.','err'); return; }
+  const user=await window.LYMX.requireAuth(); if(!user) return;
+  sb=window.LYMX.sb;
+  $('saveBtn').addEventListener('click',save);
+  $('resetBtn').addEventListener('click',resetForm);
+  await loadJobs();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

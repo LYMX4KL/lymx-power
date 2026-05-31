@@ -144,48 +144,8 @@
 <section class="soft">
   <div class="wrap">
     <h2>Open roles</h2>
-    <div class="roles">
-      <a class="role" href="careers-detail.html">
-        <div class="info">
-          <h3>Senior Full-Stack Engineer</h3>
-          <div class="meta">Engineering<span class="sep">·</span>Las Vegas or Remote (US)<span class="sep">·</span>Full-time<span class="sep">·</span>$160K–$200K + equity</div>
-        </div>
-        <div class="pill-row">
-          <span class="pill">Engineering</span>
-          <span class="pill green">Hiring fast</span>
-          <span class="arrow">→</span>
-        </div>
-      </a>
-      <a class="role" href="mailto:careers@getlymx.com?subject=Partner%20Success%20Lead">
-        <div class="info">
-          <h3>Partner Success Lead</h3>
-          <div class="meta">Operations<span class="sep">·</span>Las Vegas (on-site)<span class="sep">·</span>Full-time<span class="sep">·</span>$95K–$120K + equity</div>
-        </div>
-        <div class="pill-row">
-          <span class="pill">Operations</span>
-          <span class="arrow">→</span>
-        </div>
-      </a>
-      <a class="role" href="mailto:careers@getlymx.com?subject=Frontend%20PWA%20Engineer">
-        <div class="info">
-          <h3>Frontend / PWA Engineer</h3>
-          <div class="meta">Engineering<span class="sep">·</span>Remote (US)<span class="sep">·</span>Full-time<span class="sep">·</span>$150K–$180K + equity</div>
-        </div>
-        <div class="pill-row">
-          <span class="pill">Engineering</span>
-          <span class="arrow">→</span>
-        </div>
-      </a>
-      <a class="role" href="mailto:careers@getlymx.com?subject=Brand%20%26%20Content%20Designer">
-        <div class="info">
-          <h3>Brand &amp; Content Designer</h3>
-          <div class="meta">Design<span class="sep">·</span>Las Vegas or Remote<span class="sep">·</span>Full-time<span class="sep">·</span>$110K–$140K + equity</div>
-        </div>
-        <div class="pill-row">
-          <span class="pill">Design</span>
-          <span class="arrow">→</span>
-        </div>
-      </a>
+    <div class="roles" id="rolesList">
+      <div style="opacity:.6;padding:14px;color:var(--muted)">Loading open roles…</div>
     </div>
     <div style="text-align:center;margin-top:30px;font-size:13.5px;color:var(--muted)">
       Don't see your role? Send us a note at <a href="mailto:careers@getlymx.com" style="color:var(--accent-2);font-weight:600">careers@getlymx.com</a> — we read every email.
@@ -223,6 +183,31 @@
 </footer>
 <script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
 <script src="lymx-config.js"></script>
+<script>
+(function(){
+  var cfg = window.LYMX_CONFIG; if(!cfg || !cfg.SUPABASE_URL) return;
+  function esc(x){ return String(x==null?'':x).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function k(c){ return '$'+Math.round((c||0)/1000/100)+'K'; }
+  function pay(j){ if(j.pay_range_min_cents==null && j.pay_range_max_cents==null) return ''; var r=(j.pay_range_min_cents!=null?k(j.pay_range_min_cents):'')+(j.pay_range_max_cents!=null?'–'+k(j.pay_range_max_cents):''); return r + (j.pay_unit==='hour'?'/hr':''); }
+  var ET={w2_full_time:'Full-time',w2_part_time:'Part-time','1099_contractor':'Contractor',intern:'Intern'};
+  var WM={onsite:'On-site',hybrid:'Hybrid',remote:'Remote'};
+  fetch(cfg.SUPABASE_URL+'/rest/v1/jobs?status=eq.open&select=id,title,department,location,work_mode,employment_type,summary,pay_range_min_cents,pay_range_max_cents,pay_unit&order=opened_at.desc.nullslast',
+    { headers:{ apikey: cfg.SUPABASE_ANON_KEY, Authorization:'Bearer '+cfg.SUPABASE_ANON_KEY } })
+    .then(function(r){ return r.ok ? r.json() : []; })
+    .then(function(jobs){
+      var el = document.getElementById('rolesList'); if(!el) return;
+      if(!jobs || !jobs.length){ el.innerHTML = '<div style="padding:14px;color:var(--muted)">No open roles posted right now — email <a href="mailto:careers@getlymx.com" style="color:var(--accent-2);font-weight:600">careers@getlymx.com</a> and we will keep you in mind.</div>'; return; }
+      el.innerHTML = jobs.map(function(j){
+        var meta = [esc(j.department||''), esc(j.location||'')+' ('+(WM[j.work_mode]||j.work_mode)+')', (ET[j.employment_type]||j.employment_type), pay(j)].filter(Boolean).join('<span class="sep">·</span>');
+        return '<a class="role" href="careers-detail.html?job='+encodeURIComponent(j.id)+'">'
+          + '<div class="info"><h3>'+esc(j.title)+'</h3><div class="meta">'+meta+'</div>'
+          + (j.summary?'<div class="meta" style="margin-top:4px;color:var(--muted)">'+esc(j.summary)+'</div>':'')
+          + '</div><div class="pill-row">'+(j.department?'<span class="pill">'+esc(j.department)+'</span>':'')+'<span class="arrow">→</span></div></a>';
+      }).join('');
+    })
+    .catch(function(e){ console.warn('[careers] jobs load failed', e); });
+})();
+</script>
 <script src="lymx-feedback.js" defer></script>
 <script src="lymx-app.js" defer></script>
 </body>
