@@ -263,6 +263,7 @@
       { href: 'partner-tree.html',       icon: '\u{1F333}', label: 'My Tree' },
       { href: 'partner-my-downlines.html', icon: '\u{1F465}', label: 'My Downlines' },
       { href: 'partner-referred-businesses.html', icon: '\u{1F3EA}', label: 'Referred Businesses' },
+      { href: 'partner-recruit-links.html', icon: '\u{1F517}', label: 'Recruitment Links' },
       { href: 'partner-activity.html',    icon: '\u{1F4DC}', label: 'Activity History' },
       { href: 'partner-leaderboard.html', icon: '\u{1F3C6}', label: 'Leaderboard' },
       { href: 'partner-payouts.html',    icon: '\u{1F4B8}', label: 'Payouts' },

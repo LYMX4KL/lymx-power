@@ -282,11 +282,15 @@
     return src.slice(0, 2).toUpperCase();
   }
   async function loadPartners() {
+    // 2026-05-31 root-cause fix: loadPartners() is called (below) BEFORE
+    // lymx-config.js loads (its <script> tag is further down the page), so
+    // window.LYMX_CONFIG was undefined on first run and the directory bailed to a
+    // permanent "loading…" placeholder — no partner cards ever rendered (ticket:
+    // "Registered Partner not displayed in directory"). Wait for config instead of bailing.
+    var _waited = 0;
+    while (!window.LYMX_CONFIG && _waited < 10000) { await new Promise(function (r) { setTimeout(r, 100); }); _waited += 100; }
     if (!window.LYMX_CONFIG) {
-      // No config — render empty grid with a friendly note.
-      partners = [];
-      const grid = document.getElementById('grid');
-      grid.innerHTML = '<div class="empty">Partner directory is loading…</div>';
+      document.getElementById('grid').innerHTML = '<div class="empty">Partner directory is unavailable right now. Please refresh in a moment.</div>';
       return;
     }
     const cfg = window.LYMX_CONFIG;

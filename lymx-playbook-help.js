@@ -59,7 +59,7 @@
     var s = document.createElement('style');
     s.id = 'lymx-pb-help-styles';
     s.textContent = ''
-      + '.lymx-pb-chip{position:fixed;left:18px;bottom:18px;z-index:9997;'
+      + '.lymx-pb-chip{position:fixed;left:18px;bottom:74px;z-index:9997;'
       + '  background:#fff;color:#0a84ff;border:1px solid #cfe0ff;'
       + '  padding:9px 14px;border-radius:999px;font-weight:700;font-size:13px;'
       + '  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;'
@@ -97,7 +97,7 @@
       + '.lymx-pb-body a{color:#0a84ff;text-decoration:underline}'
       + '.lymx-pb-meta{background:#f6f7f9;border-radius:8px;padding:9px 12px;font-size:12px;color:#5b6472;margin-bottom:14px;display:flex;gap:14px;flex-wrap:wrap}'
       + '.lymx-pb-meta b{color:#0e1116;font-weight:700}'
-      + '@media(max-width:600px){.lymx-pb-chip{left:14px;bottom:14px;padding:7px 11px;font-size:12.5px}}';
+      + '@media(max-width:600px){.lymx-pb-chip{left:14px;bottom:70px;padding:7px 11px;font-size:12.5px}}';
     document.head.appendChild(s);
   }
 
