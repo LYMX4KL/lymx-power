@@ -1,15 +1,17 @@
 -- =============================================================================
--- Migration 165 — Scheduled auto-pull for business integrations (Build B)
+-- Migration 165 — RECONCILIATION auto-pull for business integrations (Build B)
 -- =============================================================================
--- Makes the business-integration pull HANDS-FREE. Today an admin must POST to
--- pull-business-transactions manually. This adds a pg_cron job that, every 15
--- minutes, fires the pull for EVERY active business_integration_source — so new
--- fees at any integrated business turn into LYMX (or pending claims) on their
--- own. Mirrors the mig-144 pg_cron + pg_net + service-role worker pattern.
+-- Earn is INSTANT via real-time push: a business calls business-event at the
+-- moment a fee is charged, so the customer gets their LYMX while they are still
+-- paying. This pull is the SAFETY NET, not the primary path — it runs hourly to
+-- catch any real-time push that failed to reach us (network blip, brief outage),
+-- so nothing is ever permanently missed. Mirrors the mig-144 pg_cron + pg_net +
+-- service-role worker pattern.
 --
 -- Safe to run repeatedly: pull-business-transactions advances since_cursor and
--- business-event is idempotent on external_ref, so an empty or repeated pull is
--- a no-op. New integrations are picked up automatically (the worker reads the
+-- business-event is idempotent on external_ref, so a real-time push and a later
+-- reconciliation pull of the same fee resolve to ONE issuance (the repeat is a
+-- no-op). New integrations are picked up automatically (the worker reads the
 -- source table each run — no per-business scheduling).
 -- =============================================================================
 
@@ -58,15 +60,15 @@ begin
 end
 $worker$;
 
--- 2. schedule: every 15 minutes (operator can re-tune the cron string later) ---
+-- 2. schedule: hourly reconciliation (real-time push is the primary path) ------
 select cron.unschedule('lymx-auto-pull') where exists (
     select 1 from cron.job where jobname = 'lymx-auto-pull'
 );
 select cron.schedule(
     'lymx-auto-pull',
-    '*/15 * * * *',
+    '7 * * * *',
     $cronfn$select public.run_lymx_auto_pull();$cronfn$
 );
 
-do $s$ begin raise notice 'Migration 165 OK - lymx-auto-pull cron scheduled every 15 min.'; end$s$;
+do $s$ begin raise notice 'Migration 165 OK - lymx-auto-pull reconciliation cron scheduled hourly.'; end$s$;
 -- END migration 165

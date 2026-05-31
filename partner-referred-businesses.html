@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>My referred businesses · LYMX Partner</title>
+<meta name="description" content="Every business that registered with your referral code — approval status, activation progress, and the commission you've earned from each.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--muted:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--warn:#d97706;--red:#d64545}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em;color:var(--ink)}
+  .role-tag{font-size:11px;background:#f3e8fd;color:#5b3697;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .nav-links a.on{color:var(--accent)}
+
+  .wrap{max-width:1000px;margin:0 auto;padding:28px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:32px;margin:0 0 8px;letter-spacing:-.02em}
+  .lead{color:var(--mute);font-size:15px;max-width:700px;margin:0 0 24px}
+
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:120px}
+  .stat .n{font-size:22px;font-weight:800;letter-spacing:-.02em}
+  .stat .l{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:2px}
+
+  .controls{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .ctrl-label{font-size:12px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;align-self:center}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:13px;cursor:pointer;color:var(--ink);font-weight:600}
+  .chip:hover{background:#f5f6f9}.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .ct{font-size:11px;color:var(--mute);font-weight:600;background:#eef0f4;padding:1px 6px;border-radius:999px;margin-left:2px}.chip.on .ct{color:#fff;background:rgba(255,255,255,.18)}
+  .search{flex:1;min-width:180px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px}
+
+  .tbl-card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  thead th{text-align:left;padding:12px 14px;background:#fbfbfd;border-bottom:1px solid var(--line);font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;cursor:pointer;white-space:nowrap;user-select:none}
+  tbody td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:#fbfcff}
+  .nm{font-weight:700;color:var(--ink)}
+  .pill{font-size:11px;font-weight:800;letter-spacing:.03em;padding:3px 9px;border-radius:999px;text-transform:uppercase;white-space:nowrap}
+  .p-approved{background:#eafbf2;color:#0f8a59}.p-pending{background:#fff5e6;color:#b56a14}.p-rejected{background:#fdecec;color:#c0392b}
+  .amt{font-weight:700;color:var(--ok);white-space:nowrap}
+  .amt .lx{color:var(--purple)}
+  .acts a{font-size:12.5px;font-weight:700;margin-right:12px;white-space:nowrap}
+  .empty{padding:48px 24px;text-align:center;color:var(--mute)}
+  .empty .em{font-size:42px;margin-bottom:10px}.empty .et{font-weight:700;color:var(--ink);font-size:16px;margin-bottom:4px}.empty .es{font-size:13.5px;max-width:440px;margin:0 auto}
+  .skel{padding:14px;border-bottom:1px solid var(--line)}.sb{height:14px;background:linear-gradient(90deg,#eef0f4 0,#f7f8fb 50%,#eef0f4 100%);background-size:200% 100%;border-radius:5px;animation:sk 1.2s linear infinite}
+  @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  footer{max-width:1000px;margin:48px auto 0;padding:24px;color:var(--mute);font-size:12.5px;border-top:1px solid var(--line)}
+  @media(max-width:640px){.hide-sm{display:none}h1{font-size:26px}}
+</style>
+</head>
+<body data-role-required="partner">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="rep-dashboard.html"><img src="logo.png" alt="LYMX logo" /><span class="role-tag">Partner</span></a>
+    <nav class="nav-links">
+      <a href="rep-dashboard.html">Dashboard</a>
+      <a href="partner-activity.html">Activity</a>
+      <a href="partner-my-downlines.html">Downlines</a>
+      <a href="partner-referred-businesses.html" class="on">Businesses</a>
+      <a href="partner-payouts.html">Payouts</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="crumb"><a href="rep-dashboard.html">Dashboard</a> · Referred businesses</div>
+  <h1>My referred businesses</h1>
+  <p class="lead">Every business that registered with your referral code, with its approval status and the commission you've earned from it. This is your proof of attribution for business signups.</p>
+
+  <div class="stats" id="stats" style="display:none">
+    <div class="stat"><div class="n" id="s-total">0</div><div class="l">Referred</div></div>
+    <div class="stat"><div class="n" id="s-approved">0</div><div class="l">Approved</div></div>
+    <div class="stat"><div class="n" id="s-pending">0</div><div class="l">Pending review</div></div>
+    <div class="stat"><div class="n" id="s-cash">$0</div><div class="l">Commission (cash)</div></div>
+    <div class="stat"><div class="n" id="s-lymx">0</div><div class="l">Commission (LYMX)</div></div>
+  </div>
+
+  <div class="controls">
+    <input class="search" id="q" type="search" placeholder="Search business name or category…" autocomplete="off">
+    <span class="ctrl-label">Status</span>
+    <button class="chip on" data-st="all">All <span class="ct" id="ct-all">0</span></button>
+    <button class="chip" data-st="approved">Approved <span class="ct" id="ct-approved">0</span></button>
+    <button class="chip" data-st="pending">Pending <span class="ct" id="ct-pending">0</span></button>
+    <button class="chip" data-st="rejected">Rejected <span class="ct" id="ct-rejected">0</span></button>
+  </div>
+
+  <div class="tbl-card" id="host">
+    <div class="skel"><div class="sb" style="width:45%"></div></div>
+    <div class="skel"><div class="sb" style="width:60%"></div></div>
+    <div class="skel"><div class="sb" style="width:35%"></div></div>
+  </div>
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="rep-dashboard.html" style="color:#5a6373">Back to dashboard</a> · <a href="support.html" style="color:#5a6373">Tech support</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// ============================================================================
+// partner-referred-businesses.html — businesses signed up under my referral.
+// 2026-05-31 #48a5eb88 — root-cause build: partners could share business
+// referral links but had NO way to see which businesses registered under their
+// code, verify attribution, or track activation/reward progress. Reads
+// businesses.signed_up_by_partner_id = me, joins partner_commissions
+// (source_business_id) for earned commission, splits cash vs LYMX per Rule 4.
+// ============================================================================
+(function () {
+  var state = { rows: [], st: 'all', q: '', sort: 'signed', dir: -1 };
+
+  function esc(s){ return String(s==null?'':s).replace(/[<>&"]/g,function(c){return ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'})[c];}); }
+  function fmtDate(iso){ if(!iso) return '—'; var d=new Date(iso); return d.toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}); }
+  function usd(n){ return '$' + Number(n||0).toLocaleString('en-US',{maximumFractionDigits:0}); }
+  function lymx(n){ return Number(n||0).toLocaleString('en-US') + ' LYMX'; }
+
+  async function load(){
+    var sb = window.LYMX && window.LYMX.sb;
+    if (!sb) { setTimeout(load, 200); return; }
+    var sess = await sb.auth.getSession();
+    var user = sess && sess.data && sess.data.session ? sess.data.session.user : null;
+    if (!user) return;
+    var me = await sb.from('partners').select('id').eq('user_id', user.id).maybeSingle();
+    if (!me.data) { renderEmpty('No partner record is linked to your account yet.'); return; }
+    var myId = me.data.id;
+
+    var bizR = await sb.from('businesses')
+      .select('id, display_name, legal_name, category, business_kind, approval_status, created_at')
+      .eq('signed_up_by_partner_id', myId).is('archived_at', null)
+      .order('created_at', { ascending: false });
+    var biz = bizR.data || [];
+
+    // commission earned per referred business (split cash / lymx — Rule 4: never sum the two)
+    var commBy = {};
+    var ids = biz.map(function(b){return b.id;});
+    if (ids.length){
+      var cR = await sb.from('partner_commissions')
+        .select('source_business_id, amount, payout_kind')
+        .eq('partner_id', myId).in('source_business_id', ids);
+      (cR.data||[]).forEach(function(c){
+        var k = c.source_business_id; if (!k) return;
+        if (!commBy[k]) commBy[k] = { cash:0, lymx:0 };
+        if (c.payout_kind === 'lymx') commBy[k].lymx += Number(c.amount||0);
+        else commBy[k].cash += Number(c.amount||0);
+      });
+    }
+
+    state.rows = biz.map(function(b){
+      var st = (b.approval_status || 'pending');
+      return {
+        id: b.id, name: b.display_name || b.legal_name || 'Business',
+        category: b.category || (b.business_kind || ''), status: st,
+        signed: b.created_at, comm: commBy[b.id] || { cash:0, lymx:0 }
+      };
+    });
+
+    // stats
+    var approved = state.rows.filter(function(r){return r.status==='approved';}).length;
+    var pending  = state.rows.filter(function(r){return r.status==='pending';}).length;
+    var rejected = state.rows.filter(function(r){return r.status==='rejected';}).length;
+    var totalCash = state.rows.reduce(function(a,r){return a+r.comm.cash;},0);
+    var totalLymx = state.rows.reduce(function(a,r){return a+r.comm.lymx;},0);
+    document.getElementById('stats').style.display='';
+    document.getElementById('s-total').textContent = state.rows.length;
+    document.getElementById('s-approved').textContent = approved;
+    document.getElementById('s-pending').textContent = pending;
+    document.getElementById('s-cash').textContent = usd(totalCash);
+    document.getElementById('s-lymx').textContent = Number(totalLymx).toLocaleString();
+    document.getElementById('ct-all').textContent = state.rows.length;
+    document.getElementById('ct-approved').textContent = approved;
+    document.getElementById('ct-pending').textContent = pending;
+    document.getElementById('ct-rejected').textContent = rejected;
+
+    render();
+  }
+
+  function renderEmpty(msg){
+    document.getElementById('host').innerHTML =
+      '<div class="empty"><div class="em">🏪</div><div class="et">No referred businesses yet</div>'
+      + '<div class="es">' + esc(msg || 'When a business registers using your referral link, it shows up here with its approval status and the commission it earns you. Grab your business referral link from the dashboard to start.') + '</div></div>';
+  }
+
+  function sortRows(rows){
+    var s=state.sort, dir=state.dir;
+    return rows.slice().sort(function(a,b){
+      var av,bv;
+      if (s==='name'){ av=(a.name||'').toLowerCase(); bv=(b.name||'').toLowerCase(); }
+      else if (s==='status'){ av=a.status; bv=b.status; }
+      else if (s==='comm'){ av=a.comm.cash; bv=b.comm.cash; }
+      else { av=a.signed||''; bv=b.signed||''; }
+      if (av<bv) return -1*dir; if (av>bv) return 1*dir; return 0;
+    });
+  }
+
+  function render(){
+    if (!state.rows.length){ renderEmpty(); return; }
+    var q = state.q.trim().toLowerCase();
+    var filtered = state.rows.filter(function(r){
+      if (state.st!=='all' && r.status!==state.st) return false;
+      if (q && r.name.toLowerCase().indexOf(q)<0 && (r.category||'').toLowerCase().indexOf(q)<0) return false;
+      return true;
+    });
+    filtered = sortRows(filtered);
+    var host = document.getElementById('host');
+    if (!filtered.length){ host.innerHTML='<div class="empty"><div class="em">🔍</div><div class="et">No matches</div><div class="es">No referred business matches your search/filter.</div></div>'; return; }
+    function arrow(c){ return state.sort===c ? (state.dir<0?' ▼':' ▲') : ''; }
+    var head = '<table><thead><tr>'
+      + '<th data-sort="name">Business'+arrow('name')+'</th>'
+      + '<th class="hide-sm">Category</th>'
+      + '<th data-sort="status">Status'+arrow('status')+'</th>'
+      + '<th data-sort="signed" class="hide-sm">Signed'+arrow('signed')+'</th>'
+      + '<th data-sort="comm">Commission earned'+arrow('comm')+'</th>'
+      + '<th>Actions</th></tr></thead><tbody>';
+    var body = filtered.map(function(r){
+      var pc = r.status==='approved'?'p-approved':(r.status==='rejected'?'p-rejected':'p-pending');
+      var stLbl = r.status==='approved'?'Active':(r.status==='rejected'?'Rejected':'Pending review');
+      var comm = '';
+      if (r.comm.cash) comm += usd(r.comm.cash);
+      if (r.comm.lymx) comm += (comm?' · ':'') + '<span class="lx">'+lymx(r.comm.lymx)+'</span>';
+      if (!comm) comm = '<span style="color:var(--mute);font-weight:500">—</span>';
+      return '<tr>'
+        + '<td><span class="nm">'+esc(r.name)+'</span></td>'
+        + '<td class="hide-sm">'+esc(r.category||'—')+'</td>'
+        + '<td><span class="pill '+pc+'">'+stLbl+'</span></td>'
+        + '<td class="hide-sm">'+fmtDate(r.signed)+'</td>'
+        + '<td class="amt">'+comm+'</td>'
+        + '<td class="acts"><a href="partner-activity.html">Activity</a></td>'
+        + '</tr>';
+    }).join('');
+    host.innerHTML = head + body + '</tbody></table>';
+    Array.prototype.forEach.call(host.querySelectorAll('th[data-sort]'), function(th){
+      th.addEventListener('click', function(){
+        var col=th.getAttribute('data-sort');
+        if (state.sort===col) state.dir*=-1; else { state.sort=col; state.dir=(col==='name'||col==='status')?1:-1; }
+        render();
+      });
+    });
+  }
+
+  document.addEventListener('input', function(e){ if (e.target && e.target.id==='q'){ state.q=e.target.value; render(); } });
+  document.addEventListener('click', function(e){
+    var chip = e.target.closest && e.target.closest('.chip[data-st]');
+    if (!chip) return;
+    state.st = chip.getAttribute('data-st');
+    Array.prototype.forEach.call(document.querySelectorAll('.chip[data-st]'), function(c){ c.classList.toggle('on', c===chip); });
+    render();
+  });
+
+  load();
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>

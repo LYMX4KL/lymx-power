@@ -495,7 +495,7 @@
                canonical "all activity" surface for a partner (lead funnel +
                recent bookings). When a dedicated partner-activity.html ships,
                update this href in one place. -->
-          <a href="leads.html" class="more">See all →</a>
+          <a href="partner-activity.html" class="more">See all →</a>
         </div>
         <div id="repActivity">
           <div style="padding:40px 24px;text-align:center;color:var(--muted)">
@@ -954,11 +954,18 @@
       if (c.data) calIds = c.data.map(x => x.id);
     } catch (e) { console.warn('[rep-dashboard.html:L641] silent error', e); }
 
-    // Parallel queries for the three event types
+    // Resolve my partner row (needed for commissions / recruits / activations).
+    var pmeR = await sb.from("partners").select("id").eq("user_id", userId).maybeSingle();
+    var partnerId = pmeR && pmeR.data ? pmeR.data.id : null;
+
+    // 2026-05-31 #b679f887 #3bfe01be - ROOT CAUSE: this widget only read leads+bookings,
+    // so a partner with real growth events (commissions earned, partners recruited,
+    // businesses signed) but no CRM leads saw an empty "Recent activity" feed. Now it
+    // reads the same real sources the comprehensive partner-activity.html page does, and
+    // shows the latest events regardless of a 7-day window (that page owns date filtering).
     var pNewLeads = sb.from("leads")
       .select("id, full_name, email, source, created_at, stage")
       .eq("owner_user_id", userId)
-      .gte("created_at", weekAgo)
       .order("created_at", { ascending: false })
       .limit(12);
 
@@ -966,7 +973,6 @@
       .select("id, full_name, stage, stage_changed_at")
       .eq("owner_user_id", userId)
       .in("stage", ["won", "lost"])
-      .gte("stage_changed_at", weekAgo)
       .order("stage_changed_at", { ascending: false })
       .limit(12);
 
@@ -974,12 +980,37 @@
       ? sb.from("bookings")
           .select("id, starts_at, booker_name, status")
           .in("team_calendar_id", calIds)
-          .gte("starts_at", weekAgo)
           .order("starts_at", { ascending: false })
           .limit(12)
       : Promise.resolve({ data: [] }));
 
-    var results = await Promise.all([pNewLeads, pClosedLeads, pBookings]);
+    var pCommissions = (partnerId
+      ? sb.from("partner_commissions")
+          .select("id, amount, type, generation, created_at")
+          .eq("partner_id", partnerId)
+          .order("created_at", { ascending: false })
+          .limit(12)
+      : Promise.resolve({ data: [] }));
+
+    var pRecruits = (partnerId
+      ? sb.from("partners")
+          .select("id, display_name, legal_name, created_at")
+          .eq("sponsor_partner_id", partnerId)
+          .is("archived_at", null)
+          .order("created_at", { ascending: false })
+          .limit(12)
+      : Promise.resolve({ data: [] }));
+
+    var pActivations = (partnerId
+      ? sb.from("businesses")
+          .select("id, display_name, legal_name, created_at, approval_status")
+          .eq("signed_up_by_partner_id", partnerId)
+          .is("archived_at", null)
+          .order("created_at", { ascending: false })
+          .limit(12)
+      : Promise.resolve({ data: [] }));
+
+    var results = await Promise.all([pNewLeads, pClosedLeads, pBookings, pCommissions, pRecruits, pActivations]);
     var events = [];
     (results[0].data || []).forEach(function (l) {
       events.push({ at: l.created_at, icon: "➕", title: "New lead", who: l.full_name || l.email || "—", sub: l.source || "" });
@@ -990,6 +1021,17 @@
     (results[2].data || []).forEach(function (b) {
       var icon = b.status === "completed" ? "✅" : b.status === "no_show" ? "🙁" : "📅";
       events.push({ at: b.starts_at, icon: icon, title: b.status === "completed" ? "Call done" : b.status === "no_show" ? "No-show" : "Call scheduled", who: b.booker_name || "—", sub: "" });
+    });
+    (results[3].data || []).forEach(function (c) {
+      var gen = c.generation === 0 ? "Production" : (c.generation ? "G" + c.generation : "");
+      var amt = (c.amount != null) ? ("$" + Number(c.amount).toLocaleString()) : "";
+      events.push({ at: c.created_at, icon: "💰", title: "Commission" + (gen ? " · " + gen : ""), who: String(c.type || "").replace(/_/g, " "), sub: amt });
+    });
+    (results[4].data || []).forEach(function (p) {
+      events.push({ at: p.created_at, icon: "🤝", title: "New partner recruited", who: p.display_name || p.legal_name || "—", sub: "" });
+    });
+    (results[5].data || []).forEach(function (b) {
+      events.push({ at: b.created_at, icon: "🏪", title: "Business signed", who: b.display_name || b.legal_name || "—", sub: (b.approval_status || "") });
     });
     events.sort(function (a, b) { return (b.at || "").localeCompare(a.at || ""); });
     events = events.slice(0, 12);
@@ -1097,6 +1139,38 @@
     } catch (e) { console.warn('[rep-dashboard] downline tree render failed', e); }
   }
   load();
+})();
+</script>
+<script>
+// 2026-05-31 #e6177331 — onboarding checklist "Mark as done" tracking. ROOT CAUSE:
+// the checklist was a static <ol> with no way to mark items complete or see progress.
+// Adds a per-item checkbox + a "X of N done" meter, persisted per-partner in
+// localStorage (same pattern the dismiss-panel state already uses on this page).
+(function(){
+  function init(){
+    if(!(window.LYMX && window.LYMX.user)){ setTimeout(init,250); return; }
+    var ol=document.getElementById('onboardingSteps'); if(!ol) return;
+    if(ol.dataset.doneWired) return; ol.dataset.doneWired='1';
+    var pid=(window.LYMX.user && window.LYMX.user.id) || 'anon';
+    var KEY='LYMX_onboard_done_'+pid;
+    var done={}; try{ done=JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ done={}; }
+    var items=Array.prototype.slice.call(ol.querySelectorAll('li'));
+    var bar=document.createElement('div');
+    bar.style.cssText='margin:12px 0 2px;font-weight:800;color:#78350f;font-size:13px';
+    ol.parentNode.insertBefore(bar, ol);
+    function refresh(){ var n=0; items.forEach(function(_,i){ if(done[i]) n++; }); bar.textContent='\u2713 '+n+' of '+items.length+' done'; }
+    items.forEach(function(li,i){
+      li.style.listStyle='none'; li.style.marginLeft='-14px';
+      var cb=document.createElement('input'); cb.type='checkbox'; cb.checked=!!done[i];
+      cb.setAttribute('aria-label','Mark step '+(i+1)+' done');
+      cb.style.cssText='margin-right:9px;transform:translateY(2px);cursor:pointer;width:16px;height:16px';
+      function apply(){ li.style.opacity=cb.checked?'.55':'1'; li.style.textDecoration=cb.checked?'line-through':'none'; }
+      cb.addEventListener('change',function(){ if(cb.checked) done[i]=true; else delete done[i]; try{localStorage.setItem(KEY,JSON.stringify(done));}catch(e){console.warn('[onboarding] save failed',e);} apply(); refresh(); });
+      li.insertBefore(cb, li.firstChild); apply();
+    });
+    refresh();
+  }
+  init();
 })();
 </script>
 <script src="lymx-feedback.js" defer></script>

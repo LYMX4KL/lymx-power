@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>My downlines · LYMX Partner</title>
+<meta name="description" content="A searchable, sortable list of every partner in your 3-generation downline — generation, join date, businesses signed, and quick actions to view, message, or locate them in your tree.">
+<style>
+  :root{--ink:#0e1116;--mute:#5d6470;--muted:#5d6470;--bg:#fafafa;--card:#fff;--line:#e6e8ec;--accent:#0a84ff;--gold:#d4af37;--ok:#13a26b;--purple:#5b3697;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.02em;color:var(--ink)}
+  .role-tag{font-size:11px;background:#f3e8fd;color:#5b3697;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .nav-links{display:flex;gap:18px;font-size:14px}
+  .nav-links a{color:var(--ink);font-weight:500}
+  .nav-links a.on{color:var(--accent)}
+
+  .wrap{max-width:1000px;margin:0 auto;padding:28px 24px 64px}
+  .crumb{font-size:13px;color:var(--mute);margin-bottom:14px}
+  h1{font-size:32px;margin:0 0 8px;letter-spacing:-.02em}
+  .lead{color:var(--mute);font-size:15px;max-width:680px;margin:0 0 24px}
+
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:120px}
+  .stat .n{font-size:22px;font-weight:800;letter-spacing:-.02em}
+  .stat .l{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:2px}
+
+  .controls{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:18px;display:flex;flex-direction:column;gap:12px}
+  .ctrl-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .ctrl-label{font-size:12px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;margin-right:6px;align-self:center}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:13px;cursor:pointer;color:var(--ink);font-weight:600}
+  .chip:hover{background:#f5f6f9}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .ct{font-size:11px;color:var(--mute);font-weight:600;background:#eef0f4;padding:1px 6px;border-radius:999px;margin-left:2px}
+  .chip.on .ct{color:#fff;background:rgba(255,255,255,.18)}
+  .search{flex:1;min-width:180px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px}
+
+  .tbl-card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  thead th{text-align:left;padding:12px 14px;background:#fbfbfd;border-bottom:1px solid var(--line);font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;cursor:pointer;white-space:nowrap;user-select:none}
+  thead th .ar{opacity:.45;font-size:10px}
+  tbody td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:#fbfcff}
+  .nm{font-weight:700;color:var(--ink)}
+  .av{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#5b3697,#7d54c4);color:#fff;font-weight:700;font-size:13px;margin-right:8px;vertical-align:middle}
+  .gen-pill{font-size:10px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:999px;text-transform:uppercase}
+  .g1{background:#e8f0ff;color:#0a64d6}.g2{background:#eafbf2;color:#0f8a59}.g3{background:#fdf0e6;color:#b56a14}
+  .acts a{font-size:12.5px;font-weight:700;margin-right:12px;white-space:nowrap}
+  .empty{padding:48px 24px;text-align:center;color:var(--mute)}
+  .empty .em{font-size:42px;margin-bottom:10px}
+  .empty .et{font-weight:700;color:var(--ink);font-size:16px;margin-bottom:4px}
+  .empty .es{font-size:13.5px;max-width:420px;margin:0 auto}
+  .skel{padding:14px;border-bottom:1px solid var(--line)}
+  .sb{height:14px;background:linear-gradient(90deg,#eef0f4 0,#f7f8fb 50%,#eef0f4 100%);background-size:200% 100%;border-radius:5px;animation:sk 1.2s linear infinite}
+  @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  footer{max-width:1000px;margin:48px auto 0;padding:24px;color:var(--mute);font-size:12.5px;border-top:1px solid var(--line)}
+  @media(max-width:640px){.hide-sm{display:none}h1{font-size:26px}}
+</style>
+</head>
+<body data-role-required="partner">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="rep-dashboard.html"><img src="logo.png" alt="LYMX logo" /><span class="role-tag">Partner</span></a>
+    <nav class="nav-links">
+      <a href="rep-dashboard.html">Dashboard</a>
+      <a href="partner-activity.html">Activity</a>
+      <a href="partner-my-downlines.html" class="on">Downlines</a>
+      <a href="partner-tree.html">Tree</a>
+      <a href="partner-payouts.html">Payouts</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="crumb"><a href="rep-dashboard.html">Dashboard</a> · My downlines</div>
+  <h1>My downlines</h1>
+  <p class="lead">Everyone in your 3-generation network in one searchable, sortable list. For the visual layout, see your <a href="partner-tree.html">tree view</a>.</p>
+
+  <div class="stats" id="stats" style="display:none">
+    <div class="stat"><div class="n" id="s-total">0</div><div class="l">Total downline</div></div>
+    <div class="stat"><div class="n" id="s-g1">0</div><div class="l">Direct (G1)</div></div>
+    <div class="stat"><div class="n" id="s-g2">0</div><div class="l">G2</div></div>
+    <div class="stat"><div class="n" id="s-g3">0</div><div class="l">G3</div></div>
+    <div class="stat"><div class="n" id="s-biz">0</div><div class="l">Businesses signed</div></div>
+  </div>
+
+  <div class="controls">
+    <div class="ctrl-row">
+      <input class="search" id="q" type="search" placeholder="Search by name or partner code…" autocomplete="off">
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">Generation</span>
+      <button class="chip on" data-gen="all">All <span class="ct" id="ct-all">0</span></button>
+      <button class="chip" data-gen="g1">Direct <span class="ct" id="ct-g1">0</span></button>
+      <button class="chip" data-gen="g2">G2 <span class="ct" id="ct-g2">0</span></button>
+      <button class="chip" data-gen="g3">G3 <span class="ct" id="ct-g3">0</span></button>
+    </div>
+  </div>
+
+  <div class="tbl-card" id="host">
+    <div class="skel"><div class="sb" style="width:40%"></div></div>
+    <div class="skel"><div class="sb" style="width:65%"></div></div>
+    <div class="skel"><div class="sb" style="width:50%"></div></div>
+  </div>
+</div>
+
+<footer>
+  © 2026 LYMX Power · Las Vegas, NV · <a href="rep-dashboard.html" style="color:#5a6373">Back to dashboard</a> · <a href="support.html" style="color:#5a6373">Tech support</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+// ============================================================================
+// partner-my-downlines.html — searchable/sortable list of the full downline.
+// 2026-05-31 #a24f5dc7 (urgent) — root-cause build: previously the only way to
+// see your network was the visual tree (partner-tree.html); there was no list
+// view to search/sort/manage a growing downline. This walks the same canonical
+// sponsor chain (partners.sponsor_partner_id, G1->G2->G3) the dashboard tree
+// uses, joins business-activation counts, and renders a filterable table.
+// ============================================================================
+(function () {
+  var state = { rows: [], gen: 'all', q: '', sort: 'joined', dir: -1 };
+
+  function esc(s){ return String(s==null?'':s).replace(/[<>&"]/g,function(c){return ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'})[c];}); }
+  function initials(p){ var n=(p.name||'P').trim(); var parts=n.split(/\s+/); return ((parts[0]||'')[0]||'P').toUpperCase() + ((parts[1]||'')[0]||'').toUpperCase(); }
+  function fmtDate(iso){ if(!iso) return '—'; var d=new Date(iso); return d.toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}); }
+
+  async function load(){
+    var sb = window.LYMX && window.LYMX.sb;
+    if (!sb) { setTimeout(load, 200); return; }
+    var sess = await sb.auth.getSession();
+    var user = sess && sess.data && sess.data.session ? sess.data.session.user : null;
+    if (!user) return; // role-gate redirects
+    var me = await sb.from('partners').select('id').eq('user_id', user.id).maybeSingle();
+    if (!me.data) { renderEmpty('No partner record is linked to your account yet.'); return; }
+    var myId = me.data.id;
+
+    // ---- canonical 3-generation walk (mirror of rep-dashboard S2a + partner-tree) ----
+    function sel(){ return 'id, legal_name, display_name, partner_code, contact_email, created_at, is_founding_25, founding_25_rank, sponsor_partner_id'; }
+    var g1R = await sb.from('partners').select(sel()).eq('sponsor_partner_id', myId).is('archived_at', null);
+    var g1 = g1R.data || [];
+    var g1Ids = g1.map(function(p){return p.id;});
+    var g2 = [];
+    if (g1Ids.length){ var r=await sb.from('partners').select(sel()).in('sponsor_partner_id', g1Ids).is('archived_at', null); g2=r.data||[]; }
+    var g2Ids = g2.map(function(p){return p.id;});
+    var g3 = [];
+    if (g2Ids.length){ var r2=await sb.from('partners').select(sel()).in('sponsor_partner_id', g2Ids).is('archived_at', null); g3=r2.data||[]; }
+
+    var allIds = g1Ids.concat(g2Ids).concat(g3.map(function(p){return p.id;}));
+    // business-activation count per downline partner (for the "Businesses" column)
+    var bizBy = {};
+    if (allIds.length){
+      var bz = await sb.from('businesses').select('signed_up_by_partner_id').in('signed_up_by_partner_id', allIds).is('archived_at', null);
+      (bz.data||[]).forEach(function(b){ bizBy[b.signed_up_by_partner_id]=(bizBy[b.signed_up_by_partner_id]||0)+1; });
+    }
+    // sponsor name map (so each row can show who recruited them)
+    var nameById = {}; nameById[myId] = 'You';
+    [].concat(g1,g2,g3).forEach(function(p){ nameById[p.id]=p.display_name||p.legal_name||p.partner_code; });
+
+    function toRow(p, gen){
+      return {
+        id: p.id, name: p.display_name || p.legal_name || 'Partner', code: p.partner_code || '',
+        email: p.contact_email || '', gen: gen, joined: p.created_at,
+        biz: bizBy[p.id] || 0, sponsorName: nameById[p.sponsor_partner_id] || '—',
+        founding: p.is_founding_25 ? (p.founding_25_rank || true) : null
+      };
+    }
+    state.rows = g1.map(function(p){return toRow(p,'g1');})
+      .concat(g2.map(function(p){return toRow(p,'g2');}))
+      .concat(g3.map(function(p){return toRow(p,'g3');}));
+
+    // stats
+    document.getElementById('stats').style.display = '';
+    document.getElementById('s-total').textContent = state.rows.length;
+    document.getElementById('s-g1').textContent = g1.length;
+    document.getElementById('s-g2').textContent = g2.length;
+    document.getElementById('s-g3').textContent = g3.length;
+    document.getElementById('s-biz').textContent = Object.keys(bizBy).reduce(function(a,k){return a+bizBy[k];},0);
+    document.getElementById('ct-all').textContent = state.rows.length;
+    document.getElementById('ct-g1').textContent = g1.length;
+    document.getElementById('ct-g2').textContent = g2.length;
+    document.getElementById('ct-g3').textContent = g3.length;
+
+    render();
+  }
+
+  function renderEmpty(msg){
+    document.getElementById('host').innerHTML =
+      '<div class="empty"><div class="em">🌱</div><div class="et">No downline yet</div>'
+      + '<div class="es">' + esc(msg || 'As you recruit partners and they recruit others, everyone in your 3 generations will appear here. Share your recruiter link from the dashboard to get started.') + '</div></div>';
+  }
+
+  function sortRows(rows){
+    var s=state.sort, dir=state.dir;
+    return rows.slice().sort(function(a,b){
+      var av,bv;
+      if (s==='name'){ av=(a.name||'').toLowerCase(); bv=(b.name||'').toLowerCase(); }
+      else if (s==='gen'){ av=a.gen; bv=b.gen; }
+      else if (s==='biz'){ av=a.biz; bv=b.biz; }
+      else { av=a.joined||''; bv=b.joined||''; } // joined
+      if (av<bv) return -1*dir; if (av>bv) return 1*dir; return 0;
+    });
+  }
+
+  function render(){
+    var rows = state.rows;
+    if (!rows.length){ renderEmpty(); return; }
+    var q = state.q.trim().toLowerCase();
+    var filtered = rows.filter(function(r){
+      if (state.gen!=='all' && r.gen!==state.gen) return false;
+      if (q && (r.name.toLowerCase().indexOf(q)<0 && (r.code||'').toLowerCase().indexOf(q)<0)) return false;
+      return true;
+    });
+    filtered = sortRows(filtered);
+    var host = document.getElementById('host');
+    if (!filtered.length){
+      host.innerHTML = '<div class="empty"><div class="em">🔍</div><div class="et">No matches</div><div class="es">No downline partner matches your search/filter.</div></div>';
+      return;
+    }
+    function arrow(col){ return state.sort===col ? (state.dir<0?' ▼':' ▲') : ''; }
+    var head = '<table><thead><tr>'
+      + '<th data-sort="name">Partner<span class="ar">'+arrow('name')+'</span></th>'
+      + '<th data-sort="gen">Gen<span class="ar">'+arrow('gen')+'</span></th>'
+      + '<th class="hide-sm">Recruited by</th>'
+      + '<th data-sort="biz">Businesses<span class="ar">'+arrow('biz')+'</span></th>'
+      + '<th data-sort="joined" class="hide-sm">Joined<span class="ar">'+arrow('joined')+'</span></th>'
+      + '<th>Actions</th></tr></thead><tbody>';
+    var body = filtered.map(function(r){
+      var genCls = r.gen, genLbl = r.gen.toUpperCase();
+      var founding = r.founding ? ' <span class="gen-pill" style="background:#fdf6e3;color:#a07c1a">★ Founding'+(typeof r.founding==='number'?(' #'+r.founding):'')+'</span>' : '';
+      return '<tr>'
+        + '<td><span class="av">'+esc(initials(r))+'</span><span class="nm">'+esc(r.name)+'</span>'+founding
+        + (r.code?('<div style="font-size:12px;color:var(--mute);margin-left:38px">'+esc(r.code)+'</div>'):'')+'</td>'
+        + '<td><span class="gen-pill '+genCls+'">'+genLbl+'</span></td>'
+        + '<td class="hide-sm">'+esc(r.sponsorName)+'</td>'
+        + '<td>'+r.biz+'</td>'
+        + '<td class="hide-sm">'+fmtDate(r.joined)+'</td>'
+        + '<td class="acts">'
+          + '<a href="partner-tree.html?focus='+encodeURIComponent(r.id)+'">Tree</a>'
+          + '<a href="my-conversations.html?with='+encodeURIComponent(r.id)+'">Message</a>'
+        + '</td></tr>';
+    }).join('');
+    host.innerHTML = head + body + '</tbody></table>';
+    // wire sort headers
+    Array.prototype.forEach.call(host.querySelectorAll('th[data-sort]'), function(th){
+      th.addEventListener('click', function(){
+        var col=th.getAttribute('data-sort');
+        if (state.sort===col) state.dir*=-1; else { state.sort=col; state.dir=(col==='name'||col==='gen')?1:-1; }
+        render();
+      });
+    });
+  }
+
+  // controls
+  document.addEventListener('input', function(e){
+    if (e.target && e.target.id==='q'){ state.q=e.target.value; render(); }
+  });
+  document.addEventListener('click', function(e){
+    var chip = e.target.closest && e.target.closest('.chip[data-gen]');
+    if (!chip) return;
+    state.gen = chip.getAttribute('data-gen');
+    Array.prototype.forEach.call(document.querySelectorAll('.chip[data-gen]'), function(c){ c.classList.toggle('on', c===chip); });
+    render();
+  });
+
+  load();
+})();
+</script>
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>
