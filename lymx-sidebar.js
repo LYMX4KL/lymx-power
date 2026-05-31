@@ -226,7 +226,6 @@
       { href: 'refer.html',              icon: '\u{1F4E8}', label: 'Refer Friends' },
       { href: 'share-hub.html',          icon: '\u{1F4E3}', label: 'Share hub' },
       { href: 'my-bookings.html',        icon: '\u{1F4C5}', label: 'My bookings' },
-      { href: 'my-rsvps.html',           icon: '\u{1F39F}', label: 'My RSVPs' },
       { href: 'my-reviews.html',         icon: '⭐',    label: 'My Reviews' },
       { href: 'my-saved-places.html',   icon: '\u{1F4CC}', label: 'Saved Places' },
       { section: 'Account' },
@@ -249,7 +248,6 @@
       { href: 'biz-payouts.html',        icon: '\u{1F3E6}', label: 'Payouts (Stripe)' },
       { href: 'biz-pos-comparison.html', icon: '\u{1F50C}', label: 'POS / Integrations' },
       { href: 'my-bookings.html',        icon: '\u{1F4C5}', label: 'My bookings' },
-      { href: 'my-rsvps.html',           icon: '\u{1F39F}', label: 'My RSVPs' },
       { section: 'Account' },
       { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
       { href: 'notifications.html',     icon: '\u{1F514}', label: 'Notifications' },
@@ -277,7 +275,6 @@
       { href: 'partner-resources.html',  icon: '\u{1F4BC}', label: 'Sales Toolkit' },
       { href: 'team-calendar.html',      icon: '\u{1F4C5}', label: 'My Calendar' },
       { href: 'my-bookings.html',        icon: '\u{1F4DD}', label: 'My bookings' },
-      { href: 'my-rsvps.html',           icon: '\u{1F39F}', label: 'My RSVPs' },
       // 2026-05-20 #dd9468cc - Removed static Team section (Clock In, My Schedule,
       // My Time-off) from partner menu. These are STAFF-only pages and were
       // showing for every partner, causing 'This page isn't for you' rejections.
