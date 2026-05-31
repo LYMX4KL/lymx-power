@@ -451,10 +451,7 @@
                 var rnk = { admin: 4, partner: 3, business: 2, customer: 1 };
                 var topRole = (rnk[accountRole] || 0) >= (rnk[menuMode] || 0) ? accountRole : menuMode;
                 var tag = '<span class="role-tag" data-role-account="1" style="margin-top:3px;display:inline-block">' + topRole + '</span>';
-                if (topRole !== menuMode) {
-                  tag += '<span class="mode-tag" data-role-mode="1" style="margin-left:6px;background:#f3f4f6;color:#4b5563;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:999px;display:inline-block">viewing ' + menuMode + ' mode</span>';
-                }
-                return tag;
+                return tag; // 2026-05-31 — no "viewing X mode" pill; the sidebar now shows all entitled groups
               })()
             + '<div id="lymxWhoMiniCode" style="display:none;margin-top:6px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#0050c7;cursor:pointer" title="Click to copy your referral code"></div>'
             + '</div>'
@@ -743,16 +740,9 @@
               tagEl.textContent = dbRole;
               var parentMini = tagEl.parentElement;
               if (parentMini) {
+                // 2026-05-31 — mode pill retired; strip any stale one, never add it.
                 var existingModePill = parentMini.querySelector('.mode-tag[data-role-mode="1"]');
                 if (existingModePill) existingModePill.remove();
-                if (dbRole !== role) {
-                  var modePill = document.createElement('span');
-                  modePill.className = 'mode-tag';
-                  modePill.setAttribute('data-role-mode', '1');
-                  modePill.setAttribute('style', 'margin-left:6px;background:#f3f4f6;color:#4b5563;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:999px;display:inline-block');
-                  modePill.textContent = 'viewing ' + role + ' mode';
-                  tagEl.insertAdjacentElement('afterend', modePill);
-                }
               }
             }
           }
