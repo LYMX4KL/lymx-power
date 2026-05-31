@@ -706,6 +706,15 @@
     document.body.appendChild(sidebar);
     document.body.classList.add('lymx-sb-pushed');
 
+    // 2026-05-31 — on app pages the sidebar IS the navigation, so the page's top
+    // app-tab bar (.nav-links, ~25 links on admin) is redundant; it overflowed
+    // horizontally and pushed the profile avatar off-screen. Hide it wherever the
+    // sidebar mounts (logged-in app pages). Marketing pages have no sidebar, so
+    // their top nav (website links) is untouched. Brand + avatar stay (separate els).
+    try {
+      document.querySelectorAll('header .nav-links, .nav .nav-links').forEach(function (n) { n.style.display = 'none'; });
+    } catch (e) { console.warn('[sidebar] hide top nav-links', e); }
+
     var sout = document.getElementById('lymx-sb-signout');
     if (sout) sout.addEventListener('click', doSignout);
 
