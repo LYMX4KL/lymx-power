@@ -252,15 +252,13 @@ function fmtTime(iso) { return new Date(iso).toLocaleString([], { month: 'short'
 async function toggleBiz(id, makeActive, name) {
   const verb = makeActive ? 'reactivate' : 'deactivate';
   if (!makeActive && !confirm('Deactivate ' + (name || 'this business') + "? It'll be hidden from the active business roster. You can reactivate it anytime.")) return;
-  const r = await authedFetch('/rest/v1/business_partners?id=eq.' + encodeURIComponent(id), {
-    method: 'PATCH',
-    headers: { 'Prefer': 'return=representation' },
-    body: JSON.stringify({ active: makeActive })
+  const r = await authedFetch('/rest/v1/rpc/admin_set_business_active', {
+    method: 'POST',
+    body: JSON.stringify({ p_business_partner_id: id, p_active: makeActive })
   });
-  let rows = [];
-  try { rows = await r.json(); } catch (e) { console.warn('[admin-businesses] toggle parse failed', e); }
-  if (!r.ok) { alert('Could not ' + verb + ' the business (HTTP ' + r.status + ').'); return; }
-  if (!Array.isArray(rows) || rows.length === 0) { alert('No change saved — you may not have permission to ' + verb + ' this business.'); return; }
+  let row = null;
+  try { row = await r.json(); } catch (e) { console.warn('[admin-businesses] toggle parse failed', e); }
+  if (!r.ok) { alert('Could not ' + verb + ' the business: ' + ((row && row.message) || ('HTTP ' + r.status)) + '.'); return; }
   await loadAll();
 }
 
