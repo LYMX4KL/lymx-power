@@ -451,7 +451,7 @@
                 var rnk = { admin: 4, partner: 3, business: 2, customer: 1 };
                 var topRole = (rnk[accountRole] || 0) >= (rnk[menuMode] || 0) ? accountRole : menuMode;
                 var tag = '<span class="role-tag" data-role-account="1" style="margin-top:3px;display:inline-block">' + topRole + '</span>';
-                return tag; // 2026-05-31 — no "viewing X mode" pill; the sidebar now shows all entitled groups
+                return tag; // 2026-05-31 — no "viewing X mode" pill; sidebar shows all entitled groups
               })()
             + '<div id="lymxWhoMiniCode" style="display:none;margin-top:6px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#0050c7;cursor:pointer" title="Click to copy your referral code"></div>'
             + '</div>'
@@ -497,11 +497,11 @@
     };
 
     // 2026-05-31 — collapsible role GROUPS replace page-mode switching. Show every
-    // section the user is entitled to (rank-inclusive ceiling = role); each group
-    // collapses/expands; the current page's group is expanded by default; shared
-    // account links render once at the bottom so they don't repeat per group.
+    // section the user is entitled to (ceiling = max(detected role, cached DB role));
+    // each group collapses/expands; the current page's group is expanded by default;
+    // shared account links render once at the bottom so they don't repeat per group.
     var _RNK = { admin:4, partner:3, business:2, customer:1 };
-    var _dbCeil = (function(){ try { return sessionStorage.getItem('lymx_db_role'); } catch(e){ return null; } })();
+    var _dbCeil = (function(){ try { return sessionStorage.getItem('lymx_db_role'); } catch (e) { return null; } })();
     var ceil = (_RNK[_dbCeil]||0) > (_RNK[role]||0) ? _dbCeil : role;
     var groupOrder = ceil === 'admin' ? ['admin','partner','business','customer']
                    : ceil === 'partner' ? ['partner','customer']
@@ -510,11 +510,11 @@
     var GROUP_LABEL = { admin:'Admin', partner:'Partner', business:'Business', customer:'Customer' };
     var SHARED = ['profile.html','my-conversations.html','notifications.html','my-feedback.html'];
     function _linkHtml(it) {
-      var active = (it.href || '').toLowerCase() === here ? ' active' : '';
-      var lKey = LABEL_KEY[it.label] || '';
-      return '<a class="' + active.trim() + '" href="' + it.href + '">'
+      var a = (it.href || '').toLowerCase() === here ? ' active' : '';
+      var lk = LABEL_KEY[it.label] || '';
+      return '<a class="' + a.trim() + '" href="' + it.href + '">'
            + '<span class="lymx-sb-icon">' + (it.icon || '') + '</span>'
-           + '<span' + (lKey ? ' data-i18n="' + lKey + '"' : '') + '>' + it.label + '</span></a>';
+           + '<span' + (lk ? ' data-i18n="' + lk + '"' : '') + '>' + it.label + '</span></a>';
     }
     var openGroup = null;
     for (var gi = 0; gi < groupOrder.length && !openGroup; gi++) {
@@ -530,7 +530,7 @@
       var links = menu.filter(function (it) { return it.href && SHARED.indexOf(it.href.toLowerCase()) === -1; });
       if (!links.length) continue;
       html += '<div class="lymx-sb-grp' + (g === openGroup ? ' open' : '') + '" data-grp="' + g + '">'
-            + '<button type="button" class="lymx-sb-grp-h" data-grp-toggle="1"><span>' + (GROUP_LABEL[g] || g) + '</span><span class="lymx-sb-chev">\u203A</span></button>'
+            + '<button type="button" class="lymx-sb-grp-h"><span>' + (GROUP_LABEL[g] || g) + '</span><span class="lymx-sb-chev">\u203A</span></button>'
             + '<div class="lymx-sb-grp-body">';
       for (var lx = 0; lx < links.length; lx++) html += _linkHtml(links[lx]);
       html += '</div></div>';
@@ -709,8 +709,6 @@
     var sout = document.getElementById('lymx-sb-signout');
     if (sout) sout.addEventListener('click', doSignout);
 
-    // 2026-05-31 — collapsible group toggle. Groups toggle independently so a
-    // multi-role user can open Admin + Partner + Customer at once if they want.
     sidebar.addEventListener('click', function (e) {
       var hd = e.target.closest && e.target.closest('.lymx-sb-grp-h');
       if (hd && hd.parentNode) hd.parentNode.classList.toggle('open');
@@ -723,51 +721,15 @@
     // correct first paint on subsequent navigations within the session.
     (async function confirmRoleFromDb() {
       try {
+        var prevCache = null; try { prevCache = sessionStorage.getItem('lymx_db_role'); } catch (e) {}
         var dbRole = await resolveRoleFromDb();
         if (!dbRole) return;
         _stashDbRole(dbRole);
-        var rnk = { admin: 4, partner: 3, business: 2, customer: 1 };
-        // 2026-05-25 #9574bf1a / #729d977d — even on path-disambiguated pages,
-        // upgrade the ACCOUNT role-tag in place when the DB resolves a higher
-        // role than what we initially painted. We leave the MENU alone (the user
-        // is intentionally in customer-view mode), but the tag must show their
-        // true account level so they don't think their upgrade failed.
-        try {
-          var tagEl = document.querySelector('.lymx-sb .role-tag[data-role-account="1"]');
-          if (tagEl) {
-            var currentDisplayed = (tagEl.textContent || '').trim().toLowerCase();
-            if ((rnk[dbRole] || 0) > (rnk[currentDisplayed] || 0)) {
-              tagEl.textContent = dbRole;
-              var parentMini = tagEl.parentElement;
-              if (parentMini) {
-                // 2026-05-31 — mode pill retired; strip any stale one, never add it.
-                var existingModePill = parentMini.querySelector('.mode-tag[data-role-mode="1"]');
-                if (existingModePill) existingModePill.remove();
-              }
-            }
-          }
-        } catch (e) { console.warn('[sidebar] role-tag in-place update', e); }
-        var pathRole = _rolePathOnly();
-        // 2026-05-30 — pair to the fail-closed admin menu in detectRole(). On a
-        // path-disambiguated page we normally keep the path menu (intentional
-        // mode toggle for multi-role users), so we return early. EXCEPTION: an
-        // /admin-* page where the first paint did NOT show admin (because admin
-        // wasn't confirmed yet). If the DB now confirms admin, refresh so a real
-        // admin gets their menu; if it confirms non-admin, the page's role-gate
-        // handles the bounce — leave the correct non-admin menu in place and
-        // never paint admin.
-        if (pathRole && pathRole !== 'admin') {
-          if ((rnk[dbRole]||0) > (rnk[role]||0) && window.LymxSidebar && typeof window.LymxSidebar.refresh === 'function') window.LymxSidebar.refresh();
-          return;
-        }
-        if (pathRole === 'admin') {
-          if (dbRole === 'admin' && role !== 'admin' &&
-              window.LymxSidebar && typeof window.LymxSidebar.refresh === 'function') {
-            window.LymxSidebar.refresh();
-          }
-          return;
-        }
-        if (dbRole !== role && window.LymxSidebar && typeof window.LymxSidebar.refresh === 'function') {
+        var rnk = { admin:4, partner:3, business:2, customer:1 };
+        // 2026-05-31 — grouped sidebar: rebuild ONCE if DB role outranks the
+        // PRE-paint cache. Comparing to prevCache (not the path role) prevents the
+        // refresh->mount->refresh loop that made the sidebar flash.
+        if ((rnk[dbRole]||0) > (rnk[prevCache]||0) && window.LymxSidebar && typeof window.LymxSidebar.refresh === 'function') {
           window.LymxSidebar.refresh();
         }
       } catch (e) { console.warn('[sidebar] confirmRoleFromDb', e); }
