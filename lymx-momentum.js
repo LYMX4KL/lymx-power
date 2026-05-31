@@ -30,7 +30,7 @@
           ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6); ctx.restore(); });
         if (Date.now()-t0 < 2600) requestAnimationFrame(tick); else c.remove();
       })();
-    } catch(e){ /* confetti is best-effort */ }
+    } catch(e){ /* confetti is best-effort */ } // bandaid-ok: purely cosmetic canvas animation, no user data
   }
 
   function toast(msg) {
@@ -104,7 +104,7 @@
         var key = 'lymx_celebrated_' + latestAct.id;
         if (ageH < 48 && !localStorage.getItem(key)) {
           confetti(); toast('🎉 ' + fmt(latestAct.amount) + ' activation bonus earned!');
-          try { localStorage.setItem(key, '1'); } catch(e){}
+          try { localStorage.setItem(key, '1'); } catch(e){} // bandaid-ok: localStorage write is best-effort (private-mode safe)
         }
       }
 
@@ -118,8 +118,8 @@
         var need = Math.max(0, 5 - actsInWindow);
         if (daysLeft > 0 && need > 0) {
           speedHtml = '<div style="margin-top:12px;padding:12px 14px;border:1px dashed #d4af37;border-radius:10px;background:rgba(245,209,114,.08)">'+
-            '<div style="font-weight:800;font-size:13.5px">\uD83D\uDE80 $1,000 Founding speed bonus</div>'+
-            '<div style="font-size:12.5px;color:#5b6472;margin-top:2px">'+actsInWindow+' of 5 activations \u00b7 <strong>'+need+'</strong> more in <strong>'+daysLeft+'</strong> day'+(daysLeft===1?'':'s')+' to earn it.</div></div>';
+            '<div style="font-weight:800;font-size:13.5px">🚀 $1,000 Founding speed bonus</div>'+
+            '<div style="font-size:12.5px;color:#5b6472;margin-top:2px">'+actsInWindow+' of 5 activations · <strong>'+need+'</strong> more in <strong>'+daysLeft+'</strong> day'+(daysLeft===1?'':'s')+' to earn it.</div></div>';
         } else if (daysLeft <= 0 && need > 0) {
           speedHtml = '';
         }
@@ -171,7 +171,7 @@
             el.textContent = 'You are #' + (idx+1) + ' this month — ' + (gap<=0?'tied with':gap+' activation'+(gap===1?'':'s')+' from passing') + ' ' + ahead.name + '. 💪';
           } else el.textContent = 'Activate your first business this month to climb the leaderboard. 🚀';
         }
-      } catch(e){ /* leaderboard nudge optional */ }
+      } catch(e){ /* leaderboard nudge optional */ } // bandaid-ok: cosmetic rank nudge; card already rendered, outer catch logs
     } catch (e) { console.warn('[lymx-momentum] failed', e); }
   }
 

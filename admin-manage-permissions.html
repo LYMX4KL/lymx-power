@@ -204,13 +204,13 @@
   var [custQ, partQ, staffQ, ownerQ, nameQ] = await Promise.all([
     sb.from('customers').select('user_id,display_name,email').order('display_name', { ascending: true }).limit(500),
     sb.from('partners').select('user_id,legal_name,display_name,contact_email,partner_code').order('display_name', { ascending: true }).limit(500),
-    sb.from('staff_roles').select('user_id,role').limit(500),
+    sb.from('staff_roles').select('user_id,role,display_name,work_email').limit(500),
     sb.from('businesses').select('owner_user_id,name').not('owner_user_id', 'is', null).limit(500),
     sb.rpc('admin_list_user_emails')
   ]);
   if (custQ.data) custQ.data.forEach(function(r){ upsertMember(r.user_id, r.display_name, r.email, 'customer'); });
   if (partQ.data) partQ.data.forEach(function(r){ upsertMember(r.user_id, r.legal_name || r.display_name, r.contact_email, 'partner'); });
-  if (staffQ.data) staffQ.data.forEach(function(r){ upsertMember(r.user_id, null, null, r.role || 'staff'); });
+  if (staffQ.data) staffQ.data.forEach(function(r){ upsertMember(r.user_id, r.display_name, r.work_email, r.role || 'staff'); });
   if (ownerQ.data) ownerQ.data.forEach(function(r){ upsertMember(r.owner_user_id, null, null, 'business_owner'); });
 
   // 2026-05-30 - canonical identity (ARCHITECTURE-RULES Rule 1a): the authoritative

@@ -307,9 +307,9 @@
         var mo = new Date(); mo.setDate(1); mo.setHours(0,0,0,0);
         var mc = await sb.from('partner_commissions').select('amount,payout_kind,created_at').eq('partner_id', pid).gte('created_at', mo.toISOString());
         (mc.data || []).forEach(function (x) { if (x.payout_kind !== 'lymx') monthCash += Number(x.amount || 0); });
-      } catch (e) {}
+      } catch (e) { console.warn('[projector] month-cash load failed; goal meter may be understated', e); }
       // saved goal
-      try { var g = await sb.from('partner_goals').select('monthly_cash_goal').eq('partner_id', pid).limit(1); if (g.data && g.data.length) { myGoal = Number(g.data[0].monthly_cash_goal || 0); } } catch (e) {}
+      try { var g = await sb.from('partner_goals').select('monthly_cash_goal').eq('partner_id', pid).limit(1); if (g.data && g.data.length) { myGoal = Number(g.data[0].monthly_cash_goal || 0); } } catch (e) { console.warn('[projector] saved-goal load failed', e); }
       renderGoalMeter();
 
       var sum = await sb.rpc('partner_income_summary', { p_partner_id: pid });

@@ -57,7 +57,7 @@
         }
       }
     } catch (e) { console.warn('[lymx-comp-config] using defaults', e); }
-    try { apply(LYMXComp.cfg); } catch (e) {}
+    try { apply(LYMXComp.cfg); } catch (e) { console.warn('[lymx-comp-config] apply() failed; comp values not filled', e); }
     return LYMXComp.cfg;
   })();
 
