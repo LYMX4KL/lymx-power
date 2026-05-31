@@ -447,6 +447,64 @@
   </div>
 </section>
 
+<!-- FEATURED BUSINESSES (Top-rated + New, rotating 30d) — 2026-05-31 #homepage-discovery -->
+<style>
+  .lx-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;margin-top:8px}
+  .lx-biz{display:flex;flex-direction:column;gap:7px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;text-decoration:none;color:inherit;box-shadow:var(--shadow);transition:.15s}
+  .lx-biz:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(14,17,22,.12)}
+  .lx-biz-emoji{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#fef3e0,#ffd9a8);display:flex;align-items:center;justify-content:center;font-size:26px}
+  .lx-biz-name{font-size:16.5px;font-weight:800;letter-spacing:-.01em}
+  .lx-biz-cat{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  .lx-biz-tag{font-size:13.5px;color:var(--ink-2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .lx-biz-foot{display:flex;gap:8px;align-items:center;margin-top:2px;flex-wrap:wrap}
+  .lx-badge{background:rgba(19,162,107,.12);color:#0c6940;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:3px 9px;border-radius:999px}
+  .lx-rating{background:rgba(240,160,32,.16);color:#7a4a08;font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px}
+</style>
+<section class="lx-feat" id="lxTopRated-sec" style="display:none">
+  <div class="wrap">
+    <div class="sec-head"><div><h2>Top-rated businesses</h2><p>The highest-rated spots on the LYMX network — earn and redeem at every one.</p></div><a class="more" href="browse.html?sort=rating">See all &rarr;</a></div>
+    <div class="lx-row" id="lxTopRated"></div>
+  </div>
+</section>
+<section class="lx-feat soft" id="lxNew-sec" style="display:none">
+  <div class="wrap">
+    <div class="sec-head"><div><h2>New on LYMX</h2><p>Businesses that just joined the network &mdash; featured for their first 30 days.</p></div><a class="more" href="browse.html">See all &rarr;</a></div>
+    <div class="lx-row" id="lxNew"></div>
+  </div>
+</section>
+<script>
+(function(){
+  function esc(x){return (x==null?'':String(x)).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];});}
+  async function run(){
+    var t=0; while(!(window.LYMX_CONFIG&&window.LYMX_CONFIG.SUPABASE_URL&&window.LYMX_CONFIG.SUPABASE_ANON_KEY)&&t<80){ await new Promise(function(r){setTimeout(r,100);}); t++; }
+    var C=window.LYMX_CONFIG||{}; if(!C.SUPABASE_URL||!C.SUPABASE_ANON_KEY) return;
+    var H={apikey:C.SUPABASE_ANON_KEY, Authorization:'Bearer '+C.SUPABASE_ANON_KEY, 'Content-Type':'application/json'};
+    async function rpc(fn,body){ try{var r=await fetch(C.SUPABASE_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:H,body:JSON.stringify(body)}); if(!r.ok)return []; var j=await r.json(); return Array.isArray(j)?j:[];}catch(e){return [];} }
+    async function approved(extra){ try{var r=await fetch(C.SUPABASE_URL+'/rest/v1/businesses?select=display_name,slug,category,emoji,tagline&approval_status=eq.approved&archived_at=is.null&demo_only=eq.false'+extra,{headers:H}); if(!r.ok)return []; var j=await r.json(); return Array.isArray(j)?j:[];}catch(e){return [];} }
+    function card(b,badge){
+      var em=b.emoji||'\uD83C\uDFEC';
+      var rating=(b.avg_rating!=null&&Number(b.avg_rating)>0)?('\u2605 '+Number(b.avg_rating).toFixed(1)):'';
+      return '<a class="lx-biz" href="biz.html?slug='+encodeURIComponent(b.slug||'')+'">'
+        +'<div class="lx-biz-emoji">'+em+'</div>'
+        +'<div class="lx-biz-name">'+esc(b.display_name)+'</div>'
+        +'<div class="lx-biz-cat">'+esc(b.category||'Business')+'</div>'
+        +(b.tagline?'<div class="lx-biz-tag">'+esc(b.tagline)+'</div>':'')
+        +'<div class="lx-biz-foot">'+(badge?'<span class="lx-badge">'+badge+'</span>':'')+(rating?'<span class="lx-rating">'+rating+'</span>':'')+'</div>'
+        +'</a>';
+    }
+    function show(secId,rowId,rows,badge){ if(!rows||!rows.length) return; var row=document.getElementById(rowId); if(!row)return; row.innerHTML=rows.slice(0,8).map(function(b){return card(b,badge);}).join(''); document.getElementById(secId).style.display=''; }
+    var top=await rpc('fn_top_rated_local_businesses',{p_zip_prefix:null,p_limit:8});
+    if(!top.length) top=await approved('&order=created_at.desc&limit=8');
+    show('lxTopRated-sec','lxTopRated',top,'');
+    var nw=await rpc('fn_new_local_businesses',{p_zip_prefix:null,p_days:30,p_limit:12});
+    if(!nw.length){ var since=new Date(Date.now()-30*864e5).toISOString(); nw=await approved('&created_at=gte.'+since+'&order=created_at.desc&limit=12'); }
+    for(var i=nw.length-1;i>0;i--){ var k=Math.floor(Math.random()*(i+1)); var tmp=nw[i]; nw[i]=nw[k]; nw[k]=tmp; } // rotate
+    show('lxNew-sec','lxNew',nw,'New');
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
+})();
+</script>
+
 <!-- FOUNDING LAUNCH — REPLACES PLACEHOLDER BUSINESSES -->
 <section id="browse">
   <div class="wrap">
