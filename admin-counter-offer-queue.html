@@ -178,7 +178,7 @@ function paintList() {
     const pay = o.pay_rate_cents != null ? fmtUsd(o.pay_rate_cents) + (o.pay_period ? ' /' + o.pay_period : '') : '-';
     let acts = '';
     const letterBtn = o.offer_letter_path
-      ? '<a class="btn btn-outline" target="_blank" rel="noopener" href="' + esc(letterUrl(o.offer_letter_path)) + '">View letter</a>'
+      ? '<button class="btn btn-outline" onclick="viewLetter(\'' + esc(o.offer_letter_path) + '\')">View letter</button>'
       : '';
     const editBtn = o.application_id
       ? '<a class="btn btn-outline" href="admin-generate-offer.html?app=' + encodeURIComponent(o.application_id) + '">✏️ Edit terms</a>'
@@ -213,15 +213,34 @@ function paintList() {
   }).join('');
 }
 
-function letterUrl(path) {
-  // offer_letter_path is stored as "personnel-files/<uuid>/offer_letter_<ts>.html".
-  // Storage URL = <SUPABASE_URL>/storage/v1/object/public/<path> for public buckets,
-  // or use signed URLs. Try public path first; the generator EF puts letters in
-  // a public bucket per the design.
+// 2026-05-31 #102952bc — "View letter" returned {"statusCode":"404","error":"Bucket not found"}.
+// ROOT CAUSE: the offers.offer_letter_path stored by generate-offer-letter is
+// "<applicant_uuid>/offer_<id>_<date>.html" (NO bucket prefix), and the bucket
+// "personnel-files" is PRIVATE (signed-URL only) - not public as the old comment
+// assumed. The old code built ".../object/public/<path>", so storage read the uuid
+// as the bucket name and 404'd. Fix: mint a short-lived SIGNED url on click.
+async function viewLetter(path) {
   const cfg = window.LYMX_CONFIG;
-  if (!cfg || !path) return '#';
-  return cfg.SUPABASE_URL + '/storage/v1/object/public/' + path;
+  if (!cfg || !path) return;
+  const clean = String(path).replace(/^personnel-files\//, '');
+  try {
+    const session = await window.LYMX.getSession();
+    const tok = session && session.access_token;
+    const r = await fetch(cfg.SUPABASE_URL + '/storage/v1/object/sign/personnel-files/' + clean, {
+      method: 'POST',
+      headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ expiresIn: 3600 })
+    });
+    if (!r.ok) { alert('Could not open the offer letter (storage error ' + r.status + ').'); return; }
+    const j = await r.json();
+    if (!j || !j.signedURL) { alert('Could not open the offer letter (no signed URL returned).'); return; }
+    window.open(cfg.SUPABASE_URL + '/storage/v1' + j.signedURL, '_blank', 'noopener');
+  } catch (e) {
+    console.warn('[offer-queue] viewLetter failed', e);
+    alert('Could not open the offer letter. Please try again.');
+  }
 }
+window.viewLetter = viewLetter;
 
 async function sendToCandidate(id) {
   const o = _offers.find(x => x.id === id);

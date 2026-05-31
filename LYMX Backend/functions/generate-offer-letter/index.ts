@@ -157,6 +157,7 @@ serve(async (req: Request) => {
         start_date: body.start_date,
         location: body.location,
         work_mode: body.work_mode || "hybrid",
+        manager_title: (body.manager_title as string) || "Founder & CEO", // 2026-05-31 #53b65335 persist so Edit-terms restores it
         benefits_policy_id: policy.id,
         custom_notes_md: body.custom_notes_md || null,
         duties_md: body.duties_md || null,

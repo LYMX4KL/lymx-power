@@ -222,7 +222,7 @@ async function loadExistingOffer(appId){
   try {
     const sb = window.LYMX.sb;
     const { data, error } = await sb.from('offers')
-      .select('id,title,target_role,employment_type,work_mode,pay_type,pay_period,pay_rate_cents,sign_on_bonus_cents,start_date,location,custom_notes_md,duties_md,benefit_overrides,status')
+      .select('id,title,target_role,employment_type,work_mode,pay_type,pay_period,pay_rate_cents,sign_on_bonus_cents,start_date,location,custom_notes_md,duties_md,benefit_overrides,manager_title,status')
       .eq('application_id', appId)
       .in('status', ['draft','sent'])
       .order('created_at', { ascending:false })
@@ -246,6 +246,7 @@ async function loadExistingOffer(appId){
     if (o.sign_on_bonus_cents != null && o.sign_on_bonus_cents > 0) $('signOnBonus').value = (o.sign_on_bonus_cents/100);
     if (o.start_date) $('startDate').value = o.start_date;
     if (o.location) $('location').value = o.location;
+    if (o.manager_title) $('managerTitle').value = o.manager_title; // 2026-05-31 #53b65335
     if (o.custom_notes_md) $('customNotes').value = o.custom_notes_md;
     if (o.duties_md) $('duties').value = o.duties_md;
     const ov = o.benefit_overrides || {};
