@@ -706,14 +706,22 @@
     document.body.appendChild(sidebar);
     document.body.classList.add('lymx-sb-pushed');
 
-    // 2026-05-31 — on app pages the sidebar IS the navigation, so the page's top
-    // app-tab bar (.nav-links, ~25 links on admin) is redundant; it overflowed
-    // horizontally and pushed the profile avatar off-screen. Hide it wherever the
-    // sidebar mounts (logged-in app pages). Marketing pages have no sidebar, so
-    // their top nav (website links) is untouched. Brand + avatar stay (separate els).
+    // 2026-05-31 — on app pages the sidebar owns APP navigation, so the page's top
+    // app-tab bar (~25 links) is redundant and overflowed off-screen. Replace those
+    // tabs with the standard PUBLIC website nav (like any site header) so logged-in
+    // users can still reach the public site; app nav lives in the sidebar. Marketing
+    // pages have no sidebar so they're untouched. Brand + avatar are separate, stay.
     try {
-      document.querySelectorAll('header .nav-links, .nav .nav-links').forEach(function (n) { n.style.display = 'none'; });
-    } catch (e) { console.warn('[sidebar] hide top nav-links', e); }
+      var _pubNav = [['index.html','Home'],['browse.html','Browse'],['partners.html','Partners'],['why-lymx.html','Why LYMX'],['business.html','For Business'],['community.html','Community']];
+      var _here = (location.pathname.split('/').pop() || '').toLowerCase();
+      document.querySelectorAll('header .nav-links, .nav .nav-links').forEach(function (nl) {
+        nl.innerHTML = _pubNav.map(function (it) {
+          var on = it[0].toLowerCase() === _here ? ' class="on"' : '';
+          return '<a' + on + ' href="' + it[0] + '">' + it[1] + '</a>';
+        }).join('');
+        nl.style.display = '';
+      });
+    } catch (e) { console.warn('[sidebar] public top nav', e); }
 
     var sout = document.getElementById('lymx-sb-signout');
     if (sout) sout.addEventListener('click', doSignout);
