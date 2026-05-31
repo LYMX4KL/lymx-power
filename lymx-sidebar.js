@@ -229,7 +229,6 @@
       { href: 'my-rsvps.html',           icon: '\u{1F39F}', label: 'My RSVPs' },
       { href: 'my-reviews.html',         icon: '⭐',    label: 'My Reviews' },
       { href: 'my-saved-places.html',   icon: '\u{1F4CC}', label: 'Saved Places' },
-      { href: 'customer-charity.html',   icon: '\u{1F49D}', label: 'Donate LYMX' },
       { section: 'Account' },
       { href: 'my-conversations.html',   icon: '\u{1F4EC}', label: 'Messages' },
       { href: 'notifications.html',     icon: '\u{1F514}', label: 'Notifications' },
@@ -473,9 +472,9 @@
       'My Business':'sidebar.section.my_business'
     };
     var LABEL_KEY = {
-      'Dashboard':'sidebar.dashboard','My LYMX Wallet':'sidebar.wallet','Send LYMX':'sidebar.send_lymx',
+      'Dashboard':'sidebar.dashboard','My LYMX Wallet':'sidebar.wallet',
       'Browse Businesses':'sidebar.browse_businesses','Refer Friends':'sidebar.refer_friends','Share hub':'sidebar.share_hub',
-      'My Reviews':'sidebar.my_reviews','Saved Places':'sidebar.saved_places','Donate LYMX':'sidebar.donate_lymx',
+      'My Reviews':'sidebar.my_reviews','Saved Places':'sidebar.saved_places',
       'Messages':'sidebar.messages','Profile':'sidebar.profile','Contacts':'sidebar.contacts',
       'My Feedback':'sidebar.my_feedback','Analytics':'sidebar.analytics','My Customers':'sidebar.my_customers',
       'Staff':'sidebar.staff','Promo Planner':'sidebar.promo_planner','Cashflow':'sidebar.cashflow',
