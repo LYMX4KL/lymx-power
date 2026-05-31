@@ -479,6 +479,11 @@
       live.className = 'btn outline'; live.textContent = 'Open landing page →';
       live.href = welcomeUrl; live.target = '_blank';
       actions.appendChild(live);
+      const inviteBtn = document.createElement('button');
+      inviteBtn.className = 'btn outline'; inviteBtn.textContent = '\uD83D\uDCE7 Send integration invite';
+      inviteBtn.title = 'Email this business the read-endpoint integration letter';
+      inviteBtn.addEventListener('click', () => doSendIntegrationInvite(b.id, inviteBtn));
+      actions.appendChild(inviteBtn);
       const undo = document.createElement('button');
       undo.className = 'btn reject'; undo.textContent = 'Unapprove (mark pending)';
       undo.addEventListener('click', () => doSetStatus(b.id, 'pending', undo));
@@ -497,6 +502,23 @@
     }));
 
     return card;
+  }
+
+  async function doSendIntegrationInvite(businessId, btn) {
+    const orig = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Sending\u2026';
+    try {
+      const r = await fetch(URL + '/functions/v1/send-business-integration-invite', {
+        method: 'POST', headers: H, body: JSON.stringify({ business_id: businessId })
+      });
+      const j = await r.json().catch(() => ({}));
+      if (j.ok && j.already_sent) toast('Already sent earlier to ' + (j.sent_to || 'their contact') + '.', 'ok');
+      else if (j.ok) toast('Integration invite sent to ' + (j.sent_to || 'their contact') + '.', 'ok');
+      else if (j.skipped === 'no_intake') toast('Not sent \u2014 this business has not completed intake yet.', 'err');
+      else if (j.error === 'no_recipient') toast('No contact email on file for this business.', 'err');
+      else toast('Could not send: ' + (j.error || 'unknown'), 'err');
+    } catch (e) { toast('Send failed: ' + (e.message || e), 'err'); }
+    btn.disabled = false; btn.textContent = orig;
   }
 
   // ---- Modal: 🔄 Request more info (Module 2, migration 095) -------------
