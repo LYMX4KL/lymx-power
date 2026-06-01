@@ -189,7 +189,8 @@ function paintList() {
              letterBtn +
              '<button class="btn btn-danger" onclick="setStatus(\'' + o.id + '\',\'rescinded\')">Rescind</button>';
     } else if (s === 'sent') {
-      acts = '<button class="btn btn-success" onclick="markAccepted(\'' + o.id + '\')">Mark accepted</button>' +
+      acts = '<button class="btn btn-primary" onclick="resendToCandidate(\'' + o.id + '\')">Resend</button>' +
+             '<button class="btn btn-success" onclick="markAccepted(\'' + o.id + '\')">Mark accepted</button>' +
              '<button class="btn btn-outline" onclick="markDeclined(\'' + o.id + '\')">Mark declined</button>' +
              editBtn +
              letterBtn +
@@ -252,15 +253,28 @@ async function viewLetter(path) {
 }
 window.viewLetter = viewLetter;
 
-async function sendToCandidate(id) {
+// Shared dispatch: mints a fresh 14-day accept link, sets status 'sent',
+// auto-emails the candidate via the send-email EF (Resend, transactional =>
+// from @getlymx.com), then shows the copy-paste fallback modal. Used by BOTH
+// the first Send (draft -> sent) and Resend (sent -> sent) so they never drift.
+// 2026-06-01 #73e260bc + #1ee6c6e6 — offers were flipped to 'sent' with no email
+// actually dispatched, and there was no way to re-send a stuck offer. Now every
+// send/resend goes through one path that emails + logs, and Resend lives in the
+// Sent-waiting tab so a never-delivered offer is always recoverable.
+async function dispatchOffer(id, opts) {
+  opts = opts || {};
+  const isResend = !!opts.resend;
   const o = _offers.find(x => x.id === id);
   const a = (o && _appsById[o.application_id]) || {};
   const who = [(a.first_name||''), (a.last_name||'')].filter(Boolean).join(' ') || a.email || 'this candidate';
   const candEmail = a.email || '';
-  if (!confirm('Send the offer to ' + who + '?\n\nThis (1) flips the status to "sent", (2) generates a one-time-use accept link valid for 14 days, and (3) shows you a copy-paste email body to send to ' + (candEmail || 'them') + ' manually. The candidate clicks the link to accept and the personnel record auto-creates.')) return;
 
-  // Generate the magic-link token. Browser crypto.randomUUID() is supported
-  // in modern Chrome/Firefox/Safari; fall back to a uuid v4 polyfill if not.
+  const confirmMsg = isResend
+    ? ('Resend the offer to ' + who + '?\n\nThis emails ' + (candEmail || 'them') + ' again and refreshes their accept link to a new 14-day window. Use this when the first email never arrived.')
+    : ('Send the offer to ' + who + '?\n\nThis (1) flips the status to "sent", (2) generates a one-time-use accept link valid for 14 days, and (3) emails it to ' + (candEmail || 'them') + ' (with a copy-paste backup). The candidate clicks the link to accept and the personnel record auto-creates.');
+  if (!confirm(confirmMsg)) return;
+
+  // Mint a fresh magic-link token. crypto.randomUUID() in modern browsers; uuid v4 fallback.
   const token = (typeof crypto !== 'undefined' && crypto.randomUUID)
     ? crypto.randomUUID()
     : (() => {
@@ -272,10 +286,9 @@ async function sendToCandidate(id) {
   const acceptUrl = location.origin + '/accept-offer.html?t=' + token;
 
   // Patch the offer row: status=sent, sent_at, accept_token + expiry + issued_at.
-  // The accept-offer.html page resolves the token via fn_offer_resolve_by_token
-  // (migration 121) and the Accept button calls fn_offer_accept_by_token, which
-  // fires tg_offer_accepted_spawn_onboarding (migration 056) for the personnel
-  // record + onboarding tasks.
+  // accept-offer.html resolves the token via fn_offer_resolve_by_token (mig 121);
+  // Accept calls fn_offer_accept_by_token -> tg_offer_accepted_spawn_onboarding
+  // (mig 056) for the personnel record + onboarding tasks.
   const cfg = window.LYMX_CONFIG;
   const session = await window.LYMX.getSession();
   const tok = session.access_token;
@@ -291,15 +304,14 @@ async function sendToCandidate(id) {
     })
   });
   if (!r.ok) {
-    banner('err', 'Send failed: ' + (await r.text()).slice(0,200));
+    banner('err', (isResend ? 'Resend' : 'Send') + ' failed: ' + (await r.text()).slice(0,200));
     return;
   }
 
-  // 2026-05-31 #0 ROOT-CAUSE: auto-send the offer email to the candidate.
-  // Previously this only showed a copy-paste body and relied on the admin to
-  // send manually, so candidates never got the offer ("offer letter never
-  // received"). Send via the existing send-email EF (Resend, transactional =>
-  // from @getlymx.com). If it fails, the copy-paste modal below is the fallback.
+  // Auto-send the offer email to the candidate. Root cause of "offer letter
+  // never received": the old flow only flipped status + showed a copy-paste
+  // body, so candidates who were not manually emailed got nothing. If the send
+  // fails, the copy-paste modal below is the fallback.
   let emailSent = false, emailErr = '';
   if (candEmail) {
     try {
@@ -317,13 +329,18 @@ async function sendToCandidate(id) {
     emailErr = 'no email on file for this candidate';
   }
   banner(emailSent ? 'ok' : 'err',
-    emailSent ? ('Offer emailed to ' + candEmail + '.')
+    emailSent ? ((isResend ? 'Offer re-emailed to ' : 'Offer emailed to ') + candEmail + '.')
               : ('Could not auto-send (' + emailErr + '). Use the copy-paste body below to send manually.'));
 
   // Show the modal: confirmation when sent, copy-paste fallback when not.
   showSendModal(who, candEmail, acceptUrl, o, emailSent, emailErr);
   await load();
 }
+
+async function sendToCandidate(id) { return dispatchOffer(id, { resend: false }); }
+async function resendToCandidate(id) { return dispatchOffer(id, { resend: true }); }
+window.sendToCandidate = sendToCandidate;
+window.resendToCandidate = resendToCandidate;
 
 // Compose the offer email (subject + body). Shared by the auto-send in
 // sendToCandidate and the copy-paste fallback modal so the two never drift.
