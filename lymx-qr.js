@@ -347,6 +347,10 @@
         .then(function (s) {
           stream = s;
           video.srcObject = s;
+          // 2026-05-31 #34 — must call play() after attaching the stream. Without it
+          // the <video> stays BLACK on browsers that don't auto-play here, so the
+          // detector never receives frames ("camera screen appears but completely black").
+          var _pp = video.play(); if (_pp && _pp.catch) _pp.catch(function (e) { console.warn('[lymx-qr] video.play()', e); });
           status.textContent = 'Scanning…';
           loop();
         })
