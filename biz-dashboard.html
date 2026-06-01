@@ -995,5 +995,63 @@ window.addEventListener('DOMContentLoaded', async function () {
   setInterval(function () { if (document.visibilityState === 'visible') loadPendingClaims(); }, 30000);
 })();
 </script>
+<script>
+// 2026-05-31 — Business signup-fee payment via Stripe Checkout (create-checkout-session EF).
+// Shows the "Pay $850" banner ONLY when the fee is genuinely owed (not paid, not waived),
+// so nothing fake/dead is shown. The webhook flips signup_fee_paid on payment.
+(function () {
+  'use strict';
+  function startCheckout(mode, btn) {
+    return async function () {
+      var cfg = window.LYMX_CONFIG;
+      try {
+        if (btn) { btn.dataset._t = btn.textContent; btn.disabled = true; btn.textContent = 'Opening Stripe…'; }
+        var sess = await window.LYMX.getSession();
+        var tok = sess && sess.access_token;
+        var r = await fetch(cfg.SUPABASE_URL + '/functions/v1/create-checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok },
+          body: JSON.stringify({ mode: mode })
+        });
+        var j = await r.json().catch(function () { return {}; });
+        if (r.ok && j.url) { location.href = j.url; return; }
+        alert('Could not start checkout: ' + (j.error || ('error ' + r.status)));
+      } catch (e) {
+        console.warn('[biz-pay] checkout failed', e);
+        alert('Could not reach checkout right now. Please try again in a moment.');
+      }
+      if (btn) { btn.disabled = false; if (btn.dataset._t) btn.textContent = btn.dataset._t; }
+    };
+  }
+  async function init() {
+    if (!window.LYMX || !window.LYMX.sb || !window.LYMX.requireAuth) { return setTimeout(init, 200); }
+    var user = await window.LYMX.requireAuth();
+    if (!user) return;
+    var sb = window.LYMX.sb, biz = null;
+    var SEL = 'id,signup_fee_paid,signup_fee_waived';
+    try {
+      var q = await sb.from('businesses').select(SEL).eq('owner_user_id', user.id).maybeSingle();
+      biz = q.data;
+      if (!biz && user.email) {
+        var q2 = await sb.from('businesses').select(SEL).ilike('contact_email', user.email.toLowerCase()).limit(1);
+        if (q2.data && q2.data.length) biz = q2.data[0];
+      }
+    } catch (e) { console.warn('[biz-pay] business load', e); return; }
+    if (!biz || biz.signup_fee_paid || biz.signup_fee_waived) return;  // only show when truly owed
+    var wrap = document.querySelector('.wrap'); if (!wrap) return;
+    var banner = document.createElement('div');
+    banner.style.cssText = "background:#fff8e1;border:1px solid #f5d172;border-radius:12px;padding:14px 18px;margin:14px 0;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif";
+    banner.innerHTML = '<div style="font-size:13.5px;color:#7a5a08"><strong>One-time setup fee due.</strong> Pay your $850 LYMX Business signup fee to activate your account.</div>';
+    var pay = document.createElement('button');
+    pay.type = 'button';
+    pay.textContent = 'Pay $850 signup fee →';
+    pay.style.cssText = 'background:#0e1116;color:#fff;border:0;padding:11px 18px;border-radius:9px;font-weight:800;font-size:13.5px;cursor:pointer;white-space:nowrap';
+    pay.onclick = startCheckout('signup', pay);
+    banner.appendChild(pay);
+    wrap.insertBefore(banner, wrap.firstChild);
+  }
+  init();
+})();
+</script>
 </body>
 </html>

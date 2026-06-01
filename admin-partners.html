@@ -346,10 +346,17 @@
       document.getElementById('listBody').innerHTML = '<tr><td colspan="7" class="empty"><div class="big">🤝</div>No partners match this filter.</td></tr>';
       return;
     }
+    // id -> partner map so the Sponsor column shows a readable code + name
+    // (not a meaningless UUID slice) and the move modal can resolve codes.
+    const byId = {}; ALL.forEach(p => byId[p.id] = p);
     const html = filtered.map(r => {
       const initials = initialsFor(r.display_name || r.legal_name, r.contact_email);
       const avInner = r.avatar_url ? '<img src="' + escapeHtml(r.avatar_url) + '" alt="">' : escapeHtml(initials);
-      const sponsorChip = r.sponsor_partner_id ? '<span class="num">' + escapeHtml(r.sponsor_partner_id.slice(0,8)) + '…</span>' : '<span style="color:var(--muted)">—</span>';
+      const sp = r.sponsor_partner_id ? byId[r.sponsor_partner_id] : null;
+      const sponsorChip = r.sponsor_partner_id
+        ? '<span class="num">' + escapeHtml(sp ? (sp.partner_code || (r.sponsor_partner_id.slice(0,8) + '…')) : (r.sponsor_partner_id.slice(0,8) + '…')) + '</span>'
+          + (sp && (sp.legal_name || sp.display_name) ? '<div style="font-size:11px;color:var(--muted)">' + escapeHtml(sp.legal_name || sp.display_name) + '</div>' : '')
+        : '<span style="color:var(--muted)">—</span>';
       const foundingChip = r.is_founding_25 ? '<span class="pill gold">★ #' + (r.founding_25_rank || '?') + '</span>' : '<span style="color:var(--muted)">—</span>';
       const created = new Date(r.created_at);
       const createdLabel = created.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
@@ -361,6 +368,9 @@
       const resendBtn = (r.email_status === 'no_email' || r.email_status === 'failed' || r.email_status === 'pending')
         ? ' <button class="btn btn-secondary" data-act="resend-welcome" data-id="' + r.id + '" title="Re-run partner-provision-email to retry @getlymx.com setup + welcome email">↻ Resend welcome</button>'
         : '';
+      // 2026-05-31 - Admin sets/moves a partner's sponsor (upline). The whole
+      // downline moves with them (mig 171 admin_set_partner_sponsor).
+      const sponsorBtn = ' <button class="btn btn-secondary" data-act="move-sponsor" data-id="' + r.id + '" title="Set or change this partner&#39;s sponsor (upline). Their entire downline moves with them.">⇅ Sponsor</button>';
       return '<tr>' +
         '<td><div class="name-cell"><div class="av">' + avInner + '</div><div class="body"><div class="nm">' + escapeHtml(r.legal_name || r.display_name || '—') + '</div><div class="em">' + escapeHtml(r.contact_email || '—') + '</div></div></div></td>' +
         '<td class="num">' + escapeHtml(r.partner_code || '—') + '</td>' +
@@ -368,7 +378,7 @@
         '<td>' + pillFor(r) + (r.full_company_email ? '<div style="font-size:11.5px;color:var(--muted);margin-top:2px;font-family:ui-monospace,Menlo,monospace">' + escapeHtml(r.full_company_email) + '</div>' : '') + '</td>' +
         '<td>' + foundingChip + '</td>' +
         '<td><span class="num">' + escapeHtml(createdLabel) + '</span></td>' +
-        '<td style="text-align:right">' + actionBtn + resendBtn + '</td>' +
+        '<td style="text-align:right">' + actionBtn + sponsorBtn + resendBtn + '</td>' +
         '</tr>';
     }).join('');
     document.getElementById('listBody').innerHTML = html;
@@ -400,6 +410,93 @@
       console.warn('[admin-partners] reactivate failed', e);
       toast('Reactivate failed: ' + (e.message || 'unknown'), 'err');
     }
+  }
+
+  // ----- Set / move a partner's sponsor (upline) -----
+  // The whole downline moves with the partner: we change only this partner's
+  // sponsor_partner_id; every team member keeps their own links inside the
+  // subtree. The admin_set_partner_sponsor RPC (mig 171, admin-gated) re-routes
+  // the subtree's mgc_tree chains through the new upline and rejects loops.
+  function openMoveSponsor(id) {
+    const r = ALL.find(p => p.id === id);
+    if (!r) { toast('Partner not found — reload.', 'err'); return; }
+    const current = r.sponsor_partner_id ? ALL.find(p => p.id === r.sponsor_partner_id) : null;
+    const currentLabel = current ? (current.partner_code || '') + ' — ' + (current.legal_name || current.display_name || '') : 'none (top of tree)';
+
+    // Candidate list: everyone except this partner. The RPC blocks loops, so we
+    // don't need to compute descendants client-side.
+    const opts = ALL.filter(p => p.id !== id)
+      .map(p => '<option value="' + escapeHtml(p.partner_code || p.id) + '">' + escapeHtml((p.legal_name || p.display_name || '—') + (p.contact_email ? ' (' + p.contact_email + ')' : '')) + '</option>')
+      .join('');
+
+    let ov = document.getElementById('moveSponsorOverlay');
+    if (ov) ov.remove();
+    ov = document.createElement('div');
+    ov.id = 'moveSponsorOverlay';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999;padding:18px';
+    ov.innerHTML =
+      '<div style="background:#fff;color:var(--ink);max-width:460px;width:100%;border-radius:14px;padding:22px;box-shadow:0 18px 50px rgba(0,0,0,.4)">' +
+        '<div style="font-weight:800;font-size:17px;margin-bottom:4px">Set / move sponsor</div>' +
+        '<div style="font-size:13px;color:var(--muted);margin-bottom:14px">' +
+          '<b>' + escapeHtml(r.legal_name || r.display_name || r.partner_code || 'Partner') + '</b>' +
+          (r.partner_code ? ' <span class="num">' + escapeHtml(r.partner_code) + '</span>' : '') +
+          '<br>Their entire downline moves with them.' +
+        '</div>' +
+        '<div style="font-size:12.5px;margin-bottom:6px">Current sponsor: <b>' + escapeHtml(currentLabel) + '</b></div>' +
+        '<label style="display:block;font-size:12.5px;font-weight:700;margin:10px 0 4px">New sponsor (type a partner code or name)</label>' +
+        '<input id="msInput" list="msList" placeholder="P-000001 or name" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:14px;box-sizing:border-box">' +
+        '<datalist id="msList">' + opts + '</datalist>' +
+        '<label style="display:flex;align-items:center;gap:8px;font-size:12.5px;margin-top:12px;cursor:pointer">' +
+          '<input type="checkbox" id="msClear"> Remove sponsor — make this partner a top-of-tree root' +
+        '</label>' +
+        '<div id="msErr" style="display:none;color:var(--danger);font-size:12.5px;margin-top:10px"></div>' +
+        '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">' +
+          '<button id="msCancel" class="btn btn-secondary">Cancel</button>' +
+          '<button id="msSave" class="btn btn-ok">Save</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(ov);
+
+    const input = ov.querySelector('#msInput');
+    const clear = ov.querySelector('#msClear');
+    const errEl = ov.querySelector('#msErr');
+    const close = () => ov.remove();
+    ov.addEventListener('click', (e) => { if (e.target === ov) close(); });
+    ov.querySelector('#msCancel').addEventListener('click', close);
+    clear.addEventListener('change', () => { input.disabled = clear.checked; if (clear.checked) input.value = ''; });
+    input.focus();
+
+    ov.querySelector('#msSave').addEventListener('click', async () => {
+      errEl.style.display = 'none';
+      let sponsorId = null;
+      if (!clear.checked) {
+        const raw = (input.value || '').trim();
+        if (!raw) { errEl.textContent = 'Enter a sponsor, or check the box to make this a root.'; errEl.style.display = 'block'; return; }
+        // Match by partner_code (exact, case-insensitive) first, then by name/email.
+        const low = raw.toLowerCase();
+        let match = ALL.find(p => (p.partner_code || '').toLowerCase() === low);
+        if (!match) match = ALL.find(p => ((p.legal_name || '') + ' (' + (p.contact_email || '') + ')').toLowerCase() === low);
+        if (!match) match = ALL.find(p => (p.legal_name || p.display_name || '').toLowerCase() === low);
+        if (!match) { errEl.textContent = 'No partner matches "' + raw + '". Pick one from the list.'; errEl.style.display = 'block'; return; }
+        if (match.id === id) { errEl.textContent = 'A partner cannot sponsor themselves.'; errEl.style.display = 'block'; return; }
+        sponsorId = match.id;
+      }
+      const saveBtn = ov.querySelector('#msSave');
+      saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
+      try {
+        const { data, error } = await sb.rpc('admin_set_partner_sponsor', { p_partner_id: id, p_sponsor_partner_id: sponsorId });
+        if (error) throw error;
+        const n = (data && data.descendants_rebuilt != null) ? data.descendants_rebuilt : 0;
+        close();
+        toast(sponsorId ? ('Sponsor set' + (n ? ' — ' + n + ' downline member' + (n === 1 ? '' : 's') + ' moved with them.' : '.')) : 'Sponsor removed — now a root.');
+        await loadPartners();
+      } catch (e) {
+        console.warn('[admin-partners] set sponsor failed', e);
+        errEl.textContent = 'Failed: ' + (e.message || 'unknown error');
+        errEl.style.display = 'block';
+        saveBtn.disabled = false; saveBtn.textContent = 'Save';
+      }
+    });
   }
 
   // ----- Wire UI -----
@@ -445,6 +542,7 @@
     if (act === 'suspend')    suspendPartner(id);
     else if (act === 'reactivate') reactivatePartner(id);
     else if (act === 'resend-welcome') resendWelcome(id);
+    else if (act === 'move-sponsor') openMoveSponsor(id);
   });
 
   // 2026-05-20 #8ae35834 - Run settlement batch.
