@@ -387,6 +387,12 @@
     document.head.appendChild(style);
   }
 
+  // 2026-06-01 (Kenny) — persist which sidebar groups are open across page loads
+  // so navigating doesn't collapse the user's expanded sections (sidebar got long;
+  // losing open state forced re-hunting). Session-scoped.
+  function _readOpenGrps() { try { return JSON.parse(sessionStorage.getItem('lymx_sb_open_grps') || '[]') || []; } catch (e) { return []; } }
+  function _saveOpenGrps(arr) { try { sessionStorage.setItem('lymx_sb_open_grps', JSON.stringify(arr)); } catch (e) {} }
+
   function buildSidebar(role) {
     var items = MENUS[role] || MENUS.customer;
     var aside = document.createElement('aside');
@@ -521,12 +527,13 @@
       }
     }
     if (!openGroup) openGroup = groupOrder[0];
+    var _savedOpen = _readOpenGrps();
     for (var gx = 0; gx < groupOrder.length; gx++) {
       var g = groupOrder[gx];
       var menu = MENUS[g] || [];
       var links = menu.filter(function (it) { return it.href && SHARED.indexOf(it.href.toLowerCase()) === -1; });
       if (!links.length) continue;
-      html += '<div class="lymx-sb-grp' + (g === openGroup ? ' open' : '') + '" data-grp="' + g + '">'
+      html += '<div class="lymx-sb-grp' + ((g === openGroup || _savedOpen.indexOf(g) > -1) ? ' open' : '') + '" data-grp="' + g + '">'
             + '<button type="button" class="lymx-sb-grp-h"><span>' + (GROUP_LABEL[g] || g) + '</span><span class="lymx-sb-chev">\u203A</span></button>'
             + '<div class="lymx-sb-grp-body">';
       for (var lx = 0; lx < links.length; lx++) html += _linkHtml(links[lx]);
@@ -703,6 +710,27 @@
     document.body.appendChild(sidebar);
     document.body.classList.add('lymx-sb-pushed');
 
+    // 2026-06-01 (Kenny) — keep the sidebar WITH the page. A full page reload used
+    // to reset the (now long) sidebar to the top, leaving the current page's item
+    // off-screen so users had to hunt for it. Restore the saved scroll position,
+    // guarantee the active item is visible, and remember scroll as the user moves.
+    try {
+      var _saved = parseInt(sessionStorage.getItem('lymx_sb_scroll') || '', 10);
+      if (!isNaN(_saved)) sidebar.scrollTop = _saved;
+      var _act = sidebar.querySelector('a.active');
+      if (_act) {
+        var _t = _act.offsetTop, _b = _t + _act.offsetHeight;
+        if (_t < sidebar.scrollTop || _b > sidebar.scrollTop + sidebar.clientHeight) {
+          sidebar.scrollTop = Math.max(0, _t - sidebar.clientHeight / 2);
+        }
+      }
+      var _stmr;
+      sidebar.addEventListener('scroll', function () {
+        clearTimeout(_stmr);
+        _stmr = setTimeout(function () { try { sessionStorage.setItem('lymx_sb_scroll', String(sidebar.scrollTop)); } catch (e) {} }, 150);
+      });
+    } catch (e) { console.warn('[sidebar] scroll persist', e); }
+
     // 2026-05-31 — on app pages the sidebar owns APP navigation, so the page's top
     // app-tab bar (~25 links) is redundant and overflowed off-screen. Replace those
     // tabs with the standard PUBLIC website nav (like any site header) so logged-in
@@ -725,7 +753,13 @@
 
     sidebar.addEventListener('click', function (e) {
       var hd = e.target.closest && e.target.closest('.lymx-sb-grp-h');
-      if (hd && hd.parentNode) hd.parentNode.classList.toggle('open');
+      if (hd && hd.parentNode) {
+        hd.parentNode.classList.toggle('open');
+        try {
+          var open = Array.prototype.map.call(sidebar.querySelectorAll('.lymx-sb-grp.open'), function (g) { return g.getAttribute('data-grp'); });
+          _saveOpenGrps(open);
+        } catch (e2) {}
+      }
     });
 
     // 2026-05-24 — async DB role confirmation. If the first paint chose the
