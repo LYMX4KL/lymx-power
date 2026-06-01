@@ -88,7 +88,11 @@ serve(async (req) => {
     // Resolve the business — explicit id (admin) or the caller's own business.
     let biz: any = null;
     if (reqBody.business_id) {
-        const { data: isAdmin } = await supabase.rpc("am_i_admin");
+        // am_i_admin() must run with the CALLER's JWT (auth.uid()), not the
+        // service-role client — otherwise it always returns false and admins
+        // can't act on a business by id.
+        const userClient = createClient(SB_URL, SB_KEY, { global: { headers: { Authorization: req.headers.get("Authorization") || "" } } });
+        const { data: isAdmin } = await userClient.rpc("am_i_admin");
         const { data: byId } = await supabase
             .from("businesses")
             .select("id, owner_user_id, display_name, contact_email")
@@ -97,12 +101,14 @@ serve(async (req) => {
         if (byId.owner_user_id !== userId && !isAdmin) return err("Not the owner", 403);
         biz = byId;
     } else {
-        const { data: byOwner } = await supabase
+        // limit(1), not maybeSingle() — an owner can have >1 business, and
+        // maybeSingle() errors on multiple rows (would 404 a real owner).
+        const { data: rows } = await supabase
             .from("businesses")
             .select("id, owner_user_id, display_name, contact_email")
-            .eq("owner_user_id", userId).maybeSingle();
-        if (!byOwner) return err("No business found for this account", 404);
-        biz = byOwner;
+            .eq("owner_user_id", userId).order("created_at", { ascending: true }).limit(1);
+        if (!rows || !rows.length) return err("No business found for this account", 404);
+        biz = rows[0];
     }
 
     const origin = "https://getlymx.com";
