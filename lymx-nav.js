@@ -441,8 +441,15 @@
       var ANON2 = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_ANON_KEY;
       var URL2  = window.LYMX_CONFIG && window.LYMX_CONFIG.SUPABASE_URL;
       var tok2  = readToken();
-      if (URL2 && ANON2 && tok2) {
-        fetch(URL2 + '/rest/v1/conversations?select=unread_count_subject&unread_count_subject=gt.0',
+      var me2 = null;
+      try { me2 = JSON.parse(atob(String(tok2).split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub; } catch (e) {}
+      // 2026-06-01 #29eedbfd — scope unread to the signed-in user's OWN threads.
+      // The old query summed unread_count_subject across EVERY conversation the
+      // user could see, so an admin/staff account (RLS lets them see all) showed
+      // everyone's unread (e.g. "77") while their real inbox had only a few. Filter
+      // by subject_user_id so the badge matches what the Messages page lists.
+      if (URL2 && ANON2 && tok2 && me2) {
+        fetch(URL2 + '/rest/v1/conversations?select=unread_count_subject&subject_user_id=eq.' + encodeURIComponent(me2) + '&unread_count_subject=gt.0',
               { headers: { apikey: ANON2, Authorization: 'Bearer ' + tok2 } })
           .then(function (r) { return r.ok ? r.json() : []; })
           .then(function (rows) {
