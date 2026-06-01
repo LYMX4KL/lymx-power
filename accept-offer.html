@@ -111,11 +111,11 @@ function renderOffer(o) {
   const candidateName = [o.candidate_first_name, o.candidate_last_name].filter(Boolean).join(' ') || 'there';
   const expiresAt = o.token_expires_at ? new Date(o.token_expires_at) : null;
   const expiryMsg = expiresAt ? 'This link expires on ' + expiresAt.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) + '.' : '';
-  const letterUrl = o.offer_letter_path ? (SUPABASE_URL + '/storage/v1/object/public/' + o.offer_letter_path) : null;
+  const hasLetter = !!(o.offer_letter_html && o.offer_letter_html.length);
   c.innerHTML =
     '<h1>Your LYMX offer</h1>' +
     '<p class="sub">Hi ' + esc(candidateName) + ' — here is a summary of the offer. Review it, then click Accept below when you are ready.</p>' +
-    (letterUrl ? '<a class="letter-link" target="_blank" rel="noopener" href="' + esc(letterUrl) + '">📄 Read the full offer letter →</a>' : '') +
+    (hasLetter ? '<button type="button" class="letter-link" id="viewLetterBtn">📄 Read the full offer letter →</button>' : '') +
     '<div class="card" style="margin-top:14px">' +
       '<div class="grid2">' +
         '<div><div class="field-label">Position</div><div class="field-val big">' + esc(o.title || '—') + '</div></div>' +
@@ -136,6 +136,21 @@ function renderOffer(o) {
     '</div>' +
     '<p class="small">Not ready, or need to negotiate? Reply to the email you got from LYMX and we will work it out before you commit. Do not click Accept until you are sure — clicking is binding.</p>';
   $('acceptBtn').addEventListener('click', onAccept);
+  // 2026-06-01 #95b4e200 — render the letter HTML directly (it arrives via the
+  // token-gated resolver). The old code linked to a PUBLIC storage URL, but
+  // personnel-files is private and the applicant has no session, so it 404'd
+  // "Bucket not found". The HTML is token-scoped, so opening it as a blob is safe.
+  const _vbtn = $('viewLetterBtn');
+  if (_vbtn) _vbtn.addEventListener('click', function () {
+    try {
+      const _blob = new Blob([o.offer_letter_html], { type: 'text/html' });
+      const _url = URL.createObjectURL(_blob);
+      window.open(_url, '_blank', 'noopener');
+      setTimeout(function () { URL.revokeObjectURL(_url); }, 60000);
+    } catch (e) {
+      alert('Could not open the letter here. Please reply to your offer email and we will resend it.');
+    }
+  });
 }
 
 async function onAccept() {
