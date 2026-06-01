@@ -64,14 +64,14 @@
 
   <div class="card">
     <h2>How LYMX handles bank info</h2>
-    <p>LYMX uses <strong>Stripe Connect</strong> to pay Partners. Your bank account is held by Stripe, not by LYMX — we never see your full routing or account number, and you can update it any time through Stripe's hosted form.</p>
+    <p>We're finalizing LYMX's payout processor. For now, bank setup for Partner payouts is handled manually by our team — request it below and we'll get you set up securely. Your commissions keep accruing in your dashboard the whole time, so nothing is lost while this is being set up.</p>
     <ul class="info-list">
-      <li>Account verification happens through Stripe (typically 1–2 micro-deposits).</li>
-      <li>Bank changes take effect immediately for future payouts — pending payouts stay on the previous bank until cleared.</li>
-      <li>Tax info (W-9 / 1099-NEC) is also collected through Stripe Connect.</li>
+      <li>Request setup below — admin replies within one business day to collect your bank details securely.</li>
+      <li>Bank changes take effect for future payouts; pending payouts stay on the previous bank until cleared.</li>
+      <li>Tax info (W-9 / 1099-NEC) is collected as part of setup.</li>
     </ul>
     <div style="margin-top:14px">
-      <button class="btn primary" id="updateBankBtn" type="button">🔗 Update via Stripe</button>
+      <button class="btn primary" id="updateBankBtn" type="button">🏦 Request bank setup</button>
       <a class="btn ghost" href="partner-payouts.html">← Back to Payouts</a>
     </div>
     <div id="update-msg" style="margin-top:12px;font-size:13px;color:var(--muted);line-height:1.5"></div>
@@ -79,7 +79,7 @@
 
   <div class="card" style="background:#f8fafc">
     <h2>Need help?</h2>
-    <p>If Stripe Connect isn't loading or you'd rather set up the bank manually, email <a href="mailto:partners@getlymx.com?subject=Partner%20bank%20setup" style="color:var(--accent-2);font-weight:700">partners@getlymx.com</a>. Admin will reach out within 24 hours during business days.</p>
+    <p>Prefer to arrange setup by email directly? Email <a href="mailto:partners@getlymx.com?subject=Partner%20bank%20setup" style="color:var(--accent-2);font-weight:700">partners@getlymx.com</a>. Admin will reach out within 24 hours during business days.</p>
   </div>
 </div>
 
@@ -123,46 +123,23 @@
   const hasBankOnFile = hasStripeAccount && partner.bank_last4;
 
   if (hasBankOnFile) {
-    statusBox.innerHTML = '<div class="status green"><span class="ic">✅</span><div class="body"><b>Bank on file — ready for payouts</b>Verified via Stripe Connect. You can update through the button below.</div></div>';
+    statusBox.innerHTML = '<div class="status green"><span class="ic">✅</span><div class="body"><b>Bank on file — ready for payouts</b>Your payout bank is on file. To change it, use Request bank setup below.</div></div>';
     bankCard.style.display = '';
     bankFields.innerHTML =
       '<div class="field"><div class="l">Bank</div><div class="r">' + (partner.bank_name || '—') + '</div></div>' +
       '<div class="field"><div class="l">Account</div><div class="r">****' + partner.bank_last4 + '</div></div>' +
       '<div class="field"><div class="l">Payout method</div><div class="r">' + (partner.payout_method || 'ACH') + '</div></div>';
   } else if (hasStripeAccount) {
-    statusBox.innerHTML = '<div class="status amber"><span class="ic">⚠️</span><div class="body"><b>Stripe account created — bank not added yet</b>Click Update via Stripe to add your bank account. Until then, payouts will accumulate but not transfer.</div></div>';
+    statusBox.innerHTML = '<div class="status amber"><span class="ic">⚠️</span><div class="body"><b>Bank not added yet</b>Use Request bank setup below to add your payout bank. Until then, commissions accumulate in your dashboard.</div></div>';
   } else {
-    statusBox.innerHTML = '<div class="status amber"><span class="ic">🏦</span><div class="body"><b>No bank set up yet</b>You\'ll need to connect a bank through Stripe before your first payout can transfer. Commissions accumulate in your LYMX dashboard either way.</div></div>';
+    statusBox.innerHTML = '<div class="status amber"><span class="ic">🏦</span><div class="body"><b>No payout bank yet</b>Request bank setup below before your first payout. Your commissions accumulate in your dashboard either way.</div></div>';
   }
 
-  updateBtn.addEventListener('click', async () => {
-    updateBtn.disabled = true;
-    updateBtn.textContent = 'Generating Stripe link…';
-    updateMsg.textContent = '';
-    try {
-      const session = (await sb.auth.getSession()).data.session;
-      const tok = session && session.access_token;
-      const cfg = window.LYMX_CONFIG;
-      const resp = await fetch(cfg.SUPABASE_URL + '/functions/v1/partner-bank-onboarding-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok },
-        body: JSON.stringify({ return_url: location.origin + '/partner-payouts.html?bank_updated=1' })
-      });
-      const json = await resp.json().catch(() => ({}));
-      if (resp.ok && json.url) {
-        location.href = json.url;
-        return;
-      }
-      // EF not built yet OR error — fall back to email instructions
-      updateMsg.innerHTML = 'Stripe Connect onboarding isn\'t wired to the dashboard yet — admin is finishing the EF this week. In the meantime, email <a href="mailto:partners@getlymx.com?subject=Partner%20bank%20setup" style="color:#0050c7;font-weight:700">partners@getlymx.com</a> with your preferred bank and admin will set it up manually within 24 hours.';
-      updateBtn.disabled = false;
-      updateBtn.textContent = '🔗 Update via Stripe';
-    } catch (e) {
-      console.warn('[partner-bank-update] stripe link', e);
-      updateMsg.innerHTML = 'Could not reach Stripe Connect right now — try again in a few minutes, or email <a href="mailto:partners@getlymx.com" style="color:#0050c7;font-weight:700">partners@getlymx.com</a> for manual setup.';
-      updateBtn.disabled = false;
-      updateBtn.textContent = '🔗 Update via Stripe';
-    }
+  updateBtn.addEventListener('click', function () {
+    // 2026-05-31 — payout processor (Forte) not yet live; no fake Stripe button.
+    // Real working action: request manual setup by email until self-serve ships.
+    location.href = 'mailto:partners@getlymx.com?subject=' + encodeURIComponent('Partner payout bank setup')
+      + '&body=' + encodeURIComponent("Hi LYMX team, I'd like to set up the bank account for my Partner payouts.\n\nName:\nPartner code:\n");
   });
 })();
 </script>

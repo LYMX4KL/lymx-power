@@ -129,6 +129,26 @@ serve(async (req) => {
                 }
                 break;
             }
+            case "checkout.session.completed": {
+                // 2026-05-31 — business payment confirmed (create-checkout-session).
+                // Stripe is the source of truth: only here do we mark the business
+                // paid/subscribed. client_reference_id + metadata carry the biz id.
+                const s = event.data.object || {};
+                const bizId = s.client_reference_id || s.metadata?.business_id || null;
+                const purpose = s.metadata?.purpose || (s.mode === "subscription" ? "subscription" : "signup");
+                if (bizId) {
+                    const patch: Record<string, unknown> = { stripe_last_synced_at: new Date().toISOString() };
+                    if (s.customer) patch.stripe_customer_id = s.customer;
+                    if (purpose === "signup") {
+                        patch.signup_fee_paid = true;
+                        patch.signup_paid_at = new Date().toISOString();
+                    } else if (purpose === "subscription" && s.subscription) {
+                        patch.stripe_subscription_id = s.subscription;
+                    }
+                    await supabase.from("businesses").update(patch).eq("id", bizId);
+                }
+                break;
+            }
             default:
                 // Unhandled event types are still logged + 200'd
                 break;
