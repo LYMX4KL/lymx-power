@@ -324,19 +324,30 @@ async function loadInbox() {
   document.getElementById('lastSync').textContent = 'Synced ' + new Date().toLocaleTimeString();
 }
 
-function computeStats() {
-  const now = Date.now();
-  const day30 = 30 * 24 * 3600 * 1000;
-  let n = 0, ip = 0, rs = 0;
-  for (const r of allRows) {
-    if (r.status === 'new') n++;
-    else if (r.status === 'in_progress') ip++;
-    else if (r.status === 'resolved' && (now - new Date(r.created_at).getTime()) < day30) rs++;
+async function computeStats() {
+  // 2026-06-01 #bfaf22b0 #cad715f0 — the Total used to be allRows.length, but the
+  // inbox only fetches the newest 500 rows (limit=500), so once there were 500+
+  // tickets the Total froze at "500" and real submission volume couldn't be tracked.
+  // ROOT FIX: read EXACT counts straight from the DB (count=exact, head) so the
+  // stats reflect reality regardless of the 500-row display cap.
+  async function cnt(filter) {
+    try {
+      const r = await authedFetch('/rest/v1/feedback?select=id' + (filter ? '&' + filter : ''),
+        { headers: { 'Prefer': 'count=exact', 'Range': '0-0' } });
+      const cr = r.headers.get('content-range') || '';
+      const m = cr.match(/\/(\d+)\s*$/);
+      return m ? parseInt(m[1], 10) : null;
+    } catch (e) { console.warn('[tech-support] count fetch', filter, e); return null; }
   }
-  document.getElementById('cNew').textContent = n;
-  document.getElementById('cIp').textContent = ip;
-  document.getElementById('cRs').textContent = rs;
-  document.getElementById('cTot').textContent = allRows.length;
+  const since30 = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+  const [tot, n, ip, rs] = await Promise.all([
+    cnt(''),
+    cnt('status=eq.new'),
+    cnt('status=eq.in_progress'),
+    cnt('status=eq.resolved&created_at=gte.' + since30)
+  ]);
+  const setv = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = (v == null ? '—' : v); };
+  setv('cNew', n); setv('cIp', ip); setv('cRs', rs); setv('cTot', tot);
 }
 
 function fmtWhen(iso) {
