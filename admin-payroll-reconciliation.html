@@ -99,6 +99,13 @@
       </select>
     </label>
     <button class="btn btn-outline" id="newPeriodBtn">+ New period</button>
+    <label>Region:
+      <select id="regionFilter">
+        <option value="all">All</option>
+        <option value="domestic">🇺🇸 Domestic (USA)</option>
+        <option value="overseas">🌍 Overseas</option>
+      </select>
+    </label>
     <button class="btn btn-primary" id="loadBtn">Load</button>
     <button class="btn btn-outline" id="exportCsvBtn" disabled>Export CSV</button>
     <span style="flex:1"></span>
@@ -142,6 +149,7 @@
   document.getElementById('newPeriodBtn').addEventListener('click', onNewPeriod);
   document.getElementById('loadBtn').addEventListener('click', onLoad);
   document.getElementById('exportCsvBtn').addEventListener('click', onExportCsv);
+  document.getElementById('regionFilter').addEventListener('change', onRegionFilterChange);
   document.getElementById('lockBtn').addEventListener('click', onLockPeriod);
   document.getElementById('paidBtn').addEventListener('click', onMarkPaid);
 })();
@@ -159,6 +167,21 @@ function banner(t, m, autoclose) {
 
 let _currentPeriod = null;
 let _currentRows = [];
+
+// 2026-06-01 feedback #6caf1dc5 — domestic vs overseas payroll have different pay
+// periods/dates, so HR reviews + exports them separately. The filter scopes the
+// table, summary, and CSV by staff pay_region (migration 175). Lock / mark-paid
+// still act on the whole period (a period is a date range, not a region).
+function regionFilterValue(){ const el = $('regionFilter'); return el ? el.value : 'all'; }
+function visibleRows(){
+  const f = regionFilterValue();
+  return (f === 'all') ? _currentRows : _currentRows.filter(r => (r.pay_region || 'domestic') === f);
+}
+function onRegionFilterChange(){
+  if (!_currentPeriod) return;
+  paintSummary(); paintTable();
+  $('exportCsvBtn').disabled = visibleRows().length === 0;
+}
 
 async function loadPeriods() {
   const cfg = window.LYMX_CONFIG;
@@ -188,16 +211,25 @@ async function onNewPeriod() {
   const dd = today.getDate();
   const yyyy = today.getFullYear();
   const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const monthName = today.toLocaleString('en-US',{month:'long'});
+  const lastDay = new Date(yyyy, today.getMonth() + 1, 0).getDate();
+  const region = regionFilterValue();
+  // 2026-06-01 #6caf1dc5 — overseas runs use a different pay cadence (default to a
+  // full calendar month; adjust the dates in the prompts to your real overseas
+  // pay schedule). Domestic keeps the US semi-monthly default (1-15 / 16-EOM).
   let start, end, label;
-  if (dd <= 15) {
+  if (region === 'overseas') {
+    start = yyyy + '-' + mm + '-01';
+    end = yyyy + '-' + mm + '-' + String(lastDay).padStart(2, '0');
+    label = '[Overseas] ' + monthName + ' 1-' + lastDay + ', ' + yyyy;
+  } else if (dd <= 15) {
     start = yyyy + '-' + mm + '-01';
     end = yyyy + '-' + mm + '-15';
-    label = today.toLocaleString('en-US',{month:'long'}) + ' 1-15, ' + yyyy;
+    label = (region === 'domestic' ? '[Domestic] ' : '') + monthName + ' 1-15, ' + yyyy;
   } else {
     start = yyyy + '-' + mm + '-16';
-    const lastDay = new Date(yyyy, today.getMonth() + 1, 0).getDate();
     end = yyyy + '-' + mm + '-' + String(lastDay).padStart(2, '0');
-    label = today.toLocaleString('en-US',{month:'long'}) + ' 16-' + lastDay + ', ' + yyyy;
+    label = (region === 'domestic' ? '[Domestic] ' : '') + monthName + ' 16-' + lastDay + ', ' + yyyy;
   }
   const userStart = prompt('Period start (YYYY-MM-DD):', start);
   if (!userStart) return;
@@ -265,7 +297,7 @@ async function onLoad() {
   if (uids.length) {
     const spR = await fetch(cfg.SUPABASE_URL +
       '/rest/v1/staff_profiles?user_id=in.(' + uids.join(',') + ')' +
-      '&select=user_id,title,classification,is_on_payroll,pay_rate_cents,pay_period', {
+      '&select=user_id,title,classification,is_on_payroll,pay_rate_cents,pay_period,pay_region', {
       headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok }
     });
     if (spR.ok) {
@@ -287,6 +319,7 @@ async function onLoad() {
         name: l.user_name_snapshot || '(unknown)',
         title: sp.title || '',
         classification: sp.classification || '',
+        pay_region: sp.pay_region || 'domestic',
         is_on_payroll: !!sp.is_on_payroll,
         days: 0,
         reg_mins: 0,
@@ -316,7 +349,7 @@ async function onLoad() {
   paintSummary();
   paintTable();
 
-  $('exportCsvBtn').disabled = _currentRows.length === 0;
+  $('exportCsvBtn').disabled = visibleRows().length === 0;
   $('lockBtn').disabled = !!_currentPeriod.locked;
   $('paidBtn').disabled = !_currentPeriod.locked || !!_currentPeriod.paid_out;
   banner('ok', 'Loaded ' + _currentRows.length + ' staff · ' + lines.length + ' timesheet lines.');
@@ -343,7 +376,7 @@ function paintPeriodStatus() {
 }
 
 function paintSummary() {
-  const totals = _currentRows.reduce((acc, r) => {
+  const totals = visibleRows().reduce((acc, r) => {
     acc.staff += 1;
     acc.reg_mins += r.reg_mins;
     acc.ot_mins += r.ot_mins;
@@ -371,15 +404,20 @@ function paintSummary() {
 }
 
 function paintTable() {
-  if (!_currentRows.length) {
-    $('reconBody').innerHTML = '<tr><td colspan="10" class="empty-msg">No timesheet lines found for this period. Approve some lines on the Timesheets page first.</td></tr>';
+  const rows = visibleRows();
+  if (!rows.length) {
+    const f = regionFilterValue();
+    const msg = _currentRows.length
+      ? 'No ' + (f === 'all' ? '' : f + ' ') + 'staff in this period. Switch the Region filter or approve lines on the Timesheets page.'
+      : 'No timesheet lines found for this period. Approve some lines on the Timesheets page first.';
+    $('reconBody').innerHTML = '<tr><td colspan="10" class="empty-msg">' + esc(msg) + '</td></tr>';
     return;
   }
-  const grandReg = _currentRows.reduce((s,r) => s + r.reg_pay_usd, 0);
-  const grandOt  = _currentRows.reduce((s,r) => s + r.ot_pay_usd, 0);
-  const grandGross = _currentRows.reduce((s,r) => s + r.gross_usd, 0);
+  const grandReg = rows.reduce((s,r) => s + r.reg_pay_usd, 0);
+  const grandOt  = rows.reduce((s,r) => s + r.ot_pay_usd, 0);
+  const grandGross = rows.reduce((s,r) => s + r.gross_usd, 0);
 
-  $('reconBody').innerHTML = _currentRows.map(r => {
+  $('reconBody').innerHTML = rows.map(r => {
     let statusPill = '<span class="pill ok">OK</span>';
     if (!r.is_on_payroll) statusPill = '<span class="pill warn">Off payroll</span>';
     else if (r.unapproved_count > 0) statusPill = '<span class="pill miss">' + r.unapproved_count + ' unapproved</span>';
@@ -406,10 +444,11 @@ function paintTable() {
 }
 
 function onExportCsv() {
-  if (!_currentRows.length) return;
-  const header = ['name','classification','title','days','regular_hours','overtime_hours','missed_lunches','rate_usd_hr','regular_pay_usd','overtime_pay_usd','gross_usd','on_payroll'];
-  const rows = _currentRows.map(r => [
-    r.name, r.classification, r.title, r.days,
+  const exportRows = visibleRows();
+  if (!exportRows.length) return;
+  const header = ['name','classification','pay_region','title','days','regular_hours','overtime_hours','missed_lunches','rate_usd_hr','regular_pay_usd','overtime_pay_usd','gross_usd','on_payroll'];
+  const rows = exportRows.map(r => [
+    r.name, r.classification, r.pay_region || 'domestic', r.title, r.days,
     (r.reg_mins/60).toFixed(2), (r.ot_mins/60).toFixed(2),
     r.missed_lunch_count, r.rate_usd.toFixed(2),
     r.reg_pay_usd.toFixed(2), r.ot_pay_usd.toFixed(2), r.gross_usd.toFixed(2),
@@ -419,7 +458,8 @@ function onExportCsv() {
     const s = String(cell == null ? '' : cell);
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   }).join(','))].join('\n');
-  const fname = 'lymx-payroll-' +
+  const rf = regionFilterValue();
+  const fname = 'lymx-payroll-' + (rf === 'all' ? '' : rf + '-') +
     (_currentPeriod.period_start || 'period') + '_' +
     (_currentPeriod.period_end || '') + '.csv';
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });

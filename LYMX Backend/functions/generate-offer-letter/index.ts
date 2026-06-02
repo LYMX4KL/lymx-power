@@ -263,6 +263,23 @@ function renderOfferLetter(p: {
         ? '<ul style="margin:.25rem 0 .75rem 1.2rem;padding:0">' + holidays.map(h => `<li>${esc(h)}</li>`).join("") + "</ul>"
         : '<p style="margin:0;color:#6B7280;font-style:italic">No paid holidays defined yet.</p>';
 
+    // 2026-06-01 feedback #da347aa6 / #0d02770f — make benefit ELIGIBILITY explicit
+    // so candidates know WHO is eligible and WHEN benefits begin, instead of inferring
+    // (one tester wrongly assumed a "1 year after probation" delay). Real policy:
+    // eligibility begins after the probation period, full-time only, and some benefits
+    // accrue/vest over time. All read from benefits_policy config — never hardcoded.
+    const empEligMap: Record<string, string> = {
+        full_time: "full-time employees only",
+        part_time: "full-time and part-time employees",
+        all: "all employees",
+    };
+    const eligWho = empEligMap[p.policy.eligibility_employment_type] || "full-time employees only";
+    const eligNote = (p.policy.eligibility_note && String(p.policy.eligibility_note).trim())
+        ? esc(p.policy.eligibility_note)
+        : `Benefit eligibility begins after the ${effWait}-day probation period and applies to ${eligWho}. ` +
+          `Reaching eligibility is the START of benefits — some benefits accrue or vest over time ` +
+          `(for example, PTO accrues per the accrual method shown above), so they are earned gradually rather than all at once.`;
+
     const signOnLine = p.sign_on_bonus_cents > 0
         ? `<tr><td>Sign-on bonus</td><td>${dollars(p.sign_on_bonus_cents)} (paid on first regular pay date after start)</td></tr>`
         : "";
@@ -318,8 +335,11 @@ ${p.duties_md ? `<h2>Key Responsibilities</h2><div class="notes-box">${esc(p.dut
 <table>
   <tr><td>Vacation / PTO</td><td>${effPto} days per year (${esc((p.policy.pto_accrual_method || "lump_annual").replace(/_/g, " "))} accrual)</td></tr>
   <tr><td>Sick leave</td><td>${effSick} days per year</td></tr>
-  <tr><td>Eligibility waiting period</td><td>${effWait} days from start date before PTO/benefits kick in</td></tr>
+  <tr><td>Eligibility waiting period</td><td>${effWait}-day probation from your start date before benefits eligibility begins</td></tr>
 </table>
+
+<h2>Benefits Eligibility</h2>
+<p style="font-size:.92rem;color:#475569">${eligNote}</p>
 
 ${showHolidays ? `<h2>Paid Holidays</h2>${holidayList}` : ""}
 

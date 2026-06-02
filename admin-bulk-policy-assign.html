@@ -46,6 +46,18 @@
   .status-msg.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
   .badge{display:inline-block;padding:1px 7px;border-radius:5px;font-size:10.5px;font-weight:800;color:var(--muted);background:#eef0f4;text-transform:uppercase;letter-spacing:.04em;margin-left:5px}
   .empty{padding:24px;text-align:center;color:var(--muted);font-size:13px}
+  .btn-preview{flex-shrink:0;appearance:none;border:1px solid var(--line);background:#fff;color:var(--accent-2);border-radius:7px;padding:5px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+  .btn-preview:hover{background:var(--bg-soft);border-color:var(--accent)}
+  .modal-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(14,17,22,.45);align-items:center;justify-content:center;padding:24px}
+  .modal-box{background:#fff;border-radius:14px;max-width:680px;width:100%;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  .modal-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .modal-head h3{margin:0;font-size:17px;font-weight:800}
+  .modal-meta{font-size:11.5px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.03em}
+  .modal-close{appearance:none;border:0;background:transparent;font-size:22px;line-height:1;cursor:pointer;color:var(--muted)}
+  .modal-body{padding:18px 20px;overflow-y:auto;font-size:14px;color:var(--ink-2)}
+  .modal-body h2,.modal-body h3,.modal-body h4{margin:.8em 0 .3em}
+  .modal-body ul{margin:.3em 0 .6em 1.2rem;padding:0}
+  .modal-body p{margin:.5em 0}
 </style>
 </head>
 <body data-role-required="perm:hr_admin">
@@ -92,6 +104,19 @@
   </div>
 </main>
 
+<div class="modal-overlay" id="previewModal">
+  <div class="modal-box" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div>
+        <h3 id="previewTitle">Policy</h3>
+        <div class="modal-meta" id="previewMeta"></div>
+      </div>
+      <button type="button" class="modal-close" id="previewClose" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body" id="previewBody"></div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="lymx-config.js"></script>
 <script src="lymx-auth.js"></script>
@@ -112,7 +137,7 @@ async function load(){
   const sb = window.LYMX.sb;
 
   const [{ data: pols }, { data: prof }, { data: emails }] = await Promise.all([
-    sb.from('policy_documents').select('id, code, title, version, sign_method, remote_only, role_specific').eq('active', true).order('title'),
+    sb.from('policy_documents').select('id, code, title, version, sign_method, remote_only, role_specific, body_md').eq('active', true).order('title'),
     sb.from('staff_profiles').select('user_id, employment_status, title').eq('employment_status','active'),
     sb.rpc('admin_list_user_emails').then(r => ({ data: r.data || [] }))
   ]);
@@ -141,13 +166,46 @@ function renderPolicies(){
       '<div class="body"><div class="title">' + esc(p.title) + ' <span class="badge">v' + esc(p.version) + '</span> <span class="badge">' + esc(p.sign_method.replace('_',' ')) + '</span></div>' +
         '<div class="sub-row">' + esc(p.code) + (p.role_specific ? ' · role: ' + esc(p.role_specific) : '') + (p.remote_only ? ' · remote only' : '') + '</div>' +
       '</div>' +
+      '<button type="button" class="btn-preview" data-preview="' + esc(p.id) + '" title="Read this policy before assigning">👁 View</button>' +
     '</label>'
   ).join('');
   document.querySelectorAll('[data-pid]').forEach(c => c.addEventListener('change', () => {
     if (c.checked) selPolicies.add(c.dataset.pid); else selPolicies.delete(c.dataset.pid);
     updateSummary(); renderPolicies();
   }));
+  // 2026-06-01 feedback #c17ba85d — let HR READ a policy before assigning it.
+  document.querySelectorAll('[data-preview]').forEach(b => b.addEventListener('click', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    openPolicyPreview(b.dataset.preview);
+  }));
 }
+
+// Minimal, injection-safe markdown: escape FIRST, then apply a few inline rules.
+function mdLite(src){
+  let s = esc(src || '');
+  s = s.replace(/^###\s+(.*)$/gm, '<h4>$1</h4>')
+       .replace(/^##\s+(.*)$/gm, '<h3>$1</h3>')
+       .replace(/^#\s+(.*)$/gm, '<h2 style="font-size:1.1rem">$1</h2>')
+       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+       .replace(/^\s*[-*]\s+(.*)$/gm, '<li>$1</li>');
+  s = s.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>').replace(/<\/ul>\s*<ul>/g, '');
+  s = s.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>');
+  return '<p>' + s + '</p>';
+}
+
+function openPolicyPreview(id){
+  const p = policies.find(x => x.id === id);
+  if (!p) return;
+  const body = (p.body_md && String(p.body_md).trim())
+    ? mdLite(p.body_md)
+    : '<p style="color:var(--muted);font-style:italic">This policy has no document text yet.</p>';
+  $('previewTitle').innerHTML = esc(p.title) + ' <span class="badge">v' + esc(p.version) + '</span>';
+  $('previewMeta').textContent = p.code + (p.role_specific ? ' · role: ' + p.role_specific : '') +
+    ' · sign: ' + String(p.sign_method).replace('_',' ') + (p.remote_only ? ' · remote only' : '');
+  $('previewBody').innerHTML = body;
+  $('previewModal').style.display = 'flex';
+}
+function closePolicyPreview(){ $('previewModal').style.display = 'none'; }
 
 function renderStaff(){
   let items = staff;
@@ -200,6 +258,10 @@ $('assignBtn').addEventListener('click', async () => {
   updateSummary(); renderPolicies(); renderStaff();
   $('assignBtn').textContent = 'Assign →';
 });
+
+$('previewClose').addEventListener('click', closePolicyPreview);
+$('previewModal').addEventListener('click', (e) => { if (e.target === $('previewModal')) closePolicyPreview(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePolicyPreview(); });
 
 load();
 </script>

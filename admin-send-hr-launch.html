@@ -35,6 +35,9 @@
   .templates{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
   .tplbtn{background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer}
   .tplbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .tplbtn.on{border-color:var(--accent);color:var(--accent);background:#eef5ff}
+  .mini-btn{appearance:none;border:1px solid var(--line);background:#fff;border-radius:6px;padding:3px 9px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;color:var(--accent-2,#0050c7)}
+  .mini-btn:hover{border-color:var(--accent);background:#f1f7ff}
 </style>
 </head>
 <body data-role-required="perm:hr_admin">
@@ -56,6 +59,7 @@
         <label>Staff member</label>
         <select id="staffSelect"><option value="">-- pick a staff member --</option></select>
         <div class="hint">Reads from staff_profiles.</div>
+        <div class="hint" id="staffRegion" style="margin-top:6px"></div>
       </div>
       <div class="row">
         <label>Recipient email (override)</label>
@@ -66,6 +70,16 @@
     <div class="row">
       <label>Subject</label>
       <input type="text" id="subject" value="Welcome to LYMX staff" />
+    </div>
+
+    <div class="row" style="margin-bottom:8px">
+      <label>Template set</label>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <button type="button" class="tplbtn on" id="audDomestic" onclick="setAudience('domestic')">🇺🇸 Domestic (USA)</button>
+        <button type="button" class="tplbtn" id="audOverseas" onclick="setAudience('overseas')">🌍 Overseas</button>
+        <span id="audienceTag" class="hint" style="margin-left:6px">🇺🇸 Domestic (USA) templates</span>
+      </div>
+      <div class="hint">Auto-selected from the staff member's pay region. Overseas templates use [bracketed placeholders] — fill in the documents + pay dates before sending.</div>
     </div>
 
     <div class="templates">
@@ -147,6 +161,68 @@ Your default location is set. Add additional places at my-clock-in-anchor.html.
 — Helen, HR`
 };
 
+// 2026-06-01 feedback #b45f7e73 — Overseas template set. Overseas workers need
+// DIFFERENT documents + pay dates than US staff, so these are separate templates.
+// Bracketed [PLACEHOLDERS] mark the region-specific facts HR fills in before sending
+// (LYMX's overseas document list + pay schedule aren't hardcoded here on purpose).
+const TPLS_OVERSEAS = {
+  welcome: `Hi {{first_name}},
+
+Welcome to LYMX as a {{title}}. Here's what you need to know in your first few days:
+
+1. Sign in: {{login_url}}
+   Same account you've been using. Your sidebar will now show a "My Work" section with Clock In, My Schedule, My Time-off.
+
+2. Documents we need from you:
+   - [LIST THE OVERSEAS REQUIRED DOCUMENTS — e.g. passport / national ID, local tax form, proof of bank account for international transfer]
+   (These replace the US I-9 / W-4 — your region uses different paperwork.)
+
+3. Set up your clock-in:
+   - Open getlymx.com/staff-clock-in.html and follow the on-screen steps.
+
+4. Pay schedule:
+   [STATE THE OVERSEAS PAY PERIODS + PAY DATES — e.g. paid monthly on the last working day]. We'll remind you before each run.
+
+If anything looks off, reply to this email or message Helen.
+
+— Helen, HR
+LYMX Power`,
+  payroll: `Hi {{first_name}},
+
+Quick note on how LYMX pays our overseas team:
+
+• Pay periods: [STATE OVERSEAS PAY PERIODS — e.g. monthly]
+• Pay dates: [STATE OVERSEAS PAY DATES]
+• Clock In/Out daily so the system can compute your hours
+• Payment method: [STATE OVERSEAS PAYMENT METHOD — e.g. international transfer / Wise / Deel]
+• Your rate and classification live on your personnel file
+
+Questions? Reply here.
+
+— Helen, HR`,
+  clockin: `Hi {{first_name}},
+
+Quick guide for clock-in:
+
+DAILY:
+  1. Open getlymx.com/staff-clock-in.html
+  2. Tap "Clock In" — your phone GPS verifies you're at an approved location
+  3. Tap "Lunch" to start your break, "Back from lunch" to resume
+  4. Tap "Clock Out" at end of day
+
+ANYTHING WEIRD:
+  • GPS keeps failing → ping Helen — she'll widen your geofence
+  • Working from a different place that day → submit a single-day exception (linked from your dashboard)
+  • Forgot to clock in/out → ping Helen, she can edit your day
+
+— Helen, HR`
+};
+
+// Both template sets keyed by region so switching audience reloads the same kind.
+const TPL_SETS = { domestic: TPLS, overseas: TPLS_OVERSEAS };
+let audience = 'domestic';
+let currentTplKey = 'welcome';
+
 (async function init(){
   if (!window.LYMX || !window.LYMX.getSession) { setTimeout(init,100); return; }
   const session = await window.LYMX.getSession();
@@ -161,7 +237,18 @@ function banner(t, m) {
   $('bannerArea').innerHTML = '<div class="banner ' + t + '">' + esc(m) + '</div>';
   if (t === 'ok') setTimeout(() => $('bannerArea').innerHTML = '', 4000);
 }
-function loadTpl(k) { $('bodyText').value = TPLS[k] || ''; }
+function loadTpl(k) { currentTplKey = k; $('bodyText').value = (TPL_SETS[audience] || {})[k] || ''; }
+function setAudience(a, keepBody) {
+  audience = (a === 'overseas') ? 'overseas' : 'domestic';
+  const dBtn = $('audDomestic'), oBtn = $('audOverseas');
+  if (dBtn && oBtn) {
+    dBtn.classList.toggle('on', audience === 'domestic');
+    oBtn.classList.toggle('on', audience === 'overseas');
+  }
+  const tag = $('audienceTag');
+  if (tag) tag.textContent = audience === 'overseas' ? '🌍 Overseas templates' : '🇺🇸 Domestic (USA) templates';
+  if (!keepBody) loadTpl(currentTplKey);
+}
 
 let _staffMap = {};
 
@@ -169,7 +256,7 @@ async function loadStaff() {
   const cfg = window.LYMX_CONFIG;
   const session = await window.LYMX.getSession();
   const tok = session.access_token;
-  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/staff_profiles?select=user_id,title,classification&limit=200', {
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/staff_profiles?select=user_id,title,classification,pay_region&limit=200', {
     headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer '+tok }
   });
   if (!r.ok) return;
@@ -185,11 +272,49 @@ async function loadStaff() {
     if (!_staffMap[s.user_id]) _staffMap[s.user_id] = { name: '(no partner row)', email: '' };
     _staffMap[s.user_id].title = s.title;
     _staffMap[s.user_id].classification = s.classification;
+    _staffMap[s.user_id].pay_region = s.pay_region || 'domestic';
   });
   $('staffSelect').innerHTML = '<option value="">-- pick a staff member --</option>' +
     Object.entries(_staffMap).map(([uid, s]) =>
       '<option value="' + uid + '">' + esc(s.name) + (s.title ? ' — ' + esc(s.title) : '') + '</option>'
     ).join('');
+  $('staffSelect').addEventListener('change', onStaffChange);
+}
+
+// When a staff member is picked, auto-select their region's template set and
+// show an inline "switch region" control (writes via the gated RPC, migration 175).
+function onStaffChange() {
+  const uid = $('staffSelect').value;
+  const el = $('staffRegion');
+  if (!uid) { setAudience('domestic'); if (el) el.innerHTML = ''; return; }
+  const s = _staffMap[uid] || {};
+  const region = s.pay_region || 'domestic';
+  setAudience(region);
+  if (el) {
+    const other = region === 'overseas' ? 'domestic' : 'overseas';
+    const label = region === 'overseas' ? '🌍 Overseas' : '🇺🇸 Domestic (USA)';
+    el.innerHTML = 'Pay region: <strong>' + label + '</strong> ' +
+      '<button type="button" class="mini-btn" id="switchRegionBtn">Switch to ' +
+      (other === 'overseas' ? 'Overseas' : 'Domestic') + '</button>';
+    const btn = $('switchRegionBtn');
+    if (btn) btn.addEventListener('click', () => setStaffRegion(uid, other));
+  }
+}
+
+async function setStaffRegion(uid, region) {
+  if (!confirm('Set this staff member’s pay region to ' + region + '? This changes which onboarding + payroll workflow applies to them.')) return;
+  const cfg = window.LYMX_CONFIG;
+  const session = await window.LYMX.getSession();
+  const tok = session.access_token;
+  const r = await fetch(cfg.SUPABASE_URL + '/rest/v1/rpc/set_staff_pay_region', {
+    method: 'POST',
+    headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_user_id: uid, p_region: region })
+  });
+  if (!r.ok) { banner('err', 'Could not update region: ' + (await r.text()).slice(0,160)); return; }
+  if (_staffMap[uid]) _staffMap[uid].pay_region = region;
+  banner('ok', 'Pay region set to ' + region + '.');
+  onStaffChange();
 }
 
 function substitute(text, uid) {

@@ -104,9 +104,32 @@
           <div class="field">
             <label for="waitDays">Eligibility waiting period (days)</label>
             <input id="waitDays" type="number" min="0" step="1" />
-            <div class="hint">Days before PTO / health benefits start.</div>
+            <div class="hint">Probation days from the start date before benefits eligibility begins.</div>
           </div>
         </div>
+      </div>
+
+      <div class="card">
+        <h2>Benefits Eligibility</h2>
+        <div class="form-row">
+          <div class="field">
+            <label for="eligEmpType">Who is eligible</label>
+            <select id="eligEmpType">
+              <option value="full_time">Full-time employees only</option>
+              <option value="part_time">Full-time & part-time</option>
+              <option value="all">All employees</option>
+            </select>
+            <div class="hint">Appears on this policy and on every offer letter.</div>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="field">
+            <label for="eligNote">Eligibility summary shown to employees (optional)</label>
+            <textarea id="eligNote" placeholder="Leave blank to auto-generate from the waiting period + who-is-eligible above."></textarea>
+            <div class="hint">Plain-English statement of when benefits begin. Blank = auto-generated. Reaching eligibility starts benefits; some accrue or vest over time.</div>
+          </div>
+        </div>
+        <div class="policy-banner" id="eligPreview" style="margin-top:4px"></div>
       </div>
 
       <div class="card">
@@ -170,6 +193,25 @@
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+// 2026-06-01 feedback #da347aa6 — make benefit eligibility (who + when) explicit.
+function eligWhoLabel(t){
+  return t === 'all' ? 'all employees'
+       : t === 'part_time' ? 'full-time and part-time employees'
+       : 'full-time employees only';
+}
+function autoEligText(){
+  const w = parseInt(($('waitDays')||{}).value, 10);
+  const wd = Number.isNaN(w) ? 90 : w;
+  return 'Eligibility begins after the ' + wd + '-day probation period and applies to '
+       + eligWhoLabel(($('eligEmpType')||{}).value) + '. Reaching eligibility starts benefits; '
+       + 'some benefits accrue or vest over time — see each benefit’s accrual method.';
+}
+function updateEligPreview(){
+  const el = $('eligPreview'); if (!el) return;
+  const note = (($('eligNote')||{}).value || '').trim();
+  el.textContent = 'Employees will see: “' + (note || autoEligText()) + '”';
+}
+
 let me = null;
 let holidays = [];
 
@@ -200,9 +242,12 @@ function fillForm(p){
   $('offersHealth').checked = !!p.offers_health;
   $('offersRetire').checked = !!p.offers_retirement;
   $('healthShare').value = (p.health_employee_share_pct == null ? '' : p.health_employee_share_pct);
+  $('eligEmpType').value = p.eligibility_employment_type || 'full_time';
+  $('eligNote').value    = p.eligibility_note || '';
   holidays = Array.isArray(p.paid_holidays) ? p.paid_holidays.slice() : [];
   $('notes').value = '';   // notes are per-version; start blank for the new version
   renderHolidays();
+  updateEligPreview();
 }
 
 function showStatus(msg, kind){
@@ -259,6 +304,10 @@ async function init(){
 
   $('addHolidayBtn').addEventListener('click', addHoliday);
   $('newHoliday').addEventListener('keydown', (e) => { if (e.key === 'Enter'){ e.preventDefault(); addHoliday(); } });
+  ['eligEmpType','eligNote','waitDays'].forEach(id => {
+    const el = $(id);
+    if (el){ el.addEventListener('input', updateEligPreview); el.addEventListener('change', updateEligPreview); }
+  });
   $('saveBtn').addEventListener('click', () => save(sb));
 }
 
@@ -275,7 +324,9 @@ async function save(sb){
     p_offers_health:             $('offersHealth').checked,
     p_offers_retirement:         $('offersRetire').checked,
     p_health_employee_share_pct: shareRaw === '' ? null : Number(shareRaw),
-    p_notes:                     $('notes').value || null
+    p_notes:                     $('notes').value || null,
+    p_eligibility_employment_type: $('eligEmpType').value || 'full_time',
+    p_eligibility_note:          ($('eligNote').value || '').trim() || null
   };
 
   if (Number.isNaN(payload.p_pto_days_full_time) || Number.isNaN(payload.p_sick_days_full_time) || Number.isNaN(payload.p_eligibility_wait_days)){

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="LYMX Admin — read-only registry of provisioned company @getlymx.com email addresses." />
+<meta name="robots" content="noindex,nofollow" />
+<title>Company Emails · LYMX Admin</title>
+<style>
+  :root{--ink:#0e1116;--ink-2:#1a1f27;--muted:#5b6472;--line:#e6e8ec;--bg:#ffffff;--bg-soft:#f6f7f9;--accent:#0a84ff;--accent-2:#0050c7;--ok:#13a26b;--warn:#f0a020;--danger:#e0413e;--maxw:1180px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg-soft)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;max-width:1320px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+  .role-tag{background:rgba(208,32,84,.12);color:#a01644;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .page{padding:28px 0 64px}
+  .page-head h1{margin:0;font-size:24px;font-weight:800}
+  .page-head p{margin:6px 0 14px;color:var(--muted);font-size:14px}
+  .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .filter-input{flex:1;min-width:220px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:14px;background:#fff}
+  .count{font-size:13px;color:var(--muted);font-weight:600}
+  .tablecard{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(14,17,22,.05)}
+  table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.t th{text-align:left;padding:11px 14px;border-bottom:2px solid var(--line);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--bg-soft)}
+  table.t td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.t tr:last-child td{border-bottom:none}
+  .mono{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:var(--accent-2)}
+  .who{font-weight:700}
+  .who .sub{display:block;font-weight:500;font-size:11.5px;color:var(--muted);margin-top:1px}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+  .pill.active{background:#dff8ec;color:#0c6940}
+  .pill.pending{background:#fff3d8;color:#7a4a08}
+  .pill.failed{background:#fde8e6;color:#7a1a17}
+  .pill.suspended{background:#eef0f3;color:var(--muted)}
+  .pill.grey{background:#eef0f3;color:var(--muted)}
+  .empty{padding:40px 16px;text-align:center;color:var(--muted);font-size:14px}
+  .banner{padding:11px 14px;border-radius:9px;margin-bottom:12px;font-size:13.5px}
+  .banner.info{background:#eef5ff;border:1px solid #c5dffb;color:#1d4ed8}
+  .banner.err{background:#fdecec;border:1px solid #f5b7b7;color:#9b1c1c}
+</style>
+</head>
+<body data-role-required="perm:admin_partners">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="admin-dashboard.html">LYMX <span class="role-tag">Admin</span></a>
+    <a href="admin-partners.html" style="font-size:13px;color:var(--muted)">Manage partners →</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <h1>📧 Company Emails</h1>
+      <p>Read-only record of every provisioned company <strong>@getlymx.com</strong> address — who it belongs to, its status, and when it was set up. To create, suspend, or re-send a welcome email, use <a href="admin-partners.html" style="color:var(--accent);text-decoration:underline">Manage partners</a>.</p>
+    </div>
+
+    <div class="banner info" id="topBanner">Loading provisioned company emails…</div>
+
+    <div class="toolbar">
+      <input class="filter-input" type="search" id="filter" placeholder="Filter by name or email…" />
+      <span class="count" id="count"></span>
+    </div>
+
+    <div class="tablecard">
+      <table class="t">
+        <thead>
+          <tr>
+            <th>Person</th>
+            <th>Company email</th>
+            <th>Forwards to</th>
+            <th>Status</th>
+            <th>Provisioned</th>
+            <th>Welcome sent</th>
+            <th>Acknowledged</th>
+            <th>Secondary</th>
+          </tr>
+        </thead>
+        <tbody id="rows"><tr><td colspan="8" class="empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lymx-config.js"></script>
+<script src="lymx-auth.js"></script>
+<script>
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function dt(s){ return s ? new Date(s).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }) : '—'; }
+
+let _rows = [];
+let _filter = '';
+
+function statusPill(s){
+  const k = (s || 'grey').toLowerCase();
+  const cls = ['active','pending','failed','suspended'].includes(k) ? k : 'grey';
+  return '<span class="pill ' + cls + '">' + esc(s || 'unknown') + '</span>';
+}
+
+function render(){
+  const q = _filter.toLowerCase();
+  const view = !q ? _rows : _rows.filter(r =>
+    ((r.name || '') + ' ' + (r.full_email || '') + ' ' + (r.forward_to || '')).toLowerCase().includes(q));
+  $('count').textContent = view.length + ' of ' + _rows.length + ' shown';
+  const tb = $('rows');
+  if (!view.length){ tb.innerHTML = '<tr><td colspan="8" class="empty">No provisioned company emails' + (q ? ' match your filter.' : ' yet.') + '</td></tr>'; return; }
+  tb.innerHTML = view.map(r => {
+    const secondary = r.secondary_full_email
+      ? '<span class="mono">' + esc(r.secondary_full_email) + '</span> ' + statusPill(r.secondary_status)
+      : '<span class="pill grey">none</span>';
+    const suspended = r.suspended_at ? '<div class="sub" style="color:var(--danger)">Suspended ' + dt(r.suspended_at) + '</div>' : '';
+    return '<tr>' +
+      '<td class="who">' + esc(r.name || '(unknown)') + (r.contact_email ? '<span class="sub">' + esc(r.contact_email) + '</span>' : '') + suspended + '</td>' +
+      '<td><span class="mono">' + esc(r.full_email || '—') + '</span></td>' +
+      '<td>' + (r.forward_to ? '<span class="mono">' + esc(r.forward_to) + '</span>' : '—') + '</td>' +
+      '<td>' + statusPill(r.status) + '</td>' +
+      '<td>' + dt(r.provisioned_at) + '</td>' +
+      '<td>' + dt(r.onboarding_email_sent_at) + '</td>' +
+      '<td>' + (r.partner_acknowledged_at ? dt(r.partner_acknowledged_at) : '<span class="pill grey">no</span>') + '</td>' +
+      '<td>' + secondary + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+async function init(){
+  if (!window.LYMX || !window.LYMX.requireAuth) return;
+  const user = await window.LYMX.requireAuth();
+  if (!user) return;
+  const sb = window.LYMX.sb;
+
+  // NOTE: never select smtp_username / smtp_password — credentials stay server-side.
+  const { data: emails, error } = await sb.from('partner_emails')
+    .select('partner_id,full_email,forward_to,display_name,status,provisioned_at,onboarding_email_sent_at,partner_acknowledged_at,suspended_at,secondary_full_email,secondary_status')
+    .order('provisioned_at', { ascending: false });
+
+  if (error){
+    $('topBanner').className = 'banner err';
+    $('topBanner').textContent = 'Could not load provisioned emails. Refresh to try again.';
+    $('rows').innerHTML = '<tr><td colspan="8" class="empty">Load failed.</td></tr>';
+    console.warn('[provisioned-emails] load failed', error);
+    return;
+  }
+
+  // Resolve owner names from partners (display_name / legal_name / contact_email).
+  const ids = [...new Set((emails || []).map(e => e.partner_id).filter(Boolean))];
+  const nameMap = {};
+  if (ids.length){
+    const { data: partners } = await sb.from('partners')
+      .select('id,display_name,legal_name,contact_email')
+      .in('id', ids);
+    (partners || []).forEach(p => { nameMap[p.id] = p; });
+  }
+
+  _rows = (emails || []).map(e => {
+    const p = nameMap[e.partner_id] || {};
+    return Object.assign({}, e, {
+      name: e.display_name || p.display_name || p.legal_name || '',
+      contact_email: p.contact_email || ''
+    });
+  });
+
+  $('topBanner').className = 'banner info';
+  $('topBanner').textContent = _rows.length
+    ? _rows.length + ' company email' + (_rows.length === 1 ? '' : 's') + ' provisioned. This list is read-only.'
+    : 'No company emails have been provisioned yet. Provision one from Manage partners.';
+  render();
+
+  $('filter').addEventListener('input', e => { _filter = e.target.value; render(); });
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+</script>
+
+<script src="lymx-feedback.js" defer></script>
+<script src="lymx-sidebar.js" defer></script>
+<script src="lymx-app.js" defer></script>
+<script src="lymx-role-gate.js" defer></script>
+</body>
+</html>
